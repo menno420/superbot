@@ -1,0 +1,297 @@
+{
+    "wooden planks": {
+        "wood": 1
+    },
+    "crafting table": {
+        "wooden planks": 4
+    },
+    "stick": {
+        "wooden planks": 1
+    },
+    "wooden sword": {
+        "wooden planks": 2,
+        "stick": 1
+    },
+    "wooden pickaxe": {
+        "wooden planks": 3,
+        "stick": 2
+    },
+    "wooden shovel": {
+        "wooden planks": 1,
+        "stick": 2
+    },
+    "wooden axe": {
+        "wooden planks": 3,
+        "stick": 2
+    },
+    "stone sword": {
+        "stone": 2,
+        "stick": 1
+    },
+    "stone pickaxe": {
+        "stone": 3,
+        "stick": 2
+    },
+    "stone shovel": {
+        "stone": 1,
+        "stick": 2
+    },
+    "stone axe": {
+        "stone": 3,
+        "stick": 2
+    },
+    "furnace": {
+        "stone": 8
+    },
+    "iron sword": {
+        "iron": 2,
+        "stick": 1
+    },
+    "iron pickaxe": {
+        "iron": 3,
+        "stick": 2
+    },
+    "iron shovel": {
+        "iron": 1,
+        "stick": 2
+    },
+    "iron axe": {
+        "iron": 3,
+        "stick": 2
+    },
+    "iron door": {
+        "iron": 6
+    },
+    "iron golem": {
+        "iron": 36,
+        "pumpkin": 1
+    },
+    "bucket": {
+        "iron": 3
+    },
+    "shears": {
+        "iron": 2
+    },
+    "gold sword": {
+        "gold": 2,
+        "stick": 1
+    },
+    "gold pickaxe": {
+        "gold": 3,
+        "stick": 2
+    },
+    "diamond sword": {
+        "diamond": 2,
+        "stick": 1
+    },
+    "diamond pickaxe": {
+        "diamond": 3,
+        "stick": 2
+    },
+    "diamond shovel": {
+        "diamond": 1,
+        "stick": 2
+    },
+    "diamond axe": {
+        "diamond": 3,
+        "stick": 2
+    },
+    "helmet_gold": {
+        "gold": 5
+    },
+    "helmet_iron": {
+        "iron": 5
+    },
+    "helmet_diamond": {
+        "diamond": 5
+    },
+    "helmet_silver": {
+        "silver": 5
+    },
+    "helmet_bronze": {
+        "bronze": 5
+    },
+    "chestplate_gold": {
+        "gold": 8
+    },
+    "chestplate_iron": {
+        "iron": 8
+    },
+    "chestplate_diamond": {
+        "diamond": 8
+    },
+    "chestplate_silver": {
+        "silver": 8
+    },
+    "chestplate_bronze": {
+        "bronze": 8
+    },
+    "leggings_gold": {
+        "gold": 7
+    },
+    "leggings_iron": {
+        "iron": 7
+    },
+    "leggings_diamond": {
+        "diamond": 7
+    },
+    "leggings_silver": {
+        "silver": 7
+    },
+    "leggings_bronze": {
+        "bronze": 7
+    },
+    "boots_gold": {
+        "gold": 4
+    },
+    "boots_iron": {
+        "iron": 4
+    },
+    "boots_diamond": {
+        "diamond": 4
+    },
+    "boots_silver": {
+        "silver": 4
+    },
+    "boots_bronze": {
+        "bronze": 4
+    },
+    "shield_gold": {
+        "gold": 6,
+        "iron": 1
+    },
+    "shield_iron": {
+        "iron": 6,
+        "wooden planks": 2
+    },
+    "shield_diamond": {
+        "diamond": 6,
+        "iron": 2
+    },
+    "torch": {
+        "stick": 1,
+        "coal": 1
+    },
+    "chest": {
+        "wooden planks": 8
+    },
+    "ladder": {
+        "stick": 7
+    },
+    "bow": {
+        "stick": 3,
+        "string": 3
+    },
+    "arrow": {
+        "stick": 1,
+        "feather": 1,
+        "flint": 1
+    },
+    "anvil": {
+        "iron": 31
+    },
+    "bookshelf": {
+        "wooden planks": 6,
+        "book": 3
+    },
+    "enchantment table": {
+        "diamond": 2,
+        "obsidian": 4,
+        "book": 1
+    },
+    "nether portal": {
+        "obsidian": 10
+    },
+    "golden apple": {
+        "apple": 1,
+        "gold": 8
+    },
+    "stone hut": {
+        "stone": 5
+    },
+    "wooden house": {
+        "wood": 8
+    },
+    "giant fortress": {
+        "stone": 50,
+        "wood": 30,
+        "iron": 10
+    },
+    "diamond throne": {
+        "diamond": 6
+    },
+    "gold statue": {
+        "gold": 4
+    },
+    "netherite_pickaxe": {
+        "diamond pickaxe": 1,
+        "netherite_ingot": 2
+    },
+    "netherite_axe": {
+        "diamond axe": 1,
+        "netherite_ingot": 2
+    },
+    "netherite_shovel": {
+        "diamond shovel": 1,
+        "netherite_ingot": 2
+    },
+    "netherite_sword": {
+        "diamond sword": 1,
+        "netherite_ingot": 2
+    },
+    "netherite_hoe": {
+        "diamond hoe": 1,
+        "netherite_ingot": 2
+    },
+    "chainmail_helmet": {
+        "iron_ingot": 5
+    },
+    "chainmail_chestplate": {
+        "iron_ingot": 8
+    },
+    "chainmail_leggings": {
+        "iron_ingot": 7
+    },
+    "chainmail_boots": {
+        "iron_ingot": 4
+    },
+    "painting": {
+        "wooden planks": 2,
+        "string": 1
+    },
+    "banner": {
+        "wooden planks": 2,
+        "dye": 1
+    },
+    "vase": {
+        "clay": 4
+    },
+    "carpet": {
+        "wool": 4
+    },
+    "enchanted_scroll": {
+        "book": 1,
+        "lapis_lazuli": 2,
+        "magic_wand": 1
+    },
+    "rune_of_power": {
+        "diamond": 1,
+        "gold_ingot": 2,
+        "magic_wand": 1
+    },
+    "wizard_hat": {
+        "leather": 4,
+        "gold_ingot": 1,
+        "magic_wand": 1
+    },
+    "arcane_orb": {
+        "nether_star": 1,
+        "diamond": 1,
+        "obsidian": 2
+    },
+    "sorcerer_staff": {
+        "wooden planks": 2,
+        "diamond": 1,
+        "magic_wand": 1
+    }
+}

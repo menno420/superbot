@@ -1,0 +1,31 @@
+{
+    "340415158583296000": {
+        "diamond": 4,
+        "iron": 8,
+        "gold": 7,
+        "stone": 28,
+        "wood": 21,
+        "axe": 1,
+        "pickaxe": 1,
+        "furnace": 1
+    },
+    "1154758502905020458": {
+        "gold": 1,
+        "iron": 2,
+        "stone": 13,
+        "diamond": 5,
+        "wood": 56,
+        "iron pickaxe": 1
+    },
+    "371015059343933441": {
+        "diamond": 5,
+        "gold": 7,
+        "stone": 8,
+        "wood": 21,
+        "iron": 1,
+        "sword": 1
+    },
+    "1067847621353414696": {
+        "wood": 3
+    }
+}

@@ -1,0 +1,39 @@
+# --- Core Bot ---
+discord.py~=2.5.2        # Discord API wrapper (slash commands, events, etc.)
+python-dotenv~=1.0.0     # Load secrets/config from .env
+pydantic~=2.7.0          # Structured config & data validation
+
+# --- Database & Data Handling ---
+aiosqlite~=0.21.0        # Async SQLite database driver
+orjson~=3.10.0           # High-performance JSON serialization/deserialization
+
+# --- Logging & Monitoring ---
+loguru~=0.7.0            # Better structured logging with rotations
+
+# --- AI & NLP (planned moderation, commands, events) ---
+openai~=1.99.6           # GPT moderation/chat API
+tiktoken~=0.7.0          # Token counting for GPT prompts
+transformers~=4.44.0     # HuggingFace models for local/offline NLP
+sentencepiece~=0.2.0     # Tokenizer backend for some HF models
+
+# --- Internationalization & Localization ---
+Babel~=2.15.0            # Pluralization rules, date/time formatting
+
+# --- Image Processing ---
+Pillow~=10.4.0           # PIL for crafting UIs, item cards
+qrcode~=7.4.2            # QR code generation for quick sharing/links
+
+# --- Performance / Caching ---
+aiocache~=0.12.0         # Async caching backend with Redis/memory
+async-lru~=2.0.4         # Lightweight in-memory LRU cache
+
+# --- Optional Web / API Integration ---
+aiohttp~=3.9.5           # Async HTTP client for APIs/webhooks
+fastapi~=0.111.0         # REST endpoints for admin, integrations
+uvicorn~=0.30.0          # ASGI server for FastAPI
+
+# --- Dev / Testing (remove in prod installs if needed) ---
+# pytest~=8.3.0
+# pytest-asyncio~=0.23.0
+# black~=24.4.0
+# isort~=5.13.0

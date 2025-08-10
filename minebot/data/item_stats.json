@@ -1,0 +1,2211 @@
+{
+    "adamantite_ingot": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "adamantite_ore": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "alchemy_vial": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "amethyst": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "ancient_artifact": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "quest_items",
+        "weight": 1
+    },
+    "ancient_scroll": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "antidote": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "apple": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "consumables",
+        "weight": 1
+    },
+    "arcane_orb": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "magic_items",
+        "weight": 1
+    },
+    "axe_diamond": {
+        "defense": 0,
+        "damage": 7,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "axe_gold": {
+        "defense": 0,
+        "damage": 6,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "axe_iron": {
+        "defense": 0,
+        "damage": 6,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "axe_stone": {
+        "defense": 0,
+        "damage": 5,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "axe_wood": {
+        "defense": 0,
+        "damage": 4,
+        "rarity": 1,
+        "value": 1,
+        "weight": 2
+    },
+    "bamboo": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "banner": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "decorative_items",
+        "weight": 1
+    },
+    "bed": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "blaze_powder": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "bone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "boots_diamond": {
+        "defense": 5,
+        "damage": 0,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "boots_gold": {
+        "defense": 4,
+        "damage": 0,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "boots_iron": {
+        "defense": 4,
+        "damage": 0,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "boots_leather": {
+        "defense": 3,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "bow": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "weapons",
+        "weight": 1
+    },
+    "bread": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "consumables",
+        "weight": 1
+    },
+    "brick": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "building_blocks",
+        "weight": 1
+    },
+    "bronze_coin": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "currency",
+        "weight": 1
+    },
+    "bucket": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "cactus": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "carpet": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "decorative_items",
+        "weight": 1
+    },
+    "carrot_seed": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "seeds",
+        "weight": 1
+    },
+    "celestial_orb": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "chainmail_boots": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 1
+    },
+    "chainmail_chestplate": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 1
+    },
+    "chainmail_helmet": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 1
+    },
+    "chainmail_leggings": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 1
+    },
+    "charcoal": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "chestplate_diamond": {
+        "defense": 9,
+        "damage": 0,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "chestplate_gold": {
+        "defense": 8,
+        "damage": 0,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "chestplate_iron": {
+        "defense": 8,
+        "damage": 0,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "chestplate_leather": {
+        "defense": 7,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "circuit_board": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "clay": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "coal": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 2,
+        "category": "resources",
+        "weight": 1
+    },
+    "compass": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "cooked_fish": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "consumables",
+        "weight": 1
+    },
+    "copper_ingot": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "copper_ore": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "copper_wire": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "coral": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "corn_seed": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "seeds",
+        "weight": 1
+    },
+    "crossbow": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "weapons",
+        "weight": 1
+    },
+    "dagger": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "weapons",
+        "weight": 1
+    },
+    "desert_sandstone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 3
+    },
+    "diamond": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "resources",
+        "weight": 4
+    },
+    "diamond_axe": {
+        "damage": 4,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "tools",
+        "weight": 4
+    },
+    "diamond_boots": {
+        "damage": 0,
+        "defense": 6,
+        "rarity": 4,
+        "value": 5,
+        "category": "armor",
+        "weight": 4
+    },
+    "diamond_chestplate": {
+        "damage": 0,
+        "defense": 6,
+        "rarity": 4,
+        "value": 5,
+        "category": "armor",
+        "weight": 4
+    },
+    "diamond_helmet": {
+        "damage": 0,
+        "defense": 6,
+        "rarity": 4,
+        "value": 5,
+        "category": "armor",
+        "weight": 4
+    },
+    "diamond_hoe": {
+        "damage": 4,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "tools",
+        "weight": 4
+    },
+    "diamond_leggings": {
+        "damage": 0,
+        "defense": 6,
+        "rarity": 4,
+        "value": 5,
+        "category": "armor",
+        "weight": 4
+    },
+    "diamond_pickaxe": {
+        "damage": 4,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "tools",
+        "weight": 4
+    },
+    "diamond_shard": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "crafting_materials",
+        "weight": 4
+    },
+    "diamond_shield": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "shields",
+        "weight": 4
+    },
+    "diamond_shovel": {
+        "damage": 4,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "tools",
+        "weight": 4
+    },
+    "diamond_sword": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "weapons",
+        "weight": 4
+    },
+    "dragon_blood": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "dragon_egg": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "resources",
+        "weight": 1
+    },
+    "dragon_scale": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "earthstone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 3
+    },
+    "elixir": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "consumables",
+        "weight": 1
+    },
+    "emerald": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "resources",
+        "weight": 1
+    },
+    "emerald_ore": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "resources",
+        "weight": 1
+    },
+    "emerald_shard": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "enchanted_book_efficiency": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 4,
+        "value": 6,
+        "weight": 2
+    },
+    "enchanted_book_fortune": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 4,
+        "value": 6,
+        "weight": 2
+    },
+    "enchanted_book_sharpness": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 4,
+        "value": 6,
+        "weight": 2
+    },
+    "enchanted_book_unbreaking": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 4,
+        "value": 6,
+        "weight": 2
+    },
+    "enchanted_scroll": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 6,
+        "category": "magic_items",
+        "weight": 1
+    },
+    "enchanted_wood": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "special_resources",
+        "weight": 2
+    },
+    "event_token": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "quest_items",
+        "weight": 1
+    },
+    "feather": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "fiber_optic": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "fire_resistance_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 4,
+        "category": "special_potions",
+        "weight": 1
+    },
+    "firestone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 3
+    },
+    "fishing_rod": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "flint": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "flint_and_steel": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "food_apple": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "food_bread": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "food_carrot": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "food_cooked beef": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "food_cooked porkchop": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "food_potato": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "gemstone_token": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 5,
+        "category": "currency",
+        "weight": 3
+    },
+    "glass": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "glass_pane": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "building_blocks",
+        "weight": 1
+    },
+    "glowstone_dust": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 3
+    },
+    "gold_coin": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "currency",
+        "weight": 4
+    },
+    "gold_ingot": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "resources",
+        "weight": 4
+    },
+    "gold_nugget": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "crafting_materials",
+        "weight": 4
+    },
+    "gold_ore": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "resources",
+        "weight": 4
+    },
+    "golden_axe": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "tools",
+        "weight": 4
+    },
+    "golden_boots": {
+        "damage": 0,
+        "defense": 5,
+        "rarity": 3,
+        "value": 3,
+        "category": "armor",
+        "weight": 4
+    },
+    "golden_chestplate": {
+        "damage": 0,
+        "defense": 5,
+        "rarity": 3,
+        "value": 3,
+        "category": "armor",
+        "weight": 4
+    },
+    "golden_helmet": {
+        "damage": 0,
+        "defense": 5,
+        "rarity": 3,
+        "value": 3,
+        "category": "armor",
+        "weight": 4
+    },
+    "golden_hoe": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "tools",
+        "weight": 4
+    },
+    "golden_leggings": {
+        "damage": 0,
+        "defense": 5,
+        "rarity": 3,
+        "value": 3,
+        "category": "armor",
+        "weight": 4
+    },
+    "golden_pickaxe": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "tools",
+        "weight": 4
+    },
+    "golden_shield": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "shields",
+        "weight": 4
+    },
+    "golden_shovel": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "tools",
+        "weight": 4
+    },
+    "golden_sword": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 3,
+        "category": "weapons",
+        "weight": 4
+    },
+    "granite": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "building_blocks",
+        "weight": 1
+    },
+    "gravel": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "griffin_feather": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "hammer": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "healing_herb": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "healing_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 4,
+        "category": "consumables",
+        "weight": 1
+    },
+    "helmet_diamond": {
+        "defense": 5,
+        "damage": 0,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "helmet_gold": {
+        "defense": 4,
+        "damage": 0,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "helmet_iron": {
+        "defense": 4,
+        "damage": 0,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "helmet_leather": {
+        "defense": 3,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "herb": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "hoe_diamond": {
+        "defense": 0,
+        "damage": 4,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "hoe_gold": {
+        "defense": 0,
+        "damage": 3,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "hoe_iron": {
+        "defense": 0,
+        "damage": 3,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "hoe_stone": {
+        "defense": 0,
+        "damage": 2,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "hoe_wood": {
+        "defense": 0,
+        "damage": 1,
+        "rarity": 1,
+        "value": 1,
+        "weight": 2
+    },
+    "ice_crystal": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "invisibility_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 4,
+        "category": "special_potions",
+        "weight": 1
+    },
+    "iron_axe": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "tools",
+        "weight": 4
+    },
+    "iron_boots": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 2,
+        "value": 2,
+        "category": "armor",
+        "weight": 4
+    },
+    "iron_chestplate": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 2,
+        "value": 2,
+        "category": "armor",
+        "weight": 4
+    },
+    "iron_helmet": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 2,
+        "value": 2,
+        "category": "armor",
+        "weight": 4
+    },
+    "iron_hoe": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "tools",
+        "weight": 4
+    },
+    "iron_ingot": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "resources",
+        "weight": 4
+    },
+    "iron_leggings": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 2,
+        "value": 2,
+        "category": "armor",
+        "weight": 4
+    },
+    "iron_nugget": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "crafting_materials",
+        "weight": 4
+    },
+    "iron_ore": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "resources",
+        "weight": 4
+    },
+    "iron_pickaxe": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "tools",
+        "weight": 4
+    },
+    "iron_shield": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "shields",
+        "weight": 4
+    },
+    "iron_shovel": {
+        "damage": 3,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "tools",
+        "weight": 4
+    },
+    "iron_sword": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 2,
+        "category": "weapons",
+        "weight": 4
+    },
+    "jade": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "lapis_lazuli": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "lava_rock": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "leather": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "leggings_diamond": {
+        "defense": 8,
+        "damage": 0,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "leggings_gold": {
+        "defense": 7,
+        "damage": 0,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "leggings_iron": {
+        "defense": 7,
+        "damage": 0,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "leggings_leather": {
+        "defense": 6,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "lichen": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "lore_book": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "quest_items",
+        "weight": 2
+    },
+    "lost_relic": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "quest_items",
+        "weight": 1
+    },
+    "mace": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "weapons",
+        "weight": 1
+    },
+    "magic_seed": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "seeds",
+        "weight": 1
+    },
+    "magic_wand": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "magic_items",
+        "weight": 1
+    },
+    "mana_crystal": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 5,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "mana_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "resources",
+        "weight": 1
+    },
+    "map": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "map_fragment": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "quest_items",
+        "weight": 1
+    },
+    "marble": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "building_blocks",
+        "weight": 1
+    },
+    "mithril_ingot": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "mithril_ore": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "moss": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "mysterious_key": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "quest_items",
+        "weight": 1
+    },
+    "nether_quartz": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "nether_star": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "netherite_axe": {
+        "damage": 5,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "tools",
+        "weight": 5
+    },
+    "netherite_boots": {
+        "damage": 0,
+        "defense": 7,
+        "rarity": 5,
+        "value": 6,
+        "category": "armor",
+        "weight": 5
+    },
+    "netherite_chestplate": {
+        "damage": 0,
+        "defense": 7,
+        "rarity": 5,
+        "value": 6,
+        "category": "armor",
+        "weight": 5
+    },
+    "netherite_helmet": {
+        "damage": 0,
+        "defense": 7,
+        "rarity": 5,
+        "value": 6,
+        "category": "armor",
+        "weight": 5
+    },
+    "netherite_hoe": {
+        "damage": 5,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "tools",
+        "weight": 5
+    },
+    "netherite_leggings": {
+        "damage": 0,
+        "defense": 7,
+        "rarity": 5,
+        "value": 6,
+        "category": "armor",
+        "weight": 5
+    },
+    "netherite_pickaxe": {
+        "damage": 5,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "tools",
+        "weight": 5
+    },
+    "netherite_shield": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "shields",
+        "weight": 5
+    },
+    "netherite_shovel": {
+        "damage": 5,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "tools",
+        "weight": 5
+    },
+    "netherite_sword": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "weapons",
+        "weight": 5
+    },
+    "obsidian": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 5,
+        "category": "resources",
+        "weight": 5
+    },
+    "obsidian_boots": {
+        "damage": 0,
+        "defense": 8,
+        "rarity": 5,
+        "value": 5,
+        "category": "armor",
+        "weight": 5
+    },
+    "obsidian_chestplate": {
+        "damage": 0,
+        "defense": 8,
+        "rarity": 5,
+        "value": 5,
+        "category": "armor",
+        "weight": 5
+    },
+    "obsidian_helmet": {
+        "damage": 0,
+        "defense": 8,
+        "rarity": 5,
+        "value": 5,
+        "category": "armor",
+        "weight": 5
+    },
+    "obsidian_leggings": {
+        "damage": 0,
+        "defense": 8,
+        "rarity": 5,
+        "value": 5,
+        "category": "armor",
+        "weight": 5
+    },
+    "painting": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "decorative_items",
+        "weight": 1
+    },
+    "paper": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "phoenix_ash": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "phoenix_feather": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "pickaxe_diamond": {
+        "defense": 0,
+        "damage": 5,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "pickaxe_gold": {
+        "defense": 0,
+        "damage": 4,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "pickaxe_iron": {
+        "defense": 0,
+        "damage": 4,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "pickaxe_stone": {
+        "defense": 0,
+        "damage": 3,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "pickaxe_wood": {
+        "defense": 0,
+        "damage": 2,
+        "rarity": 1,
+        "value": 1,
+        "weight": 2
+    },
+    "plasma_core": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "potato_seed": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "seeds",
+        "weight": 1
+    },
+    "potion_healing": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 3,
+        "value": 4,
+        "weight": 1
+    },
+    "potion_strength": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 3,
+        "value": 4,
+        "weight": 1
+    },
+    "potion_swiftness": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 3,
+        "value": 4,
+        "weight": 1
+    },
+    "quest_scroll": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 5,
+        "category": "quest_items",
+        "weight": 1
+    },
+    "redstone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 3
+    },
+    "regeneration_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 4,
+        "category": "special_potions",
+        "weight": 1
+    },
+    "resource_coal": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 2,
+        "weight": 1
+    },
+    "resource_cobblestone": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "resource_copper": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "resource_diamond": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "resource_emerald": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 4,
+        "value": 5,
+        "weight": 1
+    },
+    "resource_flint": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "resource_gold": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "resource_iron": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "resource_lapis": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "resource_obsidian": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 5,
+        "value": 5,
+        "weight": 5
+    },
+    "resource_redstone": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "resource_stick": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "resource_stone": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "resource_string": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 1
+    },
+    "resource_wood": {
+        "defense": 0,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 2
+    },
+    "ruby": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "rune_of_power": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "magic_items",
+        "weight": 1
+    },
+    "salt": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "sand": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "sapphire": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "scythe": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "seashell": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "shears": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "shield_iron": {
+        "defense": 6,
+        "damage": 0,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "shield_wood": {
+        "defense": 4,
+        "damage": 0,
+        "rarity": 1,
+        "value": 1,
+        "weight": 4
+    },
+    "shielding_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 4,
+        "category": "special_potions",
+        "weight": 4
+    },
+    "shovel_diamond": {
+        "defense": 0,
+        "damage": 4,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "shovel_gold": {
+        "defense": 0,
+        "damage": 3,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "shovel_iron": {
+        "defense": 0,
+        "damage": 3,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "shovel_stone": {
+        "defense": 0,
+        "damage": 2,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "shovel_wood": {
+        "defense": 0,
+        "damage": 1,
+        "rarity": 1,
+        "value": 1,
+        "weight": 2
+    },
+    "silver_coin": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "currency",
+        "weight": 1
+    },
+    "slate": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "building_blocks",
+        "weight": 1
+    },
+    "sorcerer_staff": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 6,
+        "category": "magic_items",
+        "weight": 1
+    },
+    "speed_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 4,
+        "category": "special_potions",
+        "weight": 1
+    },
+    "spell_book": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "magic_items",
+        "weight": 2
+    },
+    "staff": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "weapons",
+        "weight": 1
+    },
+    "stamina_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 4,
+        "category": "consumables",
+        "weight": 1
+    },
+    "statue": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "decorative_items",
+        "weight": 1
+    },
+    "steak": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "consumables",
+        "weight": 1
+    },
+    "stone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 3
+    },
+    "stone_axe": {
+        "damage": 2,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 3
+    },
+    "stone_boots": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 3
+    },
+    "stone_brick": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "building_blocks",
+        "weight": 3
+    },
+    "stone_chestplate": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 3
+    },
+    "stone_helmet": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 3
+    },
+    "stone_hoe": {
+        "damage": 2,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 3
+    },
+    "stone_leggings": {
+        "damage": 0,
+        "defense": 4,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 3
+    },
+    "stone_pickaxe": {
+        "damage": 2,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 3
+    },
+    "stone_shovel": {
+        "damage": 2,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 3
+    },
+    "stone_sword": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "weapons",
+        "weight": 3
+    },
+    "strength_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 4,
+        "category": "special_potions",
+        "weight": 1
+    },
+    "string": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "sulfur": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "sword_diamond": {
+        "defense": 0,
+        "damage": 9,
+        "rarity": 4,
+        "value": 5,
+        "weight": 4
+    },
+    "sword_gold": {
+        "defense": 0,
+        "damage": 8,
+        "rarity": 3,
+        "value": 3,
+        "weight": 4
+    },
+    "sword_iron": {
+        "defense": 0,
+        "damage": 8,
+        "rarity": 2,
+        "value": 2,
+        "weight": 4
+    },
+    "sword_stone": {
+        "defense": 0,
+        "damage": 7,
+        "rarity": 1,
+        "value": 1,
+        "weight": 3
+    },
+    "sword_wood": {
+        "defense": 0,
+        "damage": 6,
+        "rarity": 1,
+        "value": 1,
+        "weight": 2
+    },
+    "tapestry": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "decorative_items",
+        "weight": 1
+    },
+    "titanium_ingot": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "titanium_ore": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 1
+    },
+    "torch": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 1
+    },
+    "unicorn_hair": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 1
+    },
+    "vase": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "decorative_items",
+        "weight": 1
+    },
+    "volcanic_rock": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 3,
+        "value": 1,
+        "category": "biome_items",
+        "weight": 1
+    },
+    "water_breathing_potion": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 4,
+        "category": "special_potions",
+        "weight": 1
+    },
+    "waterstone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 3
+    },
+    "wheat_seed": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "seeds",
+        "weight": 1
+    },
+    "windstone": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 3
+    },
+    "wizard_hat": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 4,
+        "value": 1,
+        "category": "magic_items",
+        "weight": 1
+    },
+    "wood": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "resources",
+        "weight": 2
+    },
+    "wood_plank": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "building_blocks",
+        "weight": 2
+    },
+    "wooden_axe": {
+        "damage": 1,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 2
+    },
+    "wooden_boots": {
+        "damage": 0,
+        "defense": 2,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 2
+    },
+    "wooden_chestplate": {
+        "damage": 0,
+        "defense": 2,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 2
+    },
+    "wooden_helmet": {
+        "damage": 0,
+        "defense": 2,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 2
+    },
+    "wooden_hoe": {
+        "damage": 1,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 2
+    },
+    "wooden_leggings": {
+        "damage": 0,
+        "defense": 2,
+        "rarity": 1,
+        "value": 1,
+        "category": "armor",
+        "weight": 2
+    },
+    "wooden_pickaxe": {
+        "damage": 1,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 2
+    },
+    "wooden_shield": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "shields",
+        "weight": 4
+    },
+    "wooden_shovel": {
+        "damage": 1,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "tools",
+        "weight": 2
+    },
+    "wooden_sword": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 1,
+        "value": 1,
+        "category": "weapons",
+        "weight": 2
+    },
+    "wool": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 2,
+        "value": 1,
+        "category": "crafting_materials",
+        "weight": 1
+    },
+    "wyvern_scale": {
+        "damage": 0,
+        "defense": 0,
+        "rarity": 5,
+        "value": 1,
+        "category": "special_resources",
+        "weight": 1
+    }
+}
