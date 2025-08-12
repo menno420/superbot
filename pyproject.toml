@@ -1,0 +1,79 @@
+# ---------- RUFF (ultra strict) ----------
+[tool.ruff]
+# Match prod env on PythonAnywhere
+target-version = "py310"
+line-length = 88
+
+# Let Ruff resolve your package correctly
+src = ["superbot/src"]
+
+# Never lint/read these reference projects (they're read-only)
+extend-exclude = [
+  "disbot/",
+  "minebot/",
+  "superbot-start/",
+]
+
+# Rules live under the "lint" table on modern Ruff
+[tool.ruff.lint]
+select = [
+    "E", "W", "F",      # pycodestyle + pyflakes
+    "C90",              # mccabe complexity
+    "N",                # naming
+    "D",                # docstrings (pydocstyle)
+    "B",                # bugbear
+    "A",                # builtins shadowing
+    "ANN",              # annotations required
+    "S",                # security (bandit)
+    "T20",              # no print()
+    "ERA",              # no commented-out code
+    "COM",              # commas
+    "Q",                # quotes consistency
+    "ISC",              # implicit str concat
+    "G",                # logging format
+    "UP",               # modern syntax
+    "PT",               # pytest style (for later)
+    "RET",              # returns
+    "SIM",              # simplify
+    "ARG"               # unused arguments
+]
+# Relax two fussy docstring layout rules
+ignore = ["D203", "D213"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 8
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
+
+# ---------- BLACK ----------
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+# ---------- ISORT ----------
+[tool.isort]
+profile = "black"
+line_length = 88
+src_paths = ["superbot/src"]
+
+# ---------- MYPY (strict) ----------
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+no_implicit_optional = true
+# Avoid the duplicate "cogs" packages in old projects
+exclude = "^(disbot/|minebot/|superbot-start/)"

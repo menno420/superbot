@@ -29,8 +29,8 @@ config.json
 ########################################
 *.sqlite
 *.db
-/data/db/*
-!data/lang/*.json   # keep language files tracked
+superbot/data/db/*
+!superbot/data/lang/*.json   # keep language files tracked
 
 ########################################
 # LOGS
@@ -38,6 +38,7 @@ config.json
 *.log
 logs/
 log/
+superbot/data/logs/
 
 ########################################
 # CACHE / TEMP FILES
