@@ -1,43 +1,72 @@
-"""Dynamic cog loader utilities."""
+"""Dynamic cog discovery and management."""
 
 from __future__ import annotations
 
-import logging
-from importlib import import_module
+import pkgutil
 from pathlib import Path
 
 from discord.ext import commands
 
-FEATURES_PATH = Path(__file__).resolve().parents[1] / "features"
-logger = logging.getLogger(__name__)
+from ..core.services.logging_service import log_error, log_info
+
+FEATURES_ROOT = Path(__file__).resolve().parents[1] / "features"
+BASE_PACKAGE = "superbot.features"
 
 
-def discover_feature_modules() -> list[str]:
-    """Discover feature modules containing a ``setup`` function."""
+def discover_cogs() -> list[str]:
+    """Return a list of extension module paths."""
     modules: list[str] = []
-    base_package = "superbot"
-    for path in FEATURES_PATH.rglob("*.py"):
-        if path.name == "__init__.py":
+    for module in pkgutil.walk_packages(
+        [str(FEATURES_ROOT)], prefix=f"{BASE_PACKAGE}.",
+    ):
+        if module.ispkg:
             continue
-        rel = path.relative_to(FEATURES_PATH.parent)
-        module_name = ".".join((base_package, *rel.with_suffix("").parts))
-        try:
-            module = import_module(module_name)
-        except Exception as exc:  # noqa: BLE001
-            logger.exception("Failed to import %s", module_name, exc_info=exc)
-            continue
-        if hasattr(module, "setup"):
-            modules.append(module_name)
+        name = module.name
+        modules.append(name)
     return modules
 
 
-async def load_all(bot: commands.Bot) -> None:
-    """Load all discovered feature modules."""
-    for module in discover_feature_modules():
-        await bot.load_extension(module)
+async def load_cog(bot: commands.Bot, name: str) -> tuple[bool, str | None]:
+    """Load a single cog by module name."""
+    try:
+        await bot.load_extension(name)
+        log_info("Loaded cog %s", name)
+        return True, None
+    except Exception as exc:  # noqa: BLE001
+        log_error("Failed to load cog %s", name, exc_info=exc)
+        return False, str(exc)
 
 
-async def unload_all(bot: commands.Bot) -> None:
-    """Unload all discovered feature modules."""
-    for module in discover_feature_modules():
-        await bot.unload_extension(module)
+async def unload_cog(bot: commands.Bot, name: str) -> tuple[bool, str | None]:
+    """Unload a loaded cog."""
+    try:
+        await bot.unload_extension(name)
+        log_info("Unloaded cog %s", name)
+        return True, None
+    except Exception as exc:  # noqa: BLE001
+        log_error("Failed to unload cog %s", name, exc_info=exc)
+        return False, str(exc)
+
+
+async def reload_cog(bot: commands.Bot, name: str) -> tuple[bool, str | None]:
+    """Reload an already loaded cog."""
+    try:
+        await bot.reload_extension(name)
+        log_info("Reloaded cog %s", name)
+        return True, None
+    except Exception as exc:  # noqa: BLE001
+        log_error("Failed to reload cog %s", name, exc_info=exc)
+        return False, str(exc)
+
+
+async def load_all(bot: commands.Bot) -> tuple[list[str], dict[str, str]]:
+    """Load all discoverable cogs and return (loaded, failed)."""
+    loaded: list[str] = []
+    failed: dict[str, str] = {}
+    for name in discover_cogs():
+        ok, err = await load_cog(bot, name)
+        if ok:
+            loaded.append(name)
+        else:
+            failed[name] = err or "unknown"
+    return loaded, failed
