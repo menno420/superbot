@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
+=======
+import logging
+ codex/implement-minimal-clean-start-for-superbot
 import sys
 from pathlib import Path
 
@@ -21,7 +25,10 @@ from superbot.loaders import cogs as cog_loader  # noqa: E402
 
 
 async def start_bot() -> None:
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
     """Initialize services, load cogs, and run the bot."""
+=======
+ codex/implement-minimal-clean-start-for-superbot
     settings = Settings()
     logger = init_logging(settings.log_level)
     intents = discord.Intents.default()
@@ -31,6 +38,7 @@ async def start_bot() -> None:
         intents=intents,
         help_command=None,
     )
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
     bot.settings = settings
     bot.logger = logger
 
@@ -41,11 +49,21 @@ async def start_bot() -> None:
         **_kwargs: object,
     ) -> None:  # noqa: ANN401
         """Log errors from events with their traceback."""
+=======
+    bot.settings = settings  # type: ignore[attr-defined]
+    bot.logger = logger  # type: ignore[attr-defined]
+
+    @bot.event
+    async def on_error(event: str, *args: object, **kwargs: object) -> None:  # noqa: ANN401
+codex/implement-minimal-clean-start-for-superbot
         logger.exception("Unhandled event %s", event)
 
     @bot.event
     async def on_ready() -> None:
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
         """Log startup and optionally announce in a channel."""
+=======
+ codex/implement-minimal-clean-start-for-superbot
         logger.info("startup complete")
         if settings.startup_channel_id:
             channel = bot.get_channel(settings.startup_channel_id)
@@ -66,7 +84,10 @@ async def start_bot() -> None:
 
 
 def main() -> None:
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
     """Run the bot's asynchronous entrypoint."""
+=======
+ codex/implement-minimal-clean-start-for-superbot
     try:
         asyncio.run(start_bot())
     except Exception as exc:  # pragma: no cover
