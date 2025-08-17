@@ -127,12 +127,20 @@ class AdminCog(commands.Cog):
 
     @commands.group(name="cog", invoke_without_command=True)
     @owner_only_command()
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
+    async def cog(self: AdminCog, ctx: commands.Context[commands.Bot]) -> None:
+=======
     async def cog_group(self: AdminCog, ctx: commands.Context[commands.Bot]) -> None:
+ codex/implement-minimal-clean-start-for-superbot
         """Base command for cog management."""
         if ctx.invoked_subcommand is None:
             await ctx.send("Usage: !cog [load|unload|reload] <name>")
 
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
+    @cog.command(name="load")
+=======
     @cog_group.command(name="load")
+ codex/implement-minimal-clean-start-for-superbot
     @owner_only_command()
     async def cog_load(
         self: AdminCog,
@@ -143,7 +151,11 @@ class AdminCog(commands.Cog):
         await cog_loader.load_one(self.bot, name)
         await ctx.send(f"loaded {name}")
 
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
+    @cog.command(name="unload")
+=======
     @cog_group.command(name="unload")
+ codex/implement-minimal-clean-start-for-superbot
     @owner_only_command()
     async def cog_unload(
         self: AdminCog,
@@ -154,7 +166,11 @@ class AdminCog(commands.Cog):
         await cog_loader.unload_one(self.bot, name)
         await ctx.send(f"unloaded {name}")
 
+ codex/implement-minimal-clean-start-for-superbot-mxye1t
+    @cog.command(name="reload")
+=======
     @cog_group.command(name="reload")
+ codex/implement-minimal-clean-start-for-superbot
     @owner_only_command()
     async def cog_reload(
         self: AdminCog,
