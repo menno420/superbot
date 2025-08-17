@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import sys
 from pathlib import Path
 
@@ -22,6 +21,7 @@ from superbot.loaders import cogs as cog_loader  # noqa: E402
 
 
 async def start_bot() -> None:
+    """Initialize services, load cogs, and run the bot."""
     settings = Settings()
     logger = init_logging(settings.log_level)
     intents = discord.Intents.default()
@@ -31,15 +31,21 @@ async def start_bot() -> None:
         intents=intents,
         help_command=None,
     )
-    bot.settings = settings  # type: ignore[attr-defined]
-    bot.logger = logger  # type: ignore[attr-defined]
+    bot.settings = settings
+    bot.logger = logger
 
     @bot.event
-    async def on_error(event: str, *args: object, **kwargs: object) -> None:  # noqa: ANN401
+    async def on_error(
+        event: str,
+        *_args: object,
+        **_kwargs: object,
+    ) -> None:  # noqa: ANN401
+        """Log errors from events with their traceback."""
         logger.exception("Unhandled event %s", event)
 
     @bot.event
     async def on_ready() -> None:
+        """Log startup and optionally announce in a channel."""
         logger.info("startup complete")
         if settings.startup_channel_id:
             channel = bot.get_channel(settings.startup_channel_id)
@@ -60,6 +66,7 @@ async def start_bot() -> None:
 
 
 def main() -> None:
+    """Run the bot's asynchronous entrypoint."""
     try:
         asyncio.run(start_bot())
     except Exception as exc:  # pragma: no cover

@@ -127,12 +127,12 @@ class AdminCog(commands.Cog):
 
     @commands.group(name="cog", invoke_without_command=True)
     @owner_only_command()
-    async def cog_group(self: AdminCog, ctx: commands.Context[commands.Bot]) -> None:
+    async def cog(self: AdminCog, ctx: commands.Context[commands.Bot]) -> None:
         """Base command for cog management."""
         if ctx.invoked_subcommand is None:
             await ctx.send("Usage: !cog [load|unload|reload] <name>")
 
-    @cog_group.command(name="load")
+    @cog.command(name="load")
     @owner_only_command()
     async def cog_load(
         self: AdminCog,
@@ -143,7 +143,7 @@ class AdminCog(commands.Cog):
         await cog_loader.load_one(self.bot, name)
         await ctx.send(f"loaded {name}")
 
-    @cog_group.command(name="unload")
+    @cog.command(name="unload")
     @owner_only_command()
     async def cog_unload(
         self: AdminCog,
@@ -154,7 +154,7 @@ class AdminCog(commands.Cog):
         await cog_loader.unload_one(self.bot, name)
         await ctx.send(f"unloaded {name}")
 
-    @cog_group.command(name="reload")
+    @cog.command(name="reload")
     @owner_only_command()
     async def cog_reload(
         self: AdminCog,
