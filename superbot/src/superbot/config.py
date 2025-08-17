@@ -13,10 +13,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 def _load_env() -> None:
     """Load .env files from common locations."""
+    project_root = Path(__file__).resolve().parents[2]
+    repo_root = Path(__file__).resolve().parents[3]
     locations = [
-        Path(__file__).with_name(".env"),
-        Path(__file__).resolve().parent.parent / ".env",
-        Path.cwd() / ".env",
+        project_root / ".env",  # superbot/.env
+        repo_root / ".env",  # repo root .env
+        Path.cwd() / ".env",  # cwd fallback
     ]
     for path in locations:
         if path.is_file():
