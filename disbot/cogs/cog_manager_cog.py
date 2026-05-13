@@ -148,7 +148,7 @@ class CogManagerCog(commands.Cog):
 
     @commands.command(name="cogs")
     @commands.has_permissions(administrator=True)
-    async def cog_manager(self, ctx: commands.Context):
+    async def open_cog_manager(self, ctx: commands.Context):
         """Opens the interactive cog manager. (Admin only)"""
         view = CogManagerView(self.bot, ctx)
         await ctx.send(embed=build_status_embed(self.bot), view=view)

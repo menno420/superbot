@@ -127,7 +127,7 @@ class AdminCog(commands.Cog):
 
     @commands.command(name='coglist')
     @commands.has_permissions(administrator=True)
-    async def cog_list(self, ctx):
+    async def list_cogs(self, ctx):
         """List all cog files with load status and syntax check."""
         loaded = set(self.bot.extensions.keys())
         lines = []
