@@ -6,6 +6,7 @@ import os
 import json
 import datetime
 import urllib.request
+import threading
 import aiohttp
 import config  # Ensure config.py exists and contains PREFIX & DISCORD_BOT_TOKEN
 from discord.ext import commands
@@ -40,6 +41,12 @@ class WebhookLogHandler(logging.Handler):
                 data=payload,
                 headers={"Content-Type": "application/json"},
             )
+            threading.Thread(target=self._send, args=(req,), daemon=True).start()
+        except Exception:
+            pass
+
+    def _send(self, req):
+        try:
             urllib.request.urlopen(req, timeout=5)
         except Exception:
             pass
