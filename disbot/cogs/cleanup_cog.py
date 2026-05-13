@@ -78,7 +78,7 @@ class Cleanup(commands.Cog):
     async def on_message(self, message):
         await self.remove_unwanted_message(message)
 
-    @commands.command(name='cleanup_history')
+    @commands.command(name='cleanuphistory')
     @commands.has_permissions(manage_messages=True)
     @commands.cooldown(1, 10, commands.BucketType.channel)
     async def cleanup_history(self, ctx, limit: int = 100, *, keyword: str = None):
@@ -126,7 +126,7 @@ class Cleanup(commands.Cog):
             await ctx.message.delete()
             await confirmation_msg.delete()
 
-    @commands.command(name='add_prohibited_word')
+    @commands.command(name='addword')
     @commands.has_permissions(administrator=True)
     async def add_prohibited_word(self, ctx, *, word: str):
         """Adds a word to the prohibited words list."""
@@ -142,7 +142,7 @@ class Cleanup(commands.Cog):
             await ctx.send(f"Added '{word}' to the prohibited words list.", delete_after=5)
             self.logger.info(f"Added prohibited word: {word}")
 
-    @commands.command(name='remove_prohibited_word')
+    @commands.command(name='removeword')
     @commands.has_permissions(administrator=True)
     async def remove_prohibited_word(self, ctx, *, word: str):
         """Removes a word from the prohibited words list."""

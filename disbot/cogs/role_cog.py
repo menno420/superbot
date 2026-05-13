@@ -141,13 +141,13 @@ class RoleCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(name="debug_roles")
+    @commands.command(name="debugroles")
     async def debug_roles(self, ctx):
         """Prints all role names for verification."""
         roles = [role.name for role in ctx.guild.roles]
         await ctx.send(f"Available Roles: {', '.join(roles)}")
 
-    @commands.command(name="refresh_members")
+    @commands.command(name="refreshmembers")
     async def refresh_members(self, ctx):
         """Forces the bot to fetch all members."""
         await ctx.guild.chunk()
