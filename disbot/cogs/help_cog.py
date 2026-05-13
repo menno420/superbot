@@ -8,8 +8,7 @@ from utils.localization import localization  # Import localization system
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Path to localization file
-LOCALIZATION_PATH = "/home/menno/disbot/data/json/localization.json"
+LOCALIZATION_PATH = os.path.join(os.path.dirname(__file__), "../data/json/localization.json")
 
 def get_command_language(ctx):
     """Detects language based on invoked alias."""
@@ -144,9 +143,8 @@ class HelpCategoryView(discord.ui.View):
         self.cogs = cogs
         self.lang = lang
 
-        # Assign buttons dynamically
         for cog in self.cogs:
-            clean_name = cog.qualified_name.replace("Cog", "")  # Remove 'Cog' from name
+            clean_name = cog.qualified_name.replace("Cog", "")
             button = discord.ui.Button(label=clean_name, style=discord.ButtonStyle.primary)
             button.callback = self.make_category_callback(cog)
             self.add_item(button)
