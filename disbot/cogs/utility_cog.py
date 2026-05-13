@@ -33,7 +33,8 @@ class UtilityCog(commands.Cog):
         embed.add_field(name="Member Count", value=guild.member_count, inline=True)
         embed.add_field(name="Boost Level", value=guild.premium_tier, inline=True)
         embed.add_field(name="Created At", value=guild.created_at.strftime('%Y-%m-%d'), inline=True)
-        embed.set_thumbnail(url=guild.icon.url)
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
         await ctx.send(embed=embed)
 
     ### User Info Command ###
@@ -44,7 +45,7 @@ class UtilityCog(commands.Cog):
         status = str(member.status).capitalize()  # Online, Offline, etc.
         activity = member.activity.name if member.activity else "None"  # Current activity if available
         embed = discord.Embed(title=f"User Info - {member}", color=discord.Color.green())
-        embed.set_thumbnail(url=member.avatar.url)
+        embed.set_thumbnail(url=member.display_avatar.url)
         embed.add_field(name="Username", value=member.name, inline=True)
         embed.add_field(name="Discriminator", value=f"#{member.discriminator}", inline=True)
         embed.add_field(name="User ID", value=member.id, inline=True)
@@ -69,19 +70,9 @@ class UtilityCog(commands.Cog):
             await ctx.send("Please specify a time greater than 0 minutes.")
             return
 
-        # Send the initial reminder with a unique start message
-        initial_message = await ctx.send(f"⏳ Reminder set for {time} minutes: {message}")
-
-        # Countdown loop in minutes and seconds format
-        total_seconds = time * 60
-        while total_seconds > 0:
-            minutes, seconds = divmod(total_seconds, 60)
-            await asyncio.sleep(1)
-            total_seconds -= 1
-            await initial_message.edit(content=f"⏳ Reminder in progress ({minutes:02}:{seconds:02} remaining): {message}")
-
-        # Final reminder with a different message
-        await ctx.send(f"⏰ Time's up! Reminder: {message}")
+        await ctx.send(f"⏳ Reminder set for {time} minute(s): {message}")
+        await asyncio.sleep(time * 60)
+        await ctx.send(f"⏰ Time's up! {ctx.author.mention} — Reminder: {message}")
 
     ### Create Server Invite Command ###
     @commands.command(name='invite')
@@ -97,7 +88,7 @@ class UtilityCog(commands.Cog):
         """Displays a user's avatar."""
         member = member or ctx.author
         embed = discord.Embed(title=f"{member}'s Avatar", color=discord.Color.blue())
-        embed.set_image(url=member.avatar.url)
+        embed.set_image(url=member.display_avatar.url)
         await ctx.send(embed=embed)
 
     ### Poll Command ###

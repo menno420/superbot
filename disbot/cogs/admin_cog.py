@@ -53,7 +53,7 @@ class AdminCog(commands.Cog):
     # ------------------------------------------------------------------
     # Reaction Role System
     # ------------------------------------------------------------------
-    @commands.command(name='setup_reaction_roles', aliases=['reaktionsrollen'])
+    @commands.command(name='reactroles', aliases=['reaktionsrollen'])
     @commands.has_permissions(manage_roles=True)
     async def setup_reaction_roles(self, ctx, message_id: int, emoji: str, role: discord.Role):
         """Setup reaction role assignment. Users get a role when reacting with a specific emoji."""
@@ -85,25 +85,9 @@ class AdminCog(commands.Cog):
             logging.error(f'Error setting up reaction roles: {e}')
 
     # ------------------------------------------------------------------
-    # Polls
-    # ------------------------------------------------------------------
-    @commands.command(name='create_poll', aliases=['erstelle_umfrage'])
-    @commands.has_permissions(manage_channels=True)
-    async def create_poll(self, ctx, question: str, *options):
-        """Create a poll with up to 10 options."""
-        if len(options) > 10:
-            await ctx.send("⚠️ You can only provide up to 10 options.")
-            return
-        description = [f"{i}. {option}" for i, option in enumerate(options, 1)]
-        embed = discord.Embed(title=question, description="\n".join(description), color=discord.Color.blue())
-        poll_message = await ctx.send(embed=embed)
-        for i in range(len(options)):
-            await poll_message.add_reaction(f"{i+1}\N{COMBINING ENCLOSING KEYCAP}")
-
-    # ------------------------------------------------------------------
     # Server Statistics
     # ------------------------------------------------------------------
-    @commands.command(name='server_stats')
+    @commands.command(name='serverstats')
     async def server_stats(self, ctx):
         """Display server statistics."""
         guild = ctx.guild
@@ -141,7 +125,7 @@ class AdminCog(commands.Cog):
         except Exception as e:
             await ctx.send(f'⚠️ Error {action}ing `{module}`: {e}')
 
-    @commands.command(name='cog_list')
+    @commands.command(name='coglist')
     @commands.has_permissions(administrator=True)
     async def cog_list(self, ctx):
         """List all cog files with load status and syntax check."""
@@ -162,7 +146,7 @@ class AdminCog(commands.Cog):
         embed.set_footer(text='✅ Loaded  ❌ Unloaded  🟢 Syntax OK  🔴 Syntax Error')
         await ctx.send(embed=embed)
 
-    @commands.command(name='load_all_cogs')
+    @commands.command(name='loadall')
     @commands.is_owner()
     async def load_all_cogs(self, ctx):
         """Load all unloaded cogs, skipping already-loaded ones."""
@@ -185,7 +169,7 @@ class AdminCog(commands.Cog):
             parts.append('❌ Failed:\n' + '\n'.join(failed))
         await ctx.send('\n'.join(parts) or '✅ Nothing to load.')
 
-    @commands.command(name='unload_all_cogs')
+    @commands.command(name='unloadall')
     @commands.is_owner()
     async def unload_all_cogs(self, ctx):
         """Unload all loaded cogs except this one."""
@@ -211,7 +195,7 @@ class AdminCog(commands.Cog):
             parts.append('❌ Failed:\n' + '\n'.join(failed))
         await ctx.send('\n'.join(parts) or '✅ Nothing to unload.')
 
-    @commands.command(name='reload_all_cogs')
+    @commands.command(name='reloadall')
     @commands.is_owner()
     async def reload_all_cogs(self, ctx):
         """Reload all currently loaded cogs."""
@@ -232,7 +216,7 @@ class AdminCog(commands.Cog):
     # ------------------------------------------------------------------
     # Restart
     # ------------------------------------------------------------------
-    @commands.command(name='reload_main_script')
+    @commands.command(name='restart')
     @commands.is_owner()
     async def reload_main_script(self, ctx):
         """Restart the bot process."""
