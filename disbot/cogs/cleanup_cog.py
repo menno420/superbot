@@ -4,29 +4,27 @@ from discord.ext import commands
 import logging
 import asyncio
 import json
+import os
 
 class Cleanup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
 
-        # Load prohibited words from file and compile regex patterns
-        self.prohibited_words_file = '/home/menno/disbot/data/json/prohibited_words.json'
+        self.prohibited_words_file = os.path.join(os.path.dirname(__file__), "../data/json/prohibited_words.json")
         self.prohibited_words = self.load_prohibited_words()
         self.prohibited_patterns = [
             re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE)
             for word in self.prohibited_words
         ]
 
-        # Command detection regex (messages starting with a command prefix)
         self.command_prefixes = ['?', '!']
         self.command_pattern = re.compile(
             rf'^\s*({"|".join(map(re.escape, self.command_prefixes))})\S+',
             re.IGNORECASE
         )
 
-        # Channels where commands are allowed
-        self.whitelisted_channels = [1348795460948590622, 1349693768365903912, 1349851456509055047]  # Replace with your actual channel IDs
+        self.whitelisted_channels = [1348795460948590622, 1349693768365903912, 1349851456509055047]
 
     def load_prohibited_words(self):
         try:
@@ -38,17 +36,17 @@ class Cleanup(commands.Cog):
 
     def save_prohibited_words(self):
         try:
+            os.makedirs(os.path.dirname(self.prohibited_words_file), exist_ok=True)
             with open(self.prohibited_words_file, 'w') as f:
                 json.dump(self.prohibited_words, f, indent=4)
         except Exception as e:
             self.logger.error(f"Error saving prohibited words: {e}")
 
     async def remove_unwanted_message(self, message):
-        """Deletes the message if it is a command in a non‑whitelisted channel or contains prohibited content."""
+        """Deletes the message if it is a command in a non-whitelisted channel or contains prohibited content."""
         if message.author.bot:
             return False
 
-        # If it's a command message and not in a whitelisted channel, delete it.
         if self.command_pattern.match(message.content):
             if message.channel.id not in self.whitelisted_channels:
                 try:
@@ -59,10 +57,8 @@ class Cleanup(commands.Cog):
                 except discord.DiscordException as e:
                     self.logger.error(f"Failed to delete command message: {e}")
                 return True
-            # If in a whitelisted channel, allow the command to pass through.
             return False
 
-        # For non-command messages, check for prohibited content.
         for pattern in self.prohibited_patterns:
             if pattern.search(message.content):
                 try:
@@ -80,10 +76,7 @@ class Cleanup(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        # Only run deletion logic here; do not process commands.
         await self.remove_unwanted_message(message)
-        # Note: We intentionally do not call process_commands(message) here
-        # so that command processing can be handled by your main script without duplication.
 
     @commands.command(name='cleanup_history')
     @commands.has_permissions(manage_messages=True)
