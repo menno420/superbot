@@ -34,6 +34,7 @@ INITIAL_EXTENSIONS = [
     "cogs.German_cog",
     "cogs.utility_cog",
     "cogs.cleanup_cog",
+    "cogs.channel_cog",
 ]
 
 # ==========================

@@ -8,6 +8,8 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 from utils import db as global_db
+from utils.channels import create_private_channel, get_or_create_category, cleanup_category
+from utils.tournaments import TournamentRegistration
 
 logger = logging.getLogger("bot")
 
@@ -176,9 +178,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             if reaction:
                 users = [u async for u in reaction.users()]
                 for user in users:
-                    if user.bot:
-                        continue
-                            for user in users:
                     if not user.bot:
                         await self.try_register_player(user, ctx.guild.id)
                 await ctx.send(f"{len(self.players)} players have registered for the tournament.")
@@ -304,25 +303,15 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     async def create_bot_match_channel(self, guild, player, ctx):
         """Creates a private channel for a match against the bot."""
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            player: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            self.bot.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        channel_name = f"rps-{player.display_name}-vs-bot"
-        category = discord.utils.get(guild.categories, name="RPS Bot Matches")
-        if category is None:
-            try:
-                category = await guild.create_category("RPS Bot Matches")
-            except discord.Forbidden:
-                await ctx.send("I do not have permission to create categories.")
-                return None
-
         try:
-            channel = await guild.create_text_channel(channel_name, overwrites=overwrites, category=category)
-            return channel
+            return await create_private_channel(
+                guild,
+                f"rps-{player.display_name}-vs-bot",
+                [player],
+                "RPS Bot Matches",
+            )
         except discord.Forbidden:
-            await ctx.send("I do not have permission to create text channels.")
+            await ctx.send("I do not have permission to create channels.")
             return None
         except Exception as e:
             logger.exception(f"Error creating bot match channel: {e}")
@@ -428,26 +417,15 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     async def create_match_channel(self, guild, player1, player2, ctx):
         """Creates a private channel for the match."""
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            player1: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            player2: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            self.bot.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        channel_name = f"rps-{player1.display_name}-vs-{player2.display_name}"
-        category = discord.utils.get(guild.categories, name="RPS Tournaments")
-        if category is None:
-            try:
-                category = await guild.create_category("RPS Tournaments")
-            except discord.Forbidden:
-                await ctx.send("I do not have permission to create categories.")
-                return None
-
         try:
-            channel = await guild.create_text_channel(channel_name, overwrites=overwrites, category=category)
-            return channel
+            return await create_private_channel(
+                guild,
+                f"rps-{player1.display_name}-vs-{player2.display_name}",
+                [player1, player2],
+                "RPS Tournaments",
+            )
         except discord.Forbidden:
-            await ctx.send("I do not have permission to create text channels.")
+            await ctx.send("I do not have permission to create channels.")
             return None
         except Exception as e:
             logger.exception(f"Error creating match channel: {e}")
@@ -762,14 +740,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             await self.start_round(last_channel, self.settings["default_best_of"])
 
     async def delete_all_match_channels(self, guild):
-        """Deletes all match channels."""
+        """Deletes all RPS tournament match channels and their category."""
         category = discord.utils.get(guild.categories, name="RPS Tournaments")
         if category:
-            for channel in category.channels:
-                try:
-                    await channel.delete()
-                except Exception as e:
-                    logger.exception(f"Error deleting match channel {channel.name}: {e}")
+            await cleanup_category(category)
 
     @tasks.loop(minutes=10)
     async def clean_up_expired_matches(self):

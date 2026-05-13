@@ -5,6 +5,8 @@ import discord
 from discord.ext import commands
 import logging
 from utils import db
+from utils.channels import create_private_channel, cleanup_category
+from utils.tournaments import TournamentRegistration
 
 logger = logging.getLogger("bot")
 
@@ -104,25 +106,13 @@ _pvp: dict[frozenset, _PvPState] = {}        # frozenset({p1, p2}) → state
 # Tournament state
 # ---------------------------------------------------------------------------
 
-class _BjTournament:
+class _BjTournament(TournamentRegistration):
     def __init__(self, host_id: int, guild_id: int, announce_id: int,
                  entry_fee: int, rounds: int, duration_mins: int):
-        self.host_id         = host_id
-        self.guild_id        = guild_id
-        self.announce_id     = announce_id    # channel to post announcements
-        self.entry_fee       = entry_fee
+        super().__init__(host_id, guild_id, announce_id, entry_fee, duration_mins)
         self.rounds          = rounds
-        self.duration_mins   = duration_mins
-        self.players:   set[int]         = set()
         self.results:   dict[int, int]   = {}  # user_id → final chips
-        self.started         = False
-        self.reg_message:    discord.Message | None = None
         self.category:       discord.CategoryChannel | None = None
-        self.timer_task:     asyncio.Task | None = None
-
-    @property
-    def pot(self) -> int:
-        return self.entry_fee * len(self.players)
 
 
 _tournaments: dict[int, _BjTournament] = {}  # guild_id → tournament
@@ -421,27 +411,10 @@ class _TournRegistrationView(discord.ui.View):
 
     @discord.ui.button(label="Join Tournament", style=discord.ButtonStyle.green, emoji="🃏")
     async def join_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        t = self.tourn
-        if t.started:
-            await interaction.response.send_message(
-                "The tournament has already started.", ephemeral=True)
-            return
-        uid = interaction.user.id
-        if uid in t.players:
-            await interaction.response.send_message(
-                "You're already registered!", ephemeral=True)
-            return
-        if t.entry_fee > 0:
-            bal = await db.get_coins(uid, t.guild_id)
-            if bal < t.entry_fee:
-                await interaction.response.send_message(
-                    f"❌ Need **{t.entry_fee}** 🪙 to enter (you have {bal}).",
-                    ephemeral=True)
-                return
-        t.players.add(uid)
-        await interaction.response.send_message(
-            f"✅ You're registered! ({len(t.players)} player(s) so far)", ephemeral=True)
-        await _update_tourn_embed(t)
+        ok, msg = await self.tourn.try_join(interaction.user.id)
+        await interaction.response.send_message(msg, ephemeral=True)
+        if ok:
+            await _update_tourn_embed(self.tourn)
 
 
 async def _update_tourn_embed(t: _BjTournament):
@@ -639,16 +612,8 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         await announce.send(embed=embed)
 
     # Clean up private channels
-    if tourn.category and guild:
-        for ch in tourn.category.channels:
-            try:
-                await ch.delete()
-            except Exception:
-                pass
-        try:
-            await tourn.category.delete()
-        except Exception:
-            pass
+    if tourn.category:
+        await cleanup_category(tourn.category)
 
     _tournaments.pop(tourn.guild_id, None)
 
@@ -675,14 +640,9 @@ class BlackjackCog(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         if guild and guild.get_member(uid) and guild.get_member(uid).bot:
             return
-        if uid in tourn.players:
-            return
-        if tourn.entry_fee > 0:
-            bal = await db.get_coins(uid, tourn.guild_id)
-            if bal < tourn.entry_fee:
-                return
-        tourn.players.add(uid)
-        await _update_tourn_embed(tourn)
+        ok, _ = await tourn.try_join(uid)
+        if ok:
+            await _update_tourn_embed(tourn)
 
     # ---- commands ----
 
@@ -816,14 +776,9 @@ async def _launch_tournament(tourn: _BjTournament, guild: discord.Guild,
         _tournaments.pop(tourn.guild_id, None)
         return
 
-    # Deduct entry fees
+    # Deduct entry fees (uses shared TournamentRegistration helper)
     if tourn.entry_fee:
-        for uid in list(tourn.players):
-            bal = await db.get_coins(uid, tourn.guild_id)
-            if bal < tourn.entry_fee:
-                tourn.players.discard(uid)
-                continue
-            await db.add_coins(uid, tourn.guild_id, -tourn.entry_fee)
+        await tourn.deduct_fees()
 
     if not tourn.players:
         if announce:
@@ -837,39 +792,32 @@ async def _launch_tournament(tourn: _BjTournament, guild: discord.Guild,
             "Check your private channel."
         )
 
-    # Create category + private channels
-    overwrites_default = {guild.default_role: discord.PermissionOverwrite(read_messages=False)}
-    try:
-        tourn.category = await guild.create_category(
-            "BJ Tournament", overwrites=overwrites_default
-        )
-    except discord.Forbidden:
-        if announce:
-            await announce.send("❌ I don't have permission to create channels.")
-        _tournaments.pop(tourn.guild_id, None)
-        return
-
+    # Create private channels via shared utility
     for uid in tourn.players:
         member = guild.get_member(uid)
         if not member:
             tourn.results[uid] = 0
             continue
-        overwrites = {
-            **overwrites_default,
-            member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-        }
         try:
-            ch = await guild.create_text_channel(
-                f"bj-{member.display_name}", overwrites=overwrites,
-                category=tourn.category,
+            ch = await create_private_channel(
+                guild,
+                f"bj-{member.display_name}",
+                [member],
+                "BJ Tournament",
             )
+            if tourn.category is None:
+                tourn.category = ch.category
             ps = _TournPlayerState(uid, tourn.guild_id, tourn.rounds)
             await ch.send(
                 f"Welcome, {member.mention}! You have **{tourn.rounds}** rounds "
                 f"and start with **{TOURN_START_CHIPS}** chips. Good luck! 🃏"
             )
             await _start_tourn_round(ps, ch, tourn)
+        except discord.Forbidden:
+            if announce:
+                await announce.send("❌ I don't have permission to create channels.")
+            _tournaments.pop(tourn.guild_id, None)
+            return
         except Exception as e:
             logger.error("Failed to create tournament channel: %s", e)
             tourn.results[uid] = 0
