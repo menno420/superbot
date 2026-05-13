@@ -4,19 +4,60 @@ import logging
 import os
 import json
 import datetime
+import urllib.request
+import aiohttp
 import config  # Ensure config.py exists and contains PREFIX & DISCORD_BOT_TOKEN
 from discord.ext import commands
 
 # ==========================
+# Webhook Log Handler
+# ==========================
+class WebhookLogHandler(logging.Handler):
+    """Forwards WARNING+ log records to a Discord webhook synchronously."""
+
+    ICONS = {"WARNING": "⚠️", "ERROR": "❌", "CRITICAL": "🚨"}
+
+    def __init__(self, url: str):
+        super().__init__(level=logging.WARNING)
+        self.url = url
+        fmt = "%(asctime)s | %(name)s | %(message)s"
+        self.setFormatter(logging.Formatter(fmt, datefmt="%H:%M:%S"))
+
+    def emit(self, record: logging.LogRecord):
+        if not self.url:
+            return
+        try:
+            msg = self.format(record)
+            if len(msg) > 1900:
+                msg = msg[:1900] + "…"
+            icon = self.ICONS.get(record.levelname, "ℹ️")
+            payload = json.dumps({
+                "content": f"{icon} `[{record.levelname}]` {msg}",
+                "username": "Bot Logger",
+            }).encode()
+            req = urllib.request.Request(
+                self.url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            urllib.request.urlopen(req, timeout=5)
+        except Exception:
+            pass  # Never let the log handler crash the bot
+
+# ==========================
 # Logging Setup
 # ==========================
+_handlers: list[logging.Handler] = [
+    logging.FileHandler("bot.log"),
+    logging.StreamHandler(),
+]
+if config.WEBHOOK_URL:
+    _handlers.append(WebhookLogHandler(config.WEBHOOK_URL))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-    handlers=[
-        logging.FileHandler("bot.log"),  # Logs to file
-        logging.StreamHandler()  # Logs to console
-    ]
+    handlers=_handlers,
 )
 
 logger = logging.getLogger("bot")
@@ -87,6 +128,30 @@ async def on_ready():
         if cmd:
             cmd.aliases = alias_list
             logger.info(f"🔄 Loaded aliases for {command_name}: {alias_list}")
+
+    await _send_startup_message()
+
+async def _send_startup_message():
+    if not config.WEBHOOK_URL:
+        return
+    try:
+        prefix = config.PREFIX
+        embed = discord.Embed(
+            title="🚀 Bot is Online",
+            color=discord.Color.green(),
+            timestamp=datetime.datetime.utcnow(),
+        )
+        embed.add_field(name="Prefix", value=f"`{prefix}` — e.g. `{prefix}help`, `{prefix}cog`", inline=False)
+        embed.add_field(name="Servers", value=str(len(bot.guilds)), inline=True)
+        embed.add_field(name="Commands", value=str(len(bot.commands)), inline=True)
+        embed.add_field(name="Loaded Cogs", value=str(len(bot.cogs)), inline=True)
+        embed.set_footer(text=f"Logged in as {bot.user}")
+
+        async with aiohttp.ClientSession() as session:
+            webhook = discord.Webhook.from_url(config.WEBHOOK_URL, session=session)
+            await webhook.send(embed=embed, username="Bot Status")
+    except Exception as e:
+        logger.error(f"Failed to send startup webhook: {e}")
 
 # ==========================
 # Restrict Commands to Specific Channels

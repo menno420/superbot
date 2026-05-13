@@ -34,8 +34,9 @@ INITIAL_EXTENSIONS = [
 ]
 
 # ==========================
-# Logging Level
+# Webhook URL (for logs + startup notification)
 # ==========================
+WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 # ==========================
