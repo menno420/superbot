@@ -1,12 +1,8 @@
 from discord.ext import commands
 import discord
 import logging
-import os
 import sys
-import importlib
 import asyncio
-
-COGS_DIR = os.path.dirname(__file__)
 
 class AdminCog(commands.Cog):
     def __init__(self, bot):
@@ -80,54 +76,6 @@ class AdminCog(commands.Cog):
         embed.add_field(name="Roles", value=roles)
         await ctx.send(embed=embed)
 
-    ### Dynamic Cog Management ###
-    @commands.command(name='cog')
-    @commands.is_owner()
-    async def manage_cog(self, ctx, action: str, cog_name: str):
-        """Load, unload, or reload a specified cog."""
-        action = action.lower()
-        if action not in ['load', 'unload', 'reload']:
-            await ctx.send(f'❌ Invalid action `{action}`. Use `load`, `unload`, or `reload`.')
-            return
-        try:
-            if action == 'load':
-                await self.bot.load_extension(f'cogs.{cog_name}')
-            elif action == 'unload':
-                await self.bot.unload_extension(f'cogs.{cog_name}')
-            elif action == 'reload':
-                await self.bot.reload_extension(f'cogs.{cog_name}')
-            await ctx.send(f'✅ Cog `{cog_name}` has been successfully {action}ed.')
-        except Exception as e:
-            await ctx.send(f'⚠️ Error {action}ing cog `{cog_name}`: {e}')
-
-    ### Manage All Cogs ###
-    @commands.command(name='load_all_cogs')
-    @commands.is_owner()
-    async def load_all_cogs(self, ctx):
-        """Load all cogs."""
-        for filename in os.listdir(COGS_DIR):
-            if filename.endswith('.py') and filename != '__init__.py':
-                await self.bot.load_extension(f'cogs.{filename[:-3]}')
-        await ctx.send('✅ All cogs loaded successfully.')
-
-    @commands.command(name='unload_all_cogs')
-    @commands.is_owner()
-    async def unload_all_cogs(self, ctx):
-        """Unload all cogs."""
-        for filename in os.listdir(COGS_DIR):
-            if filename.endswith('.py') and filename != '__init__.py':
-                await self.bot.unload_extension(f'cogs.{filename[:-3]}')
-        await ctx.send('✅ All cogs unloaded successfully.')
-
-    @commands.command(name='reload_all_cogs')
-    @commands.is_owner()
-    async def reload_all_cogs(self, ctx):
-        """Reload all cogs."""
-        for filename in os.listdir(COGS_DIR):
-            if filename.endswith('.py') and filename != '__init__.py':
-                await self.bot.reload_extension(f'cogs.{filename[:-3]}')
-        await ctx.send('✅ All cogs reloaded successfully.')
-
     ### Restart Bot ###
     @commands.command(name='reload_main_script')
     @commands.is_owner()
@@ -138,17 +86,6 @@ class AdminCog(commands.Cog):
 
         await self.bot.close()
         os.execv(sys.executable, [sys.executable] + sys.argv)
-
-    ### Send a startup message only to #bot_spam channel ###
-    @commands.Cog.listener()
-    async def on_ready(self):
-        for guild in self.bot.guilds:
-            channel = discord.utils.get(guild.text_channels, name='bot_spam')
-            if channel and channel.permissions_for(guild.me).send_messages:
-                try:
-                    await channel.send(f'Hello everyone! {self.bot.user.name} is now online and ready to rumble!')
-                except Exception as e:
-                    logging.error(f'Error sending startup message: {e}')
 
 # Function to load this cog
 async def setup(bot):
