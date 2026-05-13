@@ -14,15 +14,14 @@ from discord.ext import commands
 # Webhook Log Handler
 # ==========================
 class WebhookLogHandler(logging.Handler):
-    """Forwards WARNING+ log records to a Discord webhook synchronously."""
+    """Forwards log records to a Discord webhook synchronously."""
 
-    ICONS = {"WARNING": "⚠️", "ERROR": "❌", "CRITICAL": "🚨"}
+    ICONS = {"DEBUG": "🔍", "INFO": "ℹ️", "WARNING": "⚠️", "ERROR": "❌", "CRITICAL": "🚨"}
 
     def __init__(self, url: str):
-        super().__init__(level=logging.WARNING)
+        super().__init__(level=logging.INFO)
         self.url = url
-        fmt = "%(asctime)s | %(name)s | %(message)s"
-        self.setFormatter(logging.Formatter(fmt, datefmt="%H:%M:%S"))
+        self.setFormatter(logging.Formatter("%(asctime)s | %(name)s | %(message)s", datefmt="%H:%M:%S"))
 
     def emit(self, record: logging.LogRecord):
         if not self.url:
@@ -43,25 +42,24 @@ class WebhookLogHandler(logging.Handler):
             )
             urllib.request.urlopen(req, timeout=5)
         except Exception:
-            pass  # Never let the log handler crash the bot
+            pass
 
 # ==========================
 # Logging Setup
 # ==========================
 _webhook_handler: WebhookLogHandler | None = None
-_handlers: list[logging.Handler] = [
-    logging.FileHandler("bot.log"),
-    logging.StreamHandler(),
-]
+
+_fmt = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+_root = logging.getLogger()
+_root.setLevel(logging.INFO)
+
+for _h in (logging.FileHandler("bot.log"), logging.StreamHandler()):
+    _h.setFormatter(_fmt)
+    _root.addHandler(_h)
+
 if config.WEBHOOK_URL:
     _webhook_handler = WebhookLogHandler(config.WEBHOOK_URL)
-    _handlers.append(_webhook_handler)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-    handlers=_handlers,
-)
+    _root.addHandler(_webhook_handler)
 
 logger = logging.getLogger("bot")
 
@@ -213,7 +211,16 @@ async def load_cogs():
             await bot.load_extension(ext)
             logger.info(f"✅ Successfully loaded {ext}")
         except Exception as e:
-            logger.error(f"❌ Failed to load {ext}: {e}", exc_info=True)
+            msg = f"❌ Failed to load `{ext}`: {type(e).__name__}: {e}"
+            logger.error(msg, exc_info=True)
+            # Post directly to webhook in case logging pipeline isn't working
+            if config.WEBHOOK_URL:
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        wh = discord.Webhook.from_url(config.WEBHOOK_URL, session=session)
+                        await wh.send(f"🔴 **Cog load failure**\n```{msg}```", username="Bot Loader")
+                except Exception:
+                    pass
 
 # ==========================
 # Bot Startup
