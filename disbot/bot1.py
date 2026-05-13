@@ -47,12 +47,14 @@ class WebhookLogHandler(logging.Handler):
 # ==========================
 # Logging Setup
 # ==========================
+_webhook_handler: WebhookLogHandler | None = None
 _handlers: list[logging.Handler] = [
     logging.FileHandler("bot.log"),
     logging.StreamHandler(),
 ]
 if config.WEBHOOK_URL:
-    _handlers.append(WebhookLogHandler(config.WEBHOOK_URL))
+    _webhook_handler = WebhookLogHandler(config.WEBHOOK_URL)
+    _handlers.append(_webhook_handler)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -65,7 +67,7 @@ logger = logging.getLogger("bot")
 # ==========================
 # Prevent Multiple Instances
 # ==========================
-PID_FILE = "bot.pid"
+PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bot.pid")
 
 def check_existing_instance():
     """ Prevents multiple instances of the bot from running. """
@@ -119,6 +121,7 @@ aliases = load_aliases()
 @bot.event
 async def on_ready():
     bot.uptime = datetime.datetime.utcnow()
+    bot._webhook_handler = _webhook_handler  # expose to cogs for !loglevel
     logger.info(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")
     logger.info(f"🔗 Connected to {len(bot.guilds)} servers")
     logger.info("🚀 Bot is ready!")
@@ -130,6 +133,14 @@ async def on_ready():
             logger.info(f"🔄 Loaded aliases for {command_name}: {alias_list}")
 
     await _send_startup_message()
+
+@bot.event
+async def on_command(ctx):
+    logger.info(f"CMD | {ctx.author} | #{ctx.channel} | {ctx.message.content[:150]}")
+
+@bot.event
+async def on_command_completion(ctx):
+    logger.info(f"CMD ✅ | {ctx.command.qualified_name} completed for {ctx.author}")
 
 async def _send_startup_message():
     if not config.WEBHOOK_URL:
@@ -189,7 +200,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("⚠️ Missing argument. Check `!help` for usage.", delete_after=10)
     else:
-        logger.error(f"⚠️ Unhandled error: {error}", exc_info=True)
+        logger.error(f"CMD ❌ | {ctx.command} | {ctx.author} | {type(error).__name__}: {error}", exc_info=True)
         await ctx.send("⚠️ An unexpected error occurred. Please try again later.", delete_after=10)
 
 # ==========================
