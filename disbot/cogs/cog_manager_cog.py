@@ -145,7 +145,7 @@ class CogManagerCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.command(name="cog", aliases=["cogs"])
+    @commands.command(name="cogs")
     @commands.has_permissions(administrator=True)
     async def cog_manager(self, ctx: commands.Context):
         """Opens the interactive cog manager. (Admin only)"""
