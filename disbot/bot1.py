@@ -92,7 +92,7 @@ async def on_ready():
 @bot.check
 async def globally_block_dms(ctx):
     """ Ensure commands are only executed in allowed channels without any feedback if not allowed, except for force command. """
-    return ctx.guild is not None and (ctx.channel.id in ALLOWED_CHANNELS or ctx.command.name == "force")
+    return ctx.guild is not None and (ctx.channel.id in ALLOWED_CHANNELS or (ctx.command is not None and ctx.command.name == "force"))
 
 # ==========================
 # Force Command Override (Admins Only)
@@ -112,7 +112,7 @@ async def force(ctx, command_name: str, *args):
 # ==========================
 @bot.event
 async def on_command_error(ctx, error):
-    if ctx.channel.id not in ALLOWED_CHANNELS and ctx.command.name != "force":
+    if ctx.channel.id not in ALLOWED_CHANNELS and (ctx.command is None or ctx.command.name != "force"):
         return  # Ignore errors for unauthorized channels unless using force
 
     if isinstance(error, commands.MissingPermissions):
