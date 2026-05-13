@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 import json
+import datetime
 import config  # Ensure config.py exists and contains PREFIX & DISCORD_BOT_TOKEN
 from discord.ext import commands
 
@@ -76,6 +77,7 @@ aliases = load_aliases()
 
 @bot.event
 async def on_ready():
+    bot.uptime = datetime.datetime.utcnow()
     logger.info(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")
     logger.info(f"🔗 Connected to {len(bot.guilds)} servers")
     logger.info("🚀 Bot is ready!")
