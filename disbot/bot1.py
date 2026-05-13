@@ -11,6 +11,7 @@ import aiohttp
 import config  # Ensure config.py exists and contains PREFIX & DISCORD_BOT_TOKEN
 from discord.ext import commands
 from utils import db
+from utils.synonyms import find_command as _find_synonym
 
 # ==========================
 # Webhook Log Handler
@@ -203,7 +204,16 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("❌ You do not have permission to use this command.", delete_after=10)
     elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("❌ Command not found. Use `!help` for available commands.", delete_after=10)
+        # Try synonym lookup before giving up
+        raw = ctx.invoked_with or ""
+        suggestion = _find_synonym(raw)
+        if suggestion:
+            await ctx.send(
+                f"❓ Unknown command `{raw}`. Did you mean `{config.PREFIX}{suggestion}`?",
+                delete_after=15,
+            )
+        else:
+            await ctx.send("❌ Command not found. Use `!help` for available commands.", delete_after=10)
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("⚠️ Missing argument. Check `!help` for usage.", delete_after=10)
     else:

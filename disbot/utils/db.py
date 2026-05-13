@@ -46,6 +46,7 @@ async def _create_tables() -> None:
             level    INTEGER NOT NULL DEFAULT 0,
             messages INTEGER NOT NULL DEFAULT 0,
             last_xp  INTEGER NOT NULL DEFAULT 0,
+            coins    INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY (user_id, guild_id)
         )""",
         """CREATE TABLE IF NOT EXISTS warnings (
@@ -85,6 +86,12 @@ async def _create_tables() -> None:
     for stmt in statements:
         await conn.execute(stmt)
     await conn.commit()
+    # Migration: add coins column to existing xp tables that predate it
+    async with conn.execute("PRAGMA table_info(xp)") as cur:
+        cols = {row[1] async for row in cur}
+    if "coins" not in cols:
+        await conn.execute("ALTER TABLE xp ADD COLUMN coins INTEGER NOT NULL DEFAULT 0")
+        await conn.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -243,4 +250,34 @@ async def log_mod_action(
         "INSERT INTO mod_logs (timestamp, guild_id, action, target_id, moderator_id, reason) "
         "VALUES (?, ?, ?, ?, ?, ?)",
         (ts, guild_id, action, target_id, moderator_id, reason),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Coin helpers
+# ---------------------------------------------------------------------------
+
+async def get_coins(user_id: int, guild_id: int) -> int:
+    row = await fetchone(
+        "SELECT coins FROM xp WHERE user_id=? AND guild_id=?", (user_id, guild_id)
+    )
+    return row["coins"] if row else 0
+
+
+async def add_coins(user_id: int, guild_id: int, amount: int) -> int:
+    """Add (or subtract if negative) coins; clamps to 0. Returns new balance."""
+    await execute(
+        """INSERT INTO xp (user_id, guild_id, coins) VALUES (?, ?, MAX(0, ?))
+           ON CONFLICT(user_id, guild_id) DO UPDATE SET
+               coins=MAX(0, coins + excluded.coins)""",
+        (user_id, guild_id, amount),
+    )
+    return await get_coins(user_id, guild_id)
+
+
+async def set_coins(user_id: int, guild_id: int, amount: int) -> None:
+    await execute(
+        """INSERT INTO xp (user_id, guild_id, coins) VALUES (?, ?, MAX(0, ?))
+           ON CONFLICT(user_id, guild_id) DO UPDATE SET coins=MAX(0, excluded.coins)""",
+        (user_id, guild_id, amount),
     )

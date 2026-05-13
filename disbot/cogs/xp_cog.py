@@ -12,6 +12,9 @@ _XP_MIN = 15
 _XP_MAX = 25
 _COOLDOWN = 60  # seconds
 
+# Stat types recognised by !rank and !leaderboard.  Add future stats here.
+_STAT_TYPES: set[str] = {"xp", "coins", "both"}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -78,52 +81,93 @@ class XpCog(commands.Cog):
     # ------------------------------------------------------------------ commands
 
     @commands.command(name="rank")
-    async def rank(self, ctx: commands.Context, member: discord.Member = None):
-        """Show your (or another user's) XP rank."""
-        member = member or ctx.author
+    async def rank(self, ctx: commands.Context, *args):
+        """Show XP/coin rank.  !rank [user] [xp|coins]"""
+        # Parse optional member and optional stat type from positional args
+        member: discord.Member = ctx.author
+        stat: str = "both"
+        for arg in args:
+            if arg.lower() in _STAT_TYPES:
+                stat = arg.lower()
+            else:
+                try:
+                    member = await commands.MemberConverter().convert(ctx, arg)
+                except commands.BadArgument:
+                    pass
+
         row = await db.get_xp(member.id, ctx.guild.id)
         level, current, needed = db.level_progress(row["xp"])
 
-        all_rows = await db.fetchall(
+        all_xp = await db.fetchall(
             "SELECT user_id FROM xp WHERE guild_id=? ORDER BY xp DESC", (ctx.guild.id,)
         )
-        rank_pos = next(
-            (i + 1 for i, r in enumerate(all_rows) if r["user_id"] == member.id), "?"
+        all_coins = await db.fetchall(
+            "SELECT user_id FROM xp WHERE guild_id=? ORDER BY coins DESC", (ctx.guild.id,)
         )
+        xp_rank = next((i + 1 for i, r in enumerate(all_xp)    if r["user_id"] == member.id), "?")
+        co_rank = next((i + 1 for i, r in enumerate(all_coins)  if r["user_id"] == member.id), "?")
 
-        bar = _progress_bar(current, needed)
         embed = discord.Embed(title=f"📊 {member.display_name}", color=discord.Color.blue())
         embed.set_thumbnail(url=member.display_avatar.url)
-        embed.add_field(name="Rank",     value=f"#{rank_pos}",  inline=True)
-        embed.add_field(name="Level",    value=str(level),      inline=True)
-        embed.add_field(name="Total XP", value=str(row["xp"]),  inline=True)
-        embed.add_field(
-            name="Progress",
-            value=f"`{bar}` {current}/{needed} XP",
-            inline=False,
-        )
-        embed.add_field(name="Messages", value=str(row["messages"]), inline=True)
+
+        if stat in ("both", "xp"):
+            bar = _progress_bar(current, needed)
+            embed.add_field(name="XP Rank",  value=f"#{xp_rank}",    inline=True)
+            embed.add_field(name="Level",    value=str(level),        inline=True)
+            embed.add_field(name="Total XP", value=str(row["xp"]),   inline=True)
+            embed.add_field(
+                name="Progress",
+                value=f"`{bar}` {current}/{needed} XP",
+                inline=False,
+            )
+            embed.add_field(name="Messages", value=str(row["messages"]), inline=True)
+
+        if stat in ("both", "coins"):
+            embed.add_field(name="Coin Rank", value=f"#{co_rank}",         inline=True)
+            embed.add_field(name="🪙 Coins",  value=str(row.get("coins", 0)), inline=True)
+
         await ctx.send(embed=embed)
 
     @commands.command(name="leaderboard", aliases=["lb"])
-    async def leaderboard(self, ctx: commands.Context):
-        """Show the top 10 users by XP."""
-        rows = await db.fetchall(
-            "SELECT user_id, xp, level FROM xp WHERE guild_id=? ORDER BY xp DESC LIMIT 10",
-            (ctx.guild.id,),
-        )
-        embed = discord.Embed(title="🏆 XP Leaderboard", color=discord.Color.gold())
-        if not rows:
-            embed.description = "No XP data yet — start chatting!"
-        else:
+    async def leaderboard(self, ctx: commands.Context, stat: str = "xp"):
+        """Show the top 10.  !leaderboard [xp|coins]"""
+        stat = stat.lower()
+        if stat not in _STAT_TYPES:
+            await ctx.send(
+                f"Unknown stat `{stat}`. Choose from: {', '.join(_STAT_TYPES)}.",
+                delete_after=8,
+            )
+            return
+
+        if stat == "xp":
+            rows = await db.fetchall(
+                "SELECT user_id, xp, level FROM xp WHERE guild_id=? ORDER BY xp DESC LIMIT 10",
+                (ctx.guild.id,),
+            )
+            title = "🏆 XP Leaderboard"
             medals = ["🥇", "🥈", "🥉"]
             lines = []
             for i, row in enumerate(rows):
-                member = ctx.guild.get_member(row["user_id"])
-                name = member.display_name if member else f"<@{row['user_id']}>"
+                m = ctx.guild.get_member(row["user_id"])
+                name = m.display_name if m else f"<@{row['user_id']}>"
                 icon = medals[i] if i < 3 else f"`#{i+1}`"
                 lines.append(f"{icon} **{name}** — Level {row['level']} ({row['xp']} XP)")
-            embed.description = "\n".join(lines)
+        else:  # coins
+            rows = await db.fetchall(
+                "SELECT user_id, coins FROM xp WHERE guild_id=? ORDER BY coins DESC LIMIT 10",
+                (ctx.guild.id,),
+            )
+            title = "🪙 Coin Leaderboard"
+            medals = ["🥇", "🥈", "🥉"]
+            lines = []
+            for i, row in enumerate(rows):
+                m = ctx.guild.get_member(row["user_id"])
+                name = m.display_name if m else f"<@{row['user_id']}>"
+                icon = medals[i] if i < 3 else f"`#{i+1}`"
+                lines.append(f"{icon} **{name}** — {row['coins']} 🪙")
+
+        embed = discord.Embed(title=title, color=discord.Color.gold())
+        embed.description = "\n".join(lines) if lines else "No data yet!"
         await ctx.send(embed=embed)
 
     @commands.command(name="givexp")
