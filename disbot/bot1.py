@@ -55,7 +55,7 @@ ALLOWED_CHANNELS = {1348795460948590622}
 # ==========================
 # Load Aliases from localization.json
 # ==========================
-LOCALIZATION_PATH = "/home/menno/disbot/data/json/localization.json"
+LOCALIZATION_PATH = os.path.join(os.path.dirname(__file__), "data/json/localization.json")
 
 def load_aliases():
     """Loads command aliases from localization.json."""

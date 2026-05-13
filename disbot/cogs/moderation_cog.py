@@ -1,18 +1,20 @@
 import discord
 from discord.ext import commands
 from discord import Member
+from datetime import timedelta
 import logging
 import asyncio
 import sqlite3
 import os
 
-DB_PATH = "/home/menno/disbot/data/moderation.db"
-LOG_PATH = "/home/menno/disbot/data/json/mod_logs.json"
+DB_PATH = os.path.join(os.path.dirname(__file__), "../data/moderation.db")
+LOG_PATH = os.path.join(os.path.dirname(__file__), "../data/json/mod_logs.json")
 
 class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
         self.conn = sqlite3.connect(DB_PATH)
         self.cursor = self.conn.cursor()
         self._setup_database()
@@ -36,6 +38,7 @@ class ModerationCog(commands.Cog):
             "moderator": ctx.author.id,
             "reason": reason
         }
+        os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
         with open(LOG_PATH, "a") as log_file:
             log_file.write(str(log_data) + "\n")
 
@@ -61,7 +64,7 @@ class ModerationCog(commands.Cog):
         await self.log_action(ctx, "warn", member, reason)
 
         if warning_count >= 3:
-            await self.timeout(ctx, member, 10)  # Timeout for 10 minutes after 3 warnings
+            await self.timeout(ctx, member, 10)
             self.cursor.execute("DELETE FROM warnings WHERE user_id = ? AND guild_id = ?", (member.id, ctx.guild.id))
             self.conn.commit()
 
