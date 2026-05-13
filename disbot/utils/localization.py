@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Set the path to the localization file
-LOCALIZATION_PATH = "/home/menno/disbot/data/json/localization.json"
+LOCALIZATION_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "json", "localization.json")
 
 class LocalizationManager:
     """Handles language translations for the bot."""

@@ -3,7 +3,7 @@ import os
 import discord
 from discord.ext import commands
 
-LOCALIZATION_PATH = "/home/menno/disbot/data/json/localization.json"
+LOCALIZATION_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "json", "localization.json")
 
 class TranslationUpdater(commands.Cog):
     """Cog to update localization.json with all command descriptions and aliases."""

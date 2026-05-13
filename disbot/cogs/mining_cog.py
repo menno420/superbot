@@ -4,7 +4,7 @@ import random
 import json
 import os
 
-DATA_DIR = "/home/menno/disbot/data/json"
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "json")
 DATA_FILE = os.path.join(DATA_DIR, "mining_data.json")
 RECIPES_FILE = os.path.join(DATA_DIR, "recipes.json")
 
