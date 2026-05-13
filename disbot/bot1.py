@@ -92,7 +92,7 @@ intents.message_content = True  # Ensure message content intent is enabled
 bot = commands.Bot(command_prefix=config.PREFIX, intents=intents, help_command=None)  # Disable default help command
 
 # Define allowed command channels (Only these two)
-ALLOWED_CHANNELS = {1348795460948590622}
+ALLOWED_CHANNELS = {1348795460948590622, 1403818013408624642}
 
 # ==========================
 # Load Aliases from localization.json
