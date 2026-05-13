@@ -1,3 +1,4 @@
+from __future__ import annotations
 from discord.ext import commands
 import discord
 import logging
