@@ -215,8 +215,5 @@ async def main():
 if __name__ == "__main__":
     try:
         asyncio.run(main())
-    except RuntimeError:  # Handles event loop issues on some environments
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
     except Exception as e:
         logger.error(f"❌ Critical startup error: {e}", exc_info=True)
