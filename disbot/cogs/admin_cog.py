@@ -6,6 +6,8 @@ import sys
 import importlib
 import asyncio
 
+COGS_DIR = os.path.dirname(__file__)
+
 class AdminCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -103,8 +105,8 @@ class AdminCog(commands.Cog):
     @commands.is_owner()
     async def load_all_cogs(self, ctx):
         """Load all cogs."""
-        for filename in os.listdir('./cogs'):
-            if filename.endswith('.py'):
+        for filename in os.listdir(COGS_DIR):
+            if filename.endswith('.py') and filename != '__init__.py':
                 await self.bot.load_extension(f'cogs.{filename[:-3]}')
         await ctx.send('✅ All cogs loaded successfully.')
 
@@ -112,8 +114,8 @@ class AdminCog(commands.Cog):
     @commands.is_owner()
     async def unload_all_cogs(self, ctx):
         """Unload all cogs."""
-        for filename in os.listdir('./cogs'):
-            if filename.endswith('.py'):
+        for filename in os.listdir(COGS_DIR):
+            if filename.endswith('.py') and filename != '__init__.py':
                 await self.bot.unload_extension(f'cogs.{filename[:-3]}')
         await ctx.send('✅ All cogs unloaded successfully.')
 
@@ -121,12 +123,12 @@ class AdminCog(commands.Cog):
     @commands.is_owner()
     async def reload_all_cogs(self, ctx):
         """Reload all cogs."""
-        for filename in os.listdir('./cogs'):
-            if filename.endswith('.py'):
+        for filename in os.listdir(COGS_DIR):
+            if filename.endswith('.py') and filename != '__init__.py':
                 await self.bot.reload_extension(f'cogs.{filename[:-3]}')
         await ctx.send('✅ All cogs reloaded successfully.')
 
-    ### Restart Bot (Reload Main Script) ###
+    ### Restart Bot ###
     @commands.command(name='reload_main_script')
     @commands.is_owner()
     async def reload_main_script(self, ctx):
@@ -134,8 +136,8 @@ class AdminCog(commands.Cog):
         await ctx.send('♻️ Restarting bot...')
         logging.info('Restarting bot...')
 
-        await self.bot.close()  # Shut down the bot
-        os.execv(sys.executable, [sys.executable] + sys.argv)  # Restart the bot process
+        await self.bot.close()
+        os.execv(sys.executable, [sys.executable] + sys.argv)
 
     ### Send a startup message only to #bot_spam channel ###
     @commands.Cog.listener()
