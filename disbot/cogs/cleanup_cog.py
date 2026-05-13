@@ -24,7 +24,7 @@ class Cleanup(commands.Cog):
             re.IGNORECASE
         )
 
-        self.whitelisted_channels = [1348795460948590622, 1349693768365903912, 1349851456509055047]
+        self.whitelisted_channels = [1348795460948590622, 1349693768365903912, 1349851456509055047, 1403818013408624642]
 
     def load_prohibited_words(self):
         try:
