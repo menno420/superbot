@@ -4,43 +4,18 @@ from discord.ext import commands
 from discord import Member
 from datetime import timedelta
 import logging
-import os
-import sqlite3
+from utils import db
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "../data/moderation.db")
-LOG_PATH = os.path.join(os.path.dirname(__file__), "../data/json/mod_logs.json")
+logger = logging.getLogger("bot")
 
 
 class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.logger = logging.getLogger("bot")
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-        self.conn = sqlite3.connect(DB_PATH)
-        self.cursor = self.conn.cursor()
-        self._setup_database()
-
-    def _setup_database(self):
-        self.cursor.execute('''CREATE TABLE IF NOT EXISTS warnings (
-            user_id INTEGER,
-            guild_id INTEGER,
-            count INTEGER DEFAULT 0,
-            PRIMARY KEY (user_id, guild_id)
-        )''')
-        self.conn.commit()
 
     async def log_action(self, ctx, action: str, member, reason: str = "No reason provided"):
-        log_data = {
-            "guild": ctx.guild.name,
-            "action": action,
-            "member": member.id,
-            "moderator": ctx.author.id,
-            "reason": reason,
-        }
-        os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-        with open(LOG_PATH, "a") as f:
-            f.write(str(log_data) + "\n")
-        self.logger.info(f"MOD | {action.upper()} | {member} | by {ctx.author} | {reason}")
+        await db.log_mod_action(ctx.guild.id, action, member.id, ctx.author.id, reason)
+        logger.info("MOD | %s | %s | by %s | %s", action.upper(), member, ctx.author, reason)
 
     def _can_act_on(self, ctx, member: Member) -> str | None:
         """Returns an error message if the action is not allowed, else None."""
@@ -64,25 +39,7 @@ class ModerationCog(commands.Cog):
             await ctx.send(err)
             return
 
-        self.cursor.execute(
-            "SELECT count FROM warnings WHERE user_id = ? AND guild_id = ?",
-            (member.id, ctx.guild.id)
-        )
-        result = self.cursor.fetchone()
-        count = (result[0] + 1) if result else 1
-
-        if result:
-            self.cursor.execute(
-                "UPDATE warnings SET count = ? WHERE user_id = ? AND guild_id = ?",
-                (count, member.id, ctx.guild.id)
-            )
-        else:
-            self.cursor.execute(
-                "INSERT INTO warnings (user_id, guild_id, count) VALUES (?, ?, ?)",
-                (member.id, ctx.guild.id, count)
-            )
-        self.conn.commit()
-
+        count = await db.add_warning(member.id, ctx.guild.id)
         await ctx.send(f"⚠️ {member.mention} warned ({count}/3). Reason: {reason}")
         await self.log_action(ctx, "warn", member, reason)
 
@@ -91,11 +48,7 @@ class ModerationCog(commands.Cog):
                 until = discord.utils.utcnow() + timedelta(minutes=10)
                 await member.timeout(until, reason="3 warnings reached.")
                 await ctx.send(f"⏳ {member.mention} timed out for 10 minutes (3 warnings).")
-                self.cursor.execute(
-                    "DELETE FROM warnings WHERE user_id = ? AND guild_id = ?",
-                    (member.id, ctx.guild.id)
-                )
-                self.conn.commit()
+                await db.clear_warnings(member.id, ctx.guild.id)
             except discord.Forbidden:
                 await ctx.send("⚠️ Reached 3 warnings but I lack permission to timeout this user.")
 

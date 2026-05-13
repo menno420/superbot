@@ -10,6 +10,7 @@ import threading
 import aiohttp
 import config  # Ensure config.py exists and contains PREFIX & DISCORD_BOT_TOKEN
 from discord.ext import commands
+from utils import db
 
 # ==========================
 # Webhook Log Handler
@@ -233,10 +234,14 @@ async def load_cogs():
 # Bot Startup
 # ==========================
 async def main():
-    async with bot:
-        await load_cogs()
-        logger.info("🚀 Starting bot...")
-        await bot.start(config.DISCORD_BOT_TOKEN)
+    await db.init()
+    try:
+        async with bot:
+            await load_cogs()
+            logger.info("🚀 Starting bot...")
+            await bot.start(config.DISCORD_BOT_TOKEN)
+    finally:
+        await db.close()
 
 if __name__ == "__main__":
     try:

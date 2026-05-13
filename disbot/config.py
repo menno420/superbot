@@ -28,6 +28,7 @@ INITIAL_EXTENSIONS = [
     "cogs.help_cog",
     "cogs.role_cog",
     "cogs.moderation_cog",
+    "cogs.xp_cog",
     "cogs.German_cog",
     "cogs.utility_cog",
     "cogs.cleanup_cog",
