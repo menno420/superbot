@@ -29,7 +29,7 @@ class RoleCog(commands.Cog):
 
     async def assign_roles(self, ctx=None):
         """Assigns roles based on join time while keeping the highest role and removing outdated progression roles."""
-        guild = self.bot.get_guild(1348216920993693716)  # Replace with your guild ID
+        guild = self.bot.get_guild(1403818012812775506)
         if not guild:
             logger.error("❌ Guild not found!")
             return
