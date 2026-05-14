@@ -371,6 +371,9 @@ class _ChannelCreatorView(discord.ui.View):
             return False
         return True
 
+    # Some discord.py builds dispatch via _run_checks instead of interaction_check
+    _run_checks = interaction_check
+
     async def on_error(
         self,
         interaction: discord.Interaction,
