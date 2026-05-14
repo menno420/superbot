@@ -24,13 +24,13 @@ jobs:
           pip install black isort ruff mypy
 
       - name: Run Black (check only)
-        run: black --check superbot/src --exclude '(\.github|tests|venv|env|build|dist)'
+        run: black --check superbot --exclude '(\.github|tests|venv|env|build|dist)'
 
       - name: Run isort (check only)
-        run: isort --check-only superbot/src --skip-glob '*/(\.github|tests|venv|env|build|dist)/*'
+        run: isort --check-only superbot --skip-glob '*/(\.github|tests|venv|env|build|dist)/*'
 
       - name: Run Ruff
-        run: ruff check superbot/src --exclude .github,tests,venv,env,build,dist
+        run: ruff check superbot --exclude .github,tests,venv,env,build,dist
 
       - name: Run mypy
-        run: mypy superbot/src --exclude '(\.github|tests|venv|env|build|dist)'
+        run: mypy superbot --exclude '(\.github|tests|venv|env|build|dist)'
