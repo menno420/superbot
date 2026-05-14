@@ -377,15 +377,15 @@ class _ChannelCreatorView(discord.ui.View):
         error: Exception,
         item: discord.ui.Item,
     ) -> None:
-        logger.error("ChannelCreatorView unhandled error on %s: %s", item, error, exc_info=True)
-        msg = "❌ An unexpected error occurred."
-        if not interaction.response.is_done():
-            await interaction.response.send_message(msg, ephemeral=True)
-        else:
-            try:
+        logger.error("ChannelCreatorView error on %s: %s", item, error, exc_info=True)
+        msg = f"❌ {type(error).__name__}: {error}"
+        try:
+            if not interaction.response.is_done():
+                await interaction.response.send_message(msg, ephemeral=True)
+            else:
                 await interaction.followup.send(msg, ephemeral=True)
-            except Exception:
-                pass
+        except Exception:
+            pass
 
     def _build_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -419,9 +419,9 @@ class _ChannelCreatorView(discord.ui.View):
                 "Please select or enter a channel name first.", ephemeral=True)
             return
 
-        # Acknowledge immediately — Discord requires a response within 3 seconds,
-        # and the API calls below can exceed that under load.
-        await interaction.response.defer()
+        # Defer immediately — Discord requires acknowledgement within 3 seconds.
+        # ephemeral=True keeps the follow-up visible only to the invoker.
+        await interaction.response.defer(ephemeral=True)
 
         guild = interaction.guild
         safe  = await safe_channel_name(guild, self.chosen_name)
@@ -458,7 +458,14 @@ class _ChannelCreatorView(discord.ui.View):
             description=f"{ch.mention} created" + (f" in **{self.chosen_cat}**" if self.chosen_cat else "") + suffix,
             color=discord.Color.green(),
         )
-        await interaction.edit_original_response(embed=embed, view=self)
+        # Update the panel embed; if it fails (e.g. message deleted) still confirm via followup
+        try:
+            await self.message.edit(embed=embed, view=self)
+        except Exception:
+            await interaction.followup.send(
+                f"✅ Channel {ch.mention} created!" + (f" in **{self.chosen_cat}**" if self.chosen_cat else ""),
+                ephemeral=True,
+            )
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, emoji="❌", row=2)
@@ -490,8 +497,12 @@ class _NameSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self._parent.chosen_name = self.values[0]
-        await interaction.response.edit_message(
-            embed=self._parent._build_embed(), view=self._parent)
+        try:
+            await interaction.response.edit_message(
+                embed=self._parent._build_embed(), view=self._parent)
+        except discord.HTTPException:
+            if not interaction.response.is_done():
+                await interaction.response.defer()
 
 
 class _CategorySelect(discord.ui.Select):
@@ -506,8 +517,12 @@ class _CategorySelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self._parent.chosen_cat = self.values[0]
-        await interaction.response.edit_message(
-            embed=self._parent._build_embed(), view=self._parent)
+        try:
+            await interaction.response.edit_message(
+                embed=self._parent._build_embed(), view=self._parent)
+        except discord.HTTPException:
+            if not interaction.response.is_done():
+                await interaction.response.defer()
 
 
 class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):
