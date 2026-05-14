@@ -8,6 +8,18 @@ from utils import db
 
 logger = logging.getLogger("bot")
 
+
+async def _post_log(bot: commands.Bot, guild_id: int, embed: discord.Embed) -> None:
+    cid = await db.get_setting(guild_id, "economy_log_channel", "")
+    if not cid:
+        return
+    ch = bot.get_channel(int(cid))
+    if ch:
+        try:
+            await ch.send(embed=embed)
+        except Exception:
+            pass
+
 _XP_MIN = 15
 _XP_MAX = 25
 _COOLDOWN = 60  # seconds
@@ -63,10 +75,10 @@ class XpCog(commands.Cog):
 
         if leveled_up:
             channel_id = await db.get_setting(guild_id, "xp_announce_channel", "")
-            channel: discord.TextChannel | None = None
+            announce_ch: discord.TextChannel | None = None
             if channel_id:
-                channel = message.guild.get_channel(int(channel_id))
-            channel = channel or message.channel
+                announce_ch = message.guild.get_channel(int(channel_id))
+            announce_ch = announce_ch or message.channel
 
             embed = discord.Embed(
                 title="🎉 Level Up!",
@@ -74,9 +86,19 @@ class XpCog(commands.Cog):
                 color=discord.Color.gold(),
             )
             try:
-                await channel.send(embed=embed)
+                await announce_ch.send(embed=embed)
             except discord.Forbidden:
                 pass
+
+            log_embed = discord.Embed(
+                title="🏆 Level Up",
+                description=(
+                    f"{message.author.mention} reached **Level {new_level}**! "
+                    f"(Total XP: {new_xp})"
+                ),
+                color=discord.Color.gold(),
+            )
+            await _post_log(self.bot, guild_id, log_embed)
 
     # ------------------------------------------------------------------ commands
 

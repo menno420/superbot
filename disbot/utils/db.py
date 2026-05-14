@@ -39,6 +39,29 @@ def get() -> aiosqlite.Connection:
 async def _create_tables() -> None:
     conn = get()
     statements = [
+        """CREATE TABLE IF NOT EXISTS economy (
+            user_id      INTEGER NOT NULL,
+            guild_id     INTEGER NOT NULL,
+            last_daily   INTEGER NOT NULL DEFAULT 0,
+            daily_streak INTEGER NOT NULL DEFAULT 0,
+            daily_count  INTEGER NOT NULL DEFAULT 0,
+            last_worked  INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (user_id, guild_id)
+        )""",
+        """CREATE TABLE IF NOT EXISTS job_progress (
+            user_id      INTEGER NOT NULL,
+            guild_id     INTEGER NOT NULL,
+            job_name     TEXT    NOT NULL,
+            times_worked INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (user_id, guild_id, job_name)
+        )""",
+        """CREATE TABLE IF NOT EXISTS inventory (
+            user_id   INTEGER NOT NULL,
+            guild_id  INTEGER NOT NULL,
+            item_name TEXT    NOT NULL,
+            quantity  INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (user_id, guild_id, item_name)
+        )""",
         """CREATE TABLE IF NOT EXISTS xp (
             user_id  INTEGER NOT NULL,
             guild_id INTEGER NOT NULL,
@@ -281,3 +304,84 @@ async def set_coins(user_id: int, guild_id: int, amount: int) -> None:
            ON CONFLICT(user_id, guild_id) DO UPDATE SET coins=MAX(0, excluded.coins)""",
         (user_id, guild_id, amount),
     )
+
+
+# ---------------------------------------------------------------------------
+# Economy / daily helpers
+# ---------------------------------------------------------------------------
+
+async def get_economy(user_id: int, guild_id: int) -> dict:
+    await execute(
+        "INSERT OR IGNORE INTO economy (user_id, guild_id) VALUES (?,?)",
+        (user_id, guild_id),
+    )
+    row = await fetchone(
+        "SELECT * FROM economy WHERE user_id=? AND guild_id=?", (user_id, guild_id)
+    )
+    return dict(row)
+
+
+async def set_economy(user_id: int, guild_id: int, **kwargs) -> None:
+    allowed = {"last_daily", "daily_streak", "daily_count", "last_worked"}
+    cols = {k: v for k, v in kwargs.items() if k in allowed}
+    if not cols:
+        return
+    sets = ", ".join(f"{k}=?" for k in cols)
+    await execute(
+        f"UPDATE economy SET {sets} WHERE user_id=? AND guild_id=?",
+        (*cols.values(), user_id, guild_id),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Job progress helpers
+# ---------------------------------------------------------------------------
+
+async def get_job_times(user_id: int, guild_id: int, job_name: str) -> int:
+    row = await fetchone(
+        "SELECT times_worked FROM job_progress WHERE user_id=? AND guild_id=? AND job_name=?",
+        (user_id, guild_id, job_name),
+    )
+    return row["times_worked"] if row else 0
+
+
+async def increment_job(user_id: int, guild_id: int, job_name: str) -> int:
+    """Increment times_worked for a job and return the new count."""
+    await execute(
+        """INSERT INTO job_progress (user_id, guild_id, job_name, times_worked)
+           VALUES (?,?,?,1)
+           ON CONFLICT(user_id, guild_id, job_name)
+           DO UPDATE SET times_worked = times_worked + 1""",
+        (user_id, guild_id, job_name),
+    )
+    return await get_job_times(user_id, guild_id, job_name)
+
+
+# ---------------------------------------------------------------------------
+# Inventory helpers
+# ---------------------------------------------------------------------------
+
+async def get_inventory(user_id: int, guild_id: int) -> dict[str, int]:
+    rows = await fetchall(
+        "SELECT item_name, quantity FROM inventory WHERE user_id=? AND guild_id=?",
+        (user_id, guild_id),
+    )
+    return {r["item_name"]: r["quantity"] for r in rows}
+
+
+async def add_item(user_id: int, guild_id: int, item_name: str, quantity: int = 1) -> None:
+    await execute(
+        """INSERT INTO inventory (user_id, guild_id, item_name, quantity)
+           VALUES (?,?,?,?)
+           ON CONFLICT(user_id, guild_id, item_name)
+           DO UPDATE SET quantity = quantity + ?""",
+        (user_id, guild_id, item_name, quantity, quantity),
+    )
+
+
+async def has_item(user_id: int, guild_id: int, item_name: str) -> bool:
+    row = await fetchone(
+        "SELECT quantity FROM inventory WHERE user_id=? AND guild_id=? AND item_name=?",
+        (user_id, guild_id, item_name),
+    )
+    return bool(row and row["quantity"] > 0)
