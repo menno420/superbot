@@ -33,8 +33,28 @@ class ChannelCog(commands.Cog):
             return ctx.author.guild_permissions.administrator or ctx.author.id == ctx.guild.owner_id
         return commands.check(predicate)
 
-    def get_category_or_channel(self, guild, name):
-        return discord.utils.get(guild.categories, name=name) or discord.utils.get(guild.channels, name=name)
+    def _resolve_channel(self, guild: discord.Guild, query: str):
+        """Find a channel by name, mention (<#ID>), or numeric ID."""
+        if query.startswith('<#') and query.endswith('>'):
+            query = query[2:-1]
+        if query.isdigit():
+            ch = guild.get_channel(int(query))
+            if ch:
+                return ch
+        return discord.utils.get(guild.channels, name=query)
+
+    def _resolve_category(self, guild: discord.Guild, query: str):
+        """Find a category by name, mention, or numeric ID."""
+        if query.startswith('<#') and query.endswith('>'):
+            query = query[2:-1]
+        if query.isdigit():
+            ch = guild.get_channel(int(query))
+            if isinstance(ch, discord.CategoryChannel):
+                return ch
+        return discord.utils.get(guild.categories, name=query)
+
+    def get_category_or_channel(self, guild, query):
+        return self._resolve_category(guild, query) or self._resolve_channel(guild, query)
 
     async def set_permissions(self, target, role, read_messages):
         if isinstance(target, discord.CategoryChannel):
@@ -58,18 +78,18 @@ class ChannelCog(commands.Cog):
     # Commands
     # -------------------
 
-    @commands.command(name="set", help="Set access for a channel/category. Usage: !set <target> <@role> <True/False>")
+    @commands.command(name="set", help="Set access for a channel/category. Usage: !set <name|id> <@role> <True/False>")
     @is_admin_or_owner()
     async def set_access(self, ctx, target: str, role: discord.Role, permission: bool):
         target_channel = self.get_category_or_channel(ctx.guild, target)
         if target_channel:
             await self.set_permissions(target_channel, role, read_messages=permission)
             state = "opened" if permission else "closed"
-            await ctx.send(f'{target_channel.type} "{target}" {state} for {role.name}!')
+            await ctx.send(f'{target_channel.type} "{target_channel.name}" {state} for {role.name}!')
         else:
             await ctx.send(f'Channel or Category "{target}" not found.')
 
-    @commands.command(name="evt", help="Create or delete an event channel. Usage: !evt <name> <create/delete>")
+    @commands.command(name="evt", help="Create or delete an event channel. Usage: !evt <name|id> <create/delete>")
     @is_admin_or_owner()
     async def manage_event(self, ctx, evt: str, action: str):
         if action.lower() == "create":
@@ -78,10 +98,10 @@ class ChannelCog(commands.Cog):
             await ctx.guild.create_text_channel(name, category=category)
             await ctx.send(f'Event channel "{name}" created!')
         elif action.lower() == "delete":
-            channel = discord.utils.get(ctx.guild.channels, name=evt)
+            channel = self._resolve_channel(ctx.guild, evt)
             if channel:
                 await channel.delete()
-                await ctx.send(f'Event "{evt}" deleted!')
+                await ctx.send(f'Event "{channel.name}" deleted!')
             else:
                 await ctx.send(f'Event "{evt}" not found.')
         else:
@@ -94,7 +114,7 @@ class ChannelCog(commands.Cog):
         safe_name = await safe_channel_name(ctx.guild, channel_name)
         category = None
         if category_name:
-            category = discord.utils.get(ctx.guild.categories, name=category_name)
+            category = self._resolve_category(ctx.guild, category_name)
             if not category:
                 await ctx.send(f'Category "{category_name}" not found!')
                 return
@@ -124,21 +144,26 @@ class ChannelCog(commands.Cog):
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
 
-    @commands.command(name="bulkdelete", help="Delete multiple channels. Usage: !bulkdelete <name1> [name2...] or <word>")
+    @commands.command(name="bulkdelete", help="Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>")
     @is_admin_or_owner()
     async def bulk_delete_channels(self, ctx, *channel_names_or_word: str):
         if not channel_names_or_word:
-            await ctx.send("Please provide at least one channel name or a word.")
+            await ctx.send("Please provide at least one channel name, ID, or keyword.")
             return
 
         if len(channel_names_or_word) == 1:
             word = channel_names_or_word[0]
-            channels_to_delete = [ch for ch in ctx.guild.channels if word in ch.name]
-            if not channels_to_delete:
-                await ctx.send(f"No channels found containing '{word}'.")
-                return
+            # Single arg: try exact ID/name match first, then keyword search
+            exact = self._resolve_channel(ctx.guild, word)
+            if exact:
+                channels_to_delete = [exact]
+            else:
+                channels_to_delete = [ch for ch in ctx.guild.channels if word in ch.name]
+                if not channels_to_delete:
+                    await ctx.send(f"No channels found matching '{word}'.")
+                    return
         else:
-            channels_to_delete = [discord.utils.get(ctx.guild.channels, name=n)
+            channels_to_delete = [self._resolve_channel(ctx.guild, n)
                                    for n in channel_names_or_word]
 
         deleted, failed = [], []
@@ -157,13 +182,13 @@ class ChannelCog(commands.Cog):
         if failed:  response += f'❌ Failed: {", ".join(failed)}.'
         await ctx.send(response)
 
-    @commands.command(name="del", help="Delete a specific channel. Usage: !del <channel_name>")
+    @commands.command(name="del", help="Delete a specific channel. Usage: !del <name|id>")
     @is_admin_or_owner()
     async def delete_channel(self, ctx, channel_name: str):
-        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             await channel.delete()
-            await ctx.send(f'Channel "{channel_name}" deleted.')
+            await ctx.send(f'Channel "{channel.name}" deleted.')
         else:
             await ctx.send(f'Channel "{channel_name}" not found.')
 
@@ -176,84 +201,86 @@ class ChannelCog(commands.Cog):
             embed.add_field(name=category.name, value=channels or "No channels", inline=False)
         await ctx.send(embed=embed)
 
-    @commands.command(name="clone", help="Clone a channel. Usage: !clone <existing> <new_name>")
+    @commands.command(name="clone", help="Clone a channel. Usage: !clone <name|id> <new_name>")
     @is_admin_or_owner()
     async def clone_channel(self, ctx, existing_channel_name: str, new_channel_name: str):
-        existing = discord.utils.get(ctx.guild.channels, name=existing_channel_name)
+        existing = self._resolve_channel(ctx.guild, existing_channel_name)
         if existing:
             await existing.clone(name=new_channel_name)
-            await ctx.send(f'"{existing_channel_name}" cloned as "{new_channel_name}".')
+            await ctx.send(f'"{existing.name}" cloned as "{new_channel_name}".')
         else:
             await ctx.send(f'"{existing_channel_name}" not found.')
 
-    @commands.command(name="move", help="Move a channel to a category. Usage: !move <channel> <category>")
+    @commands.command(name="move", help="Move a channel to a category. Usage: !move <channel name|id> <category name|id>")
     @is_admin_or_owner()
     async def move_channel(self, ctx, channel_name: str, category_name: str):
-        channel  = discord.utils.get(ctx.guild.channels,    name=channel_name)
-        category = discord.utils.get(ctx.guild.categories,  name=category_name)
+        channel  = self._resolve_channel(ctx.guild, channel_name)
+        category = self._resolve_category(ctx.guild, category_name)
         if channel and category:
             await channel.edit(category=category)
-            await ctx.send(f'"{channel_name}" moved to "{category_name}".')
+            await ctx.send(f'"{channel.name}" moved to "{category.name}".')
         else:
             await ctx.send("Channel or Category not found.")
 
-    @commands.command(name="lock", help="Lock a channel. Usage: !lock <channel_name>")
+    @commands.command(name="lock", help="Lock a channel. Usage: !lock <name|id>")
     @is_admin_or_owner()
     async def lock_channel(self, ctx, channel_name: str):
-        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             await channel.set_permissions(ctx.guild.default_role, send_messages=False)
-            await ctx.send(f'"{channel_name}" locked.')
+            await ctx.send(f'"{channel.name}" locked.')
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="unlock", help="Unlock a channel. Usage: !unlock <channel_name>")
+    @commands.command(name="unlock", help="Unlock a channel. Usage: !unlock <name|id>")
     @is_admin_or_owner()
     async def unlock_channel(self, ctx, channel_name: str):
-        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             await channel.set_permissions(ctx.guild.default_role, send_messages=True)
-            await ctx.send(f'"{channel_name}" unlocked.')
+            await ctx.send(f'"{channel.name}" unlocked.')
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="channelinfo", help="Channel details. Usage: !channelinfo <channel_name>")
+    @commands.command(name="channelinfo", help="Channel details. Usage: !channelinfo <name|id>")
     @is_admin_or_owner()
     async def channel_info(self, ctx, channel_name: str):
-        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             embed = discord.Embed(title=f"Channel Info — {channel.name}", color=discord.Color.orange())
             embed.add_field(name="Type",      value=str(channel.type),                    inline=True)
             embed.add_field(name="Category",  value=channel.category.name if channel.category else "None", inline=True)
             embed.add_field(name="Position",  value=str(channel.position),                inline=True)
-            embed.add_field(name="Topic",     value=channel.topic or "No topic set.",     inline=False)
+            embed.add_field(name="Topic",     value=getattr(channel, "topic", None) or "No topic set.", inline=False)
             embed.add_field(name="Created",   value=channel.created_at.strftime("%Y-%m-%d %H:%M:%S"), inline=True)
+            embed.add_field(name="ID",        value=str(channel.id),                      inline=True)
             embed.add_field(name="Overwrites", value=self.format_overwrites(channel.overwrites), inline=False)
             await ctx.send(embed=embed)
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="rename", help="Rename a channel. Usage: !rename <old> <new>")
+    @commands.command(name="rename", help="Rename a channel. Usage: !rename <old name|id> <new_name>")
     @is_admin_or_owner()
     async def rename_channel(self, ctx, old_name: str, new_name: str):
-        channel = discord.utils.get(ctx.guild.channels, name=old_name)
+        channel = self._resolve_channel(ctx.guild, old_name)
         if channel:
+            old = channel.name
             await channel.edit(name=new_name)
-            await ctx.send(f'"{old_name}" renamed to "{new_name}".')
+            await ctx.send(f'"{old}" renamed to "{new_name}".')
         else:
             await ctx.send(f'"{old_name}" not found.')
 
-    @commands.command(name="permissions", help="Modify channel permissions. Usage: !permissions <channel> <@role> <allow/deny>")
+    @commands.command(name="permissions", help="Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>")
     @is_admin_or_owner()
     async def modify_permissions(self, ctx, channel_name: str, role: discord.Role, action: str):
-        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             if action.lower() == "allow":
                 await channel.set_permissions(role, send_messages=True)
-                await ctx.send(f'Send messages **allowed** for {role.name} in "{channel_name}".')
+                await ctx.send(f'Send messages **allowed** for {role.name} in "{channel.name}".')
             elif action.lower() == "deny":
                 await channel.set_permissions(role, send_messages=False)
-                await ctx.send(f'Send messages **denied** for {role.name} in "{channel_name}".')
+                await ctx.send(f'Send messages **denied** for {role.name} in "{channel.name}".')
             else:
                 await ctx.send('Invalid action. Use "allow" or "deny".')
         else:
@@ -288,23 +315,23 @@ class ChannelCog(commands.Cog):
         if failed:  response += f'❌ Failed: {", ".join(failed)}.'
         await ctx.send(response)
 
-    @commands.command(name="archive", help="Make a channel read-only. Usage: !archive <channel_name>")
+    @commands.command(name="archive", help="Make a channel read-only. Usage: !archive <name|id>")
     @is_admin_or_owner()
     async def archive_channel(self, ctx, channel_name: str):
-        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             await channel.set_permissions(ctx.guild.default_role, send_messages=False)
-            await ctx.send(f'"{channel_name}" archived (read-only).')
+            await ctx.send(f'"{channel.name}" archived (read-only).')
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="unarchive", help="Restore send permissions for a channel. Usage: !unarchive <channel_name>")
+    @commands.command(name="unarchive", help="Restore send permissions for a channel. Usage: !unarchive <name|id>")
     @is_admin_or_owner()
     async def unarchive_channel(self, ctx, channel_name: str):
-        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             await channel.set_permissions(ctx.guild.default_role, send_messages=True)
-            await ctx.send(f'"{channel_name}" unarchived.')
+            await ctx.send(f'"{channel.name}" unarchived.')
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
@@ -344,6 +371,22 @@ class _ChannelCreatorView(discord.ui.View):
             return False
         return True
 
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,
+    ) -> None:
+        logger.error("ChannelCreatorView unhandled error on %s: %s", item, error, exc_info=True)
+        msg = "❌ An unexpected error occurred."
+        if not interaction.response.is_done():
+            await interaction.response.send_message(msg, ephemeral=True)
+        else:
+            try:
+                await interaction.followup.send(msg, ephemeral=True)
+            except Exception:
+                pass
+
     def _build_embed(self) -> discord.Embed:
         embed = discord.Embed(
             title="📋 Channel Creator",
@@ -376,6 +419,10 @@ class _ChannelCreatorView(discord.ui.View):
                 "Please select or enter a channel name first.", ephemeral=True)
             return
 
+        # Acknowledge immediately — Discord requires a response within 3 seconds,
+        # and the API calls below can exceed that under load.
+        await interaction.response.defer()
+
         guild = interaction.guild
         safe  = await safe_channel_name(guild, self.chosen_name)
         category = None
@@ -383,22 +430,22 @@ class _ChannelCreatorView(discord.ui.View):
             try:
                 category = await get_or_create_category(guild, self.chosen_cat)
             except discord.Forbidden:
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     "❌ I don't have permission to create categories.", ephemeral=True)
                 return
             except discord.HTTPException as exc:
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"❌ Failed to create category: {exc}", ephemeral=True)
                 return
 
         try:
             ch = await guild.create_text_channel(safe, category=category)
         except discord.Forbidden:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "❌ I don't have permission to create channels.", ephemeral=True)
             return
         except discord.HTTPException as exc:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"❌ Failed to create channel: {exc}", ephemeral=True)
             return
 
@@ -411,7 +458,7 @@ class _ChannelCreatorView(discord.ui.View):
             description=f"{ch.mention} created" + (f" in **{self.chosen_cat}**" if self.chosen_cat else "") + suffix,
             color=discord.Color.green(),
         )
-        await interaction.response.edit_message(embed=embed, view=self)
+        await interaction.edit_original_response(embed=embed, view=self)
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, emoji="❌", row=2)
@@ -477,7 +524,6 @@ class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):
     async def on_submit(self, interaction: discord.Interaction):
         name = self.channel_name.value.strip().lower().replace(" ", "-")
         self._view.chosen_name = name
-        # Modals can't use edit_message — defer and update the stored message reference
         await interaction.response.defer()
         if self._view.message:
             await self._view.message.edit(
