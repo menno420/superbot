@@ -10,7 +10,12 @@ logger = logging.getLogger("DataManager")
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 JSON_DIR = os.path.join(DATA_DIR, "json")
-DB_PATH = os.path.join(DATA_DIR, "bot_data.db")
+_default_db = (
+    "/data/bot_data.db"
+    if os.path.isdir("/data")
+    else os.path.join(DATA_DIR, "bot_data.db")
+)
+DB_PATH = os.environ.get("BOT_DB_PATH", _default_db)
 
 
 class DataManager:

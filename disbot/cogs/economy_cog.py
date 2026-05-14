@@ -317,6 +317,23 @@ class EconomyCog(commands.Cog):
             embed.description = "Empty — visit `!shop` to buy items!"
         await ctx.send(embed=embed)
 
+    # ------------------------------------------------------------------ !balance
+
+    @commands.command(name="balance", aliases=["bal", "wallet"])
+    async def balance(self, ctx: commands.Context, member: discord.Member = None):
+        """Show your (or another user's) current coin balance."""
+        target = member or ctx.author
+        coins = await db.get_coins(target.id, ctx.guild.id)
+        xp_row = await db.get_xp(target.id, ctx.guild.id)
+        embed = discord.Embed(
+            title=f"💰 {target.display_name}'s Wallet",
+            color=discord.Color.gold(),
+        )
+        embed.set_thumbnail(url=target.display_avatar.url)
+        embed.add_field(name="🪙 Coins", value=f"**{coins:,}**", inline=True)
+        embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
+        await ctx.send(embed=embed)
+
     # ------------------------------------------------------------------ !setlogchannel
 
     @commands.command(name="setlogchannel")
