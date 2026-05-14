@@ -21,7 +21,10 @@ class CountingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logger
-        self.data_file = 'count_data.json'
+        self.data_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "data", "count_data.json"
+        )
         self.lock = asyncio.Lock()  # To ensure thread-safe operations on count_data
         self.count_data = {}  # Initialize count_data
         self.load_data()

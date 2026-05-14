@@ -807,6 +807,26 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     async def cog_load(self):
         self.clean_up_task = asyncio.ensure_future(self.clean_up_expired_matches())
+        asyncio.ensure_future(self._cleanup_orphaned_channels())
+
+    async def _cleanup_orphaned_channels(self):
+        """On startup, clean up any leftover RPS tournament/bot-match channels."""
+        await self.bot.wait_until_ready()
+        for guild in self.bot.guilds:
+            for cat_name in ("RPS Tournaments", "RPS Bot Matches"):
+                cat = discord.utils.get(guild.categories, name=cat_name)
+                if not cat or not cat.channels:
+                    continue
+                for ch in cat.channels:
+                    try:
+                        await ch.send(
+                            "⚠️ The bot restarted and this match was interrupted. "
+                            "This channel will be deleted in 5 minutes."
+                        )
+                    except Exception:
+                        pass
+                await asyncio.sleep(300)
+                await cleanup_category(cat)
 
     def cog_unload(self):
         """Cleanup when the cog is unloaded."""

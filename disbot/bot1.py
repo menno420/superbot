@@ -132,23 +132,48 @@ async def on_ready():
     bot._webhook_handler = _webhook_handler  # expose to cogs for !loglevel
     logger.info(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")
     logger.info(f"🔗 Connected to {len(bot.guilds)} servers")
+    logger.info(f"📦 Loaded cogs: {', '.join(bot.cogs.keys())}")
     logger.info("🚀 Bot is ready!")
+
+    if not config.WEBHOOK_URL:
+        logger.warning("⚠️ DISCORD_WEBHOOK_URL is not set — webhook logging disabled.")
 
     for command_name, alias_list in aliases.items():
         cmd = bot.get_command(command_name)
         if cmd:
             cmd.aliases = alias_list
-            logger.info(f"🔄 Loaded aliases for {command_name}: {alias_list}")
 
     await _send_startup_message()
 
 @bot.event
 async def on_command(ctx):
-    logger.info(f"CMD | {ctx.author} | #{ctx.channel} | {ctx.message.content[:150]}")
+    logger.info(f"CMD | {ctx.author} ({ctx.author.id}) | #{ctx.channel} | {ctx.guild} | {ctx.message.content[:150]}")
 
 @bot.event
 async def on_command_completion(ctx):
-    logger.info(f"CMD ✅ | {ctx.command.qualified_name} completed for {ctx.author}")
+    logger.info(f"CMD ✅ | {ctx.command.qualified_name} | {ctx.author} | {ctx.guild}")
+
+@bot.event
+async def on_command_error(ctx, error):
+    if ctx.channel.id not in ALLOWED_CHANNELS and (ctx.command is None or ctx.command.name != "force"):
+        return
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ You do not have permission to use this command.", delete_after=10)
+    elif isinstance(error, commands.CommandNotFound):
+        raw = ctx.invoked_with or ""
+        suggestion = _find_synonym(raw)
+        if suggestion:
+            await ctx.send(
+                f"❓ Unknown command `{raw}`. Did you mean `{config.PREFIX}{suggestion}`?",
+                delete_after=15,
+            )
+        else:
+            await ctx.send("❌ Command not found. Use `!help` for available commands.", delete_after=10)
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("⚠️ Missing argument. Check `!help` for usage.", delete_after=10)
+    else:
+        logger.error(f"CMD ❌ | {ctx.command} | {ctx.author} | {ctx.guild} | {type(error).__name__}: {error}", exc_info=True)
+        await ctx.send("⚠️ An unexpected error occurred. Please try again later.", delete_after=10)
 
 async def _send_startup_message():
     if not config.WEBHOOK_URL:
@@ -193,32 +218,6 @@ async def force(ctx, command_name: str, *args):
     else:
         await ctx.send("❌ Command not found.", delete_after=10)
 
-# ==========================
-# Event: Command Error Handling
-# ==========================
-@bot.event
-async def on_command_error(ctx, error):
-    if ctx.channel.id not in ALLOWED_CHANNELS and (ctx.command is None or ctx.command.name != "force"):
-        return  # Ignore errors for unauthorized channels unless using force
-
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ You do not have permission to use this command.", delete_after=10)
-    elif isinstance(error, commands.CommandNotFound):
-        # Try synonym lookup before giving up
-        raw = ctx.invoked_with or ""
-        suggestion = _find_synonym(raw)
-        if suggestion:
-            await ctx.send(
-                f"❓ Unknown command `{raw}`. Did you mean `{config.PREFIX}{suggestion}`?",
-                delete_after=15,
-            )
-        else:
-            await ctx.send("❌ Command not found. Use `!help` for available commands.", delete_after=10)
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("⚠️ Missing argument. Check `!help` for usage.", delete_after=10)
-    else:
-        logger.error(f"CMD ❌ | {ctx.command} | {ctx.author} | {type(error).__name__}: {error}", exc_info=True)
-        await ctx.send("⚠️ An unexpected error occurred. Please try again later.", delete_after=10)
 
 # ==========================
 # Load Cogs (Extensions)
