@@ -4,41 +4,15 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import cooldown, BucketType
 import asyncio
-import json
-import os
 import random
 
-LEADERBOARD_FILE = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "data", "leaderboard.json",
-)
+from utils import db
 
 class Deathmatch(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # Active duels: {(user1_id, user2_id): Duel}
         self.active_duels = {}
-        # Load or initialize leaderboard
-        self.leaderboard = self.load_leaderboard()
-
-    def load_leaderboard(self):
-        # Ensure the 'data/' directory exists
-        os.makedirs(os.path.dirname(LEADERBOARD_FILE), exist_ok=True)
-        
-        if not os.path.exists(LEADERBOARD_FILE):
-            with open(LEADERBOARD_FILE, 'w') as f:
-                json.dump({}, f)
-            return {}
-        with open(LEADERBOARD_FILE, 'r') as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                # Handle corrupted JSON file
-                return {}
-
-    def save_leaderboard(self):
-        with open(LEADERBOARD_FILE, 'w') as f:
-            json.dump(self.leaderboard, f, indent=4)
 
     class Duel:
         def __init__(self, player1, player2):
@@ -113,8 +87,8 @@ class Deathmatch(commands.Cog):
 
         def check(reaction, user):
             return (
-                user == opponent and 
-                str(reaction.emoji) in ["✅", "❌"] and 
+                user == opponent and
+                str(reaction.emoji) in ["✅", "❌"] and
                 reaction.message.id == message.id
             )
 
@@ -138,23 +112,23 @@ class Deathmatch(commands.Cog):
     @commands.command(name='dm_leaderboard', aliases=['dm_lb', 'board'])
     async def leaderboard_cmd(self, ctx):
         """Display the Deathmatch leaderboard."""
-        if not self.leaderboard:
+        rows = await db.get_deathmatch_leaderboard()
+        if not rows:
             await ctx.send("No battles have been recorded yet.")
             return
 
-        sorted_lb = sorted(self.leaderboard.items(), key=lambda x: x[1]['wins'], reverse=True)
         embed = discord.Embed(
             title="Deathmatch Leaderboard",
             description="Top players by wins",
             color=discord.Color.gold(),
             timestamp=ctx.message.created_at
         )
-        for idx, (user_id, stats) in enumerate(sorted_lb, start=1):
-            user = self.bot.get_user(int(user_id))
+        for idx, row in enumerate(rows, start=1):
+            user = self.bot.get_user(row['user_id'])
             if user:
                 embed.add_field(
                     name=f"{idx}. {user.name}",
-                    value=f"Wins: {stats['wins']} | Losses: {stats['losses']}",
+                    value=f"Wins: {row['wins']} | Losses: {row['losses']}",
                     inline=False
                 )
         await ctx.send(embed=embed)
@@ -189,8 +163,8 @@ class Deathmatch(commands.Cog):
 
             def check(m):
                 return (
-                    m.author == current_player and 
-                    m.channel == ctx.channel and 
+                    m.author == current_player and
+                    m.channel == ctx.channel and
                     m.content.lower() in ['attack', 'defend']
                 )
 
@@ -199,7 +173,7 @@ class Deathmatch(commands.Cog):
                 msg = await self.bot.wait_for('message', check=check, timeout=60.0)
             except asyncio.TimeoutError:
                 await ctx.send(f"{current_player.mention} took too long to respond. {opponent.mention} wins by default!")
-                self.update_leaderboard(winner=opponent.id, loser=current_player.id)
+                await self.update_leaderboard(winner_id=opponent.id, loser_id=current_player.id)
                 duel.is_over = True
                 del self.active_duels[tuple(sorted([duel.player1.id, duel.player2.id]))]
                 return
@@ -218,11 +192,11 @@ class Deathmatch(commands.Cog):
             # Check for win condition
             if duel.player1_hp <= 0:
                 await ctx.send(f"{duel.player1.mention} has been defeated! {duel.player2.mention} wins!")
-                self.update_leaderboard(winner=duel.player2.id, loser=duel.player1.id)
+                await self.update_leaderboard(winner_id=duel.player2.id, loser_id=duel.player1.id)
                 duel.is_over = True
             elif duel.player2_hp <= 0:
                 await ctx.send(f"{duel.player2.mention} has been defeated! {duel.player1.mention} wins!")
-                self.update_leaderboard(winner=duel.player1.id, loser=duel.player2.id)
+                await self.update_leaderboard(winner_id=duel.player1.id, loser_id=duel.player2.id)
                 duel.is_over = True
             else:
                 # Switch turn
@@ -239,17 +213,10 @@ class Deathmatch(commands.Cog):
             timestamp=ctx.message.created_at
         )
         await duel_message.edit(embed=embed)
-        self.save_leaderboard()
 
-    def update_leaderboard(self, winner_id, loser_id):
+    async def update_leaderboard(self, winner_id, loser_id):
         """Update the leaderboard with the duel results."""
-        if str(winner_id) not in self.leaderboard:
-            self.leaderboard[str(winner_id)] = {"wins": 0, "losses": 0}
-        if str(loser_id) not in self.leaderboard:
-            self.leaderboard[str(loser_id)] = {"wins": 0, "losses": 0}
-
-        self.leaderboard[str(winner_id)]['wins'] += 1
-        self.leaderboard[str(loser_id)]['losses'] += 1
+        await db.update_deathmatch(winner_id, loser_id)
 
     @challenge.error
     async def challenge_error(self, ctx, error):

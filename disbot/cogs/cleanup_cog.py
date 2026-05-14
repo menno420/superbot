@@ -3,21 +3,16 @@ import discord
 from discord.ext import commands
 import logging
 import asyncio
-import json
-import os
 import config as _config
+from utils import db
 
 class Cleanup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
 
-        self.prohibited_words_file = os.path.join(os.path.dirname(__file__), "../data/json/prohibited_words.json")
-        self.prohibited_words = self.load_prohibited_words()
-        self.prohibited_patterns = [
-            re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE)
-            for word in self.prohibited_words
-        ]
+        self.prohibited_words = []
+        self.prohibited_patterns = []
 
         self.command_prefixes = ['?', '!']
         self.command_pattern = re.compile(
@@ -27,21 +22,15 @@ class Cleanup(commands.Cog):
 
         self.whitelisted_channels = _config.CLEANUP_WHITELIST_CHANNELS
 
-    def load_prohibited_words(self):
-        try:
-            with open(self.prohibited_words_file, 'r') as f:
-                return json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.logger.info("No prohibited words file found. Starting with an empty list.")
-            return []
+    async def cog_load(self):
+        await self._reload_words()
 
-    def save_prohibited_words(self):
-        try:
-            os.makedirs(os.path.dirname(self.prohibited_words_file), exist_ok=True)
-            with open(self.prohibited_words_file, 'w') as f:
-                json.dump(self.prohibited_words, f, indent=4)
-        except Exception as e:
-            self.logger.error(f"Error saving prohibited words: {e}")
+    async def _reload_words(self):
+        self.prohibited_words = await db.get_prohibited_words(0)
+        self.prohibited_patterns = [
+            re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE)
+            for word in self.prohibited_words
+        ]
 
     async def remove_unwanted_message(self, message):
         """Deletes the message if it is a command in a non-whitelisted channel or contains prohibited content."""
@@ -127,38 +116,53 @@ class Cleanup(commands.Cog):
             await ctx.message.delete()
             await confirmation_msg.delete()
 
-    @commands.command(name='addword')
+    @commands.group(name='word', invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    async def add_prohibited_word(self, ctx, *, word: str):
+    async def word_cmd(self, ctx):
+        """Manage prohibited words. Subcommands: add, remove, list."""
+        words = self.prohibited_words
+        if words:
+            word_list = ', '.join(f'`{w}`' for w in sorted(words))
+            await ctx.send(f"Prohibited words: {word_list}", delete_after=15)
+        else:
+            await ctx.send("No prohibited words are currently set.", delete_after=10)
+
+    @word_cmd.command(name='add')
+    @commands.has_permissions(administrator=True)
+    async def word_add(self, ctx, *, word: str):
         """Adds a word to the prohibited words list."""
         word = word.lower()
-        if word in self.prohibited_words:
-            await ctx.send(f"The word '{word}' is already in the prohibited list.", delete_after=5)
-        else:
-            self.prohibited_words.append(word)
-            self.prohibited_patterns.append(
-                re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE)
-            )
-            self.save_prohibited_words()
+        added = await db.add_prohibited_word(0, word)
+        if added:
+            await self._reload_words()
             await ctx.send(f"Added '{word}' to the prohibited words list.", delete_after=5)
             self.logger.info(f"Added prohibited word: {word}")
+        else:
+            await ctx.send(f"The word '{word}' is already in the prohibited list.", delete_after=5)
 
-    @commands.command(name='removeword')
+    @word_cmd.command(name='remove')
     @commands.has_permissions(administrator=True)
-    async def remove_prohibited_word(self, ctx, *, word: str):
+    async def word_remove(self, ctx, *, word: str):
         """Removes a word from the prohibited words list."""
         word = word.lower()
-        if word in self.prohibited_words:
-            self.prohibited_words.remove(word)
-            self.prohibited_patterns = [
-                re.compile(rf'\b{re.escape(w)}\b', re.IGNORECASE)
-                for w in self.prohibited_words
-            ]
-            self.save_prohibited_words()
+        removed = await db.remove_prohibited_word(0, word)
+        if removed:
+            await self._reload_words()
             await ctx.send(f"Removed '{word}' from the prohibited words list.", delete_after=5)
             self.logger.info(f"Removed prohibited word: {word}")
         else:
             await ctx.send(f"The word '{word}' is not in the prohibited list.", delete_after=5)
+
+    @word_cmd.command(name='list')
+    @commands.has_permissions(administrator=True)
+    async def word_list(self, ctx):
+        """Shows all prohibited words."""
+        words = self.prohibited_words
+        if words:
+            word_list = ', '.join(f'`{w}`' for w in sorted(words))
+            await ctx.send(f"Prohibited words: {word_list}", delete_after=15)
+        else:
+            await ctx.send("No prohibited words are currently set.", delete_after=10)
 
 async def setup(bot):
     await bot.add_cog(Cleanup(bot))

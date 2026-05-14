@@ -5,7 +5,8 @@ import discord
 from discord.ext import commands
 import logging
 from utils import db
-from utils.helpers import CogMenuView
+from utils.helpers import CogMenuView, post_log_embed
+from utils.cooldowns import check_cooldown, format_remaining
 
 logger = logging.getLogger("bot")
 
@@ -113,17 +114,7 @@ async def _available_jobs(user_id: int, guild_id: int) -> list[str]:
     ]
 
 
-async def post_economy_log(bot: commands.Bot, guild_id: int, embed: discord.Embed) -> None:
-    """Post an economy event embed to the guild's configured log channel."""
-    cid = await db.get_setting(guild_id, "economy_log_channel", "")
-    if not cid:
-        return
-    ch = bot.get_channel(int(cid))
-    if ch:
-        try:
-            await ch.send(embed=embed)
-        except Exception:
-            pass
+# post_economy_log is now helpers.post_log_embed — imported above
 
 
 # ---------------------------------------------------------------------------
@@ -213,11 +204,10 @@ class EconomyCog(commands.Cog):
         last = row["last_daily"]
         streak = row["daily_streak"]
 
-        if now - last < _DAILY_COOLDOWN:
-            remaining = _DAILY_COOLDOWN - (now - last)
-            h, m = divmod(remaining // 60, 60)
+        on_cd, secs = check_cooldown(last, _DAILY_COOLDOWN)
+        if on_cd:
             await ctx.send(
-                f"⏰ Already claimed today! Come back in **{h}h {m}m**.",
+                f"⏰ Already claimed today! Come back in **{format_remaining(secs)}**.",
                 delete_after=10,
             )
             return
@@ -262,7 +252,7 @@ class EconomyCog(commands.Cog):
             ),
             color=discord.Color.gold(),
         )
-        await post_economy_log(self.bot, gid, log_embed)
+        await post_log_embed(self.bot, gid, log_embed)
 
     # ------------------------------------------------------------------ !work
 
@@ -273,9 +263,9 @@ class EconomyCog(commands.Cog):
         now  = int(time.time())
         row  = await db.get_economy(uid, gid)
 
-        if now - row["last_worked"] < _WORK_COOLDOWN:
-            remaining = (_WORK_COOLDOWN - (now - row["last_worked"])) // 60
-            await ctx.send(f"⏰ You're tired! Rest for **{remaining}m** more.", delete_after=10)
+        on_cd, secs = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
+        if on_cd:
+            await ctx.send(f"⏰ You're tired! Rest for **{format_remaining(secs)}** more.", delete_after=10)
             return
 
         available = await _available_jobs(uid, gid)
@@ -458,10 +448,10 @@ class _JobSelect(discord.ui.Select):
 
         # Re-check cooldown (guard against double-click)
         eco = await db.get_economy(uid, gid)
-        if now - eco["last_worked"] < _WORK_COOLDOWN:
-            remaining = (_WORK_COOLDOWN - (now - eco["last_worked"])) // 60
+        on_cd, secs = check_cooldown(eco["last_worked"], _WORK_COOLDOWN)
+        if on_cd:
             await interaction.response.send_message(
-                f"⏰ Still on cooldown! {remaining}m left.", ephemeral=True)
+                f"⏰ Still on cooldown! {format_remaining(secs)} left.", ephemeral=True)
             return
 
         times   = await db.get_job_times(uid, gid, job_name)
@@ -502,7 +492,7 @@ class _JobSelect(discord.ui.Select):
             ),
             color=discord.Color.green(),
         )
-        await post_economy_log(self._ctx.bot, gid, log_embed)
+        await post_log_embed(self._ctx.bot, gid, log_embed)
 
 
 # ---------------------------------------------------------------------------
@@ -604,7 +594,7 @@ class _ShopSelect(discord.ui.Select):
             ),
             color=discord.Color.orange(),
         )
-        await post_economy_log(self._ctx.bot, gid, log_embed)
+        await post_log_embed(self._ctx.bot, gid, log_embed)
 
 
 async def setup(bot: commands.Bot):

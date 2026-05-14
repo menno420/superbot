@@ -5,7 +5,8 @@ import discord
 from discord.ext import commands
 import logging
 from utils import db
-from utils.helpers import CogMenuView
+from utils.helpers import CogMenuView, post_log_embed
+from utils.cooldowns import check_cooldown, format_remaining
 
 logger = logging.getLogger("bot")
 
@@ -18,17 +19,6 @@ _XP_MENU_COMMANDS: list[tuple[str, str, str]] = [
     ("resetxp",      "!resetxp <@user>",           "Reset a user's XP to zero (admin only)."),
 ]
 
-
-async def _post_log(bot: commands.Bot, guild_id: int, embed: discord.Embed) -> None:
-    cid = await db.get_setting(guild_id, "economy_log_channel", "")
-    if not cid:
-        return
-    ch = bot.get_channel(int(cid))
-    if ch:
-        try:
-            await ch.send(embed=embed)
-        except Exception:
-            pass
 
 _XP_MIN = 15
 _XP_MAX = 25
@@ -84,7 +74,8 @@ class XpCog(commands.Cog):
         row = await db.get_xp(user_id, guild_id)
         xp_min, xp_max, cooldown = await _guild_xp_settings(guild_id)
 
-        if now - row["last_xp"] < cooldown:
+        on_cd, _ = check_cooldown(row["last_xp"], cooldown)
+        if on_cd:
             return
 
         amount = random.randint(xp_min, xp_max)
@@ -115,7 +106,7 @@ class XpCog(commands.Cog):
                 ),
                 color=discord.Color.gold(),
             )
-            await _post_log(self.bot, guild_id, log_embed)
+            await post_log_embed(self.bot, guild_id, log_embed)
 
     # ------------------------------------------------------------------ commands
 

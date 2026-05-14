@@ -1,9 +1,8 @@
 import discord
 from discord.ext import commands
-import json
-import os
 import logging
 import asyncio
+from utils import db
 from datetime import datetime
 import re
 import random
@@ -21,13 +20,8 @@ class CountingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logger
-        self.data_file = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "data", "count_data.json"
-        )
         self.lock = asyncio.Lock()
         self.count_data = {}
-        self.load_data()
 
         # Precompile regex for performance
         self.number_pattern = re.compile(r'\d+')
@@ -158,29 +152,17 @@ class CountingCog(commands.Cog):
             'and': '+',  # Sometimes 'and' is used in numbers
         }
 
-    def load_data(self):
-        """Load counting data from a JSON file."""
-        if os.path.exists(self.data_file):
-            try:
-                with open(self.data_file, 'r') as f:
-                    self.count_data = json.load(f)
-                self.logger.info("Counting data loaded successfully.")
-            except json.JSONDecodeError:
-                self.logger.error(f"JSON decode error in {self.data_file}. Initializing empty data.")
-                self.count_data = {}
-        else:
-            self.count_data = {}
-            self.save_data()
-            self.logger.info("No existing data file found. Created new data file.")
+    async def cog_load(self):
+        """Load counting state for all guilds from the database."""
+        for guild in self.bot.guilds:
+            self.count_data[str(guild.id)] = await db.get_counting_state(guild.id)
 
-    def save_data(self):
-        """Save counting data to a JSON file."""
+    async def _save_guild(self, guild_id_str: str):
         try:
-            with open(self.data_file, 'w') as f:
-                json.dump(self.count_data, f, indent=4)
-            self.logger.info("Counting data saved successfully.")
-        except Exception as e:
-            self.logger.error(f"Failed to save data: {e}")
+            guild_id = int(guild_id_str)
+            await db.set_counting_state(guild_id, self.count_data.get(guild_id_str, {}))
+        except Exception:
+            pass
 
     # --------------------------------------------
     # Permission Helpers
@@ -314,7 +296,7 @@ class CountingCog(commands.Cog):
                 channel_config['prime_numbers'] = []  # Optional: Track prime numbers if needed
 
             self.count_data[guild_id]['channels'][channel_id] = channel_config
-            self.save_data()
+            asyncio.ensure_future(self._save_guild(guild_id))
 
         await ctx.send(f"Started a **{mode.capitalize()}** counting match in {channel.mention}!", delete_after=10)
 
@@ -346,7 +328,7 @@ class CountingCog(commands.Cog):
 
             # Remove channel data
             del self.count_data[guild_id]['channels'][channel_id]
-            self.save_data()
+            asyncio.ensure_future(self._save_guild(guild_id))
 
         await ctx.send(f"Ended and deleted the counting match in {channel.name}.", delete_after=10)
 
@@ -381,7 +363,7 @@ class CountingCog(commands.Cog):
             if mode == 'random':
                 rand_range = channel_data.get('random_range', [1, 3])
                 channel_data['next_expected'] = start + random.randint(*rand_range)
-            self.save_data()
+            asyncio.ensure_future(self._save_guild(guild_id))
 
         await ctx.send(f"The count has been reset in {channel.mention}.", delete_after=10)
 
@@ -404,7 +386,7 @@ class CountingCog(commands.Cog):
 
             channel_data = self.count_data[guild_id]['channels'][channel_id]
             channel_data['taking_turns'] = not channel_data.get('taking_turns', False)
-            self.save_data()
+            asyncio.ensure_future(self._save_guild(guild_id))
 
             status = "enabled" if channel_data['taking_turns'] else "disabled"
         await ctx.send(f"'Taking turns' mode has been {status} in {channel.mention}.", delete_after=10)
@@ -515,7 +497,7 @@ class CountingCog(commands.Cog):
             try:
                 skip_numbers = [int(num.strip()) for num in numbers.split(',')]
                 channel_data['skip_numbers'] = skip_numbers
-                self.save_data()
+                asyncio.ensure_future(self._save_guild(guild_id))
                 await ctx.send(f"Skip numbers updated to: {skip_numbers}", delete_after=10)
             except ValueError:
                 await ctx.send("Invalid input. Please provide a comma-separated list of integers.", delete_after=10)
@@ -541,7 +523,7 @@ class CountingCog(commands.Cog):
 
             channel_data = self.count_data[guild_id]['channels'][channel_id]
             channel_data['reset_on_wrong_count'] = not channel_data.get('reset_on_wrong_count', False)
-            self.save_data()
+            asyncio.ensure_future(self._save_guild(guild_id))
 
             status = "enabled" if channel_data['reset_on_wrong_count'] else "disabled"
         await ctx.send(f"'Reset on wrong count' has been {status} in {channel.mention}.", delete_after=10)
@@ -619,7 +601,7 @@ class CountingCog(commands.Cog):
                     channel_data['last_user'] = None
                     channel_data['leaderboard'] = {}
                     channel_data['last_count_time'] = datetime.utcnow().timestamp()
-                    self.save_data()
+                    asyncio.ensure_future(self._save_guild(guild_id))
 
                     await message.channel.send(
                         f"{message.author.mention}, incorrect count! The count has been reset.",
@@ -683,7 +665,7 @@ class CountingCog(commands.Cog):
             leaderboard = channel_data.get('leaderboard', {})
             leaderboard[user_id] = leaderboard.get(user_id, 0) + 1
             channel_data['leaderboard'] = leaderboard
-            self.save_data()
+            asyncio.ensure_future(self._save_guild(guild_id))
 
         # Add reaction to acknowledge correct count
         try:

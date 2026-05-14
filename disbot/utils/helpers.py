@@ -3,6 +3,20 @@ import discord
 from discord.ext import commands
 
 
+async def post_log_embed(bot: commands.Bot, guild_id: int, embed: discord.Embed) -> None:
+    """Post an embed to the guild's configured economy_log_channel (if set)."""
+    from utils import db
+    cid = await db.get_setting(guild_id, "economy_log_channel", "")
+    if not cid:
+        return
+    ch = bot.get_channel(int(cid))
+    if ch:
+        try:
+            await ch.send(embed=embed)
+        except Exception:
+            pass
+
+
 def normalize_name(name: str) -> str:
     """Normalize a name to lowercase with no spaces for consistent role matching."""
     return name.lower().replace(" ", "")
