@@ -49,7 +49,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         }
         self.entry_fee = 0
         self.paid_players: set[int] = set()   # players who paid the entry fee
-        self.clean_up_task = None  # started in cog_load after bot is ready
 
     def create_move_aliases(self):
         """Creates a dictionary of move aliases for all game modes."""

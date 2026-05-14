@@ -5,10 +5,6 @@ import logging
 import asyncio
 import json
 import os
-import sys
-
-# Allow importing config from the parent disbot package
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config as _config
 
 class Cleanup(commands.Cog):
