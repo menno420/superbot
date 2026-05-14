@@ -1,8 +1,10 @@
 from __future__ import annotations
-import asyncpg
+
 import json
-import os
 import logging
+import os
+
+import asyncpg
 
 logger = logging.getLogger("bot")
 

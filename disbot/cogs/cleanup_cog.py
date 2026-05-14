@@ -1,9 +1,10 @@
+import asyncio
+import logging
 import re
+
+import config as _config
 import discord
 from discord.ext import commands
-import logging
-import asyncio
-import config as _config
 from utils import db
 
 

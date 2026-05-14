@@ -1,9 +1,9 @@
-import discord
-from discord.ext import commands
-import random
 import json
 import os
+import random
 
+import discord
+from discord.ext import commands
 from utils import db
 
 RECIPES_FILE = os.path.join(

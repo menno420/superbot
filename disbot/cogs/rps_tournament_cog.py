@@ -1,15 +1,17 @@
 from __future__ import annotations
-import discord
-from discord.ext import commands
+
 import asyncio
-import random
 import logging
 import os
+import random
+
+import discord
+from discord.ext import commands
 from utils import db as global_db
 from utils.channels import (
+    cleanup_category,
     create_private_channel,
     get_or_create_category,
-    cleanup_category,
 )
 from utils.tournaments import TournamentRegistration
 

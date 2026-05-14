@@ -1,6 +1,7 @@
+import random
+
 import discord
 from discord.ext import commands
-import random
 
 FACTS = [
     "Honey never spoils — archaeologists found 3000-year-old honey in Egyptian tombs.",

@@ -1,8 +1,10 @@
 from __future__ import annotations
+
+import logging
+
 import discord
 from discord.ext import commands
-import logging
-from utils.channels import safe_channel_name, get_or_create_category
+from utils.channels import get_or_create_category, safe_channel_name
 from utils.helpers import CogMenuView
 
 logger = logging.getLogger("bot")

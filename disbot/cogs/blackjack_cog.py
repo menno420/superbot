@@ -1,11 +1,13 @@
 from __future__ import annotations
+
 import asyncio
+import logging
 import random
+
 import discord
 from discord.ext import commands
-import logging
 from utils import db
-from utils.channels import create_private_channel, cleanup_category
+from utils.channels import cleanup_category, create_private_channel
 from utils.tournaments import TournamentRegistration
 
 logger = logging.getLogger("bot")

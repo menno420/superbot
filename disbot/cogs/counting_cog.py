@@ -1,15 +1,16 @@
+import ast
+import asyncio
+import difflib
+import logging
+import math
+import operator as op
+import random
+import re
+from datetime import datetime
+
 import discord
 from discord.ext import commands
-import logging
-import asyncio
 from utils import db
-from datetime import datetime
-import re
-import random
-import ast
-import operator as op
-import math
-import difflib
 
 
 def _word_to_num(text: str) -> int | None:

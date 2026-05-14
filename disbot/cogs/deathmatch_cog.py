@@ -1,11 +1,11 @@
 # cogs/deathmatch_cog.py
 
-import discord
-from discord.ext import commands
-from discord.ext.commands import cooldown, BucketType
 import asyncio
 import random
 
+import discord
+from discord.ext import commands
+from discord.ext.commands import BucketType, cooldown
 from utils import db
 
 

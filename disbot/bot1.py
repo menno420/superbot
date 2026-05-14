@@ -1,15 +1,17 @@
 from __future__ import annotations
-import discord
+
 import asyncio
 import atexit
+import datetime
+import json
 import logging
 import os
 import signal
-import json
 import traceback
-import datetime
+
 import aiohttp
 import config
+import discord
 from discord.ext import commands
 from utils import db
 from utils.synonyms import find_command as _find_synonym

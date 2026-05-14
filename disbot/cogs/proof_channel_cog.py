@@ -1,8 +1,10 @@
 from __future__ import annotations
+
+import asyncio
+import logging
+
 import discord
 from discord.ext import commands
-import logging
-import asyncio
 
 logger = logging.getLogger("discord_bot.prize_cog")
 

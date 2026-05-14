@@ -1,5 +1,6 @@
 # config.py - Clean and optimized version
 import os
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env

@@ -1,9 +1,11 @@
 from __future__ import annotations
-from discord.ext import commands
-import discord
+
 import asyncio
-from utils.helpers import CogMenuView
+
+import discord
+from discord.ext import commands
 from utils import embeds as em
+from utils.helpers import CogMenuView
 
 _UTILITY_MENU_COMMANDS: list[tuple[str, str, str]] = [
     ("utilitymenu", "!utilitymenu", "Show this utility command menu."),
