@@ -317,6 +317,23 @@ class EconomyCog(commands.Cog):
             embed.description = "Empty — visit `!shop` to buy items!"
         await ctx.send(embed=embed)
 
+    # ------------------------------------------------------------------ !balance
+
+    @commands.command(name="balance", aliases=["bal", "wallet"])
+    async def balance(self, ctx: commands.Context, member: discord.Member = None):
+        """Show your (or another user's) current coin balance."""
+        target = member or ctx.author
+        coins = await db.get_coins(target.id, ctx.guild.id)
+        xp_row = await db.get_xp(target.id, ctx.guild.id)
+        embed = discord.Embed(
+            title=f"💰 {target.display_name}'s Wallet",
+            color=discord.Color.gold(),
+        )
+        embed.set_thumbnail(url=target.display_avatar.url)
+        embed.add_field(name="🪙 Coins", value=f"**{coins:,}**", inline=True)
+        embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
+        await ctx.send(embed=embed)
+
     # ------------------------------------------------------------------ !setlogchannel
 
     @commands.command(name="setlogchannel")
@@ -386,6 +403,8 @@ class _WorkView(discord.ui.View):
             return False
         return True
 
+    _run_checks = interaction_check
+
     async def on_timeout(self):
         for item in self.children:
             item.disabled = True
@@ -416,7 +435,7 @@ class _JobSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         job_name = self.values[0]
-        uid, gid = interaction.user.id, interaction.guild.id
+        uid, gid = self._ctx.author.id, self._ctx.guild.id
         now      = int(time.time())
 
         # Re-check cooldown (guard against double-click)
@@ -510,6 +529,8 @@ class _ShopView(discord.ui.View):
             return False
         return True
 
+    _run_checks = interaction_check
+
     async def on_timeout(self):
         for item in self.children:
             item.disabled = True
@@ -531,7 +552,7 @@ class _ShopSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         item_name = self.values[0]
-        uid, gid  = interaction.user.id, interaction.guild.id
+        uid, gid  = self._ctx.author.id, self._ctx.guild.id
         data      = SHOP_ITEMS[item_name]
 
         if await db.has_item(uid, gid, item_name):

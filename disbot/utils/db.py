@@ -5,23 +5,38 @@ import logging
 
 logger = logging.getLogger("bot")
 
-_DEFAULT_DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "data", "bot_data.db",
-)
-DB_PATH = os.environ.get("BOT_DB_PATH", _DEFAULT_DB_PATH)
+def _resolve_db_path() -> str:
+    if env := os.environ.get("BOT_DB_PATH"):
+        return env
+    # Auto-use /data/ if it exists — Railway/Render persistent volume standard mount
+    if os.path.isdir("/data"):
+        return "/data/bot_data.db"
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "data", "bot_data.db",
+    )
+
+
+DB_PATH = _resolve_db_path()
 
 _db: aiosqlite.Connection | None = None
 
 
 async def init() -> None:
     global _db
+    is_new = not os.path.exists(DB_PATH)
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     _db = await aiosqlite.connect(DB_PATH)
     _db.row_factory = aiosqlite.Row
     await _db.execute("PRAGMA journal_mode=WAL")
     await _create_tables()
-    logger.info("Database initialised at %s", DB_PATH)
+    if is_new:
+        logger.warning(
+            "Fresh database created at %s — set BOT_DB_PATH to a persistent volume "
+            "path so data survives deployments.", DB_PATH
+        )
+    else:
+        logger.info("Database opened at %s", DB_PATH)
 
 
 async def close() -> None:
