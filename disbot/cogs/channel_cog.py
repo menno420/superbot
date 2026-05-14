@@ -49,8 +49,8 @@ class ChannelCog(commands.Cog):
             name = (target.name if isinstance(target, discord.Role)
                     else target.display_name if isinstance(target, discord.Member)
                     else "Unknown")
-            allow = ", ".join([p.replace("_", " ").title() for p, v in perms if v])
-            deny  = ", ".join([p.replace("_", " ").title() for p, v in perms if not v])
+            allow = ", ".join([p.replace("_", " ").title() for p, v in iter(perms) if v is True])
+            deny  = ", ".join([p.replace("_", " ").title() for p, v in iter(perms) if v is False])
             formatted += f"**{name}**\nAllowed: {allow or 'None'}\nDenied: {deny or 'None'}\n\n"
         return formatted or "No overwrites."
 
@@ -380,13 +380,26 @@ class _ChannelCreatorView(discord.ui.View):
         safe  = await safe_channel_name(guild, self.chosen_name)
         category = None
         if self.chosen_cat:
-            category = await get_or_create_category(guild, self.chosen_cat)
+            try:
+                category = await get_or_create_category(guild, self.chosen_cat)
+            except discord.Forbidden:
+                await interaction.response.send_message(
+                    "❌ I don't have permission to create categories.", ephemeral=True)
+                return
+            except discord.HTTPException as exc:
+                await interaction.response.send_message(
+                    f"❌ Failed to create category: {exc}", ephemeral=True)
+                return
 
         try:
             ch = await guild.create_text_channel(safe, category=category)
         except discord.Forbidden:
             await interaction.response.send_message(
                 "❌ I don't have permission to create channels.", ephemeral=True)
+            return
+        except discord.HTTPException as exc:
+            await interaction.response.send_message(
+                f"❌ Failed to create channel: {exc}", ephemeral=True)
             return
 
         for item in self.children:

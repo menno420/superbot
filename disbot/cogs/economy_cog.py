@@ -143,6 +143,13 @@ class EconomyCog(commands.Cog):
             ch = guild.get_channel(int(cid))
             if ch:
                 return  # channel still exists, nothing to do
+
+        # on_ready can fire on every reconnect — check by name before creating
+        existing = discord.utils.get(guild.text_channels, name="economy-log")
+        if existing:
+            await db.set_setting(guild.id, "economy_log_channel", str(existing.id))
+            return
+
         try:
             cat = (discord.utils.get(guild.categories, name="Bot")
                    or discord.utils.get(guild.categories, name="General"))
