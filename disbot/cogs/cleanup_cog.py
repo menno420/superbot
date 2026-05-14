@@ -5,6 +5,11 @@ import logging
 import asyncio
 import json
 import os
+import sys
+
+# Allow importing config from the parent disbot package
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config as _config
 
 class Cleanup(commands.Cog):
     def __init__(self, bot):
@@ -24,7 +29,7 @@ class Cleanup(commands.Cog):
             re.IGNORECASE
         )
 
-        self.whitelisted_channels = [1348795460948590622, 1349693768365903912, 1349851456509055047, 1403818013408624642]
+        self.whitelisted_channels = _config.CLEANUP_WHITELIST_CHANNELS
 
     def load_prohibited_words(self):
         try:

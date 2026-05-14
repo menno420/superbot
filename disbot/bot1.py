@@ -1,8 +1,10 @@
 from __future__ import annotations
 import discord
 import asyncio
+import atexit
 import logging
 import os
+import signal
 import json
 import datetime
 import urllib.request
@@ -94,6 +96,17 @@ def check_existing_instance():
 
 check_existing_instance()
 
+
+def _remove_pid() -> None:
+    try:
+        os.remove(PID_FILE)
+    except FileNotFoundError:
+        pass
+
+
+atexit.register(_remove_pid)
+signal.signal(signal.SIGTERM, lambda *_: _remove_pid())
+
 # ==========================
 # Bot Configuration
 # ==========================
@@ -101,8 +114,7 @@ intents = discord.Intents.all()
 intents.message_content = True  # Ensure message content intent is enabled
 bot = commands.Bot(command_prefix=config.PREFIX, intents=intents, help_command=None)  # Disable default help command
 
-# Define allowed command channels (Only these two)
-ALLOWED_CHANNELS = {1348795460948590622, 1403818013408624642}
+ALLOWED_CHANNELS = config.ALLOWED_CHANNELS
 
 # ==========================
 # Load Aliases from localization.json
