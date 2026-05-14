@@ -432,7 +432,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             await ctx.send(f"An error occurred while creating the match channel: {e}")
             return None
 
-    @commands.command(name="rpslb", aliases=["rpslb"])
+    @commands.command(name="rpslb")
     async def rps_leaderboard(self, ctx):
         """Displays the current leaderboard."""
         try:
