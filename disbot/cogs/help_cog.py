@@ -39,11 +39,12 @@ def build_cog_embed(cog: commands.Cog, prefix: str) -> discord.Embed:
     cmds = _get_visible_commands(cog)
     for cmd in cmds:
         aliases = f"  *(aliases: {', '.join(cmd.aliases)})*" if cmd.aliases else ""
-        usage = f"`{prefix}{cmd.name} {cmd.signature}`.strip()" if cmd.signature else f"`{prefix}{cmd.name}`"
+        sig = f" {cmd.signature}".rstrip() if cmd.signature else ""
+        usage = f"`{prefix}{cmd.name}{sig}`"
         desc = cmd.help or "No description."
         embed.add_field(
             name=f"`{prefix}{cmd.name}`{aliases}",
-            value=f"{desc}\nUsage: `{prefix}{cmd.name}{(' ' + cmd.signature) if cmd.signature else ''}`",
+            value=f"{desc}\nUsage: {usage}",
             inline=False,
         )
     if not embed.fields:

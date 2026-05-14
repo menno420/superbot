@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 import json
 import os
 import logging
@@ -25,10 +25,9 @@ class CountingCog(commands.Cog):
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "data", "count_data.json"
         )
-        self.lock = asyncio.Lock()  # To ensure thread-safe operations on count_data
-        self.count_data = {}  # Initialize count_data
+        self.lock = asyncio.Lock()
+        self.count_data = {}
         self.load_data()
-        self.status_announcements.start()
 
         # Precompile regex for performance
         self.number_pattern = re.compile(r'\d+')
@@ -286,21 +285,29 @@ class CountingCog(commands.Cog):
                 return
 
             # Set up mode-specific configurations
+            starting_count = 0 if mode in [
+                'normal', 'random', 'skip', 'multiples', 'prime',
+                'fibonacci', 'squares', 'cubes', 'factorials', 'custom',
+            ] else 1000
             channel_config = {
-                'current_count': 0 if mode in ['normal', 'random', 'skip', 'multiples', 'prime',
-                                               'fibonacci', 'squares', 'cubes', 'factorials', 'custom'] else 1000,  # Starting point for reverse
+                'current_count': starting_count,
                 'last_user': None,
                 'taking_turns': False,
                 'leaderboard': {},
                 'mode': mode,
-                'step': 1,  # Default step
-                'skip_numbers': [5, 10],  # Default skip numbers for skip mode
-                'random_range': [1, 3],  # Default range for random mode
-                'multiple': multiple if mode == 'multiples' else None,  # Set multiple for multiples mode
+                'step': 1,
+                'skip_numbers': [5, 10],
+                'random_range': [1, 3],
+                'multiple': multiple if mode == 'multiples' else None,
                 'custom_sequence': custom_sequence if mode == 'custom' else None,
                 'sequence_index': 0,
                 'last_count_time': datetime.utcnow().timestamp(),
-                'reset_on_wrong_count': False,  # New setting added
+                'reset_on_wrong_count': False,
+                # For random mode: pre-roll the first expected value
+                'next_expected': (
+                    starting_count + random.randint(1, 3)
+                    if mode == 'random' else None
+                ),
             }
 
             if mode == 'prime':
@@ -362,12 +369,18 @@ class CountingCog(commands.Cog):
 
             channel_data = self.count_data[guild_id]['channels'][channel_id]
             mode = channel_data.get('mode', 'normal')
-            channel_data['current_count'] = 0 if mode in ['normal', 'random', 'skip', 'multiples', 'prime',
-                                                          'fibonacci', 'squares', 'cubes', 'factorials', 'custom'] else 1000
+            start = 0 if mode in [
+                'normal', 'random', 'skip', 'multiples', 'prime',
+                'fibonacci', 'squares', 'cubes', 'factorials', 'custom',
+            ] else 1000
+            channel_data['current_count'] = start
             channel_data['sequence_index'] = 0
             channel_data['last_user'] = None
             channel_data['leaderboard'] = {}
             channel_data['last_count_time'] = datetime.utcnow().timestamp()
+            if mode == 'random':
+                rand_range = channel_data.get('random_range', [1, 3])
+                channel_data['next_expected'] = start + random.randint(*rand_range)
             self.save_data()
 
         await ctx.send(f"The count has been reset in {channel.mention}.", delete_after=10)
@@ -428,7 +441,7 @@ class CountingCog(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name='leaderboard', aliases=['lb'])
+    @commands.command(name='countlb', aliases=['counting_leaderboard'])
     async def leaderboard(self, ctx, channel: discord.TextChannel = None):
         """
         Displays the leaderboard for the counting game in the specified channel or current channel.
@@ -659,6 +672,10 @@ class CountingCog(commands.Cog):
             channel_data['current_count'] = parsed_count
             channel_data['last_user'] = user_id
             channel_data['last_count_time'] = datetime.utcnow().timestamp()
+            # Roll next expected value for random mode
+            if mode == 'random':
+                rand_range = channel_data.get('random_range', [1, 3])
+                channel_data['next_expected'] = parsed_count + random.randint(*rand_range)
             # Update sequence index for custom sequences
             if mode in ['fibonacci', 'squares', 'cubes', 'factorials', 'custom']:
                 channel_data['sequence_index'] += 1
@@ -917,8 +934,8 @@ class CountingCog(commands.Cog):
             while expected in channel_data.get('skip_numbers', []):
                 expected += channel_data.get('step', 1)
         elif mode == 'random':
-            rand_step = random.randint(*channel_data.get('random_range', [1, 3]))
-            expected = current_count + rand_step
+            # Use the pre-rolled value so it doesn't change between calls
+            expected = channel_data.get('next_expected', current_count + 1)
         elif mode == 'fibonacci':
             a, b = 0, 1
             for _ in range(channel_data.get('sequence_index', 0) + 1):
@@ -958,40 +975,12 @@ class CountingCog(commands.Cog):
         return True
 
     # --------------------------------------------
-    # Tasks
-    # --------------------------------------------
-
-    @tasks.loop(minutes=5)
-    async def status_announcements(self):
-        """Send periodic status updates to counting channels."""
-        async with self.lock:
-            for guild_id, guild_data in self.count_data.items():
-                guild = self.bot.get_guild(int(guild_id))
-                if not guild:
-                    continue
-                for channel_id, channel_data in guild_data.get('channels', {}).items():
-                    channel = guild.get_channel(int(channel_id))
-                    if channel:
-                        current_count = channel_data.get('current_count', 0)
-                        mode = channel_data.get('mode', 'normal').capitalize()
-                        try:
-                            # await channel.send(f"Current count: {current_count} | Mode: {mode}", delete_after=10
-                            pass
-                        except discord.Forbidden:
-                            self.logger.error(f"Missing permissions to send messages in channel '{channel.name}'.")
-                            continue
-
-    @status_announcements.before_loop
-    async def before_status_announcements(self):
-        await self.bot.wait_until_ready()
-
-    # --------------------------------------------
     # Cog Unload
     # --------------------------------------------
 
     def cog_unload(self):
         """Handles cleanup when the cog is unloaded."""
-        self.status_announcements.cancel()
+        pass
 
 async def setup(bot):
     await bot.add_cog(CountingCog(bot))

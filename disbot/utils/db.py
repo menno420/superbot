@@ -5,10 +5,11 @@ import logging
 
 logger = logging.getLogger("bot")
 
-DB_PATH = os.path.join(
+_DEFAULT_DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "data", "bot_data.db"
+    "data", "bot_data.db",
 )
+DB_PATH = os.environ.get("BOT_DB_PATH", _DEFAULT_DB_PATH)
 
 _db: aiosqlite.Connection | None = None
 
@@ -104,6 +105,29 @@ async def _create_tables() -> None:
             timestamp TEXT NOT NULL,
             level     TEXT NOT NULL,
             message   TEXT NOT NULL
+        )""",
+        """CREATE TABLE IF NOT EXISTS reaction_roles (
+            guild_id    INTEGER NOT NULL,
+            message_id  INTEGER NOT NULL,
+            emoji       TEXT    NOT NULL,
+            role_id     INTEGER NOT NULL,
+            PRIMARY KEY (guild_id, message_id, emoji)
+        )""",
+        """CREATE TABLE IF NOT EXISTS rps_players (
+            user_id INTEGER PRIMARY KEY,
+            name    TEXT    NOT NULL,
+            wins    INTEGER NOT NULL DEFAULT 0,
+            losses  INTEGER NOT NULL DEFAULT 0,
+            ties    INTEGER NOT NULL DEFAULT 0
+        )""",
+        """CREATE TABLE IF NOT EXISTS rps_matches (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            player1_id INTEGER NOT NULL,
+            player2_id INTEGER NOT NULL,
+            winner_id  INTEGER,
+            mode       TEXT    NOT NULL DEFAULT 'classic',
+            best_of    INTEGER NOT NULL DEFAULT 3,
+            timestamp  TEXT    NOT NULL
         )""",
     ]
     for stmt in statements:
@@ -385,3 +409,67 @@ async def has_item(user_id: int, guild_id: int, item_name: str) -> bool:
         (user_id, guild_id, item_name),
     )
     return bool(row and row["quantity"] > 0)
+
+
+# ---------------------------------------------------------------------------
+# Reaction role helpers
+# ---------------------------------------------------------------------------
+
+async def add_reaction_role(
+    guild_id: int, message_id: int, emoji: str, role_id: int
+) -> None:
+    await execute(
+        """INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT(guild_id, message_id, emoji) DO UPDATE SET role_id=excluded.role_id""",
+        (guild_id, message_id, emoji, role_id),
+    )
+
+
+async def remove_reaction_role(
+    guild_id: int, message_id: int, emoji: str
+) -> None:
+    await execute(
+        "DELETE FROM reaction_roles WHERE guild_id=? AND message_id=? AND emoji=?",
+        (guild_id, message_id, emoji),
+    )
+
+
+async def get_reaction_role(
+    guild_id: int, message_id: int, emoji: str
+) -> int | None:
+    row = await fetchone(
+        "SELECT role_id FROM reaction_roles WHERE guild_id=? AND message_id=? AND emoji=?",
+        (guild_id, message_id, emoji),
+    )
+    return row["role_id"] if row else None
+
+
+async def get_all_reaction_roles(guild_id: int) -> list[dict]:
+    return await fetchall(
+        "SELECT message_id, emoji, role_id FROM reaction_roles WHERE guild_id=?",
+        (guild_id,),
+    )
+
+
+# ---------------------------------------------------------------------------
+# RPS stats helpers
+# ---------------------------------------------------------------------------
+
+async def rps_ensure_player(user_id: int, name: str) -> None:
+    await execute(
+        "INSERT OR IGNORE INTO rps_players (user_id, name) VALUES (?, ?)",
+        (user_id, name),
+    )
+
+
+async def rps_update_stat(user_id: int, result: str) -> None:
+    col = {"win": "wins", "loss": "losses", "tie": "ties"}.get(result)
+    if col:
+        await execute(f"UPDATE rps_players SET {col}={col}+1 WHERE user_id=?", (user_id,))
+
+
+async def rps_get_leaderboard() -> list[dict]:
+    return await fetchall(
+        "SELECT name, wins, losses, ties FROM rps_players ORDER BY wins DESC LIMIT 15"
+    )

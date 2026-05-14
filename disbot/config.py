@@ -47,9 +47,26 @@ WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 # ==========================
-# Print Configuration (Optional Debugging)
+# Channel Restrictions
 # ==========================
-print(f"Bot is starting with prefix: '{PREFIX}'")
-print(f"Loaded Cogs: {INITIAL_EXTENSIONS}")
-print(f"Logging level set to: {LOG_LEVEL}")
-print(f"Token type: {type(DISCORD_BOT_TOKEN)}, Length: {len(DISCORD_BOT_TOKEN)}")
+def _parse_channel_ids(env_key: str, fallback: list[int]) -> set[int]:
+    raw = os.getenv(env_key, "")
+    if raw.strip():
+        try:
+            return {int(c.strip()) for c in raw.split(",") if c.strip()}
+        except ValueError:
+            pass
+    return set(fallback)
+
+
+# Channels where bot commands are allowed
+ALLOWED_CHANNELS: set[int] = _parse_channel_ids(
+    "BOT_ALLOWED_CHANNELS",
+    [1348795460948590622, 1403818013408624642],
+)
+
+# Channels exempt from the cleanup cog's command-deletion rule
+CLEANUP_WHITELIST_CHANNELS: set[int] = _parse_channel_ids(
+    "BOT_CLEANUP_WHITELIST",
+    [1348795460948590622, 1349693768365903912, 1349851456509055047, 1403818013408624642],
+)

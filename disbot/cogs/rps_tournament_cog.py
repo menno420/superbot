@@ -1,22 +1,16 @@
 from __future__ import annotations
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 import asyncio
 import random
 import logging
 import os
-import sqlite3
-from datetime import datetime, timedelta
 from utils import db as global_db
 from utils.channels import create_private_channel, get_or_create_category, cleanup_category
 from utils.tournaments import TournamentRegistration
 
 logger = logging.getLogger("bot")
 
-_RPS_DB = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "data", "rps_tournament.db"
-)
 _FREE_WIN = 30  # coins for free-play win
 
 class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
@@ -55,35 +49,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         }
         self.entry_fee = 0
         self.paid_players: set[int] = set()   # players who paid the entry fee
-        os.makedirs(os.path.dirname(_RPS_DB), exist_ok=True)
-        self.db_connection = sqlite3.connect(_RPS_DB)
-        self.db_cursor = self.db_connection.cursor()
-        self.create_tables()
-        self.clean_up_task = None  # started in cog_load after bot is ready
-
-    def create_tables(self):
-        """Creates necessary tables in the database."""
-        self.db_cursor.execute('''
-            CREATE TABLE IF NOT EXISTS players (
-                id INTEGER PRIMARY KEY,
-                name TEXT,
-                wins INTEGER DEFAULT 0,
-                losses INTEGER DEFAULT 0,
-                ties INTEGER DEFAULT 0
-            )
-        ''')
-        self.db_cursor.execute('''
-            CREATE TABLE IF NOT EXISTS matches (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                player1_id INTEGER,
-                player2_id INTEGER,
-                winner_id INTEGER,
-                mode TEXT,
-                best_of INTEGER,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        self.db_connection.commit()
 
     def create_move_aliases(self):
         """Creates a dictionary of move aliases for all game modes."""
@@ -187,16 +152,12 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             logger.exception(f"Error ending registration: {e}")
             await ctx.send("An error occurred while ending registration.")
 
-    def add_player_to_db(self, user):
-        """Adds a player to the database."""
+    async def add_player_to_db(self, user) -> None:
+        """Ensures the player exists in the async RPS stats table."""
         try:
-            self.db_cursor.execute(
-                "INSERT OR IGNORE INTO players (id, name) VALUES (?, ?)",
-                (user.id, user.display_name)
-            )
-            self.db_connection.commit()
+            await global_db.rps_ensure_player(user.id, user.display_name)
         except Exception as e:
-            logger.exception(f"Error adding player to database: {e}")
+            logger.exception("Error adding RPS player to database: %s", e)
 
     async def try_register_player(self, user, guild_id: int) -> bool:
         """Check entry fee, deduct if needed, register player. Returns success."""
@@ -210,7 +171,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             self.paid_players.add(user.id)
         self.players.append(user)
         self.scores[user] = 0
-        self.add_player_to_db(user)
+        await self.add_player_to_db(user)
         return True
 
     @commands.command(name="rpsstart", aliases=["rpsbegin"])
@@ -434,22 +395,24 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     @commands.command(name="rpslb")
     async def rps_leaderboard(self, ctx):
-        """Displays the current leaderboard."""
+        """Displays the RPS leaderboard."""
         try:
-            self.db_cursor.execute('''
-                SELECT name, wins, losses, ties FROM players ORDER BY wins DESC
-            ''')
-            records = self.db_cursor.fetchall()
+            records = await global_db.rps_get_leaderboard()
             if not records:
                 await ctx.send("No scores to display.")
                 return
-            leaderboard = "\n".join(
-                f"{idx+1}. {name}: {wins} Wins, {losses} Losses, {ties} Ties"
-                for idx, (name, wins, losses, ties) in enumerate(records)
+            lines = [
+                f"{idx+1}. {r['name']}: {r['wins']}W / {r['losses']}L / {r['ties']}T"
+                for idx, r in enumerate(records)
+            ]
+            embed = discord.Embed(
+                title="✂️ RPS Leaderboard",
+                description="\n".join(lines),
+                color=discord.Color.blurple(),
             )
-            await ctx.send(f"**Tournament Leaderboard:**\n{leaderboard}")
+            await ctx.send(embed=embed)
         except Exception as e:
-            logger.exception(f"Error fetching leaderboard: {e}")
+            logger.exception("Error fetching RPS leaderboard: %s", e)
             await ctx.send("An error occurred while fetching the leaderboard.")
 
     @commands.Cog.listener()
@@ -684,24 +647,15 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             match2["move"] = None
             await channel.send("Next round! Please enter your move.")
 
-    def update_player_stats(self, player, result):
-        """Updates player stats in the database."""
+    def update_player_stats(self, player, result: str) -> None:
+        """Schedule an async stats update without blocking the event loop."""
+        asyncio.ensure_future(self._async_update_stat(player.id, result))
+
+    async def _async_update_stat(self, user_id: int, result: str) -> None:
         try:
-            if result == 'win':
-                self.db_cursor.execute('''
-                    UPDATE players SET wins = wins + 1 WHERE id = ?
-                ''', (player.id,))
-            elif result == 'loss':
-                self.db_cursor.execute('''
-                    UPDATE players SET losses = losses + 1 WHERE id = ?
-                ''', (player.id,))
-            elif result == 'tie':
-                self.db_cursor.execute('''
-                    UPDATE players SET ties = ties + 1 WHERE id = ?
-                ''', (player.id,))
-            self.db_connection.commit()
+            await global_db.rps_update_stat(user_id, result)
         except Exception as e:
-            logger.exception(f"Error updating player stats: {e}")
+            logger.exception("Error updating RPS player stats: %s", e)
 
     async def schedule_channel_deletion(self, channel):
         """Schedules the deletion of a match channel after a delay."""
@@ -745,12 +699,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         if category:
             await cleanup_category(category)
 
-    @tasks.loop(minutes=10)
-    async def clean_up_expired_matches(self):
-        """Periodic task to clean up expired matches."""
-        now = datetime.utcnow()
-        cutoff = now - timedelta(minutes=30)
-        # Implement logic to clean up matches older than cutoff
 
     @rps_register.error
     async def rps_register_error(self, ctx, error):
@@ -806,7 +754,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         await ctx.send(f"Setting `{setting}` updated to `{value}`.")
 
     async def cog_load(self):
-        self.clean_up_task = asyncio.ensure_future(self.clean_up_expired_matches())
         asyncio.ensure_future(self._cleanup_orphaned_channels())
 
     async def _cleanup_orphaned_channels(self):
@@ -830,11 +777,8 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     def cog_unload(self):
         """Cleanup when the cog is unloaded."""
-        if self.clean_up_task and not self.clean_up_task.done():
-            self.clean_up_task.cancel()
         if self.reminder_task and not self.reminder_task.done():
             self.reminder_task.cancel()
-        self.db_connection.close()
 
     # ------------------------------------------------------------------
     # Quick-play RPS with coins (button-based, single-player vs bot)

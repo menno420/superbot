@@ -8,7 +8,10 @@ import json
 import os
 import random
 
-LEADERBOARD_FILE = os.path.join("data", "leaderboard.json")
+LEADERBOARD_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "data", "leaderboard.json",
+)
 
 class Deathmatch(commands.Cog):
     def __init__(self, bot):

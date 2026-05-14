@@ -459,12 +459,14 @@ class _TournBlackjackView(discord.ui.View):
     """One view per round per player in a tournament."""
 
     def __init__(self, game: _Game, player_state: _TournPlayerState,
-                 channel: discord.TextChannel, tourn: _BjTournament):
+                 channel: discord.TextChannel, tourn: _BjTournament,
+                 bot: commands.Bot):
         super().__init__(timeout=120)
         self.game         = game
         self.ps           = player_state
         self.channel      = channel
         self.tourn        = tourn
+        self.bot          = bot
         self.message: discord.Message | None = None
 
     async def _finish_round(self, interaction: discord.Interaction,
@@ -492,9 +494,9 @@ class _TournBlackjackView(discord.ui.View):
             await self.channel.send(
                 f"✅ You finished the tournament with **{self.ps.chips}** chips!"
             )
-            await _check_tourn_done(self.tourn, interaction.client)
+            await _check_tourn_done(self.tourn, self.bot)
         else:
-            await _start_tourn_round(self.ps, self.channel, self.tourn)
+            await _start_tourn_round(self.ps, self.channel, self.tourn, self.bot)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.game.user_id:
@@ -515,13 +517,9 @@ class _TournBlackjackView(discord.ui.View):
         if self.ps.chips == 0 or self.ps.rounds_left == 0:
             self.ps.done = True
             self.tourn.results[self.ps.user_id] = self.ps.chips
-            try:
-                bot = self.message.channel.guild._state._get_client()
-                await _check_tourn_done(self.tourn, bot)
-            except Exception:
-                pass
+            await _check_tourn_done(self.tourn, self.bot)
         else:
-            await _start_tourn_round(self.ps, self.channel, self.tourn)
+            await _start_tourn_round(self.ps, self.channel, self.tourn, self.bot)
 
     @discord.ui.button(label="Hit",   style=discord.ButtonStyle.green, emoji="👊")
     async def hit(self, interaction: discord.Interaction, _: discord.ui.Button):
@@ -555,14 +553,14 @@ class _TournBlackjackView(discord.ui.View):
 
 
 async def _start_tourn_round(ps: _TournPlayerState, channel: discord.TextChannel,
-                              tourn: _BjTournament):
+                              tourn: _BjTournament, bot: commands.Bot):
     game = _Game(ps.user_id, ps.guild_id, 0, tournament_chips=ps.chips)
     _active[(ps.user_id, ps.guild_id)] = game
     member = channel.guild.get_member(ps.user_id)
     mention = member.mention if member else f"<@{ps.user_id}>"
 
     embed = _game_embed(game, title=f"🃏 Round {tourn.rounds - ps.rounds_left + 1}/{tourn.rounds}")
-    view  = _TournBlackjackView(game, ps, channel, tourn)
+    view  = _TournBlackjackView(game, ps, channel, tourn, bot)
     msg   = await channel.send(content=mention, embed=embed, view=view)
     view.message = msg
 
@@ -834,7 +832,7 @@ async def _launch_tournament(tourn: _BjTournament, guild: discord.Guild,
                 f"Welcome, {member.mention}! You have **{tourn.rounds}** rounds "
                 f"and start with **{TOURN_START_CHIPS}** chips. Good luck! 🃏"
             )
-            await _start_tourn_round(ps, ch, tourn)
+            await _start_tourn_round(ps, ch, tourn, bot)
         except discord.Forbidden:
             if announce:
                 await announce.send("❌ I don't have permission to create channels.")

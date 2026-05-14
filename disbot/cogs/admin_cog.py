@@ -7,6 +7,7 @@ import re
 import sys
 import ast
 import asyncio
+from utils import db
 
 COGS_DIR = os.path.dirname(os.path.abspath(__file__))
 PID_FILE = os.path.join(os.path.dirname(COGS_DIR), "bot.pid")
@@ -51,38 +52,99 @@ class AdminCog(commands.Cog):
         self.bot = bot
 
     # ------------------------------------------------------------------
-    # Reaction Role System
+    # Reaction Role System  (DB-backed — survives restarts)
     # ------------------------------------------------------------------
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if payload.user_id == self.bot.user.id:
+            return
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
+            return
+        member = guild.get_member(payload.user_id)
+        if not member or member.bot:
+            return
+        role_id = await db.get_reaction_role(
+            payload.guild_id, payload.message_id, str(payload.emoji)
+        )
+        if role_id:
+            role = guild.get_role(role_id)
+            if role:
+                try:
+                    await member.add_roles(role, reason="Reaction role")
+                except discord.Forbidden:
+                    pass
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
+            return
+        member = guild.get_member(payload.user_id)
+        if not member or member.bot:
+            return
+        role_id = await db.get_reaction_role(
+            payload.guild_id, payload.message_id, str(payload.emoji)
+        )
+        if role_id:
+            role = guild.get_role(role_id)
+            if role:
+                try:
+                    await member.remove_roles(role, reason="Reaction role removed")
+                except discord.Forbidden:
+                    pass
+
     @commands.command(name='reactroles', aliases=['reaktionsrollen'])
     @commands.has_permissions(manage_roles=True)
     async def setup_reaction_roles(self, ctx, message_id: int, emoji: str, role: discord.Role):
-        """Setup reaction role assignment. Users get a role when reacting with a specific emoji."""
+        """Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>"""
         try:
             message = await ctx.fetch_message(message_id)
+        except discord.NotFound:
+            await ctx.send("❌ Message not found in this channel.", delete_after=8)
+            return
+        except discord.Forbidden:
+            await ctx.send("❌ I can't read that message.", delete_after=8)
+            return
+
+        await db.add_reaction_role(ctx.guild.id, message_id, emoji, role.id)
+        try:
             await message.add_reaction(emoji)
+        except discord.HTTPException:
+            await ctx.send("⚠️ Role saved, but I couldn't add the reaction (invalid emoji?).")
+            return
+        await ctx.send(
+            f"✅ Reaction role set: reacting with {emoji} on that message will assign **{role.name}**.",
+            delete_after=15,
+        )
 
-            @self.bot.event
-            async def on_raw_reaction_add(payload):
-                if payload.message_id == message_id and str(payload.emoji) == emoji:
-                    guild = self.bot.get_guild(payload.guild_id)
-                    role_to_assign = guild.get_role(role.id)
-                    member = guild.get_member(payload.user_id)
-                    if role_to_assign and member:
-                        await member.add_roles(role_to_assign)
-                        await ctx.send(f'✅ Assigned {role_to_assign.name} to {member.display_name}.')
+    @commands.command(name='removereactrole')
+    @commands.has_permissions(manage_roles=True)
+    async def remove_reaction_role(self, ctx, message_id: int, emoji: str):
+        """Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"""
+        await db.remove_reaction_role(ctx.guild.id, message_id, emoji)
+        await ctx.send(f"✅ Reaction role for {emoji} on that message removed.", delete_after=10)
 
-            @self.bot.event
-            async def on_raw_reaction_remove(payload):
-                if payload.message_id == message_id and str(payload.emoji) == emoji:
-                    guild = self.bot.get_guild(payload.guild_id)
-                    role_to_remove = guild.get_role(role.id)
-                    member = guild.get_member(payload.user_id)
-                    if role_to_remove and member:
-                        await member.remove_roles(role_to_remove)
-                        await ctx.send(f'❌ Removed {role_to_remove.name} from {member.display_name}.')
-        except Exception as e:
-            await ctx.send(f'⚠️ Error setting up reaction roles: {e}')
-            logging.error(f'Error setting up reaction roles: {e}')
+    @commands.command(name='listreactroles')
+    @commands.has_permissions(manage_roles=True)
+    async def list_reaction_roles(self, ctx):
+        """List all active reaction roles in this server."""
+        rows = await db.get_all_reaction_roles(ctx.guild.id)
+        if not rows:
+            await ctx.send("No reaction roles configured.", delete_after=8)
+            return
+        lines = []
+        for r in rows:
+            role = ctx.guild.get_role(r["role_id"])
+            role_str = role.mention if role else f"<deleted role {r['role_id']}>"
+            lines.append(f"Message `{r['message_id']}` · {r['emoji']} → {role_str}")
+        embed = discord.Embed(
+            title="⚙️ Reaction Roles",
+            description="\n".join(lines),
+            color=discord.Color.blurple(),
+        )
+        await ctx.send(embed=embed)
 
     # ------------------------------------------------------------------
     # Server Statistics
