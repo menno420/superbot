@@ -403,6 +403,8 @@ class _WorkView(discord.ui.View):
             return False
         return True
 
+    _run_checks = interaction_check
+
     async def on_timeout(self):
         for item in self.children:
             item.disabled = True
@@ -433,7 +435,7 @@ class _JobSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         job_name = self.values[0]
-        uid, gid = interaction.user.id, interaction.guild.id
+        uid, gid = self._ctx.author.id, self._ctx.guild.id
         now      = int(time.time())
 
         # Re-check cooldown (guard against double-click)
@@ -527,6 +529,8 @@ class _ShopView(discord.ui.View):
             return False
         return True
 
+    _run_checks = interaction_check
+
     async def on_timeout(self):
         for item in self.children:
             item.disabled = True
@@ -548,7 +552,7 @@ class _ShopSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         item_name = self.values[0]
-        uid, gid  = interaction.user.id, interaction.guild.id
+        uid, gid  = self._ctx.author.id, self._ctx.guild.id
         data      = SHOP_ITEMS[item_name]
 
         if await db.has_item(uid, gid, item_name):

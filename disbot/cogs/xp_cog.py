@@ -250,6 +250,8 @@ class XpConfigView(discord.ui.View):
             return False
         return True
 
+    _run_checks = interaction_check
+
     async def _refresh(self, interaction: discord.Interaction):
         await interaction.message.edit(embed=await self.build_embed(), view=self)
 

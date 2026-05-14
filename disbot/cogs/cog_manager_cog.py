@@ -76,6 +76,8 @@ class CogManagerView(discord.ui.View):
             return False
         return True
 
+    _run_checks = interaction_check
+
     async def _refresh(self, interaction: discord.Interaction):
         self.remove_item(self._select)
         self._select = CogSelect(self.bot)
