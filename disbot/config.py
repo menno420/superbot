@@ -50,6 +50,7 @@ INITIAL_EXTENSIONS = [
     "cogs.diagnostic_cog",
     "cogs.chain_cog",
     "cogs.general_cog",
+    "cogs.leaderboard_cog",
 ]
 
 # ==========================

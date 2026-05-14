@@ -109,30 +109,6 @@ class Deathmatch(commands.Cog):
             await ctx.send(f"{opponent.mention} declined the duel.")
             await message.delete()
 
-    @commands.command(name='dm_leaderboard', aliases=['dm_lb', 'board'])
-    async def leaderboard_cmd(self, ctx):
-        """Display the Deathmatch leaderboard."""
-        rows = await db.get_deathmatch_leaderboard()
-        if not rows:
-            await ctx.send("No battles have been recorded yet.")
-            return
-
-        embed = discord.Embed(
-            title="Deathmatch Leaderboard",
-            description="Top players by wins",
-            color=discord.Color.gold(),
-            timestamp=ctx.message.created_at
-        )
-        for idx, row in enumerate(rows, start=1):
-            user = self.bot.get_user(row['user_id'])
-            if user:
-                embed.add_field(
-                    name=f"{idx}. {user.name}",
-                    value=f"Wins: {row['wins']} | Losses: {row['losses']}",
-                    inline=False
-                )
-        await ctx.send(embed=embed)
-
     async def start_duel(self, ctx, duel):
         """Manage the duel flow."""
         embed = discord.Embed(

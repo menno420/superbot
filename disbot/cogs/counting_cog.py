@@ -465,39 +465,6 @@ class CountingCog(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name='countlb', aliases=['counting_leaderboard'])
-    async def leaderboard(self, ctx, channel: discord.TextChannel = None):
-        """
-        Displays the leaderboard for the counting game in the specified channel or current channel.
-        """
-        if not channel:
-            channel = ctx.channel
-
-        guild_id = str(ctx.guild.id)
-        channel_id = str(channel.id)
-
-        async with self.lock:
-            if guild_id not in self.count_data or channel_id not in self.count_data[guild_id].get('channels', {}):
-                await ctx.send("Counting game is not set up for this channel.", delete_after=10)
-                return
-
-            leaderboard = self.count_data[guild_id]['channels'][channel_id].get('leaderboard', {})
-            if not leaderboard:
-                await ctx.send("No counts have been made yet.", delete_after=10)
-                return
-
-            sorted_leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
-            embed = discord.Embed(title="Counting Leaderboard", color=discord.Color.gold())
-
-            for idx, (user_id, count) in enumerate(sorted_leaderboard[:10], start=1):  # Top 10
-                user = ctx.guild.get_member(int(user_id))
-                if user:
-                    embed.add_field(name=f"{idx}. {user.display_name}", value=f"{count} counts", inline=False)
-                else:
-                    embed.add_field(name=f"{idx}. Unknown User", value=f"{count} counts", inline=False)
-
-        await ctx.send(embed=embed)
-
     @commands.command(name='count_rules', aliases=['cr'])
     async def count_rules(self, ctx):
         """

@@ -18,6 +18,47 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 JSON_DIR = os.path.join(DATA_DIR, "json")
 
 
+class _PaginatorView(discord.ui.View):
+    """Simple prev/next paginator for multi-page embeds."""
+
+    def __init__(self, pages: list[discord.Embed], author: discord.Member | discord.User):
+        super().__init__(timeout=120)
+        self.pages = pages
+        self.author = author
+        self.index = 0
+        self.message: discord.Message | None = None
+        self._update_buttons()
+
+    def _update_buttons(self):
+        self.prev_btn.disabled = self.index == 0
+        self.next_btn.disabled = self.index == len(self.pages) - 1
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author.id:
+            await interaction.response.send_message("This paginator isn't yours.", ephemeral=True)
+            return False
+        return True
+
+    async def on_timeout(self):
+        if self.message:
+            try:
+                await self.message.edit(view=None)
+            except Exception:
+                pass
+
+    @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary)
+    async def prev_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.index -= 1
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self.pages[self.index], view=self)
+
+    @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary)
+    async def next_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.index += 1
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self.pages[self.index], view=self)
+
+
 class DiagnosticCog(commands.Cog):
     """Advanced diagnostics and monitoring tools."""
 
@@ -31,26 +72,48 @@ class DiagnosticCog(commands.Cog):
     @commands.command(name="list_commands_detailed", aliases=["listcmds"])
     @commands.has_permissions(administrator=True)
     async def list_commands_detailed(self, ctx):
-        """List all registered commands with details, organised by cog."""
-        embed = discord.Embed(title="Detailed Command List", color=discord.Color.blue())
-        for cog_name, cog_obj in self.bot.cogs.items():
-            cmds = cog_obj.get_commands()
-            if not cmds:
-                continue
-            lines = []
-            for cmd in cmds:
-                cd_text = "No cooldown"
-                if cmd._buckets._cooldown:
-                    cd = cmd._buckets._cooldown
-                    cd_text = f"{cd.rate} use(s) per {cd.per}s"
-                perms = getattr(cmd, "checks", [])
-                aliases = ", ".join(cmd.aliases) if cmd.aliases else "None"
-                lines.append(
-                    f"**`!{cmd.name}`** — {cmd.help or 'No description'}\n"
-                    f"  Cooldown: {cd_text} | Aliases: {aliases}"
+        """List all registered commands with details, paginated by cog."""
+        pages: list[discord.Embed] = []
+        cogs_with_cmds = [
+            (name, cog.get_commands())
+            for name, cog in self.bot.cogs.items()
+            if cog.get_commands()
+        ]
+
+        COGS_PER_PAGE = 4
+        for i in range(0, max(len(cogs_with_cmds), 1), COGS_PER_PAGE):
+            chunk = cogs_with_cmds[i : i + COGS_PER_PAGE]
+            page_num = i // COGS_PER_PAGE + 1
+            total_pages = (len(cogs_with_cmds) + COGS_PER_PAGE - 1) // COGS_PER_PAGE or 1
+            embed = discord.Embed(
+                title=f"Command List — Page {page_num}/{total_pages}",
+                color=discord.Color.blue(),
+            )
+            for cog_name, cmds in chunk:
+                lines = []
+                for cmd in cmds:
+                    cd_text = "No cooldown"
+                    if cmd._buckets._cooldown:
+                        cd = cmd._buckets._cooldown
+                        cd_text = f"{cd.rate}x per {cd.per:.0f}s"
+                    aliases = ", ".join(cmd.aliases) if cmd.aliases else "—"
+                    lines.append(
+                        f"**`!{cmd.name}`** — {(cmd.help or 'No description')[:80]}\n"
+                        f"  CD: {cd_text} | Aliases: {aliases}"
+                    )
+                embed.add_field(
+                    name=cog_name,
+                    value=("\n".join(lines) or "No commands")[:1024],
+                    inline=False,
                 )
-            embed.add_field(name=cog_name, value="\n".join(lines)[:1024], inline=False)
-        await ctx.send(embed=embed)
+            pages.append(embed)
+
+        if not pages:
+            await ctx.send("No cogs with commands found.", delete_after=10)
+            return
+
+        view = _PaginatorView(pages, ctx.author)
+        view.message = await ctx.send(embed=pages[0], view=view)
 
     @commands.command(name="find_command", aliases=["findcmd"])
     @commands.has_permissions(administrator=True)

@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 import logging
 from utils import db
+from utils import embeds as em
 from utils.helpers import CogMenuView, post_log_embed
 from utils.cooldowns import check_cooldown, format_remaining
 
@@ -158,52 +159,12 @@ class XpCog(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="leaderboard", aliases=["lb"])
-    async def leaderboard(self, ctx: commands.Context, stat: str = "xp"):
-        """Show the top 10.  !leaderboard [xp|coins]"""
-        stat = stat.lower()
-        if stat not in ("xp", "coins"):
-            await ctx.send(
-                f"Unknown stat `{stat}`. Choose from: `xp`, `coins`.",
-                delete_after=8,
-            )
-            return
-
-        medals = ["🥇", "🥈", "🥉"]
-        lines = []
-        if stat == "xp":
-            rows = await db.fetchall(
-                "SELECT user_id, xp, level FROM xp WHERE guild_id=$1 ORDER BY xp DESC LIMIT 10",
-                (ctx.guild.id,),
-            )
-            title = "🏆 XP Leaderboard"
-            for i, row in enumerate(rows):
-                m = ctx.guild.get_member(row["user_id"])
-                name = m.display_name if m else f"<@{row['user_id']}>"
-                icon = medals[i] if i < 3 else f"`#{i+1}`"
-                lines.append(f"{icon} **{name}** — Level {row['level']} ({row['xp']} XP)")
-        else:  # coins
-            rows = await db.fetchall(
-                "SELECT user_id, coins FROM xp WHERE guild_id=$1 ORDER BY coins DESC LIMIT 10",
-                (ctx.guild.id,),
-            )
-            title = "🪙 Coin Leaderboard"
-            for i, row in enumerate(rows):
-                m = ctx.guild.get_member(row["user_id"])
-                name = m.display_name if m else f"<@{row['user_id']}>"
-                icon = medals[i] if i < 3 else f"`#{i+1}`"
-                lines.append(f"{icon} **{name}** — {row['coins']} 🪙")
-
-        embed = discord.Embed(title=title, color=discord.Color.gold())
-        embed.description = "\n".join(lines) if lines else "No data yet!"
-        await ctx.send(embed=embed)
-
     @commands.command(name="givexp")
     @commands.has_permissions(administrator=True)
     async def givexp(self, ctx: commands.Context, member: discord.Member, amount: int):
         """Give XP to a user (admin only)."""
         if amount <= 0:
-            await ctx.send("Amount must be positive.", delete_after=5)
+            await ctx.send(embed=em.error("Amount must be positive."), delete_after=5)
             return
         new_xp, new_level, _ = await db.add_xp(member.id, ctx.guild.id, amount, 0)
         await ctx.send(

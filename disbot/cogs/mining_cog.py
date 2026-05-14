@@ -174,20 +174,6 @@ class MiningCog(commands.Cog):
         embed.add_field(name="Unique Items", value=str(unique_items))
         await ctx.send(embed=embed)
 
-    @commands.command(name="minelb", aliases=["miningleaderboard"])
-    async def leaderboard(self, ctx):
-        """Shows top miners by total item count."""
-        rows = await db.get_all_mining_totals()
-        if not rows:
-            return await ctx.send("No data available yet!")
-
-        embed = discord.Embed(title="Top Miners", color=discord.Color.gold())
-
-        for i, (user_id, total) in enumerate(rows, 1):
-            embed.add_field(name=f"{i}. <@{user_id}>", value=f"{total} items", inline=False)
-
-        await ctx.send(embed=embed)
-
     #
     # ====== BUILD / CRAFTING COMMANDS ======
     #

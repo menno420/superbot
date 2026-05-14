@@ -3,6 +3,7 @@ from discord.ext import commands
 import discord
 import asyncio
 from utils.helpers import CogMenuView
+from utils import embeds as em
 
 _UTILITY_MENU_COMMANDS: list[tuple[str, str, str]] = [
     ("utilitymenu", "!utilitymenu",              "Show this utility command menu."),
@@ -31,10 +32,10 @@ class UtilityCog(commands.Cog):
     async def clear(self, ctx, amount: int = 5):
         """Purge messages. Max 100."""
         if amount <= 0:
-            await ctx.send("Please specify a number greater than 0.", delete_after=5)
+            await ctx.send(embed=em.error("Please specify a number greater than 0."), delete_after=5)
             return
         if amount > 100:
-            await ctx.send("You can only clear up to 100 messages at a time.", delete_after=5)
+            await ctx.send(embed=em.error("You can only clear up to 100 messages at a time."), delete_after=5)
             return
         deleted = await ctx.channel.purge(limit=amount)
         msg = await ctx.send(f"Cleared {len(deleted)} messages.")
@@ -97,7 +98,7 @@ class UtilityCog(commands.Cog):
     async def remind(self, ctx, time: int, *, message: str):
         """Set a reminder.  !remind <minutes> <message>"""
         if time <= 0:
-            await ctx.send("Please specify a time greater than 0 minutes.")
+            await ctx.send(embed=em.error("Please specify a time greater than 0 minutes."))
             return
         await ctx.send(f"⏳ Reminder set for **{time}** minute(s): {message}")
         task = asyncio.create_task(self._remind_after(ctx, time * 60, message))
@@ -120,10 +121,10 @@ class UtilityCog(commands.Cog):
     async def poll(self, ctx, question: str, *options):
         """Create a simple reaction poll."""
         if len(options) < 2:
-            await ctx.send("You need at least two options for a poll.")
+            await ctx.send(embed=em.error("You need at least two options for a poll."))
             return
         if len(options) > 10:
-            await ctx.send("You can only provide up to 10 options.")
+            await ctx.send(embed=em.error("You can only provide up to 10 options."))
             return
         embed = discord.Embed(
             title=f"Poll: {question}",

@@ -393,28 +393,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             await ctx.send(f"An error occurred while creating the match channel: {e}")
             return None
 
-    @commands.command(name="rpslb")
-    async def rps_leaderboard(self, ctx):
-        """Displays the RPS leaderboard."""
-        try:
-            records = await global_db.rps_get_leaderboard()
-            if not records:
-                await ctx.send("No scores to display.")
-                return
-            lines = [
-                f"{idx+1}. {r['name']}: {r['wins']}W / {r['losses']}L / {r['ties']}T"
-                for idx, r in enumerate(records)
-            ]
-            embed = discord.Embed(
-                title="✂️ RPS Leaderboard",
-                description="\n".join(lines),
-                color=discord.Color.blurple(),
-            )
-            await ctx.send(embed=embed)
-        except Exception as e:
-            logger.exception("Error fetching RPS leaderboard: %s", e)
-            await ctx.send("An error occurred while fetching the leaderboard.")
-
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         """Registers users as they react to the registration message."""

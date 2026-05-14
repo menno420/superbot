@@ -6,8 +6,6 @@ import logging
 from typing import Optional
 from utils import db
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ChainCog(commands.Cog):
