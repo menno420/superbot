@@ -1,22 +1,33 @@
 from __future__ import annotations
-import time
+
+import logging
 import random
+import time
+
 import discord
 from discord.ext import commands
-import logging
 from utils import db
-from utils.helpers import CogMenuView, post_log_embed
+from utils import embeds as em
 from utils.cooldowns import check_cooldown, format_remaining
+from utils.helpers import CogMenuView, post_log_embed
 
 logger = logging.getLogger("bot")
 
 _XP_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("xpmenu",       "!xpmenu",                    "Show this XP command menu."),
-    ("rank",         "!rank [@user] [xp|coins]",   "Show XP/coin rank card for a user."),
-    ("leaderboard",  "!leaderboard [xp|coins]",    "Show the top-10 XP or coin leaderboard."),
-    ("xpconfig",     "!xpconfig",                  "Configure XP gain range, cooldown, and announce channel (admin)."),
-    ("givexp",       "!givexp <@user> <amount>",   "Give XP to a user (admin only)."),
-    ("resetxp",      "!resetxp <@user>",           "Reset a user's XP to zero (admin only)."),
+    ("xpmenu", "!xpmenu", "Show this XP command menu."),
+    ("rank", "!rank [@user] [xp|coins]", "Show XP/coin rank card for a user."),
+    (
+        "leaderboard",
+        "!leaderboard [xp|coins]",
+        "Show the top-10 XP or coin leaderboard.",
+    ),
+    (
+        "xpconfig",
+        "!xpconfig",
+        "Configure XP gain range, cooldown, and announce channel (admin).",
+    ),
+    ("givexp", "!givexp <@user> <amount>", "Give XP to a user (admin only)."),
+    ("resetxp", "!resetxp <@user>", "Reset a user's XP to zero (admin only)."),
 ]
 
 
@@ -31,6 +42,7 @@ _STAT_TYPES: set[str] = {"xp", "coins", "both"}
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 async def _guild_xp_settings(guild_id: int) -> tuple[int, int, int]:
     """Return (xp_min, xp_max, cooldown_seconds) for this guild."""
@@ -48,6 +60,7 @@ def _progress_bar(current: int, needed: int, width: int = 10) -> str:
 # ---------------------------------------------------------------------------
 # Cog
 # ---------------------------------------------------------------------------
+
 
 class XpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -132,19 +145,26 @@ class XpCog(commands.Cog):
             "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY xp DESC", (ctx.guild.id,)
         )
         all_coins = await db.fetchall(
-            "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY coins DESC", (ctx.guild.id,)
+            "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY coins DESC",
+            (ctx.guild.id,),
         )
-        xp_rank = next((i + 1 for i, r in enumerate(all_xp)    if r["user_id"] == member.id), "?")
-        co_rank = next((i + 1 for i, r in enumerate(all_coins)  if r["user_id"] == member.id), "?")
+        xp_rank = next(
+            (i + 1 for i, r in enumerate(all_xp) if r["user_id"] == member.id), "?"
+        )
+        co_rank = next(
+            (i + 1 for i, r in enumerate(all_coins) if r["user_id"] == member.id), "?"
+        )
 
-        embed = discord.Embed(title=f"📊 {member.display_name}", color=discord.Color.blue())
+        embed = discord.Embed(
+            title=f"📊 {member.display_name}", color=discord.Color.blue()
+        )
         embed.set_thumbnail(url=member.display_avatar.url)
 
         if stat in ("both", "xp"):
             bar = _progress_bar(current, needed)
-            embed.add_field(name="XP Rank",  value=f"#{xp_rank}",    inline=True)
-            embed.add_field(name="Level",    value=str(level),        inline=True)
-            embed.add_field(name="Total XP", value=str(row["xp"]),   inline=True)
+            embed.add_field(name="XP Rank", value=f"#{xp_rank}", inline=True)
+            embed.add_field(name="Level", value=str(level), inline=True)
+            embed.add_field(name="Total XP", value=str(row["xp"]), inline=True)
             embed.add_field(
                 name="Progress",
                 value=f"`{bar}` {current}/{needed} XP",
@@ -153,49 +173,11 @@ class XpCog(commands.Cog):
             embed.add_field(name="Messages", value=str(row["messages"]), inline=True)
 
         if stat in ("both", "coins"):
-            embed.add_field(name="Coin Rank", value=f"#{co_rank}",         inline=True)
-            embed.add_field(name="🪙 Coins",  value=str(row.get("coins", 0)), inline=True)
-
-        await ctx.send(embed=embed)
-
-    @commands.command(name="leaderboard", aliases=["lb"])
-    async def leaderboard(self, ctx: commands.Context, stat: str = "xp"):
-        """Show the top 10.  !leaderboard [xp|coins]"""
-        stat = stat.lower()
-        if stat not in ("xp", "coins"):
-            await ctx.send(
-                f"Unknown stat `{stat}`. Choose from: `xp`, `coins`.",
-                delete_after=8,
+            embed.add_field(name="Coin Rank", value=f"#{co_rank}", inline=True)
+            embed.add_field(
+                name="🪙 Coins", value=str(row.get("coins", 0)), inline=True
             )
-            return
 
-        medals = ["🥇", "🥈", "🥉"]
-        lines = []
-        if stat == "xp":
-            rows = await db.fetchall(
-                "SELECT user_id, xp, level FROM xp WHERE guild_id=$1 ORDER BY xp DESC LIMIT 10",
-                (ctx.guild.id,),
-            )
-            title = "🏆 XP Leaderboard"
-            for i, row in enumerate(rows):
-                m = ctx.guild.get_member(row["user_id"])
-                name = m.display_name if m else f"<@{row['user_id']}>"
-                icon = medals[i] if i < 3 else f"`#{i+1}`"
-                lines.append(f"{icon} **{name}** — Level {row['level']} ({row['xp']} XP)")
-        else:  # coins
-            rows = await db.fetchall(
-                "SELECT user_id, coins FROM xp WHERE guild_id=$1 ORDER BY coins DESC LIMIT 10",
-                (ctx.guild.id,),
-            )
-            title = "🪙 Coin Leaderboard"
-            for i, row in enumerate(rows):
-                m = ctx.guild.get_member(row["user_id"])
-                name = m.display_name if m else f"<@{row['user_id']}>"
-                icon = medals[i] if i < 3 else f"`#{i+1}`"
-                lines.append(f"{icon} **{name}** — {row['coins']} 🪙")
-
-        embed = discord.Embed(title=title, color=discord.Color.gold())
-        embed.description = "\n".join(lines) if lines else "No data yet!"
         await ctx.send(embed=embed)
 
     @commands.command(name="givexp")
@@ -203,7 +185,7 @@ class XpCog(commands.Cog):
     async def givexp(self, ctx: commands.Context, member: discord.Member, amount: int):
         """Give XP to a user (admin only)."""
         if amount <= 0:
-            await ctx.send("Amount must be positive.", delete_after=5)
+            await ctx.send(embed=em.error("Amount must be positive."), delete_after=5)
             return
         new_xp, new_level, _ = await db.add_xp(member.id, ctx.guild.id, amount, 0)
         await ctx.send(
@@ -233,6 +215,7 @@ class XpCog(commands.Cog):
 # XP Config UI
 # ---------------------------------------------------------------------------
 
+
 class XpConfigView(discord.ui.View):
     def __init__(self, ctx: commands.Context):
         super().__init__(timeout=300)
@@ -245,16 +228,20 @@ class XpConfigView(discord.ui.View):
         cid = await db.get_setting(gid, "xp_announce_channel", "")
         channel_str = f"<#{cid}>" if cid else "Same channel as message"
 
-        embed = discord.Embed(title="⚙️ XP Configuration", color=discord.Color.blurple())
-        embed.add_field(name="XP per message", value=f"{xp_min}–{xp_max}",  inline=True)
-        embed.add_field(name="Cooldown",        value=f"{cooldown}s",        inline=True)
-        embed.add_field(name="Level-up channel", value=channel_str,          inline=True)
+        embed = discord.Embed(
+            title="⚙️ XP Configuration", color=discord.Color.blurple()
+        )
+        embed.add_field(name="XP per message", value=f"{xp_min}–{xp_max}", inline=True)
+        embed.add_field(name="Cooldown", value=f"{cooldown}s", inline=True)
+        embed.add_field(name="Level-up channel", value=channel_str, inline=True)
         embed.set_footer(text="Click a button below to change a setting.")
         return embed
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -264,14 +251,20 @@ class XpConfigView(discord.ui.View):
         await interaction.message.edit(embed=await self.build_embed(), view=self)
 
     @discord.ui.button(label="XP Range", style=discord.ButtonStyle.blurple, row=0)
-    async def btn_xp_range(self, interaction: discord.Interaction, _: discord.ui.Button):
+    async def btn_xp_range(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         await interaction.response.send_modal(_XpRangeModal(self))
 
     @discord.ui.button(label="Cooldown", style=discord.ButtonStyle.blurple, row=0)
-    async def btn_cooldown(self, interaction: discord.Interaction, _: discord.ui.Button):
+    async def btn_cooldown(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         await interaction.response.send_modal(_XpCooldownModal(self))
 
-    @discord.ui.button(label="Level-up Channel", style=discord.ButtonStyle.blurple, row=0)
+    @discord.ui.button(
+        label="Level-up Channel", style=discord.ButtonStyle.blurple, row=0
+    )
     async def btn_channel(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_XpChannelModal(self))
 
@@ -284,9 +277,13 @@ class XpConfigView(discord.ui.View):
             pass
 
 
-class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):
-    xp_min = discord.ui.TextInput(label="Min XP per message", placeholder="15", max_length=4)
-    xp_max = discord.ui.TextInput(label="Max XP per message", placeholder="25", max_length=4)
+class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[call-arg]
+    xp_min = discord.ui.TextInput(
+        label="Min XP per message", placeholder="15", max_length=4
+    )
+    xp_max = discord.ui.TextInput(
+        label="Max XP per message", placeholder="25", max_length=4
+    )
 
     def __init__(self, view: XpConfigView):
         super().__init__()
@@ -310,8 +307,10 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):
         await self.view._refresh(interaction)
 
 
-class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):
-    seconds = discord.ui.TextInput(label="Cooldown in seconds", placeholder="60", max_length=5)
+class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: ignore[call-arg]
+    seconds = discord.ui.TextInput(
+        label="Cooldown in seconds", placeholder="60", max_length=5
+    )
 
     def __init__(self, view: XpConfigView):
         super().__init__()
@@ -332,7 +331,7 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):
         await self.view._refresh(interaction)
 
 
-class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"):
+class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"):  # type: ignore[call-arg]
     channel_id = discord.ui.TextInput(
         label="Channel ID (leave blank = same channel)",
         required=False,

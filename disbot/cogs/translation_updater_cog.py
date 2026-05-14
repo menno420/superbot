@@ -1,9 +1,16 @@
 import json
 import os
+
 import discord
 from discord.ext import commands
 
-LOCALIZATION_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "json", "localization.json")
+LOCALIZATION_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "data",
+    "json",
+    "localization.json",
+)
+
 
 class TranslationUpdater(commands.Cog):
     """Cog to update localization.json with all command descriptions and aliases."""
@@ -46,15 +53,24 @@ class TranslationUpdater(commands.Cog):
 
             # Store command descriptions (preserve existing translations)
             if isinstance(localization_data["en"], dict):  # Ensure it's a dictionary
-                localization_data["en"].setdefault(cmd_key, command.help or "No description provided.")
+                localization_data["en"].setdefault(
+                    cmd_key, command.help or "No description provided."
+                )
             if isinstance(localization_data["de"], dict):
-                localization_data["de"].setdefault(cmd_key, localization_data["de"].get(cmd_key, ""))
+                localization_data["de"].setdefault(
+                    cmd_key, localization_data["de"].get(cmd_key, "")
+                )
 
             # Store command aliases (preserve existing aliases)
             if isinstance(localization_data["en"]["aliases"], dict):
-                localization_data["en"]["aliases"].setdefault(command.name, command.aliases)
+                localization_data["en"]["aliases"].setdefault(
+                    command.name, command.aliases
+                )
             if isinstance(localization_data["de"]["aliases"], dict):
-                localization_data["de"]["aliases"].setdefault(command.name, localization_data["de"]["aliases"].get(command.name, []))
+                localization_data["de"]["aliases"].setdefault(
+                    command.name,
+                    localization_data["de"]["aliases"].get(command.name, []),
+                )
 
         return localization_data
 
@@ -63,15 +79,20 @@ class TranslationUpdater(commands.Cog):
         with open(LOCALIZATION_PATH, "w", encoding="utf-8") as file:
             json.dump(updated_data, file, indent=4, ensure_ascii=False)
 
-    @commands.command(name="update_translations", aliases=["update_lang", "update_locales"])
+    @commands.command(
+        name="update_translations", aliases=["update_lang", "update_locales"]
+    )
     async def update_translations(self, ctx):
         """Fetches all commands and updates localization.json with descriptions and aliases."""
         try:
             updated_data = self.extract_commands()
             self.update_localization_file(updated_data)
-            await ctx.send("✅ Localization file updated! Please complete missing translations in localization.json.")
+            await ctx.send(
+                "✅ Localization file updated! Please complete missing translations in localization.json."
+            )
         except Exception as e:
             await ctx.send(f"❌ Error while updating translations: {e}")
+
 
 async def setup(bot):
     await bot.add_cog(TranslationUpdater(bot))

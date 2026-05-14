@@ -1,14 +1,14 @@
-import discord
-from discord.ext import commands
-from discord.ext.commands import has_permissions, MissingPermissions
 import asyncio
 import logging
 from typing import Optional
+
+import discord
+from discord.ext import commands
+from discord.ext.commands import MissingPermissions, has_permissions
 from utils import db
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class ChainCog(commands.Cog):
     """Cog for managing message chains and word limits in specified channels."""
@@ -197,10 +197,14 @@ class ChainCog(commands.Cog):
         channels = await db.get_all_chain_channels(ctx.guild.id)
 
         if not channels:
-            await ctx.send("ℹ️ There are no active chains or word limits in this server.")
+            await ctx.send(
+                "ℹ️ There are no active chains or word limits in this server."
+            )
             return
 
-        embed = discord.Embed(title="Active Chains and Word Limits", color=discord.Color.green())
+        embed = discord.Embed(
+            title="Active Chains and Word Limits", color=discord.Color.green()
+        )
 
         for entry in channels:
             channel = self.bot.get_channel(entry["channel_id"])
@@ -268,7 +272,9 @@ class ChainCog(commands.Cog):
             if allowed_word and word_limit:
                 warning_message += f" Only the word `{allowed_word}` is allowed, and messages must be at most {word_limit} words."
             elif allowed_word:
-                warning_message += f" Only the word `{allowed_word}` is allowed in this channel."
+                warning_message += (
+                    f" Only the word `{allowed_word}` is allowed in this channel."
+                )
             elif word_limit:
                 warning_message += f" Messages must be at most {word_limit} words."
             warning = await message.channel.send(warning_message)
@@ -286,6 +292,7 @@ class ChainCog(commands.Cog):
     async def on_ready(self):
         """Event handler when the cog is ready."""
         logger.info(f"{self.__class__.__name__} is ready and operational.")
+
 
 # Asynchronous setup for discord.py 2.x
 async def setup(bot):

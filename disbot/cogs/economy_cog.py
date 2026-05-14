@@ -1,38 +1,40 @@
 from __future__ import annotations
-import time
+
+import logging
 import random
+import time
+
 import discord
 from discord.ext import commands
-import logging
 from utils import db
-from utils.helpers import CogMenuView, post_log_embed
 from utils.cooldowns import check_cooldown, format_remaining
+from utils.helpers import CogMenuView, post_log_embed
 
 logger = logging.getLogger("bot")
 
 _ECONOMY_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("economymenu", "!economymenu",              "Show this economy command menu."),
-    ("daily",       "!daily",                    "Claim your daily coin reward (streak-based)."),
-    ("work",        "!work",                     "Pick a job and earn coins + XP (1h cooldown)."),
-    ("balance",     "!balance [@user]",          "Check your or another user's coin balance."),
-    ("shop",        "!shop",                     "Browse and buy items needed for higher-tier jobs."),
-    ("inventory",   "!inventory [@user]",        "View your or another user's inventory."),
-    ("joblist",     "!joblist",                  "See all jobs, requirements, and your mastery."),
+    ("economymenu", "!economymenu", "Show this economy command menu."),
+    ("daily", "!daily", "Claim your daily coin reward (streak-based)."),
+    ("work", "!work", "Pick a job and earn coins + XP (1h cooldown)."),
+    ("balance", "!balance [@user]", "Check your or another user's coin balance."),
+    ("shop", "!shop", "Browse and buy items needed for higher-tier jobs."),
+    ("inventory", "!inventory [@user]", "View your or another user's inventory."),
+    ("joblist", "!joblist", "See all jobs, requirements, and your mastery."),
 ]
 
-_WORK_COOLDOWN  = 3600   # 1 hour between work sessions
+_WORK_COOLDOWN = 3600  # 1 hour between work sessions
 _DAILY_COOLDOWN = 86400  # 24 hours between daily claims
 
 # ---------------------------------------------------------------------------
 # Daily reward tiers  (label, rarity_emoji, min, max, base_weight)
 # ---------------------------------------------------------------------------
 _DAILY_TIERS = [
-    ("Common",    "⬜", 500,  999,  45),
-    ("Uncommon",  "🟩", 1000, 1999, 25),
-    ("Rare",      "🟦", 2000, 2999, 15),
-    ("Epic",      "🟪", 3000, 3999,  8),
-    ("Legendary", "🟧", 4000, 4999,  5),
-    ("Mythic",    "🟥", 5000, 5000,  2),
+    ("Common", "⬜", 500, 999, 45),
+    ("Uncommon", "🟩", 1000, 1999, 25),
+    ("Rare", "🟦", 2000, 2999, 15),
+    ("Epic", "🟪", 3000, 3999, 8),
+    ("Legendary", "🟧", 4000, 4999, 5),
+    ("Mythic", "🟥", 5000, 5000, 2),
 ]
 
 
@@ -44,7 +46,7 @@ def _daily_weights(streak: int) -> list[float]:
     shift = luck * 0.25
     take_c = min(weights[0] - 5, shift * 0.65)
     take_u = min(weights[1] - 5, shift * 0.35)
-    taken  = take_c + take_u
+    taken = take_c + take_u
     weights[0] -= take_c
     weights[1] -= take_u
     per = taken / 4
@@ -56,7 +58,7 @@ def _daily_weights(streak: int) -> list[float]:
 def _pick_daily(streak: int) -> tuple[int, str, str]:
     """Return (amount, tier_label, rarity_emoji)."""
     weights = _daily_weights(streak)
-    tier    = random.choices(_DAILY_TIERS, weights=weights, k=1)[0]
+    tier = random.choices(_DAILY_TIERS, weights=weights, k=1)[0]
     label, emoji, low, high, _ = tier
     return random.randint(low, high), label, emoji
 
@@ -66,36 +68,141 @@ def _pick_daily(streak: int) -> tuple[int, str, str]:
 # ---------------------------------------------------------------------------
 JOBS: dict[str, dict] = {
     # Tier 1 — no requirements
-    "janitor":         {"tier": 1, "pay": 50,   "xp": 10,  "level": 0,  "items": [],              "emoji": "🧹",  "desc": "Sweep floors and empty bins."},
-    "cashier":         {"tier": 1, "pay": 75,   "xp": 15,  "level": 0,  "items": [],              "emoji": "🏪",  "desc": "Run the register at a store."},
-    "dishwasher":      {"tier": 1, "pay": 60,   "xp": 12,  "level": 0,  "items": [],              "emoji": "🍽️", "desc": "Wash dishes at a restaurant."},
+    "janitor": {
+        "tier": 1,
+        "pay": 50,
+        "xp": 10,
+        "level": 0,
+        "items": [],
+        "emoji": "🧹",
+        "desc": "Sweep floors and empty bins.",
+    },
+    "cashier": {
+        "tier": 1,
+        "pay": 75,
+        "xp": 15,
+        "level": 0,
+        "items": [],
+        "emoji": "🏪",
+        "desc": "Run the register at a store.",
+    },
+    "dishwasher": {
+        "tier": 1,
+        "pay": 60,
+        "xp": 12,
+        "level": 0,
+        "items": [],
+        "emoji": "🍽️",
+        "desc": "Wash dishes at a restaurant.",
+    },
     # Tier 2 — level 5+
-    "security_guard":  {"tier": 2, "pay": 150,  "xp": 25,  "level": 5,  "items": [],              "emoji": "🔒",  "desc": "Guard an office building."},
-    "delivery_driver": {"tier": 2, "pay": 200,  "xp": 30,  "level": 5,  "items": ["car"],         "emoji": "🚗",  "desc": "Deliver packages around town."},
-    "chef":            {"tier": 2, "pay": 175,  "xp": 28,  "level": 5,  "items": [],              "emoji": "👨‍🍳", "desc": "Cook meals at a restaurant."},
+    "security_guard": {
+        "tier": 2,
+        "pay": 150,
+        "xp": 25,
+        "level": 5,
+        "items": [],
+        "emoji": "🔒",
+        "desc": "Guard an office building.",
+    },
+    "delivery_driver": {
+        "tier": 2,
+        "pay": 200,
+        "xp": 30,
+        "level": 5,
+        "items": ["car"],
+        "emoji": "🚗",
+        "desc": "Deliver packages around town.",
+    },
+    "chef": {
+        "tier": 2,
+        "pay": 175,
+        "xp": 28,
+        "level": 5,
+        "items": [],
+        "emoji": "👨‍🍳",
+        "desc": "Cook meals at a restaurant.",
+    },
     # Tier 3 — level 15+
-    "programmer":      {"tier": 3, "pay": 400,  "xp": 50,  "level": 15, "items": [],              "emoji": "💻",  "desc": "Write software for clients."},
-    "mechanic":        {"tier": 3, "pay": 350,  "xp": 45,  "level": 15, "items": ["toolkit"],     "emoji": "🔧",  "desc": "Repair vehicles at the garage."},
-    "nurse":           {"tier": 3, "pay": 380,  "xp": 48,  "level": 15, "items": [],              "emoji": "👩‍⚕️", "desc": "Care for patients at the clinic."},
+    "programmer": {
+        "tier": 3,
+        "pay": 400,
+        "xp": 50,
+        "level": 15,
+        "items": [],
+        "emoji": "💻",
+        "desc": "Write software for clients.",
+    },
+    "mechanic": {
+        "tier": 3,
+        "pay": 350,
+        "xp": 45,
+        "level": 15,
+        "items": ["toolkit"],
+        "emoji": "🔧",
+        "desc": "Repair vehicles at the garage.",
+    },
+    "nurse": {
+        "tier": 3,
+        "pay": 380,
+        "xp": 48,
+        "level": 15,
+        "items": [],
+        "emoji": "👩‍⚕️",
+        "desc": "Care for patients at the clinic.",
+    },
     # Tier 4 — level 30+
-    "lawyer":          {"tier": 4, "pay": 800,  "xp": 80,  "level": 30, "items": ["suit"],        "emoji": "⚖️",  "desc": "Represent clients in court."},
-    "doctor":          {"tier": 4, "pay": 900,  "xp": 90,  "level": 30, "items": [],              "emoji": "👨‍⚕️", "desc": "Treat patients at the hospital."},
-    "ceo":             {"tier": 4, "pay": 1200, "xp": 100, "level": 50, "items": ["suit", "car"], "emoji": "👔",  "desc": "Run your own company."},
+    "lawyer": {
+        "tier": 4,
+        "pay": 800,
+        "xp": 80,
+        "level": 30,
+        "items": ["suit"],
+        "emoji": "⚖️",
+        "desc": "Represent clients in court.",
+    },
+    "doctor": {
+        "tier": 4,
+        "pay": 900,
+        "xp": 90,
+        "level": 30,
+        "items": [],
+        "emoji": "👨‍⚕️",
+        "desc": "Treat patients at the hospital.",
+    },
+    "ceo": {
+        "tier": 4,
+        "pay": 1200,
+        "xp": 100,
+        "level": 50,
+        "items": ["suit", "car"],
+        "emoji": "👔",
+        "desc": "Run your own company.",
+    },
 }
 
 # ---------------------------------------------------------------------------
 # Shop items
 # ---------------------------------------------------------------------------
 SHOP_ITEMS: dict[str, dict] = {
-    "car":     {"price": 5000, "emoji": "🚗", "desc": "Required for delivery driver and CEO."},
+    "car": {
+        "price": 5000,
+        "emoji": "🚗",
+        "desc": "Required for delivery driver and CEO.",
+    },
     "toolkit": {"price": 2000, "emoji": "🔧", "desc": "Required for mechanic work."},
-    "suit":    {"price": 3000, "emoji": "👔", "desc": "Required for lawyer and CEO roles."},
+    "suit": {
+        "price": 3000,
+        "emoji": "👔",
+        "desc": "Required for lawyer and CEO roles.",
+    },
 }
 
 
 # ---------------------------------------------------------------------------
 # Module-level helpers
 # ---------------------------------------------------------------------------
+
 
 def _job_pay(job_name: str, times_worked: int) -> int:
     """Base pay × (1 + min(times_worked, 100) / 100)."""
@@ -105,11 +212,12 @@ def _job_pay(job_name: str, times_worked: int) -> int:
 
 async def _available_jobs(user_id: int, guild_id: int) -> list[str]:
     """Return job names the user is currently eligible for."""
-    row   = await db.get_xp(user_id, guild_id)
+    row = await db.get_xp(user_id, guild_id)
     level = row["level"]
-    inv   = await db.get_inventory(user_id, guild_id)
+    inv = await db.get_inventory(user_id, guild_id)
     return [
-        name for name, data in JOBS.items()
+        name
+        for name, data in JOBS.items()
         if level >= data["level"] and all(item in inv for item in data["items"])
     ]
 
@@ -120,6 +228,7 @@ async def _available_jobs(user_id: int, guild_id: int) -> list[str]:
 # ---------------------------------------------------------------------------
 # Cog
 # ---------------------------------------------------------------------------
+
 
 class EconomyCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -160,8 +269,9 @@ class EconomyCog(commands.Cog):
             return
 
         try:
-            cat = (discord.utils.get(guild.categories, name="Bot")
-                   or discord.utils.get(guild.categories, name="General"))
+            cat = discord.utils.get(guild.categories, name="Bot") or discord.utils.get(
+                guild.categories, name="General"
+            )
             overwrites = {
                 guild.default_role: discord.PermissionOverwrite(
                     read_messages=True, send_messages=False
@@ -199,8 +309,8 @@ class EconomyCog(commands.Cog):
     async def daily(self, ctx: commands.Context):
         """Claim your daily reward. Higher streaks unlock better odds!"""
         uid, gid = ctx.author.id, ctx.guild.id
-        now  = int(time.time())
-        row  = await db.get_economy(uid, gid)
+        now = int(time.time())
+        row = await db.get_economy(uid, gid)
         last = row["last_daily"]
         streak = row["daily_streak"]
 
@@ -219,11 +329,10 @@ class EconomyCog(commands.Cog):
 
         amount, tier_label, tier_emoji = _pick_daily(streak)
         new_count = row["daily_count"] + 1
-        new_bal   = await db.add_coins(uid, gid, amount)
-        await db.set_economy(uid, gid,
-                             last_daily=now,
-                             daily_streak=streak,
-                             daily_count=new_count)
+        new_bal = await db.add_coins(uid, gid, amount)
+        await db.set_economy(
+            uid, gid, last_daily=now, daily_streak=streak, daily_count=new_count
+        )
 
         weights = _daily_weights(streak)
         chance_preview = " · ".join(
@@ -235,12 +344,13 @@ class EconomyCog(commands.Cog):
             description=f"{tier_emoji} **{tier_label}** reward!",
             color=discord.Color.gold(),
         )
-        embed.set_author(name=ctx.author.display_name,
-                         icon_url=ctx.author.display_avatar.url)
-        embed.add_field(name="Coins earned",  value=f"**+{amount}** 🪙",    inline=True)
-        embed.add_field(name="Balance",       value=f"**{new_bal}** 🪙",    inline=True)
-        embed.add_field(name="Streak",        value=f"🔥 **{streak}** days", inline=True)
-        embed.add_field(name="Total claims",  value=str(new_count),          inline=True)
+        embed.set_author(
+            name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url
+        )
+        embed.add_field(name="Coins earned", value=f"**+{amount}** 🪙", inline=True)
+        embed.add_field(name="Balance", value=f"**{new_bal}** 🪙", inline=True)
+        embed.add_field(name="Streak", value=f"🔥 **{streak}** days", inline=True)
+        embed.add_field(name="Total claims", value=str(new_count), inline=True)
         embed.set_footer(text=f"Current odds → {chance_preview}")
         await ctx.send(embed=embed)
 
@@ -260,12 +370,15 @@ class EconomyCog(commands.Cog):
     async def work(self, ctx: commands.Context):
         """Open the job selector and earn coins + XP (1 h cooldown)."""
         uid, gid = ctx.author.id, ctx.guild.id
-        now  = int(time.time())
-        row  = await db.get_economy(uid, gid)
+        now = int(time.time())
+        row = await db.get_economy(uid, gid)
 
         on_cd, secs = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
         if on_cd:
-            await ctx.send(f"⏰ You're tired! Rest for **{format_remaining(secs)}** more.", delete_after=10)
+            await ctx.send(
+                f"⏰ You're tired! Rest for **{format_remaining(secs)}** more.",
+                delete_after=10,
+            )
             return
 
         available = await _available_jobs(uid, gid)
@@ -286,12 +399,12 @@ class EconomyCog(commands.Cog):
             ),
             color=discord.Color.blurple(),
         )
-        embed.add_field(name="Level",  value=str(xp_row["level"]),             inline=True)
-        embed.add_field(name="Coins",  value=f"{xp_row.get('coins', 0)} 🪙",  inline=True)
+        embed.add_field(name="Level", value=str(xp_row["level"]), inline=True)
+        embed.add_field(name="Coins", value=f"{xp_row.get('coins', 0)} 🪙", inline=True)
         embed.set_footer(text="Pick a job from the dropdown.")
 
         view = _WorkView(ctx, available)
-        msg  = await ctx.send(embed=embed, view=view)
+        msg = await ctx.send(embed=embed, view=view)
         view.message = msg
 
     # ------------------------------------------------------------------ !shop
@@ -300,7 +413,7 @@ class EconomyCog(commands.Cog):
     async def shop(self, ctx: commands.Context):
         """Browse and buy items from the shop."""
         view = _ShopView(ctx)
-        msg  = await ctx.send(embed=_shop_embed(), view=view)
+        msg = await ctx.send(embed=_shop_embed(), view=view)
         view.message = msg
 
     # ------------------------------------------------------------------ !inventory
@@ -317,9 +430,11 @@ class EconomyCog(commands.Cog):
         if inv:
             lines = []
             for item_name, qty in inv.items():
-                data  = SHOP_ITEMS.get(item_name, {})
+                data = SHOP_ITEMS.get(item_name, {})
                 emoji = data.get("emoji", "📦")
-                lines.append(f"{emoji} **{item_name.replace('_', ' ').title()}** × {qty}")
+                lines.append(
+                    f"{emoji} **{item_name.replace('_', ' ').title()}** × {qty}"
+                )
             embed.description = "\n".join(lines)
         else:
             embed.description = "Empty — visit `!shop` to buy items!"
@@ -357,9 +472,9 @@ class EconomyCog(commands.Cog):
     async def joblist(self, ctx: commands.Context):
         """Show all jobs, requirements, and your mastery for each."""
         uid, gid = ctx.author.id, ctx.guild.id
-        xp_row   = await db.get_xp(uid, gid)
-        level    = xp_row["level"]
-        inv      = await db.get_inventory(uid, gid)
+        xp_row = await db.get_xp(uid, gid)
+        level = xp_row["level"]
+        inv = await db.get_inventory(uid, gid)
 
         embed = discord.Embed(title="📋 All Jobs", color=discord.Color.blurple())
         tiers: dict[int, list[str]] = {}
@@ -369,15 +484,18 @@ class EconomyCog(commands.Cog):
         for tier_num in sorted(tiers):
             lines = []
             for name in tiers[tier_num]:
-                data  = JOBS[name]
+                data = JOBS[name]
                 times = await db.get_job_times(uid, gid, name)
-                pay   = _job_pay(name, times)
-                unlocked = (level >= data["level"]
-                            and all(item in inv for item in data["items"]))
+                pay = _job_pay(name, times)
+                unlocked = level >= data["level"] and all(
+                    item in inv for item in data["items"]
+                )
                 lock_str = "✅" if unlocked else "🔒"
                 req_parts = []
-                if data["level"]: req_parts.append(f"Lv{data['level']}")
-                if data["items"]: req_parts.append(", ".join(data["items"]))
+                if data["level"]:
+                    req_parts.append(f"Lv{data['level']}")
+                if data["items"]:
+                    req_parts.append(", ".join(data["items"]))
                 req = f" *(req: {', '.join(req_parts)})*" if req_parts else ""
                 mastery = f" | mastery {times}/100" if times else ""
                 lines.append(
@@ -389,7 +507,9 @@ class EconomyCog(commands.Cog):
                 value="\n".join(lines),
                 inline=False,
             )
-        embed.set_footer(text=f"Your level: {level}  |  Pay shown includes mastery bonus.")
+        embed.set_footer(
+            text=f"Your level: {level}  |  Pay shown includes mastery bonus."
+        )
         await ctx.send(embed=embed)
 
 
@@ -397,17 +517,19 @@ class EconomyCog(commands.Cog):
 # Work UI
 # ---------------------------------------------------------------------------
 
+
 class _WorkView(discord.ui.View):
     def __init__(self, ctx: commands.Context, available: list[str]):
         super().__init__(timeout=60)
-        self.ctx     = ctx
+        self.ctx = ctx
         self.message: discord.Message | None = None
         self.add_item(_JobSelect(ctx, available, self))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
             await interaction.response.send_message(
-                "This job menu isn't for you.", ephemeral=True)
+                "This job menu isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -424,19 +546,22 @@ class _WorkView(discord.ui.View):
 
 class _JobSelect(discord.ui.Select):
     def __init__(self, ctx: commands.Context, available: list[str], view: _WorkView):
-        self._ctx        = ctx
-        self._work_view  = view
+        self._ctx = ctx
+        self._work_view = view
         options = []
         for name in available:
             j = JOBS[name]
-            options.append(discord.SelectOption(
-                label=f"{j['emoji']} {name.replace('_', ' ').title()}",
-                value=name,
-                description=f"Base pay: {j['pay']} 🪙  |  +{j['xp']} XP  |  Tier {j['tier']}",
-            ))
+            options.append(
+                discord.SelectOption(
+                    label=f"{j['emoji']} {name.replace('_', ' ').title()}",
+                    value=name,
+                    description=f"Base pay: {j['pay']} 🪙  |  +{j['xp']} XP  |  Tier {j['tier']}",
+                )
+            )
         super().__init__(
             placeholder="Choose a job to work…",
-            min_values=1, max_values=1,
+            min_values=1,
+            max_values=1,
             options=options,
             row=0,
         )
@@ -444,23 +569,24 @@ class _JobSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         job_name = self.values[0]
         uid, gid = self._ctx.author.id, self._ctx.guild.id
-        now      = int(time.time())
+        now = int(time.time())
 
         # Re-check cooldown (guard against double-click)
         eco = await db.get_economy(uid, gid)
         on_cd, secs = check_cooldown(eco["last_worked"], _WORK_COOLDOWN)
         if on_cd:
             await interaction.response.send_message(
-                f"⏰ Still on cooldown! {format_remaining(secs)} left.", ephemeral=True)
+                f"⏰ Still on cooldown! {format_remaining(secs)} left.", ephemeral=True
+            )
             return
 
-        times   = await db.get_job_times(uid, gid, job_name)
-        pay     = _job_pay(job_name, times)
-        job     = JOBS[job_name]
+        times = await db.get_job_times(uid, gid, job_name)
+        pay = _job_pay(job_name, times)
+        job = JOBS[job_name]
         xp_gain = job["xp"]
 
-        new_times             = await db.increment_job(uid, gid, job_name)
-        new_bal               = await db.add_coins(uid, gid, pay)
+        new_times = await db.increment_job(uid, gid, job_name)
+        new_bal = await db.add_coins(uid, gid, pay)
         new_xp, new_lv, lvup = await db.add_xp(uid, gid, xp_gain, now)
         await db.set_economy(uid, gid, last_worked=now)
 
@@ -470,11 +596,19 @@ class _JobSelect(discord.ui.Select):
             description=job["desc"],
             color=discord.Color.green(),
         )
-        embed.add_field(name="Earned",      value=f"**+{pay}** 🪙",                  inline=True)
-        embed.add_field(name="XP gained",   value=f"**+{xp_gain}** XP",              inline=True)
-        embed.add_field(name="Balance",     value=f"**{new_bal}** 🪙",               inline=True)
-        embed.add_field(name="Job mastery", value=f"{new_times}× worked (+{bonus_pct}% pay)", inline=True)
-        embed.add_field(name="Level",       value=f"**{new_lv}**{'  🎉 Level up!' if lvup else ''}", inline=True)
+        embed.add_field(name="Earned", value=f"**+{pay}** 🪙", inline=True)
+        embed.add_field(name="XP gained", value=f"**+{xp_gain}** XP", inline=True)
+        embed.add_field(name="Balance", value=f"**{new_bal}** 🪙", inline=True)
+        embed.add_field(
+            name="Job mastery",
+            value=f"{new_times}× worked (+{bonus_pct}% pay)",
+            inline=True,
+        )
+        embed.add_field(
+            name="Level",
+            value=f"**{new_lv}**{'  🎉 Level up!' if lvup else ''}",
+            inline=True,
+        )
         embed.set_footer(text="Come back in 1 hour to work again!")
 
         for item in self._work_view.children:
@@ -499,6 +633,7 @@ class _JobSelect(discord.ui.Select):
 # Shop UI
 # ---------------------------------------------------------------------------
 
+
 def _shop_embed() -> discord.Embed:
     embed = discord.Embed(
         title="🛒 Item Shop",
@@ -518,7 +653,7 @@ def _shop_embed() -> discord.Embed:
 class _ShopView(discord.ui.View):
     def __init__(self, ctx: commands.Context):
         super().__init__(timeout=120)
-        self.ctx     = ctx
+        self.ctx = ctx
         self.message: discord.Message | None = None
         options = [
             discord.SelectOption(
@@ -533,7 +668,8 @@ class _ShopView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
             await interaction.response.send_message(
-                "This shop isn't for you.", ephemeral=True)
+                "This shop isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -550,8 +686,8 @@ class _ShopView(discord.ui.View):
 
 class _ShopSelect(discord.ui.Select):
     def __init__(self, ctx: commands.Context, options, view: _ShopView):
-        self._ctx        = ctx
-        self._shop_view  = view
+        self._ctx = ctx
+        self._shop_view = view
         super().__init__(
             placeholder="Select an item to buy…",
             options=options,
@@ -560,19 +696,21 @@ class _ShopSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         item_name = self.values[0]
-        uid, gid  = self._ctx.author.id, self._ctx.guild.id
-        data      = SHOP_ITEMS[item_name]
+        uid, gid = self._ctx.author.id, self._ctx.guild.id
+        data = SHOP_ITEMS[item_name]
 
         if await db.has_item(uid, gid, item_name):
             await interaction.response.send_message(
-                f"You already own a **{item_name}**!", ephemeral=True)
+                f"You already own a **{item_name}**!", ephemeral=True
+            )
             return
 
         bal = await db.get_coins(uid, gid)
         if bal < data["price"]:
             await interaction.response.send_message(
                 f"❌ Need **{data['price']:,}** 🪙 — you only have **{bal:,}** 🪙.",
-                ephemeral=True)
+                ephemeral=True,
+            )
             return
 
         new_bal = await db.add_coins(uid, gid, -data["price"])

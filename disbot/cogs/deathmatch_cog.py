@@ -1,12 +1,13 @@
 # cogs/deathmatch_cog.py
 
-import discord
-from discord.ext import commands
-from discord.ext.commands import cooldown, BucketType
 import asyncio
 import random
 
+import discord
+from discord.ext import commands
+from discord.ext.commands import BucketType, cooldown
 from utils import db
+
 
 class Deathmatch(commands.Cog):
     def __init__(self, bot):
@@ -50,7 +51,7 @@ class Deathmatch(commands.Cog):
         def defend(self, player_id):
             self.defense[player_id] = True
 
-    @commands.command(name='dm_challenge', aliases=['deathmatch', 'challenge'])
+    @commands.command(name="dm_challenge", aliases=["deathmatch", "challenge"])
     @cooldown(1, 30, BucketType.user)  # 1 use per 30 seconds per user
     async def challenge(self, ctx, opponent: discord.Member):
         """Challenge another user to a deathmatch duel."""
@@ -64,7 +65,9 @@ class Deathmatch(commands.Cog):
 
         duel_key = tuple(sorted([ctx.author.id, opponent.id]))
         if duel_key in self.active_duels:
-            await ctx.send("A duel between you and the opponent is already in progress.")
+            await ctx.send(
+                "A duel between you and the opponent is already in progress."
+            )
             return
 
         # Prevent challenging users who are already in another duel
@@ -78,7 +81,7 @@ class Deathmatch(commands.Cog):
             title="Deathmatch Challenge",
             description=f"{ctx.author.mention} has challenged {opponent.mention} to a duel!\n\nReact with ✅ to accept or ❌ to decline.",
             color=discord.Color.red(),
-            timestamp=ctx.message.created_at
+            timestamp=ctx.message.created_at,
         )
         embed.set_footer(text="You have 30 seconds to respond.")
         message = await ctx.send(embed=embed)
@@ -87,20 +90,26 @@ class Deathmatch(commands.Cog):
 
         def check(reaction, user):
             return (
-                user == opponent and
-                str(reaction.emoji) in ["✅", "❌"] and
-                reaction.message.id == message.id
+                user == opponent
+                and str(reaction.emoji) in ["✅", "❌"]
+                and reaction.message.id == message.id
             )
 
         try:
-            reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=30.0, check=check
+            )
         except asyncio.TimeoutError:
-            await ctx.send(f"{opponent.mention} did not respond in time. Challenge canceled.")
+            await ctx.send(
+                f"{opponent.mention} did not respond in time. Challenge canceled."
+            )
             await message.delete()
             return
 
         if str(reaction.emoji) == "✅":
-            await ctx.send(f"{opponent.mention} accepted the duel! Let the battle begin!")
+            await ctx.send(
+                f"{opponent.mention} accepted the duel! Let the battle begin!"
+            )
             # Initialize and start the duel
             duel = self.Duel(ctx.author, opponent)
             self.active_duels[duel_key] = duel
@@ -109,37 +118,13 @@ class Deathmatch(commands.Cog):
             await ctx.send(f"{opponent.mention} declined the duel.")
             await message.delete()
 
-    @commands.command(name='dm_leaderboard', aliases=['dm_lb', 'board'])
-    async def leaderboard_cmd(self, ctx):
-        """Display the Deathmatch leaderboard."""
-        rows = await db.get_deathmatch_leaderboard()
-        if not rows:
-            await ctx.send("No battles have been recorded yet.")
-            return
-
-        embed = discord.Embed(
-            title="Deathmatch Leaderboard",
-            description="Top players by wins",
-            color=discord.Color.gold(),
-            timestamp=ctx.message.created_at
-        )
-        for idx, row in enumerate(rows, start=1):
-            user = self.bot.get_user(row['user_id'])
-            if user:
-                embed.add_field(
-                    name=f"{idx}. {user.name}",
-                    value=f"Wins: {row['wins']} | Losses: {row['losses']}",
-                    inline=False
-                )
-        await ctx.send(embed=embed)
-
     async def start_duel(self, ctx, duel):
         """Manage the duel flow."""
         embed = discord.Embed(
             title="Deathmatch Started!",
             description=f"{duel.player1.mention} vs {duel.player2.mention}\n\nBoth players have **100 HP**.\nIt's {duel.turn.mention}'s turn!",
             color=discord.Color.dark_red(),
-            timestamp=ctx.message.created_at
+            timestamp=ctx.message.created_at,
         )
         duel_message = await ctx.send(embed=embed)
 
@@ -157,46 +142,62 @@ class Deathmatch(commands.Cog):
                     f"Choose your action: `attack` or `defend`."
                 ),
                 color=discord.Color.dark_red(),
-                timestamp=ctx.message.created_at
+                timestamp=ctx.message.created_at,
             )
             await duel_message.edit(embed=embed)
 
             def check(m):
                 return (
-                    m.author == current_player and
-                    m.channel == ctx.channel and
-                    m.content.lower() in ['attack', 'defend']
+                    m.author == current_player
+                    and m.channel == ctx.channel
+                    and m.content.lower() in ["attack", "defend"]
                 )
 
             try:
-                await ctx.send(f"{current_player.mention}, choose your action (`attack` or `defend`):")
-                msg = await self.bot.wait_for('message', check=check, timeout=60.0)
+                await ctx.send(
+                    f"{current_player.mention}, choose your action (`attack` or `defend`):"
+                )
+                msg = await self.bot.wait_for("message", check=check, timeout=60.0)
             except asyncio.TimeoutError:
-                await ctx.send(f"{current_player.mention} took too long to respond. {opponent.mention} wins by default!")
-                await self.update_leaderboard(winner_id=opponent.id, loser_id=current_player.id)
+                await ctx.send(
+                    f"{current_player.mention} took too long to respond. {opponent.mention} wins by default!"
+                )
+                await self.update_leaderboard(
+                    winner_id=opponent.id, loser_id=current_player.id
+                )
                 duel.is_over = True
                 del self.active_duels[tuple(sorted([duel.player1.id, duel.player2.id]))]
                 return
 
             action = msg.content.lower()
-            if action == 'attack':
+            if action == "attack":
                 damage, critical = duel.attack(current_player.id, opponent.id)
                 attack_msg = f"{current_player.mention} attacks {opponent.mention} for **{damage} damage**!"
                 if critical:
                     attack_msg += " **Critical Hit!**"
                 await ctx.send(attack_msg)
-            elif action == 'defend':
+            elif action == "defend":
                 duel.defend(current_player.id)
-                await ctx.send(f"{current_player.mention} is defending against the next attack!")
+                await ctx.send(
+                    f"{current_player.mention} is defending against the next attack!"
+                )
 
             # Check for win condition
             if duel.player1_hp <= 0:
-                await ctx.send(f"{duel.player1.mention} has been defeated! {duel.player2.mention} wins!")
-                await self.update_leaderboard(winner_id=duel.player2.id, loser_id=duel.player1.id)
+                await ctx.send(
+                    f"{duel.player1.mention} has been defeated! {duel.player2.mention} wins!"
+                )
+                await self.update_leaderboard(
+                    winner_id=duel.player2.id, loser_id=duel.player1.id
+                )
                 duel.is_over = True
             elif duel.player2_hp <= 0:
-                await ctx.send(f"{duel.player2.mention} has been defeated! {duel.player1.mention} wins!")
-                await self.update_leaderboard(winner_id=duel.player1.id, loser_id=duel.player2.id)
+                await ctx.send(
+                    f"{duel.player2.mention} has been defeated! {duel.player1.mention} wins!"
+                )
+                await self.update_leaderboard(
+                    winner_id=duel.player1.id, loser_id=duel.player2.id
+                )
                 duel.is_over = True
             else:
                 # Switch turn
@@ -209,8 +210,12 @@ class Deathmatch(commands.Cog):
                 f"{duel.player1.mention}: **{max(duel.player1_hp, 0)} HP**\n"
                 f"{duel.player2.mention}: **{max(duel.player2_hp, 0)} HP**"
             ),
-            color=discord.Color.green() if duel.player1_hp > duel.player2_hp else discord.Color.red(),
-            timestamp=ctx.message.created_at
+            color=(
+                discord.Color.green()
+                if duel.player1_hp > duel.player2_hp
+                else discord.Color.red()
+            ),
+            timestamp=ctx.message.created_at,
         )
         await duel_message.edit(embed=embed)
 
@@ -222,14 +227,16 @@ class Deathmatch(commands.Cog):
     async def challenge_error(self, ctx, error):
         """Handle errors for the challenge command."""
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f"You're on cooldown! Please try again in {int(error.retry_after)} seconds.")
+            await ctx.send(
+                f"You're on cooldown! Please try again in {int(error.retry_after)} seconds."
+            )
         elif isinstance(error, commands.BadArgument):
             await ctx.send("Couldn't find the user. Please mention a valid member.")
         else:
             await ctx.send("An error occurred while processing the command.")
             raise error  # Re-raise the error for debugging purposes
 
-    @commands.command(name='dm_help', aliases=['deathmatch_help'])
+    @commands.command(name="dm_help", aliases=["deathmatch_help"])
     async def dm_help(self, ctx):
         """Display help information for Deathmatch commands."""
         embed = discord.Embed(
@@ -243,9 +250,10 @@ class Deathmatch(commands.Cog):
                 "`defend` - Defend against your opponent's next attack."
             ),
             color=discord.Color.blue(),
-            timestamp=ctx.message.created_at
+            timestamp=ctx.message.created_at,
         )
         await ctx.send(embed=embed)
+
 
 # Asynchronous setup function for discord.py v2.x
 async def setup(bot):

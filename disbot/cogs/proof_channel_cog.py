@@ -1,8 +1,10 @@
 from __future__ import annotations
+
+import asyncio
+import logging
+
 import discord
 from discord.ext import commands
-import logging
-import asyncio
 
 logger = logging.getLogger("discord_bot.prize_cog")
 
@@ -16,9 +18,13 @@ class ProofChannelCog(commands.Cog):
     def get_proof_channel(self, guild: discord.Guild) -> discord.TextChannel | None:
         return discord.utils.get(guild.text_channels, name="proof")
 
-    async def _lock_for_winner(self, proof_channel: discord.TextChannel, winner: discord.Member) -> None:
+    async def _lock_for_winner(
+        self, proof_channel: discord.TextChannel, winner: discord.Member
+    ) -> None:
         overwrites = {
-            proof_channel.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            proof_channel.guild.default_role: discord.PermissionOverwrite(
+                view_channel=False
+            ),
             winner: discord.PermissionOverwrite(view_channel=True, send_messages=True),
             proof_channel.guild.me: discord.PermissionOverwrite(view_channel=True),
         }
@@ -27,7 +33,9 @@ class ProofChannelCog(commands.Cog):
 
     async def _unlock(self, proof_channel: discord.TextChannel) -> None:
         overwrites = {
-            proof_channel.guild.default_role: discord.PermissionOverwrite(view_channel=True, send_messages=False),
+            proof_channel.guild.default_role: discord.PermissionOverwrite(
+                view_channel=True, send_messages=False
+            ),
             proof_channel.guild.me: discord.PermissionOverwrite(view_channel=True),
         }
         await proof_channel.edit(overwrites=overwrites)
@@ -39,10 +47,15 @@ class ProofChannelCog(commands.Cog):
         """Grant a winner exclusive access to #proof.  Usage: +prize @winner"""
         ch = self.get_proof_channel(ctx.guild)
         if not ch:
-            await ctx.send("Channel '#proof' not found. Please create one first.", delete_after=10)
+            await ctx.send(
+                "Channel '#proof' not found. Please create one first.", delete_after=10
+            )
             return
         await self._lock_for_winner(ch, winner)
-        await ctx.send(f"{winner.mention} has been granted access to {ch.mention}!", delete_after=10)
+        await ctx.send(
+            f"{winner.mention} has been granted access to {ch.mention}!",
+            delete_after=10,
+        )
 
     @commands.command(name="-prize")
     @commands.has_permissions(manage_channels=True)
@@ -97,7 +110,9 @@ class ProofChannelCog(commands.Cog):
             await asyncio.sleep(duration * 60)
             try:
                 await self._unlock(ch)
-                await ctx.send(f"Time is up! {ch.mention} is now read-only again.", delete_after=10)
+                await ctx.send(
+                    f"Time is up! {ch.mention} is now read-only again.", delete_after=10
+                )
             except Exception:
                 pass
             finally:
@@ -110,10 +125,20 @@ class ProofChannelCog(commands.Cog):
 def _format_overwrites(overwrites: dict) -> str:
     lines = []
     for target, perms in overwrites.items():
-        name = target.name if isinstance(target, discord.Role) else getattr(target, "display_name", "Unknown")
-        allow = ", ".join(p.replace("_", " ").title() for p, v in iter(perms) if v is True)
-        deny  = ", ".join(p.replace("_", " ").title() for p, v in iter(perms) if v is False)
-        lines.append(f"**{name}**\nAllowed: {allow or 'None'}\nDenied: {deny or 'None'}")
+        name = (
+            target.name
+            if isinstance(target, discord.Role)
+            else getattr(target, "display_name", "Unknown")
+        )
+        allow = ", ".join(
+            p.replace("_", " ").title() for p, v in iter(perms) if v is True
+        )
+        deny = ", ".join(
+            p.replace("_", " ").title() for p, v in iter(perms) if v is False
+        )
+        lines.append(
+            f"**{name}**\nAllowed: {allow or 'None'}\nDenied: {deny or 'None'}"
+        )
     return "\n\n".join(lines) or "No overwrites."
 
 

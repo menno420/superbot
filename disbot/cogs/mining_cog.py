@@ -1,17 +1,23 @@
-import discord
-from discord.ext import commands
-import random
 import json
 import os
+import random
 
+import discord
+from discord.ext import commands
 from utils import db
 
-RECIPES_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "json", "recipes.json")
+RECIPES_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "data",
+    "json",
+    "recipes.json",
+)
 
 
 #
 # ===== HELPER FUNCTIONS (Outside the Cog) =====
 #
+
 
 def load_recipes():
     """
@@ -24,7 +30,7 @@ def load_recipes():
         "iron pickaxe": {"iron": 3, "wood": 1},
         "gold statue": {"gold": 4},
         "diamond throne": {"diamond": 6},
-        "wooden house": {"wood": 8}
+        "wooden house": {"wood": 8},
     }
 
     if not os.path.exists(RECIPES_FILE):
@@ -57,6 +63,7 @@ def load_recipes():
 # ===== THE COG CLASS =====
 #
 
+
 class MiningCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -77,6 +84,7 @@ class MiningCog(commands.Cog):
     #
     class MineView(discord.ui.View):
         """Simple View for the !mine command: 'Mine Left', 'Mine Right', 'Mine Down'."""
+
         def __init__(self, user_id, cog):
             super().__init__(timeout=30)
             self.user_id = user_id
@@ -87,15 +95,21 @@ class MiningCog(commands.Cog):
             return interaction.user.id == self.user_id
 
         @discord.ui.button(label="Mine Left", style=discord.ButtonStyle.primary)
-        async def mine_left(self, interaction: discord.Interaction, button: discord.ui.Button):
+        async def mine_left(
+            self, interaction: discord.Interaction, button: discord.ui.Button
+        ):
             await self.handle_mine(interaction, "left")
 
         @discord.ui.button(label="Mine Right", style=discord.ButtonStyle.primary)
-        async def mine_right(self, interaction: discord.Interaction, button: discord.ui.Button):
+        async def mine_right(
+            self, interaction: discord.Interaction, button: discord.ui.Button
+        ):
             await self.handle_mine(interaction, "right")
 
         @discord.ui.button(label="Mine Down", style=discord.ButtonStyle.primary)
-        async def mine_down(self, interaction: discord.Interaction, button: discord.ui.Button):
+        async def mine_down(
+            self, interaction: discord.Interaction, button: discord.ui.Button
+        ):
             await self.handle_mine(interaction, "down")
 
         async def handle_mine(self, interaction: discord.Interaction, direction: str):
@@ -106,17 +120,15 @@ class MiningCog(commands.Cog):
             pickaxe_bonus = 2 if inventory.get("pickaxe", 0) > 0 else 1
             # Weighted random resource
             ores = {"stone": 3, "iron": 2, "gold": 1, "diamond": 0.5}
-            found = random.choices(list(ores.keys()), weights=ores.values(), k=1)[0]
+            found = random.choices(list(ores.keys()), weights=list(ores.values()), k=1)[
+                0
+            ]
             amount = random.randint(1, 3) * pickaxe_bonus
 
             await self.cog.update_inventory(user_id, found, amount)
 
             new_content = f"{interaction.user.mention} mined {amount}x **{found}** by going {direction}!"
-            await interaction.message.edit(
-                content=new_content,
-                embed=None,
-                view=None
-            )
+            await interaction.message.edit(content=new_content, embed=None, view=None)
             self.stop()
 
     #
@@ -130,7 +142,7 @@ class MiningCog(commands.Cog):
         embed = discord.Embed(
             title="Mining",
             description="Choose a direction to mine.\nIf you own a pickaxe, you'll get extra loot!",
-            color=discord.Color.blurple()
+            color=discord.Color.blurple(),
         )
         await ctx.send(embed=embed, view=view)
 
@@ -142,7 +154,9 @@ class MiningCog(commands.Cog):
         multiplier = 2 if inventory.get("axe", 0) > 0 else 1
         wood_amount = random.randint(1, 3) * multiplier
         await self.update_inventory(ctx.author.id, "wood", wood_amount)
-        await ctx.send(f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!")
+        await ctx.send(
+            f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!"
+        )
 
     @commands.command(name="mineinv", aliases=["mineinventory"])
     async def inventory(self, ctx):
@@ -151,13 +165,17 @@ class MiningCog(commands.Cog):
         inventory = await db.get_mining_inventory(user_id)
 
         if not inventory:
-            return await ctx.send("Your mining inventory is empty. Start mining with `!mine`!")
+            return await ctx.send(
+                "Your mining inventory is empty. Start mining with `!mine`!"
+            )
 
-        items_list = "\n".join([f"**{item}**: {count}" for item, count in inventory.items() if count > 0])
+        items_list = "\n".join(
+            [f"**{item}**: {count}" for item, count in inventory.items() if count > 0]
+        )
         embed = discord.Embed(
             title=f"{ctx.author.name}'s Mining Inventory",
             description=items_list,
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
         await ctx.send(embed=embed)
 
@@ -169,23 +187,11 @@ class MiningCog(commands.Cog):
         total_items = sum(inventory.values())
         unique_items = len(inventory)
 
-        embed = discord.Embed(title=f"{ctx.author.name}'s Mining Stats", color=discord.Color.purple())
+        embed = discord.Embed(
+            title=f"{ctx.author.name}'s Mining Stats", color=discord.Color.purple()
+        )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
-        await ctx.send(embed=embed)
-
-    @commands.command(name="minelb", aliases=["miningleaderboard"])
-    async def leaderboard(self, ctx):
-        """Shows top miners by total item count."""
-        rows = await db.get_all_mining_totals()
-        if not rows:
-            return await ctx.send("No data available yet!")
-
-        embed = discord.Embed(title="Top Miners", color=discord.Color.gold())
-
-        for i, (user_id, total) in enumerate(rows, 1):
-            embed.add_field(name=f"{i}. <@{user_id}>", value=f"{total} items", inline=False)
-
         await ctx.send(embed=embed)
 
     #
@@ -209,19 +215,25 @@ class MiningCog(commands.Cog):
             required_items = self.recipes.get(structure_lower)
 
             if not required_items:
-                return await ctx.send("Unknown structure. Use `!buildlist` to see all available structures.")
+                return await ctx.send(
+                    "Unknown structure. Use `!buildlist` to see all available structures."
+                )
 
             # Check resources
             for item, amount_needed in required_items.items():
                 if inventory.get(item, 0) < amount_needed:
-                    return await ctx.send(f"You don't have enough **{item}** to build **{structure}**.")
+                    return await ctx.send(
+                        f"You don't have enough **{item}** to build **{structure}**."
+                    )
 
             # Subtract cost and give the user the new buildable item
             for item, amount_needed in required_items.items():
                 await self.update_inventory(ctx.author.id, item, -amount_needed)
             await self.update_inventory(ctx.author.id, structure_lower, 1)
 
-            await ctx.send(f"{ctx.author.mention} successfully built a **{structure}**!")
+            await ctx.send(
+                f"{ctx.author.mention} successfully built a **{structure}**!"
+            )
         except Exception as e:
             print(f"[ERROR in build command]: {e}")
             await ctx.send("An unexpected error occurred while trying to build.")
@@ -237,18 +249,22 @@ class MiningCog(commands.Cog):
             for structure_name, requirements in self.recipes.items():
                 if not isinstance(requirements, dict):
                     continue
-                req_str = ", ".join([f"{mat}: {amt}" for mat, amt in requirements.items()])
+                req_str = ", ".join(
+                    [f"{mat}: {amt}" for mat, amt in requirements.items()]
+                )
                 recipe_lines.append(f"**{structure_name.title()}**: Requires {req_str}")
 
             embed = discord.Embed(
                 title="Available Structures",
                 description="\n".join(recipe_lines),
-                color=discord.Color.green()
+                color=discord.Color.green(),
             )
             await ctx.send(embed=embed)
         except Exception as e:
             print(f"[ERROR in buildlist command]: {e}")
-            await ctx.send("An unexpected error occurred while listing buildable structures.")
+            await ctx.send(
+                "An unexpected error occurred while listing buildable structures."
+            )
 
     @commands.command()
     async def buildable(self, ctx):
@@ -264,12 +280,14 @@ class MiningCog(commands.Cog):
                 can_build.append(structure_name)
 
         if not can_build:
-            return await ctx.send("You currently don't have enough resources to build anything.")
+            return await ctx.send(
+                "You currently don't have enough resources to build anything."
+            )
 
         embed = discord.Embed(
             title=f"{ctx.author.name}'s Buildable Structures",
             description="\n".join(s.title() for s in can_build),
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
         await ctx.send(embed=embed)
 
@@ -286,7 +304,7 @@ class MiningCog(commands.Cog):
             "stumbled upon a hidden diamond vein and got 1 diamond!",
             "was attacked by monsters and lost 2 stone...",
             "found a secret chest with 3 wood!",
-            "got lost and found nothing..."
+            "got lost and found nothing...",
         ]
         result = random.choice(outcomes)
 
@@ -351,6 +369,7 @@ class MiningCog(commands.Cog):
 #
 # ===== SETUP FUNCTION =====
 #
+
 
 async def setup(bot):
     await bot.add_cog(MiningCog(bot))

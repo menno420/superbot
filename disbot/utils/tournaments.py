@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import asyncio
+
 import discord
 from utils import db
 
@@ -19,15 +21,15 @@ class TournamentRegistration:
         entry_fee: int,
         duration_mins: int,
     ):
-        self.host_id       = host_id
-        self.guild_id      = guild_id
-        self.announce_id   = announce_id
-        self.entry_fee     = entry_fee
+        self.host_id = host_id
+        self.guild_id = guild_id
+        self.announce_id = announce_id
+        self.entry_fee = entry_fee
         self.duration_mins = duration_mins
-        self.players:      set[int]              = set()
-        self.started:      bool                  = False
-        self.reg_message:  discord.Message | None = None
-        self.timer_task:   asyncio.Task | None    = None
+        self.players: set[int] = set()
+        self.started: bool = False
+        self.reg_message: discord.Message | None = None
+        self.timer_task: asyncio.Task | None = None
 
     @property
     def pot(self) -> int:

@@ -1,8 +1,10 @@
 from __future__ import annotations
-import asyncpg
+
 import json
-import os
 import logging
+import os
+
+import asyncpg
 
 logger = logging.getLogger("bot")
 
@@ -180,6 +182,7 @@ async def _create_tables() -> None:
 # Generic helpers  (same call signature as the old aiosqlite wrappers)
 # ---------------------------------------------------------------------------
 
+
 async def fetchone(query: str, params: tuple = ()) -> dict | None:
     row = await get().fetchrow(query, *params)
     return dict(row) if row else None
@@ -198,8 +201,9 @@ async def execute(query: str, params: tuple = ()) -> None:
 # XP helpers
 # ---------------------------------------------------------------------------
 
+
 def xp_for_level(level: int) -> int:
-    return 5 * (level ** 2) + 50 * level + 100
+    return 5 * (level**2) + 50 * level + 100
 
 
 def level_progress(total_xp: int) -> tuple[int, int, int]:
@@ -218,12 +222,19 @@ async def get_xp(user_id: int, guild_id: int) -> dict:
         "SELECT * FROM xp WHERE user_id=$1 AND guild_id=$2", (user_id, guild_id)
     )
     return row or {
-        "user_id": user_id, "guild_id": guild_id,
-        "xp": 0, "level": 0, "messages": 0, "last_xp": 0, "coins": 0,
+        "user_id": user_id,
+        "guild_id": guild_id,
+        "xp": 0,
+        "level": 0,
+        "messages": 0,
+        "last_xp": 0,
+        "coins": 0,
     }
 
 
-async def add_xp(user_id: int, guild_id: int, amount: int, now: int) -> tuple[int, int, bool]:
+async def add_xp(
+    user_id: int, guild_id: int, amount: int, now: int
+) -> tuple[int, int, bool]:
     row = await get_xp(user_id, guild_id)
     new_xp = row["xp"] + amount
     new_level, _, _ = level_progress(new_xp)
@@ -243,6 +254,7 @@ async def add_xp(user_id: int, guild_id: int, amount: int, now: int) -> tuple[in
 # Guild settings helpers
 # ---------------------------------------------------------------------------
 
+
 async def get_setting(guild_id: int, key: str, default: str = "") -> str:
     row = await fetchone(
         "SELECT value FROM guild_settings WHERE guild_id=$1 AND key=$2", (guild_id, key)
@@ -261,6 +273,7 @@ async def set_setting(guild_id: int, key: str, value: str) -> None:
 # ---------------------------------------------------------------------------
 # Role threshold helpers
 # ---------------------------------------------------------------------------
+
 
 async def get_role_thresholds(guild_id: int) -> list[dict]:
     return await fetchall(
@@ -290,9 +303,11 @@ async def remove_role_threshold(guild_id: int, role_name: str) -> None:
 # Warning helpers
 # ---------------------------------------------------------------------------
 
+
 async def get_warnings(user_id: int, guild_id: int) -> int:
     row = await fetchone(
-        "SELECT count FROM warnings WHERE user_id=$1 AND guild_id=$2", (user_id, guild_id)
+        "SELECT count FROM warnings WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
     )
     return row["count"] if row else 0
 
@@ -317,11 +332,16 @@ async def clear_warnings(user_id: int, guild_id: int) -> None:
 # Mod log helpers
 # ---------------------------------------------------------------------------
 
+
 async def log_mod_action(
-    guild_id: int, action: str, target_id: int,
-    moderator_id: int, reason: str = "No reason provided",
+    guild_id: int,
+    action: str,
+    target_id: int,
+    moderator_id: int,
+    reason: str = "No reason provided",
 ) -> None:
     from datetime import datetime
+
     ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     await execute(
         "INSERT INTO mod_logs (timestamp, guild_id, action, target_id, moderator_id, reason) "
@@ -333,6 +353,7 @@ async def log_mod_action(
 # ---------------------------------------------------------------------------
 # Coin helpers
 # ---------------------------------------------------------------------------
+
 
 async def get_coins(user_id: int, guild_id: int) -> int:
     row = await fetchone(
@@ -363,6 +384,7 @@ async def set_coins(user_id: int, guild_id: int, amount: int) -> None:
 # Economy / daily helpers
 # ---------------------------------------------------------------------------
 
+
 async def get_economy(user_id: int, guild_id: int) -> dict:
     await execute(
         "INSERT INTO economy (user_id, guild_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
@@ -392,6 +414,7 @@ async def set_economy(user_id: int, guild_id: int, **kwargs) -> None:
 # Job progress helpers
 # ---------------------------------------------------------------------------
 
+
 async def get_job_times(user_id: int, guild_id: int, job_name: str) -> int:
     row = await fetchone(
         "SELECT times_worked FROM job_progress WHERE user_id=$1 AND guild_id=$2 AND job_name=$3",
@@ -415,6 +438,7 @@ async def increment_job(user_id: int, guild_id: int, job_name: str) -> int:
 # Inventory helpers
 # ---------------------------------------------------------------------------
 
+
 async def get_inventory(user_id: int, guild_id: int) -> dict[str, int]:
     rows = await fetchall(
         "SELECT item_name, quantity FROM inventory WHERE user_id=$1 AND guild_id=$2",
@@ -423,7 +447,9 @@ async def get_inventory(user_id: int, guild_id: int) -> dict[str, int]:
     return {r["item_name"]: r["quantity"] for r in rows}
 
 
-async def add_item(user_id: int, guild_id: int, item_name: str, quantity: int = 1) -> None:
+async def add_item(
+    user_id: int, guild_id: int, item_name: str, quantity: int = 1
+) -> None:
     await execute(
         """INSERT INTO inventory (user_id, guild_id, item_name, quantity)
            VALUES ($1, $2, $3, $4)
@@ -445,7 +471,10 @@ async def has_item(user_id: int, guild_id: int, item_name: str) -> bool:
 # Reaction role helpers
 # ---------------------------------------------------------------------------
 
-async def add_reaction_role(guild_id: int, message_id: int, emoji: str, role_id: int) -> None:
+
+async def add_reaction_role(
+    guild_id: int, message_id: int, emoji: str, role_id: int
+) -> None:
     await execute(
         """INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
            VALUES ($1, $2, $3, $4)
@@ -480,6 +509,7 @@ async def get_all_reaction_roles(guild_id: int) -> list[dict]:
 # RPS stats helpers
 # ---------------------------------------------------------------------------
 
+
 async def rps_ensure_player(user_id: int, name: str) -> None:
     await execute(
         "INSERT INTO rps_players (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING",
@@ -505,6 +535,7 @@ async def rps_get_leaderboard() -> list[dict]:
 # Mining inventory helpers  (replaces mining_data.json)
 # ---------------------------------------------------------------------------
 
+
 async def get_mining_inventory(user_id: str) -> dict[str, int]:
     rows = await fetchall(
         "SELECT item_name, quantity FROM mining_inventory WHERE user_id=$1", (user_id,)
@@ -527,9 +558,7 @@ async def set_mining_inventory(user_id: str, inventory: dict[str, int]) -> None:
     """Overwrite the entire inventory for a user (used for admin reset)."""
     pool = get()
     async with pool.acquire() as conn:
-        await conn.execute(
-            "DELETE FROM mining_inventory WHERE user_id=$1", user_id
-        )
+        await conn.execute("DELETE FROM mining_inventory WHERE user_id=$1", user_id)
         if inventory:
             await conn.executemany(
                 "INSERT INTO mining_inventory (user_id, item_name, quantity) VALUES ($1, $2, $3)",
@@ -549,6 +578,7 @@ async def get_all_mining_totals() -> list[tuple[str, int]]:
 # Prohibited word helpers  (replaces prohibited_words.json)
 # ---------------------------------------------------------------------------
 
+
 async def get_prohibited_words(guild_id: int) -> list[str]:
     rows = await fetchall(
         "SELECT word FROM prohibited_words WHERE guild_id=$1", (guild_id,)
@@ -560,7 +590,8 @@ async def add_prohibited_word(guild_id: int, word: str) -> bool:
     """Returns True if newly added, False if already present."""
     result = await get().execute(
         "INSERT INTO prohibited_words (guild_id, word) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-        guild_id, word,
+        guild_id,
+        word,
     )
     return result == "INSERT 0 1"
 
@@ -576,6 +607,7 @@ async def remove_prohibited_word(guild_id: int, word: str) -> bool:
 # ---------------------------------------------------------------------------
 # Deathmatch helpers  (replaces leaderboard.json)
 # ---------------------------------------------------------------------------
+
 
 async def get_deathmatch_stats(user_id: int) -> dict:
     row = await fetchone(
@@ -609,6 +641,7 @@ async def get_deathmatch_leaderboard() -> list[dict]:
 # Chain channel helpers  (replaces chain_data.json)
 # ---------------------------------------------------------------------------
 
+
 async def get_chain_channel(channel_id: int) -> dict | None:
     return await fetchone(
         "SELECT word, word_limit, chain_count FROM chain_channels WHERE channel_id=$1",
@@ -616,7 +649,9 @@ async def get_chain_channel(channel_id: int) -> dict | None:
     )
 
 
-async def set_chain_channel(channel_id: int, guild_id: int, word: str, limit: int = 0) -> None:
+async def set_chain_channel(
+    channel_id: int, guild_id: int, word: str, limit: int = 0
+) -> None:
     await execute(
         """INSERT INTO chain_channels (channel_id, guild_id, word, word_limit, chain_count)
            VALUES ($1, $2, $3, $4, 0)
@@ -631,7 +666,8 @@ async def delete_chain_channel(channel_id: int) -> None:
 
 async def set_chain_limit(channel_id: int, limit: int) -> None:
     await execute(
-        "UPDATE chain_channels SET word_limit=$1 WHERE channel_id=$2", (limit, channel_id)
+        "UPDATE chain_channels SET word_limit=$1 WHERE channel_id=$2",
+        (limit, channel_id),
     )
 
 
@@ -653,6 +689,7 @@ async def get_all_chain_channels(guild_id: int) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Counting state helpers  (replaces count_data.json)
 # ---------------------------------------------------------------------------
+
 
 async def get_counting_state(guild_id: int) -> dict:
     row = await fetchone(

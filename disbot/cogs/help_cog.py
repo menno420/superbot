@@ -1,7 +1,9 @@
 from __future__ import annotations
+
+import logging
+
 import discord
 from discord.ext import commands
-import logging
 
 logger = logging.getLogger("bot")
 
@@ -75,11 +77,15 @@ class CategorySelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user != self.view.ctx.author:
-            await interaction.response.send_message("This help menu is not for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This help menu is not for you.", ephemeral=True
+            )
             return
         cog = interaction.client.get_cog(self.values[0])
         if not cog:
-            await interaction.response.send_message("That category is no longer loaded.", ephemeral=True)
+            await interaction.response.send_message(
+                "That category is no longer loaded.", ephemeral=True
+            )
             return
         prefix = self.view.prefix
         embed = build_cog_embed(cog, prefix)
@@ -100,19 +106,27 @@ class HelpView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This help menu is not for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This help menu is not for you.", ephemeral=True
+            )
             return False
         return True
 
-    @discord.ui.button(label="◀ Back", style=discord.ButtonStyle.grey, row=1, disabled=True)
-    async def back_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(
+        label="◀ Back", style=discord.ButtonStyle.grey, row=1, disabled=True
+    )
+    async def back_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         self.showing_cog = None
         button.disabled = True
         # Rebuild select so it reflects currently loaded cogs
         self.remove_item(self._select)
         self._select = CategorySelect(self.bot)
         self.add_item(self._select)
-        await interaction.response.edit_message(embed=build_overview_embed(self.bot), view=self)
+        await interaction.response.edit_message(
+            embed=build_overview_embed(self.bot), view=self
+        )
 
     async def on_timeout(self):
         for item in self.children:
@@ -145,7 +159,9 @@ class HelpCog(commands.Cog):
                     color=discord.Color.green(),
                 )
                 if cmd.aliases:
-                    embed.add_field(name="Aliases", value=", ".join(f"`{a}`" for a in cmd.aliases))
+                    embed.add_field(
+                        name="Aliases", value=", ".join(f"`{a}`" for a in cmd.aliases)
+                    )
                 embed.add_field(
                     name="Usage",
                     value=f"`{prefix}{cmd.name}{(' ' + cmd.signature) if cmd.signature else ''}`",
@@ -153,7 +169,9 @@ class HelpCog(commands.Cog):
                 )
                 await ctx.send(embed=embed, delete_after=60)
                 return
-            await ctx.send(f"No command or category named `{category}` found.", delete_after=10)
+            await ctx.send(
+                f"No command or category named `{category}` found.", delete_after=10
+            )
             return
 
         view = HelpView(self.bot, ctx)
