@@ -153,7 +153,11 @@ class CountingCog(commands.Cog):
         }
 
     async def cog_load(self):
-        """Load counting state for all guilds from the database."""
+        """Schedule DB state load for after the bot is connected."""
+        asyncio.ensure_future(self._load_when_ready())
+
+    async def _load_when_ready(self):
+        await self.bot.wait_until_ready()
         for guild in self.bot.guilds:
             self.count_data[str(guild.id)] = await db.get_counting_state(guild.id)
 
