@@ -129,10 +129,10 @@ class XpCog(commands.Cog):
         level, current, needed = db.level_progress(row["xp"])
 
         all_xp = await db.fetchall(
-            "SELECT user_id FROM xp WHERE guild_id=? ORDER BY xp DESC", (ctx.guild.id,)
+            "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY xp DESC", (ctx.guild.id,)
         )
         all_coins = await db.fetchall(
-            "SELECT user_id FROM xp WHERE guild_id=? ORDER BY coins DESC", (ctx.guild.id,)
+            "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY coins DESC", (ctx.guild.id,)
         )
         xp_rank = next((i + 1 for i, r in enumerate(all_xp)    if r["user_id"] == member.id), "?")
         co_rank = next((i + 1 for i, r in enumerate(all_coins)  if r["user_id"] == member.id), "?")
@@ -173,7 +173,7 @@ class XpCog(commands.Cog):
         lines = []
         if stat == "xp":
             rows = await db.fetchall(
-                "SELECT user_id, xp, level FROM xp WHERE guild_id=? ORDER BY xp DESC LIMIT 10",
+                "SELECT user_id, xp, level FROM xp WHERE guild_id=$1 ORDER BY xp DESC LIMIT 10",
                 (ctx.guild.id,),
             )
             title = "🏆 XP Leaderboard"
@@ -184,7 +184,7 @@ class XpCog(commands.Cog):
                 lines.append(f"{icon} **{name}** — Level {row['level']} ({row['xp']} XP)")
         else:  # coins
             rows = await db.fetchall(
-                "SELECT user_id, coins FROM xp WHERE guild_id=? ORDER BY coins DESC LIMIT 10",
+                "SELECT user_id, coins FROM xp WHERE guild_id=$1 ORDER BY coins DESC LIMIT 10",
                 (ctx.guild.id,),
             )
             title = "🪙 Coin Leaderboard"
@@ -216,7 +216,7 @@ class XpCog(commands.Cog):
     async def resetxp(self, ctx: commands.Context, member: discord.Member):
         """Reset a user's XP to zero (admin only)."""
         await db.execute(
-            "DELETE FROM xp WHERE user_id=? AND guild_id=?", (member.id, ctx.guild.id)
+            "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2", (member.id, ctx.guild.id)
         )
         await ctx.send(f"✅ Reset XP for {member.mention}.")
 

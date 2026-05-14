@@ -45,6 +45,7 @@ INITIAL_EXTENSIONS = [
     "cogs.economy_cog",
     "cogs.counting_cog",
     "cogs.deathmatch_cog",
+    "cogs.proof_channel_cog",
 ]
 
 # ==========================
