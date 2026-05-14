@@ -154,21 +154,21 @@ class XpCog(commands.Cog):
     async def leaderboard(self, ctx: commands.Context, stat: str = "xp"):
         """Show the top 10.  !leaderboard [xp|coins]"""
         stat = stat.lower()
-        if stat not in _STAT_TYPES:
+        if stat not in ("xp", "coins"):
             await ctx.send(
-                f"Unknown stat `{stat}`. Choose from: {', '.join(_STAT_TYPES)}.",
+                f"Unknown stat `{stat}`. Choose from: `xp`, `coins`.",
                 delete_after=8,
             )
             return
 
+        medals = ["🥇", "🥈", "🥉"]
+        lines = []
         if stat == "xp":
             rows = await db.fetchall(
                 "SELECT user_id, xp, level FROM xp WHERE guild_id=? ORDER BY xp DESC LIMIT 10",
                 (ctx.guild.id,),
             )
             title = "🏆 XP Leaderboard"
-            medals = ["🥇", "🥈", "🥉"]
-            lines = []
             for i, row in enumerate(rows):
                 m = ctx.guild.get_member(row["user_id"])
                 name = m.display_name if m else f"<@{row['user_id']}>"
@@ -180,8 +180,6 @@ class XpCog(commands.Cog):
                 (ctx.guild.id,),
             )
             title = "🪙 Coin Leaderboard"
-            medals = ["🥇", "🥈", "🥉"]
-            lines = []
             for i, row in enumerate(rows):
                 m = ctx.guild.get_member(row["user_id"])
                 name = m.display_name if m else f"<@{row['user_id']}>"
