@@ -4,33 +4,14 @@ import random
 import json
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "json")
-DATA_FILE = os.path.join(DATA_DIR, "mining_data.json")
-RECIPES_FILE = os.path.join(DATA_DIR, "recipes.json")
+from utils import db
+
+RECIPES_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "json", "recipes.json")
 
 
 #
 # ===== HELPER FUNCTIONS (Outside the Cog) =====
 #
-
-def load_data():
-    """Loads mining data from the JSON file or creates an empty dictionary if missing/invalid."""
-    if not os.path.exists(DATA_FILE):
-        return {}
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data if isinstance(data, dict) else {}
-    except (json.JSONDecodeError, ValueError):
-        return {}
-
-
-def save_data(data):
-    """Saves the given inventory data to mining_data.json, ensuring the directory exists."""
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
-
 
 def load_recipes():
     """
@@ -79,28 +60,17 @@ def load_recipes():
 class MiningCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.mining_data = load_data()
         self.recipes = load_recipes()
 
     #
     # ====== INTERNAL HELPER METHOD ======
     #
-    def update_inventory(self, user_id, item, amount=1, save=True):
+    async def update_inventory(self, user_id, item, amount=1):
         """
         Updates a user's inventory by 'amount' of 'item'.
-        Prevents negative totals.
-        The optional 'save' parameter reduces frequent file writes if set to False.
+        Delegates to the DB helper which clamps to 0 automatically.
         """
-        user_id = str(user_id)
-        if user_id not in self.mining_data:
-            self.mining_data[user_id] = {}
-
-        self.mining_data[user_id][item] = self.mining_data[user_id].get(item, 0) + amount
-        if self.mining_data[user_id][item] < 0:
-            self.mining_data[user_id][item] = 0
-
-        if save:
-            save_data(self.mining_data)
+        await db.update_mining_item(str(user_id), item, amount)
 
     #
     # ====== VIEW FOR MINING BUTTONS ======
@@ -132,14 +102,14 @@ class MiningCog(commands.Cog):
             await interaction.response.defer()
 
             user_id = str(self.user_id)
-            pickaxe_bonus = 2 if self.cog.mining_data.get(user_id, {}).get("pickaxe", 0) > 0 else 1
+            inventory = await db.get_mining_inventory(user_id)
+            pickaxe_bonus = 2 if inventory.get("pickaxe", 0) > 0 else 1
             # Weighted random resource
             ores = {"stone": 3, "iron": 2, "gold": 1, "diamond": 0.5}
             found = random.choices(list(ores.keys()), weights=ores.values(), k=1)[0]
             amount = random.randint(1, 3) * pickaxe_bonus
 
-            self.cog.update_inventory(user_id, found, amount, save=False)
-            save_data(self.cog.mining_data)
+            await self.cog.update_inventory(user_id, found, amount)
 
             new_content = f"{interaction.user.mention} mined {amount}x **{found}** by going {direction}!"
             await interaction.message.edit(
@@ -168,17 +138,17 @@ class MiningCog(commands.Cog):
     async def chop(self, ctx):
         """Chop wood. If you have an 'axe', you'll collect double."""
         user_id = str(ctx.author.id)
-        inventory = self.mining_data.get(user_id, {})
+        inventory = await db.get_mining_inventory(user_id)
         multiplier = 2 if inventory.get("axe", 0) > 0 else 1
         wood_amount = random.randint(1, 3) * multiplier
-        self.update_inventory(ctx.author.id, "wood", wood_amount)
+        await self.update_inventory(ctx.author.id, "wood", wood_amount)
         await ctx.send(f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!")
 
     @commands.command()
     async def inventory(self, ctx):
         """Displays your inventory."""
         user_id = str(ctx.author.id)
-        inventory = self.mining_data.get(user_id, {})
+        inventory = await db.get_mining_inventory(user_id)
 
         if not inventory:
             return await ctx.send("Your inventory is empty. Start mining with `!mine`!")
@@ -195,7 +165,7 @@ class MiningCog(commands.Cog):
     async def stats(self, ctx):
         """Shows your total items and number of unique items."""
         user_id = str(ctx.author.id)
-        inventory = self.mining_data.get(user_id, {})
+        inventory = await db.get_mining_inventory(user_id)
         total_items = sum(inventory.values())
         unique_items = len(inventory)
 
@@ -207,15 +177,14 @@ class MiningCog(commands.Cog):
     @commands.command()
     async def leaderboard(self, ctx):
         """Shows top miners by total item count."""
-        if not self.mining_data:
+        rows = await db.get_all_mining_totals()
+        if not rows:
             return await ctx.send("No data available yet!")
 
-        sorted_users = sorted(self.mining_data.items(), key=lambda x: sum(x[1].values()), reverse=True)
         embed = discord.Embed(title="Top Miners", color=discord.Color.gold())
 
-        for i, (user, inventory) in enumerate(sorted_users[:10], 1):
-            total = sum(inventory.values())
-            embed.add_field(name=f"{i}. <@{user}>", value=f"{total} items", inline=False)
+        for i, (user_id, total) in enumerate(rows, 1):
+            embed.add_field(name=f"{i}. <@{user_id}>", value=f"{total} items", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -234,7 +203,7 @@ class MiningCog(commands.Cog):
                 return await ctx.invoke(self.bot.get_command("buildlist"))
 
             user_id = str(ctx.author.id)
-            inventory = self.mining_data.get(user_id, {})
+            inventory = await db.get_mining_inventory(user_id)
 
             structure_lower = structure.lower()
             required_items = self.recipes.get(structure_lower)
@@ -249,9 +218,8 @@ class MiningCog(commands.Cog):
 
             # Subtract cost and give the user the new buildable item
             for item, amount_needed in required_items.items():
-                self.update_inventory(ctx.author.id, item, -amount_needed, save=False)
-            self.update_inventory(ctx.author.id, structure_lower, 1, save=False)
-            save_data(self.mining_data)
+                await self.update_inventory(ctx.author.id, item, -amount_needed)
+            await self.update_inventory(ctx.author.id, structure_lower, 1)
 
             await ctx.send(f"{ctx.author.mention} successfully built a **{structure}**!")
         except Exception as e:
@@ -288,7 +256,7 @@ class MiningCog(commands.Cog):
         Lists only what the user can currently build based on their inventory.
         """
         user_id = str(ctx.author.id)
-        inventory = self.mining_data.get(user_id, {})
+        inventory = await db.get_mining_inventory(user_id)
 
         can_build = []
         for structure_name, requirements in self.recipes.items():
@@ -323,13 +291,13 @@ class MiningCog(commands.Cog):
         result = random.choice(outcomes)
 
         if "found 1 gold" in result:
-            self.update_inventory(user_id, "gold", 1)
+            await self.update_inventory(user_id, "gold", 1)
         elif "1 diamond" in result:
-            self.update_inventory(user_id, "diamond", 1)
+            await self.update_inventory(user_id, "diamond", 1)
         elif "lost 2 stone" in result:
-            self.update_inventory(user_id, "stone", -2)
+            await self.update_inventory(user_id, "stone", -2)
         elif "3 wood" in result:
-            self.update_inventory(user_id, "wood", 3)
+            await self.update_inventory(user_id, "wood", 3)
 
         await ctx.send(f"{ctx.author.mention} {result}")
 
@@ -342,7 +310,8 @@ class MiningCog(commands.Cog):
         user_id = str(ctx.author.id)
         item = item.lower()
 
-        if self.mining_data.get(user_id, {}).get(item, 0) < 1:
+        inventory = await db.get_mining_inventory(user_id)
+        if inventory.get(item, 0) < 1:
             return await ctx.send(f"You don't have **{item}** to use.")
 
         if item == "torch":
@@ -352,7 +321,7 @@ class MiningCog(commands.Cog):
         else:
             message = f"You used **{item}**, but nothing special happened."
 
-        self.update_inventory(user_id, item, -1)
+        await self.update_inventory(user_id, item, -1)
         await ctx.send(f"{ctx.author.mention} {message}")
 
     #
@@ -365,9 +334,7 @@ class MiningCog(commands.Cog):
         if not ctx.author.guild_permissions.administrator:
             return await ctx.send("You don't have permission to do that.")
 
-        user_id = str(member.id)
-        self.mining_data[user_id] = {}
-        save_data(self.mining_data)
+        await db.set_mining_inventory(str(member.id), {})
         await ctx.send(f"{member.name}'s inventory has been reset.")
 
     @commands.command()
@@ -377,7 +344,7 @@ class MiningCog(commands.Cog):
             return await ctx.send("You don't have permission to do that.")
 
         item = item.lower()
-        self.update_inventory(member.id, item, amount)
+        await db.update_mining_item(str(member.id), item, amount)
         await ctx.send(f"Gave {amount}x **{item}** to {member.name}.")
 
 

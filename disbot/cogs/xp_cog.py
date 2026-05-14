@@ -5,20 +5,20 @@ import discord
 from discord.ext import commands
 import logging
 from utils import db
+from utils.helpers import CogMenuView, post_log_embed
+from utils.cooldowns import check_cooldown, format_remaining
 
 logger = logging.getLogger("bot")
 
+_XP_MENU_COMMANDS: list[tuple[str, str, str]] = [
+    ("xpmenu",       "!xpmenu",                    "Show this XP command menu."),
+    ("rank",         "!rank [@user] [xp|coins]",   "Show XP/coin rank card for a user."),
+    ("leaderboard",  "!leaderboard [xp|coins]",    "Show the top-10 XP or coin leaderboard."),
+    ("xpconfig",     "!xpconfig",                  "Configure XP gain range, cooldown, and announce channel (admin)."),
+    ("givexp",       "!givexp <@user> <amount>",   "Give XP to a user (admin only)."),
+    ("resetxp",      "!resetxp <@user>",           "Reset a user's XP to zero (admin only)."),
+]
 
-async def _post_log(bot: commands.Bot, guild_id: int, embed: discord.Embed) -> None:
-    cid = await db.get_setting(guild_id, "economy_log_channel", "")
-    if not cid:
-        return
-    ch = bot.get_channel(int(cid))
-    if ch:
-        try:
-            await ch.send(embed=embed)
-        except Exception:
-            pass
 
 _XP_MIN = 15
 _XP_MAX = 25
@@ -53,6 +53,13 @@ class XpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @commands.command(name="xpmenu")
+    async def xp_menu(self, ctx: commands.Context):
+        """Show a quick-reference menu for all XP commands."""
+        view = CogMenuView(ctx, "🏆 XP Commands", _XP_MENU_COMMANDS)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
+
     # ------------------------------------------------------------------ events
 
     @commands.Cog.listener()
@@ -67,7 +74,8 @@ class XpCog(commands.Cog):
         row = await db.get_xp(user_id, guild_id)
         xp_min, xp_max, cooldown = await _guild_xp_settings(guild_id)
 
-        if now - row["last_xp"] < cooldown:
+        on_cd, _ = check_cooldown(row["last_xp"], cooldown)
+        if on_cd:
             return
 
         amount = random.randint(xp_min, xp_max)
@@ -98,7 +106,7 @@ class XpCog(commands.Cog):
                 ),
                 color=discord.Color.gold(),
             )
-            await _post_log(self.bot, guild_id, log_embed)
+            await post_log_embed(self.bot, guild_id, log_embed)
 
     # ------------------------------------------------------------------ commands
 

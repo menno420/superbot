@@ -6,6 +6,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ==========================
+# Database
+# ==========================
+# Required: postgres://user:password@host:5432/dbname
+# Set via DATABASE_URL environment variable (Railway / Render standard).
+# db.py will raise a clear RuntimeError at startup if this is missing.
+
+# ==========================
 # Discord Bot Token
 # ==========================
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN_PRODUCTION")

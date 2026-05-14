@@ -7,10 +7,21 @@ import re
 import sys
 import ast
 import asyncio
-from utils import db
+from utils.helpers import CogMenuView
 
 COGS_DIR = os.path.dirname(os.path.abspath(__file__))
 PID_FILE = os.path.join(os.path.dirname(COGS_DIR), "bot.pid")
+
+_ADMIN_MENU_COMMANDS: list[tuple[str, str, str]] = [
+    ("adminmenu",   "!adminmenu",                        "Show this admin command menu."),
+    ("serverstats", "!serverstats",                      "Display server member and channel statistics."),
+    ("coglist",     "!coglist",                          "List all cogs with load status and syntax check."),
+    ("cog",         "!cog <load|unload|reload> <name>",  "Load, unload, or reload a specific cog."),
+    ("loadall",     "!loadall",                          "Load all unloaded cogs."),
+    ("reloadall",   "!reloadall",                        "Reload all currently loaded cogs."),
+    ("loglevel",    "!loglevel <DEBUG|INFO|WARNING|ERROR>","Change the webhook log level."),
+    ("restart",     "!restart",                          "Restart the bot process (owner only)."),
+]
 
 
 def _normalize(name: str) -> str:
@@ -52,99 +63,16 @@ class AdminCog(commands.Cog):
         self.bot = bot
 
     # ------------------------------------------------------------------
-    # Reaction Role System  (DB-backed — survives restarts)
+    # Admin menu
     # ------------------------------------------------------------------
 
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        if payload.user_id == self.bot.user.id:
-            return
-        guild = self.bot.get_guild(payload.guild_id)
-        if not guild:
-            return
-        member = guild.get_member(payload.user_id)
-        if not member or member.bot:
-            return
-        role_id = await db.get_reaction_role(
-            payload.guild_id, payload.message_id, str(payload.emoji)
-        )
-        if role_id:
-            role = guild.get_role(role_id)
-            if role:
-                try:
-                    await member.add_roles(role, reason="Reaction role")
-                except discord.Forbidden:
-                    pass
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        guild = self.bot.get_guild(payload.guild_id)
-        if not guild:
-            return
-        member = guild.get_member(payload.user_id)
-        if not member or member.bot:
-            return
-        role_id = await db.get_reaction_role(
-            payload.guild_id, payload.message_id, str(payload.emoji)
-        )
-        if role_id:
-            role = guild.get_role(role_id)
-            if role:
-                try:
-                    await member.remove_roles(role, reason="Reaction role removed")
-                except discord.Forbidden:
-                    pass
-
-    @commands.command(name='reactroles', aliases=['reaktionsrollen'])
-    @commands.has_permissions(manage_roles=True)
-    async def setup_reaction_roles(self, ctx, message_id: int, emoji: str, role: discord.Role):
-        """Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>"""
-        try:
-            message = await ctx.fetch_message(message_id)
-        except discord.NotFound:
-            await ctx.send("❌ Message not found in this channel.", delete_after=8)
-            return
-        except discord.Forbidden:
-            await ctx.send("❌ I can't read that message.", delete_after=8)
-            return
-
-        await db.add_reaction_role(ctx.guild.id, message_id, emoji, role.id)
-        try:
-            await message.add_reaction(emoji)
-        except discord.HTTPException:
-            await ctx.send("⚠️ Role saved, but I couldn't add the reaction (invalid emoji?).")
-            return
-        await ctx.send(
-            f"✅ Reaction role set: reacting with {emoji} on that message will assign **{role.name}**.",
-            delete_after=15,
-        )
-
-    @commands.command(name='removereactrole')
-    @commands.has_permissions(manage_roles=True)
-    async def remove_reaction_role(self, ctx, message_id: int, emoji: str):
-        """Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"""
-        await db.remove_reaction_role(ctx.guild.id, message_id, emoji)
-        await ctx.send(f"✅ Reaction role for {emoji} on that message removed.", delete_after=10)
-
-    @commands.command(name='listreactroles')
-    @commands.has_permissions(manage_roles=True)
-    async def list_reaction_roles(self, ctx):
-        """List all active reaction roles in this server."""
-        rows = await db.get_all_reaction_roles(ctx.guild.id)
-        if not rows:
-            await ctx.send("No reaction roles configured.", delete_after=8)
-            return
-        lines = []
-        for r in rows:
-            role = ctx.guild.get_role(r["role_id"])
-            role_str = role.mention if role else f"<deleted role {r['role_id']}>"
-            lines.append(f"Message `{r['message_id']}` · {r['emoji']} → {role_str}")
-        embed = discord.Embed(
-            title="⚙️ Reaction Roles",
-            description="\n".join(lines),
-            color=discord.Color.blurple(),
-        )
-        await ctx.send(embed=embed)
+    @commands.command(name='adminmenu')
+    @commands.has_permissions(administrator=True)
+    async def admin_menu(self, ctx):
+        """Show a quick-reference menu for all admin commands."""
+        view = CogMenuView(ctx, "🛠️ Admin Commands", _ADMIN_MENU_COMMANDS)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
 
     # ------------------------------------------------------------------
     # Server Statistics
@@ -284,7 +212,6 @@ class AdminCog(commands.Cog):
         """Restart the bot process."""
         await ctx.send('♻️ Restarting bot...')
         logging.info('Restarting bot...')
-        # Remove PID file so the new process doesn't think another instance is running
         if os.path.exists(PID_FILE):
             os.remove(PID_FILE)
         await self.bot.close()
