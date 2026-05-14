@@ -9,8 +9,46 @@ import random
 import ast
 import operator as op
 import math
-from word2number import w2n
 import difflib
+
+
+def _word_to_num(text: str) -> int | None:
+    """Minimal word-to-number converter (replaces the word2number package)."""
+    _ONES = {
+        'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+        'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14,
+        'fifteen': 15, 'sixteen': 16, 'seventeen': 17, 'eighteen': 18,
+        'nineteen': 19,
+    }
+    _TENS = {
+        'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50,
+        'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90,
+    }
+    _MAGNITUDES = {
+        'thousand': 1_000, 'million': 1_000_000,
+        'billion': 1_000_000_000, 'trillion': 1_000_000_000_000,
+    }
+    words = text.lower().split()
+    if not words:
+        return None
+    result = 0
+    current = 0
+    for word in words:
+        if word == 'and':
+            continue
+        if word in _ONES:
+            current += _ONES[word]
+        elif word in _TENS:
+            current += _TENS[word]
+        elif word == 'hundred':
+            current = (current or 1) * 100
+        elif word in _MAGNITUDES:
+            result += (current or 1) * _MAGNITUDES[word]
+            current = 0
+        else:
+            return None
+    return result + current
 
 logger = logging.getLogger('CountingCog')
 
@@ -154,7 +192,7 @@ class CountingCog(commands.Cog):
 
     async def cog_load(self):
         """Schedule DB state load for after the bot is connected."""
-        asyncio.ensure_future(self._load_when_ready())
+        asyncio.create_task(self._load_when_ready())
 
     async def _load_when_ready(self):
         await self.bot.wait_until_ready()
@@ -300,7 +338,7 @@ class CountingCog(commands.Cog):
                 channel_config['prime_numbers'] = []  # Optional: Track prime numbers if needed
 
             self.count_data[guild_id]['channels'][channel_id] = channel_config
-            asyncio.ensure_future(self._save_guild(guild_id))
+            asyncio.create_task(self._save_guild(guild_id))
 
         await ctx.send(f"Started a **{mode.capitalize()}** counting match in {channel.mention}!", delete_after=10)
 
@@ -332,7 +370,7 @@ class CountingCog(commands.Cog):
 
             # Remove channel data
             del self.count_data[guild_id]['channels'][channel_id]
-            asyncio.ensure_future(self._save_guild(guild_id))
+            asyncio.create_task(self._save_guild(guild_id))
 
         await ctx.send(f"Ended and deleted the counting match in {channel.name}.", delete_after=10)
 
@@ -367,7 +405,7 @@ class CountingCog(commands.Cog):
             if mode == 'random':
                 rand_range = channel_data.get('random_range', [1, 3])
                 channel_data['next_expected'] = start + random.randint(*rand_range)
-            asyncio.ensure_future(self._save_guild(guild_id))
+            asyncio.create_task(self._save_guild(guild_id))
 
         await ctx.send(f"The count has been reset in {channel.mention}.", delete_after=10)
 
@@ -390,7 +428,7 @@ class CountingCog(commands.Cog):
 
             channel_data = self.count_data[guild_id]['channels'][channel_id]
             channel_data['taking_turns'] = not channel_data.get('taking_turns', False)
-            asyncio.ensure_future(self._save_guild(guild_id))
+            asyncio.create_task(self._save_guild(guild_id))
 
             status = "enabled" if channel_data['taking_turns'] else "disabled"
         await ctx.send(f"'Taking turns' mode has been {status} in {channel.mention}.", delete_after=10)
@@ -501,7 +539,7 @@ class CountingCog(commands.Cog):
             try:
                 skip_numbers = [int(num.strip()) for num in numbers.split(',')]
                 channel_data['skip_numbers'] = skip_numbers
-                asyncio.ensure_future(self._save_guild(guild_id))
+                asyncio.create_task(self._save_guild(guild_id))
                 await ctx.send(f"Skip numbers updated to: {skip_numbers}", delete_after=10)
             except ValueError:
                 await ctx.send("Invalid input. Please provide a comma-separated list of integers.", delete_after=10)
@@ -527,7 +565,7 @@ class CountingCog(commands.Cog):
 
             channel_data = self.count_data[guild_id]['channels'][channel_id]
             channel_data['reset_on_wrong_count'] = not channel_data.get('reset_on_wrong_count', False)
-            asyncio.ensure_future(self._save_guild(guild_id))
+            asyncio.create_task(self._save_guild(guild_id))
 
             status = "enabled" if channel_data['reset_on_wrong_count'] else "disabled"
         await ctx.send(f"'Reset on wrong count' has been {status} in {channel.mention}.", delete_after=10)
@@ -605,7 +643,7 @@ class CountingCog(commands.Cog):
                     channel_data['last_user'] = None
                     channel_data['leaderboard'] = {}
                     channel_data['last_count_time'] = datetime.utcnow().timestamp()
-                    asyncio.ensure_future(self._save_guild(guild_id))
+                    asyncio.create_task(self._save_guild(guild_id))
 
                     await message.channel.send(
                         f"{message.author.mention}, incorrect count! The count has been reset.",
@@ -669,7 +707,7 @@ class CountingCog(commands.Cog):
             leaderboard = channel_data.get('leaderboard', {})
             leaderboard[user_id] = leaderboard.get(user_id, 0) + 1
             channel_data['leaderboard'] = leaderboard
-            asyncio.ensure_future(self._save_guild(guild_id))
+            asyncio.create_task(self._save_guild(guild_id))
 
         # Add reaction to acknowledge correct count
         try:
@@ -790,16 +828,11 @@ class CountingCog(commands.Cog):
             return None
 
     def parse_number_word(self, text: str) -> int:
-        """
-        Parses a number word or ordinal into an integer.
-        """
-        try:
-            if text.lower() in self.ordinal_mapping:
-                return self.ordinal_mapping[text.lower()]
-            else:
-                return w2n.word_to_num(text)
-        except ValueError:
-            return None
+        """Parses a number word or ordinal into an integer."""
+        lower = text.lower()
+        if lower in self.ordinal_mapping:
+            return self.ordinal_mapping[lower]
+        return _word_to_num(lower)
 
     def split_concatenated_numbers(self, text: str) -> str:
         """

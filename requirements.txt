@@ -1,6 +1,5 @@
 discord.py>=2.3.0
 python-dotenv>=1.0.0
 psutil>=5.9.0
-word2number>=1.1
 asyncpg>=0.29.0
 aiohttp>=3.9.0

@@ -103,7 +103,7 @@ class ProofChannelCog(commands.Cog):
             finally:
                 self._timed_tasks.pop(ctx.guild.id, None)
 
-        task = asyncio.ensure_future(_auto_unlock())
+        task = asyncio.create_task(_auto_unlock())
         self._timed_tasks[ctx.guild.id] = task
 
 

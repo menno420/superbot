@@ -100,7 +100,7 @@ class UtilityCog(commands.Cog):
             await ctx.send("Please specify a time greater than 0 minutes.")
             return
         await ctx.send(f"⏳ Reminder set for **{time}** minute(s): {message}")
-        task = asyncio.ensure_future(self._remind_after(ctx, time * 60, message))
+        task = asyncio.create_task(self._remind_after(ctx, time * 60, message))
 
     async def _remind_after(self, ctx: commands.Context, delay: float, message: str) -> None:
         await asyncio.sleep(delay)
