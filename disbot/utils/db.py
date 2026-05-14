@@ -188,7 +188,7 @@ async def get_xp(user_id: int, guild_id: int) -> dict:
     )
     return row or {
         "user_id": user_id, "guild_id": guild_id,
-        "xp": 0, "level": 0, "messages": 0, "last_xp": 0,
+        "xp": 0, "level": 0, "messages": 0, "last_xp": 0, "coins": 0,
     }
 
 
