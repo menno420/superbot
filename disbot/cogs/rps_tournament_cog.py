@@ -1,16 +1,23 @@
-# rps_cog.py
-
+from __future__ import annotations
 import discord
 from discord.ext import commands, tasks
 import asyncio
 import random
 import logging
+import os
 import sqlite3
 from datetime import datetime, timedelta
+from utils import db as global_db
+from utils.channels import create_private_channel, get_or_create_category, cleanup_category
+from utils.tournaments import TournamentRegistration
 
-# Configure logging
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("bot")
+
+_RPS_DB = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "data", "rps_tournament.db"
+)
+_FREE_WIN = 30  # coins for free-play win
 
 class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
     """Cog for managing Rock-Paper-Scissors tournaments with multiple game modes."""
@@ -46,10 +53,13 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             "default_mode": "classic",
             "default_best_of": 3
         }
-        self.db_connection = sqlite3.connect('rps_tournament.db')
+        self.entry_fee = 0
+        self.paid_players: set[int] = set()   # players who paid the entry fee
+        os.makedirs(os.path.dirname(_RPS_DB), exist_ok=True)
+        self.db_connection = sqlite3.connect(_RPS_DB)
         self.db_cursor = self.db_connection.cursor()
         self.create_tables()
-        self.clean_up_task = self.bot.loop.create_task(self.clean_up_expired_matches())
+        self.clean_up_task = None  # started in cog_load after bot is ready
 
     def create_tables(self):
         """Creates necessary tables in the database."""
@@ -91,10 +101,11 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             "grass": ["grass", "leaf", "🌿", "🍃"]
         }
 
-    @commands.command(name="rps_register", aliases=["rpsreg"])
+    @commands.command(name="rpsregister", aliases=["rpsreg"])
     @commands.has_permissions(administrator=True)
-    async def rps_register(self, ctx, role: discord.Role = None):
-        """Starts the registration period with a reaction role message."""
+    async def rps_register(self, ctx, role: discord.Role = None, entry_fee: int = 0):
+        """Starts the registration period with a reaction role message.  !rpsregister [@role] [entry_fee]"""
+        self.entry_fee = max(0, entry_fee)
         if self.tournament_active:
             await ctx.send("Cannot start registration after the tournament has started.")
             return
@@ -107,18 +118,22 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         self.registration_role = role
 
         # Send the registration message
+        fee_str = f"**{self.entry_fee}** 🪙" if self.entry_fee else "Free"
         embed = discord.Embed(
             title="🎮 Rock-Paper-Scissors Tournament Registration 🎮",
             description=(
-                "React with ✅ to sign up for the tournament!\n"
+                "React ✅ or click **Join** to sign up!\n"
                 f"Registration ends in {self.registration_timer // 60} minutes."
             ),
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
+        embed.add_field(name="Entry Fee", value=fee_str, inline=True)
+        embed.add_field(name="Game Mode", value=self.settings["default_mode"].capitalize(), inline=True)
         if role:
             embed.add_field(name="Attention", value=f"{role.mention}", inline=False)
 
-        self.registration_message = await ctx.send(embed=embed)
+        reg_view = _RpsRegistrationView(self)
+        self.registration_message = await ctx.send(embed=embed, view=reg_view)
         await self.registration_message.add_reaction(self.registration_emoji)
 
         # Start the registration timer
@@ -161,14 +176,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             registration_message = await ctx.fetch_message(self.registration_message.id)
             reaction = discord.utils.get(registration_message.reactions, emoji=self.registration_emoji)
             if reaction:
-                users = await reaction.users().flatten()
+                users = [u async for u in reaction.users()]
                 for user in users:
-                    if user.bot:
-                        continue
-                    if user not in self.players:
-                        self.players.append(user)
-                        self.scores[user] = 0
-                        self.add_player_to_db(user)
+                    if not user.bot:
+                        await self.try_register_player(user, ctx.guild.id)
                 await ctx.send(f"{len(self.players)} players have registered for the tournament.")
             else:
                 await ctx.send("No participants registered.")
@@ -179,15 +190,30 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
     def add_player_to_db(self, user):
         """Adds a player to the database."""
         try:
-            self.db_cursor.execute('''
-                INSERT OR IGNORE INTO players (id, name)
-                VALUES (?, ?)
-            ''', (user.id, user.display_name))
+            self.db_cursor.execute(
+                "INSERT OR IGNORE INTO players (id, name) VALUES (?, ?)",
+                (user.id, user.display_name)
+            )
             self.db_connection.commit()
         except Exception as e:
             logger.exception(f"Error adding player to database: {e}")
 
-    @commands.command(name="rps_start", aliases=["rpsbegin"])
+    async def try_register_player(self, user, guild_id: int) -> bool:
+        """Check entry fee, deduct if needed, register player. Returns success."""
+        if user.id in self.paid_players or user in self.players:
+            return False  # already registered
+        if self.entry_fee > 0:
+            bal = await global_db.get_coins(user.id, guild_id)
+            if bal < self.entry_fee:
+                return False
+            await global_db.add_coins(user.id, guild_id, -self.entry_fee)
+            self.paid_players.add(user.id)
+        self.players.append(user)
+        self.scores[user] = 0
+        self.add_player_to_db(user)
+        return True
+
+    @commands.command(name="rpsstart", aliases=["rpsbegin"])
     @commands.has_permissions(administrator=True)
     async def rps_start(self, ctx, mode=None, best_of: int = None):
         """Starts the RPS tournament. Usage: !rps_start [mode] [best_of]"""
@@ -222,7 +248,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         await ctx.send(f"Tournament started with game mode: {self.game_mode}, Best of {best_of}")
         await self.start_round(ctx, best_of)
 
-    @commands.command(name="rps_bot")
+    @commands.command(name="rpsbot")
     async def rps_bot(self, ctx, mode=None, best_of: int = None, *members_or_roles):
         """Starts matches against the bot."""
         if mode is None:
@@ -277,32 +303,22 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     async def create_bot_match_channel(self, guild, player, ctx):
         """Creates a private channel for a match against the bot."""
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            player: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            self.bot.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        channel_name = f"rps-{player.display_name}-vs-bot"
-        category = discord.utils.get(guild.categories, name="RPS Bot Matches")
-        if category is None:
-            try:
-                category = await guild.create_category("RPS Bot Matches")
-            except discord.Forbidden:
-                await ctx.send("I do not have permission to create categories.")
-                return None
-
         try:
-            channel = await guild.create_text_channel(channel_name, overwrites=overwrites, category=category)
-            return channel
+            return await create_private_channel(
+                guild,
+                f"rps-{player.display_name}-vs-bot",
+                [player],
+                "RPS Bot Matches",
+            )
         except discord.Forbidden:
-            await ctx.send("I do not have permission to create text channels.")
+            await ctx.send("I do not have permission to create channels.")
             return None
         except Exception as e:
             logger.exception(f"Error creating bot match channel: {e}")
             await ctx.send(f"An error occurred while creating the match channel: {e}")
             return None
 
-    @commands.command(name="rps_matchup")
+    @commands.command(name="rpsmatchup")
     @commands.has_permissions(administrator=True)
     async def rps_matchup(self, ctx, player1: discord.Member, player2: discord.Member):
         """Manually creates a match between two specific members."""
@@ -401,33 +417,22 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     async def create_match_channel(self, guild, player1, player2, ctx):
         """Creates a private channel for the match."""
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            player1: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            player2: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            self.bot.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        channel_name = f"rps-{player1.display_name}-vs-{player2.display_name}"
-        category = discord.utils.get(guild.categories, name="RPS Tournaments")
-        if category is None:
-            try:
-                category = await guild.create_category("RPS Tournaments")
-            except discord.Forbidden:
-                await ctx.send("I do not have permission to create categories.")
-                return None
-
         try:
-            channel = await guild.create_text_channel(channel_name, overwrites=overwrites, category=category)
-            return channel
+            return await create_private_channel(
+                guild,
+                f"rps-{player1.display_name}-vs-{player2.display_name}",
+                [player1, player2],
+                "RPS Tournaments",
+            )
         except discord.Forbidden:
-            await ctx.send("I do not have permission to create text channels.")
+            await ctx.send("I do not have permission to create channels.")
             return None
         except Exception as e:
             logger.exception(f"Error creating match channel: {e}")
             await ctx.send(f"An error occurred while creating the match channel: {e}")
             return None
 
-    @commands.command(name="rps_leaderboard", aliases=["rpslb"])
+    @commands.command(name="rpslb")
     async def rps_leaderboard(self, ctx):
         """Displays the current leaderboard."""
         try:
@@ -462,11 +467,12 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         if str(reaction.emoji) != self.registration_emoji:
             return
 
-        if user not in self.players:
-            self.players.append(user)
-            self.scores[user] = 0
-            self.add_player_to_db(user)
-            await reaction.message.channel.send(f"{user.display_name} has registered for the tournament.")
+        guild_id = reaction.message.guild.id if reaction.message.guild else 0
+        ok = await self.try_register_player(user, guild_id)
+        if ok:
+            await reaction.message.channel.send(
+                f"{user.display_name} has registered for the tournament."
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -711,16 +717,17 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         """Checks if the tournament is over or starts a new round."""
         if len(self.current_round) == 1:
             winner = self.current_round[0]
-            # Try to send the message to the system channel
-            if guild.system_channel:
-                await guild.system_channel.send(
-                    f"🏆 **{winner.display_name}** has won the Rock-Paper-Scissors Tournament! 🏆"
-                )
-            else:
-                # Fallback to the channel where the last match was played
-                await last_channel.send(
-                    f"🏆 **{winner.display_name}** has won the Rock-Paper-Scissors Tournament! 🏆"
-                )
+            pot = self.entry_fee * len(self.paid_players)
+            msg_lines = [f"🏆 **{winner.display_name}** has won the RPS Tournament! 🏆"]
+            if pot:
+                new_bal = await global_db.add_coins(winner.id, guild.id, pot)
+                msg_lines.append(f"💰 Payout: **{pot}** 🪙 (Balance: {new_bal} 🪙)")
+            elif self.entry_fee == 0:
+                reward = 100
+                new_bal = await global_db.add_coins(winner.id, guild.id, reward)
+                msg_lines.append(f"🎁 Free tournament reward: **{reward}** 🪙")
+            announce = guild.system_channel or last_channel
+            await announce.send("\n".join(msg_lines))
             self.tournament_active = False
             self.players.clear()
             self.scores.clear()
@@ -733,14 +740,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             await self.start_round(last_channel, self.settings["default_best_of"])
 
     async def delete_all_match_channels(self, guild):
-        """Deletes all match channels."""
+        """Deletes all RPS tournament match channels and their category."""
         category = discord.utils.get(guild.categories, name="RPS Tournaments")
         if category:
-            for channel in category.channels:
-                try:
-                    await channel.delete()
-                except Exception as e:
-                    logger.exception(f"Error deleting match channel {channel.name}: {e}")
+            await cleanup_category(category)
 
     @tasks.loop(minutes=10)
     async def clean_up_expired_matches(self):
@@ -764,7 +767,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
             await ctx.send(f"An error occurred: {str(error)}")
         logger.exception(f"Error in rps_start command: {error}")
 
-    @commands.command(name="rps_help")
+    @commands.command(name="rpshelp")
     async def rps_help(self, ctx):
         """Displays help information for RPS tournament commands."""
         help_text = (
@@ -780,7 +783,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         )
         await ctx.send(help_text)
 
-    @commands.command(name="rps_settings")
+    @commands.command(name="rpssettings")
     @commands.has_permissions(administrator=True)
     async def rps_settings(self, ctx, setting: str, value):
         """Updates bot settings."""
@@ -802,17 +805,365 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         self.settings[setting] = value
         await ctx.send(f"Setting `{setting}` updated to `{value}`.")
 
+    async def cog_load(self):
+        self.clean_up_task = asyncio.ensure_future(self.clean_up_expired_matches())
+
     def cog_unload(self):
         """Cleanup when the cog is unloaded."""
-        if self.clean_up_task:
+        if self.clean_up_task and not self.clean_up_task.done():
             self.clean_up_task.cancel()
         if self.reminder_task and not self.reminder_task.done():
             self.reminder_task.cancel()
         self.db_connection.close()
 
-# Update the setup function according to your discord.py version
+    # ------------------------------------------------------------------
+    # Quick-play RPS with coins (button-based, single-player vs bot)
+    # ------------------------------------------------------------------
 
-# For discord.py version 2.x
+    @commands.command(name="rps")
+    async def quickrps(self, ctx: commands.Context,
+                       target: discord.Member | None = None, bet: int = 0):
+        """Quick RPS.  !rps [bet]  or  !rps @player [bet]"""
+        if bet < 0:
+            await ctx.send("Bet must be 0 or a positive number.", delete_after=5)
+            return
+
+        # PvP challenge
+        if target and target != ctx.author:
+            if target.bot:
+                await ctx.send("You can't challenge a bot to PvP.", delete_after=5)
+                return
+            if bet > 0:
+                bal = await global_db.get_coins(ctx.author.id, ctx.guild.id)
+                if bet > bal:
+                    await ctx.send(f"❌ You only have **{bal}** 🪙.", delete_after=8)
+                    return
+            bet_str = f"**{bet}** 🪙" if bet else "free play"
+            view    = _RpsPvpChallengeView(ctx.author, target, ctx.guild.id, bet)
+            embed   = discord.Embed(
+                title="✂️ RPS Challenge!",
+                description=(
+                    f"{ctx.author.mention} challenges {target.mention} to Rock-Paper-Scissors "
+                    f"({bet_str}).\n{target.mention}, do you accept?"
+                ),
+                color=discord.Color.blurple(),
+            )
+            msg = await ctx.send(embed=embed, view=view)
+            view.message = msg
+            return
+
+        # vs bot
+        if bet > 0:
+            bal = await global_db.get_coins(ctx.author.id, ctx.guild.id)
+            if bet > bal:
+                await ctx.send(f"❌ You only have **{bal}** 🪙.", delete_after=10)
+                return
+        view = _RpsView(ctx.author, ctx.guild.id, bet)
+        bet_str = f"**{bet}** 🪙" if bet else f"Free play (win = +{_FREE_WIN} 🪙)"
+        embed = discord.Embed(
+            title="✂️ Rock · Paper · Scissors",
+            description=f"Bet: {bet_str}\nChoose your move!",
+            color=discord.Color.blurple(),
+        )
+        msg = await ctx.send(embed=embed, view=view)
+        view.message = msg
+
+
+# ---------------------------------------------------------------------------
+# Quick-play RPS View
+# ---------------------------------------------------------------------------
+
+_RPS_WINS = {"rock": "scissors", "scissors": "paper", "paper": "rock"}
+_RPS_EMOJI = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
+
+
+class _RpsView(discord.ui.View):
+    def __init__(self, user: discord.Member, guild_id: int, bet: int):
+        super().__init__(timeout=60)
+        self.user = user
+        self.guild_id = guild_id
+        self.bet = bet
+        self.message: discord.Message | None = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message("This game isn't yours.", ephemeral=True)
+            return False
+        return True
+
+    async def _play(self, interaction: discord.Interaction, player_move: str):
+        for item in self.children:
+            item.disabled = True
+
+        bot_move = random.choice(["rock", "paper", "scissors"])
+        pe, be = _RPS_EMOJI[player_move], _RPS_EMOJI[bot_move]
+
+        if player_move == bot_move:
+            result = "🤝 Tie!"
+            coin_delta = 0
+            color = discord.Color.blurple()
+        elif _RPS_WINS[player_move] == bot_move:
+            payout = self.bet if self.bet else _FREE_WIN
+            result = f"🎉 You win! +{payout} 🪙"
+            coin_delta = payout
+            color = discord.Color.green()
+        else:
+            loss = -self.bet if self.bet else 0
+            result = f"😞 Bot wins. {loss} 🪙" if self.bet else "😞 Bot wins."
+            coin_delta = loss
+            color = discord.Color.red()
+
+        new_bal = await global_db.add_coins(self.user.id, self.guild_id, coin_delta)
+        embed = discord.Embed(
+            title="✂️ Rock · Paper · Scissors",
+            description=(
+                f"You: **{player_move}** {pe}  vs  Bot: **{bot_move}** {be}\n\n"
+                f"{result}\n"
+                f"Balance: **{new_bal}** 🪙"
+            ),
+            color=color,
+        )
+        await interaction.response.edit_message(embed=embed, view=self)
+        self.stop()
+
+    @discord.ui.button(label="Rock",     emoji="🪨", style=discord.ButtonStyle.grey)
+    async def rock(self, i: discord.Interaction, _: discord.ui.Button):
+        await self._play(i, "rock")
+
+    @discord.ui.button(label="Paper",    emoji="📄", style=discord.ButtonStyle.grey)
+    async def paper(self, i: discord.Interaction, _: discord.ui.Button):
+        await self._play(i, "paper")
+
+    @discord.ui.button(label="Scissors", emoji="✂️", style=discord.ButtonStyle.grey)
+    async def scissors(self, i: discord.Interaction, _: discord.ui.Button):
+        await self._play(i, "scissors")
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
+        try:
+            await self.message.edit(content="Game timed out.", view=self)
+        except Exception:
+            pass
+
+
+# ---------------------------------------------------------------------------
+# RPS Registration View (button-based join)
+# ---------------------------------------------------------------------------
+
+class _RpsRegistrationView(discord.ui.View):
+    def __init__(self, cog: RPSTournamentCog):
+        super().__init__(timeout=None)   # lives until tournament starts
+        self.cog = cog
+
+    @discord.ui.button(label="Join Tournament", style=discord.ButtonStyle.green, emoji="✅")
+    async def join_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        cog = self.cog
+        if not cog.registration_active:
+            await interaction.response.send_message(
+                "Registration is no longer open.", ephemeral=True)
+            return
+        guild_id = interaction.guild_id or 0
+        ok = await cog.try_register_player(interaction.user, guild_id)
+        if ok:
+            await interaction.response.send_message(
+                f"✅ Registered! ({len(cog.players)} player(s) so far)", ephemeral=True)
+        else:
+            bal = await global_db.get_coins(interaction.user.id, guild_id)
+            if cog.entry_fee > 0 and bal < cog.entry_fee:
+                await interaction.response.send_message(
+                    f"❌ Need **{cog.entry_fee}** 🪙 to enter (you have {bal}).",
+                    ephemeral=True)
+            else:
+                await interaction.response.send_message(
+                    "You're already registered!", ephemeral=True)
+
+
+# ---------------------------------------------------------------------------
+# RPS PvP Challenge
+# ---------------------------------------------------------------------------
+
+_rps_pvp_pending: dict[frozenset, dict] = {}   # {p1,p2} → {choices, guild_id, bet, channel_id}
+
+
+class _RpsPvpChallengeView(discord.ui.View):
+    def __init__(self, challenger: discord.Member, opponent: discord.Member,
+                 guild_id: int, bet: int):
+        super().__init__(timeout=60)
+        self.challenger = challenger
+        self.opponent   = opponent
+        self.guild_id   = guild_id
+        self.bet        = bet
+        self.message: discord.Message | None = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.opponent.id:
+            await interaction.response.send_message(
+                "This challenge isn't for you.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Accept", style=discord.ButtonStyle.green, emoji="✅")
+    async def accept(self, interaction: discord.Interaction, _: discord.ui.Button):
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(
+            content="✅ Challenge accepted — both players, choose your move!",
+            view=self,
+        )
+        key = frozenset({self.challenger.id, self.opponent.id})
+        _rps_pvp_pending[key] = {
+            "choices":    {},
+            "guild_id":   self.guild_id,
+            "bet":        self.bet,
+            "channel_id": interaction.channel_id,
+        }
+        # Send ephemeral choose-views to both players
+        ch = interaction.channel
+        play_view = _RpsPvpPlayView(
+            self.challenger, self.opponent, self.guild_id, self.bet, ch
+        )
+        await ch.send(
+            f"{self.challenger.mention} {self.opponent.mention} — click below to pick your move (only you can see your choice):",
+            view=play_view,
+        )
+        self.stop()
+
+    @discord.ui.button(label="Decline", style=discord.ButtonStyle.red, emoji="❌")
+    async def decline(self, interaction: discord.Interaction, _: discord.ui.Button):
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(
+            content=f"❌ {self.opponent.display_name} declined the challenge.", view=self)
+        self.stop()
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
+        try:
+            await self.message.edit(content="⏰ Challenge timed out.", view=self)
+        except Exception:
+            pass
+
+
+class _RpsPvpPlayView(discord.ui.View):
+    """Visible to the channel; each player clicks to get their ephemeral move picker."""
+
+    def __init__(self, p1: discord.Member, p2: discord.Member,
+                 guild_id: int, bet: int, channel: discord.TextChannel):
+        super().__init__(timeout=60)
+        self.p1       = p1
+        self.p2       = p2
+        self.guild_id = guild_id
+        self.bet      = bet
+        self.channel  = channel
+        self.choices: dict[int, str] = {}
+        self.message: discord.Message | None = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id not in (self.p1.id, self.p2.id):
+            await interaction.response.send_message(
+                "You're not part of this match.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Pick your move", style=discord.ButtonStyle.blurple, emoji="✂️")
+    async def pick(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if interaction.user.id in self.choices:
+            await interaction.response.send_message(
+                "You already picked!", ephemeral=True)
+            return
+        picker_view = _RpsMovePickerView(interaction.user.id, self)
+        await interaction.response.send_message(
+            "Choose your move — only you can see this:", view=picker_view, ephemeral=True)
+
+    async def record_choice(self, user_id: int, move: str):
+        self.choices[user_id] = move
+        if len(self.choices) == 2:
+            await self._resolve()
+
+    async def _resolve(self):
+        for item in self.children:
+            item.disabled = True
+        try:
+            await self.message.edit(view=self)
+        except Exception:
+            pass
+        self.stop()
+
+        m1 = self.choices.get(self.p1.id, "forfeit")
+        m2 = self.choices.get(self.p2.id, "forfeit")
+
+        def _wins(a, b):
+            return {"rock": "scissors", "scissors": "paper", "paper": "rock"}.get(a) == b
+
+        e = {"rock": "🪨", "paper": "📄", "scissors": "✂️", "forfeit": "❌"}
+
+        if m1 == "forfeit" and m2 == "forfeit":
+            result, coin_delta, winner_id = "🤝 Both forfeited.", 0, None
+        elif m1 == "forfeit":
+            result, coin_delta, winner_id = f"{self.p2.mention} wins (opponent forfeited)!", self.bet, self.p2.id
+        elif m2 == "forfeit":
+            result, coin_delta, winner_id = f"{self.p1.mention} wins (opponent forfeited)!", self.bet, self.p1.id
+        elif m1 == m2:
+            result, coin_delta, winner_id = "🤝 Tie! No coins exchanged.", 0, None
+        elif _wins(m1, m2):
+            result, coin_delta, winner_id = f"🎉 {self.p1.mention} wins!", self.bet, self.p1.id
+        else:
+            result, coin_delta, winner_id = f"🎉 {self.p2.mention} wins!", self.bet, self.p2.id
+
+        if coin_delta and winner_id:
+            loser_id = self.p2.id if winner_id == self.p1.id else self.p1.id
+            payout   = coin_delta if coin_delta else _FREE_WIN
+            await global_db.add_coins(winner_id, self.guild_id,  payout)
+            await global_db.add_coins(loser_id,  self.guild_id, -payout)
+
+        embed = discord.Embed(
+            title="✂️ RPS PvP Result",
+            description=(
+                f"{self.p1.mention}: **{m1}** {e.get(m1, '')}\n"
+                f"{self.p2.mention}: **{m2}** {e.get(m2, '')}\n\n"
+                f"{result}"
+            ),
+            color=discord.Color.green() if winner_id else discord.Color.blurple(),
+        )
+        await self.channel.send(embed=embed)
+
+    async def on_timeout(self):
+        # Anyone who didn't choose forfeits
+        for pid in (self.p1.id, self.p2.id):
+            if pid not in self.choices:
+                self.choices[pid] = "forfeit"
+        if len(self.choices) == 2:
+            await self._resolve()
+
+
+class _RpsMovePickerView(discord.ui.View):
+    """Ephemeral view for picking a move in PvP."""
+
+    def __init__(self, user_id: int, parent: _RpsPvpPlayView):
+        super().__init__(timeout=55)
+        self.user_id = user_id
+        self.parent  = parent
+
+    @discord.ui.button(label="Rock",     emoji="🪨", style=discord.ButtonStyle.grey)
+    async def rock(self, i: discord.Interaction, _): await self._pick(i, "rock")
+
+    @discord.ui.button(label="Paper",    emoji="📄", style=discord.ButtonStyle.grey)
+    async def paper(self, i: discord.Interaction, _): await self._pick(i, "paper")
+
+    @discord.ui.button(label="Scissors", emoji="✂️", style=discord.ButtonStyle.grey)
+    async def scissors(self, i: discord.Interaction, _): await self._pick(i, "scissors")
+
+    async def _pick(self, interaction: discord.Interaction, move: str):
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(
+            content=f"You chose **{move}** — waiting for opponent…", view=self)
+        self.stop()
+        await self.parent.record_choice(self.user_id, move)
+
+
 async def setup(bot):
     await bot.add_cog(RPSTournamentCog(bot))
 
