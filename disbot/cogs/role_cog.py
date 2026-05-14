@@ -508,7 +508,7 @@ class RoleCreatorView(discord.ui.View):
             pass
 
 
-class _RoleCreateModal(discord.ui.Modal, title="Create Role"):
+class _RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[call-arg]
     name = discord.ui.TextInput(label="Role name", max_length=100)
     color = discord.ui.TextInput(
         label="Color (hex, e.g. #3498db)",
@@ -649,7 +649,7 @@ class RoleSettingsView(discord.ui.View):
             pass
 
 
-class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):
+class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):  # type: ignore[call-arg]
     role_name = discord.ui.TextInput(
         label="Role name (must exist in server)", max_length=100
     )

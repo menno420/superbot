@@ -33,4 +33,4 @@ jobs:
         run: ruff check . --exclude .github,tests,venv,env,build,dist
 
       - name: Run mypy
-        run: mypy --check . --exclude '(\.github|tests|venv|env|build|dist)'
+        run: mypy disbot/

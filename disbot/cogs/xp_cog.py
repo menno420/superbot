@@ -277,7 +277,7 @@ class XpConfigView(discord.ui.View):
             pass
 
 
-class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):
+class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[call-arg]
     xp_min = discord.ui.TextInput(
         label="Min XP per message", placeholder="15", max_length=4
     )
@@ -307,7 +307,7 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):
         await self.view._refresh(interaction)
 
 
-class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):
+class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: ignore[call-arg]
     seconds = discord.ui.TextInput(
         label="Cooldown in seconds", placeholder="60", max_length=5
     )
@@ -331,7 +331,7 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):
         await self.view._refresh(interaction)
 
 
-class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"):
+class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"):  # type: ignore[call-arg]
     channel_id = discord.ui.TextInput(
         label="Channel ID (leave blank = same channel)",
         required=False,

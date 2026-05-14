@@ -20,7 +20,7 @@ logger = logging.getLogger("bot")
 _FREE_WIN = 30  # coins for free-play win
 
 
-class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
+class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # type: ignore[call-arg]
     """Cog for managing Rock-Paper-Scissors tournaments with multiple game modes."""
 
     def __init__(self, bot):

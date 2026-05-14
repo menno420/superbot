@@ -299,7 +299,7 @@ class CountingCog(commands.Cog):
         return False
 
     # Decorator to check if the user is staff or owner
-    def staff_or_owner():
+    def staff_or_owner():  # type: ignore[misc]
         """Decorator to check if the user is staff or owner."""
 
         async def predicate(ctx):
@@ -959,7 +959,7 @@ class CountingCog(commands.Cog):
         tokens = re.findall(r"\d+|[^\W\d_]+|[^\w\s]", content, re.UNICODE)
 
         processed_tokens = []
-        number_word_tokens = []
+        number_word_tokens: list[str] = []
         prev_token_type = None
 
         for token in tokens:

@@ -1400,7 +1400,7 @@ class _CategorySelect(discord.ui.Select):
                 await interaction.response.defer()
 
 
-class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):
+class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):  # type: ignore[call-arg]
     channel_name = discord.ui.TextInput(
         label="Channel name",
         placeholder="e.g. my-channel",

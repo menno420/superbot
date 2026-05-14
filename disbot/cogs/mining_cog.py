@@ -120,7 +120,9 @@ class MiningCog(commands.Cog):
             pickaxe_bonus = 2 if inventory.get("pickaxe", 0) > 0 else 1
             # Weighted random resource
             ores = {"stone": 3, "iron": 2, "gold": 1, "diamond": 0.5}
-            found = random.choices(list(ores.keys()), weights=ores.values(), k=1)[0]
+            found = random.choices(list(ores.keys()), weights=list(ores.values()), k=1)[
+                0
+            ]
             amount = random.randint(1, 3) * pickaxe_bonus
 
             await self.cog.update_inventory(user_id, found, amount)

@@ -160,7 +160,7 @@ class LeaderboardView(discord.ui.View):
         await interaction.edit_original_response(embed=embed, view=self)
 
 
-class LeaderboardCog(commands.Cog, name="Leaderboard"):
+class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg]
     """Centralised leaderboards for XP, coins, mining, deathmatch, RPS, and counting."""
 
     def __init__(self, bot: commands.Bot):

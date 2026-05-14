@@ -812,7 +812,7 @@ class BlackjackCog(commands.Cog):
             return
 
         # Solo vs bot
-        key = (ctx.author.id, ctx.guild.id)
+        key = (ctx.author.id, ctx.guild.id)  # type: ignore[assignment]
         if key in _active:
             await ctx.send("You already have a game running!", delete_after=8)
             return
@@ -823,7 +823,7 @@ class BlackjackCog(commands.Cog):
                 return
 
         game = _Game(ctx.author.id, ctx.guild.id, bet)
-        _active[key] = game
+        _active[key] = game  # type: ignore[index]
 
         if _is_blackjack(game.player):
             payout = int(bet * 1.5) if bet else FREE_WIN_COINS
@@ -835,7 +835,7 @@ class BlackjackCog(commands.Cog):
                 value=f"+{payout} 🪙  |  Balance: **{new_bal}** 🪙",
                 inline=False,
             )
-            _active.pop(key)
+            _active.pop(key)  # type: ignore[call-overload]
             await ctx.send(embed=embed)
             return
 

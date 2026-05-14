@@ -40,7 +40,7 @@ def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
 # ---------------------------------------------------------------------------
 
 
-class _WarnModal(discord.ui.Modal, title="Warn Member"):
+class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(
         label="User (mention, ID, or name)", max_length=100
     )
@@ -90,7 +90,7 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):
                 )
 
 
-class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):
+class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(
         label="User (mention, ID, or name)", max_length=100
     )
@@ -146,7 +146,7 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):
             )
 
 
-class _KickModal(discord.ui.Modal, title="Kick Member"):
+class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(
         label="User (mention, ID, or name)", max_length=100
     )
@@ -188,7 +188,7 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):
             )
 
 
-class _BanModal(discord.ui.Modal, title="Ban Member"):
+class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(
         label="User (mention, ID, or name)", max_length=100
     )
@@ -230,7 +230,7 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):
             )
 
 
-class _UnbanModal(discord.ui.Modal, title="Unban Member"):
+class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-arg]
     username_input = discord.ui.TextInput(label="Username (exact)", max_length=200)
 
     def __init__(self, cog: "ModerationCog"):
