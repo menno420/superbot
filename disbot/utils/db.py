@@ -313,11 +313,13 @@ async def get_coins(user_id: int, guild_id: int) -> int:
 
 async def add_coins(user_id: int, guild_id: int, amount: int) -> int:
     """Add (or subtract if negative) coins; clamps to 0. Returns new balance."""
+    # Pass amount twice: once for the INSERT default (clamped for new users),
+    # once for the UPDATE so negative values actually subtract from existing balance.
     await execute(
         """INSERT INTO xp (user_id, guild_id, coins) VALUES (?, ?, MAX(0, ?))
            ON CONFLICT(user_id, guild_id) DO UPDATE SET
-               coins=MAX(0, coins + excluded.coins)""",
-        (user_id, guild_id, amount),
+               coins=MAX(0, coins + ?)""",
+        (user_id, guild_id, amount, amount),
     )
     return await get_coins(user_id, guild_id)
 
