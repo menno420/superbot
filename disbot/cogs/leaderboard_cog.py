@@ -9,24 +9,31 @@ from utils import embeds as em
 MEDALS = ["🥇", "🥈", "🥉"]
 
 CATEGORIES = {
-    "xp":         ("🏆 XP Leaderboard",         "xp"),
-    "coins":      ("🪙 Coin Leaderboard",        "coins"),
-    "mining":     ("⛏️ Mining Leaderboard",      "mining"),
-    "deathmatch": ("⚔️ Deathmatch Leaderboard",  "deathmatch"),
-    "rps":        ("✂️ RPS Leaderboard",          "rps"),
-    "counting":   ("🔢 Counting Leaderboard",    "counting"),
+    "xp": ("🏆 XP Leaderboard", "xp"),
+    "coins": ("🪙 Coin Leaderboard", "coins"),
+    "mining": ("⛏️ Mining Leaderboard", "mining"),
+    "deathmatch": ("⚔️ Deathmatch Leaderboard", "deathmatch"),
+    "rps": ("✂️ RPS Leaderboard", "rps"),
+    "counting": ("🔢 Counting Leaderboard", "counting"),
 }
 
 ALIASES_MAP = {
-    "minelb": "mining", "miningleaderboard": "mining",
-    "dm_leaderboard": "deathmatch", "dm_lb": "deathmatch", "board": "deathmatch",
+    "minelb": "mining",
+    "miningleaderboard": "mining",
+    "dm_leaderboard": "deathmatch",
+    "dm_lb": "deathmatch",
+    "board": "deathmatch",
     "rpslb": "rps",
-    "countlb": "counting", "counting_leaderboard": "counting",
-    "lb": "xp", "rankings": "xp",
+    "countlb": "counting",
+    "counting_leaderboard": "counting",
+    "lb": "xp",
+    "rankings": "xp",
 }
 
 
-async def _build_embed(category: str, guild: discord.Guild, ctx_channel: discord.abc.GuildChannel) -> discord.Embed:
+async def _build_embed(
+    category: str, guild: discord.Guild, ctx_channel: discord.abc.GuildChannel
+) -> discord.Embed:
     title, _ = CATEGORIES.get(category, ("Leaderboard", ""))
     embed = discord.Embed(title=title, color=discord.Color.gold())
 
@@ -81,7 +88,9 @@ async def _build_embed(category: str, guild: discord.Guild, ctx_channel: discord
         lines = []
         for i, row in enumerate(rows):
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
-            lines.append(f"{icon} **{row['name']}** — {row['wins']}W / {row['losses']}L / {row['ties']}T")
+            lines.append(
+                f"{icon} **{row['name']}** — {row['wins']}W / {row['losses']}L / {row['ties']}T"
+            )
         embed.description = "\n".join(lines) or "No data yet!"
 
     elif category == "counting":
@@ -106,7 +115,12 @@ async def _build_embed(category: str, guild: discord.Guild, ctx_channel: discord
 class LeaderboardView(discord.ui.View):
     """Category-selector view for the leaderboard panel."""
 
-    def __init__(self, guild: discord.Guild, channel: discord.abc.GuildChannel, author: discord.Member | discord.User):
+    def __init__(
+        self,
+        guild: discord.Guild,
+        channel: discord.abc.GuildChannel,
+        author: discord.Member | discord.User,
+    ):
         super().__init__(timeout=120)
         self.guild = guild
         self.channel = channel
@@ -115,7 +129,9 @@ class LeaderboardView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author.id:
-            await interaction.response.send_message("This panel isn't yours.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't yours.", ephemeral=True
+            )
             return False
         return True
 
@@ -129,15 +145,17 @@ class LeaderboardView(discord.ui.View):
     @discord.ui.select(
         placeholder="Choose a leaderboard category…",
         options=[
-            discord.SelectOption(label="XP",         value="xp",         emoji="🏆"),
-            discord.SelectOption(label="Coins",       value="coins",      emoji="🪙"),
-            discord.SelectOption(label="Mining",      value="mining",     emoji="⛏️"),
-            discord.SelectOption(label="Deathmatch",  value="deathmatch", emoji="⚔️"),
-            discord.SelectOption(label="RPS",         value="rps",        emoji="✂️"),
-            discord.SelectOption(label="Counting",    value="counting",   emoji="🔢"),
+            discord.SelectOption(label="XP", value="xp", emoji="🏆"),
+            discord.SelectOption(label="Coins", value="coins", emoji="🪙"),
+            discord.SelectOption(label="Mining", value="mining", emoji="⛏️"),
+            discord.SelectOption(label="Deathmatch", value="deathmatch", emoji="⚔️"),
+            discord.SelectOption(label="RPS", value="rps", emoji="✂️"),
+            discord.SelectOption(label="Counting", value="counting", emoji="🔢"),
         ],
     )
-    async def select_category(self, interaction: discord.Interaction, select: discord.ui.Select):
+    async def select_category(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ):
         await interaction.response.defer()
         embed = await _build_embed(select.values[0], self.guild, self.channel)
         await interaction.edit_original_response(embed=embed, view=self)
@@ -152,11 +170,15 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):
     @commands.command(
         name="leaderboard",
         aliases=[
-            "lb", "rankings",
-            "minelb", "miningleaderboard",
-            "dm_leaderboard", "dm_lb",
+            "lb",
+            "rankings",
+            "minelb",
+            "miningleaderboard",
+            "dm_leaderboard",
+            "dm_lb",
             "rpslb",
-            "countlb", "counting_leaderboard",
+            "countlb",
+            "counting_leaderboard",
         ],
     )
     async def leaderboard(self, ctx: commands.Context, category: str = ""):

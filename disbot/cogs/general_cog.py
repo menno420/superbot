@@ -45,8 +45,14 @@ MOTIVATIONS = [
 ]
 
 EIGHTBALL = [
-    "Yes!", "No.", "Maybe.", "Ask again later.",
-    "It is certain.", "Definitely not.", "Signs point to yes.", "Don't count on it.",
+    "Yes!",
+    "No.",
+    "Maybe.",
+    "Ask again later.",
+    "It is certain.",
+    "Definitely not.",
+    "Signs point to yes.",
+    "Don't count on it.",
 ]
 
 GREETINGS = ["Hello!", "Hi there!", "Greetings!", "Hey!", "What's up?"]
@@ -68,7 +74,9 @@ class General(commands.Cog):
     async def quote(self, ctx):
         await ctx.send(random.choice(QUOTES))
 
-    @commands.command(name="trivia", help="Asks a trivia question (answer hidden in spoiler tag).")
+    @commands.command(
+        name="trivia", help="Asks a trivia question (answer hidden in spoiler tag)."
+    )
     async def trivia(self, ctx):
         await ctx.send(random.choice(TRIVIA))
 
@@ -76,7 +84,11 @@ class General(commands.Cog):
     async def motivate(self, ctx):
         await ctx.send(random.choice(MOTIVATIONS))
 
-    @commands.command(name="eightball", aliases=["8ball"], help="Ask the Magic 8-Ball a yes/no question.")
+    @commands.command(
+        name="eightball",
+        aliases=["8ball"],
+        help="Ask the Magic 8-Ball a yes/no question.",
+    )
     async def eightball(self, ctx, *, question: str):
         await ctx.send(f"🎱 {random.choice(EIGHTBALL)}")
 

@@ -3,9 +3,12 @@ import discord
 from discord.ext import commands
 
 
-async def post_log_embed(bot: commands.Bot, guild_id: int, embed: discord.Embed) -> None:
+async def post_log_embed(
+    bot: commands.Bot, guild_id: int, embed: discord.Embed
+) -> None:
     """Post an embed to the guild's configured economy_log_channel (if set)."""
     from utils import db
+
     cid = await db.get_setting(guild_id, "economy_log_channel", "")
     if not cid:
         return
@@ -66,7 +69,9 @@ class CogMenuView(discord.ui.View):
         embed = discord.Embed(title=f"`!{name}`", color=discord.Color.green())
         embed.add_field(name="Usage", value=f"`{usage}`", inline=False)
         embed.add_field(name="Description", value=desc, inline=False)
-        embed.set_footer(text=f"{self.title} • Select another command or click Overview")
+        embed.set_footer(
+            text=f"{self.title} • Select another command or click Overview"
+        )
         return embed
 
     async def on_timeout(self) -> None:
@@ -81,7 +86,9 @@ class CogMenuView(discord.ui.View):
 
 class _CommandSelect(discord.ui.Select):
     def __init__(self, options: list[discord.SelectOption], menu: CogMenuView):
-        super().__init__(placeholder="Select a command…", options=options, min_values=1, max_values=1)
+        super().__init__(
+            placeholder="Select a command…", options=options, min_values=1, max_values=1
+        )
         self.menu = menu
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -96,4 +103,6 @@ class _OverviewButton(discord.ui.Button):
         self.menu = menu
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        await interaction.response.edit_message(embed=self.menu.build_embed(), view=self.view)
+        await interaction.response.edit_message(
+            embed=self.menu.build_embed(), view=self.view
+        )

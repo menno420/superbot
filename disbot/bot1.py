@@ -63,15 +63,17 @@ class WebhookReporter:
             color=discord.Color.green(),
             timestamp=datetime.datetime.utcnow(),
         )
-        embed.add_field(name="Prefix",      value=f"`{config.PREFIX}`",       inline=True)
-        embed.add_field(name="Servers",     value=str(len(bot.guilds)),        inline=True)
-        embed.add_field(name="Commands",    value=str(len(bot.commands)),      inline=True)
-        embed.add_field(name="Loaded cogs", value=str(len(bot.cogs)),          inline=True)
+        embed.add_field(name="Prefix", value=f"`{config.PREFIX}`", inline=True)
+        embed.add_field(name="Servers", value=str(len(bot.guilds)), inline=True)
+        embed.add_field(name="Commands", value=str(len(bot.commands)), inline=True)
+        embed.add_field(name="Loaded cogs", value=str(len(bot.cogs)), inline=True)
         embed.set_footer(text=f"Logged in as {bot.user}")
         await self._send(embed, username="Bot Status")
 
     async def on_cog_fail(self, ext: str, error: Exception) -> None:
-        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+        tb = "".join(
+            traceback.format_exception(type(error), error, error.__traceback__)
+        )
         if len(tb) > 1800:
             tb = tb[-1800:]
         embed = discord.Embed(
@@ -88,10 +90,14 @@ class WebhookReporter:
             color=discord.Color.blue(),
             timestamp=datetime.datetime.utcnow(),
         )
-        embed.add_field(name="Input",   value=f"`{ctx.message.content[:200]}`", inline=False)
-        embed.add_field(name="User",    value=f"{ctx.author} (`{ctx.author.id}`)", inline=True)
-        embed.add_field(name="Channel", value=f"#{ctx.channel}",                  inline=True)
-        embed.add_field(name="Server",  value=str(ctx.guild),                     inline=True)
+        embed.add_field(
+            name="Input", value=f"`{ctx.message.content[:200]}`", inline=False
+        )
+        embed.add_field(
+            name="User", value=f"{ctx.author} (`{ctx.author.id}`)", inline=True
+        )
+        embed.add_field(name="Channel", value=f"#{ctx.channel}", inline=True)
+        embed.add_field(name="Server", value=str(ctx.guild), inline=True)
         cog_name = ctx.cog.qualified_name if ctx.cog else "—"
         embed.set_footer(text=f"Cog: {cog_name}")
         await self._send(embed)
@@ -102,9 +108,11 @@ class WebhookReporter:
             color=discord.Color.green(),
             timestamp=datetime.datetime.utcnow(),
         )
-        embed.add_field(name="Command", value=f"`{ctx.command.qualified_name}`", inline=True)
-        embed.add_field(name="User",    value=str(ctx.author),                   inline=True)
-        embed.add_field(name="Server",  value=str(ctx.guild),                    inline=True)
+        embed.add_field(
+            name="Command", value=f"`{ctx.command.qualified_name}`", inline=True
+        )
+        embed.add_field(name="User", value=str(ctx.author), inline=True)
+        embed.add_field(name="Server", value=str(ctx.guild), inline=True)
         await self._send(embed)
 
     async def on_command_error(
@@ -121,8 +129,8 @@ class WebhookReporter:
                 color=discord.Color.greyple(),
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.add_field(name="User",   value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild),  inline=True)
+            embed.add_field(name="User", value=str(ctx.author), inline=True)
+            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
             await self._send(embed)
             return
 
@@ -136,8 +144,8 @@ class WebhookReporter:
                 color=discord.Color.orange(),
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.add_field(name="User",   value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild),  inline=True)
+            embed.add_field(name="User", value=str(ctx.author), inline=True)
+            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
             await self._send(embed)
             return
 
@@ -148,12 +156,14 @@ class WebhookReporter:
                 color=discord.Color.orange(),
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.add_field(name="User",   value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild),  inline=True)
+            embed.add_field(name="User", value=str(ctx.author), inline=True)
+            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
             await self._send(embed)
             return
 
-        if isinstance(error, (commands.MissingPermissions, commands.BotMissingPermissions)):
+        if isinstance(
+            error, (commands.MissingPermissions, commands.BotMissingPermissions)
+        ):
             label = "User" if isinstance(error, commands.MissingPermissions) else "Bot"
             embed = discord.Embed(
                 title=f"🔒 {label} Missing Permissions",
@@ -162,8 +172,8 @@ class WebhookReporter:
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.add_field(name="Command", value=f"`!{ctx.command}`", inline=True)
-            embed.add_field(name="User",    value=str(ctx.author),     inline=True)
-            embed.add_field(name="Server",  value=str(ctx.guild),      inline=True)
+            embed.add_field(name="User", value=str(ctx.author), inline=True)
+            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
             await self._send(embed)
             return
 
@@ -174,8 +184,8 @@ class WebhookReporter:
                 color=discord.Color.yellow(),
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.add_field(name="User",   value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild),  inline=True)
+            embed.add_field(name="User", value=str(ctx.author), inline=True)
+            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
             await self._send(embed)
             return
 
@@ -188,16 +198,21 @@ class WebhookReporter:
         embed = discord.Embed(
             title="❌ Unexpected Error",
             description=(
-                f"**{type(error).__name__}**: {error}\n\n"
-                f"```py\n{tb}\n```"
+                f"**{type(error).__name__}**: {error}\n\n" f"```py\n{tb}\n```"
             ),
             color=discord.Color.red(),
             timestamp=datetime.datetime.utcnow(),
         )
-        embed.add_field(name="Input",   value=f"`{ctx.message.content[:150]}`", inline=False)
-        embed.add_field(name="Command", value=f"`{ctx.command}`",               inline=True)
-        embed.add_field(name="User",    value=f"{ctx.author} (`{ctx.author.id}`)", inline=True)
-        embed.add_field(name="Channel", value=f"#{ctx.channel} in {ctx.guild}",   inline=True)
+        embed.add_field(
+            name="Input", value=f"`{ctx.message.content[:150]}`", inline=False
+        )
+        embed.add_field(name="Command", value=f"`{ctx.command}`", inline=True)
+        embed.add_field(
+            name="User", value=f"{ctx.author} (`{ctx.author.id}`)", inline=True
+        )
+        embed.add_field(
+            name="Channel", value=f"#{ctx.channel} in {ctx.guild}", inline=True
+        )
         await self._send(embed)
 
 
@@ -288,7 +303,7 @@ _aliases = _load_aliases()
 @bot.event
 async def on_ready() -> None:
     bot.uptime = datetime.datetime.utcnow()
-    bot._reporter = reporter          # expose so cogs can call reporter directly
+    bot._reporter = reporter  # expose so cogs can call reporter directly
     logger.info("Logged in as %s (ID: %s)", bot.user, bot.user.id)
     logger.info("Connected to %d server(s)", len(bot.guilds))
     logger.info("Loaded cogs: %s", ", ".join(bot.cogs.keys()))
@@ -306,7 +321,10 @@ async def on_ready() -> None:
 async def on_command(ctx: commands.Context) -> None:
     logger.info(
         "CMD | %s (%s) | #%s | %s | %s",
-        ctx.author, ctx.author.id, ctx.channel, ctx.guild,
+        ctx.author,
+        ctx.author.id,
+        ctx.channel,
+        ctx.guild,
         ctx.message.content[:150],
     )
     if reporter:
@@ -315,7 +333,9 @@ async def on_command(ctx: commands.Context) -> None:
 
 @bot.event
 async def on_command_completion(ctx: commands.Context) -> None:
-    logger.info("CMD ✅ | %s | %s | %s", ctx.command.qualified_name, ctx.author, ctx.guild)
+    logger.info(
+        "CMD ✅ | %s | %s | %s", ctx.command.qualified_name, ctx.author, ctx.guild
+    )
     if reporter:
         await reporter.on_command_success(ctx)
 
@@ -328,7 +348,7 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
 
     # User-facing responses only in allowed channels
     in_allowed = ctx.channel.id in ALLOWED_CHANNELS
-    is_force   = ctx.command is not None and ctx.command.name == "force"
+    is_force = ctx.command is not None and ctx.command.name == "force"
     if not in_allowed and not is_force:
         return
 
@@ -336,7 +356,9 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         return  # channel guard — no user message needed
 
     if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ You do not have permission to use this command.", delete_after=10)
+        await ctx.send(
+            "❌ You do not have permission to use this command.", delete_after=10
+        )
 
     elif isinstance(error, commands.BotMissingPermissions):
         await ctx.send(
@@ -376,11 +398,16 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
     else:
         logger.error(
             "CMD ❌ | %s | %s | %s | %s: %s",
-            ctx.command, ctx.author, ctx.guild,
-            type(error).__name__, error,
+            ctx.command,
+            ctx.author,
+            ctx.guild,
+            type(error).__name__,
+            error,
             exc_info=True,
         )
-        await ctx.send("⚠️ An unexpected error occurred. Please try again.", delete_after=10)
+        await ctx.send(
+            "⚠️ An unexpected error occurred. Please try again.", delete_after=10
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -417,7 +444,13 @@ async def _load_cogs() -> None:
             await bot.load_extension(ext)
             logger.info("✅ Loaded %s", ext)
         except Exception as exc:
-            logger.error("❌ Failed to load %s: %s: %s", ext, type(exc).__name__, exc, exc_info=True)
+            logger.error(
+                "❌ Failed to load %s: %s: %s",
+                ext,
+                type(exc).__name__,
+                exc,
+                exc_info=True,
+            )
             if reporter:
                 await reporter.on_cog_fail(ext, exc)
 

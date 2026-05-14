@@ -59,6 +59,7 @@ INITIAL_EXTENSIONS = [
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
+
 # ==========================
 # Channel Restrictions
 # ==========================
@@ -81,5 +82,10 @@ ALLOWED_CHANNELS: set[int] = _parse_channel_ids(
 # Channels exempt from the cleanup cog's command-deletion rule
 CLEANUP_WHITELIST_CHANNELS: set[int] = _parse_channel_ids(
     "BOT_CLEANUP_WHITELIST",
-    [1348795460948590622, 1349693768365903912, 1349851456509055047, 1403818013408624642],
+    [
+        1348795460948590622,
+        1349693768365903912,
+        1349851456509055047,
+        1403818013408624642,
+    ],
 )

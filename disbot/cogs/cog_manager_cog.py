@@ -72,7 +72,9 @@ class CogManagerView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This menu is not for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This menu is not for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -85,7 +87,9 @@ class CogManagerView(discord.ui.View):
         await interaction.message.edit(embed=build_status_embed(self.bot), view=self)
 
     @discord.ui.button(label="Load", style=discord.ButtonStyle.green, row=1)
-    async def load_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def load_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         await interaction.response.defer()
         if not self.selected_cog:
             await interaction.followup.send("Select a cog first.", ephemeral=True)
@@ -93,7 +97,9 @@ class CogManagerView(discord.ui.View):
         try:
             await self.bot.load_extension(self.selected_cog)
             logger.info(f"Loaded {self.selected_cog} by {interaction.user}")
-            await interaction.followup.send(f"✅ Loaded `{self.selected_cog}`.", ephemeral=True)
+            await interaction.followup.send(
+                f"✅ Loaded `{self.selected_cog}`.", ephemeral=True
+            )
         except commands.ExtensionAlreadyLoaded:
             await interaction.followup.send("⚠️ Already loaded.", ephemeral=True)
         except Exception as e:
@@ -102,27 +108,37 @@ class CogManagerView(discord.ui.View):
         await self._refresh(interaction)
 
     @discord.ui.button(label="Unload", style=discord.ButtonStyle.red, row=1)
-    async def unload_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def unload_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         await interaction.response.defer()
         if not self.selected_cog:
             await interaction.followup.send("Select a cog first.", ephemeral=True)
             return
         if "cog_manager_cog" in self.selected_cog:
-            await interaction.followup.send("❌ Cannot unload the Cog Manager itself.", ephemeral=True)
+            await interaction.followup.send(
+                "❌ Cannot unload the Cog Manager itself.", ephemeral=True
+            )
             return
         try:
             await self.bot.unload_extension(self.selected_cog)
             logger.info(f"Unloaded {self.selected_cog} by {interaction.user}")
-            await interaction.followup.send(f"🔴 Unloaded `{self.selected_cog}`.", ephemeral=True)
+            await interaction.followup.send(
+                f"🔴 Unloaded `{self.selected_cog}`.", ephemeral=True
+            )
         except commands.ExtensionNotLoaded:
             await interaction.followup.send("⚠️ Not currently loaded.", ephemeral=True)
         except Exception as e:
             logger.error(f"Failed to unload {self.selected_cog}: {e}", exc_info=True)
-            await interaction.followup.send(f"❌ Failed to unload: `{e}`", ephemeral=True)
+            await interaction.followup.send(
+                f"❌ Failed to unload: `{e}`", ephemeral=True
+            )
         await self._refresh(interaction)
 
     @discord.ui.button(label="Reload", style=discord.ButtonStyle.blurple, row=1)
-    async def reload_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def reload_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         await interaction.response.defer()
         if not self.selected_cog:
             await interaction.followup.send("Select a cog first.", ephemeral=True)
@@ -130,16 +146,24 @@ class CogManagerView(discord.ui.View):
         try:
             await self.bot.reload_extension(self.selected_cog)
             logger.info(f"Reloaded {self.selected_cog} by {interaction.user}")
-            await interaction.followup.send(f"🔄 Reloaded `{self.selected_cog}`.", ephemeral=True)
+            await interaction.followup.send(
+                f"🔄 Reloaded `{self.selected_cog}`.", ephemeral=True
+            )
         except commands.ExtensionNotLoaded:
-            await interaction.followup.send("⚠️ Not loaded — use Load instead.", ephemeral=True)
+            await interaction.followup.send(
+                "⚠️ Not loaded — use Load instead.", ephemeral=True
+            )
         except Exception as e:
             logger.error(f"Failed to reload {self.selected_cog}: {e}", exc_info=True)
-            await interaction.followup.send(f"❌ Failed to reload: `{e}`", ephemeral=True)
+            await interaction.followup.send(
+                f"❌ Failed to reload: `{e}`", ephemeral=True
+            )
         await self._refresh(interaction)
 
     @discord.ui.button(label="Refresh", style=discord.ButtonStyle.grey, row=1)
-    async def refresh_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def refresh_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         await interaction.response.defer()
         await self._refresh(interaction)
 

@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import random
+
+
 class GermanCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -21,7 +23,7 @@ class GermanCog(commands.Cog):
         jokes = [
             "Warum können Geister so schlecht lügen? Weil man sie durchschauen kann!",
             "Wie nennt man einen Keks unter einem Baum? Ein schattiges Plätzchen!",
-            "Warum haben Pilze so gute Partys? Weil sie die besten Räume haben!"
+            "Warum haben Pilze so gute Partys? Weil sie die besten Räume haben!",
         ]
         await ctx.send(random.choice(jokes))
 
@@ -29,6 +31,7 @@ class GermanCog(commands.Cog):
     async def tschuss(self, ctx):
         """Verabschiedet sich höflich."""
         await ctx.send("Tschüss! Bis bald! 👋")
+
 
 async def setup(bot):
     await bot.add_cog(GermanCog(bot))

@@ -15,19 +15,42 @@ import difflib
 def _word_to_num(text: str) -> int | None:
     """Minimal word-to-number converter (replaces the word2number package)."""
     _ONES = {
-        'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
-        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-        'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14,
-        'fifteen': 15, 'sixteen': 16, 'seventeen': 17, 'eighteen': 18,
-        'nineteen': 19,
+        "zero": 0,
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6,
+        "seven": 7,
+        "eight": 8,
+        "nine": 9,
+        "ten": 10,
+        "eleven": 11,
+        "twelve": 12,
+        "thirteen": 13,
+        "fourteen": 14,
+        "fifteen": 15,
+        "sixteen": 16,
+        "seventeen": 17,
+        "eighteen": 18,
+        "nineteen": 19,
     }
     _TENS = {
-        'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50,
-        'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90,
+        "twenty": 20,
+        "thirty": 30,
+        "forty": 40,
+        "fifty": 50,
+        "sixty": 60,
+        "seventy": 70,
+        "eighty": 80,
+        "ninety": 90,
     }
     _MAGNITUDES = {
-        'thousand': 1_000, 'million': 1_000_000,
-        'billion': 1_000_000_000, 'trillion': 1_000_000_000_000,
+        "thousand": 1_000,
+        "million": 1_000_000,
+        "billion": 1_000_000_000,
+        "trillion": 1_000_000_000_000,
     }
     words = text.lower().split()
     if not words:
@@ -35,13 +58,13 @@ def _word_to_num(text: str) -> int | None:
     result = 0
     current = 0
     for word in words:
-        if word == 'and':
+        if word == "and":
             continue
         if word in _ONES:
             current += _ONES[word]
         elif word in _TENS:
             current += _TENS[word]
-        elif word == 'hundred':
+        elif word == "hundred":
             current = (current or 1) * 100
         elif word in _MAGNITUDES:
             result += (current or 1) * _MAGNITUDES[word]
@@ -50,7 +73,9 @@ def _word_to_num(text: str) -> int | None:
             return None
     return result + current
 
-logger = logging.getLogger('CountingCog')
+
+logger = logging.getLogger("CountingCog")
+
 
 class CountingCog(commands.Cog):
     """A cog for managing various counting games with multiple modes."""
@@ -62,99 +87,147 @@ class CountingCog(commands.Cog):
         self.count_data = {}
 
         # Precompile regex for performance
-        self.number_pattern = re.compile(r'\d+')
+        self.number_pattern = re.compile(r"\d+")
         self.word_pattern = re.compile(
-            r'\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|'
-            r'eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|'
-            r'eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|'
-            r'eighty|ninety|hundred|thousand|million|billion|trillion|'
-            r'first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|'
-            r'eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|'
-            r'seventeenth|eighteenth|nineteenth|twentieth)\b', re.IGNORECASE)
+            r"\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|"
+            r"eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|"
+            r"eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|"
+            r"eighty|ninety|hundred|thousand|million|billion|trillion|"
+            r"first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"
+            r"eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|"
+            r"seventeenth|eighteenth|nineteenth|twentieth)\b",
+            re.IGNORECASE,
+        )
 
-        self.number_words_set = set([
-            # Cardinal numbers
-            'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
-            'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen',
-            'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen',
-            'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty',
-            'ninety', 'hundred', 'thousand', 'million', 'billion', 'trillion',
-            # Ordinal numbers
-            'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh',
-            'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth',
-            'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth',
-            'nineteenth', 'twentieth'
-        ])
+        self.number_words_set = set(
+            [
+                # Cardinal numbers
+                "zero",
+                "one",
+                "two",
+                "three",
+                "four",
+                "five",
+                "six",
+                "seven",
+                "eight",
+                "nine",
+                "ten",
+                "eleven",
+                "twelve",
+                "thirteen",
+                "fourteen",
+                "fifteen",
+                "sixteen",
+                "seventeen",
+                "eighteen",
+                "nineteen",
+                "twenty",
+                "thirty",
+                "forty",
+                "fifty",
+                "sixty",
+                "seventy",
+                "eighty",
+                "ninety",
+                "hundred",
+                "thousand",
+                "million",
+                "billion",
+                "trillion",
+                # Ordinal numbers
+                "first",
+                "second",
+                "third",
+                "fourth",
+                "fifth",
+                "sixth",
+                "seventh",
+                "eighth",
+                "ninth",
+                "tenth",
+                "eleventh",
+                "twelfth",
+                "thirteenth",
+                "fourteenth",
+                "fifteenth",
+                "sixteenth",
+                "seventeenth",
+                "eighteenth",
+                "nineteenth",
+                "twentieth",
+            ]
+        )
 
         self.phrase_number_mapping = {
-            'a couple': 2,
-            'a few': 3,
-            'several': 7,
-            'a dozen': 12,
-            'half a dozen': 6,
-            'a half dozen': 6,
-            'a bakers dozen': 13,
-            'a score': 20,
-            'a gross': 144,
-            'a hundred': 100,
-            'a thousand': 1000,
-            'a million': 1000000,
-            'one million': 1000000,
-            'a billion': 1000000000,
-            'one billion': 1000000000,
+            "a couple": 2,
+            "a few": 3,
+            "several": 7,
+            "a dozen": 12,
+            "half a dozen": 6,
+            "a half dozen": 6,
+            "a bakers dozen": 13,
+            "a score": 20,
+            "a gross": 144,
+            "a hundred": 100,
+            "a thousand": 1000,
+            "a million": 1000000,
+            "one million": 1000000,
+            "a billion": 1000000000,
+            "one billion": 1000000000,
         }
 
         self.ordinal_mapping = {
-            'first': 1,
-            'second': 2,
-            'third': 3,
-            'fourth': 4,
-            'fifth': 5,
-            'sixth': 6,
-            'seventh': 7,
-            'eighth': 8,
-            'ninth': 9,
-            'tenth': 10,
-            'eleventh': 11,
-            'twelfth': 12,
-            'thirteenth': 13,
-            'fourteenth': 14,
-            'fifteenth': 15,
-            'sixteenth': 16,
-            'seventeenth': 17,
-            'eighteenth': 18,
-            'nineteenth': 19,
-            'twentieth': 20
+            "first": 1,
+            "second": 2,
+            "third": 3,
+            "fourth": 4,
+            "fifth": 5,
+            "sixth": 6,
+            "seventh": 7,
+            "eighth": 8,
+            "ninth": 9,
+            "tenth": 10,
+            "eleventh": 11,
+            "twelfth": 12,
+            "thirteenth": 13,
+            "fourteenth": 14,
+            "fifteenth": 15,
+            "sixteenth": 16,
+            "seventeenth": 17,
+            "eighteenth": 18,
+            "nineteenth": 19,
+            "twentieth": 20,
         }
 
         self.roman_numeral_mapping = {
-            'I': 1,
-            'IV': 4,
-            'V': 5,
-            'IX': 9,
-            'X': 10,
-            'XL': 40,
-            'L': 50,
-            'XC': 90,
-            'C': 100,
-            'CD': 400,
-            'D': 500,
-            'CM': 900,
-            'M': 1000
+            "I": 1,
+            "IV": 4,
+            "V": 5,
+            "IX": 9,
+            "X": 10,
+            "XL": 40,
+            "L": 50,
+            "XC": 90,
+            "C": 100,
+            "CD": 400,
+            "D": 500,
+            "CM": 900,
+            "M": 1000,
         }
 
         self.emoji_number_mapping = {
-            '0️⃣': '0',
-            '1️⃣': '1',
-            '2️⃣': '2',
-            '3️⃣': '3',
-            '4️⃣': '4',
-            '5️⃣': '5',
-            '6️⃣': '6',
-            '7️⃣': '7',
-            '8️⃣': '8',
-            '9️⃣': '9',
-            '🔟': '10'
+            "0️⃣": "0",
+            "1️⃣": "1",
+            "2️⃣": "2",
+            "3️⃣": "3",
+            "4️⃣": "4",
+            "5️⃣": "5",
+            "6️⃣": "6",
+            "7️⃣": "7",
+            "8️⃣": "8",
+            "9️⃣": "9",
+            "🔟": "10",
         }
 
         # Supported operators for safe evaluation
@@ -171,23 +244,23 @@ class CountingCog(commands.Cog):
 
         # Operator mapping for replacement
         self.operator_mapping = {
-            'plus': '+',
-            'minus': '-',
-            'times': '*',
-            'multipliedby': '*',
-            'multiplied': '*',
-            'multiply': '*',
-            'x': '*',           # Added to handle 'x' as multiplication
-            '×': '*',           # Added to handle '×' as multiplication
-            'dividedby': '/',
-            'divided': '/',
-            'divide': '/',
-            'over': '/',
-            'powerof': '**',
-            'tothepowerof': '**',
-            'equals': '=',
-            'equal': '=',
-            'and': '+',  # Sometimes 'and' is used in numbers
+            "plus": "+",
+            "minus": "-",
+            "times": "*",
+            "multipliedby": "*",
+            "multiplied": "*",
+            "multiply": "*",
+            "x": "*",  # Added to handle 'x' as multiplication
+            "×": "*",  # Added to handle '×' as multiplication
+            "dividedby": "/",
+            "divided": "/",
+            "divide": "/",
+            "over": "/",
+            "powerof": "**",
+            "tothepowerof": "**",
+            "equals": "=",
+            "equal": "=",
+            "and": "+",  # Sometimes 'and' is used in numbers
         }
 
     async def cog_load(self):
@@ -215,7 +288,10 @@ class CountingCog(commands.Cog):
         if await self.bot.is_owner(ctx.author):
             return True
         # Define staff roles by name
-        staff_roles = ['Admin', 'Moderator']  # Adjust these role names as per your server
+        staff_roles = [
+            "Admin",
+            "Moderator",
+        ]  # Adjust these role names as per your server
         for role in ctx.author.roles:
             if role.name in staff_roles:
                 return True
@@ -224,16 +300,18 @@ class CountingCog(commands.Cog):
     # Decorator to check if the user is staff or owner
     def staff_or_owner():
         """Decorator to check if the user is staff or owner."""
+
         async def predicate(ctx):
             cog = ctx.cog
             return await cog.is_staff_or_owner(ctx)
+
         return commands.check(predicate)
 
     # --------------------------------------------
     # Commands
     # --------------------------------------------
 
-    @commands.command(name='start_match', aliases=['sm'])
+    @commands.command(name="start_match", aliases=["sm"])
     @staff_or_owner()
     async def start_match(self, ctx, mode: str, *args):
         """
@@ -247,17 +325,34 @@ class CountingCog(commands.Cog):
         mode = mode.lower()
 
         # Validate mode
-        valid_modes = ['normal', 'reverse', 'skip', 'random', 'multiples', 'prime', 'fibonacci', 'squares', 'cubes', 'factorials', 'custom']
+        valid_modes = [
+            "normal",
+            "reverse",
+            "skip",
+            "random",
+            "multiples",
+            "prime",
+            "fibonacci",
+            "squares",
+            "cubes",
+            "factorials",
+            "custom",
+        ]
         if mode not in valid_modes:
-            await ctx.send(f"Invalid mode. Available modes: {', '.join(valid_modes)}.", delete_after=10)
+            await ctx.send(
+                f"Invalid mode. Available modes: {', '.join(valid_modes)}.",
+                delete_after=10,
+            )
             return
 
         # Parse additional arguments
         multiple = None
         custom_sequence = None
-        if mode == 'multiples':
+        if mode == "multiples":
             if not args:
-                await ctx.send("Please specify a multiple for 'multiples' mode.", delete_after=10)
+                await ctx.send(
+                    "Please specify a multiple for 'multiples' mode.", delete_after=10
+                )
                 return
             try:
                 multiple = int(args[0])
@@ -266,16 +361,24 @@ class CountingCog(commands.Cog):
             except ValueError:
                 await ctx.send("Multiple must be a positive integer.", delete_after=10)
                 return
-        elif mode == 'custom':
+        elif mode == "custom":
             if not args:
-                await ctx.send("Please provide a sequence of numbers for 'custom' mode.", delete_after=10)
+                await ctx.send(
+                    "Please provide a sequence of numbers for 'custom' mode.",
+                    delete_after=10,
+                )
                 return
             try:
-                custom_sequence = [int(num.strip()) for num in ' '.join(args).split(',')]
+                custom_sequence = [
+                    int(num.strip()) for num in " ".join(args).split(",")
+                ]
                 if not custom_sequence:
                     raise ValueError
             except ValueError:
-                await ctx.send("Invalid sequence. Please provide a comma-separated list of integers.", delete_after=10)
+                await ctx.send(
+                    "Invalid sequence. Please provide a comma-separated list of integers.",
+                    delete_after=10,
+                )
                 return
 
         async with self.lock:
@@ -284,65 +387,97 @@ class CountingCog(commands.Cog):
             channel_name = f"{mode}-counting-{timestamp}"
             existing_channel = discord.utils.get(guild.text_channels, name=channel_name)
             if existing_channel:
-                await ctx.send(f"A channel named '{channel_name}' already exists.", delete_after=10)
+                await ctx.send(
+                    f"A channel named '{channel_name}' already exists.", delete_after=10
+                )
                 return
 
             try:
                 channel = await guild.create_text_channel(channel_name)
-                self.logger.info(f"Created channel '{channel_name}' in guild '{guild.name}'.")
+                self.logger.info(
+                    f"Created channel '{channel_name}' in guild '{guild.name}'."
+                )
             except discord.Forbidden:
-                self.logger.error(f"Missing permissions to create channel in guild '{guild.name}'.")
-                await ctx.send("I don't have permission to create channels.", delete_after=10)
+                self.logger.error(
+                    f"Missing permissions to create channel in guild '{guild.name}'."
+                )
+                await ctx.send(
+                    "I don't have permission to create channels.", delete_after=10
+                )
                 return
             except Exception as e:
-                self.logger.error(f"Error creating channel '{channel_name}' in guild '{guild.name}': {e}")
-                await ctx.send("An error occurred while creating the channel.", delete_after=10)
+                self.logger.error(
+                    f"Error creating channel '{channel_name}' in guild '{guild.name}': {e}"
+                )
+                await ctx.send(
+                    "An error occurred while creating the channel.", delete_after=10
+                )
                 return
 
             # Initialize channel data
             channel_id = str(channel.id)
             if guild_id not in self.count_data:
                 self.count_data[guild_id] = {}
-            self.count_data[guild_id].setdefault('channels', {})
-            if channel_id in self.count_data[guild_id]['channels']:
-                await ctx.send("A counting match is already active in this channel.", delete_after=10)
+            self.count_data[guild_id].setdefault("channels", {})
+            if channel_id in self.count_data[guild_id]["channels"]:
+                await ctx.send(
+                    "A counting match is already active in this channel.",
+                    delete_after=10,
+                )
                 return
 
             # Set up mode-specific configurations
-            starting_count = 0 if mode in [
-                'normal', 'random', 'skip', 'multiples', 'prime',
-                'fibonacci', 'squares', 'cubes', 'factorials', 'custom',
-            ] else 1000
+            starting_count = (
+                0
+                if mode
+                in [
+                    "normal",
+                    "random",
+                    "skip",
+                    "multiples",
+                    "prime",
+                    "fibonacci",
+                    "squares",
+                    "cubes",
+                    "factorials",
+                    "custom",
+                ]
+                else 1000
+            )
             channel_config = {
-                'current_count': starting_count,
-                'last_user': None,
-                'taking_turns': False,
-                'leaderboard': {},
-                'mode': mode,
-                'step': 1,
-                'skip_numbers': [5, 10],
-                'random_range': [1, 3],
-                'multiple': multiple if mode == 'multiples' else None,
-                'custom_sequence': custom_sequence if mode == 'custom' else None,
-                'sequence_index': 0,
-                'last_count_time': datetime.utcnow().timestamp(),
-                'reset_on_wrong_count': False,
+                "current_count": starting_count,
+                "last_user": None,
+                "taking_turns": False,
+                "leaderboard": {},
+                "mode": mode,
+                "step": 1,
+                "skip_numbers": [5, 10],
+                "random_range": [1, 3],
+                "multiple": multiple if mode == "multiples" else None,
+                "custom_sequence": custom_sequence if mode == "custom" else None,
+                "sequence_index": 0,
+                "last_count_time": datetime.utcnow().timestamp(),
+                "reset_on_wrong_count": False,
                 # For random mode: pre-roll the first expected value
-                'next_expected': (
-                    starting_count + random.randint(1, 3)
-                    if mode == 'random' else None
+                "next_expected": (
+                    starting_count + random.randint(1, 3) if mode == "random" else None
                 ),
             }
 
-            if mode == 'prime':
-                channel_config['prime_numbers'] = []  # Optional: Track prime numbers if needed
+            if mode == "prime":
+                channel_config["prime_numbers"] = (
+                    []
+                )  # Optional: Track prime numbers if needed
 
-            self.count_data[guild_id]['channels'][channel_id] = channel_config
+            self.count_data[guild_id]["channels"][channel_id] = channel_config
             asyncio.create_task(self._save_guild(guild_id))
 
-        await ctx.send(f"Started a **{mode.capitalize()}** counting match in {channel.mention}!", delete_after=10)
+        await ctx.send(
+            f"Started a **{mode.capitalize()}** counting match in {channel.mention}!",
+            delete_after=10,
+        )
 
-    @commands.command(name='end_match', aliases=['em'])
+    @commands.command(name="end_match", aliases=["em"])
     @staff_or_owner()
     async def end_match(self, ctx, channel: discord.TextChannel):
         """
@@ -352,29 +487,46 @@ class CountingCog(commands.Cog):
         channel_id = str(channel.id)
 
         async with self.lock:
-            if guild_id not in self.count_data or channel_id not in self.count_data[guild_id].get('channels', {}):
-                await ctx.send("No active counting match found in the specified channel.", delete_after=10)
+            if guild_id not in self.count_data or channel_id not in self.count_data[
+                guild_id
+            ].get("channels", {}):
+                await ctx.send(
+                    "No active counting match found in the specified channel.",
+                    delete_after=10,
+                )
                 return
 
             try:
                 await channel.delete()
-                self.logger.info(f"Deleted channel '{channel.name}' in guild '{ctx.guild.name}'.")
+                self.logger.info(
+                    f"Deleted channel '{channel.name}' in guild '{ctx.guild.name}'."
+                )
             except discord.Forbidden:
-                self.logger.error(f"Missing permissions to delete channel '{channel.name}' in guild '{ctx.guild.name}'.")
-                await ctx.send("I don't have permission to delete that channel.", delete_after=10)
+                self.logger.error(
+                    f"Missing permissions to delete channel '{channel.name}' in guild '{ctx.guild.name}'."
+                )
+                await ctx.send(
+                    "I don't have permission to delete that channel.", delete_after=10
+                )
                 return
             except Exception as e:
-                self.logger.error(f"Error deleting channel '{channel.name}' in guild '{ctx.guild.name}': {e}")
-                await ctx.send("An error occurred while deleting the channel.", delete_after=10)
+                self.logger.error(
+                    f"Error deleting channel '{channel.name}' in guild '{ctx.guild.name}': {e}"
+                )
+                await ctx.send(
+                    "An error occurred while deleting the channel.", delete_after=10
+                )
                 return
 
             # Remove channel data
-            del self.count_data[guild_id]['channels'][channel_id]
+            del self.count_data[guild_id]["channels"][channel_id]
             asyncio.create_task(self._save_guild(guild_id))
 
-        await ctx.send(f"Ended and deleted the counting match in {channel.name}.", delete_after=10)
+        await ctx.send(
+            f"Ended and deleted the counting match in {channel.name}.", delete_after=10
+        )
 
-    @commands.command(name='reset_count', aliases=['rc'])
+    @commands.command(name="reset_count", aliases=["rc"])
     @staff_or_owner()
     async def reset_count(self, ctx, channel: discord.TextChannel = None):
         """
@@ -387,29 +539,48 @@ class CountingCog(commands.Cog):
         channel_id = str(channel.id)
 
         async with self.lock:
-            if guild_id not in self.count_data or channel_id not in self.count_data[guild_id].get('channels', {}):
-                await ctx.send("Counting game is not set up for this channel.", delete_after=10)
+            if guild_id not in self.count_data or channel_id not in self.count_data[
+                guild_id
+            ].get("channels", {}):
+                await ctx.send(
+                    "Counting game is not set up for this channel.", delete_after=10
+                )
                 return
 
-            channel_data = self.count_data[guild_id]['channels'][channel_id]
-            mode = channel_data.get('mode', 'normal')
-            start = 0 if mode in [
-                'normal', 'random', 'skip', 'multiples', 'prime',
-                'fibonacci', 'squares', 'cubes', 'factorials', 'custom',
-            ] else 1000
-            channel_data['current_count'] = start
-            channel_data['sequence_index'] = 0
-            channel_data['last_user'] = None
-            channel_data['leaderboard'] = {}
-            channel_data['last_count_time'] = datetime.utcnow().timestamp()
-            if mode == 'random':
-                rand_range = channel_data.get('random_range', [1, 3])
-                channel_data['next_expected'] = start + random.randint(*rand_range)
+            channel_data = self.count_data[guild_id]["channels"][channel_id]
+            mode = channel_data.get("mode", "normal")
+            start = (
+                0
+                if mode
+                in [
+                    "normal",
+                    "random",
+                    "skip",
+                    "multiples",
+                    "prime",
+                    "fibonacci",
+                    "squares",
+                    "cubes",
+                    "factorials",
+                    "custom",
+                ]
+                else 1000
+            )
+            channel_data["current_count"] = start
+            channel_data["sequence_index"] = 0
+            channel_data["last_user"] = None
+            channel_data["leaderboard"] = {}
+            channel_data["last_count_time"] = datetime.utcnow().timestamp()
+            if mode == "random":
+                rand_range = channel_data.get("random_range", [1, 3])
+                channel_data["next_expected"] = start + random.randint(*rand_range)
             asyncio.create_task(self._save_guild(guild_id))
 
-        await ctx.send(f"The count has been reset in {channel.mention}.", delete_after=10)
+        await ctx.send(
+            f"The count has been reset in {channel.mention}.", delete_after=10
+        )
 
-    @commands.command(name='toggle_turns', aliases=['tt'])
+    @commands.command(name="toggle_turns", aliases=["tt"])
     @staff_or_owner()
     async def toggle_turns(self, ctx, channel: discord.TextChannel = None):
         """
@@ -422,18 +593,25 @@ class CountingCog(commands.Cog):
         channel_id = str(channel.id)
 
         async with self.lock:
-            if guild_id not in self.count_data or channel_id not in self.count_data[guild_id].get('channels', {}):
-                await ctx.send("Counting game is not set up for this channel.", delete_after=10)
+            if guild_id not in self.count_data or channel_id not in self.count_data[
+                guild_id
+            ].get("channels", {}):
+                await ctx.send(
+                    "Counting game is not set up for this channel.", delete_after=10
+                )
                 return
 
-            channel_data = self.count_data[guild_id]['channels'][channel_id]
-            channel_data['taking_turns'] = not channel_data.get('taking_turns', False)
+            channel_data = self.count_data[guild_id]["channels"][channel_id]
+            channel_data["taking_turns"] = not channel_data.get("taking_turns", False)
             asyncio.create_task(self._save_guild(guild_id))
 
-            status = "enabled" if channel_data['taking_turns'] else "disabled"
-        await ctx.send(f"'Taking turns' mode has been {status} in {channel.mention}.", delete_after=10)
+            status = "enabled" if channel_data["taking_turns"] else "disabled"
+        await ctx.send(
+            f"'Taking turns' mode has been {status} in {channel.mention}.",
+            delete_after=10,
+        )
 
-    @commands.command(name='count_info', aliases=['ci'])
+    @commands.command(name="count_info", aliases=["ci"])
     async def count_info(self, ctx, channel: discord.TextChannel = None):
         """
         Displays the current count and whether taking turns mode is enabled or disabled in the specified channel or current channel.
@@ -445,42 +623,70 @@ class CountingCog(commands.Cog):
         channel_id = str(channel.id)
 
         async with self.lock:
-            if guild_id not in self.count_data or channel_id not in self.count_data[guild_id].get('channels', {}):
-                await ctx.send("Counting game is not set up for this channel.", delete_after=10)
+            if guild_id not in self.count_data or channel_id not in self.count_data[
+                guild_id
+            ].get("channels", {}):
+                await ctx.send(
+                    "Counting game is not set up for this channel.", delete_after=10
+                )
                 return
 
-            channel_data = self.count_data[guild_id]['channels'][channel_id]
-            current_count = channel_data.get('current_count', 0)
-            taking_turns = channel_data.get('taking_turns', False)
-            mode = channel_data.get('mode', 'normal').capitalize()
-            step = channel_data.get('step', 1)
-            reset_on_wrong_count = channel_data.get('reset_on_wrong_count', False)
+            channel_data = self.count_data[guild_id]["channels"][channel_id]
+            current_count = channel_data.get("current_count", 0)
+            taking_turns = channel_data.get("taking_turns", False)
+            mode = channel_data.get("mode", "normal").capitalize()
+            step = channel_data.get("step", 1)
+            reset_on_wrong_count = channel_data.get("reset_on_wrong_count", False)
 
         embed = discord.Embed(title="Counting Info", color=discord.Color.blue())
         embed.add_field(name="Mode", value=mode, inline=False)
         embed.add_field(name="Current Count", value=str(current_count), inline=False)
         embed.add_field(name="Taking Turns Mode", value=str(taking_turns), inline=False)
-        embed.add_field(name="Reset on Wrong Count", value=str(reset_on_wrong_count), inline=False)
+        embed.add_field(
+            name="Reset on Wrong Count", value=str(reset_on_wrong_count), inline=False
+        )
         embed.add_field(name="Step", value=str(step), inline=False)
 
         await ctx.send(embed=embed)
 
-    @commands.command(name='count_rules', aliases=['cr'])
+    @commands.command(name="count_rules", aliases=["cr"])
     async def count_rules(self, ctx):
         """
         Displays the counting game rules.
         """
         embed = discord.Embed(title="Counting Game Rules", color=discord.Color.green())
-        embed.add_field(name="1. Follow the Sequence", value="Provide the correct next number based on the game mode.", inline=False)
-        embed.add_field(name="2. Taking Turns", value="If enabled, users must take turns before counting again.", inline=False)
-        embed.add_field(name="3. Mode-Specific Rules", value="Each counting mode has unique rules (e.g., Fibonacci sequence, squares).", inline=False)
-        embed.add_field(name="4. Respect the Channel", value="Use only the designated counting channel for the game.", inline=False)
-        embed.add_field(name="5. Have Fun!", value="Enjoy the game and encourage others to participate.", inline=False)
+        embed.add_field(
+            name="1. Follow the Sequence",
+            value="Provide the correct next number based on the game mode.",
+            inline=False,
+        )
+        embed.add_field(
+            name="2. Taking Turns",
+            value="If enabled, users must take turns before counting again.",
+            inline=False,
+        )
+        embed.add_field(
+            name="3. Mode-Specific Rules",
+            value="Each counting mode has unique rules (e.g., Fibonacci sequence, squares).",
+            inline=False,
+        )
+        embed.add_field(
+            name="4. Respect the Channel",
+            value="Use only the designated counting channel for the game.",
+            inline=False,
+        )
+        embed.add_field(
+            name="5. Have Fun!",
+            value="Enjoy the game and encourage others to participate.",
+            inline=False,
+        )
         await ctx.send(embed=embed)
 
-    @commands.command(name='set_skip_numbers', aliases=['ssn'])
+    @commands.command(name="set_skip_numbers", aliases=["ssn"])
     @staff_or_owner()
-    async def set_skip_numbers(self, ctx, channel: discord.TextChannel = None, *, numbers: str = ''):
+    async def set_skip_numbers(
+        self, ctx, channel: discord.TextChannel = None, *, numbers: str = ""
+    ):
         """
         Sets the skip numbers for the 'skip' mode in the specified or current channel.
         Usage: !set_skip_numbers [channel] <numbers>
@@ -493,27 +699,39 @@ class CountingCog(commands.Cog):
         channel_id = str(channel.id)
 
         async with self.lock:
-            if guild_id not in self.count_data or \
-               channel_id not in self.count_data[guild_id].get('channels', {}):
-                await ctx.send("Counting game is not set up for this channel.", delete_after=10)
+            if guild_id not in self.count_data or channel_id not in self.count_data[
+                guild_id
+            ].get("channels", {}):
+                await ctx.send(
+                    "Counting game is not set up for this channel.", delete_after=10
+                )
                 return
 
-            channel_data = self.count_data[guild_id]['channels'][channel_id]
-            if channel_data.get('mode') != 'skip':
-                await ctx.send("Skip numbers can only be set for 'skip' mode.", delete_after=10)
+            channel_data = self.count_data[guild_id]["channels"][channel_id]
+            if channel_data.get("mode") != "skip":
+                await ctx.send(
+                    "Skip numbers can only be set for 'skip' mode.", delete_after=10
+                )
                 return
 
             try:
-                skip_numbers = [int(num.strip()) for num in numbers.split(',')]
-                channel_data['skip_numbers'] = skip_numbers
+                skip_numbers = [int(num.strip()) for num in numbers.split(",")]
+                channel_data["skip_numbers"] = skip_numbers
                 asyncio.create_task(self._save_guild(guild_id))
-                await ctx.send(f"Skip numbers updated to: {skip_numbers}", delete_after=10)
+                await ctx.send(
+                    f"Skip numbers updated to: {skip_numbers}", delete_after=10
+                )
             except ValueError:
-                await ctx.send("Invalid input. Please provide a comma-separated list of integers.", delete_after=10)
+                await ctx.send(
+                    "Invalid input. Please provide a comma-separated list of integers.",
+                    delete_after=10,
+                )
 
-    @commands.command(name='toggle_reset_on_wrong_count', aliases=['trwc'])
+    @commands.command(name="toggle_reset_on_wrong_count", aliases=["trwc"])
     @staff_or_owner()
-    async def toggle_reset_on_wrong_count(self, ctx, channel: discord.TextChannel = None):
+    async def toggle_reset_on_wrong_count(
+        self, ctx, channel: discord.TextChannel = None
+    ):
         """
         Toggles the 'reset on wrong count' feature on or off in the specified channel or current channel.
         Usage: !toggle_reset_on_wrong_count [channel]
@@ -525,17 +743,25 @@ class CountingCog(commands.Cog):
         channel_id = str(channel.id)
 
         async with self.lock:
-            if guild_id not in self.count_data or \
-               channel_id not in self.count_data[guild_id].get('channels', {}):
-                await ctx.send("Counting game is not set up for this channel.", delete_after=10)
+            if guild_id not in self.count_data or channel_id not in self.count_data[
+                guild_id
+            ].get("channels", {}):
+                await ctx.send(
+                    "Counting game is not set up for this channel.", delete_after=10
+                )
                 return
 
-            channel_data = self.count_data[guild_id]['channels'][channel_id]
-            channel_data['reset_on_wrong_count'] = not channel_data.get('reset_on_wrong_count', False)
+            channel_data = self.count_data[guild_id]["channels"][channel_id]
+            channel_data["reset_on_wrong_count"] = not channel_data.get(
+                "reset_on_wrong_count", False
+            )
             asyncio.create_task(self._save_guild(guild_id))
 
-            status = "enabled" if channel_data['reset_on_wrong_count'] else "disabled"
-        await ctx.send(f"'Reset on wrong count' has been {status} in {channel.mention}.", delete_after=10)
+            status = "enabled" if channel_data["reset_on_wrong_count"] else "disabled"
+        await ctx.send(
+            f"'Reset on wrong count' has been {status} in {channel.mention}.",
+            delete_after=10,
+        )
 
     # --------------------------------------------
     # Event Listeners
@@ -557,23 +783,23 @@ class CountingCog(commands.Cog):
         async with self.lock:
             if guild_id not in self.count_data:
                 return
-            if 'channels' not in self.count_data[guild_id]:
+            if "channels" not in self.count_data[guild_id]:
                 return
-            if channel_id not in self.count_data[guild_id]['channels']:
+            if channel_id not in self.count_data[guild_id]["channels"]:
                 return
 
-            channel_data = self.count_data[guild_id]['channels'][channel_id]
-            mode = channel_data.get('mode', 'normal')
-            taking_turns = channel_data.get('taking_turns', False)
-            current_count = channel_data.get('current_count', 0)
-            last_user = channel_data.get('last_user', None)
-            step = channel_data.get('step', 1)
-            skip_numbers = channel_data.get('skip_numbers', [])
-            random_range = channel_data.get('random_range', [1, 3])
-            multiple = channel_data.get('multiple', None)
-            sequence_index = channel_data.get('sequence_index', 0)
-            custom_sequence = channel_data.get('custom_sequence', [])
-            reset_on_wrong_count = channel_data.get('reset_on_wrong_count', False)
+            channel_data = self.count_data[guild_id]["channels"][channel_id]
+            mode = channel_data.get("mode", "normal")
+            taking_turns = channel_data.get("taking_turns", False)
+            current_count = channel_data.get("current_count", 0)
+            last_user = channel_data.get("last_user", None)
+            step = channel_data.get("step", 1)
+            skip_numbers = channel_data.get("skip_numbers", [])
+            random_range = channel_data.get("random_range", [1, 3])
+            multiple = channel_data.get("multiple", None)
+            sequence_index = channel_data.get("sequence_index", 0)
+            custom_sequence = channel_data.get("custom_sequence", [])
+            reset_on_wrong_count = channel_data.get("reset_on_wrong_count", False)
 
             # Parse the message to extract the count
             parsed_count = self.parse_message(message.content)
@@ -586,11 +812,13 @@ class CountingCog(commands.Cog):
                 # Optionally notify the user
                 await message.channel.send(
                     f"{message.author.mention}, please send a valid number or mathematical expression.",
-                    delete_after=5
+                    delete_after=5,
                 )
                 return
 
-            expected_count = self.calculate_expected_count(channel_data, current_count, mode)
+            expected_count = self.calculate_expected_count(
+                channel_data, current_count, mode
+            )
 
             # Validate the parsed count against expected count
             if parsed_count != expected_count:
@@ -601,25 +829,35 @@ class CountingCog(commands.Cog):
 
                 if reset_on_wrong_count:
                     # Reset the count to the starting value
-                    if mode in ['normal', 'random', 'skip', 'multiples', 'prime',
-                                'fibonacci', 'squares', 'cubes', 'factorials', 'custom']:
-                        channel_data['current_count'] = 0
+                    if mode in [
+                        "normal",
+                        "random",
+                        "skip",
+                        "multiples",
+                        "prime",
+                        "fibonacci",
+                        "squares",
+                        "cubes",
+                        "factorials",
+                        "custom",
+                    ]:
+                        channel_data["current_count"] = 0
                     else:  # For 'reverse' mode
-                        channel_data['current_count'] = 1000
-                    channel_data['sequence_index'] = 0
-                    channel_data['last_user'] = None
-                    channel_data['leaderboard'] = {}
-                    channel_data['last_count_time'] = datetime.utcnow().timestamp()
+                        channel_data["current_count"] = 1000
+                    channel_data["sequence_index"] = 0
+                    channel_data["last_user"] = None
+                    channel_data["leaderboard"] = {}
+                    channel_data["last_count_time"] = datetime.utcnow().timestamp()
                     asyncio.create_task(self._save_guild(guild_id))
 
                     await message.channel.send(
                         f"{message.author.mention}, incorrect count! The count has been reset.",
-                        delete_after=5
+                        delete_after=5,
                     )
                 else:
                     await message.channel.send(
                         f"{message.author.mention}, incorrect count! The next number should be {expected_count}.",
-                        delete_after=5
+                        delete_after=5,
                     )
                 return
 
@@ -630,12 +868,12 @@ class CountingCog(commands.Cog):
                     pass  # Missing permissions to delete messages
                 await message.channel.send(
                     f"{message.author.mention}, you cannot count twice in a row!",
-                    delete_after=5
+                    delete_after=5,
                 )
                 return
 
             # Additional mode-specific validations
-            if mode == 'multiples' and multiple:
+            if mode == "multiples" and multiple:
                 if parsed_count % multiple != 0:
                     try:
                         await message.delete()
@@ -643,11 +881,11 @@ class CountingCog(commands.Cog):
                         pass
                     await message.channel.send(
                         f"{message.author.mention}, please count in multiples of {multiple}.",
-                        delete_after=5
+                        delete_after=5,
                     )
                     return
 
-            if mode == 'prime':
+            if mode == "prime":
                 if not self.is_prime(parsed_count):
                     try:
                         await message.delete()
@@ -655,25 +893,27 @@ class CountingCog(commands.Cog):
                         pass
                     await message.channel.send(
                         f"{message.author.mention}, please count prime numbers only.",
-                        delete_after=5
+                        delete_after=5,
                     )
                     return
 
             # Update count
-            channel_data['current_count'] = parsed_count
-            channel_data['last_user'] = user_id
-            channel_data['last_count_time'] = datetime.utcnow().timestamp()
+            channel_data["current_count"] = parsed_count
+            channel_data["last_user"] = user_id
+            channel_data["last_count_time"] = datetime.utcnow().timestamp()
             # Roll next expected value for random mode
-            if mode == 'random':
-                rand_range = channel_data.get('random_range', [1, 3])
-                channel_data['next_expected'] = parsed_count + random.randint(*rand_range)
+            if mode == "random":
+                rand_range = channel_data.get("random_range", [1, 3])
+                channel_data["next_expected"] = parsed_count + random.randint(
+                    *rand_range
+                )
             # Update sequence index for custom sequences
-            if mode in ['fibonacci', 'squares', 'cubes', 'factorials', 'custom']:
-                channel_data['sequence_index'] += 1
+            if mode in ["fibonacci", "squares", "cubes", "factorials", "custom"]:
+                channel_data["sequence_index"] += 1
             # Update leaderboard
-            leaderboard = channel_data.get('leaderboard', {})
+            leaderboard = channel_data.get("leaderboard", {})
             leaderboard[user_id] = leaderboard.get(user_id, 0) + 1
-            channel_data['leaderboard'] = leaderboard
+            channel_data["leaderboard"] = leaderboard
             asyncio.create_task(self._save_guild(guild_id))
 
         # Add reaction to acknowledge correct count
@@ -695,7 +935,7 @@ class CountingCog(commands.Cog):
 
         # Replace phrases with their numeric equivalents
         for phrase, num in self.phrase_number_mapping.items():
-            pattern = r'\b' + re.escape(phrase) + r'\b'
+            pattern = r"\b" + re.escape(phrase) + r"\b"
             content = re.sub(pattern, str(num), content)
 
         # Replace number emotes with their numeric equivalents
@@ -706,16 +946,16 @@ class CountingCog(commands.Cog):
         # Replace hyphens within words (e.g., "twenty-one") with spaces
         # but keep hyphens used as operators intact.
         # This regex replaces hyphens only between letters.
-        content = re.sub(r'(?<=[a-zA-Z])-(?=[a-zA-Z])', ' ', content)
+        content = re.sub(r"(?<=[a-zA-Z])-(?=[a-zA-Z])", " ", content)
 
         # Split concatenated number words
         content = self.split_concatenated_numbers(content)
 
         # Define all operator symbols, including '×' and 'x'
-        operator_symbols = '+-*/^()=.×x'
+        operator_symbols = "+-*/^()=.×x"
 
         # Tokenize the content into numbers, words, and operators
-        tokens = re.findall(r'\d+|[^\W\d_]+|[^\w\s]', content, re.UNICODE)
+        tokens = re.findall(r"\d+|[^\W\d_]+|[^\w\s]", content, re.UNICODE)
 
         processed_tokens = []
         number_word_tokens = []
@@ -727,65 +967,67 @@ class CountingCog(commands.Cog):
             if lower_token in self.operator_mapping or token in operator_symbols:
                 # Process any collected number word tokens
                 if number_word_tokens:
-                    number_word_str = ' '.join(number_word_tokens)
+                    number_word_str = " ".join(number_word_tokens)
                     number = self.parse_number_word(number_word_str)
                     if number is None:
                         return None
                     processed_tokens.append(str(number))
                     number_word_tokens = []
-                    prev_token_type = 'number'
+                    prev_token_type = "number"
                 # Append the operator
                 if lower_token in self.operator_mapping:
                     processed_tokens.append(self.operator_mapping[lower_token])
                 else:
                     processed_tokens.append(token)
-                prev_token_type = 'operator'
+                prev_token_type = "operator"
             elif lower_token.isdigit() or token.isdigit():
                 # Process any collected number word tokens
                 if number_word_tokens:
-                    number_word_str = ' '.join(number_word_tokens)
+                    number_word_str = " ".join(number_word_tokens)
                     number = self.parse_number_word(number_word_str)
                     if number is None:
                         return None
                     processed_tokens.append(str(number))
                     number_word_tokens = []
-                if prev_token_type == 'number':
+                if prev_token_type == "number":
                     # Insert '+' between adjacent numbers
-                    processed_tokens.append('+')
+                    processed_tokens.append("+")
                 processed_tokens.append(token)
-                prev_token_type = 'number'
+                prev_token_type = "number"
             elif lower_token in self.number_words_set:
                 number_word_tokens.append(lower_token)
-                prev_token_type = 'number_word'
+                prev_token_type = "number_word"
             else:
                 # Try fuzzy matching for misspellings
-                close_matches = difflib.get_close_matches(lower_token, self.number_words_set, n=1, cutoff=0.8)
+                close_matches = difflib.get_close_matches(
+                    lower_token, self.number_words_set, n=1, cutoff=0.8
+                )
                 if close_matches:
                     number_word_tokens.append(close_matches[0])
-                    prev_token_type = 'number_word'
+                    prev_token_type = "number_word"
                 else:
                     # Try to parse as a Roman numeral
                     roman_value = self.roman_to_int(lower_token.upper())
                     if roman_value is not None:
-                        if prev_token_type == 'number':
+                        if prev_token_type == "number":
                             # Insert '+' between adjacent numbers
-                            processed_tokens.append('+')
+                            processed_tokens.append("+")
                         processed_tokens.append(str(roman_value))
-                        prev_token_type = 'number'
+                        prev_token_type = "number"
                     else:
                         # Unknown token, return None
                         return None
 
         # Process any remaining number word tokens
         if number_word_tokens:
-            number_word_str = ' '.join(number_word_tokens)
+            number_word_str = " ".join(number_word_tokens)
             number = self.parse_number_word(number_word_str)
             if number is None:
                 return None
             processed_tokens.append(str(number))
 
         # Join the processed tokens into a single expression
-        expr = ''.join(processed_tokens)
+        expr = "".join(processed_tokens)
 
         # Try to evaluate the expression
         result = self.eval_expr(expr)
@@ -811,7 +1053,7 @@ class CountingCog(commands.Cog):
         text_lower = text.lower()
 
         # Initialize variables
-        result = ''
+        result = ""
         i = 0
 
         while i < len(text_lower):
@@ -820,7 +1062,7 @@ class CountingCog(commands.Cog):
                 substr = text_lower[i:j]
                 if substr in number_words:
                     # If we find a number word, add it to the result with a space
-                    result += substr + ' '
+                    result += substr + " "
                     i = j - 1  # Adjust index to the end of the matched word
                     match_found = True
                     break
@@ -839,8 +1081,8 @@ class CountingCog(commands.Cog):
         i = 0
         num = 0
         while i < len(s):
-            if i + 1 < len(s) and s[i:i+2] in roman_map:
-                num += roman_map[s[i:i+2]]
+            if i + 1 < len(s) and s[i : i + 2] in roman_map:
+                num += roman_map[s[i : i + 2]]
                 i += 2
             elif s[i] in roman_map:
                 num += roman_map[s[i]]
@@ -855,16 +1097,16 @@ class CountingCog(commands.Cog):
         Supports basic arithmetic operations.
         """
         try:
-            expr = expr.replace(' ', '')
+            expr = expr.replace(" ", "")
             # Remove any invalid characters
-            if not re.match(r'^[0-9+\-*/^().=]+$', expr):
+            if not re.match(r"^[0-9+\-*/^().=]+$", expr):
                 return None
             # Limit the length of the expression to prevent abuse
             if len(expr) > 50:
                 return None
             # Handle equations with '='
-            if '=' in expr:
-                left_expr, right_expr = expr.split('=', 1)
+            if "=" in expr:
+                left_expr, right_expr = expr.split("=", 1)
                 left_val = self.safe_eval(left_expr)
                 right_val = self.safe_eval(right_expr)
                 if left_val == right_val:
@@ -882,7 +1124,7 @@ class CountingCog(commands.Cog):
         Safely evaluate an arithmetic expression without '=' and return the result.
         """
         try:
-            node = ast.parse(expr, mode='eval').body
+            node = ast.parse(expr, mode="eval").body
             return self.eval_(node)
         except Exception as e:
             self.logger.error(f"Error in safe_eval with expression '{expr}': {e}")
@@ -909,42 +1151,44 @@ class CountingCog(commands.Cog):
         else:
             raise TypeError(f"Unsupported expression: {node}")
 
-    def calculate_expected_count(self, channel_data: dict, current_count: int, mode: str) -> int:
+    def calculate_expected_count(
+        self, channel_data: dict, current_count: int, mode: str
+    ) -> int:
         """
         Calculates the expected next count based on the current count and mode.
         """
-        if mode == 'reverse':
-            expected = current_count - channel_data.get('step', 1)
-        elif mode == 'skip':
-            expected = current_count + channel_data.get('step', 1)
-            while expected in channel_data.get('skip_numbers', []):
-                expected += channel_data.get('step', 1)
-        elif mode == 'random':
+        if mode == "reverse":
+            expected = current_count - channel_data.get("step", 1)
+        elif mode == "skip":
+            expected = current_count + channel_data.get("step", 1)
+            while expected in channel_data.get("skip_numbers", []):
+                expected += channel_data.get("step", 1)
+        elif mode == "random":
             # Use the pre-rolled value so it doesn't change between calls
-            expected = channel_data.get('next_expected', current_count + 1)
-        elif mode == 'fibonacci':
+            expected = channel_data.get("next_expected", current_count + 1)
+        elif mode == "fibonacci":
             a, b = 0, 1
-            for _ in range(channel_data.get('sequence_index', 0) + 1):
+            for _ in range(channel_data.get("sequence_index", 0) + 1):
                 a, b = b, a + b
             expected = a
-        elif mode == 'squares':
-            index = channel_data.get('sequence_index', 0) + 1
-            expected = index ** 2
-        elif mode == 'cubes':
-            index = channel_data.get('sequence_index', 0) + 1
-            expected = index ** 3
-        elif mode == 'factorials':
-            index = channel_data.get('sequence_index', 0) + 1
+        elif mode == "squares":
+            index = channel_data.get("sequence_index", 0) + 1
+            expected = index**2
+        elif mode == "cubes":
+            index = channel_data.get("sequence_index", 0) + 1
+            expected = index**3
+        elif mode == "factorials":
+            index = channel_data.get("sequence_index", 0) + 1
             expected = math.factorial(index)
-        elif mode == 'custom':
-            sequence = channel_data.get('custom_sequence', [])
-            index = channel_data.get('sequence_index', 0)
+        elif mode == "custom":
+            sequence = channel_data.get("custom_sequence", [])
+            index = channel_data.get("sequence_index", 0)
             if index < len(sequence):
                 expected = sequence[index]
             else:
                 expected = None  # End of custom sequence
         else:  # normal, multiples, prime
-            expected = current_count + channel_data.get('step', 1)
+            expected = current_count + channel_data.get("step", 1)
         return expected
 
     def is_prime(self, number: int) -> bool:
@@ -955,7 +1199,7 @@ class CountingCog(commands.Cog):
             return True
         if number % 2 == 0:
             return False
-        for i in range(3, int(number ** 0.5) + 1, 2):
+        for i in range(3, int(number**0.5) + 1, 2):
             if number % i == 0:
                 return False
         return True
@@ -967,6 +1211,7 @@ class CountingCog(commands.Cog):
     def cog_unload(self):
         """Handles cleanup when the cog is unloaded."""
         pass
+
 
 async def setup(bot):
     await bot.add_cog(CountingCog(bot))

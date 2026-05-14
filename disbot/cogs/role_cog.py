@@ -10,36 +10,57 @@ logger = logging.getLogger("bot")
 
 # Default time-based thresholds seeded into the DB when a guild has none.
 _DEFAULT_THRESHOLDS: list[tuple[str, int]] = [
-    ("Neu",       0),
-    ("Normal",    1),
-    ("Iron",      7),
-    ("Gold",      30),
-    ("Diamand",   365),
+    ("Neu", 0),
+    ("Normal", 1),
+    ("Iron", 7),
+    ("Gold", 30),
+    ("Diamand", 365),
     ("Netherite", 730),
-    ("Beacon",    1825),
+    ("Beacon", 1825),
 ]
 
-SKIP_ROLES = {"Admin"}   # role names that are never auto-assigned / removed
+SKIP_ROLES = {"Admin"}  # role names that are never auto-assigned / removed
 
 _ROLE_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("rolemenu",    "!rolemenu",                         "Show this role command menu."),
-    ("roles",       "!roles",                            "List all server roles with member counts."),
-    ("assignroles", "!assignroles",                      "Manually run time-based role assignment."),
-    ("createrole",  "!createrole <name> [color] [hoist]","Create a new role with optional hex color."),
-    ("deleterole",  "!deleterole <@role>",               "Delete a role from the server."),
-    ("rolecreator", "!rolecreator",                      "Open the interactive role creator UI."),
-    ("rolesettings","!rolesettings",                     "Manage time-based role thresholds (admin UI)."),
-    ("setrole",     "!setrole <days> <role name>",       "Add/update a time-based role threshold."),
-    ("unsetrole",   "!unsetrole <role name>",            "Remove a role from auto-assignment."),
-    ("reactroles",  "!reactroles <msg_id> <emoji> <@role>","Attach a reaction→role mapping to a message."),
-    ("removereactrole","!removereactrole <msg_id> <emoji>","Remove a reaction role binding."),
-    ("listreactroles","!listreactroles",                 "List all active reaction roles in this server."),
+    ("rolemenu", "!rolemenu", "Show this role command menu."),
+    ("roles", "!roles", "List all server roles with member counts."),
+    ("assignroles", "!assignroles", "Manually run time-based role assignment."),
+    (
+        "createrole",
+        "!createrole <name> [color] [hoist]",
+        "Create a new role with optional hex color.",
+    ),
+    ("deleterole", "!deleterole <@role>", "Delete a role from the server."),
+    ("rolecreator", "!rolecreator", "Open the interactive role creator UI."),
+    ("rolesettings", "!rolesettings", "Manage time-based role thresholds (admin UI)."),
+    (
+        "setrole",
+        "!setrole <days> <role name>",
+        "Add/update a time-based role threshold.",
+    ),
+    ("unsetrole", "!unsetrole <role name>", "Remove a role from auto-assignment."),
+    (
+        "reactroles",
+        "!reactroles <msg_id> <emoji> <@role>",
+        "Attach a reaction→role mapping to a message.",
+    ),
+    (
+        "removereactrole",
+        "!removereactrole <msg_id> <emoji>",
+        "Remove a reaction role binding.",
+    ),
+    (
+        "listreactroles",
+        "!listreactroles",
+        "List all active reaction roles in this server.",
+    ),
 ]
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 async def _ensure_defaults(guild_id: int) -> None:
     """Seed default thresholds for a guild that has none yet."""
@@ -62,20 +83,21 @@ def _find_role_normalized(guild: discord.Guild, name: str) -> discord.Role | Non
 
 
 _COLOR_OPTIONS = [
-    ("Red",    "#e74c3c"),
-    ("Blue",   "#3498db"),
-    ("Green",  "#2ecc71"),
+    ("Red", "#e74c3c"),
+    ("Blue", "#3498db"),
+    ("Green", "#2ecc71"),
     ("Yellow", "#f1c40f"),
     ("Purple", "#9b59b6"),
     ("Orange", "#e67e22"),
-    ("White",  "#ffffff"),
-    ("Black",  "#000000"),
+    ("White", "#ffffff"),
+    ("Black", "#000000"),
 ]
 
 
 # ---------------------------------------------------------------------------
 # Cog
 # ---------------------------------------------------------------------------
+
 
 class RoleCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -98,7 +120,9 @@ class RoleCog(commands.Cog):
 
     # ------------------------------------------------------------------ core role assignment
 
-    async def _assign_roles(self, guild: discord.Guild, ctx: commands.Context = None) -> int:
+    async def _assign_roles(
+        self, guild: discord.Guild, ctx: commands.Context = None
+    ) -> int:
         """Assign time-based roles to all members. Returns count of assignments made."""
         await _ensure_defaults(guild.id)
         thresholds = await db.get_role_thresholds(guild.id)
@@ -128,26 +152,39 @@ class RoleCog(commands.Cog):
                 if days >= role_map[name]:
                     target_name = name
 
-            target_role = _find_role_normalized(guild, target_name) if target_name else None
+            target_role = (
+                _find_role_normalized(guild, target_name) if target_name else None
+            )
 
             # Current highest progression role this member holds
             current_highest: str | None = None
             for role in member.roles:
                 matched = next(
-                    (n for n in role_map if normalize_name(n) == normalize_name(role.name)),
+                    (
+                        n
+                        for n in role_map
+                        if normalize_name(n) == normalize_name(role.name)
+                    ),
                     None,
                 )
                 if matched:
-                    if current_highest is None or progression.index(matched) > progression.index(current_highest):
+                    if current_highest is None or progression.index(
+                        matched
+                    ) > progression.index(current_highest):
                         current_highest = matched
 
             # Don't downgrade
-            if current_highest and target_name and progression.index(current_highest) > progression.index(target_name):
+            if (
+                current_highest
+                and target_name
+                and progression.index(current_highest) > progression.index(target_name)
+            ):
                 continue
 
             # Remove outdated progression roles (keep target only)
             to_remove = [
-                r for r in member.roles
+                r
+                for r in member.roles
                 if any(normalize_name(r.name) == normalize_name(n) for n in role_map)
                 and r != target_role
             ]
@@ -161,7 +198,9 @@ class RoleCog(commands.Cog):
                 try:
                     await member.add_roles(target_role)
                     assigned += 1
-                    logger.info("Assigned %s to %s", target_role.name, member.display_name)
+                    logger.info(
+                        "Assigned %s to %s", target_role.name, member.display_name
+                    )
                 except (discord.Forbidden, discord.HTTPException):
                     pass
 
@@ -218,17 +257,23 @@ class RoleCog(commands.Cog):
 
     @commands.command(name="createrole")
     @commands.has_permissions(manage_roles=True)
-    async def createrole(self, ctx: commands.Context, name: str, color: str = "000000", hoist: str = "no"):
+    async def createrole(
+        self, ctx: commands.Context, name: str, color: str = "000000", hoist: str = "no"
+    ):
         """Create a new role.  Usage: !createrole <name> [hex_color] [hoist yes/no]"""
         try:
             col = _parse_color(color)
         except (ValueError, OverflowError):
-            await ctx.send("❌ Invalid color — use a hex code like `#3498db`.", delete_after=10)
+            await ctx.send(
+                "❌ Invalid color — use a hex code like `#3498db`.", delete_after=10
+            )
             return
         do_hoist = hoist.lower() in ("yes", "true", "1", "y")
         try:
             role = await ctx.guild.create_role(name=name, color=col, hoist=do_hoist)
-            await ctx.send(f"✅ Created role **{role.name}** (color `{color}`, hoist={do_hoist}).")
+            await ctx.send(
+                f"✅ Created role **{role.name}** (color `{color}`, hoist={do_hoist})."
+            )
         except discord.Forbidden:
             await ctx.send("❌ I don't have permission to create roles.")
         except discord.HTTPException as e:
@@ -284,7 +329,9 @@ class RoleCog(commands.Cog):
         discord_role = _find_role_normalized(ctx.guild, role_name)
         store_name = discord_role.name if discord_role else role_name
         await db.set_role_threshold(ctx.guild.id, store_name, days)
-        await ctx.send(f"✅ Role **{store_name}** will be assigned after **{days}** day(s).")
+        await ctx.send(
+            f"✅ Role **{store_name}** will be assigned after **{days}** day(s)."
+        )
 
     @commands.command(name="unsetrole")
     @commands.has_permissions(administrator=True)
@@ -293,7 +340,14 @@ class RoleCog(commands.Cog):
         # Try exact match first, then normalized match against stored thresholds
         thresholds = await db.get_role_thresholds(ctx.guild.id)
         key = normalize_name(role_name)
-        match = next((r["role_name"] for r in thresholds if normalize_name(r["role_name"]) == key), role_name)
+        match = next(
+            (
+                r["role_name"]
+                for r in thresholds
+                if normalize_name(r["role_name"]) == key
+            ),
+            role_name,
+        )
         await db.remove_role_threshold(ctx.guild.id, match)
         await ctx.send(f"✅ Removed **{match}** from the auto-assignment system.")
 
@@ -339,9 +393,11 @@ class RoleCog(commands.Cog):
                 except discord.Forbidden:
                     pass
 
-    @commands.command(name='reactroles', aliases=['reaktionsrollen'])
+    @commands.command(name="reactroles", aliases=["reaktionsrollen"])
     @commands.has_permissions(manage_roles=True)
-    async def setup_reaction_roles(self, ctx, message_id: int, emoji: str, role: discord.Role):
+    async def setup_reaction_roles(
+        self, ctx, message_id: int, emoji: str, role: discord.Role
+    ):
         """Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>"""
         try:
             message = await ctx.fetch_message(message_id)
@@ -356,21 +412,25 @@ class RoleCog(commands.Cog):
         try:
             await message.add_reaction(emoji)
         except discord.HTTPException:
-            await ctx.send("⚠️ Role saved, but I couldn't add the reaction (invalid emoji?).")
+            await ctx.send(
+                "⚠️ Role saved, but I couldn't add the reaction (invalid emoji?)."
+            )
             return
         await ctx.send(
             f"✅ Reaction role set: reacting with {emoji} on that message will assign **{role.name}**.",
             delete_after=15,
         )
 
-    @commands.command(name='removereactrole')
+    @commands.command(name="removereactrole")
     @commands.has_permissions(manage_roles=True)
     async def remove_reaction_role(self, ctx, message_id: int, emoji: str):
         """Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"""
         await db.remove_reaction_role(ctx.guild.id, message_id, emoji)
-        await ctx.send(f"✅ Reaction role for {emoji} on that message removed.", delete_after=10)
+        await ctx.send(
+            f"✅ Reaction role for {emoji} on that message removed.", delete_after=10
+        )
 
-    @commands.command(name='listreactroles')
+    @commands.command(name="listreactroles")
     @commands.has_permissions(manage_roles=True)
     async def list_reaction_roles(self, ctx):
         """List all active reaction roles in this server."""
@@ -407,7 +467,9 @@ class RoleCog(commands.Cog):
         if role:
             try:
                 await member.add_roles(role)
-                logger.info("Assigned '%s' to %s on join.", zero_day, member.display_name)
+                logger.info(
+                    "Assigned '%s' to %s on join.", zero_day, member.display_name
+                )
             except (discord.Forbidden, discord.HTTPException):
                 pass
 
@@ -415,6 +477,7 @@ class RoleCog(commands.Cog):
 # ---------------------------------------------------------------------------
 # Role Creator UI
 # ---------------------------------------------------------------------------
+
 
 class RoleCreatorView(discord.ui.View):
     def __init__(self, ctx: commands.Context):
@@ -424,7 +487,9 @@ class RoleCreatorView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -444,16 +509,22 @@ class RoleCreatorView(discord.ui.View):
 class _RoleCreateModal(discord.ui.Modal, title="Create Role"):
     name = discord.ui.TextInput(label="Role name", max_length=100)
     color = discord.ui.TextInput(
-        label="Color (hex, e.g. #3498db)", placeholder="#000000",
-        required=False, max_length=7,
+        label="Color (hex, e.g. #3498db)",
+        placeholder="#000000",
+        required=False,
+        max_length=7,
     )
     hoist = discord.ui.TextInput(
         label="Show separately in member list? (yes/no)",
-        placeholder="no", required=False, max_length=3,
+        placeholder="no",
+        required=False,
+        max_length=3,
     )
     mentionable = discord.ui.TextInput(
         label="Mentionable by everyone? (yes/no)",
-        placeholder="no", required=False, max_length=3,
+        placeholder="no",
+        required=False,
+        max_length=3,
     )
 
     def __init__(self, ctx: commands.Context):
@@ -496,6 +567,7 @@ class _RoleCreateModal(discord.ui.Modal, title="Create Role"):
 # Role Settings UI (time thresholds)
 # ---------------------------------------------------------------------------
 
+
 class RoleSettingsView(discord.ui.View):
     def __init__(self, ctx: commands.Context):
         super().__init__(timeout=300)
@@ -509,7 +581,10 @@ class RoleSettingsView(discord.ui.View):
             color=discord.Color.blurple(),
         )
         if thresholds:
-            lines = [f"**{r['role_name']}** — {r['days_required']} day(s)" for r in thresholds]
+            lines = [
+                f"**{r['role_name']}** — {r['days_required']} day(s)"
+                for r in thresholds
+            ]
             embed.description = "\n".join(lines)
         else:
             embed.description = "No thresholds configured."
@@ -518,7 +593,9 @@ class RoleSettingsView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -533,7 +610,9 @@ class RoleSettingsView(discord.ui.View):
     async def remove_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         thresholds = await db.get_role_thresholds(self.ctx.guild.id)
         if not thresholds:
-            await interaction.response.send_message("No thresholds to remove.", ephemeral=True)
+            await interaction.response.send_message(
+                "No thresholds to remove.", ephemeral=True
+            )
             return
         view = _RemoveThresholdView(self, thresholds)
         await interaction.response.send_message(
@@ -547,7 +626,9 @@ class RoleSettingsView(discord.ui.View):
         await interaction.response.defer()
         await self._refresh(interaction)
 
-    @discord.ui.button(label="Run Assignment Now", style=discord.ButtonStyle.blurple, row=1)
+    @discord.ui.button(
+        label="Run Assignment Now", style=discord.ButtonStyle.blurple, row=1
+    )
     async def run_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
         cog: RoleCog = interaction.client.get_cog("RoleCog")
@@ -567,8 +648,12 @@ class RoleSettingsView(discord.ui.View):
 
 
 class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):
-    role_name = discord.ui.TextInput(label="Role name (must exist in server)", max_length=100)
-    days = discord.ui.TextInput(label="Days in server required", placeholder="0", max_length=5)
+    role_name = discord.ui.TextInput(
+        label="Role name (must exist in server)", max_length=100
+    )
+    days = discord.ui.TextInput(
+        label="Days in server required", placeholder="0", max_length=5
+    )
 
     def __init__(self, parent: RoleSettingsView):
         super().__init__()
@@ -585,7 +670,9 @@ class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):
             )
             return
         # Store with Discord's original casing if the role exists
-        discord_role = _find_role_normalized(interaction.guild, self.role_name.value.strip())
+        discord_role = _find_role_normalized(
+            interaction.guild, self.role_name.value.strip()
+        )
         store_name = discord_role.name if discord_role else self.role_name.value.strip()
         await db.set_role_threshold(interaction.guild.id, store_name, d)
         await interaction.response.defer()

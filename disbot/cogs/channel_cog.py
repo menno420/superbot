@@ -8,27 +8,45 @@ from utils.helpers import CogMenuView
 logger = logging.getLogger("bot")
 
 _CHANNEL_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("channelmenu",    "!channelmenu",                              "Show this channel command menu."),
-    ("list",           "!list",                                     "List all categories and channels, including uncategorized."),
-    ("create",         "!create <name> <@role> <True/False> [cat]", "Create a channel with role access."),
-    ("channelcreator", "!channelcreator",                           "Open the interactive channel management panel."),
-    ("del",            "!del <name|id>",                            "Delete a specific channel."),
-    ("move",           "!move <channel> <category>",                "Move a channel into a category."),
-    ("lock",           "!lock <name|id>",                           "Lock a channel (no send messages)."),
-    ("unlock",         "!unlock <name|id>",                         "Unlock a previously locked channel."),
-    ("archive",        "!archive <name|id>",                        "Make a channel read-only."),
-    ("rename",         "!rename <old> <new>",                       "Rename a channel."),
-    ("channelinfo",    "!channelinfo <name|id>",                    "Show detailed info about a channel."),
-    ("clone",          "!clone <name|id> <new_name>",               "Clone a channel with a new name."),
+    ("channelmenu", "!channelmenu", "Show this channel command menu."),
+    ("list", "!list", "List all categories and channels, including uncategorized."),
+    (
+        "create",
+        "!create <name> <@role> <True/False> [cat]",
+        "Create a channel with role access.",
+    ),
+    (
+        "channelcreator",
+        "!channelcreator",
+        "Open the interactive channel management panel.",
+    ),
+    ("del", "!del <name|id>", "Delete a specific channel."),
+    ("move", "!move <channel> <category>", "Move a channel into a category."),
+    ("lock", "!lock <name|id>", "Lock a channel (no send messages)."),
+    ("unlock", "!unlock <name|id>", "Unlock a previously locked channel."),
+    ("archive", "!archive <name|id>", "Make a channel read-only."),
+    ("rename", "!rename <old> <new>", "Rename a channel."),
+    ("channelinfo", "!channelinfo <name|id>", "Show detailed info about a channel."),
+    ("clone", "!clone <name|id> <new_name>", "Clone a channel with a new name."),
 ]
 
 # Keyword presets shown in the dropdown menus
 _NAME_PRESETS = [
-    "general", "gaming", "announcements", "events",
-    "tournament", "support", "bot-commands", "vc-lounge",
+    "general",
+    "gaming",
+    "announcements",
+    "events",
+    "tournament",
+    "support",
+    "bot-commands",
+    "vc-lounge",
 ]
 _CATEGORY_PRESETS = [
-    "Gaming", "Community", "Events", "Tournaments", "Staff",
+    "Gaming",
+    "Community",
+    "Events",
+    "Tournaments",
+    "Staff",
 ]
 
 
@@ -45,13 +63,18 @@ class ChannelCog(commands.Cog):
     @staticmethod
     def is_admin_or_owner():
         """Check if the user is an administrator or the server owner."""
+
         async def predicate(ctx):
-            return ctx.author.guild_permissions.administrator or ctx.author.id == ctx.guild.owner_id
+            return (
+                ctx.author.guild_permissions.administrator
+                or ctx.author.id == ctx.guild.owner_id
+            )
+
         return commands.check(predicate)
 
     def _resolve_channel(self, guild: discord.Guild, query: str):
         """Find a channel by name, mention (<#ID>), or numeric ID."""
-        if query.startswith('<#') and query.endswith('>'):
+        if query.startswith("<#") and query.endswith(">"):
             query = query[2:-1]
         if query.isdigit():
             ch = guild.get_channel(int(query))
@@ -61,7 +84,7 @@ class ChannelCog(commands.Cog):
 
     def _resolve_category(self, guild: discord.Guild, query: str):
         """Find a category by name, mention, or numeric ID."""
-        if query.startswith('<#') and query.endswith('>'):
+        if query.startswith("<#") and query.endswith(">"):
             query = query[2:-1]
         if query.isdigit():
             ch = guild.get_channel(int(query))
@@ -70,7 +93,9 @@ class ChannelCog(commands.Cog):
         return discord.utils.get(guild.categories, name=query)
 
     def get_category_or_channel(self, guild, query):
-        return self._resolve_category(guild, query) or self._resolve_channel(guild, query)
+        return self._resolve_category(guild, query) or self._resolve_channel(
+            guild, query
+        )
 
     async def set_permissions(self, target, role, read_messages):
         if isinstance(target, discord.CategoryChannel):
@@ -82,19 +107,33 @@ class ChannelCog(commands.Cog):
     def format_overwrites(self, overwrites):
         formatted = ""
         for target, perms in overwrites.items():
-            name = (target.name if isinstance(target, discord.Role)
-                    else target.display_name if isinstance(target, discord.Member)
-                    else "Unknown")
-            allow = ", ".join([p.replace("_", " ").title() for p, v in iter(perms) if v is True])
-            deny  = ", ".join([p.replace("_", " ").title() for p, v in iter(perms) if v is False])
-            formatted += f"**{name}**\nAllowed: {allow or 'None'}\nDenied: {deny or 'None'}\n\n"
+            name = (
+                target.name
+                if isinstance(target, discord.Role)
+                else (
+                    target.display_name
+                    if isinstance(target, discord.Member)
+                    else "Unknown"
+                )
+            )
+            allow = ", ".join(
+                [p.replace("_", " ").title() for p, v in iter(perms) if v is True]
+            )
+            deny = ", ".join(
+                [p.replace("_", " ").title() for p, v in iter(perms) if v is False]
+            )
+            formatted += (
+                f"**{name}**\nAllowed: {allow or 'None'}\nDenied: {deny or 'None'}\n\n"
+            )
         return formatted or "No overwrites."
 
     # -------------------
     # Commands
     # -------------------
 
-    @commands.command(name="channelmenu", help="Show the channel command quick-reference menu.")
+    @commands.command(
+        name="channelmenu", help="Show the channel command quick-reference menu."
+    )
     @is_admin_or_owner()
     async def channel_menu(self, ctx):
         """Show a quick-reference menu for all channel commands."""
@@ -102,18 +141,26 @@ class ChannelCog(commands.Cog):
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
 
-    @commands.command(name="set", help="Set access for a channel/category. Usage: !set <name|id> <@role> <True/False>")
+    @commands.command(
+        name="set",
+        help="Set access for a channel/category. Usage: !set <name|id> <@role> <True/False>",
+    )
     @is_admin_or_owner()
     async def set_access(self, ctx, target: str, role: discord.Role, permission: bool):
         target_channel = self.get_category_or_channel(ctx.guild, target)
         if target_channel:
             await self.set_permissions(target_channel, role, read_messages=permission)
             state = "opened" if permission else "closed"
-            await ctx.send(f'{target_channel.type} "{target_channel.name}" {state} for {role.name}!')
+            await ctx.send(
+                f'{target_channel.type} "{target_channel.name}" {state} for {role.name}!'
+            )
         else:
             await ctx.send(f'Channel or Category "{target}" not found.')
 
-    @commands.command(name="evt", help="Create or delete an event channel. Usage: !evt <name|id> <create/delete>")
+    @commands.command(
+        name="evt",
+        help="Create or delete an event channel. Usage: !evt <name|id> <create/delete>",
+    )
     @is_admin_or_owner()
     async def manage_event(self, ctx, evt: str, action: str):
         if action.lower() == "create":
@@ -131,10 +178,19 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send('Invalid action. Use "create" or "delete".')
 
-    @commands.command(name="create", help="Create a channel with role access. Usage: !create <name> <@role> <True/False> [category]")
+    @commands.command(
+        name="create",
+        help="Create a channel with role access. Usage: !create <name> <@role> <True/False> [category]",
+    )
     @is_admin_or_owner()
-    async def create_channel_with_role(self, ctx, channel_name: str, role: discord.Role,
-                                       permission: bool, category_name: str = None):
+    async def create_channel_with_role(
+        self,
+        ctx,
+        channel_name: str,
+        role: discord.Role,
+        permission: bool,
+        category_name: str = None,
+    ):
         safe_name = await safe_channel_name(ctx.guild, channel_name)
         category = None
         if category_name:
@@ -147,10 +203,15 @@ class ChannelCog(commands.Cog):
         await new_channel.set_permissions(role, read_messages=permission)
         state = "granted" if permission else "restricted"
         suffix = f' (renamed to "{safe_name}")' if safe_name != channel_name else ""
-        await ctx.send(f'Channel "{safe_name}" created with {state} access for {role.name}!{suffix}')
+        await ctx.send(
+            f'Channel "{safe_name}" created with {state} access for {role.name}!{suffix}'
+        )
 
-    @commands.command(name="channelcreator", aliases=["ccreate"],
-                      help="Open the comprehensive channel management panel.")
+    @commands.command(
+        name="channelcreator",
+        aliases=["ccreate"],
+        help="Open the comprehensive channel management panel.",
+    )
     @is_admin_or_owner()
     async def channel_creator(self, ctx):
         """Opens the comprehensive channel management panel."""
@@ -158,7 +219,10 @@ class ChannelCog(commands.Cog):
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
 
-    @commands.command(name="bulkdelete", help="Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>")
+    @commands.command(
+        name="bulkdelete",
+        help="Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>",
+    )
     @is_admin_or_owner()
     async def bulk_delete_channels(self, ctx, *channel_names_or_word: str):
         if not channel_names_or_word:
@@ -172,13 +236,16 @@ class ChannelCog(commands.Cog):
             if exact:
                 channels_to_delete = [exact]
             else:
-                channels_to_delete = [ch for ch in ctx.guild.channels if word in ch.name]
+                channels_to_delete = [
+                    ch for ch in ctx.guild.channels if word in ch.name
+                ]
                 if not channels_to_delete:
                     await ctx.send(f"No channels found matching '{word}'.")
                     return
         else:
-            channels_to_delete = [self._resolve_channel(ctx.guild, n)
-                                   for n in channel_names_or_word]
+            channels_to_delete = [
+                self._resolve_channel(ctx.guild, n) for n in channel_names_or_word
+            ]
 
         deleted, failed = [], []
         for channel in channels_to_delete:
@@ -192,11 +259,15 @@ class ChannelCog(commands.Cog):
                 failed.append("Not found")
 
         response = ""
-        if deleted: response += f'✅ Deleted: {", ".join(deleted)}.\n'
-        if failed:  response += f'❌ Failed: {", ".join(failed)}.'
+        if deleted:
+            response += f'✅ Deleted: {", ".join(deleted)}.\n'
+        if failed:
+            response += f'❌ Failed: {", ".join(failed)}.'
         await ctx.send(response)
 
-    @commands.command(name="del", help="Delete a specific channel. Usage: !del <name|id>")
+    @commands.command(
+        name="del", help="Delete a specific channel. Usage: !del <name|id>"
+    )
     @is_admin_or_owner()
     async def delete_channel(self, ctx, channel_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
@@ -206,22 +277,39 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send(f'Channel "{channel_name}" not found.')
 
-    @commands.command(name="list", help="List all categories and channels, including uncategorized.")
+    @commands.command(
+        name="list", help="List all categories and channels, including uncategorized."
+    )
     @is_admin_or_owner()
     async def list_channels(self, ctx):
-        embed = discord.Embed(title="Categories and Channels", color=discord.Color.blue())
+        embed = discord.Embed(
+            title="Categories and Channels", color=discord.Color.blue()
+        )
         for category in ctx.guild.categories:
             channels = "\n".join(f" - {ch.name}" for ch in category.channels)
-            embed.add_field(name=category.name, value=channels or "No channels", inline=False)
-        uncategorized = [ch for ch in ctx.guild.channels if ch.category is None and not isinstance(ch, discord.CategoryChannel)]
+            embed.add_field(
+                name=category.name, value=channels or "No channels", inline=False
+            )
+        uncategorized = [
+            ch
+            for ch in ctx.guild.channels
+            if ch.category is None and not isinstance(ch, discord.CategoryChannel)
+        ]
         if uncategorized:
-            names = "\n".join(f" - {ch.name}" for ch in sorted(uncategorized, key=lambda c: c.position))
+            names = "\n".join(
+                f" - {ch.name}"
+                for ch in sorted(uncategorized, key=lambda c: c.position)
+            )
             embed.add_field(name="— Uncategorized —", value=names, inline=False)
         await ctx.send(embed=embed)
 
-    @commands.command(name="clone", help="Clone a channel. Usage: !clone <name|id> <new_name>")
+    @commands.command(
+        name="clone", help="Clone a channel. Usage: !clone <name|id> <new_name>"
+    )
     @is_admin_or_owner()
-    async def clone_channel(self, ctx, existing_channel_name: str, new_channel_name: str):
+    async def clone_channel(
+        self, ctx, existing_channel_name: str, new_channel_name: str
+    ):
         existing = self._resolve_channel(ctx.guild, existing_channel_name)
         if existing:
             await existing.clone(name=new_channel_name)
@@ -229,10 +317,13 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send(f'"{existing_channel_name}" not found.')
 
-    @commands.command(name="move", help="Move a channel to a category. Usage: !move <channel name|id> <category name|id>")
+    @commands.command(
+        name="move",
+        help="Move a channel to a category. Usage: !move <channel name|id> <category name|id>",
+    )
     @is_admin_or_owner()
     async def move_channel(self, ctx, channel_name: str, category_name: str):
-        channel  = self._resolve_channel(ctx.guild, channel_name)
+        channel = self._resolve_channel(ctx.guild, channel_name)
         category = self._resolve_category(ctx.guild, category_name)
         if channel and category:
             await channel.edit(category=category)
@@ -260,24 +351,46 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="channelinfo", help="Channel details. Usage: !channelinfo <name|id>")
+    @commands.command(
+        name="channelinfo", help="Channel details. Usage: !channelinfo <name|id>"
+    )
     @is_admin_or_owner()
     async def channel_info(self, ctx, channel_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
-            embed = discord.Embed(title=f"Channel Info — {channel.name}", color=discord.Color.orange())
-            embed.add_field(name="Type",      value=str(channel.type),                    inline=True)
-            embed.add_field(name="Category",  value=channel.category.name if channel.category else "None", inline=True)
-            embed.add_field(name="Position",  value=str(channel.position),                inline=True)
-            embed.add_field(name="Topic",     value=getattr(channel, "topic", None) or "No topic set.", inline=False)
-            embed.add_field(name="Created",   value=channel.created_at.strftime("%Y-%m-%d %H:%M:%S"), inline=True)
-            embed.add_field(name="ID",        value=str(channel.id),                      inline=True)
-            embed.add_field(name="Overwrites", value=self.format_overwrites(channel.overwrites), inline=False)
+            embed = discord.Embed(
+                title=f"Channel Info — {channel.name}", color=discord.Color.orange()
+            )
+            embed.add_field(name="Type", value=str(channel.type), inline=True)
+            embed.add_field(
+                name="Category",
+                value=channel.category.name if channel.category else "None",
+                inline=True,
+            )
+            embed.add_field(name="Position", value=str(channel.position), inline=True)
+            embed.add_field(
+                name="Topic",
+                value=getattr(channel, "topic", None) or "No topic set.",
+                inline=False,
+            )
+            embed.add_field(
+                name="Created",
+                value=channel.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                inline=True,
+            )
+            embed.add_field(name="ID", value=str(channel.id), inline=True)
+            embed.add_field(
+                name="Overwrites",
+                value=self.format_overwrites(channel.overwrites),
+                inline=False,
+            )
             await ctx.send(embed=embed)
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="rename", help="Rename a channel. Usage: !rename <old name|id> <new_name>")
+    @commands.command(
+        name="rename", help="Rename a channel. Usage: !rename <old name|id> <new_name>"
+    )
     @is_admin_or_owner()
     async def rename_channel(self, ctx, old_name: str, new_name: str):
         channel = self._resolve_channel(ctx.guild, old_name)
@@ -288,23 +401,35 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send(f'"{old_name}" not found.')
 
-    @commands.command(name="permissions", help="Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>")
+    @commands.command(
+        name="permissions",
+        help="Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>",
+    )
     @is_admin_or_owner()
-    async def modify_permissions(self, ctx, channel_name: str, role: discord.Role, action: str):
+    async def modify_permissions(
+        self, ctx, channel_name: str, role: discord.Role, action: str
+    ):
         channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             if action.lower() == "allow":
                 await channel.set_permissions(role, send_messages=True)
-                await ctx.send(f'Send messages **allowed** for {role.name} in "{channel.name}".')
+                await ctx.send(
+                    f'Send messages **allowed** for {role.name} in "{channel.name}".'
+                )
             elif action.lower() == "deny":
                 await channel.set_permissions(role, send_messages=False)
-                await ctx.send(f'Send messages **denied** for {role.name} in "{channel.name}".')
+                await ctx.send(
+                    f'Send messages **denied** for {role.name} in "{channel.name}".'
+                )
             else:
                 await ctx.send('Invalid action. Use "allow" or "deny".')
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="bulkcreate", help="Create multiple channels. Usage: !bulkcreate <ch1> [ch2...] [category]")
+    @commands.command(
+        name="bulkcreate",
+        help="Create multiple channels. Usage: !bulkcreate <ch1> [ch2...] [category]",
+    )
     @is_admin_or_owner()
     async def bulk_create_channels(self, ctx, *args):
         if not args:
@@ -329,11 +454,15 @@ class ChannelCog(commands.Cog):
                 failed.append(ch)
 
         response = ""
-        if created: response += f'✅ Created: {", ".join(created)}.\n'
-        if failed:  response += f'❌ Failed: {", ".join(failed)}.'
+        if created:
+            response += f'✅ Created: {", ".join(created)}.\n'
+        if failed:
+            response += f'❌ Failed: {", ".join(failed)}.'
         await ctx.send(response)
 
-    @commands.command(name="archive", help="Make a channel read-only. Usage: !archive <name|id>")
+    @commands.command(
+        name="archive", help="Make a channel read-only. Usage: !archive <name|id>"
+    )
     @is_admin_or_owner()
     async def archive_channel(self, ctx, channel_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
@@ -343,7 +472,10 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send(f'"{channel_name}" not found.')
 
-    @commands.command(name="unarchive", help="Restore send permissions for a channel. Usage: !unarchive <name|id>")
+    @commands.command(
+        name="unarchive",
+        help="Restore send permissions for a channel. Usage: !unarchive <name|id>",
+    )
     @is_admin_or_owner()
     async def unarchive_channel(self, ctx, channel_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
@@ -358,29 +490,36 @@ class ChannelCog(commands.Cog):
 # Shared helpers
 # =====================================================================
 
+
 def _build_channel_options(guild: discord.Guild) -> list[discord.SelectOption]:
     """Return up to 25 SelectOptions for all text + voice channels, sorted by name."""
     channels = sorted(
-        [ch for ch in guild.channels
-         if isinstance(ch, (discord.TextChannel, discord.VoiceChannel))],
+        [
+            ch
+            for ch in guild.channels
+            if isinstance(ch, (discord.TextChannel, discord.VoiceChannel))
+        ],
         key=lambda c: c.name,
     )
     options = []
     for ch in channels[:25]:
         emoji = "🔊" if isinstance(ch, discord.VoiceChannel) else "#"
         cat_label = ch.category.name if ch.category else "No category"
-        options.append(discord.SelectOption(
-            label=ch.name[:100],
-            value=str(ch.id),
-            description=f"{cat_label}"[:100],
-            emoji=emoji,
-        ))
+        options.append(
+            discord.SelectOption(
+                label=ch.name[:100],
+                value=str(ch.id),
+                description=f"{cat_label}"[:100],
+                emoji=emoji,
+            )
+        )
     return options
 
 
 # =====================================================================
 # Top-level manager panel
 # =====================================================================
+
 
 class _ChannelManagerView(discord.ui.View):
     """Top-level channel management panel with three action modes."""
@@ -396,7 +535,9 @@ class _ChannelManagerView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -440,30 +581,40 @@ class _ChannelManagerView(discord.ui.View):
     # Buttons (row 0)
     # ------------------------------------------------------------------
 
-    @discord.ui.button(label="Create Channel", style=discord.ButtonStyle.green,
-                       emoji="➕", row=0)
+    @discord.ui.button(
+        label="Create Channel", style=discord.ButtonStyle.green, emoji="➕", row=0
+    )
     async def create_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         sub = _CreateSubView(self.ctx, manager_message=self.message)
         await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
 
-    @discord.ui.button(label="Delete Channel", style=discord.ButtonStyle.red,
-                       emoji="🗑️", row=0)
+    @discord.ui.button(
+        label="Delete Channel", style=discord.ButtonStyle.red, emoji="🗑️", row=0
+    )
     async def delete_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         options = _build_channel_options(interaction.guild)
         if not options:
             await interaction.response.send_message(
-                "No text or voice channels found on this server.", ephemeral=True)
+                "No text or voice channels found on this server.", ephemeral=True
+            )
             return
         sub = _DeleteSubView(self.ctx, options=options, manager_message=self.message)
         await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
 
-    @discord.ui.button(label="Manage Restrictions", style=discord.ButtonStyle.blurple,
-                       emoji="🔒", row=0)
-    async def restrict_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+    @discord.ui.button(
+        label="Manage Restrictions",
+        style=discord.ButtonStyle.blurple,
+        emoji="🔒",
+        row=0,
+    )
+    async def restrict_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         options = _build_channel_options(interaction.guild)
         if not options:
             await interaction.response.send_message(
-                "No text or voice channels found on this server.", ephemeral=True)
+                "No text or voice channels found on this server.", ephemeral=True
+            )
             return
         sub = _RestrictSubView(self.ctx, options=options, manager_message=self.message)
         await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
@@ -485,15 +636,18 @@ class _ChannelManagerView(discord.ui.View):
 # Create sub-panel  (same logic as the old _ChannelCreatorView)
 # =====================================================================
 
+
 class _CreateSubView(discord.ui.View):
     """Channel-creation sub-panel — mirrors the old _ChannelCreatorView."""
 
-    def __init__(self, ctx: commands.Context, *, manager_message: discord.Message | None):
+    def __init__(
+        self, ctx: commands.Context, *, manager_message: discord.Message | None
+    ):
         super().__init__(timeout=120)
         self.ctx = ctx
         self.manager_message = manager_message
         self.chosen_name: str | None = None
-        self.chosen_cat:  str | None = None
+        self.chosen_cat: str | None = None
 
         # Category options: existing guild categories first, then presets
         existing_cats = [c.name for c in ctx.guild.categories]
@@ -503,12 +657,14 @@ class _CreateSubView(discord.ui.View):
         ]
         for p in _CATEGORY_PRESETS:
             if p not in existing_cats and len(cat_options) < 24:
-                cat_options.append(discord.SelectOption(label=p, description="New category"))
+                cat_options.append(
+                    discord.SelectOption(label=p, description="New category")
+                )
         if not cat_options:
             cat_options = [discord.SelectOption(label=p) for p in _CATEGORY_PRESETS]
 
         self.name_select = _NameSelect(_NAME_PRESETS, self)
-        self.cat_select  = _CategorySelect(cat_options, self)
+        self.cat_select = _CategorySelect(cat_options, self)
         self.add_item(self.name_select)
         self.add_item(self.cat_select)
 
@@ -518,7 +674,9 @@ class _CreateSubView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -569,49 +727,62 @@ class _CreateSubView(discord.ui.View):
     # Buttons (row 2)
     # ------------------------------------------------------------------
 
-    @discord.ui.button(label="Custom Name", style=discord.ButtonStyle.grey, emoji="✏️", row=2)
-    async def custom_name_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+    @discord.ui.button(
+        label="Custom Name", style=discord.ButtonStyle.grey, emoji="✏️", row=2
+    )
+    async def custom_name_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         await interaction.response.send_modal(_CustomNameModal(self))
 
-    @discord.ui.button(label="Create Channel", style=discord.ButtonStyle.green, emoji="✅", row=2)
+    @discord.ui.button(
+        label="Create Channel", style=discord.ButtonStyle.green, emoji="✅", row=2
+    )
     async def create_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not self.chosen_name:
             await interaction.response.send_message(
-                "Please select or enter a channel name first.", ephemeral=True)
+                "Please select or enter a channel name first.", ephemeral=True
+            )
             return
 
         await interaction.response.defer(ephemeral=True)
 
         guild = interaction.guild
-        safe  = await safe_channel_name(guild, self.chosen_name)
+        safe = await safe_channel_name(guild, self.chosen_name)
         category = None
         if self.chosen_cat:
             try:
                 category = await get_or_create_category(guild, self.chosen_cat)
             except discord.Forbidden:
                 await interaction.followup.send(
-                    "❌ I don't have permission to create categories.", ephemeral=True)
+                    "❌ I don't have permission to create categories.", ephemeral=True
+                )
                 return
             except discord.HTTPException as exc:
                 await interaction.followup.send(
-                    f"❌ Failed to create category: {exc}", ephemeral=True)
+                    f"❌ Failed to create category: {exc}", ephemeral=True
+                )
                 return
 
         try:
             ch = await guild.create_text_channel(safe, category=category)
         except discord.Forbidden:
             await interaction.followup.send(
-                "❌ I don't have permission to create channels.", ephemeral=True)
+                "❌ I don't have permission to create channels.", ephemeral=True
+            )
             return
         except discord.HTTPException as exc:
             await interaction.followup.send(
-                f"❌ Failed to create channel: {exc}", ephemeral=True)
+                f"❌ Failed to create channel: {exc}", ephemeral=True
+            )
             return
 
         for item in self.children:
             item.disabled = True
 
-        suffix = f' (renamed from "{self.chosen_name}")' if safe != self.chosen_name else ""
+        suffix = (
+            f' (renamed from "{self.chosen_name}")' if safe != self.chosen_name else ""
+        )
         embed = discord.Embed(
             title="✅ Channel Created",
             description=(
@@ -635,6 +806,7 @@ class _CreateSubView(discord.ui.View):
 
         # After a brief visual pause, restore the manager panel
         import asyncio
+
         await asyncio.sleep(2)
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
@@ -647,14 +819,18 @@ class _CreateSubView(discord.ui.View):
     async def cancel_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
-        await interaction.response.edit_message(embed=manager.build_embed(), view=manager)
+        await interaction.response.edit_message(
+            embed=manager.build_embed(), view=manager
+        )
         self.stop()
 
     @discord.ui.button(label="↩️ Back", style=discord.ButtonStyle.grey, row=2)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
-        await interaction.response.edit_message(embed=manager.build_embed(), view=manager)
+        await interaction.response.edit_message(
+            embed=manager.build_embed(), view=manager
+        )
         self.stop()
 
     # ------------------------------------------------------------------
@@ -674,6 +850,7 @@ class _CreateSubView(discord.ui.View):
 # Delete sub-panel
 # =====================================================================
 
+
 class _DeleteSubView(discord.ui.View):
     """Channel-deletion sub-panel with a select menu and confirmation flow."""
 
@@ -690,7 +867,9 @@ class _DeleteSubView(discord.ui.View):
         self.selected_channel_id: int | None = None
         self.selected_channel_name: str | None = None
 
-        self.channel_select = _ChannelSelect(options, self, placeholder="Select a channel to delete…")
+        self.channel_select = _ChannelSelect(
+            options, self, placeholder="Select a channel to delete…"
+        )
         self.add_item(self.channel_select)
 
     # ------------------------------------------------------------------
@@ -699,7 +878,9 @@ class _DeleteSubView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -733,7 +914,11 @@ class _DeleteSubView(discord.ui.View):
         )
         embed.add_field(
             name="Selected channel",
-            value=f"`{self.selected_channel_name}`" if self.selected_channel_name else "*(none)*",
+            value=(
+                f"`{self.selected_channel_name}`"
+                if self.selected_channel_name
+                else "*(none)*"
+            ),
             inline=False,
         )
         return embed
@@ -752,11 +937,14 @@ class _DeleteSubView(discord.ui.View):
     # Buttons (row 1)
     # ------------------------------------------------------------------
 
-    @discord.ui.button(label="Delete Selected", style=discord.ButtonStyle.red, emoji="🗑️", row=1)
+    @discord.ui.button(
+        label="Delete Selected", style=discord.ButtonStyle.red, emoji="🗑️", row=1
+    )
     async def delete_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not self.selected_channel_id:
             await interaction.response.send_message(
-                "Please select a channel first.", ephemeral=True)
+                "Please select a channel first.", ephemeral=True
+            )
             return
         confirm_view = _DeleteConfirmView(
             self.ctx,
@@ -764,14 +952,18 @@ class _DeleteSubView(discord.ui.View):
             channel_name=self.selected_channel_name,
             manager_message=self.manager_message,
         )
-        await interaction.response.edit_message(embed=self._confirm_embed(), view=confirm_view)
+        await interaction.response.edit_message(
+            embed=self._confirm_embed(), view=confirm_view
+        )
         self.stop()
 
     @discord.ui.button(label="↩️ Back", style=discord.ButtonStyle.grey, row=1)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
-        await interaction.response.edit_message(embed=manager.build_embed(), view=manager)
+        await interaction.response.edit_message(
+            embed=manager.build_embed(), view=manager
+        )
         self.stop()
 
     # ------------------------------------------------------------------
@@ -806,7 +998,9 @@ class _DeleteConfirmView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -828,7 +1022,9 @@ class _DeleteConfirmView(discord.ui.View):
         except Exception:
             pass
 
-    @discord.ui.button(label="Confirm Delete", style=discord.ButtonStyle.red, emoji="🗑️", row=0)
+    @discord.ui.button(
+        label="Confirm Delete", style=discord.ButtonStyle.red, emoji="🗑️", row=0
+    )
     async def confirm_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         channel = interaction.guild.get_channel(self.channel_id)
         if channel is None:
@@ -865,6 +1061,7 @@ class _DeleteConfirmView(discord.ui.View):
         self.stop()
 
         import asyncio
+
         await asyncio.sleep(2)
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
@@ -873,11 +1070,15 @@ class _DeleteConfirmView(discord.ui.View):
         except Exception:
             pass
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.grey, emoji="❌", row=0)
+    @discord.ui.button(
+        label="Cancel", style=discord.ButtonStyle.grey, emoji="❌", row=0
+    )
     async def cancel_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         # Go back to the delete sub-panel
         options = _build_channel_options(interaction.guild)
-        sub = _DeleteSubView(self.ctx, options=options, manager_message=self.manager_message)
+        sub = _DeleteSubView(
+            self.ctx, options=options, manager_message=self.manager_message
+        )
         await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
         self.stop()
 
@@ -893,6 +1094,7 @@ class _DeleteConfirmView(discord.ui.View):
 # =====================================================================
 # Restrict sub-panel
 # =====================================================================
+
 
 class _RestrictSubView(discord.ui.View):
     """Restriction management: pick a channel, then choose lock/unlock/archive/unarchive."""
@@ -910,7 +1112,9 @@ class _RestrictSubView(discord.ui.View):
         self.selected_channel_id: int | None = None
         self.selected_channel_name: str | None = None
 
-        self.channel_select = _ChannelSelect(options, self, placeholder="Select a channel to manage…")
+        self.channel_select = _ChannelSelect(
+            options, self, placeholder="Select a channel to manage…"
+        )
         self.add_item(self.channel_select)
 
     # ------------------------------------------------------------------
@@ -919,7 +1123,9 @@ class _RestrictSubView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message("This panel isn't for you.", ephemeral=True)
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
             return False
         return True
 
@@ -959,7 +1165,11 @@ class _RestrictSubView(discord.ui.View):
         )
         embed.add_field(
             name="Selected channel",
-            value=f"`{self.selected_channel_name}`" if self.selected_channel_name else "*(none)*",
+            value=(
+                f"`{self.selected_channel_name}`"
+                if self.selected_channel_name
+                else "*(none)*"
+            ),
             inline=False,
         )
         return embed
@@ -979,25 +1189,32 @@ class _RestrictSubView(discord.ui.View):
     ) -> None:
         if not self.selected_channel_id:
             await interaction.response.send_message(
-                "Please select a channel first.", ephemeral=True)
+                "Please select a channel first.", ephemeral=True
+            )
             return
 
         channel = interaction.guild.get_channel(self.selected_channel_id)
         if channel is None:
             await interaction.response.send_message(
-                f"Channel `{self.selected_channel_name}` not found.", ephemeral=True)
+                f"Channel `{self.selected_channel_name}` not found.", ephemeral=True
+            )
             return
 
         await interaction.response.defer(ephemeral=True)
         try:
-            await channel.set_permissions(interaction.guild.default_role, send_messages=send_messages)
+            await channel.set_permissions(
+                interaction.guild.default_role, send_messages=send_messages
+            )
         except discord.Forbidden:
             await interaction.followup.send(
-                "❌ I don't have permission to change that channel's permissions.", ephemeral=True)
+                "❌ I don't have permission to change that channel's permissions.",
+                ephemeral=True,
+            )
             return
         except discord.HTTPException as exc:
             await interaction.followup.send(
-                f"❌ Failed to update permissions: {exc}", ephemeral=True)
+                f"❌ Failed to update permissions: {exc}", ephemeral=True
+            )
             return
 
         result_embed = discord.Embed(
@@ -1017,6 +1234,7 @@ class _RestrictSubView(discord.ui.View):
         self.stop()
 
         import asyncio
+
         await asyncio.sleep(2)
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
@@ -1035,7 +1253,9 @@ class _RestrictSubView(discord.ui.View):
             embed_color=discord.Color.red(),
         )
 
-    @discord.ui.button(label="Unlock", style=discord.ButtonStyle.green, emoji="🔓", row=1)
+    @discord.ui.button(
+        label="Unlock", style=discord.ButtonStyle.green, emoji="🔓", row=1
+    )
     async def unlock_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await self._apply_restriction(
             interaction,
@@ -1045,7 +1265,9 @@ class _RestrictSubView(discord.ui.View):
             embed_color=discord.Color.green(),
         )
 
-    @discord.ui.button(label="Archive", style=discord.ButtonStyle.grey, emoji="📁", row=1)
+    @discord.ui.button(
+        label="Archive", style=discord.ButtonStyle.grey, emoji="📁", row=1
+    )
     async def archive_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await self._apply_restriction(
             interaction,
@@ -1055,8 +1277,12 @@ class _RestrictSubView(discord.ui.View):
             embed_color=discord.Color.greyple(),
         )
 
-    @discord.ui.button(label="Unarchive", style=discord.ButtonStyle.grey, emoji="📂", row=1)
-    async def unarchive_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+    @discord.ui.button(
+        label="Unarchive", style=discord.ButtonStyle.grey, emoji="📂", row=1
+    )
+    async def unarchive_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         await self._apply_restriction(
             interaction,
             send_messages=True,
@@ -1069,7 +1295,9 @@ class _RestrictSubView(discord.ui.View):
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
-        await interaction.response.edit_message(embed=manager.build_embed(), view=manager)
+        await interaction.response.edit_message(
+            embed=manager.build_embed(), view=manager
+        )
         self.stop()
 
     # ------------------------------------------------------------------
@@ -1089,13 +1317,17 @@ class _RestrictSubView(discord.ui.View):
 # Shared Select components
 # =====================================================================
 
+
 class _ChannelSelect(discord.ui.Select):
     """Generic channel select used by Delete and Restrict sub-panels."""
 
-    def __init__(self, options: list[discord.SelectOption], parent_view, *, placeholder: str):
+    def __init__(
+        self, options: list[discord.SelectOption], parent_view, *, placeholder: str
+    ):
         super().__init__(
             placeholder=placeholder,
-            min_values=1, max_values=1,
+            min_values=1,
+            max_values=1,
             options=options,
             row=0,
         )
@@ -1105,10 +1337,13 @@ class _ChannelSelect(discord.ui.Select):
         self._parent.selected_channel_id = int(self.values[0])
         # Resolve the display name from the options list
         chosen_opt = next((o for o in self.options if o.value == self.values[0]), None)
-        self._parent.selected_channel_name = chosen_opt.label if chosen_opt else self.values[0]
+        self._parent.selected_channel_name = (
+            chosen_opt.label if chosen_opt else self.values[0]
+        )
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(), view=self._parent)
+                embed=self._parent.build_embed(), view=self._parent
+            )
         except discord.HTTPException:
             if not interaction.response.is_done():
                 await interaction.response.defer()
@@ -1121,7 +1356,8 @@ class _NameSelect(discord.ui.Select):
         options = [discord.SelectOption(label=p, value=p) for p in presets]
         super().__init__(
             placeholder="Pick a channel name…",
-            min_values=1, max_values=1,
+            min_values=1,
+            max_values=1,
             options=options,
             row=0,
         )
@@ -1131,7 +1367,8 @@ class _NameSelect(discord.ui.Select):
         self._parent.chosen_name = self.values[0]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(), view=self._parent)
+                embed=self._parent.build_embed(), view=self._parent
+            )
         except discord.HTTPException:
             if not interaction.response.is_done():
                 await interaction.response.defer()
@@ -1143,7 +1380,8 @@ class _CategorySelect(discord.ui.Select):
     def __init__(self, options: list[discord.SelectOption], view):
         super().__init__(
             placeholder="Pick a category…",
-            min_values=1, max_values=1,
+            min_values=1,
+            max_values=1,
             options=options,
             row=1,
         )
@@ -1153,7 +1391,8 @@ class _CategorySelect(discord.ui.Select):
         self._parent.chosen_cat = self.values[0]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(), view=self._parent)
+                embed=self._parent.build_embed(), view=self._parent
+            )
         except discord.HTTPException:
             if not interaction.response.is_done():
                 await interaction.response.defer()
@@ -1176,12 +1415,14 @@ class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):
         await interaction.response.defer()
         if self._view.manager_message:
             await self._view.manager_message.edit(
-                embed=self._view.build_embed(), view=self._view)
+                embed=self._view.build_embed(), view=self._view
+            )
 
 
 # =====================================================================
 # Cog Setup
 # =====================================================================
+
 
 async def setup(bot):
     await bot.add_cog(ChannelCog(bot))

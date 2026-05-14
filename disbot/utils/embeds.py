@@ -4,7 +4,9 @@ import discord
 
 def success(title: str, description: str = "", **fields: str) -> discord.Embed:
     """Green success embed with optional extra fields."""
-    embed = discord.Embed(title=title, description=description, color=discord.Color.green())
+    embed = discord.Embed(
+        title=title, description=description, color=discord.Color.green()
+    )
     for name, value in fields.items():
         embed.add_field(name=name.replace("_", " ").title(), value=value, inline=True)
     return embed
@@ -17,7 +19,9 @@ def error(message: str) -> discord.Embed:
 
 def info(title: str, description: str = "", **fields: str) -> discord.Embed:
     """Blue informational embed with optional extra fields."""
-    embed = discord.Embed(title=title, description=description, color=discord.Color.blue())
+    embed = discord.Embed(
+        title=title, description=description, color=discord.Color.blue()
+    )
     for name, value in fields.items():
         embed.add_field(name=name.replace("_", " ").title(), value=value, inline=True)
     return embed

@@ -14,14 +14,18 @@ from utils import db
 
 logger = logging.getLogger("bot")
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
+)
 JSON_DIR = os.path.join(DATA_DIR, "json")
 
 
 class _PaginatorView(discord.ui.View):
     """Simple prev/next paginator for multi-page embeds."""
 
-    def __init__(self, pages: list[discord.Embed], author: discord.Member | discord.User):
+    def __init__(
+        self, pages: list[discord.Embed], author: discord.Member | discord.User
+    ):
         super().__init__(timeout=120)
         self.pages = pages
         self.author = author
@@ -35,7 +39,9 @@ class _PaginatorView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author.id:
-            await interaction.response.send_message("This paginator isn't yours.", ephemeral=True)
+            await interaction.response.send_message(
+                "This paginator isn't yours.", ephemeral=True
+            )
             return False
         return True
 
@@ -47,13 +53,17 @@ class _PaginatorView(discord.ui.View):
                 pass
 
     @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary)
-    async def prev_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def prev_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         self.index -= 1
         self._update_buttons()
         await interaction.response.edit_message(embed=self.pages[self.index], view=self)
 
     @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary)
-    async def next_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def next_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         self.index += 1
         self._update_buttons()
         await interaction.response.edit_message(embed=self.pages[self.index], view=self)
@@ -84,7 +94,9 @@ class DiagnosticCog(commands.Cog):
         for i in range(0, max(len(cogs_with_cmds), 1), COGS_PER_PAGE):
             chunk = cogs_with_cmds[i : i + COGS_PER_PAGE]
             page_num = i // COGS_PER_PAGE + 1
-            total_pages = (len(cogs_with_cmds) + COGS_PER_PAGE - 1) // COGS_PER_PAGE or 1
+            total_pages = (
+                len(cogs_with_cmds) + COGS_PER_PAGE - 1
+            ) // COGS_PER_PAGE or 1
             embed = discord.Embed(
                 title=f"Command List — Page {page_num}/{total_pages}",
                 color=discord.Color.blue(),
@@ -191,11 +203,23 @@ class DiagnosticCog(commands.Cog):
     async def check_database(self, ctx):
         """Verify that all expected PostgreSQL tables exist."""
         expected = {
-            "economy", "job_progress", "inventory", "xp", "warnings",
-            "mod_logs", "role_thresholds", "guild_settings", "logs",
-            "reaction_roles", "rps_players", "rps_matches",
-            "mining_inventory", "prohibited_words", "deathmatch_stats",
-            "chain_channels", "counting_state",
+            "economy",
+            "job_progress",
+            "inventory",
+            "xp",
+            "warnings",
+            "mod_logs",
+            "role_thresholds",
+            "guild_settings",
+            "logs",
+            "reaction_roles",
+            "rps_players",
+            "rps_matches",
+            "mining_inventory",
+            "prohibited_words",
+            "deathmatch_stats",
+            "chain_channels",
+            "counting_state",
         }
         try:
             rows = await db.fetchall(
@@ -209,7 +233,9 @@ class DiagnosticCog(commands.Cog):
         missing = expected - existing
         extra = existing - expected
 
-        embed = discord.Embed(title="Database Schema Check", color=discord.Color.purple())
+        embed = discord.Embed(
+            title="Database Schema Check", color=discord.Color.purple()
+        )
         embed.add_field(
             name="Missing Tables",
             value=", ".join(sorted(missing)) or "None",
@@ -248,7 +274,9 @@ class DiagnosticCog(commands.Cog):
             inline=True,
         )
         embed.add_field(name="Commands", value=str(len(self.bot.commands)), inline=True)
-        embed.add_field(name="Latency", value=f"{self.bot.latency*1000:.1f} ms", inline=True)
+        embed.add_field(
+            name="Latency", value=f"{self.bot.latency*1000:.1f} ms", inline=True
+        )
         embed.add_field(name="CPU", value=f"{cpu_usage}%", inline=True)
         embed.add_field(name="RAM", value=f"{memory.percent}%", inline=True)
         embed.add_field(name="Uptime", value=uptime_str, inline=True)
@@ -267,7 +295,9 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def system_info(self, ctx):
         """Display system-level stats."""
-        total, used, free = shutil.disk_usage(DATA_DIR if os.path.isdir(DATA_DIR) else "/")
+        total, used, free = shutil.disk_usage(
+            DATA_DIR if os.path.isdir(DATA_DIR) else "/"
+        )
         embed = discord.Embed(title="System Information", color=discord.Color.teal())
         embed.add_field(name="Python", value=platform.python_version(), inline=True)
         embed.add_field(
