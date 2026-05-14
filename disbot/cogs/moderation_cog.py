@@ -5,13 +5,31 @@ from discord import Member
 from datetime import timedelta
 import logging
 from utils import db
+from utils.helpers import CogMenuView
 
 logger = logging.getLogger("bot")
+
+_MOD_MENU_COMMANDS: list[tuple[str, str, str]] = [
+    ("modmenu",  "!modmenu",                              "Show this moderation command menu."),
+    ("warn",     "!warn <@user> [reason]",                "Issue a warning to a member."),
+    ("timeout",  "!timeout <@user> <minutes> [reason]",   "Temporarily mute a member."),
+    ("kick",     "!kick <@user> [reason]",                "Kick a member from the server."),
+    ("ban",      "!ban <@user> [reason]",                 "Ban a member from the server."),
+    ("unban",    "!unban <user#0000>",                    "Unban a previously banned user."),
+]
 
 
 class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command(name="modmenu")
+    @commands.has_permissions(moderate_members=True)
+    async def mod_menu(self, ctx):
+        """Show a quick-reference menu for all moderation commands."""
+        view = CogMenuView(ctx, "🔨 Moderation Commands", _MOD_MENU_COMMANDS)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
 
     async def log_action(self, ctx, action: str, member, reason: str = "No reason provided"):
         await db.log_mod_action(ctx.guild.id, action, member.id, ctx.author.id, reason)

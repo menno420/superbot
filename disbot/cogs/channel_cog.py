@@ -3,8 +3,24 @@ import discord
 from discord.ext import commands
 import logging
 from utils.channels import safe_channel_name, get_or_create_category
+from utils.helpers import CogMenuView
 
 logger = logging.getLogger("bot")
+
+_CHANNEL_MENU_COMMANDS: list[tuple[str, str, str]] = [
+    ("channelmenu",   "!channelmenu",                              "Show this channel command menu."),
+    ("list",          "!list",                                     "List all categories and channels, including uncategorized."),
+    ("create",        "!create <name> <@role> <True/False> [cat]", "Create a channel with role access."),
+    ("channelcreator","!channelcreator",                           "Open the interactive channel creator UI."),
+    ("del",           "!del <name|id>",                            "Delete a specific channel."),
+    ("move",          "!move <channel> <category>",                "Move a channel into a category."),
+    ("lock",          "!lock <name|id>",                           "Lock a channel (no send messages)."),
+    ("unlock",        "!unlock <name|id>",                         "Unlock a previously locked channel."),
+    ("archive",       "!archive <name|id>",                        "Make a channel read-only."),
+    ("rename",        "!rename <old> <new>",                       "Rename a channel."),
+    ("channelinfo",   "!channelinfo <name|id>",                    "Show detailed info about a channel."),
+    ("clone",         "!clone <name|id> <new_name>",               "Clone a channel with a new name."),
+]
 
 # Keyword presets shown in the dropdown menus
 _NAME_PRESETS = [
@@ -77,6 +93,14 @@ class ChannelCog(commands.Cog):
     # -------------------
     # Commands
     # -------------------
+
+    @commands.command(name="channelmenu", help="Show the channel command quick-reference menu.")
+    @is_admin_or_owner()
+    async def channel_menu(self, ctx):
+        """Show a quick-reference menu for all channel commands."""
+        view = CogMenuView(ctx, "📋 Channel Commands", _CHANNEL_MENU_COMMANDS)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
 
     @commands.command(name="set", help="Set access for a channel/category. Usage: !set <name|id> <@role> <True/False>")
     @is_admin_or_owner()
@@ -192,13 +216,17 @@ class ChannelCog(commands.Cog):
         else:
             await ctx.send(f'Channel "{channel_name}" not found.')
 
-    @commands.command(name="list", help="List all categories and channels.")
+    @commands.command(name="list", help="List all categories and channels, including uncategorized.")
     @is_admin_or_owner()
     async def list_channels(self, ctx):
         embed = discord.Embed(title="Categories and Channels", color=discord.Color.blue())
         for category in ctx.guild.categories:
             channels = "\n".join(f" - {ch.name}" for ch in category.channels)
             embed.add_field(name=category.name, value=channels or "No channels", inline=False)
+        uncategorized = [ch for ch in ctx.guild.channels if ch.category is None and not isinstance(ch, discord.CategoryChannel)]
+        if uncategorized:
+            names = "\n".join(f" - {ch.name}" for ch in sorted(uncategorized, key=lambda c: c.position))
+            embed.add_field(name="— Uncategorized —", value=names, inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(name="clone", help="Clone a channel. Usage: !clone <name|id> <new_name>")

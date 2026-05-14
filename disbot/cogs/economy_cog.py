@@ -5,8 +5,19 @@ import discord
 from discord.ext import commands
 import logging
 from utils import db
+from utils.helpers import CogMenuView
 
 logger = logging.getLogger("bot")
+
+_ECONOMY_MENU_COMMANDS: list[tuple[str, str, str]] = [
+    ("economymenu", "!economymenu",              "Show this economy command menu."),
+    ("daily",       "!daily",                    "Claim your daily coin reward (streak-based)."),
+    ("work",        "!work",                     "Pick a job and earn coins + XP (1h cooldown)."),
+    ("balance",     "!balance [@user]",          "Check your or another user's coin balance."),
+    ("shop",        "!shop",                     "Browse and buy items needed for higher-tier jobs."),
+    ("inventory",   "!inventory [@user]",        "View your or another user's inventory."),
+    ("joblist",     "!joblist",                  "See all jobs, requirements, and your mastery."),
+]
 
 _WORK_COOLDOWN  = 3600   # 1 hour between work sessions
 _DAILY_COOLDOWN = 86400  # 24 hours between daily claims
@@ -122,6 +133,13 @@ async def post_economy_log(bot: commands.Bot, guild_id: int, embed: discord.Embe
 class EconomyCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @commands.command(name="economymenu")
+    async def economy_menu(self, ctx: commands.Context):
+        """Show a quick-reference menu for all economy commands."""
+        view = CogMenuView(ctx, "💰 Economy Commands", _ECONOMY_MENU_COMMANDS)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
 
     # ------------------------------------------------------------------ events
 

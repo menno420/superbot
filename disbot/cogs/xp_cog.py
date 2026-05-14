@@ -5,8 +5,18 @@ import discord
 from discord.ext import commands
 import logging
 from utils import db
+from utils.helpers import CogMenuView
 
 logger = logging.getLogger("bot")
+
+_XP_MENU_COMMANDS: list[tuple[str, str, str]] = [
+    ("xpmenu",       "!xpmenu",                    "Show this XP command menu."),
+    ("rank",         "!rank [@user] [xp|coins]",   "Show XP/coin rank card for a user."),
+    ("leaderboard",  "!leaderboard [xp|coins]",    "Show the top-10 XP or coin leaderboard."),
+    ("xpconfig",     "!xpconfig",                  "Configure XP gain range, cooldown, and announce channel (admin)."),
+    ("givexp",       "!givexp <@user> <amount>",   "Give XP to a user (admin only)."),
+    ("resetxp",      "!resetxp <@user>",           "Reset a user's XP to zero (admin only)."),
+]
 
 
 async def _post_log(bot: commands.Bot, guild_id: int, embed: discord.Embed) -> None:
@@ -52,6 +62,13 @@ def _progress_bar(current: int, needed: int, width: int = 10) -> str:
 class XpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @commands.command(name="xpmenu")
+    async def xp_menu(self, ctx: commands.Context):
+        """Show a quick-reference menu for all XP commands."""
+        view = CogMenuView(ctx, "🏆 XP Commands", _XP_MENU_COMMANDS)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
 
     # ------------------------------------------------------------------ events
 
