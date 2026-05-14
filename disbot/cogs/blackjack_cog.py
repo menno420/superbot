@@ -625,7 +625,7 @@ class BlackjackCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self):
-        asyncio.ensure_future(self._cleanup_orphaned_tournaments())
+        asyncio.create_task(self._cleanup_orphaned_tournaments())
 
     async def _cleanup_orphaned_tournaments(self):
         """On startup, find leftover BJ Tournament categories and notify players."""
@@ -759,7 +759,7 @@ class BlackjackCog(commands.Cog):
             if not tourn.started and tourn.guild_id in _tournaments:
                 await _launch_tournament(tourn, ctx.guild, ctx.bot)
 
-        tourn.timer_task = asyncio.ensure_future(_auto_start())
+        tourn.timer_task = asyncio.create_task(_auto_start())
 
     @commands.command(name="bjstart")
     @commands.has_permissions(administrator=True)

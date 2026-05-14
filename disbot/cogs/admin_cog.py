@@ -223,17 +223,15 @@ class AdminCog(commands.Cog):
     @commands.command(name='loglevel')
     @commands.has_permissions(administrator=True)
     async def set_log_level(self, ctx, level: str):
-        """Change the webhook log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)."""
-        handler = getattr(self.bot, '_webhook_handler', None)
-        if not handler:
-            await ctx.send('❌ No webhook handler is configured.')
-            return
+        """Change the bot log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)."""
         level_int = getattr(logging, level.upper(), None)
         if not isinstance(level_int, int):
-            await ctx.send(f'❌ Unknown level `{level}`. Choose from: DEBUG, INFO, WARNING, ERROR, CRITICAL')
+            await ctx.send(
+                f'❌ Unknown level `{level}`. Choose from: DEBUG, INFO, WARNING, ERROR, CRITICAL'
+            )
             return
-        handler.setLevel(level_int)
-        await ctx.send(f'✅ Webhook log level set to `{level.upper()}`.')
+        logging.getLogger().setLevel(level_int)
+        await ctx.send(f'✅ Log level set to `{level.upper()}`.')
 
     # ------------------------------------------------------------------
     # Startup message
