@@ -344,7 +344,7 @@ class _ChannelCreatorView(discord.ui.View):
             return False
         return True
 
-    async def _refresh_embed(self, interaction: discord.Interaction):
+    def _build_embed(self) -> discord.Embed:
         embed = discord.Embed(
             title="📋 Channel Creator",
             description=(
@@ -353,9 +353,17 @@ class _ChannelCreatorView(discord.ui.View):
             ),
             color=discord.Color.blurple(),
         )
-        embed.add_field(name="Selected name",     value=f"`{self.chosen_name}`" if self.chosen_name else "*(none)*", inline=True)
-        embed.add_field(name="Selected category", value=f"`{self.chosen_cat}`"  if self.chosen_cat  else "*(none)*", inline=True)
-        await interaction.message.edit(embed=embed, view=self)
+        embed.add_field(
+            name="Selected name",
+            value=f"`{self.chosen_name}`" if self.chosen_name else "*(none)*",
+            inline=True,
+        )
+        embed.add_field(
+            name="Selected category",
+            value=f"`{self.chosen_cat}`" if self.chosen_cat else "*(none)*",
+            inline=True,
+        )
+        return embed
 
     @discord.ui.button(label="Custom Name", style=discord.ButtonStyle.grey, emoji="✏️", row=2)
     async def custom_name_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
@@ -422,8 +430,8 @@ class _NameSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self._parent.chosen_name = self.values[0]
-        await interaction.response.defer()
-        await self._parent._refresh_embed(interaction)
+        await interaction.response.edit_message(
+            embed=self._parent._build_embed(), view=self._parent)
 
 
 class _CategorySelect(discord.ui.Select):
@@ -438,8 +446,8 @@ class _CategorySelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self._parent.chosen_cat = self.values[0]
-        await interaction.response.defer()
-        await self._parent._refresh_embed(interaction)
+        await interaction.response.edit_message(
+            embed=self._parent._build_embed(), view=self._parent)
 
 
 class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):
@@ -456,8 +464,11 @@ class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):
     async def on_submit(self, interaction: discord.Interaction):
         name = self.channel_name.value.strip().lower().replace(" ", "-")
         self._view.chosen_name = name
+        # Modals can't use edit_message — defer and update the stored message reference
         await interaction.response.defer()
-        await self._view._refresh_embed(interaction)
+        if self._view.message:
+            await self._view.message.edit(
+                embed=self._view._build_embed(), view=self._view)
 
 
 # -------------------

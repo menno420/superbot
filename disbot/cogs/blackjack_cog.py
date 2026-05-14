@@ -626,6 +626,28 @@ class BlackjackCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_load(self):
+        asyncio.ensure_future(self._cleanup_orphaned_tournaments())
+
+    async def _cleanup_orphaned_tournaments(self):
+        """On startup, find leftover BJ Tournament categories and notify players."""
+        await self.bot.wait_until_ready()
+        for guild in self.bot.guilds:
+            cat = discord.utils.get(guild.categories, name="BJ Tournament")
+            if not cat or not cat.channels:
+                continue
+            for ch in cat.channels:
+                try:
+                    await ch.send(
+                        "⚠️ The bot restarted and this tournament was interrupted. "
+                        "This channel will be deleted in 5 minutes. "
+                        "Use `!bjtournament` to start a new one."
+                    )
+                except Exception:
+                    pass
+            await asyncio.sleep(300)
+            await cleanup_category(cat)
+
     # ---- reaction-based tournament registration ----
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):

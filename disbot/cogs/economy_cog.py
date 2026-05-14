@@ -126,16 +126,24 @@ class EconomyCog(commands.Cog):
     # ------------------------------------------------------------------ events
 
     @commands.Cog.listener()
+    async def on_ready(self):
+        """Ensure every guild the bot is in has an economy-log channel."""
+        for guild in self.bot.guilds:
+            await self._ensure_log_channel(guild)
+
+    @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         """Auto-create an economy-log channel when the bot joins a new guild."""
+        await self._ensure_log_channel(guild)
+
+    async def _ensure_log_channel(self, guild: discord.Guild) -> None:
+        """Create #economy-log for *guild* if it doesn't already exist."""
         cid = await db.get_setting(guild.id, "economy_log_channel", "")
         if cid:
             ch = guild.get_channel(int(cid))
             if ch:
-                return  # already set up
-
+                return  # channel still exists, nothing to do
         try:
-            # Prefer existing "Bot" or "General" category; else no category
             cat = (discord.utils.get(guild.categories, name="Bot")
                    or discord.utils.get(guild.categories, name="General"))
             overwrites = {
@@ -163,10 +171,11 @@ class EconomyCog(commands.Cog):
                 color=discord.Color.gold(),
             )
             await ch.send(embed=embed)
+            logger.info("Created economy-log channel in %s", guild.name)
         except discord.Forbidden:
             pass
         except Exception as e:
-            logger.error("on_guild_join economy-log creation failed: %s", e)
+            logger.error("economy-log creation failed in %s: %s", guild.name, e)
 
     # ------------------------------------------------------------------ !daily
 
