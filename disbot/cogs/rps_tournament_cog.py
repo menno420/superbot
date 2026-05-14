@@ -102,7 +102,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         await self.registration_message.add_reaction(self.registration_emoji)
 
         # Start the registration timer
-        self.reminder_task = self.bot.loop.create_task(self.registration_countdown(ctx))
+        self.reminder_task = asyncio.create_task(self.registration_countdown(ctx))
 
     async def registration_countdown(self, ctx):
         """Handles the registration timer and reminders."""
@@ -649,7 +649,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
 
     def update_player_stats(self, player, result: str) -> None:
         """Schedule an async stats update without blocking the event loop."""
-        asyncio.ensure_future(self._async_update_stat(player.id, result))
+        asyncio.create_task(self._async_update_stat(player.id, result))
 
     async def _async_update_stat(self, user_id: int, result: str) -> None:
         try:
@@ -754,7 +754,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):
         await ctx.send(f"Setting `{setting}` updated to `{value}`.")
 
     async def cog_load(self):
-        asyncio.ensure_future(self._cleanup_orphaned_channels())
+        asyncio.create_task(self._cleanup_orphaned_channels())
 
     async def _cleanup_orphaned_channels(self):
         """On startup, clean up any leftover RPS tournament/bot-match channels."""

@@ -144,37 +144,37 @@ class MiningCog(commands.Cog):
         await self.update_inventory(ctx.author.id, "wood", wood_amount)
         await ctx.send(f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!")
 
-    @commands.command()
+    @commands.command(name="mineinv", aliases=["mineinventory"])
     async def inventory(self, ctx):
-        """Displays your inventory."""
+        """Displays your mining inventory."""
         user_id = str(ctx.author.id)
         inventory = await db.get_mining_inventory(user_id)
 
         if not inventory:
-            return await ctx.send("Your inventory is empty. Start mining with `!mine`!")
+            return await ctx.send("Your mining inventory is empty. Start mining with `!mine`!")
 
         items_list = "\n".join([f"**{item}**: {count}" for item, count in inventory.items() if count > 0])
         embed = discord.Embed(
-            title=f"{ctx.author.name}'s Inventory",
+            title=f"{ctx.author.name}'s Mining Inventory",
             description=items_list,
             color=discord.Color.blue()
         )
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(name="minestats")
     async def stats(self, ctx):
-        """Shows your total items and number of unique items."""
+        """Shows your total mining items and number of unique items."""
         user_id = str(ctx.author.id)
         inventory = await db.get_mining_inventory(user_id)
         total_items = sum(inventory.values())
         unique_items = len(inventory)
 
-        embed = discord.Embed(title=f"{ctx.author.name}'s Stats", color=discord.Color.purple())
+        embed = discord.Embed(title=f"{ctx.author.name}'s Mining Stats", color=discord.Color.purple())
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(name="minelb", aliases=["miningleaderboard"])
     async def leaderboard(self, ctx):
         """Shows top miners by total item count."""
         rows = await db.get_all_mining_totals()

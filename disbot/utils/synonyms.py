@@ -34,8 +34,7 @@ COMMAND_SYNONYMS: dict[str, list[str]] = {
     "invite":       ["einladen"],
     "avatar":       ["pfp", "bild"],
     "cleanuphistory": ["cleanhistory", "bereinigen"],
-    "addword":      ["prohibit", "blockword"],
-    "removeword":   ["unprohibit", "unblockword", "allowword"],
+    "word":         ["addword", "removeword", "prohibit", "blockword", "wordlist"],
 }
 
 

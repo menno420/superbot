@@ -46,6 +46,10 @@ INITIAL_EXTENSIONS = [
     "cogs.counting_cog",
     "cogs.deathmatch_cog",
     "cogs.proof_channel_cog",
+    "cogs.mining_cog",
+    "cogs.diagnostic_cog",
+    "cogs.chain_cog",
+    "cogs.general_cog",
 ]
 
 # ==========================

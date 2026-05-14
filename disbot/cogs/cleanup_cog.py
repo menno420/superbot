@@ -11,8 +11,9 @@ class Cleanup(commands.Cog):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
 
-        self.prohibited_words = []
-        self.prohibited_patterns = []
+        # Per-guild caches: guild_id → (words, patterns)
+        self._word_cache: dict[int, list[str]] = {}
+        self._pattern_cache: dict[int, list] = {}
 
         self.command_prefixes = ['?', '!']
         self.command_pattern = re.compile(
@@ -22,15 +23,18 @@ class Cleanup(commands.Cog):
 
         self.whitelisted_channels = _config.CLEANUP_WHITELIST_CHANNELS
 
-    async def cog_load(self):
-        await self._reload_words()
-
-    async def _reload_words(self):
-        self.prohibited_words = await db.get_prohibited_words(0)
-        self.prohibited_patterns = [
-            re.compile(rf'\b{re.escape(word)}\b', re.IGNORECASE)
-            for word in self.prohibited_words
+    async def _load_guild(self, guild_id: int) -> None:
+        words = await db.get_prohibited_words(guild_id)
+        self._word_cache[guild_id] = words
+        self._pattern_cache[guild_id] = [
+            re.compile(rf'\b{re.escape(w)}\b', re.IGNORECASE)
+            for w in words
         ]
+
+    async def _get_patterns(self, guild_id: int) -> list:
+        if guild_id not in self._pattern_cache:
+            await self._load_guild(guild_id)
+        return self._pattern_cache[guild_id]
 
     async def remove_unwanted_message(self, message):
         """Deletes the message if it is a command in a non-whitelisted channel or contains prohibited content."""
@@ -49,7 +53,8 @@ class Cleanup(commands.Cog):
                 return True
             return False
 
-        for pattern in self.prohibited_patterns:
+        guild_id = message.guild.id if message.guild else 0
+        for pattern in await self._get_patterns(guild_id):
             if pattern.search(message.content):
                 try:
                     await message.delete()
@@ -120,7 +125,10 @@ class Cleanup(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def word_cmd(self, ctx):
         """Manage prohibited words. Subcommands: add, remove, list."""
-        words = self.prohibited_words
+        guild_id = ctx.guild.id
+        if guild_id not in self._word_cache:
+            await self._load_guild(guild_id)
+        words = self._word_cache[guild_id]
         if words:
             word_list = ', '.join(f'`{w}`' for w in sorted(words))
             await ctx.send(f"Prohibited words: {word_list}", delete_after=15)
@@ -132,9 +140,9 @@ class Cleanup(commands.Cog):
     async def word_add(self, ctx, *, word: str):
         """Adds a word to the prohibited words list."""
         word = word.lower()
-        added = await db.add_prohibited_word(0, word)
+        added = await db.add_prohibited_word(ctx.guild.id, word)
         if added:
-            await self._reload_words()
+            await self._load_guild(ctx.guild.id)
             await ctx.send(f"Added '{word}' to the prohibited words list.", delete_after=5)
             self.logger.info(f"Added prohibited word: {word}")
         else:
@@ -145,9 +153,9 @@ class Cleanup(commands.Cog):
     async def word_remove(self, ctx, *, word: str):
         """Removes a word from the prohibited words list."""
         word = word.lower()
-        removed = await db.remove_prohibited_word(0, word)
+        removed = await db.remove_prohibited_word(ctx.guild.id, word)
         if removed:
-            await self._reload_words()
+            await self._load_guild(ctx.guild.id)
             await ctx.send(f"Removed '{word}' from the prohibited words list.", delete_after=5)
             self.logger.info(f"Removed prohibited word: {word}")
         else:
@@ -157,7 +165,10 @@ class Cleanup(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def word_list(self, ctx):
         """Shows all prohibited words."""
-        words = self.prohibited_words
+        guild_id = ctx.guild.id
+        if guild_id not in self._word_cache:
+            await self._load_guild(guild_id)
+        words = self._word_cache[guild_id]
         if words:
             word_list = ', '.join(f'`{w}`' for w in sorted(words))
             await ctx.send(f"Prohibited words: {word_list}", delete_after=15)
