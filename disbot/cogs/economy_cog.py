@@ -9,6 +9,8 @@ from discord.ext import commands
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
+from utils.settings_keys import ECONOMY_LOG_CHANNEL
+from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
@@ -216,7 +218,7 @@ def _shop_embed() -> discord.Embed:
     embed = discord.Embed(
         title="🛒 Item Shop",
         description="Buy items to unlock higher-tier jobs.",
-        color=discord.Color.orange(),
+        color=WARNING_COLOR,
     )
     for name, data in SHOP_ITEMS.items():
         embed.add_field(
@@ -259,7 +261,7 @@ class EconomyCog(commands.Cog):
 
     async def _ensure_log_channel(self, guild: discord.Guild) -> None:
         """Create #economy-log for *guild* if it doesn't already exist."""
-        cid = await db.get_setting(guild.id, "economy_log_channel", "")
+        cid = await db.get_setting(guild.id, ECONOMY_LOG_CHANNEL, "")
         if cid:
             ch = guild.get_channel(int(cid))
             if ch:
@@ -267,7 +269,7 @@ class EconomyCog(commands.Cog):
 
         existing = discord.utils.get(guild.text_channels, name="economy-log")
         if existing:
-            await db.set_setting(guild.id, "economy_log_channel", str(existing.id))
+            await db.set_setting(guild.id, ECONOMY_LOG_CHANNEL, str(existing.id))
             return
 
         try:
@@ -288,7 +290,7 @@ class EconomyCog(commands.Cog):
                 category=cat,
                 topic="Live feed of XP level-ups, daily rewards, work earnings, and shop purchases.",
             )
-            await db.set_setting(guild.id, "economy_log_channel", str(ch.id))
+            await db.set_setting(guild.id, ECONOMY_LOG_CHANNEL, str(ch.id))
             embed = discord.Embed(
                 title="📊 Economy Log",
                 description=(
@@ -296,7 +298,7 @@ class EconomyCog(commands.Cog):
                     "🏆 Level-ups  •  🎁 Daily rewards  •  💼 Work earnings  •  🛒 Shop purchases\n\n"
                     "Admins can move it with `!setlogchannel #channel`."
                 ),
-                color=discord.Color.gold(),
+                color=ECONOMY_COLOR,
             )
             await ch.send(embed=embed)
             logger.info("Created economy-log channel in %s", guild.name)
@@ -343,7 +345,7 @@ class EconomyCog(commands.Cog):
         embed = discord.Embed(
             title="🎁 Daily Reward",
             description=f"{tier_emoji} **{tier_label}** reward!",
-            color=discord.Color.gold(),
+            color=ECONOMY_COLOR,
         )
         embed.set_author(
             name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url
@@ -361,7 +363,7 @@ class EconomyCog(commands.Cog):
                 f"{ctx.author.mention} claimed **{tier_emoji} {tier_label}** "
                 f"— **+{amount}** 🪙  (streak: {streak})"
             ),
-            color=discord.Color.gold(),
+            color=ECONOMY_COLOR,
         )
         await post_log_embed(self.bot, gid, log_embed)
 
@@ -398,7 +400,7 @@ class EconomyCog(commands.Cog):
                 "Choose a job below.\n"
                 "Pay increases **+1%** each time you work the same job (max +100%)."
             ),
-            color=discord.Color.blurple(),
+            color=INFO_COLOR,
         )
         embed.add_field(name="Level", value=str(xp_row["level"]), inline=True)
         embed.add_field(name="Coins", value=f"{xp_row.get('coins', 0)} 🪙", inline=True)
@@ -427,7 +429,7 @@ class EconomyCog(commands.Cog):
         xp_row = await db.get_xp(target.id, ctx.guild.id)
         embed = discord.Embed(
             title=f"💰 {target.display_name}'s Wallet",
-            color=discord.Color.gold(),
+            color=ECONOMY_COLOR,
         )
         embed.set_thumbnail(url=target.display_avatar.url)
         embed.add_field(name="🪙 Coins", value=f"**{coins:,}**", inline=True)
@@ -440,7 +442,7 @@ class EconomyCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def setlogchannel(self, ctx: commands.Context, channel: discord.TextChannel):
         """Set the economy log channel. Usage: !setlogchannel #channel"""
-        await db.set_setting(ctx.guild.id, "economy_log_channel", str(channel.id))
+        await db.set_setting(ctx.guild.id, ECONOMY_LOG_CHANNEL, str(channel.id))
         await ctx.send(f"✅ Economy log channel set to {channel.mention}.")
 
     # ------------------------------------------------------------------ !joblist
@@ -453,7 +455,7 @@ class EconomyCog(commands.Cog):
         level = xp_row["level"]
         inv = await db.get_inventory(uid, gid)
 
-        embed = discord.Embed(title="📋 All Jobs", color=discord.Color.blurple())
+        embed = discord.Embed(title="📋 All Jobs", color=INFO_COLOR)
         tiers: dict[int, list[str]] = {}
         for name, data in JOBS.items():
             tiers.setdefault(data["tier"], []).append(name)
@@ -511,7 +513,7 @@ class _EconomyPanelView(BaseView):
         on_cd_work, secs_work = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
         on_cd_daily, secs_daily = check_cooldown(row["last_daily"], _DAILY_COOLDOWN)
 
-        embed = discord.Embed(title="💰 Economy Panel", color=discord.Color.gold())
+        embed = discord.Embed(title="💰 Economy Panel", color=ECONOMY_COLOR)
         embed.set_author(
             name=self.ctx.author.display_name,
             icon_url=self.ctx.author.display_avatar.url,
@@ -574,7 +576,7 @@ class _EconomyPanelView(BaseView):
         embed = discord.Embed(
             title="🎁 Daily Reward",
             description=f"{tier_emoji} **{tier_label}** reward!",
-            color=discord.Color.gold(),
+            color=ECONOMY_COLOR,
         )
         embed.set_author(
             name=self.ctx.author.display_name,
@@ -592,7 +594,7 @@ class _EconomyPanelView(BaseView):
                 f"{self.ctx.author.mention} claimed **{tier_emoji} {tier_label}** "
                 f"— **+{amount}** 🪙  (streak: {streak})"
             ),
-            color=discord.Color.gold(),
+            color=ECONOMY_COLOR,
         )
         await post_log_embed(self.ctx.bot, gid, log_embed)
 
@@ -625,7 +627,7 @@ class _EconomyPanelView(BaseView):
                 "Choose a job below.\n"
                 "Pay increases **+1%** each time you work the same job (max +100%)."
             ),
-            color=discord.Color.blurple(),
+            color=INFO_COLOR,
         )
         embed.add_field(name="Level", value=str(xp_row["level"]), inline=True)
         embed.add_field(name="Coins", value=f"{xp_row.get('coins', 0)} 🪙", inline=True)
@@ -648,7 +650,7 @@ class _EconomyPanelView(BaseView):
         xp_row = await db.get_xp(uid, gid)
         embed = discord.Embed(
             title=f"💰 {self.ctx.author.display_name}'s Wallet",
-            color=discord.Color.gold(),
+            color=ECONOMY_COLOR,
         )
         embed.set_thumbnail(url=self.ctx.author.display_avatar.url)
         embed.add_field(name="🪙 Coins", value=f"**{coins:,}**", inline=True)
@@ -660,6 +662,7 @@ class _EconomyPanelView(BaseView):
     async def inventory_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
+        # Deferred: extract to views/inventory/ when inventory gains 3+ panel levels
         from cogs.inventory_cog import UnifiedInventoryView, _build_combined_inventory
 
         uid, gid = self.ctx.author.id, self.ctx.guild.id
@@ -675,7 +678,7 @@ class _EconomyPanelView(BaseView):
         level = xp_row["level"]
         inv = await db.get_inventory(uid, gid)
 
-        embed = discord.Embed(title="📋 All Jobs", color=discord.Color.blurple())
+        embed = discord.Embed(title="📋 All Jobs", color=INFO_COLOR)
         tiers: dict[int, list[str]] = {}
         for name, data in JOBS.items():
             tiers.setdefault(data["tier"], []).append(name)
@@ -713,15 +716,6 @@ class _EconomyPanelView(BaseView):
     ):
         embed = await self.build_embed()
         await interaction.response.edit_message(embed=embed, view=self)
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
 
 
 # ---------------------------------------------------------------------------
@@ -804,7 +798,7 @@ class _JobSelect(discord.ui.Select):
         embed = discord.Embed(
             title=f"{job['emoji']} Work Complete — {job_name.replace('_', ' ').title()}",
             description=job["desc"],
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.add_field(name="Earned", value=f"**+{pay}** 🪙", inline=True)
         embed.add_field(name="XP gained", value=f"**+{xp_gain}** XP", inline=True)
@@ -834,7 +828,7 @@ class _JobSelect(discord.ui.Select):
                 f"Earned **+{pay}** 🪙 and **+{xp_gain}** XP"
                 + ("  🎉 *Level up!*" if lvup else "")
             ),
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         await post_log_embed(self._ctx.bot, gid, log_embed)
 
@@ -932,7 +926,7 @@ class _ShopSelect(discord.ui.Select):
         embed = discord.Embed(
             title=f"✅ Purchased: {data['emoji']} {item_name.replace('_', ' ').title()}",
             description=f"**-{data['price']:,}** 🪙  |  New balance: **{new_bal:,}** 🪙",
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         await interaction.response.send_message(embed=embed)
 
@@ -943,7 +937,7 @@ class _ShopSelect(discord.ui.Select):
                 f"**{data['emoji']} {item_name.replace('_', ' ').title()}** "
                 f"for **{data['price']:,}** 🪙"
             ),
-            color=discord.Color.orange(),
+            color=WARNING_COLOR,
         )
         await post_log_embed(self._ctx.bot, gid, log_embed)
 
@@ -1026,7 +1020,7 @@ class _ShopPanelSelect(discord.ui.Select):
                 f"**-{data['price']:,}** 🪙  |  New balance: **{new_bal:,}** 🪙\n\n"
                 "Click **↩ Back** to return to the economy panel."
             ),
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         await interaction.response.edit_message(embed=embed, view=self._shop_view)
 
@@ -1037,7 +1031,7 @@ class _ShopPanelSelect(discord.ui.Select):
                 f"**{data['emoji']} {item_name.replace('_', ' ').title()}** "
                 f"for **{data['price']:,}** 🪙"
             ),
-            color=discord.Color.orange(),
+            color=WARNING_COLOR,
         )
         await post_log_embed(self._ctx.bot, gid, log_embed)
 

@@ -5,6 +5,8 @@ import asyncio
 import discord
 from discord.ext import commands
 from utils import embeds as em
+from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
+from views.base import BaseView
 
 
 async def _remind_later(
@@ -58,7 +60,7 @@ class UtilityCog(commands.Cog):
             member = member or ctx.author
             embed = discord.Embed(
                 title=f"User Info — {member}",
-                color=discord.Color.green(),
+                color=SUCCESS_COLOR,
             )
             embed.set_thumbnail(url=member.display_avatar.url)
             embed.add_field(name="Username", value=member.name, inline=True)
@@ -87,7 +89,7 @@ class UtilityCog(commands.Cog):
             embed = discord.Embed(
                 title=f"{guild.name}",
                 description="Server Information",
-                color=discord.Color.blue(),
+                color=INFO_COLOR,
             )
             embed.add_field(name="Owner", value=guild.owner.mention, inline=True)
             embed.add_field(name="Members", value=str(guild.member_count), inline=True)
@@ -107,21 +109,21 @@ class UtilityCog(commands.Cog):
                 embed.set_thumbnail(url=guild.icon.url)
         await ctx.send(embed=embed)
 
-    @commands.command(name="serverinfo")
+    @commands.command(name="serverinfo", hidden=True)
     async def serverinfo(self, ctx):
         """Alias for !info server."""
         await ctx.invoke(self.info, target="server")
 
-    @commands.command(name="userinfo")
+    @commands.command(name="userinfo", hidden=True)
     async def userinfo(self, ctx, member: discord.Member = None):
         """Alias for !info user [@member]."""
         await ctx.invoke(self.info, target="user", member=member)
 
-    @commands.command(name="avatar")
+    @commands.command(name="avatar", hidden=True)
     async def avatar(self, ctx, member: discord.Member = None):
         """Display a user's avatar."""
         member = member or ctx.author
-        embed = discord.Embed(title=f"{member}'s Avatar", color=discord.Color.blue())
+        embed = discord.Embed(title=f"{member}'s Avatar", color=INFO_COLOR)
         embed.set_image(url=member.display_avatar.url)
         await ctx.send(embed=embed)
 
@@ -155,7 +157,7 @@ class UtilityCog(commands.Cog):
         embed = discord.Embed(
             title=f"Poll: {question}",
             description="\n".join(f"{i+1}. {opt}" for i, opt in enumerate(options)),
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         poll_msg = await ctx.send(embed=embed)
         for i in range(len(options)):
@@ -167,16 +169,12 @@ class UtilityCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
-class _UtilityPanelView(discord.ui.View):
+class _UtilityPanelView(BaseView):
     """Interactive utility panel — quick access to common utility actions."""
 
     def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=180)
+        super().__init__(ctx.author, public=True, timeout=180)
         self.ctx = ctx
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return True
 
     def build_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -189,7 +187,7 @@ class _UtilityPanelView(discord.ui.View):
                 "**🔔 Remind Me** — set a timed reminder\n"
                 "**🔗 Invite** — generate a one-use server invite"
             ),
-            color=discord.Color.blue(),
+            color=UTILITY_COLOR,
         )
         embed.set_footer(text="Click an action below.")
         return embed
@@ -202,7 +200,7 @@ class _UtilityPanelView(discord.ui.View):
         embed = discord.Embed(
             title=f"{guild.name}",
             description="Server Information",
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         embed.add_field(name="Owner", value=guild.owner.mention, inline=True)
         embed.add_field(name="Members", value=str(guild.member_count), inline=True)
@@ -228,7 +226,7 @@ class _UtilityPanelView(discord.ui.View):
         member = interaction.user
         embed = discord.Embed(
             title=f"User Info — {member}",
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.set_thumbnail(url=member.display_avatar.url)
         embed.add_field(name="Username", value=member.name, inline=True)
@@ -257,7 +255,7 @@ class _UtilityPanelView(discord.ui.View):
     @discord.ui.button(label="🖼️ Avatar", style=discord.ButtonStyle.blurple, row=0)
     async def avatar_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         member = interaction.user
-        embed = discord.Embed(title=f"{member}'s Avatar", color=discord.Color.blue())
+        embed = discord.Embed(title=f"{member}'s Avatar", color=INFO_COLOR)
         embed.set_image(url=member.display_avatar.url)
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
@@ -289,15 +287,6 @@ class _UtilityPanelView(discord.ui.View):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
 
 
 # ---------------------------------------------------------------------------
@@ -333,7 +322,7 @@ class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-ar
         embed = discord.Embed(
             title=f"Poll: {self.question.value}",
             description="\n".join(f"{i+1}. {opt}" for i, opt in enumerate(opts)),
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         poll_msg = await self.channel.send(embed=embed)
         for i in range(len(opts)):

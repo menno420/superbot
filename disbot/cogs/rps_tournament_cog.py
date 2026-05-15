@@ -13,7 +13,9 @@ from utils.channels import (
     create_private_channel,
     get_or_create_category,
 )
+from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.tournaments import TournamentRegistration
+from utils.ui_constants import ERROR_COLOR, GAME_COLOR, INFO_COLOR, SUCCESS_COLOR
 
 logger = logging.getLogger("bot")
 
@@ -70,11 +72,20 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             "grass": ["grass", "leaf", "🌿", "🍃"],
         }
 
+    async def cog_load(self) -> None:
+        asyncio.create_task(self._clear_stale_tournament_flag())
+        asyncio.create_task(self._cleanup_orphaned_channels())
+
+    async def _clear_stale_tournament_flag(self) -> None:
+        await self.bot.wait_until_ready()
+        for guild in self.bot.guilds:
+            flag = await global_db.get_setting(guild.id, ACTIVE_TOURNAMENT, "")
+            if flag == "rps":
+                await global_db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
+
     @commands.command(name="rpsregister", aliases=["rpsreg"])
-    @commands.has_permissions(administrator=True)
     async def rps_register(self, ctx, role: discord.Role = None, entry_fee: int = 0):
         """Starts the registration period with a reaction role message.  !rpsregister [@role] [entry_fee]"""
-        self.entry_fee = max(0, entry_fee)
         if self.tournament_active:
             await ctx.send(
                 "Cannot start registration after the tournament has started."
@@ -84,6 +95,15 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         if self.registration_active:
             await ctx.send("Registration is already active.")
             return
+
+        existing = await global_db.get_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
+        if existing:
+            await ctx.send(
+                f"A **{existing}** tournament is already active in this server."
+            )
+            return
+
+        await global_db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "rps")
 
         self.registration_active = True
         self.registration_role = role
@@ -96,7 +116,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                 "React ✅ or click **Join** to sign up!\n"
                 f"Registration ends in {self.registration_timer // 60} minutes."
             ),
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         embed.add_field(name="Entry Fee", value=fee_str, inline=True)
         embed.add_field(
@@ -169,6 +189,9 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         except Exception as e:
             logger.exception(f"Error ending registration: {e}")
             await ctx.send("An error occurred while ending registration.")
+
+        if len(self.players) < 2:
+            await global_db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
 
     async def add_player_to_db(self, user) -> None:
         """Ensures the player exists in the async RPS stats table."""
@@ -699,6 +722,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             announce = guild.system_channel or last_channel
             await announce.send("\n".join(msg_lines))
             self.tournament_active = False
+            await global_db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
             self.players.clear()
             self.scores.clear()
             self.matches.clear()
@@ -774,9 +798,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.settings[setting] = value
         await ctx.send(f"Setting `{setting}` updated to `{value}`.")
 
-    async def cog_load(self):
-        asyncio.create_task(self._cleanup_orphaned_channels())
-
     async def _cleanup_orphaned_channels(self):
         """On startup, clean up any leftover RPS tournament/bot-match channels."""
         await self.bot.wait_until_ready()
@@ -832,7 +853,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                     f"{ctx.author.mention} challenges {target.mention} to Rock-Paper-Scissors "
                     f"({bet_str}).\n{target.mention}, do you accept?"
                 ),
-                color=discord.Color.blurple(),
+                color=GAME_COLOR,
             )
             msg = await ctx.send(embed=embed, view=view)
             view.message = msg
@@ -849,7 +870,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         embed = discord.Embed(
             title="✂️ Rock · Paper · Scissors",
             description=f"Bet: {bet_str}\nChoose your move!",
-            color=discord.Color.blurple(),
+            color=GAME_COLOR,
         )
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
@@ -889,17 +910,17 @@ class _RpsView(discord.ui.View):
         if player_move == bot_move:
             result = "🤝 Tie!"
             coin_delta = 0
-            color = discord.Color.blurple()
+            color = GAME_COLOR
         elif _RPS_WINS[player_move] == bot_move:
             payout = self.bet if self.bet else _FREE_WIN
             result = f"🎉 You win! +{payout} 🪙"
             coin_delta = payout
-            color = discord.Color.green()
+            color = SUCCESS_COLOR
         else:
             loss = -self.bet if self.bet else 0
             result = f"😞 Bot wins. {loss} 🪙" if self.bet else "😞 Bot wins."
             coin_delta = loss
-            color = discord.Color.red()
+            color = ERROR_COLOR
 
         new_bal = await global_db.add_coins(self.user.id, self.guild_id, coin_delta)
         embed = discord.Embed(
@@ -1161,7 +1182,7 @@ class _RpsPvpPlayView(discord.ui.View):
                 f"{self.p2.mention}: **{m2}** {e.get(m2, '')}\n\n"
                 f"{result}"
             ),
-            color=discord.Color.green() if winner_id else discord.Color.blurple(),
+            color=SUCCESS_COLOR if winner_id else GAME_COLOR,
         )
         await self.channel.send(embed=embed)
 

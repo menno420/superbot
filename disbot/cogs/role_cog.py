@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands, tasks
 from utils import db
 from utils.helpers import normalize_name
+from utils.ui_constants import ROLE_COLOR
 from views.roles._helpers import _ensure_defaults, _find_role_normalized, _parse_color
 
 logger = logging.getLogger("bot")
@@ -356,7 +357,7 @@ class RoleCog(commands.Cog):
         embed = discord.Embed(
             title="⚙️ Reaction Roles",
             description="\n".join(lines),
-            color=discord.Color.blurple(),
+            color=ROLE_COLOR,
         )
         await ctx.send(embed=embed)
 

@@ -8,6 +8,7 @@ import config as _config
 import discord
 from discord.ext import commands
 from utils import db
+from utils.ui_constants import ADMIN_COLOR
 from views.base import BaseView
 
 
@@ -260,9 +261,7 @@ class _WordMenuView(BaseView):
 
     def build_embed(self) -> discord.Embed:
         words = self.cog._word_cache.get(self.ctx.guild.id, [])
-        embed = discord.Embed(
-            title="🔤 Prohibited Words Manager", color=discord.Color.red()
-        )
+        embed = discord.Embed(title="🔤 Prohibited Words Manager", color=ADMIN_COLOR)
         if words:
             embed.add_field(
                 name="Current Words",
@@ -286,6 +285,70 @@ class _WordMenuView(BaseView):
     async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):
         await self.cog._load_guild(self.ctx.guild.id)
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+    @discord.ui.button(
+        label="🔍 Scan History", style=discord.ButtonStyle.blurple, row=1
+    )
+    async def btn_scan(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_ScanHistoryModal(self.cog))
+
+
+class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type: ignore[call-arg]
+    limit = discord.ui.TextInput(
+        label="Messages to scan (1–500)",
+        placeholder="100",
+        default="100",
+        max_length=3,
+    )
+    keyword = discord.ui.TextInput(
+        label="Keyword filter (optional)",
+        placeholder="Leave blank to scan all messages",
+        required=False,
+        max_length=100,
+    )
+
+    def __init__(self, cog: "Cleanup"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message(
+                "❌ You need **Manage Messages** permission to scan history.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            scan_limit = int(self.limit.value.strip())
+            if not 1 <= scan_limit <= 500:
+                raise ValueError
+        except ValueError:
+            await interaction.response.send_message(
+                "❌ Limit must be a number between 1 and 500.", ephemeral=True
+            )
+            return
+
+        kw = self.keyword.value.strip().lower() if self.keyword.value.strip() else None
+
+        await interaction.response.defer(ephemeral=True)
+
+        scanned = 0
+        deleted = 0
+        async for message in interaction.channel.history(limit=scan_limit):
+            if message.author.bot:
+                continue
+            if kw and kw not in message.content.lower():
+                continue
+            scanned += 1
+            if await self.cog.remove_unwanted_message(message):
+                deleted += 1
+
+        filter_note = f" (filtered by `{kw}`)" if kw else ""
+        await interaction.followup.send(
+            f"✅ Scanned **{scanned}** messages{filter_note}. Deleted **{deleted}**.",
+            ephemeral=True,
+        )
 
 
 async def setup(bot):

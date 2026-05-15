@@ -9,6 +9,8 @@ import sys
 
 import discord
 from discord.ext import commands
+from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
+from views.base import BaseView
 
 COGS_DIR = os.path.dirname(os.path.abspath(__file__))
 PID_FILE = os.path.join(os.path.dirname(COGS_DIR), "bot.pid")
@@ -68,11 +70,12 @@ class AdminCog(commands.Cog):
     # Server Statistics
     # ------------------------------------------------------------------
     @commands.command(name="serverstats")
+    @commands.has_permissions(administrator=True)
     async def server_stats(self, ctx):
         """Display server statistics."""
         guild = ctx.guild
         embed = discord.Embed(
-            title=f"Server Stats for {guild.name}", color=discord.Color.green()
+            title=f"Server Stats for {guild.name}", color=SUCCESS_COLOR
         )
         embed.add_field(name="Total Members", value=guild.member_count)
         embed.add_field(
@@ -111,27 +114,6 @@ class AdminCog(commands.Cog):
             await ctx.send(f"✅ `{module}` {action}ed.")
         except Exception as e:
             await ctx.send(f"⚠️ Error {action}ing `{module}`: {e}")
-
-    @commands.command(name="coglist")
-    @commands.has_permissions(administrator=True)
-    async def list_cogs(self, ctx):
-        """List all cog files with load status and syntax check."""
-        loaded = set(self.bot.extensions.keys())
-        lines = []
-        for fname in sorted(os.listdir(COGS_DIR)):
-            if not fname.endswith("_cog.py") or fname.startswith("__"):
-                continue
-            module = f"cogs.{fname[:-3]}"
-            load_icon = "✅" if module in loaded else "❌"
-            syntax_icon = "🟢" if _syntax_ok(fname) else "🔴 SYNTAX ERROR"
-            lines.append(f"{load_icon} {syntax_icon}  `{fname[:-3]}`")
-        embed = discord.Embed(
-            title="Cog List",
-            description="\n".join(lines) or "No cogs found.",
-            color=discord.Color.blue(),
-        )
-        embed.set_footer(text="✅ Loaded  ❌ Unloaded  🟢 Syntax OK  🔴 Syntax Error")
-        await ctx.send(embed=embed)
 
     @commands.command(name="loadall")
     @commands.is_owner()
@@ -181,24 +163,6 @@ class AdminCog(commands.Cog):
         if failed:
             parts.append("❌ Failed:\n" + "\n".join(failed))
         await ctx.send("\n".join(parts) or "✅ Nothing to unload.")
-
-    @commands.command(name="reloadall")
-    @commands.is_owner()
-    async def reload_all_cogs(self, ctx):
-        """Reload all currently loaded cogs."""
-        reloaded, failed = [], []
-        for module in list(self.bot.extensions.keys()):
-            try:
-                await self.bot.reload_extension(module)
-                reloaded.append(module.split(".")[1])
-            except Exception as e:
-                failed.append(f'`{module.split(".")[1]}`: {e}')
-        parts = []
-        if reloaded:
-            parts.append(f'🔄 Reloaded: {", ".join(f"`{n}`" for n in reloaded)}')
-        if failed:
-            parts.append("❌ Failed:\n" + "\n".join(failed))
-        await ctx.send("\n".join(parts) or "✅ Nothing to reload.")
 
     # ------------------------------------------------------------------
     # Restart
@@ -251,33 +215,26 @@ class AdminCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
-class _AdminPanelView(discord.ui.View):
+class _AdminPanelView(BaseView):
     """Interactive admin control panel."""
 
     def __init__(self, ctx: commands.Context, cog: AdminCog):
-        super().__init__(timeout=180)
+        super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
         self.cog = cog
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
 
     def build_embed(self) -> discord.Embed:
+        loaded_count = len(self.cog.bot.extensions)
         embed = discord.Embed(
             title="🛠️ Admin Control Panel",
             description=(
+                f"Loaded cogs: **{loaded_count}**\n\n"
                 "**📊 Server Stats** — member & channel statistics\n"
                 "**📋 Cog List** — all cogs with load status\n"
                 "**🔄 Reload All** — reload all loaded cogs (owner)\n"
                 "**📝 Log Level** — change the bot log level"
             ),
-            color=discord.Color.red(),
+            color=ADMIN_COLOR,
         )
         embed.set_footer(text="Only you can interact with this panel.")
         return embed
@@ -288,7 +245,7 @@ class _AdminPanelView(discord.ui.View):
     async def stats_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         guild = interaction.guild
         embed = discord.Embed(
-            title=f"📊 Server Stats — {guild.name}", color=discord.Color.green()
+            title=f"📊 Server Stats — {guild.name}", color=SUCCESS_COLOR
         )
         embed.add_field(name="Total Members", value=str(guild.member_count))
         embed.add_field(
@@ -315,7 +272,7 @@ class _AdminPanelView(discord.ui.View):
         embed = discord.Embed(
             title="📋 Cog List",
             description="\n".join(lines) or "No cogs found.",
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         embed.set_footer(
             text="✅ Loaded  ❌ Unloaded  🟢 OK  🔴 Syntax Error  •  ↩ Overview to return"
@@ -343,7 +300,7 @@ class _AdminPanelView(discord.ui.View):
         embed = discord.Embed(
             title="🔄 Reload Complete",
             description="\n".join(parts) or "Nothing reloaded.",
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.edit_original_response(embed=embed, view=self)
@@ -359,15 +316,6 @@ class _AdminPanelView(discord.ui.View):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
 
 
 class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[call-arg]
@@ -394,7 +342,7 @@ class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[c
         embed = discord.Embed(
             title="📝 Log Level Updated",
             description=f"Log level set to `{self.level.value.upper()}`.",
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self.panel)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
+from utils.ui_constants import ECONOMY_COLOR, ROLE_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.roles._helpers import _find_role_normalized, _parse_color
 
@@ -28,7 +29,7 @@ class ManagementPanel(BaseView):
         embed = discord.Embed(
             title="🗂️ Role Management",
             description=description,
-            color=discord.Color.blurple(),
+            color=ROLE_COLOR,
         )
         embed.set_footer(text="Create · Edit · Delete roles using the buttons below.")
         return embed

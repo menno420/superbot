@@ -8,7 +8,9 @@ import discord
 from discord.ext import commands
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
+from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.tournaments import TournamentRegistration
+from utils.ui_constants import ECONOMY_COLOR, ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
 
 logger = logging.getLogger("bot")
 
@@ -154,7 +156,7 @@ def _game_embed(
     if game.tournament_chips is not None:
         bet_str = f"Tournament chips: **{game.tournament_chips}** | Bet: {TOURN_BET_PER_ROUND}"
 
-    embed = discord.Embed(title=title, color=discord.Color.dark_green())
+    embed = discord.Embed(title=title, color=SUCCESS_COLOR)
     embed.add_field(name=d_lbl, value=d_str, inline=False)
     embed.add_field(
         name=f"Your hand ({pv})", value=_hand_str(game.player), inline=False
@@ -239,7 +241,7 @@ class BlackjackView(discord.ui.View):
             await self._finish(
                 interaction,
                 "💥 Bust — you lose!",
-                discord.Color.red(),
+                ERROR_COLOR,
                 -effective if effective else 0,
                 -1,
             )
@@ -268,7 +270,7 @@ class BlackjackView(discord.ui.View):
             await self._finish(
                 interaction,
                 "💥 Bust — you lose!",
-                discord.Color.red(),
+                ERROR_COLOR,
                 -(self.game.bet * 2),
                 -1,
             )
@@ -283,32 +285,24 @@ class BlackjackView(discord.ui.View):
 
         if _is_blackjack(self.game.player):
             payout = int(effective * 1.5) if effective else FREE_WIN_COINS
-            await self._finish(
-                interaction, "🎉 Blackjack!", discord.Color.gold(), payout, pv
-            )
+            await self._finish(interaction, "🎉 Blackjack!", ECONOMY_COLOR, payout, pv)
         elif dv > 21:
             payout = effective if effective else FREE_WIN_COINS
             await self._finish(
                 interaction,
                 "🎉 Dealer busts — you win!",
-                discord.Color.green(),
+                SUCCESS_COLOR,
                 payout,
                 pv,
             )
         elif pv > dv:
             payout = effective if effective else FREE_WIN_COINS
-            await self._finish(
-                interaction, "🎉 You win!", discord.Color.green(), payout, pv
-            )
+            await self._finish(interaction, "🎉 You win!", SUCCESS_COLOR, payout, pv)
         elif pv == dv:
-            await self._finish(
-                interaction, "🤝 Push — tie.", discord.Color.blurple(), 0, pv
-            )
+            await self._finish(interaction, "🤝 Push — tie.", GAME_COLOR, 0, pv)
         else:
             loss = -effective if effective else 0
-            await self._finish(
-                interaction, "😞 Dealer wins.", discord.Color.red(), loss, pv
-            )
+            await self._finish(interaction, "😞 Dealer wins.", ERROR_COLOR, loss, pv)
 
 
 # ---------------------------------------------------------------------------
@@ -394,7 +388,7 @@ async def _start_pvp(
             embed = _game_embed(
                 game, reveal=True, title=f"🃏 {player.display_name}'s hand"
             )
-            embed.color = discord.Color.gold()
+            embed.color = ECONOMY_COLOR
             embed.add_field(
                 name="Blackjack!", value="Waiting for opponent…", inline=False
             )
@@ -463,7 +457,7 @@ async def _resolve_pvp(state: _PvPState, channel: discord.TextChannel):
     embed = discord.Embed(
         title="🃏 Blackjack PvP Result",
         description=result,
-        color=discord.Color.gold() if winner_id else discord.Color.blurple(),
+        color=ECONOMY_COLOR if winner_id else GAME_COLOR,
     )
     embed.add_field(
         name=f"<@{state.p1}>", value=f"**{v1 if v1 >= 0 else 'Bust'}**", inline=True
@@ -508,7 +502,7 @@ def _tourn_embed(t: _BjTournament) -> discord.Embed:
     fee_str = f"**{t.entry_fee}** 🪙" if t.entry_fee else "Free"
     embed = discord.Embed(
         title="🃏 Blackjack Tournament — Registration Open",
-        color=discord.Color.dark_green(),
+        color=SUCCESS_COLOR,
     )
     embed.add_field(name="Entry Fee", value=fee_str, inline=True)
     embed.add_field(name="Rounds", value=str(t.rounds), inline=True)
@@ -614,7 +608,7 @@ class _TournBlackjackView(discord.ui.View):
         self.game.hit()
         if _hand_value(self.game.player) > 21:
             await self._finish_round(
-                interaction, "💥 Bust!", discord.Color.red(), -TOURN_BET_PER_ROUND
+                interaction, "💥 Bust!", ERROR_COLOR, -TOURN_BET_PER_ROUND
             )
             return
         await interaction.response.edit_message(embed=_game_embed(self.game), view=self)
@@ -631,24 +625,18 @@ class _TournBlackjackView(discord.ui.View):
 
         if _is_blackjack(self.game.player):
             await self._finish_round(
-                interaction, "🎉 Blackjack!", discord.Color.gold(), int(bet * 1.5)
+                interaction, "🎉 Blackjack!", ECONOMY_COLOR, int(bet * 1.5)
             )
         elif dv > 21:
             await self._finish_round(
-                interaction, "🎉 Dealer busts!", discord.Color.green(), bet
+                interaction, "🎉 Dealer busts!", SUCCESS_COLOR, bet
             )
         elif pv > dv:
-            await self._finish_round(
-                interaction, "🎉 You win!", discord.Color.green(), bet
-            )
+            await self._finish_round(interaction, "🎉 You win!", SUCCESS_COLOR, bet)
         elif pv == dv:
-            await self._finish_round(
-                interaction, "🤝 Push.", discord.Color.blurple(), 0
-            )
+            await self._finish_round(interaction, "🤝 Push.", GAME_COLOR, 0)
         else:
-            await self._finish_round(
-                interaction, "😞 Dealer wins.", discord.Color.red(), -bet
-            )
+            await self._finish_round(interaction, "😞 Dealer wins.", ERROR_COLOR, -bet)
 
 
 async def _start_tourn_round(
@@ -693,7 +681,7 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
     embed = discord.Embed(
         title="🏆 Blackjack Tournament Results",
         description="\n".join(lines),
-        color=discord.Color.gold(),
+        color=ECONOMY_COLOR,
     )
     if winner_id and pot:
         new_bal = await db.add_coins(winner_id, tourn.guild_id, pot)
@@ -719,6 +707,7 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         await cleanup_category(tourn.category)
 
     _tournaments.pop(tourn.guild_id, None)
+    await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
 
 
 # ---------------------------------------------------------------------------
@@ -737,6 +726,9 @@ class BlackjackCog(commands.Cog):
         """On startup, find leftover BJ Tournament categories and notify players."""
         await self.bot.wait_until_ready()
         for guild in self.bot.guilds:
+            flag = await db.get_setting(guild.id, ACTIVE_TOURNAMENT, "")
+            if flag == "blackjack":
+                await db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
             cat = discord.utils.get(guild.categories, name="BJ Tournament")
             if not cat or not cat.channels:
                 continue
@@ -805,7 +797,7 @@ class BlackjackCog(commands.Cog):
                     f"{ctx.author.mention} challenges {target.mention} to Blackjack "
                     f"({bet_str}).\n{target.mention}, do you accept?"
                 ),
-                color=discord.Color.dark_green(),
+                color=SUCCESS_COLOR,
             )
             msg = await ctx.send(embed=embed, view=view)
             view.message = msg
@@ -829,7 +821,7 @@ class BlackjackCog(commands.Cog):
             payout = int(bet * 1.5) if bet else FREE_WIN_COINS
             new_bal = await db.add_coins(ctx.author.id, ctx.guild.id, payout)
             embed = _game_embed(game, reveal=True)
-            embed.color = discord.Color.gold()
+            embed.color = ECONOMY_COLOR
             embed.add_field(
                 name="🎉 Blackjack!",
                 value=f"+{payout} 🪙  |  Balance: **{new_bal}** 🪙",
@@ -856,6 +848,13 @@ class BlackjackCog(commands.Cog):
         if _tournaments.get(ctx.guild.id):
             await ctx.send("A tournament is already running.", delete_after=8)
             return
+        existing = await db.get_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
+        if existing:
+            await ctx.send(
+                f"A **{existing}** tournament is already active in this server.",
+                delete_after=8,
+            )
+            return
         if entry_fee < 0 or rounds < 1 or duration_mins < 1:
             await ctx.send("Invalid parameters.", delete_after=5)
             return
@@ -869,6 +868,7 @@ class BlackjackCog(commands.Cog):
             duration_mins,
         )
         _tournaments[ctx.guild.id] = tourn
+        await db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "blackjack")
 
         view = _TournRegistrationView(tourn)
         msg = await ctx.send(embed=_tourn_embed(tourn), view=view)
@@ -916,6 +916,7 @@ async def _launch_tournament(
         if announce:
             await announce.send("❌ Tournament cancelled — no players registered.")
         _tournaments.pop(tourn.guild_id, None)
+        await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
         return
 
     # Deduct entry fees (uses shared TournamentRegistration helper)
@@ -928,6 +929,7 @@ async def _launch_tournament(
                 "❌ Tournament cancelled — no players could afford the entry fee."
             )
         _tournaments.pop(tourn.guild_id, None)
+        await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
         return
 
     if announce:
@@ -961,6 +963,7 @@ async def _launch_tournament(
             if announce:
                 await announce.send("❌ I don't have permission to create channels.")
             _tournaments.pop(tourn.guild_id, None)
+            await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
             return
         except Exception as e:
             logger.error("Failed to create tournament channel: %s", e)

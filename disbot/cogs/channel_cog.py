@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 
 import discord
 from discord.ext import commands
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.helpers import safe_select_emoji
+from utils.ui_constants import (
+    CHANNEL_COLOR,
+    ERROR_COLOR,
+    INFO_COLOR,
+    SUCCESS_COLOR,
+    WARNING_COLOR,
+)
+from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
@@ -187,16 +196,6 @@ class ChannelCog(commands.Cog):
         )
 
     @commands.command(
-        name="channelcreator",
-        aliases=["ccreate"],
-        help="Open the comprehensive channel management panel.",
-    )
-    @is_admin_or_owner()
-    async def channel_creator(self, ctx):
-        """Opens the comprehensive channel management panel (alias for !channelmenu)."""
-        await ctx.invoke(self.channel_menu)
-
-    @commands.command(
         name="bulkdelete",
         help="Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>",
     )
@@ -259,9 +258,7 @@ class ChannelCog(commands.Cog):
     )
     @is_admin_or_owner()
     async def list_channels(self, ctx):
-        embed = discord.Embed(
-            title="Categories and Channels", color=discord.Color.blue()
-        )
+        embed = discord.Embed(title="Categories and Channels", color=INFO_COLOR)
         for category in ctx.guild.categories:
             channels = "\n".join(f" - {ch.name}" for ch in category.channels)
             embed.add_field(
@@ -336,7 +333,7 @@ class ChannelCog(commands.Cog):
         channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             embed = discord.Embed(
-                title=f"Channel Info — {channel.name}", color=discord.Color.orange()
+                title=f"Channel Info — {channel.name}", color=WARNING_COLOR
             )
             embed.add_field(name="Type", value=str(channel.type), inline=True)
             embed.add_field(
@@ -437,23 +434,6 @@ class ChannelCog(commands.Cog):
             response += f'❌ Failed: {", ".join(failed)}.'
         await ctx.send(response)
 
-    @commands.command(
-        name="archive", help="Make a channel read-only. Usage: !archive <name|id>"
-    )
-    @is_admin_or_owner()
-    async def archive_channel(self, ctx, channel_name: str):
-        """Alias for !lock — sets send_messages=False for @everyone."""
-        await ctx.invoke(self.lock_channel, channel_name=channel_name)
-
-    @commands.command(
-        name="unarchive",
-        help="Restore send permissions for a channel. Usage: !unarchive <name|id>",
-    )
-    @is_admin_or_owner()
-    async def unarchive_channel(self, ctx, channel_name: str):
-        """Alias for !unlock — sets send_messages=True for @everyone."""
-        await ctx.invoke(self.unlock_channel, channel_name=channel_name)
-
 
 # =====================================================================
 # Shared helpers
@@ -492,27 +472,12 @@ def _build_channel_options(guild: discord.Guild) -> list[discord.SelectOption]:
 # =====================================================================
 
 
-class _ChannelManagerView(discord.ui.View):
+class _ChannelManagerView(BaseView):
     """Top-level channel management panel with three action modes."""
 
     def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=180)
+        super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
-        self.message: discord.Message | None = None
-
-    # ------------------------------------------------------------------
-    # Auth guard
-    # ------------------------------------------------------------------
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    _run_checks = interaction_check
 
     async def on_error(
         self,
@@ -541,9 +506,9 @@ class _ChannelManagerView(discord.ui.View):
                 "Select an action below to manage your server's channels.\n\n"
                 "**➕ Create Channel** — interactive channel creator\n"
                 "**🗑️ Delete Channel** — select and delete a channel\n"
-                "**🔒 Manage Restrictions** — lock, unlock, archive, or unarchive"
+                "**🔒 Manage Restrictions** — lock or unlock a channel"
             ),
-            color=discord.Color.blurple(),
+            color=CHANNEL_COLOR,
         )
         embed.set_footer(text="Only the command author can interact with this panel.")
         return embed
@@ -590,31 +555,19 @@ class _ChannelManagerView(discord.ui.View):
         sub = _RestrictSubView(self.ctx, options=options, manager_message=self.message)
         await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
 
-    # ------------------------------------------------------------------
-    # Timeout
-    # ------------------------------------------------------------------
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        try:
-            await self.message.edit(content="Panel timed out.", view=self)
-        except Exception:
-            pass
-
 
 # =====================================================================
 # Create sub-panel  (same logic as the old _ChannelCreatorView)
 # =====================================================================
 
 
-class _CreateSubView(discord.ui.View):
+class _CreateSubView(BaseView):
     """Channel-creation sub-panel — mirrors the old _ChannelCreatorView."""
 
     def __init__(
         self, ctx: commands.Context, *, manager_message: discord.Message | None
     ):
-        super().__init__(timeout=120)
+        super().__init__(ctx.author, timeout=120)
         self.ctx = ctx
         self.manager_message = manager_message
         self.chosen_name: str | None = None
@@ -638,20 +591,6 @@ class _CreateSubView(discord.ui.View):
         self.cat_select = _CategorySelect(cat_options, self)
         self.add_item(self.name_select)
         self.add_item(self.cat_select)
-
-    # ------------------------------------------------------------------
-    # Auth guard
-    # ------------------------------------------------------------------
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    _run_checks = interaction_check
 
     async def on_error(
         self,
@@ -680,7 +619,7 @@ class _CreateSubView(discord.ui.View):
                 "Use the menus below to pick a name and category.\n"
                 "Click **Custom Name** to type your own name."
             ),
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.add_field(
             name="Selected name",
@@ -762,7 +701,7 @@ class _CreateSubView(discord.ui.View):
                 + suffix
                 + "\n\nReturning to the management panel…"
             ),
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         try:
             await self.manager_message.edit(embed=embed, view=self)
@@ -775,9 +714,7 @@ class _CreateSubView(discord.ui.View):
 
         self.stop()
 
-        # After a brief visual pause, restore the manager panel
-        import asyncio
-
+        # Brief visual pause before restoring the manager panel
         await asyncio.sleep(2)
         manager = _ChannelManagerView(self.ctx)
         manager.message = self.manager_message
@@ -804,25 +741,13 @@ class _CreateSubView(discord.ui.View):
         )
         self.stop()
 
-    # ------------------------------------------------------------------
-    # Timeout
-    # ------------------------------------------------------------------
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        try:
-            await self.manager_message.edit(content="Panel timed out.", view=self)
-        except Exception:
-            pass
-
 
 # =====================================================================
 # Delete sub-panel
 # =====================================================================
 
 
-class _DeleteSubView(discord.ui.View):
+class _DeleteSubView(BaseView):
     """Channel-deletion sub-panel with a select menu and confirmation flow."""
 
     def __init__(
@@ -832,7 +757,7 @@ class _DeleteSubView(discord.ui.View):
         options: list[discord.SelectOption],
         manager_message: discord.Message | None,
     ):
-        super().__init__(timeout=120)
+        super().__init__(ctx.author, timeout=120)
         self.ctx = ctx
         self.manager_message = manager_message
         self.selected_channel_id: int | None = None
@@ -842,20 +767,6 @@ class _DeleteSubView(discord.ui.View):
             options, self, placeholder="Select a channel to delete…"
         )
         self.add_item(self.channel_select)
-
-    # ------------------------------------------------------------------
-    # Auth guard
-    # ------------------------------------------------------------------
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    _run_checks = interaction_check
 
     async def on_error(
         self,
@@ -881,7 +792,7 @@ class _DeleteSubView(discord.ui.View):
         embed = discord.Embed(
             title="🗑️ Delete Channel",
             description="Select the channel you want to delete, then press **Delete Selected**.",
-            color=discord.Color.red(),
+            color=ERROR_COLOR,
         )
         embed.add_field(
             name="Selected channel",
@@ -901,7 +812,7 @@ class _DeleteSubView(discord.ui.View):
                 f"Are you sure you want to delete **`{self.selected_channel_name}`**?\n"
                 "**This action cannot be undone.**"
             ),
-            color=discord.Color.dark_red(),
+            color=ERROR_COLOR,
         )
 
     # ------------------------------------------------------------------
@@ -937,20 +848,8 @@ class _DeleteSubView(discord.ui.View):
         )
         self.stop()
 
-    # ------------------------------------------------------------------
-    # Timeout
-    # ------------------------------------------------------------------
 
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        try:
-            await self.manager_message.edit(content="Panel timed out.", view=self)
-        except Exception:
-            pass
-
-
-class _DeleteConfirmView(discord.ui.View):
+class _DeleteConfirmView(BaseView):
     """Confirmation step before actually deleting a channel."""
 
     def __init__(
@@ -961,21 +860,11 @@ class _DeleteConfirmView(discord.ui.View):
         channel_name: str,
         manager_message: discord.Message | None,
     ):
-        super().__init__(timeout=60)
+        super().__init__(ctx.author, timeout=60)
         self.ctx = ctx
         self.channel_id = channel_id
         self.channel_name = channel_name
         self.manager_message = manager_message
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    _run_checks = interaction_check
 
     async def on_error(
         self,
@@ -1002,7 +891,7 @@ class _DeleteConfirmView(discord.ui.View):
             result_embed = discord.Embed(
                 title="❌ Channel Not Found",
                 description=f"Channel `{self.channel_name}` could not be found — it may have already been deleted.",
-                color=discord.Color.orange(),
+                color=WARNING_COLOR,
             )
         else:
             try:
@@ -1010,19 +899,19 @@ class _DeleteConfirmView(discord.ui.View):
                 result_embed = discord.Embed(
                     title="✅ Channel Deleted",
                     description=f"`{self.channel_name}` has been deleted.",
-                    color=discord.Color.green(),
+                    color=SUCCESS_COLOR,
                 )
             except discord.Forbidden:
                 result_embed = discord.Embed(
                     title="❌ Permission Denied",
                     description="I don't have permission to delete that channel.",
-                    color=discord.Color.red(),
+                    color=ERROR_COLOR,
                 )
             except discord.HTTPException as exc:
                 result_embed = discord.Embed(
                     title="❌ Error",
                     description=f"Failed to delete channel: {exc}",
-                    color=discord.Color.red(),
+                    color=ERROR_COLOR,
                 )
 
         for item in self.children:
@@ -1030,8 +919,6 @@ class _DeleteConfirmView(discord.ui.View):
         result_embed.set_footer(text="Returning to the management panel…")
         await interaction.response.edit_message(embed=result_embed, view=self)
         self.stop()
-
-        import asyncio
 
         await asyncio.sleep(2)
         manager = _ChannelManagerView(self.ctx)
@@ -1045,7 +932,6 @@ class _DeleteConfirmView(discord.ui.View):
         label="Cancel", style=discord.ButtonStyle.grey, emoji="❌", row=0
     )
     async def cancel_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        # Go back to the delete sub-panel
         options = _build_channel_options(interaction.guild)
         sub = _DeleteSubView(
             self.ctx, options=options, manager_message=self.manager_message
@@ -1053,22 +939,14 @@ class _DeleteConfirmView(discord.ui.View):
         await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
         self.stop()
 
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        try:
-            await self.manager_message.edit(content="Panel timed out.", view=self)
-        except Exception:
-            pass
-
 
 # =====================================================================
 # Restrict sub-panel
 # =====================================================================
 
 
-class _RestrictSubView(discord.ui.View):
-    """Restriction management: pick a channel, then choose lock/unlock/archive/unarchive."""
+class _RestrictSubView(BaseView):
+    """Restriction management: pick a channel, then choose lock or unlock."""
 
     def __init__(
         self,
@@ -1077,7 +955,7 @@ class _RestrictSubView(discord.ui.View):
         options: list[discord.SelectOption],
         manager_message: discord.Message | None,
     ):
-        super().__init__(timeout=120)
+        super().__init__(ctx.author, timeout=120)
         self.ctx = ctx
         self.manager_message = manager_message
         self.selected_channel_id: int | None = None
@@ -1087,20 +965,6 @@ class _RestrictSubView(discord.ui.View):
             options, self, placeholder="Select a channel to manage…"
         )
         self.add_item(self.channel_select)
-
-    # ------------------------------------------------------------------
-    # Auth guard
-    # ------------------------------------------------------------------
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    _run_checks = interaction_check
 
     async def on_error(
         self,
@@ -1128,11 +992,9 @@ class _RestrictSubView(discord.ui.View):
             description=(
                 "Select a channel, then choose a restriction action.\n\n"
                 "**🔒 Lock** — disable send messages for @everyone\n"
-                "**🔓 Unlock** — restore send messages for @everyone\n"
-                "**📁 Archive** — make the channel read-only\n"
-                "**📂 Unarchive** — restore send messages (same as unlock)"
+                "**🔓 Unlock** — restore send messages for @everyone"
             ),
-            color=discord.Color.blurple(),
+            color=CHANNEL_COLOR,
         )
         embed.add_field(
             name="Selected channel",
@@ -1171,19 +1033,18 @@ class _RestrictSubView(discord.ui.View):
             )
             return
 
-        await interaction.response.defer(ephemeral=True)
         try:
             await channel.set_permissions(
                 interaction.guild.default_role, send_messages=send_messages
             )
         except discord.Forbidden:
-            await interaction.followup.send(
+            await interaction.response.send_message(
                 "❌ I don't have permission to change that channel's permissions.",
                 ephemeral=True,
             )
             return
         except discord.HTTPException as exc:
-            await interaction.followup.send(
+            await interaction.response.send_message(
                 f"❌ Failed to update permissions: {exc}", ephemeral=True
             )
             return
@@ -1198,13 +1059,8 @@ class _RestrictSubView(discord.ui.View):
         for item in self.children:
             item.disabled = True
 
-        try:
-            await self.manager_message.edit(embed=result_embed, view=self)
-        except Exception:
-            pass
+        await interaction.response.edit_message(embed=result_embed, view=self)
         self.stop()
-
-        import asyncio
 
         await asyncio.sleep(2)
         manager = _ChannelManagerView(self.ctx)
@@ -1221,7 +1077,7 @@ class _RestrictSubView(discord.ui.View):
             send_messages=False,
             action_label="🔒 Lock",
             past_tense="locked (send messages disabled for @everyone)",
-            embed_color=discord.Color.red(),
+            embed_color=ERROR_COLOR,
         )
 
     @discord.ui.button(
@@ -1233,33 +1089,7 @@ class _RestrictSubView(discord.ui.View):
             send_messages=True,
             action_label="🔓 Unlock",
             past_tense="unlocked (send messages restored for @everyone)",
-            embed_color=discord.Color.green(),
-        )
-
-    @discord.ui.button(
-        label="Archive", style=discord.ButtonStyle.grey, emoji="📁", row=1
-    )
-    async def archive_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await self._apply_restriction(
-            interaction,
-            send_messages=False,
-            action_label="📁 Archive",
-            past_tense="archived (read-only)",
-            embed_color=discord.Color.greyple(),
-        )
-
-    @discord.ui.button(
-        label="Unarchive", style=discord.ButtonStyle.grey, emoji="📂", row=1
-    )
-    async def unarchive_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
-        await self._apply_restriction(
-            interaction,
-            send_messages=True,
-            action_label="📂 Unarchive",
-            past_tense="unarchived (send messages restored for @everyone)",
-            embed_color=discord.Color.green(),
+            embed_color=SUCCESS_COLOR,
         )
 
     @discord.ui.button(label="↩️ Back", style=discord.ButtonStyle.grey, row=2)
@@ -1270,18 +1100,6 @@ class _RestrictSubView(discord.ui.View):
             embed=manager.build_embed(), view=manager
         )
         self.stop()
-
-    # ------------------------------------------------------------------
-    # Timeout
-    # ------------------------------------------------------------------
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        try:
-            await self.manager_message.edit(content="Panel timed out.", view=self)
-        except Exception:
-            pass
 
 
 # =====================================================================

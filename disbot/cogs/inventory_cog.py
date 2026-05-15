@@ -6,6 +6,7 @@ import logging
 import discord
 from discord.ext import commands
 from utils import db
+from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR, MINING_COLOR, WARNING_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
@@ -107,11 +108,11 @@ _CATEGORY_ORDER: tuple[str, ...] = (
 )
 
 _CATEGORY_META: dict[str, dict] = {
-    "Mining Materials": {"emoji": "⛏️", "color": discord.Color.dark_gold()},
-    "Crafted Items": {"emoji": "🏗️", "color": discord.Color.orange()},
-    "Tools": {"emoji": "🔧", "color": discord.Color.blurple()},
-    "Economy Items": {"emoji": "💼", "color": discord.Color.gold()},
-    "Other": {"emoji": "📦", "color": discord.Color.dark_grey()},
+    "Mining Materials": {"emoji": "⛏️", "color": ECONOMY_COLOR},
+    "Crafted Items": {"emoji": "🏗️", "color": WARNING_COLOR},
+    "Tools": {"emoji": "🔧", "color": INFO_COLOR},
+    "Economy Items": {"emoji": "💼", "color": ECONOMY_COLOR},
+    "Other": {"emoji": "📦", "color": MINING_COLOR},
 }
 
 _RARITY_ORDER: dict[str, int] = {
@@ -213,7 +214,7 @@ class _CategoryView(BaseView):
 
     def build_embed(self) -> discord.Embed:
         cat_meta = _CATEGORY_META.get(
-            self._category, {"emoji": "📦", "color": discord.Color.dark_grey()}
+            self._category, {"emoji": "📦", "color": MINING_COLOR}
         )
         embed = discord.Embed(
             title=f"{cat_meta['emoji']} {self._category}",
@@ -298,7 +299,7 @@ class UnifiedInventoryView(BaseView):
     def build_hub_embed(self) -> discord.Embed:
         embed = discord.Embed(
             title=f"🎒 {self.target.display_name}'s Inventory",
-            color=discord.Color.blurple(),
+            color=ECONOMY_COLOR,
         )
         embed.set_thumbnail(url=self.target.display_avatar.url)
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 from utils import db
+from utils.ui_constants import ECONOMY_COLOR, ROLE_COLOR, WARNING_COLOR
 from views.base import BaseView
 
 
@@ -16,7 +17,7 @@ class ReactionRolesPanel(BaseView):
 
     async def build_embed(self) -> discord.Embed:
         rows = await db.get_all_reaction_roles(self.ctx.guild.id)
-        embed = discord.Embed(title="💬 Reaction Roles", color=discord.Color.blurple())
+        embed = discord.Embed(title="💬 Reaction Roles", color=ROLE_COLOR)
         if rows:
             lines = []
             for r in rows:
