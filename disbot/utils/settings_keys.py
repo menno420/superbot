@@ -23,3 +23,7 @@ SKIP_ROLES = "skip_roles"
 
 # Games (shared write: rps_tournament_cog + blackjack_cog — see Section 8 of blueprint)
 ACTIVE_TOURNAMENT = "active_tournament"
+
+# Governance (owner: governance_service)
+# Stores the REGISTRY_VERSION int at which per-guild governance was last upgraded.
+GOVERNANCE_VERSION = "governance_version"

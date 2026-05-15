@@ -1,0 +1,34 @@
+"""Typed exception hierarchy for the governance layer.
+
+All governance failures raise subclasses of GovernanceError.
+No bare ValueError or RuntimeError should originate from governance code.
+"""
+from __future__ import annotations
+
+
+class GovernanceError(Exception):
+    """Base class for all governance-layer errors."""
+
+
+class RegistryValidationError(GovernanceError):
+    """Registry integrity check failed during startup validation."""
+
+
+class CircularDependencyError(RegistryValidationError):
+    """Circular dependency detected in the subsystem dependency graph."""
+
+    def __init__(self, node: str, neighbour: str) -> None:
+        super().__init__(
+            f"Circular dependency detected: '{node}' → '{neighbour}'"
+        )
+        self.node = node
+        self.neighbour = neighbour
+
+
+class CapabilityNamespaceError(RegistryValidationError):
+    """Capability does not follow the required {subsystem}.{resource}.{action} format,
+    or uses a reserved namespace prefix (_internal, system, governance)."""
+
+
+class GovernanceUpgradeError(GovernanceError):
+    """Governance schema version upgrade failed."""
