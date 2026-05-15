@@ -122,6 +122,11 @@ class Cleanup(commands.Cog):
         return False
 
     @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
+        self._word_cache.pop(guild.id, None)
+        self._pattern_cache.pop(guild.id, None)
+
+    @commands.Cog.listener()
     async def on_message(self, message):
         await self.remove_unwanted_message(message)
 

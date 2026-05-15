@@ -290,6 +290,12 @@ async def on_ready() -> None:
 
 
 @bot.event
+async def on_guild_remove(guild: discord.Guild) -> None:
+    from services import governance_service
+    governance_service.forget_guild(guild.id)
+
+
+@bot.event
 async def on_command(ctx: commands.Context) -> None:
     logger.info(
         "CMD | %s (%s) | #%s | %s | %s",

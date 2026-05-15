@@ -329,6 +329,9 @@ class GovernanceSnapshot:
 
 # ---------------------------------------------------------------------------
 # Cache — version-stamped, tier-keyed (not member-keyed)
+# When a guild has role-scoped overrides the role_ids frozenset is added to
+# the key so that members with different roles are not served identical cached
+# results.  See _guild_has_role_overrides below.
 # ---------------------------------------------------------------------------
 
 _CACHE: dict[tuple, tuple[float, Any]] = {}
@@ -337,12 +340,24 @@ _CACHE_LOCK = asyncio.Lock()
 _CACHE_TTL = 60.0
 _NO_OVERRIDE = object()  # sentinel for negative cache entries
 
+# Tracks guilds that have at least one role-scoped visibility override in DB.
+# Set to True by set_subsystem_visibility() when scope_type='role'.
+# Cleared by forget_guild() when bot leaves the guild.
+_guild_has_role_overrides: dict[int, bool] = {}
+
 
 def _cache_ver(guild_id: int) -> int:
     return _CACHE_VERSION.get(guild_id, 0)
 
 
-def _cache_key(guild_id: int, channel_id: int | None, tier: str) -> tuple:
+def _cache_key(
+    guild_id: int,
+    channel_id: int | None,
+    tier: str,
+    role_ids: frozenset[int] = frozenset(),
+) -> tuple:
+    if _guild_has_role_overrides.get(guild_id, False):
+        return (guild_id, _cache_ver(guild_id), channel_id, tier, role_ids)
     return (guild_id, _cache_ver(guild_id), channel_id, tier)
 
 
@@ -371,6 +386,16 @@ def invalidate_guild_cache(guild_id: int) -> None:
     _CACHE_VERSION[guild_id] = _cache_ver(guild_id) + 1
 
 
+def forget_guild(guild_id: int) -> None:
+    """Remove all module-level state for a guild.
+
+    Call this from an on_guild_remove event handler so that per-guild dicts
+    do not grow unbounded as the bot joins and leaves servers.
+    """
+    _CACHE_VERSION.pop(guild_id, None)
+    _guild_has_role_overrides.pop(guild_id, None)
+
+
 # ---------------------------------------------------------------------------
 # Profiling hooks (no-op; wired for future metrics)
 # ---------------------------------------------------------------------------
@@ -396,8 +421,18 @@ _FEEDBACK_COOLDOWN_SECS = 10
 
 def _should_send_feedback(channel_id: int, subsystem: str) -> bool:
     key = (channel_id, subsystem)
-    if time.monotonic() - _FEEDBACK_COOLDOWN.get(key, 0.0) > _FEEDBACK_COOLDOWN_SECS:
-        _FEEDBACK_COOLDOWN[key] = time.monotonic()
+    now = time.monotonic()
+    if now - _FEEDBACK_COOLDOWN.get(key, 0.0) > _FEEDBACK_COOLDOWN_SECS:
+        _FEEDBACK_COOLDOWN[key] = now
+        # Lazy sweep: prune expired entries when the dict grows large to prevent
+        # unbounded accumulation from channels the bot no longer interacts with.
+        if len(_FEEDBACK_COOLDOWN) > 500:
+            expired = [
+                k for k, ts in _FEEDBACK_COOLDOWN.items()
+                if now - ts > _FEEDBACK_COOLDOWN_SECS
+            ]
+            for k in expired:
+                del _FEEDBACK_COOLDOWN[k]
         return True
     return False
 
@@ -699,7 +734,8 @@ async def resolve_visibility(ctx: GovernanceContext) -> VisibilityResult:
             ctx.member.guild.owner_id if ctx.member.guild else 0,
         )
 
-    cache_key = _cache_key(ctx.guild_id, ctx.channel_id, tier)
+    role_ids = frozenset(ctx.role_ids) if ctx.role_ids else frozenset()
+    cache_key = _cache_key(ctx.guild_id, ctx.channel_id, tier, role_ids)
     async with _CACHE_LOCK:
         cached = _cache_get(cache_key)
         if cached is not None and cached is not _NO_OVERRIDE:
@@ -1037,6 +1073,8 @@ async def set_subsystem_visibility(
     await db.set_subsystem_visibility(
         ctx.guild_id, scope_type, scope_id, subsystem, enabled
     )
+    if scope_type == "role":
+        _guild_has_role_overrides[ctx.guild_id] = True
     invalidate_guild_cache(ctx.guild_id)
     await _emit_governance_event(
         EVT_VISIBILITY_CHANGED,

@@ -292,18 +292,30 @@ async def get_xp(user_id: int, guild_id: int) -> dict:
 async def add_xp(
     user_id: int, guild_id: int, amount: int, now: int
 ) -> tuple[int, int, bool]:
-    row = await get_xp(user_id, guild_id)
-    new_xp = row["xp"] + amount
-    new_level, _, _ = level_progress(new_xp)
-    leveled_up = new_level > row["level"]
-    await execute(
+    # Atomic increment — avoids read-modify-write race under concurrent messages.
+    row = await get().fetchrow(
         """INSERT INTO xp (user_id, guild_id, xp, level, messages, last_xp)
-           VALUES ($1, $2, $3, $4, 1, $5)
+           VALUES ($1, $2, $3, 0, 1, $4)
            ON CONFLICT (user_id, guild_id) DO UPDATE SET
-               xp=EXCLUDED.xp, level=EXCLUDED.level,
-               messages=xp.messages+1, last_xp=EXCLUDED.last_xp""",
-        (user_id, guild_id, new_xp, new_level, now),
+               xp       = xp.xp + $3,
+               messages = xp.messages + 1,
+               last_xp  = $4
+           RETURNING xp, level""",
+        user_id,
+        guild_id,
+        amount,
+        now,
     )
+    new_xp = row["xp"]
+    old_level = row["level"]
+    new_level, _, _ = level_progress(new_xp)
+    leveled_up = new_level > old_level
+    if leveled_up:
+        # Monotonic update: only advances level, never regresses.
+        await execute(
+            "UPDATE xp SET level=$3 WHERE user_id=$1 AND guild_id=$2 AND level < $3",
+            (user_id, guild_id, new_level),
+        )
     return new_xp, new_level, leveled_up
 
 
@@ -402,13 +414,15 @@ async def get_warnings(user_id: int, guild_id: int) -> int:
 
 
 async def add_warning(user_id: int, guild_id: int) -> int:
-    count = await get_warnings(user_id, guild_id) + 1
-    await execute(
-        """INSERT INTO warnings (user_id, guild_id, count) VALUES ($1, $2, $3)
-           ON CONFLICT (user_id, guild_id) DO UPDATE SET count=EXCLUDED.count""",
-        (user_id, guild_id, count),
+    # Atomic increment — avoids read-modify-write race under concurrent mod actions.
+    row = await get().fetchrow(
+        """INSERT INTO warnings (user_id, guild_id, count) VALUES ($1, $2, 1)
+           ON CONFLICT (user_id, guild_id) DO UPDATE SET count = warnings.count + 1
+           RETURNING count""",
+        user_id,
+        guild_id,
     )
-    return count
+    return row["count"]
 
 
 async def clear_warnings(user_id: int, guild_id: int) -> None:
@@ -491,6 +505,28 @@ async def get_economy(user_id: int, guild_id: int) -> dict:
         "SELECT * FROM economy WHERE user_id=$1 AND guild_id=$2", (user_id, guild_id)
     )
     return dict(row)
+
+
+async def claim_daily_if_ready(
+    user_id: int, guild_id: int, now: int, cooldown_seconds: int
+) -> bool:
+    """Atomically claim daily reward.
+
+    Updates last_daily only when the cooldown has elapsed.
+    Returns True if the claim succeeded, False if the user is still on cooldown.
+    Using a conditional UPDATE eliminates the read-then-write race that allowed
+    concurrent !daily invocations to both succeed.
+    """
+    result = await get().execute(
+        """UPDATE economy SET last_daily=$3
+           WHERE user_id=$1 AND guild_id=$2
+             AND ($3 - last_daily) >= $4""",
+        user_id,
+        guild_id,
+        now,
+        cooldown_seconds,
+    )
+    return result == "UPDATE 1"
 
 
 async def set_economy(user_id: int, guild_id: int, **kwargs) -> None:
@@ -607,24 +643,26 @@ async def get_all_reaction_roles(guild_id: int) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 
-async def rps_ensure_player(user_id: int, name: str) -> None:
+async def rps_ensure_player(user_id: int, name: str, guild_id: int = 0) -> None:
     await execute(
-        "INSERT INTO rps_players (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-        (user_id, name),
+        "INSERT INTO rps_players (user_id, guild_id, name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
+        (user_id, guild_id, name),
     )
 
 
-async def rps_update_stat(user_id: int, result: str) -> None:
+async def rps_update_stat(user_id: int, result: str, guild_id: int = 0) -> None:
     col = {"win": "wins", "loss": "losses", "tie": "ties"}.get(result)
     if col:
         await execute(
-            f"UPDATE rps_players SET {col}={col}+1 WHERE user_id=$1", (user_id,)
+            f"UPDATE rps_players SET {col}={col}+1 WHERE user_id=$1 AND guild_id=$2",
+            (user_id, guild_id),
         )
 
 
-async def rps_get_leaderboard() -> list[dict]:
+async def rps_get_leaderboard(guild_id: int = 0) -> list[dict]:
     return await fetchall(
-        "SELECT name, wins, losses, ties FROM rps_players ORDER BY wins DESC LIMIT 15"
+        "SELECT name, wins, losses, ties FROM rps_players WHERE guild_id=$1 ORDER BY wins DESC LIMIT 15",
+        (guild_id,),
     )
 
 
@@ -706,31 +744,39 @@ async def remove_prohibited_word(guild_id: int, word: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
-async def get_deathmatch_stats(user_id: int) -> dict:
+async def get_deathmatch_stats(user_id: int, guild_id: int = 0) -> dict:
     row = await fetchone(
-        "SELECT wins, losses FROM deathmatch_stats WHERE user_id=$1", (user_id,)
+        "SELECT wins, losses FROM deathmatch_stats WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
     )
     return row or {"wins": 0, "losses": 0}
 
 
-async def update_deathmatch(winner_id: int, loser_id: int) -> None:
+async def update_deathmatch(winner_id: int, loser_id: int, guild_id: int = 0) -> None:
+    # Both statements are wrapped in a single transaction so a failure on the
+    # second statement does not leave the winner's record updated without the
+    # loser's record being updated.
     pool = get()
     async with pool.acquire() as conn:
-        await conn.execute(
-            """INSERT INTO deathmatch_stats (user_id, wins) VALUES ($1, 1)
-               ON CONFLICT (user_id) DO UPDATE SET wins=deathmatch_stats.wins+1""",
-            winner_id,
-        )
-        await conn.execute(
-            """INSERT INTO deathmatch_stats (user_id, losses) VALUES ($1, 1)
-               ON CONFLICT (user_id) DO UPDATE SET losses=deathmatch_stats.losses+1""",
-            loser_id,
-        )
+        async with conn.transaction():
+            await conn.execute(
+                """INSERT INTO deathmatch_stats (user_id, guild_id, wins) VALUES ($1, $2, 1)
+                   ON CONFLICT (user_id, guild_id) DO UPDATE SET wins=deathmatch_stats.wins+1""",
+                winner_id,
+                guild_id,
+            )
+            await conn.execute(
+                """INSERT INTO deathmatch_stats (user_id, guild_id, losses) VALUES ($1, $2, 1)
+                   ON CONFLICT (user_id, guild_id) DO UPDATE SET losses=deathmatch_stats.losses+1""",
+                loser_id,
+                guild_id,
+            )
 
 
-async def get_deathmatch_leaderboard() -> list[dict]:
+async def get_deathmatch_leaderboard(guild_id: int = 0) -> list[dict]:
     return await fetchall(
-        "SELECT user_id, wins, losses FROM deathmatch_stats ORDER BY wins DESC LIMIT 15"
+        "SELECT user_id, wins, losses FROM deathmatch_stats WHERE guild_id=$1 ORDER BY wins DESC LIMIT 15",
+        (guild_id,),
     )
 
 
