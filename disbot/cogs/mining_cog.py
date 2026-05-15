@@ -159,25 +159,13 @@ class MiningCog(commands.Cog):
         )
 
     @commands.command(name="mineinv", aliases=["mineinventory"])
-    async def inventory(self, ctx):
-        """Displays your mining inventory."""
-        user_id = str(ctx.author.id)
-        inventory = await db.get_mining_inventory(user_id)
-
-        if not inventory:
-            return await ctx.send(
-                "Your mining inventory is empty. Start mining with `!mine`!"
-            )
-
-        items_list = "\n".join(
-            [f"**{item}**: {count}" for item, count in inventory.items() if count > 0]
-        )
-        embed = discord.Embed(
-            title=f"{ctx.author.name}'s Mining Inventory",
-            description=items_list,
-            color=discord.Color.blue(),
-        )
-        await ctx.send(embed=embed)
+    async def mineinv(self, ctx):
+        """Show your unified inventory (compatibility alias for !inventory)."""
+        cmd = ctx.bot.get_command("inventory")
+        if cmd:
+            await ctx.invoke(cmd)
+        else:
+            await ctx.send("❌ Inventory system not loaded.", delete_after=10)
 
     @commands.command(name="minestats")
     async def stats(self, ctx):
