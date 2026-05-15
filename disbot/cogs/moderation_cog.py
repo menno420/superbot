@@ -58,24 +58,32 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
         if err:
             await interaction.response.send_message(err, ephemeral=True)
             return
+        threshold = int(
+            await db.get_setting(interaction.guild_id, "warn_threshold", "3")
+        )
+        timeout_minutes = int(
+            await db.get_setting(interaction.guild_id, "warn_timeout_minutes", "10")
+        )
         count = await db.add_warning(member.id, interaction.guild_id)
         await interaction.response.send_message(
-            f"⚠️ {member.mention} warned ({count}/3). Reason: {reason}", ephemeral=False
+            f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
+            ephemeral=False,
         )
         await db.log_mod_action(
             interaction.guild_id, "warn", member.id, interaction.user.id, reason
         )
-        if count >= 3:
+        if count >= threshold:
             try:
-                until = discord.utils.utcnow() + timedelta(minutes=10)
-                await member.timeout(until, reason="3 warnings reached.")
+                until = discord.utils.utcnow() + timedelta(minutes=timeout_minutes)
+                await member.timeout(until, reason=f"{threshold} warnings reached.")
                 await interaction.followup.send(
-                    f"⏳ {member.mention} timed out for 10 minutes (3 warnings)."
+                    f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
+                    f"({threshold} warnings)."
                 )
                 await db.clear_warnings(member.id, interaction.guild_id)
             except discord.Forbidden:
                 await interaction.followup.send(
-                    "⚠️ 3 warnings reached but I lack permission to timeout.",
+                    f"⚠️ {threshold} warnings reached but I lack permission to timeout.",
                     ephemeral=True,
                 )
 
