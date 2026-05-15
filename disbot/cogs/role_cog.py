@@ -21,8 +21,6 @@ _DEFAULT_THRESHOLDS: list[tuple[str, int]] = [
     ("Beacon", 1825),
 ]
 
-SKIP_ROLES = {"Admin"}  # role names that are never auto-assigned / removed
-
 _COLOR_OPTIONS = [
     ("Red", "#e74c3c"),
     ("Blue", "#3498db"),
@@ -98,7 +96,20 @@ class RoleCog(commands.Cog):
         role_map = {row["role_name"]: row["days_required"] for row in thresholds}
         progression = sorted(role_map, key=lambda r: role_map[r])
 
-        admin_role = _find_role_normalized(guild, "Admin")
+        skip_role_names = [
+            n.strip()
+            for n in (await db.get_setting(guild.id, "skip_roles", "Admin")).split(",")
+            if n.strip()
+        ]
+        admin_role = next(
+            (
+                r
+                for name in skip_role_names
+                for r in [_find_role_normalized(guild, name)]
+                if r
+            ),
+            None,
+        )
         assigned = 0
 
         for member in guild.members:
@@ -259,15 +270,8 @@ class RoleCog(commands.Cog):
     @commands.command(name="rolecreator")
     @commands.has_permissions(manage_roles=True)
     async def rolecreator(self, ctx: commands.Context):
-        """Open the interactive role creator."""
-        view = RoleCreatorView(ctx)
-        embed = discord.Embed(
-            title="🎨 Role Creator",
-            description="Click **Create Role** to open the creation form.",
-            color=discord.Color.blurple(),
-        )
-        msg = await ctx.send(embed=embed, view=view)
-        view.message = msg
+        """Open the interactive role management panel (use !rolemenu instead)."""
+        await self.rolemenu(ctx)
 
     @commands.command(name="rolesettings")
     @commands.has_permissions(administrator=True)
@@ -509,7 +513,7 @@ class _RolePanelView(discord.ui.View):
             )
             return
         await _ensure_defaults(interaction.guild.id)
-        settings_view = _RoleSettingsSubView(self.ctx, back_panel=self)
+        settings_view = RoleSettingsView(self.ctx, back_panel=self)
         settings_view.message = self.message
         await interaction.response.edit_message(
             embed=await settings_view.build_embed(), view=settings_view
@@ -542,38 +546,6 @@ class _RolePanelView(discord.ui.View):
                 await self.message.edit(view=self)
             except Exception:
                 pass
-
-
-# ---------------------------------------------------------------------------
-# Role Creator UI
-# ---------------------------------------------------------------------------
-
-
-class RoleCreatorView(discord.ui.View):
-    def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=300)
-        self.ctx = ctx
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    @discord.ui.button(label="Create Role", style=discord.ButtonStyle.green)
-    async def create_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.send_modal(_RoleCreateModal(self.ctx))
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        try:
-            await self.message.edit(view=self)
-        except Exception:
-            pass
 
 
 class _RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[call-arg]
@@ -639,10 +611,15 @@ class _RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[c
 
 
 class RoleSettingsView(discord.ui.View):
-    def __init__(self, ctx: commands.Context):
+    def __init__(
+        self, ctx: commands.Context, back_panel: "_RolePanelView | None" = None
+    ):
         super().__init__(timeout=300)
         self.ctx = ctx
         self.message: discord.Message | None = None
+        if back_panel is not None:
+            self._back_panel = back_panel
+            self.add_item(_BackButton(back_panel))
 
     async def build_embed(self) -> discord.Embed:
         thresholds = await db.get_role_thresholds(self.ctx.guild.id)
@@ -717,19 +694,16 @@ class RoleSettingsView(discord.ui.View):
             pass
 
 
-class _RoleSettingsSubView(RoleSettingsView):
-    """RoleSettingsView variant with a Back button for panel navigation."""
-
-    def __init__(self, ctx: commands.Context, back_panel: _RolePanelView):
-        super().__init__(ctx)
+class _BackButton(discord.ui.Button):
+    def __init__(self, back_panel: "_RolePanelView"):
+        super().__init__(label="↩ Back", style=discord.ButtonStyle.secondary, row=2)
         self._back_panel = back_panel
 
-    @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.secondary, row=2)
-    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+    async def callback(self, interaction: discord.Interaction):
         await interaction.response.edit_message(
             embed=self._back_panel.build_embed(), view=self._back_panel
         )
-        self.stop()
+        self.view.stop()
 
 
 class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):  # type: ignore[call-arg]

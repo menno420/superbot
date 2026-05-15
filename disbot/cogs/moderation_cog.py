@@ -8,18 +8,8 @@ import discord
 from discord import Member
 from discord.ext import commands
 from utils import db
-from utils.helpers import CogMenuView
 
 logger = logging.getLogger("bot")
-
-_MOD_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("modmenu", "!modmenu", "Show the moderation action panel."),
-    ("warn", "!warn <@user> [reason]", "Issue a warning to a member."),
-    ("timeout", "!timeout <@user> <minutes> [reason]", "Temporarily mute a member."),
-    ("kick", "!kick <@user> [reason]", "Kick a member from the server."),
-    ("ban", "!ban <@user> [reason]", "Ban a member from the server."),
-    ("unban", "!unban <user#0000>", "Unban a previously banned user."),
-]
 
 
 def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
@@ -231,7 +221,9 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
 
 
 class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-arg]
-    username_input = discord.ui.TextInput(label="Username (exact)", max_length=200)
+    user_id_input = discord.ui.TextInput(
+        label="User ID", placeholder="Right-click user → Copy ID", max_length=20
+    )
 
     def __init__(self, cog: "ModerationCog"):
         super().__init__()
@@ -239,26 +231,31 @@ class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        try:
-            bans = [entry async for entry in interaction.guild.bans()]
-        except discord.Forbidden:
-            await interaction.followup.send("❌ No permission to view the ban list.")
+        raw = self.user_id_input.value.strip()
+        if not raw.isdigit():
+            await interaction.followup.send("❌ Please enter a valid numeric user ID.")
             return
-        for entry in bans:
-            if entry.user.name == self.username_input.value:
-                await interaction.guild.unban(entry.user)
-                await interaction.followup.send(f"✅ {entry.user.mention} unbanned.")
-                await db.log_mod_action(
-                    interaction.guild_id,
-                    "unban",
-                    entry.user.id,
-                    interaction.user.id,
-                    "",
-                )
-                return
-        await interaction.followup.send(
-            f"❌ No banned user found with name `{self.username_input.value}`."
-        )
+        user_id = int(raw)
+        try:
+            user = await interaction.client.fetch_user(user_id)
+        except discord.NotFound:
+            await interaction.followup.send(f"❌ No user found with ID `{user_id}`.")
+            return
+        except discord.HTTPException as e:
+            await interaction.followup.send(f"❌ Failed to fetch user: {e}")
+            return
+        try:
+            await interaction.guild.unban(user)
+            await interaction.followup.send(f"✅ {user.mention} unbanned.")
+            await db.log_mod_action(
+                interaction.guild_id, "unban", user.id, interaction.user.id, ""
+            )
+        except discord.NotFound:
+            await interaction.followup.send(f"❌ User `{user_id}` is not banned.")
+        except discord.Forbidden:
+            await interaction.followup.send("❌ No permission to unban.")
+        except discord.HTTPException as e:
+            await interaction.followup.send(f"❌ Failed to unban: {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -393,25 +390,32 @@ class ModerationCog(commands.Cog):
     @commands.command(name="warn")
     @commands.has_permissions(manage_roles=True)
     async def warn(self, ctx, member: Member, *, reason="No reason provided"):
-        """Warn a user. Three warnings result in a 10-minute timeout."""
+        """Warn a user. Auto-timeouts at the configured threshold (default: 3)."""
         err = self._can_act_on(ctx, member)
         if err:
             await ctx.send(err)
             return
+        threshold = int(await db.get_setting(ctx.guild.id, "warn_threshold", "3"))
+        timeout_minutes = int(
+            await db.get_setting(ctx.guild.id, "warn_timeout_minutes", "10")
+        )
         count = await db.add_warning(member.id, ctx.guild.id)
-        await ctx.send(f"⚠️ {member.mention} warned ({count}/3). Reason: {reason}")
+        await ctx.send(
+            f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}"
+        )
         await self.log_action(ctx, "warn", member, reason)
-        if count >= 3:
+        if count >= threshold:
             try:
-                until = discord.utils.utcnow() + timedelta(minutes=10)
-                await member.timeout(until, reason="3 warnings reached.")
+                until = discord.utils.utcnow() + timedelta(minutes=timeout_minutes)
+                await member.timeout(until, reason=f"{threshold} warnings reached.")
                 await ctx.send(
-                    f"⏳ {member.mention} timed out for 10 minutes (3 warnings)."
+                    f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
+                    f"({threshold} warnings)."
                 )
                 await db.clear_warnings(member.id, ctx.guild.id)
             except discord.Forbidden:
                 await ctx.send(
-                    "⚠️ Reached 3 warnings but I lack permission to timeout this user."
+                    f"⚠️ Reached {threshold} warnings but I lack permission to timeout this user."
                 )
 
     @commands.command(name="timeout")
@@ -468,20 +472,54 @@ class ModerationCog(commands.Cog):
 
     @commands.command(name="unban")
     @commands.has_permissions(ban_members=True)
-    async def unban(self, ctx, *, member_name: str):
-        """Unban a user by their username."""
+    async def unban(self, ctx, user_id: int):
+        """Unban a user by their Discord user ID."""
         try:
-            bans = [entry async for entry in ctx.guild.bans()]
-        except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to view the ban list.")
+            user = await self.bot.fetch_user(user_id)
+        except discord.NotFound:
+            await ctx.send(f"❌ No user found with ID `{user_id}`.")
             return
-        for entry in bans:
-            if entry.user.name == member_name:
-                await ctx.guild.unban(entry.user)
-                await ctx.send(f"✅ {entry.user.mention} unbanned.")
-                await self.log_action(ctx, "unban", entry.user)
-                return
-        await ctx.send(f"❌ No banned user found with name `{member_name}`.")
+        except discord.HTTPException as e:
+            await ctx.send(f"❌ Failed to fetch user: {e}")
+            return
+        try:
+            await ctx.guild.unban(user)
+            await ctx.send(f"✅ {user.mention} unbanned.")
+            await self.log_action(ctx, "unban", user)
+        except discord.NotFound:
+            await ctx.send(f"❌ User `{user_id}` is not banned.")
+        except discord.Forbidden:
+            await ctx.send("❌ I don't have permission to unban.")
+        except discord.HTTPException as e:
+            await ctx.send(f"❌ Failed to unban: {e}")
+
+    @commands.command(name="clearwarnings")
+    @commands.has_permissions(manage_roles=True)
+    async def clearwarnings(self, ctx, member: Member):
+        """Clear all warnings for a member."""
+        await db.clear_warnings(member.id, ctx.guild.id)
+        await ctx.send(f"✅ Warnings cleared for {member.mention}.")
+        await self.log_action(ctx, "clearwarnings", member)
+
+    @commands.command(name="modlogs")
+    @commands.has_permissions(manage_roles=True)
+    async def modlogs(self, ctx, member: Member):
+        """Show moderation log history for a member."""
+        logs = await db.get_mod_logs(member.id, ctx.guild.id, limit=10)
+        embed = discord.Embed(
+            title=f"📋 Mod Logs — {member.display_name}",
+            color=discord.Color.orange(),
+        )
+        if not logs:
+            embed.description = "No moderation history found."
+        else:
+            for entry in logs:
+                embed.add_field(
+                    name=f"{entry['action'].upper()} — {entry['timestamp']}",
+                    value=f"By <@{entry['moderator_id']}> | {entry['reason']}",
+                    inline=False,
+                )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot):

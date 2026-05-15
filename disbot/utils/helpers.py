@@ -22,8 +22,8 @@ async def post_log_embed(
 
 
 def normalize_name(name: str) -> str:
-    """Normalize a name to lowercase with no spaces for consistent role matching."""
-    return name.lower().replace(" ", "")
+    """Normalize a name to lowercase with no spaces or underscores for consistent role matching."""
+    return name.lower().replace(" ", "").replace("_", "")
 
 
 class CogMenuView(discord.ui.View):

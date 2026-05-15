@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 
 import asyncpg
 
@@ -34,7 +35,9 @@ async def init() -> None:
     global _pool
     dsn = _get_dsn()
     _pool = await asyncpg.create_pool(dsn, min_size=2, max_size=10, init=_init_conn)
+    await _ensure_migrations_table()
     await _create_tables()
+    await _run_migrations()
     logger.info("PostgreSQL pool initialised (%s)", dsn.split("@")[-1])
 
 
@@ -49,6 +52,60 @@ def get() -> asyncpg.Pool:
     if _pool is None:
         raise RuntimeError("Database not initialised — call db.init() first.")
     return _pool
+
+
+_MIGRATIONS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "migrations")
+
+
+async def _ensure_migrations_table() -> None:
+    await get().execute("""CREATE TABLE IF NOT EXISTS schema_migrations (
+            version     INTEGER PRIMARY KEY,
+            applied_at  BIGINT  NOT NULL,
+            description TEXT    NOT NULL
+        )""")
+
+
+async def _run_migrations() -> None:
+    if not os.path.isdir(_MIGRATIONS_DIR):
+        return
+    applied = {
+        r["version"]
+        for r in await get().fetch(
+            "SELECT version FROM schema_migrations ORDER BY version"
+        )
+    }
+    migration_files = sorted(
+        f for f in os.listdir(_MIGRATIONS_DIR) if f.endswith(".sql")
+    )
+    for filename in migration_files:
+        try:
+            version = int(filename.split("_")[0])
+        except (ValueError, IndexError):
+            logger.warning("Migration file with unexpected name skipped: %s", filename)
+            continue
+        if version in applied:
+            continue
+        path = os.path.join(_MIGRATIONS_DIR, filename)
+        with open(path, encoding="utf-8") as f:
+            sql = f.read()
+        description = (
+            filename[len(str(version)) + 1 :].replace("_", " ").removesuffix(".sql")
+        )
+        try:
+            async with get().acquire() as conn:
+                async with conn.transaction():
+                    await conn.execute(sql)
+                    await conn.execute(
+                        "INSERT INTO schema_migrations (version, applied_at, description) "
+                        "VALUES ($1, $2, $3)",
+                        version,
+                        int(time.time()),
+                        description,
+                    )
+            logger.info("Applied migration %03d: %s", version, description)
+        except Exception as exc:
+            logger.error("Migration %03d failed: %s", version, exc, exc_info=True)
+            raise
 
 
 async def _create_tables() -> None:
@@ -347,6 +404,14 @@ async def log_mod_action(
         "INSERT INTO mod_logs (timestamp, guild_id, action, target_id, moderator_id, reason) "
         "VALUES ($1, $2, $3, $4, $5, $6)",
         (ts, guild_id, action, target_id, moderator_id, reason),
+    )
+
+
+async def get_mod_logs(target_id: int, guild_id: int, limit: int = 10) -> list[dict]:
+    return await fetchall(
+        "SELECT action, timestamp, moderator_id, reason FROM mod_logs "
+        "WHERE target_id=$1 AND guild_id=$2 ORDER BY id DESC LIMIT $3",
+        (target_id, guild_id, limit),
     )
 
 
