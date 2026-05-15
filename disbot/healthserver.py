@@ -25,7 +25,18 @@ import os
 
 from aiohttp import web
 from discord.ext import commands
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+try:
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+    _PROMETHEUS_AVAILABLE = True
+except ImportError:
+    _PROMETHEUS_AVAILABLE = False
+    CONTENT_TYPE_LATEST = "text/plain; version=0.0.4"
+
+    def generate_latest() -> bytes:  # type: ignore[misc]
+        return b"# prometheus_client not installed\n"
+
 
 logger = logging.getLogger("bot.health")
 

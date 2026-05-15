@@ -12,18 +12,23 @@ import uuid
 import config
 import discord
 from discord.ext import commands
-from pythonjsonlogger import jsonlogger
 from services.webhook_reporter import WebhookReporter
 from utils import db
 from utils.synonyms import find_command as _find_synonym
 
 # ---------------------------------------------------------------------------
-# Logging — structured JSON, rotating file (10 MB × 5 backups) + stderr
+# Logging — structured JSON when python-json-logger is available,
+# falling back to plain text so the bot boots in minimal environments.
 # ---------------------------------------------------------------------------
-_fmt = jsonlogger.JsonFormatter(
-    "%(asctime)s %(levelname)s %(name)s %(message)s",
-    rename_fields={"asctime": "timestamp", "levelname": "level", "name": "logger"},
-)
+try:
+    from pythonjsonlogger import jsonlogger as _jsonlogger
+
+    _fmt: logging.Formatter = _jsonlogger.JsonFormatter(
+        "%(asctime)s %(levelname)s %(name)s %(message)s",
+        rename_fields={"asctime": "timestamp", "levelname": "level", "name": "logger"},
+    )
+except ImportError:  # python-json-logger not installed — use stdlib formatter
+    _fmt = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 _root = logging.getLogger()
 _root.setLevel(logging.INFO)
 
