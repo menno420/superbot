@@ -32,6 +32,3 @@ CREATE TABLE IF NOT EXISTS cleanup_policies (
     PRIMARY KEY (guild_id, scope_type, scope_id)
 );
 
-INSERT INTO schema_migrations (version, applied_at, description)
-VALUES (4, extract(epoch from now())::bigint, 'governance tables')
-ON CONFLICT DO NOTHING;
