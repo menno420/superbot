@@ -10,6 +10,7 @@ from utils import db
 from utils import embeds as em
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import _parse_member, post_log_embed
+from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
@@ -81,7 +82,7 @@ async def _build_rank_embed(
         (i + 1 for i, r in enumerate(all_coins) if r["user_id"] == member.id), "?"
     )
 
-    embed = discord.Embed(title=f"📊 {member.display_name}", color=discord.Color.blue())
+    embed = discord.Embed(title=f"📊 {member.display_name}", color=UTILITY_COLOR)
     embed.set_thumbnail(url=member.display_avatar.url)
 
     if stat in ("both", "xp"):
@@ -289,7 +290,7 @@ class XpCog(commands.Cog):
             embed = discord.Embed(
                 title="🎉 Level Up!",
                 description=f"{message.author.mention} reached **Level {new_level}**!",
-                color=discord.Color.gold(),
+                color=ECONOMY_COLOR,
             )
             try:
                 await announce_ch.send(embed=embed)
@@ -302,7 +303,7 @@ class XpCog(commands.Cog):
                     f"{message.author.mention} reached **Level {new_level}**! "
                     f"(Total XP: {new_xp})"
                 ),
-                color=discord.Color.gold(),
+                color=ECONOMY_COLOR,
             )
             await post_log_embed(self.bot, guild_id, log_embed)
 
@@ -480,7 +481,7 @@ class XpConfigView(discord.ui.View):
         channel_str = f"<#{cid}>" if cid else "Same channel as message"
 
         embed = discord.Embed(
-            title="⚙️ XP Configuration", color=discord.Color.blurple()
+            title="⚙️ XP Configuration", color=UTILITY_COLOR
         )
         embed.add_field(name="XP per message", value=f"{xp_min}–{xp_max}", inline=True)
         embed.add_field(name="Cooldown", value=f"{cooldown}s", inline=True)

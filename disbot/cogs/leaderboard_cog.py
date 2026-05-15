@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from utils import db
 from utils import embeds as em
+from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
 from views.base import BaseView
 
 MEDALS = ["🥇", "🥈", "🥉"]
@@ -35,7 +36,7 @@ async def _build_embed(
     category: str, guild: discord.Guild, ctx_channel: discord.abc.GuildChannel
 ) -> discord.Embed:
     title, _ = CATEGORIES.get(category, ("Leaderboard", ""))
-    embed = discord.Embed(title=title, color=discord.Color.gold())
+    embed = discord.Embed(title=title, color=ECONOMY_COLOR)
 
     if category == "xp":
         rows = await db.fetchall(
@@ -177,7 +178,7 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
             embed = discord.Embed(
                 title="📊 Leaderboards",
                 description="Select a category below to view the leaderboard.",
-                color=discord.Color.blurple(),
+                color=UTILITY_COLOR,
             )
 
         view.message = await ctx.send(embed=embed, view=view)

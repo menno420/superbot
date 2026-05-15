@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
+from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.tournaments import TournamentRegistration
 
 logger = logging.getLogger("bot")
@@ -719,6 +720,7 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         await cleanup_category(tourn.category)
 
     _tournaments.pop(tourn.guild_id, None)
+    await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
 
 
 # ---------------------------------------------------------------------------
@@ -737,6 +739,9 @@ class BlackjackCog(commands.Cog):
         """On startup, find leftover BJ Tournament categories and notify players."""
         await self.bot.wait_until_ready()
         for guild in self.bot.guilds:
+            flag = await db.get_setting(guild.id, ACTIVE_TOURNAMENT, "")
+            if flag == "blackjack":
+                await db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
             cat = discord.utils.get(guild.categories, name="BJ Tournament")
             if not cat or not cat.channels:
                 continue
@@ -856,6 +861,13 @@ class BlackjackCog(commands.Cog):
         if _tournaments.get(ctx.guild.id):
             await ctx.send("A tournament is already running.", delete_after=8)
             return
+        existing = await db.get_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
+        if existing:
+            await ctx.send(
+                f"A **{existing}** tournament is already active in this server.",
+                delete_after=8,
+            )
+            return
         if entry_fee < 0 or rounds < 1 or duration_mins < 1:
             await ctx.send("Invalid parameters.", delete_after=5)
             return
@@ -869,6 +881,7 @@ class BlackjackCog(commands.Cog):
             duration_mins,
         )
         _tournaments[ctx.guild.id] = tourn
+        await db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "blackjack")
 
         view = _TournRegistrationView(tourn)
         msg = await ctx.send(embed=_tourn_embed(tourn), view=view)

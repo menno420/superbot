@@ -7,6 +7,8 @@ import random
 
 import discord
 from discord.ext import commands
+from utils.ui_constants import GENERAL_COLOR, SUCCESS_COLOR
+from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
@@ -59,34 +61,67 @@ class General(commands.Cog):
         if not self._facts:
             await ctx.send("No facts available.")
             return
-        await ctx.send(random.choice(self._facts))
+        embed = discord.Embed(
+            title="💡 Random Fact",
+            description=random.choice(self._facts),
+            color=GENERAL_COLOR,
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(name="joke", help="Sends a random joke.")
     async def joke(self, ctx):
         if not self._jokes:
             await ctx.send("No jokes available.")
             return
-        await ctx.send(random.choice(self._jokes))
+        embed = discord.Embed(
+            title="😄 Random Joke",
+            description=random.choice(self._jokes),
+            color=GENERAL_COLOR,
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(name="quote", help="Sends a random famous quote.")
     async def quote(self, ctx):
         if not self._quotes:
             await ctx.send("No quotes available.")
             return
-        await ctx.send(random.choice(self._quotes))
+        embed = discord.Embed(
+            title="💬 Quote",
+            description=random.choice(self._quotes),
+            color=GENERAL_COLOR,
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(
-        name="trivia", help="Asks a trivia question (answer hidden in spoiler tag)."
+        name="trivia", help="Asks a trivia question with a reveal button."
     )
     async def trivia(self, ctx):
         if not self._trivia:
             await ctx.send("No trivia available.")
             return
-        await ctx.send(random.choice(self._trivia))
+        raw = random.choice(self._trivia)
+        if " || " in raw:
+            question, answer = raw.split(" || ", 1)
+        else:
+            question, answer = raw, None
+        view = _TriviaRevealView(ctx.author, answer)
+        embed = discord.Embed(
+            title="🧠 Trivia",
+            description=question.strip(),
+            color=GENERAL_COLOR,
+        )
+        embed.set_footer(text="Click 'Reveal Answer' when ready.")
+        msg = await ctx.send(embed=embed, view=view)
+        view.message = msg
 
     @commands.command(name="motivate", help="Sends a motivational message.")
     async def motivate(self, ctx):
-        await ctx.send(random.choice(MOTIVATIONS))
+        embed = discord.Embed(
+            title="💪 Motivation",
+            description=random.choice(MOTIVATIONS),
+            color=SUCCESS_COLOR,
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(
         name="eightball",
@@ -94,11 +129,35 @@ class General(commands.Cog):
         help="Ask the Magic 8-Ball a yes/no question.",
     )
     async def eightball(self, ctx, *, question: str):
-        await ctx.send(f"🎱 {random.choice(EIGHTBALL)}")
+        embed = discord.Embed(title="🎱 Magic 8-Ball", color=GENERAL_COLOR)
+        embed.add_field(name="Question", value=question, inline=False)
+        embed.add_field(name="Answer", value=random.choice(EIGHTBALL), inline=False)
+        await ctx.send(embed=embed)
 
     @commands.command(name="greet", help="Greets you with a random greeting.")
     async def greet(self, ctx):
-        await ctx.send(random.choice(GREETINGS))
+        embed = discord.Embed(
+            title="👋 Greeting",
+            description=f"{random.choice(GREETINGS)} {ctx.author.mention}",
+            color=GENERAL_COLOR,
+        )
+        await ctx.send(embed=embed)
+
+
+# ---------------------------------------------------------------------------
+# Trivia Reveal View
+# ---------------------------------------------------------------------------
+
+
+class _TriviaRevealView(BaseView):
+    def __init__(self, author: discord.Member, answer: str | None):
+        super().__init__(author, public=True, timeout=120)
+        self._answer = answer
+
+    @discord.ui.button(label="Reveal Answer", style=discord.ButtonStyle.primary)
+    async def reveal_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        text = self._answer.strip() if self._answer else "No answer recorded."
+        await interaction.response.send_message(f"**Answer:** {text}", ephemeral=True)
 
 
 async def setup(bot):

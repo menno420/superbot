@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 from utils import db
+from utils.ui_constants import ROLE_COLOR, ECONOMY_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.roles._helpers import _DEFAULT_THRESHOLDS, _find_role_normalized
 
@@ -18,7 +19,7 @@ class TimeRolesPanel(BaseView):
     async def build_embed(self) -> discord.Embed:
         thresholds = await db.get_role_thresholds(self.ctx.guild.id)
         embed = discord.Embed(
-            title="⏱️ Time-Based Roles", color=discord.Color.blurple()
+            title="⏱️ Time-Based Roles", color=ROLE_COLOR
         )
         if thresholds:
             lines = [

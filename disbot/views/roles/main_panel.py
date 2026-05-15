@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
+from utils.ui_constants import ROLE_COLOR, ECONOMY_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.roles._helpers import _ensure_defaults
 
@@ -25,7 +26,7 @@ class RoleHubView(BaseView):
                 "**💬 Reaction Roles** — emoji reaction role bindings\n"
                 "**🔧 Diagnostics** — system status & debug tools"
             ),
-            color=discord.Color.purple(),
+            color=ROLE_COLOR,
         )
 
     # ---- Row 0: Create · Manage · Time Roles

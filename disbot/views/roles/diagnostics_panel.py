@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 from utils import db
+from utils.ui_constants import ROLE_COLOR, ECONOMY_COLOR, WARNING_COLOR
 from views.base import BaseView
 
 
@@ -25,7 +26,7 @@ class DiagnosticsPanel(BaseView):
         skip_roles = await db.get_setting(guild.id, "skip_roles", "Admin")
 
         embed = discord.Embed(
-            title="🔧 Role System Diagnostics", color=discord.Color.orange()
+            title="🔧 Role System Diagnostics", color=WARNING_COLOR
         )
         embed.add_field(name="Time Thresholds", value=str(len(thresholds)), inline=True)
         embed.add_field(name="XP Thresholds", value=str(len(xp_rows)), inline=True)

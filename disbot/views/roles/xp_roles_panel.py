@@ -5,6 +5,7 @@ import logging
 import discord
 from discord.ext import commands
 from utils import db
+from utils.ui_constants import ROLE_COLOR, ECONOMY_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.roles._helpers import _find_role_normalized
 
@@ -22,7 +23,7 @@ class XpRolesPanel(BaseView):
     async def build_embed(self) -> discord.Embed:
         all_rows = await db.get_role_thresholds(self.ctx.guild.id)
         xp_rows = [r for r in all_rows if r.get("level_required") is not None]
-        embed = discord.Embed(title="⚡ XP Role Automation", color=discord.Color.gold())
+        embed = discord.Embed(title="⚡ XP Role Automation", color=ECONOMY_COLOR)
         if xp_rows:
             lines = []
             for r in sorted(xp_rows, key=lambda x: x["level_required"]):
