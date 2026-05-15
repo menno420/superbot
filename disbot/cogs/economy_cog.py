@@ -288,7 +288,7 @@ class EconomyCog(commands.Cog):
             }
             ch = await guild.create_text_channel(
                 "economy-log",
-                overwrites=overwrites,
+                overwrites=overwrites,  # type: ignore[arg-type]
                 category=cat,
                 topic="Live feed of XP level-ups, daily rewards, work earnings, and shop purchases.",
             )
@@ -410,7 +410,7 @@ class EconomyCog(commands.Cog):
         embed.add_field(name="Coins", value=f"{xp_row.get('coins', 0)} 🪙", inline=True)
         embed.set_footer(text="Pick a job from the dropdown.")
 
-        view = _WorkView(ctx, available)
+        view = _WorkView(ctx.author.id, ctx.guild.id, available)
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
 
@@ -419,7 +419,7 @@ class EconomyCog(commands.Cog):
     @commands.command(name="shop")
     async def shop(self, ctx: commands.Context):
         """Browse and buy items from the shop."""
-        view = _ShopView(ctx)
+        view = _ShopView(ctx.author.id, ctx.guild.id)
         msg = await ctx.send(embed=_shop_embed(), view=view)
         view.message = msg
 
@@ -853,7 +853,7 @@ class _JobSelect(discord.ui.Select):
         embed.set_footer(text="Come back in 1 hour to work again!")
 
         for item in self._work_view.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(embed=embed, view=self._work_view)
         self._work_view.stop()
 

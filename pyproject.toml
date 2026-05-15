@@ -78,5 +78,5 @@ allow_untyped_defs = true          # codebase lacks full annotations
 strict_optional = false
 explicit_package_bases = true      # avoid duplicate-module errors under disbot/
 # discord.py uses metaclass kwargs (title=, name=) that mypy can't see through
-disable_error_codes = "call-arg,index,call-overload"
+disable_error_codes = ["call-arg", "index", "call-overload"]
 exclude = ["^\\.github/", "^tests/", "^venv/", "^env/", "^build/", "^dist/"]

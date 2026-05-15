@@ -197,7 +197,7 @@ class HelpPanelView(PersistentView):
                 )
                 for name in page_items
             ]
-            select = discord.ui.Select(
+            select = discord.ui.Select(  # type: ignore[var-annotated]
                 custom_id="help:select",
                 placeholder="Choose a category…",
                 min_values=1,
@@ -205,21 +205,21 @@ class HelpPanelView(PersistentView):
                 options=options,
                 row=0,
             )
-            select.callback = self._on_select
+            select.callback = self._on_select  # type: ignore[method-assign]
             self.add_item(select)
 
-        prev_btn = discord.ui.Button(
+        prev_btn = discord.ui.Button(  # type: ignore[var-annotated]
             label="◀ Prev",
             custom_id="help:prev",
             style=discord.ButtonStyle.grey,
             disabled=(self._page == 0),
             row=1,
         )
-        prev_btn.callback = self._on_prev
+        prev_btn.callback = self._on_prev  # type: ignore[method-assign]
         self.add_item(prev_btn)
 
         if self._num_pages > 1:
-            page_lbl = discord.ui.Button(
+            page_lbl = discord.ui.Button(  # type: ignore[var-annotated]
                 label=f"Page {self._page + 1}/{self._num_pages}",
                 custom_id="help:page_lbl",
                 style=discord.ButtonStyle.grey,
@@ -228,14 +228,14 @@ class HelpPanelView(PersistentView):
             )
             self.add_item(page_lbl)
 
-        next_btn = discord.ui.Button(
+        next_btn = discord.ui.Button(  # type: ignore[var-annotated]
             label="Next ▶",
             custom_id="help:next",
             style=discord.ButtonStyle.grey,
             disabled=(self._page >= self._num_pages - 1),
             row=1,
         )
-        next_btn.callback = self._on_next
+        next_btn.callback = self._on_next  # type: ignore[method-assign]
         self.add_item(next_btn)
 
     async def _resolve_visible(
@@ -251,8 +251,8 @@ class HelpPanelView(PersistentView):
         return visible_list, vis_result.member_tier
 
     async def _on_select(self, interaction: discord.Interaction) -> None:
-        subsystem_name = interaction.data["values"][0]
-        cog = _cog_for_subsystem(interaction.client, subsystem_name)
+        subsystem_name = interaction.data["values"][0]  # type: ignore[typeddict-item]
+        cog = _cog_for_subsystem(interaction.client, subsystem_name)  # type: ignore[arg-type]
         if not cog:
             await interaction.response.send_message(
                 "That category is no longer loaded.", ephemeral=True
@@ -269,7 +269,7 @@ class HelpPanelView(PersistentView):
         new_page = max(0, self._page - 1)
         new_view = HelpPanelView(visible_list, new_page)
         embed = _build_page_embed(
-            interaction.client, visible_list, new_page, member_tier
+            interaction.client, visible_list, new_page, member_tier  # type: ignore[arg-type]
         )
         await interaction.response.edit_message(embed=embed, view=new_view)
 
@@ -279,7 +279,7 @@ class HelpPanelView(PersistentView):
         new_page = min(self._page + 1, num_pages - 1)
         new_view = HelpPanelView(visible_list, new_page)
         embed = _build_page_embed(
-            interaction.client, visible_list, new_page, member_tier
+            interaction.client, visible_list, new_page, member_tier  # type: ignore[arg-type]
         )
         await interaction.response.edit_message(embed=embed, view=new_view)
 

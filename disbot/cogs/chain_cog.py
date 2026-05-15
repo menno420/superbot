@@ -30,7 +30,7 @@ class ChainCog(commands.Cog):
             "❓ Please specify a subcommand. Use `?chain create`, `?chain delete`, `?chain setlimit`, `?chain removelimit`, or `?chain list`."
         )
 
-    @chain.command(name="create")
+    @chain.command(name="create")  # type: ignore[arg-type]
     @has_permissions(administrator=True)
     async def create_chain(
         self,
@@ -79,7 +79,7 @@ class ChainCog(commands.Cog):
             await ctx.send(f"❌ An error occurred: {str(error)}")
             logger.error(f"Error in create_chain command: {error}")
 
-    @chain.command(name="delete")
+    @chain.command(name="delete")  # type: ignore[arg-type]
     @has_permissions(administrator=True)
     async def delete_chain(self, ctx, channel: discord.TextChannel = None):
         """
@@ -112,7 +112,7 @@ class ChainCog(commands.Cog):
             await ctx.send(f"❌ An error occurred: {str(error)}")
             logger.error(f"Error in delete_chain command: {error}")
 
-    @chain.command(name="setlimit")
+    @chain.command(name="setlimit")  # type: ignore[arg-type]
     @has_permissions(administrator=True)
     async def set_limit(
         self, ctx, channel: discord.TextChannel = None, limit: int = None
@@ -157,7 +157,7 @@ class ChainCog(commands.Cog):
             await ctx.send(f"❌ An error occurred: {str(error)}")
             logger.error(f"Error in set_limit command: {error}")
 
-    @chain.command(name="removelimit")
+    @chain.command(name="removelimit")  # type: ignore[arg-type]
     @has_permissions(administrator=True)
     async def remove_limit(self, ctx, channel: discord.TextChannel = None):
         """
@@ -199,7 +199,7 @@ class ChainCog(commands.Cog):
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
 
-    @chain.command(name="list")
+    @chain.command(name="list")  # type: ignore[arg-type]
     async def list_chains(self, ctx):
         """
         List all active chains and word limits in the server.
@@ -311,19 +311,19 @@ def _resolve_channel(
 ) -> discord.TextChannel | None:
     raw = raw.strip()
     if not raw:
-        return interaction.channel
+        return interaction.channel  # type: ignore[return-value]
     stripped = raw.strip("<#>")
     try:
-        return interaction.guild.get_channel(int(stripped))
+        return interaction.guild.get_channel(int(stripped))  # type: ignore[return-value]
     except ValueError:
         return discord.utils.get(interaction.guild.text_channels, name=raw)
 
 
 class _CreateChainModal(discord.ui.Modal, title="Create Chain"):  # type: ignore[call-arg]
-    channel_input = discord.ui.TextInput(
+    channel_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Channel (mention/ID, blank = current)", max_length=40, required=False
     )
-    word_input = discord.ui.TextInput(label="Allowed word", max_length=100)
+    word_input = discord.ui.TextInput(label="Allowed word", max_length=100)  # type: ignore[var-annotated]
 
     def __init__(self, cog: "ChainCog"):
         super().__init__()
@@ -351,7 +351,7 @@ class _CreateChainModal(discord.ui.Modal, title="Create Chain"):  # type: ignore
 
 
 class _DeleteChainModal(discord.ui.Modal, title="Delete Chain"):  # type: ignore[call-arg]
-    channel_input = discord.ui.TextInput(
+    channel_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Channel (mention/ID, blank = current)", max_length=40, required=False
     )
 
@@ -379,10 +379,10 @@ class _DeleteChainModal(discord.ui.Modal, title="Delete Chain"):  # type: ignore
 
 
 class _SetLimitModal(discord.ui.Modal, title="Set Word Limit"):  # type: ignore[call-arg]
-    channel_input = discord.ui.TextInput(
+    channel_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Channel (mention/ID, blank = current)", max_length=40, required=False
     )
-    limit_input = discord.ui.TextInput(
+    limit_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Word limit (0 = remove limit)", max_length=10
     )
 

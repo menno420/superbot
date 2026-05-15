@@ -144,9 +144,7 @@ async def test_no_db_overrides_economy_visible(mock_db):
 @pytest.mark.asyncio
 async def test_guild_override_false_hides_economy(mock_db):
     ctx = make_ctx(guild_id=100, channel_id=200, category_id=300)
-    mock_db.fetch.return_value = [
-        make_visibility_row("guild", 100, "economy", False)
-    ]
+    mock_db.fetch.return_value = [make_visibility_row("guild", 100, "economy", False)]
     result = await resolve_visibility(ctx)
     assert "economy" not in result.visible_subsystems
     assert result.resolved_from["economy"] is PolicySource.GUILD_OVERRIDE
@@ -155,9 +153,7 @@ async def test_guild_override_false_hides_economy(mock_db):
 @pytest.mark.asyncio
 async def test_guild_override_true_keeps_economy_visible(mock_db):
     ctx = make_ctx(guild_id=100, channel_id=200, category_id=300)
-    mock_db.fetch.return_value = [
-        make_visibility_row("guild", 100, "economy", True)
-    ]
+    mock_db.fetch.return_value = [make_visibility_row("guild", 100, "economy", True)]
     result = await resolve_visibility(ctx)
     assert "economy" in result.visible_subsystems
     assert result.resolved_from["economy"] is PolicySource.GUILD_OVERRIDE
@@ -188,9 +184,7 @@ async def test_internal_mode_subsystem_never_visible(mock_db):
     if internal_names:
         name = internal_names[0]
         # Even with a True guild override, internal subsystems must not be visible.
-        mock_db.fetch.return_value = [
-            make_visibility_row("guild", 100, name, True)
-        ]
+        mock_db.fetch.return_value = [make_visibility_row("guild", 100, name, True)]
         ctx = make_ctx()
         result = await resolve_visibility(ctx)
         assert name not in result.visible_subsystems
@@ -237,9 +231,7 @@ async def test_resolved_from_registry_default_when_no_override(mock_db):
 async def test_multiple_subsystems_resolved_independently(mock_db):
     """A guild override for economy does not affect xp resolution."""
     ctx = make_ctx(guild_id=100, channel_id=200, category_id=300)
-    mock_db.fetch.return_value = [
-        make_visibility_row("guild", 100, "economy", False)
-    ]
+    mock_db.fetch.return_value = [make_visibility_row("guild", 100, "economy", False)]
     result = await resolve_visibility(ctx)
     assert "economy" not in result.visible_subsystems
     assert "xp" in result.visible_subsystems  # xp has no override

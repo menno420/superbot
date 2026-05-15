@@ -101,7 +101,7 @@ class MiningCog(commands.Cog):
 
         async def on_timeout(self) -> None:
             for item in self.children:
-                item.disabled = True
+                item.disabled = True  # type: ignore[attr-defined]
             try:
                 await self.message.edit(view=self)
             except Exception:
@@ -416,7 +416,7 @@ class MiningHubView(PersistentView):
         row=0,
     )
     async def mine_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        cog: MiningCog = interaction.client.cogs.get("MiningCog")
+        cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         view = MiningCog.MineView(interaction.user.id, cog)
         embed = discord.Embed(
             title="Mining",
@@ -433,7 +433,7 @@ class MiningHubView(PersistentView):
         row=0,
     )
     async def harvest_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        cog: MiningCog = interaction.client.cogs.get("MiningCog")
+        cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id)
         multiplier = 2 if inventory.get("axe", 0) > 0 else 1
@@ -454,7 +454,7 @@ class MiningHubView(PersistentView):
         row=0,
     )
     async def explore_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        cog: MiningCog = interaction.client.cogs.get("MiningCog")
+        cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         user_id = str(interaction.user.id)
         outcomes = [
             ("found 1 gold in an abandoned camp!", "gold", 1),
@@ -526,7 +526,7 @@ class MiningHubView(PersistentView):
         row=1,
     )
     async def build_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        cog: MiningCog = interaction.client.cogs.get("MiningCog")
+        cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         await interaction.response.send_modal(_BuildModal(cog))
 
     @discord.ui.button(
@@ -547,7 +547,7 @@ class MiningHubView(PersistentView):
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]
-    structure = discord.ui.TextInput(
+    structure = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Structure name",
         placeholder="e.g. stone hut, iron pickaxe",
         max_length=100,

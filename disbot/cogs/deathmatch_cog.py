@@ -81,7 +81,7 @@ class _DuelView(discord.ui.View):
         self.cog.active_duels.pop(self.duel_key, None)
         await self.cog.update_leaderboard(winner_id=opponent.id, loser_id=duel.turn.id)
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
             title="⚔️ Deathmatch — Timeout",
             description=(
@@ -135,7 +135,7 @@ class _DuelView(discord.ui.View):
             self.cog.active_duels.pop(self.duel_key, None)
             await self.cog.update_leaderboard(winner_id=winner.id, loser_id=loser.id)
             for item in self.children:
-                item.disabled = True
+                item.disabled = True  # type: ignore[attr-defined]
             embed = discord.Embed(
                 title="⚔️ Deathmatch Ended",
                 description=(
@@ -180,7 +180,7 @@ class _ChallengeView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
             title="⚔️ Challenge Expired",
             description=f"{self.opponent.mention} did not respond in time.",
@@ -195,7 +195,7 @@ class _ChallengeView(discord.ui.View):
     @discord.ui.button(label="✅ Accept", style=discord.ButtonStyle.green)
     async def btn_accept(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         duel = _Duel(self.challenger, self.opponent)
         self.cog.active_duels[self.duel_key] = duel
         duel_view = _DuelView(self.cog, duel, self.duel_key, self.ctx)
@@ -207,7 +207,7 @@ class _ChallengeView(discord.ui.View):
     @discord.ui.button(label="❌ Decline", style=discord.ButtonStyle.danger)
     async def btn_decline(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
             title="⚔️ Challenge Declined",
             description=f"{self.opponent.mention} declined the duel.",
@@ -252,7 +252,7 @@ class Deathmatch(commands.Cog):
             color=discord.Color.red(),
         )
         embed.set_footer(text="You have 30 seconds to respond.")
-        view = _ChallengeView(self, ctx.author, opponent, duel_key, ctx)
+        view = _ChallengeView(self, ctx.author, opponent, duel_key, ctx)  # type: ignore[arg-type]
         view.message = await ctx.send(embed=embed, view=view)
 
     async def update_leaderboard(self, winner_id: int, loser_id: int) -> None:

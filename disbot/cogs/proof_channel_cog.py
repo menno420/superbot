@@ -31,7 +31,7 @@ class ProofChannelCog(commands.Cog):
             winner: discord.PermissionOverwrite(view_channel=True, send_messages=True),
             proof_channel.guild.me: discord.PermissionOverwrite(view_channel=True),
         }
-        await proof_channel.edit(overwrites=overwrites)
+        await proof_channel.edit(overwrites=overwrites)  # type: ignore[type-var]
         logger.info("Proof channel locked for winner: %s", winner.display_name)
 
     async def _unlock(self, proof_channel: discord.TextChannel) -> None:
@@ -41,7 +41,7 @@ class ProofChannelCog(commands.Cog):
             ),
             proof_channel.guild.me: discord.PermissionOverwrite(view_channel=True),
         }
-        await proof_channel.edit(overwrites=overwrites)
+        await proof_channel.edit(overwrites=overwrites)  # type: ignore[type-var]
         logger.info("Proof channel unlocked (read-only).")
 
     @commands.command(name="+prize")
@@ -134,7 +134,7 @@ class ProofChannelCog(commands.Cog):
 
 
 class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: ignore[call-arg]
-    winner_input = discord.ui.TextInput(
+    winner_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Winner (mention, ID, or name)", max_length=100
     )
 
@@ -167,7 +167,7 @@ class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: 
 
 
 class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: ignore[call-arg]
-    duration_input = discord.ui.TextInput(
+    duration_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Duration (minutes)", placeholder="e.g. 10", max_length=5
     )
 

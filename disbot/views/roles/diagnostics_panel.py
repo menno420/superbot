@@ -55,7 +55,7 @@ class DiagnosticsPanel(BaseView):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
         await interaction.response.defer(ephemeral=True)
-        cog = interaction.client.get_cog("RoleCog")
+        cog = interaction.client.get_cog("RoleCog")  # type: ignore[attr-defined]
         count = await cog._assign_roles(interaction.guild) if cog else 0
         await interaction.followup.send(
             f"✅ Assignment complete — {count} role(s) assigned.", ephemeral=True

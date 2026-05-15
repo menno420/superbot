@@ -104,14 +104,15 @@ class GovernanceContext:
         else:
             channel_id = getattr(channel, "id", None)
             category_id = getattr(channel, "category_id", None)
-        member = interaction.user
+        raw_user = interaction.user
+        member = raw_user if isinstance(raw_user, discord.Member) else None
         return cls(
             guild_id=interaction.guild_id,
             channel_id=channel_id,
             category_id=category_id,
             thread_id=thread_id,
             member=member,
-            role_ids={r.id for r in getattr(member, "roles", [])},
+            role_ids={r.id for r in getattr(raw_user, "roles", [])},
         )
 
     @classmethod
@@ -125,14 +126,15 @@ class GovernanceContext:
         else:
             channel_id = getattr(channel, "id", None)
             category_id = getattr(channel, "category_id", None)
-        member = message.author
+        raw_author = message.author
+        member = raw_author if isinstance(raw_author, discord.Member) else None
         return cls(
             guild_id=message.guild.id if message.guild else 0,
             channel_id=channel_id,
             category_id=category_id,
             thread_id=thread_id,
             member=member,
-            role_ids={r.id for r in getattr(member, "roles", [])},
+            role_ids={r.id for r in getattr(raw_author, "roles", [])},
         )
 
 

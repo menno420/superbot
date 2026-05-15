@@ -41,10 +41,10 @@ def _can_act_on_interaction(
 
 
 class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="User (mention, ID, or name)", max_length=100
     )
-    reason_input = discord.ui.TextInput(
+    reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
         style=discord.TextStyle.paragraph,
         required=False,
@@ -96,13 +96,13 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
 
 
 class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="User (mention, ID, or name)", max_length=100
     )
-    duration_input = discord.ui.TextInput(
+    duration_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Duration (minutes)", placeholder="e.g. 30", max_length=10
     )
-    reason_input = discord.ui.TextInput(
+    reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
         style=discord.TextStyle.paragraph,
         required=False,
@@ -151,10 +151,10 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[c
 
 
 class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="User (mention, ID, or name)", max_length=100
     )
-    reason_input = discord.ui.TextInput(
+    reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
         style=discord.TextStyle.paragraph,
         required=False,
@@ -192,10 +192,10 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
 
 
 class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="User (mention, ID, or name)", max_length=100
     )
-    reason_input = discord.ui.TextInput(
+    reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
         style=discord.TextStyle.paragraph,
         required=False,
@@ -233,7 +233,7 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
 
 
 class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-arg]
-    user_id_input = discord.ui.TextInput(
+    user_id_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="User ID", placeholder="Right-click user → Copy ID", max_length=20
     )
 
@@ -270,7 +270,7 @@ class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-
 
 
 class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="User (mention, ID, or name)", max_length=100
     )
 
@@ -302,7 +302,7 @@ class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[ca
 
 
 class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="User (mention, ID, or name)", max_length=100
     )
 
@@ -341,7 +341,7 @@ class ModPanelView(PersistentView):
     SUBSYSTEM = "moderation"
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not interaction.user.guild_permissions.moderate_members:
+        if not interaction.user.guild_permissions.moderate_members:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need Moderate Members permission.", ephemeral=True
             )

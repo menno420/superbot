@@ -50,9 +50,9 @@ def test_no_duplicate_entry_points_across_subsystems():
     seen: dict[str, str] = {}  # ep → subsystem
     for name, meta in SUBSYSTEMS.items():
         for ep in meta.get("entry_points", ()):
-            assert ep not in seen, (
-                f"Entry point {ep!r} claimed by both {seen[ep]!r} and {name!r}"
-            )
+            assert (
+                ep not in seen
+            ), f"Entry point {ep!r} claimed by both {seen[ep]!r} and {name!r}"
             seen[ep] = name
 
 

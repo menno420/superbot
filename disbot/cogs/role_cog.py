@@ -63,7 +63,7 @@ class RoleHubPanelView(PersistentView):
     async def create_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:
+        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.", ephemeral=True
             )
@@ -81,7 +81,7 @@ class RoleHubPanelView(PersistentView):
     async def manage_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:
+        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.", ephemeral=True
             )
@@ -104,7 +104,7 @@ class RoleHubPanelView(PersistentView):
     async def time_roles_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.", ephemeral=True
             )
@@ -128,7 +128,7 @@ class RoleHubPanelView(PersistentView):
     async def xp_roles_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.", ephemeral=True
             )
@@ -169,7 +169,7 @@ class RoleHubPanelView(PersistentView):
     async def diagnostics_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.", ephemeral=True
             )

@@ -104,7 +104,7 @@ async def try_fetch_message(
 ) -> discord.Message | None:
     """Fetch a Discord message, returning None if it no longer exists."""
     channel = bot.get_channel(channel_id)
-    if channel is None:
+    if channel is None or not isinstance(channel, discord.abc.Messageable):
         return None
     try:
         return await channel.fetch_message(message_id)

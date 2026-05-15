@@ -111,8 +111,8 @@ signal.signal(signal.SIGTERM, _begin_shutdown)
 
 @bot.event
 async def on_ready() -> None:
-    bot.uptime = datetime.datetime.utcnow()
-    bot._reporter = reporter
+    bot.uptime = datetime.datetime.utcnow()  # type: ignore[attr-defined]
+    bot._reporter = reporter  # type: ignore[attr-defined]
     logger.info("Logged in as %s (ID: %s)", bot.user, bot.user.id)
     logger.info("Connected to %d server(s)", len(bot.guilds))
     logger.info("Loaded cogs: %s", ", ".join(bot.cogs.keys()))
@@ -140,14 +140,14 @@ async def on_interaction(interaction: discord.Interaction) -> None:
 
 @bot.event
 async def on_command(ctx: commands.Context) -> None:
-    ctx._request_id = str(uuid.uuid4())
+    ctx._request_id = str(uuid.uuid4())  # type: ignore[attr-defined]
     cog_name = type(ctx.cog).__name__ if ctx.cog else "unknown"
     logger.info(
         "CMD %s/%s",
         cog_name,
         ctx.command.qualified_name if ctx.command else "?",
         extra={
-            "request_id": ctx._request_id,
+            "request_id": ctx._request_id,  # type: ignore[attr-defined]
             "guild_id": ctx.guild.id if ctx.guild else None,
             "user_id": ctx.author.id,
             "channel_id": ctx.channel.id,
@@ -267,7 +267,7 @@ async def _channel_guard(ctx: commands.Context) -> bool:
 # ---------------------------------------------------------------------------
 
 
-@bot.command()
+@bot.command()  # type: ignore[arg-type]
 @commands.has_permissions(administrator=True)
 async def force(ctx: commands.Context, command_name: str, *args) -> None:
     """Overrides channel restrictions and runs a command (admins only)."""

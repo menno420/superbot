@@ -134,7 +134,7 @@ async def _on_event(event: str, **payload: Any) -> None:
 
 
 async def _refresh_panel(
-    bot: discord.Client,
+    bot: "commands.Bot",
     refresh_fn: RefreshFn,
     user_id: int,
     guild_id: int,
@@ -161,7 +161,7 @@ async def _refresh_panel(
 
     embed, view = result
     channel = bot.get_channel(channel_id)
-    if channel is None:
+    if channel is None or not isinstance(channel, discord.abc.Messageable):
         return
 
     try:

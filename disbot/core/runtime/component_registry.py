@@ -146,7 +146,7 @@ def add_actions_to_view(
     inert display buttons (useful for disabled / label-only slots).
     """
     for action in actions:
-        btn = discord.ui.Button(
+        btn: discord.ui.Button = discord.ui.Button(
             label=action.label,
             custom_id=action.custom_id,
             style=action.style,
@@ -156,5 +156,5 @@ def add_actions_to_view(
         )
         cb = callbacks.get(action.custom_id)
         if cb is not None:
-            btn.callback = cb
+            btn.callback = cb  # type: ignore[method-assign]
         view.add_item(btn)

@@ -31,25 +31,25 @@ class _ConfirmView(discord.ui.View):
         self._on_confirm = on_confirm
         self._on_cancel = on_cancel
 
-        yes = discord.ui.Button(
+        yes: discord.ui.Button = discord.ui.Button(
             label=confirm_label,
             style=discord.ButtonStyle.danger,
             custom_id="surface:confirm",
         )
-        yes.callback = self._confirm
+        yes.callback = self._confirm  # type: ignore[method-assign]
         self.add_item(yes)
 
-        no = discord.ui.Button(
+        no: discord.ui.Button = discord.ui.Button(
             label=cancel_label,
             style=discord.ButtonStyle.secondary,
             custom_id="surface:cancel",
         )
-        no.callback = self._cancel
+        no.callback = self._cancel  # type: ignore[method-assign]
         self.add_item(no)
 
     def _disable_all(self) -> None:
         for item in self.children:
-            item.disabled = True  # type: ignore[union-attr]
+            item.disabled = True  # type: ignore[attr-defined]
 
     async def _confirm(self, interaction: discord.Interaction) -> None:
         self._disable_all()
