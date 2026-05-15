@@ -5,6 +5,19 @@ import re
 import discord
 from discord.ext import commands
 
+
+def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
+    """Resolve a member from a mention, ID, or username/display-name string."""
+    text = text.strip()
+    mention_match = re.match(r"<@!?(\d+)>", text)
+    if mention_match:
+        return guild.get_member(int(mention_match.group(1)))
+    if text.isdigit():
+        return guild.get_member(int(text))
+    return discord.utils.find(
+        lambda m: m.name == text or m.display_name == text, guild.members
+    )
+
 _CUSTOM_EMOJI_RE = re.compile(r"<a?:(\w+):(\d+)>")
 
 

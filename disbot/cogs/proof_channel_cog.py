@@ -5,6 +5,7 @@ import logging
 
 import discord
 from discord.ext import commands
+from utils.helpers import _parse_member
 from views.base import BaseView
 
 logger = logging.getLogger("discord_bot.prize_cog")
@@ -142,8 +143,6 @@ class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: 
         self.timed = timed
 
     async def on_submit(self, interaction: discord.Interaction):
-        from cogs.moderation_cog import _parse_member
-
         member = _parse_member(interaction.guild, self.winner_input.value)
         if not member:
             await interaction.response.send_message(

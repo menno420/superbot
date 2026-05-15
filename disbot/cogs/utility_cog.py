@@ -5,6 +5,8 @@ import asyncio
 import discord
 from discord.ext import commands
 from utils import embeds as em
+from utils.ui_constants import UTILITY_COLOR
+from views.base import BaseView
 
 
 async def _remind_later(
@@ -107,17 +109,17 @@ class UtilityCog(commands.Cog):
                 embed.set_thumbnail(url=guild.icon.url)
         await ctx.send(embed=embed)
 
-    @commands.command(name="serverinfo")
+    @commands.command(name="serverinfo", hidden=True)
     async def serverinfo(self, ctx):
         """Alias for !info server."""
         await ctx.invoke(self.info, target="server")
 
-    @commands.command(name="userinfo")
+    @commands.command(name="userinfo", hidden=True)
     async def userinfo(self, ctx, member: discord.Member = None):
         """Alias for !info user [@member]."""
         await ctx.invoke(self.info, target="user", member=member)
 
-    @commands.command(name="avatar")
+    @commands.command(name="avatar", hidden=True)
     async def avatar(self, ctx, member: discord.Member = None):
         """Display a user's avatar."""
         member = member or ctx.author
@@ -167,16 +169,12 @@ class UtilityCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
-class _UtilityPanelView(discord.ui.View):
+class _UtilityPanelView(BaseView):
     """Interactive utility panel — quick access to common utility actions."""
 
     def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=180)
+        super().__init__(ctx.author, public=True, timeout=180)
         self.ctx = ctx
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return True
 
     def build_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -189,7 +187,7 @@ class _UtilityPanelView(discord.ui.View):
                 "**🔔 Remind Me** — set a timed reminder\n"
                 "**🔗 Invite** — generate a one-use server invite"
             ),
-            color=discord.Color.blue(),
+            color=UTILITY_COLOR,
         )
         embed.set_footer(text="Click an action below.")
         return embed
@@ -289,15 +287,6 @@ class _UtilityPanelView(discord.ui.View):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
 
 
 # ---------------------------------------------------------------------------

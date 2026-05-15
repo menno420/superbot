@@ -9,7 +9,7 @@ from discord.ext import commands
 from utils import db
 from utils import embeds as em
 from utils.cooldowns import check_cooldown, format_remaining
-from utils.helpers import post_log_embed
+from utils.helpers import _parse_member, post_log_embed
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
@@ -190,8 +190,6 @@ class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
         self._hub = hub
 
     async def on_submit(self, interaction: discord.Interaction):
-        from cogs.moderation_cog import _parse_member
-
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(
@@ -233,8 +231,6 @@ class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-ar
                 "❌ Reset cancelled — type CONFIRM to proceed.", ephemeral=True
             )
             return
-        from cogs.moderation_cog import _parse_member
-
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(

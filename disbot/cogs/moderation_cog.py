@@ -1,28 +1,16 @@
 from __future__ import annotations
 
 import logging
-import re
 from datetime import timedelta
 
 import discord
 from discord import Member
 from discord.ext import commands
 from utils import db
+from utils.helpers import _parse_member
+from utils.ui_constants import MOD_COLOR
 
 logger = logging.getLogger("bot")
-
-
-def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
-    """Resolve a member from a mention, ID, or username string."""
-    text = text.strip()
-    mention_match = re.match(r"<@!?(\d+)>", text)
-    if mention_match:
-        return guild.get_member(int(mention_match.group(1)))
-    if text.isdigit():
-        return guild.get_member(int(text))
-    return discord.utils.find(
-        lambda m: m.name == text or m.display_name == text, guild.members
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -285,7 +273,7 @@ class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[ca
         logs = await db.get_mod_logs(member.id, interaction.guild_id, limit=10)
         embed = discord.Embed(
             title=f"📋 Mod Logs — {member.display_name}",
-            color=discord.Color.orange(),
+            color=MOD_COLOR,
         )
         if not logs:
             embed.description = "No moderation history found."
@@ -330,7 +318,13 @@ class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ig
 
 
 class _ModPanelView(discord.ui.View):
-    """Interactive moderation panel with quick-action modal buttons."""
+    """Permission-based panel: any user with moderate_members can interact.
+
+    This is an intentional exception to the invoker-only BaseView pattern —
+    moderation panels are collaborative staff tools, not personal menus.
+    A moderator opening the panel should not lock out fellow staff members
+    from taking action on the same panel.
+    """
 
     def __init__(self, cog: "ModerationCog"):
         super().__init__(timeout=180)
@@ -447,7 +441,7 @@ class ModerationCog(commands.Cog):
                 "Click a button to take a moderation action.\n"
                 "You'll be prompted to enter the user and reason."
             ),
-            color=discord.Color.red(),
+            color=MOD_COLOR,
         )
         embed.add_field(
             name="⚠️ Warn", value="Issue a warning (auto-timeout at 3)", inline=True
@@ -465,7 +459,7 @@ class ModerationCog(commands.Cog):
     # Traditional text commands (kept for direct use)
     # ------------------------------------------------------------------
 
-    @commands.command(name="warn")
+    @commands.command(name="warn", hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def warn(self, ctx, member: Member, *, reason="No reason provided"):
         """Warn a user. Auto-timeouts at the configured threshold (default: 3)."""
@@ -496,7 +490,7 @@ class ModerationCog(commands.Cog):
                     f"⚠️ Reached {threshold} warnings but I lack permission to timeout this user."
                 )
 
-    @commands.command(name="timeout")
+    @commands.command(name="timeout", hidden=True)
     @commands.has_permissions(moderate_members=True)
     async def timeout(self, ctx, member: Member, duration: int):
         """Timeout a member for a given number of minutes."""
@@ -514,7 +508,7 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to timeout: {e}")
 
-    @commands.command(name="kick")
+    @commands.command(name="kick", hidden=True)
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: Member, *, reason="No reason provided"):
         """Kick a member from the server."""
@@ -531,7 +525,7 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to kick: {e}")
 
-    @commands.command(name="ban")
+    @commands.command(name="ban", hidden=True)
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: Member, *, reason="No reason provided"):
         """Ban a member from the server."""
@@ -548,7 +542,7 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to ban: {e}")
 
-    @commands.command(name="unban")
+    @commands.command(name="unban", hidden=True)
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, user_id: int):
         """Unban a user by their Discord user ID."""
@@ -571,7 +565,7 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to unban: {e}")
 
-    @commands.command(name="clearwarnings")
+    @commands.command(name="clearwarnings", hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def clearwarnings(self, ctx, member: Member):
         """Clear all warnings for a member."""
@@ -579,14 +573,14 @@ class ModerationCog(commands.Cog):
         await ctx.send(f"✅ Warnings cleared for {member.mention}.")
         await self.log_action(ctx, "clearwarnings", member)
 
-    @commands.command(name="modlogs")
+    @commands.command(name="modlogs", hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def modlogs(self, ctx, member: Member):
         """Show moderation log history for a member."""
         logs = await db.get_mod_logs(member.id, ctx.guild.id, limit=10)
         embed = discord.Embed(
             title=f"📋 Mod Logs — {member.display_name}",
-            color=discord.Color.orange(),
+            color=MOD_COLOR,
         )
         if not logs:
             embed.description = "No moderation history found."
