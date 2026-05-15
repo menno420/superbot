@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
-
 from views.base import BaseView
 from views.roles._helpers import _find_role_normalized, _parse_color
 

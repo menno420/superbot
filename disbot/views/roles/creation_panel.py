@@ -4,7 +4,6 @@ import logging
 
 import discord
 from discord.ext import commands
-
 from utils import db
 from views.base import BaseView
 from views.roles._helpers import _parse_color

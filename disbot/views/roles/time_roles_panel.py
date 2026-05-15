@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
-
 from utils import db
 from views.base import BaseView
 from views.roles._helpers import _DEFAULT_THRESHOLDS, _find_role_normalized
