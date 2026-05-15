@@ -5,6 +5,7 @@ import logging
 import discord
 from discord.ext import commands
 from utils.channels import get_or_create_category, safe_channel_name
+from utils.helpers import safe_select_emoji
 
 logger = logging.getLogger("bot")
 
@@ -192,10 +193,8 @@ class ChannelCog(commands.Cog):
     )
     @is_admin_or_owner()
     async def channel_creator(self, ctx):
-        """Opens the comprehensive channel management panel."""
-        view = _ChannelManagerView(ctx)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        """Opens the comprehensive channel management panel (alias for !channelmenu)."""
+        await ctx.invoke(self.channel_menu)
 
     @commands.command(
         name="bulkdelete",
@@ -443,12 +442,8 @@ class ChannelCog(commands.Cog):
     )
     @is_admin_or_owner()
     async def archive_channel(self, ctx, channel_name: str):
-        channel = self._resolve_channel(ctx.guild, channel_name)
-        if channel:
-            await channel.set_permissions(ctx.guild.default_role, send_messages=False)
-            await ctx.send(f'"{channel.name}" archived (read-only).')
-        else:
-            await ctx.send(f'"{channel_name}" not found.')
+        """Alias for !lock — sets send_messages=False for @everyone."""
+        await ctx.invoke(self.lock_channel, channel_name=channel_name)
 
     @commands.command(
         name="unarchive",
@@ -456,12 +451,8 @@ class ChannelCog(commands.Cog):
     )
     @is_admin_or_owner()
     async def unarchive_channel(self, ctx, channel_name: str):
-        channel = self._resolve_channel(ctx.guild, channel_name)
-        if channel:
-            await channel.set_permissions(ctx.guild.default_role, send_messages=True)
-            await ctx.send(f'"{channel.name}" unarchived.')
-        else:
-            await ctx.send(f'"{channel_name}" not found.')
+        """Alias for !unlock — sets send_messages=True for @everyone."""
+        await ctx.invoke(self.unlock_channel, channel_name=channel_name)
 
 
 # =====================================================================
@@ -481,7 +472,9 @@ def _build_channel_options(guild: discord.Guild) -> list[discord.SelectOption]:
     )
     options = []
     for ch in channels[:25]:
-        emoji = "🔊" if isinstance(ch, discord.VoiceChannel) else "#"
+        emoji = safe_select_emoji(
+            "🔊" if isinstance(ch, discord.VoiceChannel) else "💬"
+        )
         cat_label = ch.category.name if ch.category else "No category"
         options.append(
             discord.SelectOption(

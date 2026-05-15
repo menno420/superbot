@@ -166,6 +166,43 @@ class XpCog(commands.Cog):
             )
             await post_log_embed(self.bot, guild_id, log_embed)
 
+            # XP threshold role assignment
+            try:
+                xp_roles = await db.get_xp_threshold_roles(guild_id)
+                for role_cfg in xp_roles:
+                    if role_cfg["level_required"] <= new_level:
+                        discord_role = discord.utils.get(
+                            message.guild.roles, name=role_cfg["role_name"]
+                        )
+                        if discord_role and discord_role not in message.author.roles:
+                            try:
+                                await message.author.add_roles(
+                                    discord_role,
+                                    reason=f"XP level-up: reached level {new_level}",
+                                )
+                                logger.info(
+                                    "XP role assigned: %s → %s (level %d)",
+                                    message.author.display_name,
+                                    discord_role.name,
+                                    new_level,
+                                )
+                            except (
+                                discord.Forbidden,
+                                discord.HTTPException,
+                            ) as role_err:
+                                logger.warning(
+                                    "Could not assign XP role %s to %s: %s",
+                                    discord_role.name,
+                                    message.author.display_name,
+                                    role_err,
+                                )
+            except Exception:
+                logger.error(
+                    "XP role assignment check failed for guild %d",
+                    guild_id,
+                    exc_info=True,
+                )
+
     # ------------------------------------------------------------------ commands
 
     @commands.command(name="rank")
