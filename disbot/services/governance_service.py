@@ -446,7 +446,8 @@ def _should_send_feedback(channel_id: int, subsystem: str) -> bool:
         # unbounded accumulation from channels the bot no longer interacts with.
         if len(_FEEDBACK_COOLDOWN) > 500:
             expired = [
-                k for k, ts in _FEEDBACK_COOLDOWN.items()
+                k
+                for k, ts in _FEEDBACK_COOLDOWN.items()
                 if now - ts > _FEEDBACK_COOLDOWN_SECS
             ]
             for k in expired:

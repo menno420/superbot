@@ -145,7 +145,9 @@ class WebhookReporter:
             await self._send(embed)
             return
 
-        if isinstance(error, (commands.MissingPermissions, commands.BotMissingPermissions)):
+        if isinstance(
+            error, (commands.MissingPermissions, commands.BotMissingPermissions)
+        ):
             label = "User" if isinstance(error, commands.MissingPermissions) else "Bot"
             embed = discord.Embed(
                 title=f"🔒 {label} Missing Permissions",

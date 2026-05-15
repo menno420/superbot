@@ -79,6 +79,7 @@ async def start_health_server(bot: commands.Bot) -> None:
     try:
         # Keep running until the task is cancelled (bot shutdown).
         import asyncio
+
         await asyncio.get_running_loop().create_future()
     finally:
         await runner.cleanup()
