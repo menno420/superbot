@@ -38,6 +38,8 @@ from typing import Any
 
 import config as _config
 import discord
+from core.events import bus as _event_bus
+from services.governance_exceptions import GovernanceError
 from utils import db, settings_keys
 from utils.subsystem_registry import (
     _COMPILED_DEPENDENCY_ORDER,
@@ -345,6 +347,11 @@ _NO_OVERRIDE = object()  # sentinel for negative cache entries
 # Cleared by forget_guild() when bot leaves the guild.
 _guild_has_role_overrides: dict[int, bool] = {}
 
+# Subsystems whose cog failed to load at startup.
+# Populated by register_failed_subsystems() from bot1._load_cogs().
+# Treated as SubsystemState.INTERNAL so they are invisible to users.
+_FAILED_SUBSYSTEMS: set[str] = set()
+
 
 def _cache_ver(guild_id: int) -> int:
     return _CACHE_VERSION.get(guild_id, 0)
@@ -394,6 +401,17 @@ def forget_guild(guild_id: int) -> None:
     """
     _CACHE_VERSION.pop(guild_id, None)
     _guild_has_role_overrides.pop(guild_id, None)
+
+
+def register_failed_subsystems(subsystems: set[str]) -> None:
+    """Mark subsystems whose cog failed to load as INTERNAL (invisible to users).
+
+    Call this from _load_cogs() after all extension loads complete.
+    Failed subsystems remain in the registry (no mutation) but are treated as
+    SubsystemState.INTERNAL so they never appear in help menus or governance
+    responses — preventing "command not found" confusion after partial boot.
+    """
+    _FAILED_SUBSYSTEMS.update(subsystems)
 
 
 # ---------------------------------------------------------------------------
@@ -599,6 +617,19 @@ async def _resolve_visibility_overrides(
                 matched_scope=PolicySource.REGISTRY_DEFAULT,
                 dependency_blocks=[],
                 final_state=SubsystemState.DISABLED,
+            )
+            resolved_from[name] = PolicySource.REGISTRY_DEFAULT
+            continue
+
+        # Cog load failure gate — treat as internal so help menus stay clean
+        if name in _FAILED_SUBSYSTEMS:
+            states[name] = SubsystemState.INTERNAL
+            traces[name] = ResolutionTrace(
+                subsystem=name,
+                checked_scopes=[],
+                matched_scope=PolicySource.REGISTRY_DEFAULT,
+                dependency_blocks=[],
+                final_state=SubsystemState.INTERNAL,
             )
             resolved_from[name] = PolicySource.REGISTRY_DEFAULT
             continue
@@ -1062,6 +1093,9 @@ async def run_governance_healthcheck(guild_id: int) -> GovernanceHealthReport:
 # ---------------------------------------------------------------------------
 
 
+_VALID_SCOPE_TYPES: frozenset[str] = frozenset({"channel", "category", "guild"})
+
+
 async def set_subsystem_visibility(
     ctx: GovernanceContext,
     scope_type: str,
@@ -1069,12 +1103,21 @@ async def set_subsystem_visibility(
     subsystem: str,
     enabled: bool | None,
 ) -> None:
-    """Set a subsystem visibility override. enabled=None clears the override (inherit)."""
+    """Set a subsystem visibility override. enabled=None clears the override (inherit).
+
+    scope_type must be one of 'channel', 'category', 'guild'.
+    Role-scoped overrides are not yet resolvable (ISSUE-007) and are explicitly
+    rejected here to prevent silent misconfiguration.
+    """
+    if scope_type not in _VALID_SCOPE_TYPES:
+        raise GovernanceError(
+            f"Invalid scope_type {scope_type!r}. "
+            f"Must be one of: {sorted(_VALID_SCOPE_TYPES)}. "
+            "Role-scoped overrides are not yet supported."
+        )
     await db.set_subsystem_visibility(
         ctx.guild_id, scope_type, scope_id, subsystem, enabled
     )
-    if scope_type == "role":
-        _guild_has_role_overrides[ctx.guild_id] = True
     invalidate_guild_cache(ctx.guild_id)
     await _emit_governance_event(
         EVT_VISIBILITY_CHANGED,
@@ -1147,9 +1190,11 @@ async def _run_governance_upgrade(guild_id: int, from_version: int) -> None:
 
 
 async def _emit_governance_event(event_name: str, payload: dict) -> None:
-    """Internal hook. Currently DEBUG-logs only.
-    Future: route to core.events.EventBus — do NOT inline analytics here.
-    governance_service must not become an analytics service.
+    """Emit a governance fact to the in-process EventBus.
+
+    Subscribers register via core.events.bus.on(event_name, handler).
+    governance_service does not handle analytics, UI refresh, or audit logging
+    directly — those concerns subscribe to these events instead.
     """
     logger.debug("governance_event %s %s", event_name, payload)
-    # Future: await event_bus.publish(event_name, payload)
+    await _event_bus.emit(event_name, **payload)

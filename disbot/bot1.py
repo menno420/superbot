@@ -417,11 +417,16 @@ async def force(ctx: commands.Context, command_name: str, *args) -> None:
 # Load cogs
 # ---------------------------------------------------------------------------
 async def _load_cogs() -> None:
+    from services import governance_service
+    from utils.subsystem_registry import SUBSYSTEMS
+
+    failed_exts: set[str] = set()
     for ext in config.INITIAL_EXTENSIONS:
         try:
             await bot.load_extension(ext)
             logger.info("✅ Loaded %s", ext)
         except Exception as exc:
+            failed_exts.add(ext)
             logger.error(
                 "❌ Failed to load %s: %s: %s",
                 ext,
@@ -431,6 +436,24 @@ async def _load_cogs() -> None:
             )
             if reporter:
                 await reporter.on_cog_fail(ext, exc)
+
+    if failed_exts:
+        # Determine which subsystems have no loaded entry_point command.
+        # Any subsystem whose every entry_point is absent from bot.commands
+        # was provided by a failed cog and must be hidden from users.
+        loaded_command_names = {cmd.name for cmd in bot.commands}
+        failed_subsystems: set[str] = set()
+        for name, meta in SUBSYSTEMS.items():
+            entry_points = meta.get("entry_points", [])
+            if entry_points and not any(
+                ep in loaded_command_names for ep in entry_points
+            ):
+                failed_subsystems.add(name)
+                logger.warning(
+                    "Subsystem %r has no loaded commands — marking INTERNAL", name
+                )
+        if failed_subsystems:
+            governance_service.register_failed_subsystems(failed_subsystems)
 
 
 # ---------------------------------------------------------------------------
