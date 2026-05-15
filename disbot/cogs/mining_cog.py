@@ -5,10 +5,11 @@ import os
 import random
 
 import discord
+from core.runtime import panel_manager
+from core.runtime.persistent_views import PersistentView, register
 from discord.ext import commands
 from utils import db
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
-from views.base import BaseView
 
 RECIPES_FILE = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -150,9 +151,8 @@ class MiningCog(commands.Cog):
     @commands.command()
     async def minemenu(self, ctx):
         """Open the mining hub panel."""
-        view = _MiningHubView(ctx)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        view = MiningHubView()
+        await panel_manager.get_or_render_panel(ctx, "mining", view.build_embed(), view)
 
     @commands.command()
     async def mine(self, ctx):
@@ -387,12 +387,11 @@ async def setup(bot):
 # ---------------------------------------------------------------------------
 
 
-class _MiningHubView(BaseView):
-    """Interactive mining hub — central access to all mining actions."""
+@register
+class MiningHubView(PersistentView):
+    """Persistent, stateless mining hub panel."""
 
-    def __init__(self, ctx):
-        super().__init__(ctx.author, timeout=180)
-        self.ctx = ctx
+    SUBSYSTEM = "mining"
 
     def build_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -410,7 +409,12 @@ class _MiningHubView(BaseView):
         embed.set_footer(text="Only you can interact with this panel.")
         return embed
 
-    @discord.ui.button(label="⛏️ Mine", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(
+        label="⛏️ Mine",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:mine",
+        row=0,
+    )
     async def mine_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         cog: MiningCog = interaction.client.cogs.get("MiningCog")
         view = MiningCog.MineView(interaction.user.id, cog)
@@ -422,7 +426,12 @@ class _MiningHubView(BaseView):
         await interaction.response.edit_message(embed=embed, view=view)
         view.message = interaction.message
 
-    @discord.ui.button(label="🌲 Harvest", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(
+        label="🌲 Harvest",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:harvest",
+        row=0,
+    )
     async def harvest_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         cog: MiningCog = interaction.client.cogs.get("MiningCog")
         user_id = str(interaction.user.id)
@@ -438,7 +447,12 @@ class _MiningHubView(BaseView):
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="🗺️ Explore", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(
+        label="🗺️ Explore",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:explore",
+        row=0,
+    )
     async def explore_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         cog: MiningCog = interaction.client.cogs.get("MiningCog")
         user_id = str(interaction.user.id)
@@ -460,7 +474,12 @@ class _MiningHubView(BaseView):
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="📦 Inventory", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(
+        label="📦 Inventory",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:inventory",
+        row=1,
+    )
     async def inventory_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
@@ -480,7 +499,12 @@ class _MiningHubView(BaseView):
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="📊 Stats", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(
+        label="📊 Stats",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:stats",
+        row=1,
+    )
     async def stats_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id)
@@ -495,12 +519,22 @@ class _MiningHubView(BaseView):
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="🔨 Build", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(
+        label="🔨 Build",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:build",
+        row=1,
+    )
     async def build_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         cog: MiningCog = interaction.client.cogs.get("MiningCog")
         await interaction.response.send_modal(_BuildModal(cog))
 
-    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=2)
+    @discord.ui.button(
+        label="↩ Overview",
+        style=discord.ButtonStyle.secondary,
+        custom_id="mining:overview",
+        row=2,
+    )
     async def overview_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):

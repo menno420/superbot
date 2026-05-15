@@ -9,7 +9,6 @@ Scope priority under test: channel > category > guild > registry default.
 from __future__ import annotations
 
 import pytest
-
 import services.governance_service as gs
 from services.governance_service import (
     GovernanceContext,
@@ -22,7 +21,6 @@ from services.governance_service import (
 )
 
 from .conftest import make_ctx, make_visibility_row
-
 
 # ---------------------------------------------------------------------------
 # Pure unit tests — _resolve_single_subsystem

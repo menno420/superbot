@@ -19,6 +19,10 @@ from __future__ import annotations
 import logging
 
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported
+from core.runtime import message_anchor_manager as anchors  # noqa: F401 — re-exported
+from core.runtime import panel_manager as panels  # noqa: F401 — re-exported
+from core.runtime import persistent_views  # noqa: F401 — re-exported
+from core.runtime import session_gc as gc  # noqa: F401 — re-exported
 from core.runtime import session_manager as sessions  # noqa: F401 — re-exported
 from core.runtime import state_store as store  # noqa: F401 — re-exported
 from core.runtime import ui_permissions as perms  # noqa: F401 — re-exported

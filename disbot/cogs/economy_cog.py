@@ -5,13 +5,14 @@ import random
 import time
 
 import discord
+from core.runtime import panel_manager
+from core.runtime.persistent_views import PersistentView, register
 from discord.ext import commands
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
 from utils.settings_keys import ECONOMY_LOG_CHANNEL
 from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR, SUCCESS_COLOR, WARNING_COLOR
-from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
@@ -242,9 +243,9 @@ class EconomyCog(commands.Cog):
     @commands.command(name="economymenu")
     async def economy_menu(self, ctx: commands.Context):
         """Open the interactive economy control panel."""
-        view = _EconomyPanelView(ctx)
-        msg = await ctx.send(embed=await view.build_embed(), view=view)
-        view.message = msg
+        view = EconomyPanelView()
+        embed = await _build_economy_embed(ctx.author, ctx.guild.id)
+        await panel_manager.get_or_render_panel(ctx, "economy", embed, view)
 
     # ------------------------------------------------------------------ events
 
@@ -493,62 +494,65 @@ class EconomyCog(commands.Cog):
 
 
 # ---------------------------------------------------------------------------
-# Economy Panel
+# Economy Panel — stateless persistent hub
 # ---------------------------------------------------------------------------
 
 
-class _EconomyPanelView(BaseView):
-    """Interactive economy control panel — hub for all economy actions."""
+async def _build_economy_embed(
+    user: discord.Member | discord.User, guild_id: int
+) -> discord.Embed:
+    """Build the economy overview embed for *user* (stateless, no ctx needed)."""
+    uid = user.id
+    row = await db.get_economy(uid, guild_id)
+    xp_row = await db.get_xp(uid, guild_id)
+    coins = await db.get_coins(uid, guild_id)
 
-    def __init__(self, ctx: commands.Context):
-        super().__init__(ctx.author, timeout=180)
-        self.ctx = ctx
+    on_cd_work, secs_work = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
+    on_cd_daily, secs_daily = check_cooldown(row["last_daily"], _DAILY_COOLDOWN)
 
-    async def build_embed(self) -> discord.Embed:
-        uid, gid = self.ctx.author.id, self.ctx.guild.id
-        row = await db.get_economy(uid, gid)
-        xp_row = await db.get_xp(uid, gid)
-        coins = await db.get_coins(uid, gid)
+    embed = discord.Embed(title="💰 Economy Panel", color=ECONOMY_COLOR)
+    embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
+    embed.add_field(name="🪙 Coins", value=f"{coins:,}", inline=True)
+    embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
+    embed.add_field(
+        name="🔥 Daily Streak", value=str(row.get("daily_streak", 0)), inline=True
+    )
+    embed.add_field(
+        name="🎁 Daily",
+        value=(
+            "✅ Available!" if not on_cd_daily else f"⏰ {format_remaining(secs_daily)}"
+        ),
+        inline=True,
+    )
+    embed.add_field(
+        name="💼 Work",
+        value=(
+            "✅ Available!" if not on_cd_work else f"⏰ {format_remaining(secs_work)}"
+        ),
+        inline=True,
+    )
+    embed.set_footer(text="Use the buttons below to take actions.")
+    return embed
 
-        on_cd_work, secs_work = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
-        on_cd_daily, secs_daily = check_cooldown(row["last_daily"], _DAILY_COOLDOWN)
 
-        embed = discord.Embed(title="💰 Economy Panel", color=ECONOMY_COLOR)
-        embed.set_author(
-            name=self.ctx.author.display_name,
-            icon_url=self.ctx.author.display_avatar.url,
-        )
-        embed.add_field(name="🪙 Coins", value=f"{coins:,}", inline=True)
-        embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
-        embed.add_field(
-            name="🔥 Daily Streak",
-            value=str(row.get("daily_streak", 0)),
-            inline=True,
-        )
-        embed.add_field(
-            name="🎁 Daily",
-            value=(
-                "✅ Available!"
-                if not on_cd_daily
-                else f"⏰ {format_remaining(secs_daily)}"
-            ),
-            inline=True,
-        )
-        embed.add_field(
-            name="💼 Work",
-            value=(
-                "✅ Available!"
-                if not on_cd_work
-                else f"⏰ {format_remaining(secs_work)}"
-            ),
-            inline=True,
-        )
-        embed.set_footer(text="Use the buttons below to take actions.")
-        return embed
+@register
+class EconomyPanelView(PersistentView):
+    """Persistent, stateless economy control panel hub.
 
-    @discord.ui.button(label="🎁 Daily", style=discord.ButtonStyle.green, row=0)
+    All callbacks derive user context from ``interaction`` — no ``ctx`` stored.
+    Ownership is enforced by PersistentView.interaction_check via anchor lookup.
+    """
+
+    SUBSYSTEM = "economy"
+
+    @discord.ui.button(
+        label="🎁 Daily",
+        style=discord.ButtonStyle.green,
+        custom_id="economy:daily",
+        row=0,
+    )
     async def daily_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        uid, gid = self.ctx.author.id, self.ctx.guild.id
+        uid, gid = interaction.user.id, interaction.guild_id
         now = int(time.time())
         row = await db.get_economy(uid, gid)
         last = row["last_daily"]
@@ -579,8 +583,8 @@ class _EconomyPanelView(BaseView):
             color=ECONOMY_COLOR,
         )
         embed.set_author(
-            name=self.ctx.author.display_name,
-            icon_url=self.ctx.author.display_avatar.url,
+            name=interaction.user.display_name,
+            icon_url=interaction.user.display_avatar.url,
         )
         embed.add_field(name="Coins earned", value=f"**+{amount}** 🪙", inline=True)
         embed.add_field(name="Balance", value=f"**{new_bal}** 🪙", inline=True)
@@ -591,17 +595,21 @@ class _EconomyPanelView(BaseView):
         log_embed = discord.Embed(
             title="🎁 Daily Claimed",
             description=(
-                f"{self.ctx.author.mention} claimed **{tier_emoji} {tier_label}** "
+                f"{interaction.user.mention} claimed **{tier_emoji} {tier_label}** "
                 f"— **+{amount}** 🪙  (streak: {streak})"
             ),
             color=ECONOMY_COLOR,
         )
-        await post_log_embed(self.ctx.bot, gid, log_embed)
+        await post_log_embed(interaction.client, gid, log_embed)
 
-    @discord.ui.button(label="💼 Work", style=discord.ButtonStyle.blurple, row=0)
+    @discord.ui.button(
+        label="💼 Work",
+        style=discord.ButtonStyle.blurple,
+        custom_id="economy:work",
+        row=0,
+    )
     async def work_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        uid, gid = self.ctx.author.id, self.ctx.guild.id
-        now = int(time.time())
+        uid, gid = interaction.user.id, interaction.guild_id
         row = await db.get_economy(uid, gid)
 
         on_cd, secs = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
@@ -633,47 +641,65 @@ class _EconomyPanelView(BaseView):
         embed.add_field(name="Coins", value=f"{xp_row.get('coins', 0)} 🪙", inline=True)
         embed.set_footer(text="Pick a job from the dropdown, or click ↩ Back.")
 
-        work_view = _WorkSubView(self.ctx, available, back_panel=self)
-        work_view.message = self.message
+        work_view = _WorkSubView(uid, gid, available)
         await interaction.response.edit_message(embed=embed, view=work_view)
 
-    @discord.ui.button(label="🛒 Shop", style=discord.ButtonStyle.blurple, row=0)
+    @discord.ui.button(
+        label="🛒 Shop",
+        style=discord.ButtonStyle.blurple,
+        custom_id="economy:shop",
+        row=0,
+    )
     async def shop_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        shop_view = _ShopSubView(self.ctx, back_panel=self)
-        shop_view.message = self.message
+        uid, gid = interaction.user.id, interaction.guild_id
+        shop_view = _ShopSubView(uid, gid)
         await interaction.response.edit_message(embed=_shop_embed(), view=shop_view)
 
-    @discord.ui.button(label="💰 Balance", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(
+        label="💰 Balance",
+        style=discord.ButtonStyle.grey,
+        custom_id="economy:balance",
+        row=1,
+    )
     async def balance_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        uid, gid = self.ctx.author.id, self.ctx.guild.id
+        uid, gid = interaction.user.id, interaction.guild_id
         coins = await db.get_coins(uid, gid)
         xp_row = await db.get_xp(uid, gid)
         embed = discord.Embed(
-            title=f"💰 {self.ctx.author.display_name}'s Wallet",
+            title=f"💰 {interaction.user.display_name}'s Wallet",
             color=ECONOMY_COLOR,
         )
-        embed.set_thumbnail(url=self.ctx.author.display_avatar.url)
+        embed.set_thumbnail(url=interaction.user.display_avatar.url)
         embed.add_field(name="🪙 Coins", value=f"**{coins:,}**", inline=True)
         embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="🎒 Inventory", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(
+        label="🎒 Inventory",
+        style=discord.ButtonStyle.grey,
+        custom_id="economy:inventory",
+        row=1,
+    )
     async def inventory_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
-        # Deferred: extract to views/inventory/ when inventory gains 3+ panel levels
         from cogs.inventory_cog import UnifiedInventoryView, _build_combined_inventory
 
-        uid, gid = self.ctx.author.id, self.ctx.guild.id
+        uid, gid = interaction.user.id, interaction.guild_id
         grouped = await _build_combined_inventory(uid, gid)
-        view = UnifiedInventoryView(self.ctx.author, self.ctx, self.ctx.author, grouped)
+        view = UnifiedInventoryView(interaction.user, None, interaction.user, grouped)
         await interaction.response.send_message(embed=view.build_hub_embed(), view=view)
         view.message = await interaction.original_response()
 
-    @discord.ui.button(label="📋 Jobs", style=discord.ButtonStyle.grey, row=1)
+    @discord.ui.button(
+        label="📋 Jobs",
+        style=discord.ButtonStyle.grey,
+        custom_id="economy:jobs",
+        row=1,
+    )
     async def jobs_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        uid, gid = self.ctx.author.id, self.ctx.guild.id
+        uid, gid = interaction.user.id, interaction.guild_id
         xp_row = await db.get_xp(uid, gid)
         level = xp_row["level"]
         inv = await db.get_inventory(uid, gid)
@@ -710,48 +736,56 @@ class _EconomyPanelView(BaseView):
         embed.set_footer(text=f"Your level: {level}  •  Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=2)
+    @discord.ui.button(
+        label="↩ Overview",
+        style=discord.ButtonStyle.secondary,
+        custom_id="economy:overview",
+        row=2,
+    )
     async def overview_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
-        embed = await self.build_embed()
+        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
         await interaction.response.edit_message(embed=embed, view=self)
 
 
 # ---------------------------------------------------------------------------
-# Work UI
+# Work UI  (ephemeral sub-view — not persistent, no custom_id required)
 # ---------------------------------------------------------------------------
 
 
 class _WorkView(discord.ui.View):
-    def __init__(self, ctx: commands.Context, available: list[str]):
+    def __init__(self, user_id: int, guild_id: int, available: list[str]):
         super().__init__(timeout=60)
-        self.ctx = ctx
+        self.user_id = user_id
+        self.guild_id = guild_id
         self.message: discord.Message | None = None
-        self.add_item(_JobSelect(ctx, available, self))
+        self.add_item(_JobSelect(user_id, guild_id, available, self))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
+        if interaction.user.id != self.user_id:
             await interaction.response.send_message(
                 "This job menu isn't for you.", ephemeral=True
             )
             return False
         return True
 
-    _run_checks = interaction_check
-
     async def on_timeout(self):
         for item in self.children:
             item.disabled = True
         try:
-            await self.message.edit(view=self)
+            if self.message:
+                await self.message.edit(view=self)
         except Exception:
             pass
 
 
 class _JobSelect(discord.ui.Select):
-    def __init__(self, ctx: commands.Context, available: list[str], view: _WorkView):
-        self._ctx = ctx
+    def __init__(
+        self, user_id: int, guild_id: int, available: list[str], view: _WorkView
+    ):
+        self._user_id = user_id
+        self._guild_id = guild_id
         self._work_view = view
         options = []
         for name in available:
@@ -773,7 +807,7 @@ class _JobSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         job_name = self.values[0]
-        uid, gid = self._ctx.author.id, self._ctx.guild.id
+        uid, gid = self._user_id, self._guild_id
         now = int(time.time())
 
         eco = await db.get_economy(uid, gid)
@@ -830,37 +864,32 @@ class _JobSelect(discord.ui.Select):
             ),
             color=SUCCESS_COLOR,
         )
-        await post_log_embed(self._ctx.bot, gid, log_embed)
+        await post_log_embed(interaction.client, gid, log_embed)
 
 
 class _WorkSubView(_WorkView):
-    """Work sub-panel opened from the economy panel — includes a Back button."""
+    """Work sub-panel with a Back button to return to the economy hub."""
 
-    def __init__(
-        self,
-        ctx: commands.Context,
-        available: list[str],
-        back_panel: _EconomyPanelView,
-    ):
-        super().__init__(ctx, available)
-        self._back_panel = back_panel
+    def __init__(self, user_id: int, guild_id: int, available: list[str]):
+        super().__init__(user_id, guild_id, available)
 
     @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await self._back_panel.build_embed()
-        await interaction.response.edit_message(embed=embed, view=self._back_panel)
+        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
+        await interaction.response.edit_message(embed=embed, view=EconomyPanelView())
         self.stop()
 
 
 # ---------------------------------------------------------------------------
-# Shop UI
+# Shop UI  (ephemeral sub-view)
 # ---------------------------------------------------------------------------
 
 
 class _ShopView(discord.ui.View):
-    def __init__(self, ctx: commands.Context):
+    def __init__(self, user_id: int, guild_id: int):
         super().__init__(timeout=120)
-        self.ctx = ctx
+        self.user_id = user_id
+        self.guild_id = guild_id
         self.message: discord.Message | None = None
         options = [
             discord.SelectOption(
@@ -870,30 +899,30 @@ class _ShopView(discord.ui.View):
             )
             for name, d in SHOP_ITEMS.items()
         ]
-        self.add_item(_ShopSelect(ctx, options, self))
+        self.add_item(_ShopSelect(user_id, guild_id, options, self))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
+        if interaction.user.id != self.user_id:
             await interaction.response.send_message(
                 "This shop isn't for you.", ephemeral=True
             )
             return False
         return True
 
-    _run_checks = interaction_check
-
     async def on_timeout(self):
         for item in self.children:
             item.disabled = True
         try:
-            await self.message.edit(view=self)
+            if self.message:
+                await self.message.edit(view=self)
         except Exception:
             pass
 
 
 class _ShopSelect(discord.ui.Select):
-    def __init__(self, ctx: commands.Context, options, view: _ShopView):
-        self._ctx = ctx
+    def __init__(self, user_id: int, guild_id: int, options, view: _ShopView):
+        self._user_id = user_id
+        self._guild_id = guild_id
         self._shop_view = view
         super().__init__(
             placeholder="Select an item to buy…",
@@ -903,7 +932,7 @@ class _ShopSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         item_name = self.values[0]
-        uid, gid = self._ctx.author.id, self._ctx.guild.id
+        uid, gid = self._user_id, self._guild_id
         data = SHOP_ITEMS[item_name]
 
         if await db.has_item(uid, gid, item_name):
@@ -939,16 +968,16 @@ class _ShopSelect(discord.ui.Select):
             ),
             color=WARNING_COLOR,
         )
-        await post_log_embed(self._ctx.bot, gid, log_embed)
+        await post_log_embed(interaction.client, gid, log_embed)
 
 
 class _ShopSubView(discord.ui.View):
-    """Shop sub-panel opened from the economy panel — includes a Back button."""
+    """Shop sub-panel that edits the economy panel message — includes a Back button."""
 
-    def __init__(self, ctx: commands.Context, back_panel: _EconomyPanelView):
+    def __init__(self, user_id: int, guild_id: int):
         super().__init__(timeout=120)
-        self.ctx = ctx
-        self.back_panel = back_panel
+        self.user_id = user_id
+        self.guild_id = guild_id
         self.message: discord.Message | None = None
         options = [
             discord.SelectOption(
@@ -958,10 +987,10 @@ class _ShopSubView(discord.ui.View):
             )
             for name, d in SHOP_ITEMS.items()
         ]
-        self.add_item(_ShopPanelSelect(ctx, options, self))
+        self.add_item(_ShopPanelSelect(user_id, guild_id, options, self))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
+        if interaction.user.id != self.user_id:
             await interaction.response.send_message(
                 "This panel isn't for you.", ephemeral=True
             )
@@ -970,8 +999,8 @@ class _ShopSubView(discord.ui.View):
 
     @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await self.back_panel.build_embed()
-        await interaction.response.edit_message(embed=embed, view=self.back_panel)
+        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
+        await interaction.response.edit_message(embed=embed, view=EconomyPanelView())
         self.stop()
 
     async def on_timeout(self):
@@ -987,14 +1016,15 @@ class _ShopSubView(discord.ui.View):
 class _ShopPanelSelect(discord.ui.Select):
     """Shop select that updates in-place within the economy panel flow."""
 
-    def __init__(self, ctx: commands.Context, options, view: _ShopSubView):
-        self._ctx = ctx
+    def __init__(self, user_id: int, guild_id: int, options, view: _ShopSubView):
+        self._user_id = user_id
+        self._guild_id = guild_id
         self._shop_view = view
         super().__init__(placeholder="Select an item to buy…", options=options, row=0)
 
     async def callback(self, interaction: discord.Interaction):
         item_name = self.values[0]
-        uid, gid = self._ctx.author.id, self._ctx.guild.id
+        uid, gid = self._user_id, self._guild_id
         data = SHOP_ITEMS[item_name]
 
         if await db.has_item(uid, gid, item_name):
@@ -1033,7 +1063,7 @@ class _ShopPanelSelect(discord.ui.Select):
             ),
             color=WARNING_COLOR,
         )
-        await post_log_embed(self._ctx.bot, gid, log_embed)
+        await post_log_embed(interaction.client, gid, log_embed)
 
 
 async def setup(bot: commands.Bot):

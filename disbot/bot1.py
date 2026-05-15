@@ -111,6 +111,9 @@ async def on_ready() -> None:
     logger.info("Logged in as %s (ID: %s)", bot.user, bot.user.id)
     logger.info("Connected to %d server(s)", len(bot.guilds))
     logger.info("Loaded cogs: %s", ", ".join(bot.cogs.keys()))
+    from core.runtime import message_anchor_manager
+
+    await message_anchor_manager.restore_anchors(bot)
     if reporter:
         await reporter.on_startup(bot)
 
@@ -310,17 +313,22 @@ async def main() -> None:
     if reporter:
         await reporter.start()
     health_task: asyncio.Task | None = None
+    gc_task: asyncio.Task | None = None
     try:
         async with bot:
+            from core.runtime import session_gc
             from healthserver import start_health_server
 
             health_task = asyncio.create_task(start_health_server(bot))
+            gc_task = session_gc.start()
             await _load_cogs()
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
         if health_task and not health_task.done():
             health_task.cancel()
+        if gc_task and not gc_task.done():
+            gc_task.cancel()
         # Graceful drain: allow up to 5 s for in-flight coroutines to finish.
         if _shutting_down:
             pending = {t for t in asyncio.all_tasks() if not t.done()}

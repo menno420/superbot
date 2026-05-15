@@ -10,7 +10,6 @@ resolve_visibility (integration, DB-mocked) to cover the full pipeline.
 from __future__ import annotations
 
 import pytest
-
 from services.governance_service import (
     PolicySource,
     ResolutionTrace,
@@ -20,7 +19,6 @@ from services.governance_service import (
 )
 
 from .conftest import make_ctx, make_visibility_row
-
 
 # ---------------------------------------------------------------------------
 # Pure unit tests — _apply_dependency_rules
