@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
-from utils.ui_constants import ROLE_COLOR, ECONOMY_COLOR, WARNING_COLOR
+from utils.ui_constants import ECONOMY_COLOR, ROLE_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.roles._helpers import _ensure_defaults
 

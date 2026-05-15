@@ -6,7 +6,7 @@ import logging
 import discord
 from discord.ext import commands
 from utils import db
-from utils.ui_constants import ECONOMY_COLOR, MINING_COLOR, WARNING_COLOR, INFO_COLOR
+from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR, MINING_COLOR, WARNING_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
