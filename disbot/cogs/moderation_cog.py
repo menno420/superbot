@@ -396,7 +396,9 @@ class ModerationCog(commands.Cog):
             await ctx.send(err)
             return
         threshold = int(await db.get_setting(ctx.guild.id, "warn_threshold", "3"))
-        timeout_minutes = int(await db.get_setting(ctx.guild.id, "warn_timeout_minutes", "10"))
+        timeout_minutes = int(
+            await db.get_setting(ctx.guild.id, "warn_timeout_minutes", "10")
+        )
         count = await db.add_warning(member.id, ctx.guild.id)
         await ctx.send(
             f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}"

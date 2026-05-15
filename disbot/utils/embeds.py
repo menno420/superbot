@@ -58,7 +58,11 @@ def user_info_embed(member: discord.Member) -> discord.Embed:
     """Standard user info embed used across admin and utility cogs."""
     embed = discord.Embed(
         title=member.display_name,
-        color=member.color if member.color != discord.Color.default() else discord.Color.blurple(),
+        color=(
+            member.color
+            if member.color != discord.Color.default()
+            else discord.Color.blurple()
+        ),
     )
     embed.set_thumbnail(url=member.display_avatar.url)
     embed.add_field(name="Username", value=str(member), inline=True)

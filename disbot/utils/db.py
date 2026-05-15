@@ -58,13 +58,11 @@ _MIGRATIONS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "migr
 
 
 async def _ensure_migrations_table() -> None:
-    await get().execute(
-        """CREATE TABLE IF NOT EXISTS schema_migrations (
+    await get().execute("""CREATE TABLE IF NOT EXISTS schema_migrations (
             version     INTEGER PRIMARY KEY,
             applied_at  BIGINT  NOT NULL,
             description TEXT    NOT NULL
-        )"""
-    )
+        )""")
 
 
 async def _run_migrations() -> None:
@@ -72,7 +70,9 @@ async def _run_migrations() -> None:
         return
     applied = {
         r["version"]
-        for r in await get().fetch("SELECT version FROM schema_migrations ORDER BY version")
+        for r in await get().fetch(
+            "SELECT version FROM schema_migrations ORDER BY version"
+        )
     }
     migration_files = sorted(
         f for f in os.listdir(_MIGRATIONS_DIR) if f.endswith(".sql")
@@ -88,7 +88,9 @@ async def _run_migrations() -> None:
         path = os.path.join(_MIGRATIONS_DIR, filename)
         with open(path, encoding="utf-8") as f:
             sql = f.read()
-        description = filename[len(str(version)) + 1 :].replace("_", " ").removesuffix(".sql")
+        description = (
+            filename[len(str(version)) + 1 :].replace("_", " ").removesuffix(".sql")
+        )
         try:
             async with get().acquire() as conn:
                 async with conn.transaction():
@@ -405,9 +407,7 @@ async def log_mod_action(
     )
 
 
-async def get_mod_logs(
-    target_id: int, guild_id: int, limit: int = 10
-) -> list[dict]:
+async def get_mod_logs(target_id: int, guild_id: int, limit: int = 10) -> list[dict]:
     return await fetchall(
         "SELECT action, timestamp, moderator_id, reason FROM mod_logs "
         "WHERE target_id=$1 AND guild_id=$2 ORDER BY id DESC LIMIT $3",

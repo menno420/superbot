@@ -25,9 +25,7 @@ class EventBus:
         self._handlers[event].append(handler)
 
     def off(self, event: str, handler: Handler) -> None:
-        self._handlers[event] = [
-            h for h in self._handlers[event] if h is not handler
-        ]
+        self._handlers[event] = [h for h in self._handlers[event] if h is not handler]
 
     async def emit(self, event: str, **payload: Any) -> None:
         for handler in list(self._handlers.get(event, [])):
@@ -44,7 +42,11 @@ class EventBus:
 
     def registered_events(self) -> dict[str, int]:
         """Return event names and handler counts for observability."""
-        return {event: len(handlers) for event, handlers in self._handlers.items() if handlers}
+        return {
+            event: len(handlers)
+            for event, handlers in self._handlers.items()
+            if handlers
+        }
 
 
 bus = EventBus()

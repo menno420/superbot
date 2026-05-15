@@ -102,7 +102,12 @@ class RoleCog(commands.Cog):
             if n.strip()
         ]
         admin_role = next(
-            (r for name in skip_role_names for r in [_find_role_normalized(guild, name)] if r),
+            (
+                r
+                for name in skip_role_names
+                for r in [_find_role_normalized(guild, name)]
+                if r
+            ),
             None,
         )
         assigned = 0
@@ -606,7 +611,9 @@ class _RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[c
 
 
 class RoleSettingsView(discord.ui.View):
-    def __init__(self, ctx: commands.Context, back_panel: "_RolePanelView | None" = None):
+    def __init__(
+        self, ctx: commands.Context, back_panel: "_RolePanelView | None" = None
+    ):
         super().__init__(timeout=300)
         self.ctx = ctx
         self.message: discord.Message | None = None
