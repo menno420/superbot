@@ -4,229 +4,43 @@ import asyncio
 import atexit
 import datetime
 import logging
+import logging.handlers
 import os
 import signal
-import traceback
 
-import aiohttp
 import config
 import discord
 from discord.ext import commands
+from services.webhook_reporter import WebhookReporter
 from utils import db
 from utils.synonyms import find_command as _find_synonym
 
 # ---------------------------------------------------------------------------
-# Console + file logging  (always active, regardless of webhook)
+# Logging — rotating file (10 MB × 5 backups) + stderr
 # ---------------------------------------------------------------------------
 _fmt = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 _root = logging.getLogger()
 _root.setLevel(logging.INFO)
 
-for _h in (logging.FileHandler("bot.log"), logging.StreamHandler()):
+for _h in (
+    logging.handlers.RotatingFileHandler(
+        "bot.log", maxBytes=10_000_000, backupCount=5, encoding="utf-8"
+    ),
+    logging.StreamHandler(),
+):
     _h.setFormatter(_fmt)
     _root.addHandler(_h)
 
 logger = logging.getLogger("bot")
 
-
 # ---------------------------------------------------------------------------
-# Async webhook reporter  (rich embeds, one persistent aiohttp session)
-# ---------------------------------------------------------------------------
-class WebhookReporter:
-    """Sends structured Discord embed logs to a webhook URL."""
-
-    def __init__(self, url: str) -> None:
-        self.url = url
-        self._session: aiohttp.ClientSession | None = None
-
-    async def start(self) -> None:
-        self._session = aiohttp.ClientSession()
-
-    async def close(self) -> None:
-        if self._session and not self._session.closed:
-            await self._session.close()
-            self._session = None
-
-    async def _send(self, embed: discord.Embed, username: str = "Bot Logger") -> None:
-        if not self.url or not self._session:
-            return
-        try:
-            wh = discord.Webhook.from_url(self.url, session=self._session)
-            await wh.send(embed=embed, username=username)
-        except Exception as exc:
-            logger.debug("Webhook send failed: %s", exc)
-
-    # ------------------------------------------------------------------ events
-
-    async def on_startup(self, bot: commands.Bot) -> None:
-        embed = discord.Embed(
-            title="🚀 Bot Online",
-            color=discord.Color.green(),
-            timestamp=datetime.datetime.utcnow(),
-        )
-        embed.add_field(name="Prefix", value=f"`{config.PREFIX}`", inline=True)
-        embed.add_field(name="Servers", value=str(len(bot.guilds)), inline=True)
-        embed.add_field(name="Commands", value=str(len(bot.commands)), inline=True)
-        embed.add_field(name="Loaded cogs", value=str(len(bot.cogs)), inline=True)
-        embed.set_footer(text=f"Logged in as {bot.user}")
-        await self._send(embed, username="Bot Status")
-
-    async def on_cog_fail(self, ext: str, error: Exception) -> None:
-        tb = "".join(
-            traceback.format_exception(type(error), error, error.__traceback__)
-        )
-        if len(tb) > 1800:
-            tb = tb[-1800:]
-        embed = discord.Embed(
-            title="🔴 Cog Load Failure",
-            description=f"**Extension:** `{ext}`\n```py\n{tb}\n```",
-            color=discord.Color.dark_red(),
-            timestamp=datetime.datetime.utcnow(),
-        )
-        await self._send(embed, username="Bot Loader")
-
-    async def on_command(self, ctx: commands.Context) -> None:
-        embed = discord.Embed(
-            title="📥 Command Invoked",
-            color=discord.Color.blue(),
-            timestamp=datetime.datetime.utcnow(),
-        )
-        embed.add_field(
-            name="Input", value=f"`{ctx.message.content[:200]}`", inline=False
-        )
-        embed.add_field(
-            name="User", value=f"{ctx.author} (`{ctx.author.id}`)", inline=True
-        )
-        embed.add_field(name="Channel", value=f"#{ctx.channel}", inline=True)
-        embed.add_field(name="Server", value=str(ctx.guild), inline=True)
-        cog_name = ctx.cog.qualified_name if ctx.cog else "—"
-        embed.set_footer(text=f"Cog: {cog_name}")
-        await self._send(embed)
-
-    async def on_command_success(self, ctx: commands.Context) -> None:
-        embed = discord.Embed(
-            title="✅ Command Completed",
-            color=discord.Color.green(),
-            timestamp=datetime.datetime.utcnow(),
-        )
-        embed.add_field(
-            name="Command", value=f"`{ctx.command.qualified_name}`", inline=True
-        )
-        embed.add_field(name="User", value=str(ctx.author), inline=True)
-        embed.add_field(name="Server", value=str(ctx.guild), inline=True)
-        await self._send(embed)
-
-    async def on_command_error(
-        self, ctx: commands.Context, error: commands.CommandError
-    ) -> None:
-        # CheckFailure just means the channel-guard fired — not worth logging
-        if isinstance(error, commands.CheckFailure):
-            return
-
-        if isinstance(error, commands.CommandNotFound):
-            embed = discord.Embed(
-                title="❓ Unknown Command",
-                description=f"Input: `{ctx.message.content[:150]}`",
-                color=discord.Color.greyple(),
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.add_field(name="User", value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
-            await self._send(embed)
-            return
-
-        if isinstance(error, commands.MissingRequiredArgument):
-            embed = discord.Embed(
-                title="⚠️ Missing Argument",
-                description=(
-                    f"Command `!{ctx.command}` is missing: `{error.param.name}`\n"
-                    f"Input: `{ctx.message.content[:150]}`"
-                ),
-                color=discord.Color.orange(),
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.add_field(name="User", value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
-            await self._send(embed)
-            return
-
-        if isinstance(error, commands.BadArgument):
-            embed = discord.Embed(
-                title="⚠️ Bad Argument",
-                description=f"{error}\nInput: `{ctx.message.content[:150]}`",
-                color=discord.Color.orange(),
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.add_field(name="User", value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
-            await self._send(embed)
-            return
-
-        if isinstance(
-            error, (commands.MissingPermissions, commands.BotMissingPermissions)
-        ):
-            label = "User" if isinstance(error, commands.MissingPermissions) else "Bot"
-            embed = discord.Embed(
-                title=f"🔒 {label} Missing Permissions",
-                description=str(error),
-                color=discord.Color.orange(),
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.add_field(name="Command", value=f"`!{ctx.command}`", inline=True)
-            embed.add_field(name="User", value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
-            await self._send(embed)
-            return
-
-        if isinstance(error, commands.CommandOnCooldown):
-            embed = discord.Embed(
-                title="⏰ Command on Cooldown",
-                description=f"`!{ctx.command}` — retry in **{error.retry_after:.1f}s**",
-                color=discord.Color.yellow(),
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.add_field(name="User", value=str(ctx.author), inline=True)
-            embed.add_field(name="Server", value=str(ctx.guild), inline=True)
-            await self._send(embed)
-            return
-
-        # Unexpected / unhandled error — include full traceback
-        tb_lines = traceback.format_exception(type(error), error, error.__traceback__)
-        tb = "".join(tb_lines)
-        if len(tb) > 1500:
-            tb = "...(truncated)\n" + tb[-1500:]
-
-        embed = discord.Embed(
-            title="❌ Unexpected Error",
-            description=(
-                f"**{type(error).__name__}**: {error}\n\n" f"```py\n{tb}\n```"
-            ),
-            color=discord.Color.red(),
-            timestamp=datetime.datetime.utcnow(),
-        )
-        embed.add_field(
-            name="Input", value=f"`{ctx.message.content[:150]}`", inline=False
-        )
-        embed.add_field(name="Command", value=f"`{ctx.command}`", inline=True)
-        embed.add_field(
-            name="User", value=f"{ctx.author} (`{ctx.author.id}`)", inline=True
-        )
-        embed.add_field(
-            name="Channel", value=f"#{ctx.channel} in {ctx.guild}", inline=True
-        )
-        await self._send(embed)
-
-
-# ---------------------------------------------------------------------------
-# Initialise reporter (session created later inside async context)
+# Webhook reporter
 # ---------------------------------------------------------------------------
 reporter: WebhookReporter | None = (
     WebhookReporter(config.WEBHOOK_URL) if config.WEBHOOK_URL else None
 )
-
 if not config.WEBHOOK_URL:
     logger.warning("DISCORD_WEBHOOK_URL not set — webhook logging disabled.")
-
 
 # ---------------------------------------------------------------------------
 # Prevent multiple instances
@@ -257,14 +71,14 @@ def _remove_pid() -> None:
 
 check_existing_instance()
 atexit.register(_remove_pid)
-signal.signal(signal.SIGTERM, lambda *_: _remove_pid())
-
 
 # ---------------------------------------------------------------------------
 # Bot instance
 # ---------------------------------------------------------------------------
-intents = discord.Intents.all()
+intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
+
 bot = commands.Bot(
     command_prefix=config.PREFIX,
     intents=intents,
@@ -273,18 +87,30 @@ bot = commands.Bot(
 
 ALLOWED_CHANNELS = config.ALLOWED_CHANNELS
 
+# Set by SIGTERM handler — channel guard rejects new commands during drain.
+_shutting_down = False
+
+
+def _begin_shutdown(*_) -> None:
+    global _shutting_down
+    _shutting_down = True
+    _remove_pid()
+
+
+signal.signal(signal.SIGTERM, _begin_shutdown)
 
 # ---------------------------------------------------------------------------
 # Bot events
 # ---------------------------------------------------------------------------
+
+
 @bot.event
 async def on_ready() -> None:
     bot.uptime = datetime.datetime.utcnow()
-    bot._reporter = reporter  # expose so cogs can call reporter directly
+    bot._reporter = reporter
     logger.info("Logged in as %s (ID: %s)", bot.user, bot.user.id)
     logger.info("Connected to %d server(s)", len(bot.guilds))
     logger.info("Loaded cogs: %s", ", ".join(bot.cogs.keys()))
-
     if reporter:
         await reporter.on_startup(bot)
 
@@ -292,6 +118,7 @@ async def on_ready() -> None:
 @bot.event
 async def on_guild_remove(guild: discord.Guild) -> None:
     from services import governance_service
+
     governance_service.forget_guild(guild.id)
 
 
@@ -320,30 +147,26 @@ async def on_command_completion(ctx: commands.Context) -> None:
 
 @bot.event
 async def on_command_error(ctx: commands.Context, error: commands.CommandError) -> None:
-    # Always log to webhook (reporter filters CheckFailure internally)
     if reporter:
         await reporter.on_command_error(ctx, error)
 
-    # User-facing responses only in allowed channels
     in_allowed = ctx.channel.id in ALLOWED_CHANNELS
     is_force = ctx.command is not None and ctx.command.name == "force"
     if not in_allowed and not is_force:
         return
 
     if isinstance(error, commands.CheckFailure):
-        return  # channel guard — no user message needed
+        return
 
     if isinstance(error, commands.MissingPermissions):
         await ctx.send(
             "❌ You do not have permission to use this command.", delete_after=10
         )
-
     elif isinstance(error, commands.BotMissingPermissions):
         await ctx.send(
             f"❌ I'm missing permissions to do that: `{error.missing_permissions}`",
             delete_after=10,
         )
-
     elif isinstance(error, commands.CommandNotFound):
         raw = ctx.invoked_with or ""
         suggestion = _find_synonym(raw)
@@ -357,22 +180,18 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
                 "❌ Command not found. Use `!help` for available commands.",
                 delete_after=10,
             )
-
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(
             f"⚠️ Missing argument: `{error.param.name}`. Use `!help {ctx.command}` for usage.",
             delete_after=10,
         )
-
     elif isinstance(error, commands.BadArgument):
         await ctx.send(f"⚠️ Bad argument: {error}", delete_after=10)
-
     elif isinstance(error, commands.CommandOnCooldown):
         await ctx.send(
             f"⏰ This command is on cooldown. Try again in **{error.retry_after:.1f}s**.",
             delete_after=8,
         )
-
     else:
         logger.error(
             "CMD ❌ | %s | %s | %s | %s: %s",
@@ -389,10 +208,14 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
 
 
 # ---------------------------------------------------------------------------
-# Global check — restrict commands to allowed channels
+# Global check — restrict commands to allowed channels; block during shutdown
 # ---------------------------------------------------------------------------
+
+
 @bot.check
 async def _channel_guard(ctx: commands.Context) -> bool:
+    if _shutting_down:
+        return False
     return ctx.guild is not None and (
         ctx.channel.id in ALLOWED_CHANNELS
         or (ctx.command is not None and ctx.command.name == "force")
@@ -402,6 +225,8 @@ async def _channel_guard(ctx: commands.Context) -> bool:
 # ---------------------------------------------------------------------------
 # !force — admin override
 # ---------------------------------------------------------------------------
+
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def force(ctx: commands.Context, command_name: str, *args) -> None:
@@ -416,6 +241,8 @@ async def force(ctx: commands.Context, command_name: str, *args) -> None:
 # ---------------------------------------------------------------------------
 # Load cogs
 # ---------------------------------------------------------------------------
+
+
 async def _load_cogs() -> None:
     from services import governance_service
     from utils.subsystem_registry import SUBSYSTEMS
@@ -438,16 +265,11 @@ async def _load_cogs() -> None:
                 await reporter.on_cog_fail(ext, exc)
 
     if failed_exts:
-        # Determine which subsystems have no loaded entry_point command.
-        # Any subsystem whose every entry_point is absent from bot.commands
-        # was provided by a failed cog and must be hidden from users.
         loaded_command_names = {cmd.name for cmd in bot.commands}
         failed_subsystems: set[str] = set()
         for name, meta in SUBSYSTEMS.items():
             entry_points = meta.get("entry_points", [])
-            if entry_points and not any(
-                ep in loaded_command_names for ep in entry_points
-            ):
+            if entry_points and not any(ep in loaded_command_names for ep in entry_points):
                 failed_subsystems.add(name)
                 logger.warning(
                     "Subsystem %r has no loaded commands — marking INTERNAL", name
@@ -459,9 +281,9 @@ async def _load_cogs() -> None:
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
+
+
 async def main() -> None:
-    # Validate registry integrity before touching the DB or loading cogs.
-    # Raises GovernanceError (subclass) and aborts on any registry fault.
     from services.governance_exceptions import GovernanceError
     from utils.subsystem_registry import validate_registry
 
@@ -475,12 +297,26 @@ async def main() -> None:
     await db.init()
     if reporter:
         await reporter.start()
+    health_task: asyncio.Task | None = None
     try:
         async with bot:
+            from healthserver import start_health_server
+
+            health_task = asyncio.create_task(start_health_server(bot))
             await _load_cogs()
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
+        if health_task and not health_task.done():
+            health_task.cancel()
+        # Graceful drain: allow up to 5 s for in-flight coroutines to finish.
+        if _shutting_down:
+            pending = {t for t in asyncio.all_tasks() if not t.done()}
+            pending.discard(asyncio.current_task())
+            if pending:
+                _, still_pending = await asyncio.wait(pending, timeout=5.0)
+                for t in still_pending:
+                    t.cancel()
         await db.close()
         if reporter:
             await reporter.close()

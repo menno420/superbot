@@ -1118,6 +1118,15 @@ async def set_subsystem_visibility(
     await db.set_subsystem_visibility(
         ctx.guild_id, scope_type, scope_id, subsystem, enabled
     )
+    await db.write_governance_audit(
+        guild_id=ctx.guild_id,
+        actor_id=ctx.member.id if ctx.member else 0,
+        action="set_visibility",
+        scope_type=scope_type,
+        scope_id=scope_id,
+        subsystem=subsystem,
+        new_value={"enabled": enabled},
+    )
     invalidate_guild_cache(ctx.guild_id)
     await _emit_governance_event(
         EVT_VISIBILITY_CHANGED,
@@ -1146,6 +1155,19 @@ async def set_cleanup_policy_for_scope(
         delete_invalid_commands=delete_invalid_commands,
         delete_failed_commands=delete_failed_commands,
         delete_after_seconds=delete_after_seconds,
+    )
+    await db.write_governance_audit(
+        guild_id=ctx.guild_id,
+        actor_id=ctx.member.id if ctx.member else 0,
+        action="set_cleanup",
+        scope_type=scope_type,
+        scope_id=scope_id,
+        subsystem=None,
+        new_value={
+            "delete_invalid_commands": delete_invalid_commands,
+            "delete_failed_commands": delete_failed_commands,
+            "delete_after_seconds": delete_after_seconds,
+        },
     )
     invalidate_guild_cache(ctx.guild_id)
     await _emit_governance_event(

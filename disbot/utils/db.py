@@ -65,47 +65,73 @@ async def _ensure_migrations_table() -> None:
         )""")
 
 
+_MIGRATION_ADVISORY_LOCK = 0x73757065_72626F74  # "superbot" as 64-bit int
+
+
 async def _run_migrations() -> None:
+    """Run pending migrations under a PostgreSQL advisory lock.
+
+    The advisory lock (session-level) ensures that concurrent bot instances
+    starting simultaneously (e.g. blue-green deploy, horizontal scaling) do
+    not race to apply the same migration. Only one process holds the lock at a
+    time; others wait until the lock is released before checking applied versions.
+    """
     if not os.path.isdir(_MIGRATIONS_DIR):
         return
-    applied = {
-        r["version"]
-        for r in await get().fetch(
-            "SELECT version FROM schema_migrations ORDER BY version"
-        )
-    }
-    migration_files = sorted(
-        f for f in os.listdir(_MIGRATIONS_DIR) if f.endswith(".sql")
-    )
-    for filename in migration_files:
-        try:
-            version = int(filename.split("_")[0])
-        except (ValueError, IndexError):
-            logger.warning("Migration file with unexpected name skipped: %s", filename)
-            continue
-        if version in applied:
-            continue
-        path = os.path.join(_MIGRATIONS_DIR, filename)
-        with open(path, encoding="utf-8") as f:
-            sql = f.read()
-        description = (
-            filename[len(str(version)) + 1 :].replace("_", " ").removesuffix(".sql")
+
+    async with get().acquire() as conn:
+        # Acquire session-scoped advisory lock — blocks until available.
+        await conn.execute(
+            "SELECT pg_advisory_lock($1)", _MIGRATION_ADVISORY_LOCK
         )
         try:
-            async with get().acquire() as conn:
-                async with conn.transaction():
-                    await conn.execute(sql)
-                    await conn.execute(
-                        "INSERT INTO schema_migrations (version, applied_at, description) "
-                        "VALUES ($1, $2, $3)",
-                        version,
-                        int(time.time()),
-                        description,
+            applied = {
+                r["version"]
+                for r in await conn.fetch(
+                    "SELECT version FROM schema_migrations ORDER BY version"
+                )
+            }
+            migration_files = sorted(
+                f for f in os.listdir(_MIGRATIONS_DIR) if f.endswith(".sql")
+            )
+            for filename in migration_files:
+                try:
+                    version = int(filename.split("_")[0])
+                except (ValueError, IndexError):
+                    logger.warning(
+                        "Migration file with unexpected name skipped: %s", filename
                     )
-            logger.info("Applied migration %03d: %s", version, description)
-        except Exception as exc:
-            logger.error("Migration %03d failed: %s", version, exc, exc_info=True)
-            raise
+                    continue
+                if version in applied:
+                    continue
+                path = os.path.join(_MIGRATIONS_DIR, filename)
+                with open(path, encoding="utf-8") as f:
+                    sql = f.read()
+                description = (
+                    filename[len(str(version)) + 1:]
+                    .replace("_", " ")
+                    .removesuffix(".sql")
+                )
+                try:
+                    async with conn.transaction():
+                        await conn.execute(sql)
+                        await conn.execute(
+                            "INSERT INTO schema_migrations "
+                            "(version, applied_at, description) VALUES ($1, $2, $3)",
+                            version,
+                            int(time.time()),
+                            description,
+                        )
+                    logger.info("Applied migration %03d: %s", version, description)
+                except Exception as exc:
+                    logger.error(
+                        "Migration %03d failed: %s", version, exc, exc_info=True
+                    )
+                    raise
+        finally:
+            await conn.execute(
+                "SELECT pg_advisory_unlock($1)", _MIGRATION_ADVISORY_LOCK
+            )
 
 
 async def _create_tables() -> None:
@@ -942,4 +968,33 @@ async def set_cleanup_policy(
         delete_invalid_commands,
         delete_failed_commands,
         delete_after_seconds,
+    )
+
+
+async def write_governance_audit(
+    guild_id: int,
+    actor_id: int,
+    action: str,
+    scope_type: str | None,
+    scope_id: int | None,
+    subsystem: str | None,
+    new_value: dict | None,
+    old_value: dict | None = None,
+) -> None:
+    """Append a row to governance_audit_log (fire-and-forget; non-blocking)."""
+    import json as _json
+
+    await get().execute(
+        """INSERT INTO governance_audit_log
+               (guild_id, actor_id, action, scope_type, scope_id,
+                subsystem, old_value, new_value)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+        guild_id,
+        actor_id,
+        action,
+        scope_type,
+        scope_id,
+        subsystem,
+        _json.dumps(old_value) if old_value is not None else None,
+        _json.dumps(new_value) if new_value is not None else None,
     )
