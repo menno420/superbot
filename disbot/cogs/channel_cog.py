@@ -5,32 +5,8 @@ import logging
 import discord
 from discord.ext import commands
 from utils.channels import get_or_create_category, safe_channel_name
-from utils.helpers import CogMenuView
 
 logger = logging.getLogger("bot")
-
-_CHANNEL_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("channelmenu", "!channelmenu", "Show this channel command menu."),
-    ("list", "!list", "List all categories and channels, including uncategorized."),
-    (
-        "create",
-        "!create <name> <@role> <True/False> [cat]",
-        "Create a channel with role access.",
-    ),
-    (
-        "channelcreator",
-        "!channelcreator",
-        "Open the interactive channel management panel.",
-    ),
-    ("del", "!del <name|id>", "Delete a specific channel."),
-    ("move", "!move <channel> <category>", "Move a channel into a category."),
-    ("lock", "!lock <name|id>", "Lock a channel (no send messages)."),
-    ("unlock", "!unlock <name|id>", "Unlock a previously locked channel."),
-    ("archive", "!archive <name|id>", "Make a channel read-only."),
-    ("rename", "!rename <old> <new>", "Rename a channel."),
-    ("channelinfo", "!channelinfo <name|id>", "Show detailed info about a channel."),
-    ("clone", "!clone <name|id> <new_name>", "Clone a channel with a new name."),
-]
 
 # Keyword presets shown in the dropdown menus
 _NAME_PRESETS = [
@@ -134,12 +110,12 @@ class ChannelCog(commands.Cog):
     # -------------------
 
     @commands.command(
-        name="channelmenu", help="Show the channel command quick-reference menu."
+        name="channelmenu", help="Open the interactive channel management panel."
     )
     @is_admin_or_owner()
     async def channel_menu(self, ctx):
-        """Show a quick-reference menu for all channel commands."""
-        view = CogMenuView(ctx, "📋 Channel Commands", _CHANNEL_MENU_COMMANDS)
+        """Open the interactive channel management panel."""
+        view = _ChannelManagerView(ctx)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
 

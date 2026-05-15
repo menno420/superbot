@@ -182,20 +182,21 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
     )
     async def leaderboard(self, ctx: commands.Context, category: str = ""):
         """Show a leaderboard.  !leaderboard [xp|coins|mining|deathmatch|rps|counting]"""
-        cat = ALIASES_MAP.get(ctx.invoked_with, category.lower()) or "xp"
+        cat = ALIASES_MAP.get(ctx.invoked_with, category.lower()) or ""
         cat = ALIASES_MAP.get(cat, cat)
+
+        view = LeaderboardView(ctx.guild, ctx.channel, ctx.author)
 
         if cat and cat in CATEGORIES:
             embed = await _build_embed(cat, ctx.guild, ctx.channel)
-            await ctx.send(embed=embed)
         else:
-            view = LeaderboardView(ctx.guild, ctx.channel, ctx.author)
             embed = discord.Embed(
                 title="📊 Leaderboards",
                 description="Select a category below to view the leaderboard.",
                 color=discord.Color.blurple(),
             )
-            view.message = await ctx.send(embed=embed, view=view)
+
+        view.message = await ctx.send(embed=embed, view=view)
 
 
 async def setup(bot: commands.Bot):

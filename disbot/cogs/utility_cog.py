@@ -5,29 +5,19 @@ import asyncio
 import discord
 from discord.ext import commands
 from utils import embeds as em
-from utils.helpers import CogMenuView
 
-_UTILITY_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("utilitymenu", "!utilitymenu", "Show this utility command menu."),
-    (
-        "info",
-        "!info [server|user] [@user]",
-        "Server or user info (defaults to server).",
-    ),
-    ("avatar", "!avatar [@user]", "Display a user's full-size avatar."),
-    (
-        "poll",
-        "!poll <question> opt1 opt2…",
-        "Create a reaction poll with up to 10 options.",
-    ),
-    ("clear", "!clear [amount]", "Purge up to 100 messages (default: 5)."),
-    ("invite", "!invite", "Generate a one-use server invite link."),
-    (
-        "remind",
-        "!remind <minutes> <message>",
-        "Set a reminder (bot DMs/pings you after delay).",
-    ),
-]
+
+async def _remind_later(
+    user: discord.User,
+    channel: discord.abc.Messageable,
+    delay: float,
+    message: str,
+) -> None:
+    await asyncio.sleep(delay)
+    try:
+        await channel.send(f"⏰ {user.mention} — Reminder: {message}")
+    except Exception:
+        pass
 
 
 class UtilityCog(commands.Cog):
@@ -36,8 +26,8 @@ class UtilityCog(commands.Cog):
 
     @commands.command(name="utilitymenu")
     async def utility_menu(self, ctx):
-        """Show a quick-reference menu for all utility commands."""
-        view = CogMenuView(ctx, "🔧 Utility Commands", _UTILITY_MENU_COMMANDS)
+        """Open the interactive utility panel."""
+        view = _UtilityPanelView(ctx)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
 
@@ -117,7 +107,6 @@ class UtilityCog(commands.Cog):
                 embed.set_thumbnail(url=guild.icon.url)
         await ctx.send(embed=embed)
 
-    # Keep !serverinfo and !userinfo as thin aliases for backwards compatibility
     @commands.command(name="serverinfo")
     async def serverinfo(self, ctx):
         """Alias for !info server."""
@@ -145,16 +134,7 @@ class UtilityCog(commands.Cog):
             )
             return
         await ctx.send(f"⏳ Reminder set for **{time}** minute(s): {message}")
-        task = asyncio.create_task(self._remind_after(ctx, time * 60, message))
-
-    async def _remind_after(
-        self, ctx: commands.Context, delay: float, message: str
-    ) -> None:
-        await asyncio.sleep(delay)
-        try:
-            await ctx.send(f"⏰ {ctx.author.mention} — Reminder: {message}")
-        except Exception:
-            pass
+        asyncio.create_task(_remind_later(ctx.author, ctx.channel, time * 60, message))
 
     @commands.command(name="invite")
     @commands.has_permissions(create_instant_invite=True)
@@ -180,6 +160,224 @@ class UtilityCog(commands.Cog):
         poll_msg = await ctx.send(embed=embed)
         for i in range(len(options)):
             await poll_msg.add_reaction(f"{i+1}\N{COMBINING ENCLOSING KEYCAP}")
+
+
+# ---------------------------------------------------------------------------
+# Utility Panel View
+# ---------------------------------------------------------------------------
+
+
+class _UtilityPanelView(discord.ui.View):
+    """Interactive utility panel — quick access to common utility actions."""
+
+    def __init__(self, ctx: commands.Context):
+        super().__init__(timeout=180)
+        self.ctx = ctx
+        self.message: discord.Message | None = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return True
+
+    def build_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="🔧 Utility Panel",
+            description=(
+                "**🖥️ Server Info** — server statistics\n"
+                "**👤 User Info** — your profile details\n"
+                "**🖼️ Avatar** — display your avatar\n"
+                "**📊 Poll** — create a reaction poll\n"
+                "**🔔 Remind Me** — set a timed reminder\n"
+                "**🔗 Invite** — generate a one-use server invite"
+            ),
+            color=discord.Color.blue(),
+        )
+        embed.set_footer(text="Click an action below.")
+        return embed
+
+    @discord.ui.button(label="🖥️ Server Info", style=discord.ButtonStyle.blurple, row=0)
+    async def serverinfo_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        guild = interaction.guild
+        embed = discord.Embed(
+            title=f"{guild.name}",
+            description="Server Information",
+            color=discord.Color.blue(),
+        )
+        embed.add_field(name="Owner", value=guild.owner.mention, inline=True)
+        embed.add_field(name="Members", value=str(guild.member_count), inline=True)
+        embed.add_field(name="Boost Level", value=str(guild.premium_tier), inline=True)
+        embed.add_field(
+            name="Created", value=guild.created_at.strftime("%Y-%m-%d"), inline=True
+        )
+        embed.add_field(
+            name="Text Channels", value=str(len(guild.text_channels)), inline=True
+        )
+        embed.add_field(
+            name="Voice Channels", value=str(len(guild.voice_channels)), inline=True
+        )
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
+        embed.set_footer(text="Click ↩ Overview to return.")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="👤 User Info", style=discord.ButtonStyle.blurple, row=0)
+    async def userinfo_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        member = interaction.user
+        embed = discord.Embed(
+            title=f"User Info — {member}",
+            color=discord.Color.green(),
+        )
+        embed.set_thumbnail(url=member.display_avatar.url)
+        embed.add_field(name="Username", value=member.name, inline=True)
+        embed.add_field(name="User ID", value=str(member.id), inline=True)
+        embed.add_field(
+            name="Joined Server",
+            value=member.joined_at.strftime("%Y-%m-%d"),
+            inline=True,
+        )
+        embed.add_field(
+            name="Joined Discord",
+            value=member.created_at.strftime("%Y-%m-%d"),
+            inline=True,
+        )
+        embed.add_field(
+            name="Status", value=str(member.status).capitalize(), inline=True
+        )
+        embed.add_field(
+            name="Activity",
+            value=member.activity.name if member.activity else "None",
+            inline=True,
+        )
+        embed.set_footer(text="Click ↩ Overview to return.")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="🖼️ Avatar", style=discord.ButtonStyle.blurple, row=0)
+    async def avatar_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        member = interaction.user
+        embed = discord.Embed(title=f"{member}'s Avatar", color=discord.Color.blue())
+        embed.set_image(url=member.display_avatar.url)
+        embed.set_footer(text="Click ↩ Overview to return.")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="📊 Poll", style=discord.ButtonStyle.grey, row=1)
+    async def poll_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_PollModal(interaction.channel))
+
+    @discord.ui.button(label="🔔 Remind Me", style=discord.ButtonStyle.grey, row=1)
+    async def remind_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(
+            _RemindModal(interaction.user, interaction.channel)
+        )
+
+    @discord.ui.button(label="🔗 Invite", style=discord.ButtonStyle.grey, row=1)
+    async def invite_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not interaction.user.guild_permissions.create_instant_invite:
+            await interaction.response.send_message(
+                "❌ You need **Create Invite** permission.", ephemeral=True
+            )
+            return
+        invite = await interaction.channel.create_invite(max_uses=1, unique=True)
+        await interaction.response.send_message(
+            f"🔗 One-use invite: {invite.url}", ephemeral=True
+        )
+
+    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=2)
+    async def overview_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except Exception:
+                pass
+
+
+# ---------------------------------------------------------------------------
+# Poll Modal
+# ---------------------------------------------------------------------------
+
+
+class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-arg]
+    question = discord.ui.TextInput(label="Poll question", max_length=200)
+    options = discord.ui.TextInput(
+        label="Options (one per line, 2–10)",
+        style=discord.TextStyle.paragraph,
+        placeholder="Option 1\nOption 2\nOption 3",
+        max_length=500,
+    )
+
+    def __init__(self, channel: discord.abc.Messageable):
+        super().__init__()
+        self.channel = channel
+
+    async def on_submit(self, interaction: discord.Interaction):
+        opts = [o.strip() for o in self.options.value.split("\n") if o.strip()]
+        if len(opts) < 2:
+            await interaction.response.send_message(
+                "❌ Need at least 2 options.", ephemeral=True
+            )
+            return
+        if len(opts) > 10:
+            await interaction.response.send_message(
+                "❌ Max 10 options.", ephemeral=True
+            )
+            return
+        embed = discord.Embed(
+            title=f"Poll: {self.question.value}",
+            description="\n".join(f"{i+1}. {opt}" for i, opt in enumerate(opts)),
+            color=discord.Color.blue(),
+        )
+        poll_msg = await self.channel.send(embed=embed)
+        for i in range(len(opts)):
+            await poll_msg.add_reaction(f"{i+1}\N{COMBINING ENCLOSING KEYCAP}")
+        await interaction.response.send_message("✅ Poll created!", ephemeral=True)
+
+
+# ---------------------------------------------------------------------------
+# Remind Modal
+# ---------------------------------------------------------------------------
+
+
+class _RemindModal(discord.ui.Modal, title="Set Reminder"):  # type: ignore[call-arg]
+    minutes = discord.ui.TextInput(
+        label="Minutes from now", placeholder="30", max_length=5
+    )
+    message = discord.ui.TextInput(
+        label="Reminder message",
+        style=discord.TextStyle.paragraph,
+        max_length=500,
+    )
+
+    def __init__(self, user: discord.User, channel: discord.abc.Messageable):
+        super().__init__()
+        self.user = user
+        self.channel = channel
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            t = int(self.minutes.value)
+            if t <= 0:
+                raise ValueError
+        except ValueError:
+            await interaction.response.send_message(
+                "❌ Minutes must be a positive integer.", ephemeral=True
+            )
+            return
+        await interaction.response.send_message(
+            f"⏳ Reminder set for **{t}** minute(s): {self.message.value}",
+            ephemeral=True,
+        )
+        asyncio.create_task(
+            _remind_later(self.user, self.channel, t * 60, self.message.value)
+        )
 
 
 async def setup(bot):
