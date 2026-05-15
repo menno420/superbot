@@ -186,7 +186,10 @@ class XpCog(commands.Cog):
                                     discord_role.name,
                                     new_level,
                                 )
-                            except (discord.Forbidden, discord.HTTPException) as role_err:
+                            except (
+                                discord.Forbidden,
+                                discord.HTTPException,
+                            ) as role_err:
                                 logger.warning(
                                     "Could not assign XP role %s to %s: %s",
                                     discord_role.name,

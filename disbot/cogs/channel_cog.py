@@ -472,7 +472,9 @@ def _build_channel_options(guild: discord.Guild) -> list[discord.SelectOption]:
     )
     options = []
     for ch in channels[:25]:
-        emoji = safe_select_emoji("🔊" if isinstance(ch, discord.VoiceChannel) else "💬")
+        emoji = safe_select_emoji(
+            "🔊" if isinstance(ch, discord.VoiceChannel) else "💬"
+        )
         cat_label = ch.category.name if ch.category else "No category"
         options.append(
             discord.SelectOption(
