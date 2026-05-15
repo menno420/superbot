@@ -7,18 +7,23 @@ import logging
 import logging.handlers
 import os
 import signal
+import uuid
 
 import config
 import discord
 from discord.ext import commands
+from pythonjsonlogger import jsonlogger
 from services.webhook_reporter import WebhookReporter
 from utils import db
 from utils.synonyms import find_command as _find_synonym
 
 # ---------------------------------------------------------------------------
-# Logging — rotating file (10 MB × 5 backups) + stderr
+# Logging — structured JSON, rotating file (10 MB × 5 backups) + stderr
 # ---------------------------------------------------------------------------
-_fmt = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+_fmt = jsonlogger.JsonFormatter(
+    "%(asctime)s %(levelname)s %(name)s %(message)s",
+    rename_fields={"asctime": "timestamp", "levelname": "level", "name": "logger"},
+)
 _root = logging.getLogger()
 _root.setLevel(logging.INFO)
 
@@ -135,13 +140,18 @@ async def on_interaction(interaction: discord.Interaction) -> None:
 
 @bot.event
 async def on_command(ctx: commands.Context) -> None:
+    ctx._request_id = str(uuid.uuid4())
+    cog_name = type(ctx.cog).__name__ if ctx.cog else "unknown"
     logger.info(
-        "CMD | %s (%s) | #%s | %s | %s",
-        ctx.author,
-        ctx.author.id,
-        ctx.channel,
-        ctx.guild,
-        ctx.message.content[:150],
+        "CMD %s/%s",
+        cog_name,
+        ctx.command.qualified_name if ctx.command else "?",
+        extra={
+            "request_id": ctx._request_id,
+            "guild_id": ctx.guild.id if ctx.guild else None,
+            "user_id": ctx.author.id,
+            "channel_id": ctx.channel.id,
+        },
     )
     if reporter:
         await reporter.on_command(ctx)
@@ -149,8 +159,21 @@ async def on_command(ctx: commands.Context) -> None:
 
 @bot.event
 async def on_command_completion(ctx: commands.Context) -> None:
+    from services import metrics as _metrics
+
+    cog_name = type(ctx.cog).__name__ if ctx.cog else "unknown"
+    cmd_name = ctx.command.qualified_name if ctx.command else "unknown"
+    _metrics.command_total.labels(
+        cog=cog_name, command=cmd_name, result="success"
+    ).inc()
     logger.info(
-        "CMD ✅ | %s | %s | %s", ctx.command.qualified_name, ctx.author, ctx.guild
+        "CMD ✅ %s/%s",
+        cog_name,
+        cmd_name,
+        extra={
+            "request_id": getattr(ctx, "_request_id", None),
+            "guild_id": ctx.guild.id if ctx.guild else None,
+        },
     )
     if reporter:
         await reporter.on_command_success(ctx)
@@ -158,6 +181,12 @@ async def on_command_completion(ctx: commands.Context) -> None:
 
 @bot.event
 async def on_command_error(ctx: commands.Context, error: commands.CommandError) -> None:
+    from services import metrics as _metrics
+
+    cog_name = type(ctx.cog).__name__ if ctx.cog else "unknown"
+    cmd_name = ctx.command.qualified_name if ctx.command else "unknown"
+    result = "denied" if isinstance(error, commands.CheckFailure) else "error"
+    _metrics.command_total.labels(cog=cog_name, command=cmd_name, result=result).inc()
     if reporter:
         await reporter.on_command_error(ctx, error)
 

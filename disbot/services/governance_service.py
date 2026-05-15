@@ -39,6 +39,7 @@ from typing import Any
 import config as _config
 import discord
 from core.events import bus as _event_bus
+from services import metrics as _metrics
 from services.governance_exceptions import GovernanceError
 from utils import db, settings_keys
 from utils.subsystem_registry import (
@@ -178,15 +179,19 @@ class ResolutionTrace:
     matched_scope: PolicySource | None
     dependency_blocks: list[str]
     final_state: SubsystemState
+    request_id: str | None = None
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "subsystem": self.subsystem,
             "checked_scopes": sorted(self.checked_scopes),
             "matched_scope": self.matched_scope.value if self.matched_scope else None,
             "dependency_blocks": sorted(self.dependency_blocks),
             "final_state": self.final_state.value,
         }
+        if self.request_id is not None:
+            d["request_id"] = self.request_id
+        return d
 
 
 @dataclass
@@ -329,6 +334,46 @@ class GovernanceSnapshot:
         }
 
 
+@dataclass
+class GovernanceDiff:
+    """Difference between two GovernanceSnapshots.
+
+    Returned by diff_governance_snapshots(); powers change-review UI,
+    audit log display, and AI-readable governance change summaries.
+    """
+
+    added_visible: set[str]
+    removed_visible: set[str]
+    changed_sources: dict[
+        str, tuple[str, str]
+    ]  # subsystem → (old, new) PolicySource value
+    capability_changes: dict[str, tuple[bool, bool]]  # cap → (old, new)
+    cleanup_changed: bool
+
+    @property
+    def is_empty(self) -> bool:
+        return (
+            not self.added_visible
+            and not self.removed_visible
+            and not self.changed_sources
+            and not self.capability_changes
+            and not self.cleanup_changed
+        )
+
+    def to_dict(self) -> dict:
+        return {
+            "added_visible": sorted(self.added_visible),
+            "removed_visible": sorted(self.removed_visible),
+            "changed_sources": {
+                k: list(v) for k, v in sorted(self.changed_sources.items())
+            },
+            "capability_changes": {
+                k: list(v) for k, v in sorted(self.capability_changes.items())
+            },
+            "cleanup_changed": self.cleanup_changed,
+        }
+
+
 # ---------------------------------------------------------------------------
 # Cache — version-stamped, tier-keyed (not member-keyed)
 # When a guild has role-scoped overrides the role_ids frozenset is added to
@@ -427,6 +472,9 @@ async def _profile(operation: str):
     finally:
         elapsed = time.monotonic() - start
         logger.debug("governance_profile op=%s elapsed=%.4f", operation, elapsed)
+        _metrics.governance_resolution_seconds.labels(operation=operation).observe(
+            elapsed
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -768,10 +816,13 @@ async def resolve_visibility(ctx: GovernanceContext) -> VisibilityResult:
 
     role_ids = frozenset(ctx.role_ids) if ctx.role_ids else frozenset()
     cache_key = _cache_key(ctx.guild_id, ctx.channel_id, tier, role_ids)
+    _guild_label = str(ctx.guild_id)
     async with _CACHE_LOCK:
         cached = _cache_get(cache_key)
         if cached is not None and cached is not _NO_OVERRIDE:
+            _metrics.governance_cache_hits.labels(guild_id=_guild_label).inc()
             return cached
+    _metrics.governance_cache_misses.labels(guild_id=_guild_label).inc()
 
     tier_accessible = set(get_subsystems_for_tier(tier))
 
@@ -841,6 +892,14 @@ async def resolve_execution(ctx: GovernanceContext, capability: str) -> Executio
         denied_by = trace_obj.final_state.value if trace_obj and not allowed else None
 
         if not allowed:
+            scope_label = (
+                trace_obj.matched_scope.value
+                if trace_obj and trace_obj.matched_scope
+                else "unknown"
+            )
+            _metrics.governance_denials_total.labels(
+                subsystem=subsystem_name, scope=scope_label
+            ).inc()
             await _emit_governance_event(
                 EVT_EXECUTION_DENIED,
                 {
@@ -1051,6 +1110,47 @@ async def build_governance_snapshot(ctx: GovernanceContext) -> GovernanceSnapsho
         capability_map=cap_map,
         registry_version=REGISTRY_VERSION,
         registry_schema_version=REGISTRY_SCHEMA_VERSION,
+    )
+
+
+def diff_governance_snapshots(
+    before: GovernanceSnapshot, after: GovernanceSnapshot
+) -> GovernanceDiff:
+    """Compute the difference between two GovernanceSnapshots.
+
+    Useful for change-review UI, audit log display, and detecting governance
+    drift between a baseline and the current state.
+    """
+    added = after.visible_subsystems - before.visible_subsystems
+    removed = before.visible_subsystems - after.visible_subsystems
+
+    changed_sources: dict[str, tuple[str, str]] = {}
+    all_subsystems = set(before.scope_provenance) | set(after.scope_provenance)
+    for name in all_subsystems:
+        old_src = before.scope_provenance.get(name)
+        new_src = after.scope_provenance.get(name)
+        if old_src != new_src:
+            changed_sources[name] = (
+                old_src.value if old_src else "none",
+                new_src.value if new_src else "none",
+            )
+
+    cap_changes: dict[str, tuple[bool, bool]] = {}
+    all_caps = set(before.capability_map) | set(after.capability_map)
+    for cap in all_caps:
+        old_val = before.capability_map.get(cap, False)
+        new_val = after.capability_map.get(cap, False)
+        if old_val != new_val:
+            cap_changes[cap] = (old_val, new_val)
+
+    cleanup_changed = before.cleanup_policy.to_dict() != after.cleanup_policy.to_dict()
+
+    return GovernanceDiff(
+        added_visible=added,
+        removed_visible=removed,
+        changed_sources=changed_sources,
+        capability_changes=cap_changes,
+        cleanup_changed=cleanup_changed,
     )
 
 

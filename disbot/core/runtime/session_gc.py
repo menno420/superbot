@@ -17,6 +17,7 @@ import asyncio
 import logging
 import time
 
+from services import metrics as _metrics
 from utils import db
 
 logger = logging.getLogger("bot.runtime.gc")
@@ -33,6 +34,8 @@ async def _run_gc_loop() -> None:
             cutoff = time.time() - SESSION_TTL
             sessions_removed = await db.delete_expired_sessions(cutoff)
             anchors_removed = await db.delete_stale_panel_anchors()
+            active_count = await db.count_active_sessions()
+            _metrics.session_active_count.set(active_count)
             if sessions_removed or anchors_removed:
                 logger.info(
                     "GC sweep complete — %d session(s), %d anchor(s) removed",

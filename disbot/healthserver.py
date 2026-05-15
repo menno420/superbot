@@ -25,6 +25,7 @@ import os
 
 from aiohttp import web
 from discord.ext import commands
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 logger = logging.getLogger("bot.health")
 
@@ -63,12 +64,18 @@ async def _ready_handler(request: web.Request) -> web.Response:
     )
 
 
+async def _metrics_handler(request: web.Request) -> web.Response:
+    """Prometheus metrics exposition endpoint."""
+    return web.Response(body=generate_latest(), content_type=CONTENT_TYPE_LATEST)
+
+
 async def start_health_server(bot: commands.Bot) -> None:
     """Start the aiohttp health server and block until cancelled."""
     app = web.Application()
     app["bot"] = bot
     app.router.add_get("/health", _health_handler)
     app.router.add_get("/ready", _ready_handler)
+    app.router.add_get("/metrics", _metrics_handler)
 
     runner = web.AppRunner(app, access_log=None)
     await runner.setup()

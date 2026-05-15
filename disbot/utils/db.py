@@ -1234,3 +1234,9 @@ async def delete_expired_sessions(cutoff_epoch: float) -> int:
         return int(result.split()[-1])
     except (IndexError, ValueError):
         return 0
+
+
+async def count_active_sessions() -> int:
+    """Return the current number of runtime sessions in the DB."""
+    row = await get().fetchrow("SELECT COUNT(*) AS n FROM runtime_sessions")
+    return int(row["n"]) if row else 0

@@ -30,6 +30,7 @@ from typing import TYPE_CHECKING, Any
 
 import discord
 from core.events import bus
+from services import metrics as _metrics
 from utils import db
 
 if TYPE_CHECKING:
@@ -126,6 +127,7 @@ async def _on_event(event: str, **payload: Any) -> None:
                         guild_id,
                         anchor["channel_id"],
                         anchor["message_id"],
+                        subsystem,
                     ),
                     name=f"panel_refresh:{subsystem}:{anchor['message_id']}",
                 )
@@ -138,6 +140,7 @@ async def _refresh_panel(
     guild_id: int,
     channel_id: int,
     message_id: int,
+    subsystem: str = "unknown",
 ) -> None:
     """Fetch a new embed/view and edit the panel message, respecting rate limits."""
     now = time.monotonic()
@@ -165,6 +168,7 @@ async def _refresh_panel(
         message = await channel.fetch_message(message_id)
         await message.edit(embed=embed, view=view)
         _last_edit[channel_id] = time.monotonic()
+        _metrics.panel_refresh_total.labels(subsystem=subsystem).inc()
         logger.debug(
             "Panel refreshed | user=%d | channel=%d | message=%d",
             user_id,
