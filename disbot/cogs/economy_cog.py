@@ -9,6 +9,7 @@ from discord.ext import commands
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
+from utils.settings_keys import ECONOMY_LOG_CHANNEL
 from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 
@@ -260,7 +261,7 @@ class EconomyCog(commands.Cog):
 
     async def _ensure_log_channel(self, guild: discord.Guild) -> None:
         """Create #economy-log for *guild* if it doesn't already exist."""
-        cid = await db.get_setting(guild.id, "economy_log_channel", "")
+        cid = await db.get_setting(guild.id, ECONOMY_LOG_CHANNEL, "")
         if cid:
             ch = guild.get_channel(int(cid))
             if ch:
@@ -268,7 +269,7 @@ class EconomyCog(commands.Cog):
 
         existing = discord.utils.get(guild.text_channels, name="economy-log")
         if existing:
-            await db.set_setting(guild.id, "economy_log_channel", str(existing.id))
+            await db.set_setting(guild.id, ECONOMY_LOG_CHANNEL, str(existing.id))
             return
 
         try:
@@ -289,7 +290,7 @@ class EconomyCog(commands.Cog):
                 category=cat,
                 topic="Live feed of XP level-ups, daily rewards, work earnings, and shop purchases.",
             )
-            await db.set_setting(guild.id, "economy_log_channel", str(ch.id))
+            await db.set_setting(guild.id, ECONOMY_LOG_CHANNEL, str(ch.id))
             embed = discord.Embed(
                 title="📊 Economy Log",
                 description=(
@@ -441,7 +442,7 @@ class EconomyCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def setlogchannel(self, ctx: commands.Context, channel: discord.TextChannel):
         """Set the economy log channel. Usage: !setlogchannel #channel"""
-        await db.set_setting(ctx.guild.id, "economy_log_channel", str(channel.id))
+        await db.set_setting(ctx.guild.id, ECONOMY_LOG_CHANNEL, str(channel.id))
         await ctx.send(f"✅ Economy log channel set to {channel.mention}.")
 
     # ------------------------------------------------------------------ !joblist
@@ -661,6 +662,7 @@ class _EconomyPanelView(BaseView):
     async def inventory_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
+        # Deferred: extract to views/inventory/ when inventory gains 3+ panel levels
         from cogs.inventory_cog import UnifiedInventoryView, _build_combined_inventory
 
         uid, gid = self.ctx.author.id, self.ctx.guild.id
@@ -714,15 +716,6 @@ class _EconomyPanelView(BaseView):
     ):
         embed = await self.build_embed()
         await interaction.response.edit_message(embed=embed, view=self)
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
 
 
 # ---------------------------------------------------------------------------

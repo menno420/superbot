@@ -5,7 +5,7 @@ import asyncio
 import discord
 from discord.ext import commands
 from utils import embeds as em
-from utils.ui_constants import UTILITY_COLOR
+from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import BaseView
 
 
@@ -60,7 +60,7 @@ class UtilityCog(commands.Cog):
             member = member or ctx.author
             embed = discord.Embed(
                 title=f"User Info — {member}",
-                color=discord.Color.green(),
+                color=SUCCESS_COLOR,
             )
             embed.set_thumbnail(url=member.display_avatar.url)
             embed.add_field(name="Username", value=member.name, inline=True)
@@ -89,7 +89,7 @@ class UtilityCog(commands.Cog):
             embed = discord.Embed(
                 title=f"{guild.name}",
                 description="Server Information",
-                color=discord.Color.blue(),
+                color=INFO_COLOR,
             )
             embed.add_field(name="Owner", value=guild.owner.mention, inline=True)
             embed.add_field(name="Members", value=str(guild.member_count), inline=True)
@@ -123,7 +123,7 @@ class UtilityCog(commands.Cog):
     async def avatar(self, ctx, member: discord.Member = None):
         """Display a user's avatar."""
         member = member or ctx.author
-        embed = discord.Embed(title=f"{member}'s Avatar", color=discord.Color.blue())
+        embed = discord.Embed(title=f"{member}'s Avatar", color=INFO_COLOR)
         embed.set_image(url=member.display_avatar.url)
         await ctx.send(embed=embed)
 
@@ -157,7 +157,7 @@ class UtilityCog(commands.Cog):
         embed = discord.Embed(
             title=f"Poll: {question}",
             description="\n".join(f"{i+1}. {opt}" for i, opt in enumerate(options)),
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         poll_msg = await ctx.send(embed=embed)
         for i in range(len(options)):
@@ -200,7 +200,7 @@ class _UtilityPanelView(BaseView):
         embed = discord.Embed(
             title=f"{guild.name}",
             description="Server Information",
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         embed.add_field(name="Owner", value=guild.owner.mention, inline=True)
         embed.add_field(name="Members", value=str(guild.member_count), inline=True)
@@ -226,7 +226,7 @@ class _UtilityPanelView(BaseView):
         member = interaction.user
         embed = discord.Embed(
             title=f"User Info — {member}",
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.set_thumbnail(url=member.display_avatar.url)
         embed.add_field(name="Username", value=member.name, inline=True)
@@ -255,7 +255,7 @@ class _UtilityPanelView(BaseView):
     @discord.ui.button(label="🖼️ Avatar", style=discord.ButtonStyle.blurple, row=0)
     async def avatar_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         member = interaction.user
-        embed = discord.Embed(title=f"{member}'s Avatar", color=discord.Color.blue())
+        embed = discord.Embed(title=f"{member}'s Avatar", color=INFO_COLOR)
         embed.set_image(url=member.display_avatar.url)
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self)
@@ -322,7 +322,7 @@ class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-ar
         embed = discord.Embed(
             title=f"Poll: {self.question.value}",
             description="\n".join(f"{i+1}. {opt}" for i, opt in enumerate(opts)),
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         poll_msg = await self.channel.send(embed=embed)
         for i in range(len(opts)):

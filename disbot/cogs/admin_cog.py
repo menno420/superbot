@@ -9,7 +9,7 @@ import sys
 
 import discord
 from discord.ext import commands
-from utils.ui_constants import ADMIN_COLOR
+from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
 COGS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -75,7 +75,7 @@ class AdminCog(commands.Cog):
         """Display server statistics."""
         guild = ctx.guild
         embed = discord.Embed(
-            title=f"Server Stats for {guild.name}", color=discord.Color.green()
+            title=f"Server Stats for {guild.name}", color=SUCCESS_COLOR
         )
         embed.add_field(name="Total Members", value=guild.member_count)
         embed.add_field(
@@ -245,7 +245,7 @@ class _AdminPanelView(BaseView):
     async def stats_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         guild = interaction.guild
         embed = discord.Embed(
-            title=f"📊 Server Stats — {guild.name}", color=discord.Color.green()
+            title=f"📊 Server Stats — {guild.name}", color=SUCCESS_COLOR
         )
         embed.add_field(name="Total Members", value=str(guild.member_count))
         embed.add_field(
@@ -272,7 +272,7 @@ class _AdminPanelView(BaseView):
         embed = discord.Embed(
             title="📋 Cog List",
             description="\n".join(lines) or "No cogs found.",
-            color=discord.Color.blue(),
+            color=INFO_COLOR,
         )
         embed.set_footer(
             text="✅ Loaded  ❌ Unloaded  🟢 OK  🔴 Syntax Error  •  ↩ Overview to return"
@@ -300,7 +300,7 @@ class _AdminPanelView(BaseView):
         embed = discord.Embed(
             title="🔄 Reload Complete",
             description="\n".join(parts) or "Nothing reloaded.",
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.edit_original_response(embed=embed, view=self)
@@ -342,7 +342,7 @@ class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[c
         embed = discord.Embed(
             title="📝 Log Level Updated",
             description=f"Log level set to `{self.level.value.upper()}`.",
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
         await interaction.response.edit_message(embed=embed, view=self.panel)

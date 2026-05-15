@@ -4,6 +4,8 @@ import re
 
 import discord
 from discord.ext import commands
+from utils.settings_keys import ECONOMY_LOG_CHANNEL
+from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR
 
 
 def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
@@ -54,7 +56,7 @@ async def post_log_embed(
     """Post an embed to the guild's configured economy_log_channel (if set)."""
     from utils import db
 
-    cid = await db.get_setting(guild_id, "economy_log_channel", "")
+    cid = await db.get_setting(guild_id, ECONOMY_LOG_CHANNEL, "")
     if not cid:
         return
     ch = bot.get_channel(int(cid))
@@ -103,7 +105,7 @@ class CogMenuView(discord.ui.View):
         embed = discord.Embed(
             title=self.title,
             description="Select a command below to see its full usage details.",
-            color=discord.Color.blurple(),
+            color=INFO_COLOR,
         )
         for name, usage, desc in self.commands_info:
             embed.add_field(name=f"`!{name}`", value=desc[:120], inline=True)
@@ -111,7 +113,7 @@ class CogMenuView(discord.ui.View):
 
     def build_command_embed(self, idx: int) -> discord.Embed:
         name, usage, desc = self.commands_info[idx]
-        embed = discord.Embed(title=f"`!{name}`", color=discord.Color.green())
+        embed = discord.Embed(title=f"`!{name}`", color=SUCCESS_COLOR)
         embed.add_field(name="Usage", value=f"`{usage}`", inline=False)
         embed.add_field(name="Description", value=desc, inline=False)
         embed.set_footer(

@@ -6,6 +6,7 @@ import logging
 import discord
 from discord.ext import commands
 from utils.helpers import _parse_member
+from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("discord_bot.prize_cog")
@@ -85,7 +86,7 @@ class ProofChannelCog(commands.Cog):
         embed = discord.Embed(
             title=f"Proof Channel Status — #{ch.name}",
             description=formatted,
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         await ctx.send(embed=embed, delete_after=60)
 
@@ -224,7 +225,7 @@ class _PrizeManagerView(BaseView):
         ch = self.cog.get_proof_channel(self.ctx.guild)
         embed = discord.Embed(
             title="🏆 Prize Channel Manager",
-            color=discord.Color.gold(),
+            color=ECONOMY_COLOR,
         )
         if ch:
             embed.description = f"Managing {ch.mention}"

@@ -10,6 +10,7 @@ from utils import db
 from utils import embeds as em
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import _parse_member, post_log_embed
+from utils.settings_keys import XP_ANNOUNCE_CHANNEL, XP_COOLDOWN, XP_MAX, XP_MIN
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
 from views.base import BaseView
 
@@ -48,9 +49,9 @@ _STAT_TYPES: set[str] = {"xp", "coins", "both"}
 
 async def _guild_xp_settings(guild_id: int) -> tuple[int, int, int]:
     """Return (xp_min, xp_max, cooldown_seconds) for this guild."""
-    mn = int(await db.get_setting(guild_id, "xp_min", str(_XP_MIN)))
-    mx = int(await db.get_setting(guild_id, "xp_max", str(_XP_MAX)))
-    cd = int(await db.get_setting(guild_id, "xp_cooldown", str(_COOLDOWN)))
+    mn = int(await db.get_setting(guild_id, XP_MIN, str(_XP_MIN)))
+    mx = int(await db.get_setting(guild_id, XP_MAX, str(_XP_MAX)))
+    cd = int(await db.get_setting(guild_id, XP_COOLDOWN, str(_COOLDOWN)))
     return mn, mx, cd
 
 
@@ -281,7 +282,7 @@ class XpCog(commands.Cog):
         new_xp, new_level, leveled_up = await db.add_xp(user_id, guild_id, amount, now)
 
         if leveled_up:
-            channel_id = await db.get_setting(guild_id, "xp_announce_channel", "")
+            channel_id = await db.get_setting(guild_id, XP_ANNOUNCE_CHANNEL, "")
             announce_ch: discord.TextChannel | None = None
             if channel_id:
                 announce_ch = message.guild.get_channel(int(channel_id))
@@ -477,7 +478,7 @@ class XpConfigView(discord.ui.View):
     async def build_embed(self) -> discord.Embed:
         gid = self.ctx.guild.id
         xp_min, xp_max, cooldown = await _guild_xp_settings(gid)
-        cid = await db.get_setting(gid, "xp_announce_channel", "")
+        cid = await db.get_setting(gid, XP_ANNOUNCE_CHANNEL, "")
         channel_str = f"<#{cid}>" if cid else "Same channel as message"
 
         embed = discord.Embed(
@@ -553,8 +554,8 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[cal
             )
             return
         gid = self.view.ctx.guild.id
-        await db.set_setting(gid, "xp_min", str(mn))
-        await db.set_setting(gid, "xp_max", str(mx))
+        await db.set_setting(gid, XP_MIN, str(mn))
+        await db.set_setting(gid, XP_MAX, str(mx))
         await interaction.response.defer()
         await self.view._refresh(interaction)
 
@@ -578,7 +579,7 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: igno
                 "Must be a non-negative integer.", ephemeral=True
             )
             return
-        await db.set_setting(self.view.ctx.guild.id, "xp_cooldown", str(val))
+        await db.set_setting(self.view.ctx.guild.id, XP_COOLDOWN, str(val))
         await interaction.response.defer()
         await self.view._refresh(interaction)
 
@@ -601,7 +602,7 @@ class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"): 
                 "Enter a valid numeric channel ID, or leave blank.", ephemeral=True
             )
             return
-        await db.set_setting(self.view.ctx.guild.id, "xp_announce_channel", val)
+        await db.set_setting(self.view.ctx.guild.id, XP_ANNOUNCE_CHANNEL, val)
         await interaction.response.defer()
         await self.view._refresh(interaction)
 

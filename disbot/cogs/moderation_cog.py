@@ -8,6 +8,7 @@ from discord import Member
 from discord.ext import commands
 from utils import db
 from utils.helpers import _parse_member
+from utils.settings_keys import WARN_THRESHOLD, WARN_TIMEOUT_MINS
 from utils.ui_constants import MOD_COLOR
 
 logger = logging.getLogger("bot")
@@ -47,10 +48,10 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             await interaction.response.send_message(err, ephemeral=True)
             return
         threshold = int(
-            await db.get_setting(interaction.guild_id, "warn_threshold", "3")
+            await db.get_setting(interaction.guild_id, WARN_THRESHOLD, "3")
         )
         timeout_minutes = int(
-            await db.get_setting(interaction.guild_id, "warn_timeout_minutes", "10")
+            await db.get_setting(interaction.guild_id, WARN_TIMEOUT_MINS, "10")
         )
         count = await db.add_warning(member.id, interaction.guild_id)
         await interaction.response.send_message(
@@ -467,9 +468,9 @@ class ModerationCog(commands.Cog):
         if err:
             await ctx.send(err)
             return
-        threshold = int(await db.get_setting(ctx.guild.id, "warn_threshold", "3"))
+        threshold = int(await db.get_setting(ctx.guild.id, WARN_THRESHOLD, "3"))
         timeout_minutes = int(
-            await db.get_setting(ctx.guild.id, "warn_timeout_minutes", "10")
+            await db.get_setting(ctx.guild.id, WARN_TIMEOUT_MINS, "10")
         )
         count = await db.add_warning(member.id, ctx.guild.id)
         await ctx.send(

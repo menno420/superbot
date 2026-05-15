@@ -93,10 +93,18 @@ class MiningCog(commands.Cog):
             super().__init__(timeout=30)
             self.user_id = user_id
             self.cog = cog
+            self.message: discord.Message | None = None
 
         async def interaction_check(self, interaction: discord.Interaction):
-            # Only the invoking user can press these
             return interaction.user.id == self.user_id
+
+        async def on_timeout(self) -> None:
+            for item in self.children:
+                item.disabled = True
+            try:
+                await self.message.edit(view=self)
+            except Exception:
+                pass
 
         @discord.ui.button(label="Mine Left", style=discord.ButtonStyle.primary)
         async def mine_left(
@@ -155,7 +163,7 @@ class MiningCog(commands.Cog):
             description="Choose a direction to mine.\nIf you own a pickaxe, you'll get extra loot!",
             color=MINING_COLOR,
         )
-        await ctx.send(embed=embed, view=view)
+        view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(hidden=True)
     async def chop(self, ctx):

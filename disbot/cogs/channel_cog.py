@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.helpers import safe_select_emoji
-from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR
+from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, INFO_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
@@ -253,7 +253,7 @@ class ChannelCog(commands.Cog):
     @is_admin_or_owner()
     async def list_channels(self, ctx):
         embed = discord.Embed(
-            title="Categories and Channels", color=discord.Color.blue()
+            title="Categories and Channels", color=INFO_COLOR
         )
         for category in ctx.guild.categories:
             channels = "\n".join(f" - {ch.name}" for ch in category.channels)
@@ -329,7 +329,7 @@ class ChannelCog(commands.Cog):
         channel = self._resolve_channel(ctx.guild, channel_name)
         if channel:
             embed = discord.Embed(
-                title=f"Channel Info — {channel.name}", color=discord.Color.orange()
+                title=f"Channel Info — {channel.name}", color=WARNING_COLOR
             )
             embed.add_field(name="Type", value=str(channel.type), inline=True)
             embed.add_field(
@@ -615,7 +615,7 @@ class _CreateSubView(BaseView):
                 "Use the menus below to pick a name and category.\n"
                 "Click **Custom Name** to type your own name."
             ),
-            color=discord.Color.green(),
+            color=SUCCESS_COLOR,
         )
         embed.add_field(
             name="Selected name",
@@ -808,7 +808,7 @@ class _DeleteSubView(BaseView):
                 f"Are you sure you want to delete **`{self.selected_channel_name}`**?\n"
                 "**This action cannot be undone.**"
             ),
-            color=discord.Color.dark_red(),
+            color=ERROR_COLOR,
         )
 
     # ------------------------------------------------------------------
@@ -887,7 +887,7 @@ class _DeleteConfirmView(BaseView):
             result_embed = discord.Embed(
                 title="❌ Channel Not Found",
                 description=f"Channel `{self.channel_name}` could not be found — it may have already been deleted.",
-                color=discord.Color.orange(),
+                color=WARNING_COLOR,
             )
         else:
             try:
@@ -895,19 +895,19 @@ class _DeleteConfirmView(BaseView):
                 result_embed = discord.Embed(
                     title="✅ Channel Deleted",
                     description=f"`{self.channel_name}` has been deleted.",
-                    color=discord.Color.green(),
+                    color=SUCCESS_COLOR,
                 )
             except discord.Forbidden:
                 result_embed = discord.Embed(
                     title="❌ Permission Denied",
                     description="I don't have permission to delete that channel.",
-                    color=discord.Color.red(),
+                    color=ERROR_COLOR,
                 )
             except discord.HTTPException as exc:
                 result_embed = discord.Embed(
                     title="❌ Error",
                     description=f"Failed to delete channel: {exc}",
-                    color=discord.Color.red(),
+                    color=ERROR_COLOR,
                 )
 
         for item in self.children:
@@ -1029,19 +1029,18 @@ class _RestrictSubView(BaseView):
             )
             return
 
-        await interaction.response.defer(ephemeral=True)
         try:
             await channel.set_permissions(
                 interaction.guild.default_role, send_messages=send_messages
             )
         except discord.Forbidden:
-            await interaction.followup.send(
+            await interaction.response.send_message(
                 "❌ I don't have permission to change that channel's permissions.",
                 ephemeral=True,
             )
             return
         except discord.HTTPException as exc:
-            await interaction.followup.send(
+            await interaction.response.send_message(
                 f"❌ Failed to update permissions: {exc}", ephemeral=True
             )
             return
@@ -1056,10 +1055,7 @@ class _RestrictSubView(BaseView):
         for item in self.children:
             item.disabled = True
 
-        try:
-            await self.manager_message.edit(embed=result_embed, view=self)
-        except Exception:
-            pass
+        await interaction.response.edit_message(embed=result_embed, view=self)
         self.stop()
 
         await asyncio.sleep(2)
