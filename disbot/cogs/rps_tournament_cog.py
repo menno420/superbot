@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import random
 
 import discord
@@ -11,10 +10,8 @@ from utils import db as global_db
 from utils.channels import (
     cleanup_category,
     create_private_channel,
-    get_or_create_category,
 )
 from utils.settings_keys import ACTIVE_TOURNAMENT
-from utils.tournaments import TournamentRegistration
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, INFO_COLOR, SUCCESS_COLOR
 
 logger = logging.getLogger("bot")
@@ -638,7 +635,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             match2["wins"] += 1
             match1["opponent_wins"] += 1
             winning_player = player2
-            losing_player = player1
             self.update_player_stats(player2, "win")
             self.update_player_stats(player1, "loss")
 

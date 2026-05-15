@@ -55,6 +55,13 @@ from governance.snapshot import (  # noqa: F401
     build_governance_snapshot,
     diff_governance_snapshots,
 )
+from governance.templates import (  # noqa: F401
+    GovernanceTemplate,
+    apply_template,
+    export_template,
+    load_template,
+    save_template,
+)
 from governance.writes import (  # noqa: F401
     check_governance_version,
     set_cleanup_policy_for_scope,
@@ -272,6 +279,12 @@ __all__ = [
     "check_governance_version",
     "set_cleanup_policy_for_scope",
     "set_subsystem_visibility",
+    # templates
+    "GovernanceTemplate",
+    "apply_template",
+    "export_template",
+    "load_template",
+    "save_template",
     # composite
     "resolve_all_capabilities",
     "resolve_all_subsystem_visibility",

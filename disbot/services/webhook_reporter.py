@@ -41,8 +41,6 @@ class WebhookReporter:
             logger.debug("Webhook send failed: %s", exc)
 
     async def on_startup(self, bot) -> None:
-        from discord.ext import commands
-
         embed = discord.Embed(
             title="🚀 Bot Online",
             color=discord.Color.green(),

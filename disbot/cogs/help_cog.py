@@ -11,7 +11,6 @@ from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
 from utils.ui_constants import ADMIN_COLOR, GENERAL_COLOR, MOD_COLOR, UTILITY_COLOR
-from utils.visibility_rules import VISIBILITY_TIERS, is_tier_sufficient
 
 logger = logging.getLogger("bot")
 

@@ -9,7 +9,7 @@ from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.helpers import safe_select_emoji
-from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
+from utils.subsystem_registry import all_subsystems_sorted
 from utils.ui_constants import (
     CHANNEL_COLOR,
     ERROR_COLOR,

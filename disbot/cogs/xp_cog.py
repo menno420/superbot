@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 from utils import db
 from utils import embeds as em
-from utils.cooldowns import check_cooldown, format_remaining
+from utils.cooldowns import check_cooldown
 from utils.helpers import _parse_member, post_log_embed
 from utils.settings_keys import XP_ANNOUNCE_CHANNEL, XP_COOLDOWN, XP_MAX, XP_MIN
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
