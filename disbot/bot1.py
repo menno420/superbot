@@ -325,7 +325,9 @@ async def _governance_guard(ctx: commands.Context) -> None:
     # Send user-facing feedback before raising so the message arrives.
     if policy.feedback:
         try:
-            await ctx.send(policy.feedback, delete_after=policy.cleanup.delete_after_seconds or 10)
+            await ctx.send(
+                policy.feedback, delete_after=policy.cleanup.delete_after_seconds or 10
+            )
         except Exception:
             pass
     if policy.cleanup.delete_message and ctx.message:
@@ -429,7 +431,9 @@ async def main() -> None:
 
             # Track app-owned tasks so shutdown only cancels OUR tasks,
             # not discord.py-internal ones (OPS-001 fix).
-            _APP_TASKS.append(asyncio.create_task(start_health_server(bot), name="health_server"))
+            _APP_TASKS.append(
+                asyncio.create_task(start_health_server(bot), name="health_server")
+            )
             _APP_TASKS.append(session_gc.start())
             await _load_cogs()
             logger.info("Starting bot...")

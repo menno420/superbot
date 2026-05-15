@@ -155,7 +155,8 @@ def _attach_back_to_help_button(
         gctx = GovernanceContext.from_interaction(interaction)
         vis_result = await governance_service.resolve_visibility(gctx)
         fresh_visible = [
-            name for name, _ in all_subsystems_sorted()
+            name
+            for name, _ in all_subsystems_sorted()
             if name in vis_result.visible_subsystems
         ]
         new_page = min(page, max(0, math.ceil(len(fresh_visible) / _PAGE_SIZE) - 1))

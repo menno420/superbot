@@ -6,10 +6,14 @@ Templates store a named set of visibility overrides that can be:
   - Stored in the DB for reuse via save_template()
 
 Public surface:
-    export_template(guild_id) → GovernanceTemplate
-    apply_template(guild_id, template) → int (overrides applied)
-    save_template(template, name, description) → int (template_id)
+    export_template(guild_id, name="", description="") → GovernanceTemplate
+    apply_template(ctx, template) → int (overrides applied via pipeline)
+    save_template(template, created_by_guild_id=None) → int (template_id)
     load_template(template_id) → GovernanceTemplate | None
+
+apply_template() routes every override through GovernanceMutationPipeline so
+authority validation, transactional audit writes, and event emission happen
+per entry — see INV-003.
 """
 
 from __future__ import annotations
@@ -105,9 +109,7 @@ async def export_template(
     return template
 
 
-async def apply_template(
-    ctx: GovernanceContext, template: GovernanceTemplate
-) -> int:
+async def apply_template(ctx: GovernanceContext, template: GovernanceTemplate) -> int:
     """Apply a template's overrides to a guild via GovernanceMutationPipeline.
 
     INV-003: every mutation routes through the pipeline.  This guarantees

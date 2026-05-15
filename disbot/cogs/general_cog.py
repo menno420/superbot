@@ -215,7 +215,7 @@ class _TriviaRevealView(BaseView):
 # ---------------------------------------------------------------------------
 
 
-class _EightBallModal(discord.ui.Modal, title="🎱 Magic 8-Ball"):
+class _EightBallModal(discord.ui.Modal, title="🎱 Magic 8-Ball"):  # type: ignore[call-arg]
     question = discord.ui.TextInput(
         label="Ask a yes/no question",
         placeholder="Will I win the lottery?",
@@ -294,7 +294,9 @@ class _GeneralPanelView(BaseView):
             )
             return
         raw = random.choice(self._cog._trivia)
-        question, answer = (raw.split(" || ", 1) + [None])[:2] if " || " in raw else (raw, None)
+        question, answer = (
+            (raw.split(" || ", 1) + [None])[:2] if " || " in raw else (raw, None)
+        )
         embed = discord.Embed(
             title="🧠 Trivia",
             description=question.strip(),

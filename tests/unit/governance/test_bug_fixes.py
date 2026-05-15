@@ -19,7 +19,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # BUG-001 — double JSON encoding shim
 # ---------------------------------------------------------------------------
@@ -400,8 +399,8 @@ class TestCapabilityOverrideTTL:
         import time as _time
 
         from governance.execution import (
-            _loaded_guilds_at,
             _OVERRIDE_TTL,
+            _loaded_guilds_at,
             _overrides_stale,
         )
 

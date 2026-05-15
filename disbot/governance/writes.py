@@ -37,7 +37,10 @@ from governance.events import (
     _emit_governance_event,
 )
 from governance.models import GovernanceContext
-from services.governance_exceptions import GovernanceError, UnauthorizedGovernanceWriteError
+from services.governance_exceptions import (
+    GovernanceError,
+    UnauthorizedGovernanceWriteError,
+)
 from utils import db, settings_keys
 from utils.subsystem_registry import REGISTRY_VERSION, SUBSYSTEMS
 from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficient
@@ -46,7 +49,9 @@ logger = logging.getLogger("bot")
 
 # Scope types accepted by the pipeline.
 # "thread" is supported since migration 009 added it to subsystem_visibility.
-_VALID_SCOPE_TYPES: frozenset[str] = frozenset({"channel", "category", "guild", "thread"})
+_VALID_SCOPE_TYPES: frozenset[str] = frozenset(
+    {"channel", "category", "guild", "thread"}
+)
 
 # Minimum tier required to mutate governance state.
 _WRITE_AUTHORITY_TIER = "moderator"

@@ -118,7 +118,6 @@ async def test_help_on_select_uses_build_help_menu_view_when_available():
     from unittest.mock import patch
 
     import discord  # noqa: F401  (ensures import path is healthy)
-
     from cogs.help_cog import HelpPanelView
 
     view = HelpPanelView(visible_list=["general"], page=0)

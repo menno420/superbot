@@ -921,7 +921,9 @@ async def get_visibility_override(
         scope_id,
         subsystem,
     )
-    return bool(row["enabled"]) if row is not None and row["enabled"] is not None else None
+    return (
+        bool(row["enabled"]) if row is not None and row["enabled"] is not None else None
+    )
 
 
 async def set_subsystem_visibility(
@@ -1198,8 +1200,8 @@ async def write_governance_audit(
         scope_type,
         scope_id,
         subsystem,
-        old_value,   # asyncpg JSONB codec handles encoding via _init_conn
-        new_value,   # asyncpg JSONB codec handles encoding via _init_conn
+        old_value,  # asyncpg JSONB codec handles encoding via _init_conn
+        new_value,  # asyncpg JSONB codec handles encoding via _init_conn
     )
 
 
