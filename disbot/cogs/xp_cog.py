@@ -57,6 +57,51 @@ def _progress_bar(current: int, needed: int, width: int = 10) -> str:
     return "█" * filled + "░" * (width - filled)
 
 
+async def _build_rank_embed(
+    member: discord.Member,
+    guild: discord.Guild,
+    stat: str,
+) -> discord.Embed:
+    """Build the rank card embed for a member."""
+    row = await db.get_xp(member.id, guild.id)
+    level, current, needed = db.level_progress(row["xp"])
+
+    all_xp = await db.fetchall(
+        "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY xp DESC", (guild.id,)
+    )
+    all_coins = await db.fetchall(
+        "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY coins DESC",
+        (guild.id,),
+    )
+    xp_rank = next(
+        (i + 1 for i, r in enumerate(all_xp) if r["user_id"] == member.id), "?"
+    )
+    co_rank = next(
+        (i + 1 for i, r in enumerate(all_coins) if r["user_id"] == member.id), "?"
+    )
+
+    embed = discord.Embed(title=f"📊 {member.display_name}", color=discord.Color.blue())
+    embed.set_thumbnail(url=member.display_avatar.url)
+
+    if stat in ("both", "xp"):
+        bar = _progress_bar(current, needed)
+        embed.add_field(name="XP Rank", value=f"#{xp_rank}", inline=True)
+        embed.add_field(name="Level", value=str(level), inline=True)
+        embed.add_field(name="Total XP", value=str(row["xp"]), inline=True)
+        embed.add_field(
+            name="Progress",
+            value=f"`{bar}` {current}/{needed} XP",
+            inline=False,
+        )
+        embed.add_field(name="Messages", value=str(row["messages"]), inline=True)
+
+    if stat in ("both", "coins"):
+        embed.add_field(name="Coin Rank", value=f"#{co_rank}", inline=True)
+        embed.add_field(name="🪙 Coins", value=str(row.get("coins", 0)), inline=True)
+
+    return embed
+
+
 # ---------------------------------------------------------------------------
 # Cog
 # ---------------------------------------------------------------------------
@@ -125,8 +170,7 @@ class XpCog(commands.Cog):
 
     @commands.command(name="rank")
     async def rank(self, ctx: commands.Context, *args):
-        """Show XP/coin rank.  !rank [user] [xp|coins]"""
-        # Parse optional member and optional stat type from positional args
+        """Show XP/coin rank.  !rank [user] [xp|coins|both]"""
         member: discord.Member = ctx.author
         stat: str = "both"
         for arg in args:
@@ -138,47 +182,9 @@ class XpCog(commands.Cog):
                 except commands.BadArgument:
                     pass
 
-        row = await db.get_xp(member.id, ctx.guild.id)
-        level, current, needed = db.level_progress(row["xp"])
-
-        all_xp = await db.fetchall(
-            "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY xp DESC", (ctx.guild.id,)
-        )
-        all_coins = await db.fetchall(
-            "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY coins DESC",
-            (ctx.guild.id,),
-        )
-        xp_rank = next(
-            (i + 1 for i, r in enumerate(all_xp) if r["user_id"] == member.id), "?"
-        )
-        co_rank = next(
-            (i + 1 for i, r in enumerate(all_coins) if r["user_id"] == member.id), "?"
-        )
-
-        embed = discord.Embed(
-            title=f"📊 {member.display_name}", color=discord.Color.blue()
-        )
-        embed.set_thumbnail(url=member.display_avatar.url)
-
-        if stat in ("both", "xp"):
-            bar = _progress_bar(current, needed)
-            embed.add_field(name="XP Rank", value=f"#{xp_rank}", inline=True)
-            embed.add_field(name="Level", value=str(level), inline=True)
-            embed.add_field(name="Total XP", value=str(row["xp"]), inline=True)
-            embed.add_field(
-                name="Progress",
-                value=f"`{bar}` {current}/{needed} XP",
-                inline=False,
-            )
-            embed.add_field(name="Messages", value=str(row["messages"]), inline=True)
-
-        if stat in ("both", "coins"):
-            embed.add_field(name="Coin Rank", value=f"#{co_rank}", inline=True)
-            embed.add_field(
-                name="🪙 Coins", value=str(row.get("coins", 0)), inline=True
-            )
-
-        await ctx.send(embed=embed)
+        embed = await _build_rank_embed(member, ctx.guild, stat)
+        view = _RankView(member, ctx.guild, stat)
+        view.message = await ctx.send(embed=embed, view=view)
 
     @commands.command(name="givexp")
     @commands.has_permissions(administrator=True)
@@ -209,6 +215,74 @@ class XpCog(commands.Cog):
         view = XpConfigView(ctx)
         msg = await ctx.send(embed=await view.build_embed(), view=view)
         view.message = msg
+
+
+# ---------------------------------------------------------------------------
+# Rank navigation view
+# ---------------------------------------------------------------------------
+
+
+class _RankView(discord.ui.View):
+    """Navigation dropdown for the rank card — lets users switch stat views."""
+
+    def __init__(
+        self,
+        member: discord.Member,
+        guild: discord.Guild,
+        current_stat: str,
+    ):
+        super().__init__(timeout=120)
+        self.member = member
+        self.guild = guild
+        self.message: discord.Message | None = None
+        self.add_item(_RankSelect(self, current_stat))
+
+    async def on_timeout(self) -> None:
+        if self.message:
+            try:
+                await self.message.edit(view=None)
+            except Exception:
+                pass
+
+
+class _RankSelect(discord.ui.Select):
+    def __init__(self, rank_view: _RankView, current_stat: str):
+        options = [
+            discord.SelectOption(
+                label="Both (XP & Coins)",
+                value="both",
+                emoji="📊",
+                default=(current_stat == "both"),
+            ),
+            discord.SelectOption(
+                label="XP",
+                value="xp",
+                emoji="🏆",
+                default=(current_stat == "xp"),
+            ),
+            discord.SelectOption(
+                label="Coins",
+                value="coins",
+                emoji="🪙",
+                default=(current_stat == "coins"),
+            ),
+        ]
+        super().__init__(
+            placeholder="Switch stat view…",
+            options=options,
+            min_values=1,
+            max_values=1,
+        )
+        self._rank_view = rank_view
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        stat = self.values[0]
+        for opt in self.options:
+            opt.default = opt.value == stat
+        embed = await _build_rank_embed(
+            self._rank_view.member, self._rank_view.guild, stat
+        )
+        await interaction.response.edit_message(embed=embed, view=self.view)
 
 
 # ---------------------------------------------------------------------------

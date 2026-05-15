@@ -6,7 +6,7 @@ from datetime import datetime
 import discord
 from discord.ext import commands, tasks
 from utils import db
-from utils.helpers import CogMenuView, normalize_name
+from utils.helpers import normalize_name
 
 logger = logging.getLogger("bot")
 
@@ -23,39 +23,15 @@ _DEFAULT_THRESHOLDS: list[tuple[str, int]] = [
 
 SKIP_ROLES = {"Admin"}  # role names that are never auto-assigned / removed
 
-_ROLE_MENU_COMMANDS: list[tuple[str, str, str]] = [
-    ("rolemenu", "!rolemenu", "Show this role command menu."),
-    ("roles", "!roles", "List all server roles with member counts."),
-    ("assignroles", "!assignroles", "Manually run time-based role assignment."),
-    (
-        "createrole",
-        "!createrole <name> [color] [hoist]",
-        "Create a new role with optional hex color.",
-    ),
-    ("deleterole", "!deleterole <@role>", "Delete a role from the server."),
-    ("rolecreator", "!rolecreator", "Open the interactive role creator UI."),
-    ("rolesettings", "!rolesettings", "Manage time-based role thresholds (admin UI)."),
-    (
-        "setrole",
-        "!setrole <days> <role name>",
-        "Add/update a time-based role threshold.",
-    ),
-    ("unsetrole", "!unsetrole <role name>", "Remove a role from auto-assignment."),
-    (
-        "reactroles",
-        "!reactroles <msg_id> <emoji> <@role>",
-        "Attach a reaction→role mapping to a message.",
-    ),
-    (
-        "removereactrole",
-        "!removereactrole <msg_id> <emoji>",
-        "Remove a reaction role binding.",
-    ),
-    (
-        "listreactroles",
-        "!listreactroles",
-        "List all active reaction roles in this server.",
-    ),
+_COLOR_OPTIONS = [
+    ("Red", "#e74c3c"),
+    ("Blue", "#3498db"),
+    ("Green", "#2ecc71"),
+    ("Yellow", "#f1c40f"),
+    ("Purple", "#9b59b6"),
+    ("Orange", "#e67e22"),
+    ("White", "#ffffff"),
+    ("Black", "#000000"),
 ]
 
 
@@ -82,18 +58,6 @@ def _find_role_normalized(guild: discord.Guild, name: str) -> discord.Role | Non
     """Case-insensitive, space-insensitive role lookup."""
     key = normalize_name(name)
     return discord.utils.find(lambda r: normalize_name(r.name) == key, guild.roles)
-
-
-_COLOR_OPTIONS = [
-    ("Red", "#e74c3c"),
-    ("Blue", "#3498db"),
-    ("Green", "#2ecc71"),
-    ("Yellow", "#f1c40f"),
-    ("Purple", "#9b59b6"),
-    ("Orange", "#e67e22"),
-    ("White", "#ffffff"),
-    ("Black", "#000000"),
-]
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +95,6 @@ class RoleCog(commands.Cog):
         if not thresholds:
             return 0
 
-        # Build ordered mapping: role_name -> days_required
         role_map = {row["role_name"]: row["days_required"] for row in thresholds}
         progression = sorted(role_map, key=lambda r: role_map[r])
 
@@ -148,7 +111,6 @@ class RoleCog(commands.Cog):
 
             days = (datetime.utcnow() - member.joined_at.replace(tzinfo=None)).days
 
-            # Find the highest qualifying role
             target_name = None
             for name in progression:
                 if days >= role_map[name]:
@@ -158,7 +120,6 @@ class RoleCog(commands.Cog):
                 _find_role_normalized(guild, target_name) if target_name else None
             )
 
-            # Current highest progression role this member holds
             current_highest: str | None = None
             for role in member.roles:
                 matched = next(
@@ -175,7 +136,6 @@ class RoleCog(commands.Cog):
                     ) > progression.index(current_highest):
                         current_highest = matched
 
-            # Don't downgrade
             if (
                 current_highest
                 and target_name
@@ -183,7 +143,6 @@ class RoleCog(commands.Cog):
             ):
                 continue
 
-            # Remove outdated progression roles (keep target only)
             to_remove = [
                 r
                 for r in member.roles
@@ -214,8 +173,8 @@ class RoleCog(commands.Cog):
 
     @commands.command(name="rolemenu")
     async def rolemenu(self, ctx: commands.Context):
-        """Show a quick-reference menu for all role commands."""
-        view = CogMenuView(ctx, "🎭 Role Commands", _ROLE_MENU_COMMANDS)
+        """Open the interactive role management panel."""
+        view = _RolePanelView(ctx, self)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
 
@@ -326,8 +285,6 @@ class RoleCog(commands.Cog):
         if days < 0:
             await ctx.send("Days must be 0 or greater.", delete_after=5)
             return
-        normalized = normalize_name(role_name)
-        # Store the original Discord role name (case-preserved) if the role exists
         discord_role = _find_role_normalized(ctx.guild, role_name)
         store_name = discord_role.name if discord_role else role_name
         await db.set_role_threshold(ctx.guild.id, store_name, days)
@@ -339,7 +296,6 @@ class RoleCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def unsetrole(self, ctx: commands.Context, *, role_name: str):
         """Remove a role from the time-based assignment system."""
-        # Try exact match first, then normalized match against stored thresholds
         thresholds = await db.get_role_thresholds(ctx.guild.id)
         key = normalize_name(role_name)
         match = next(
@@ -473,6 +429,118 @@ class RoleCog(commands.Cog):
                     "Assigned '%s' to %s on join.", zero_day, member.display_name
                 )
             except (discord.Forbidden, discord.HTTPException):
+                pass
+
+
+# ---------------------------------------------------------------------------
+# Role Panel View
+# ---------------------------------------------------------------------------
+
+
+class _RolePanelView(discord.ui.View):
+    """Interactive role management panel."""
+
+    def __init__(self, ctx: commands.Context, cog: RoleCog):
+        super().__init__(timeout=180)
+        self.ctx = ctx
+        self.cog = cog
+        self.message: discord.Message | None = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.ctx.author:
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
+            return False
+        return True
+
+    def build_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="🎭 Role Management Panel",
+            description=(
+                "**🎭 List Roles** — view all server roles with counts\n"
+                "**✨ Create Role** — open the interactive role creator\n"
+                "**⚙️ Role Settings** — manage time-based role thresholds\n"
+                "**🔄 Assign Roles** — run time-based assignment now (admin)"
+            ),
+            color=discord.Color.purple(),
+        )
+        embed.set_footer(text="Only you can interact with this panel.")
+        return embed
+
+    @discord.ui.button(label="🎭 List Roles", style=discord.ButtonStyle.blurple, row=0)
+    async def roles_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        lines = [
+            f"**{role.name}** — {sum(1 for m in interaction.guild.members if role in m.roles)} members"
+            for role in reversed(interaction.guild.roles)
+            if role != interaction.guild.default_role
+        ]
+        description = "\n".join(lines) or "No roles found."
+        if len(description) > 4000:
+            description = description[:3990] + "\n…"
+        embed = discord.Embed(
+            title=f"🎭 Roles in {interaction.guild.name}",
+            description=description,
+            color=discord.Color.purple(),
+        )
+        embed.set_footer(text="Click ↩ Overview to return.")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="✨ Create Role", style=discord.ButtonStyle.green, row=0)
+    async def createrole_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        if not interaction.user.guild_permissions.manage_roles:
+            await interaction.response.send_message(
+                "❌ You need **Manage Roles** permission.", ephemeral=True
+            )
+            return
+        await interaction.response.send_modal(_RoleCreateModal(self.ctx))
+
+    @discord.ui.button(
+        label="⚙️ Role Settings", style=discord.ButtonStyle.blurple, row=0
+    )
+    async def rolesettings_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ You need **Administrator** permission.", ephemeral=True
+            )
+            return
+        await _ensure_defaults(interaction.guild.id)
+        settings_view = _RoleSettingsSubView(self.ctx, back_panel=self)
+        settings_view.message = self.message
+        await interaction.response.edit_message(
+            embed=await settings_view.build_embed(), view=settings_view
+        )
+
+    @discord.ui.button(label="🔄 Assign Roles", style=discord.ButtonStyle.grey, row=0)
+    async def assign_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ You need **Administrator** permission.", ephemeral=True
+            )
+            return
+        await interaction.response.defer(ephemeral=True)
+        count = await self.cog._assign_roles(interaction.guild)
+        await interaction.followup.send(
+            f"✅ Assignment complete — {count} role(s) assigned.", ephemeral=True
+        )
+
+    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=1)
+    async def overview_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except Exception:
                 pass
 
 
@@ -649,6 +717,21 @@ class RoleSettingsView(discord.ui.View):
             pass
 
 
+class _RoleSettingsSubView(RoleSettingsView):
+    """RoleSettingsView variant with a Back button for panel navigation."""
+
+    def __init__(self, ctx: commands.Context, back_panel: _RolePanelView):
+        super().__init__(ctx)
+        self._back_panel = back_panel
+
+    @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.secondary, row=2)
+    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.edit_message(
+            embed=self._back_panel.build_embed(), view=self._back_panel
+        )
+        self.stop()
+
+
 class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):  # type: ignore[call-arg]
     role_name = discord.ui.TextInput(
         label="Role name (must exist in server)", max_length=100
@@ -671,7 +754,6 @@ class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):  # typ
                 "Days must be a non-negative integer.", ephemeral=True
             )
             return
-        # Store with Discord's original casing if the role exists
         discord_role = _find_role_normalized(
             interaction.guild, self.role_name.value.strip()
         )
