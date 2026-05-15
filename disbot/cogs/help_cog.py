@@ -126,6 +126,52 @@ def _build_help_page_view(visible_list: list[str], page: int) -> "HelpPanelView"
     return HelpPanelView(visible_list, page)
 
 
+def _attach_back_to_help_button(
+    view: discord.ui.View,
+    visible_list: list[str],
+    page: int,
+) -> None:
+    """Add a "↩ Back to Help" control to a subsystem panel surfaced from help.
+
+    Does not mutate the cog's panel class — adds the button to the live view
+    instance only.  No-op if the view already has 25 components (Discord cap).
+    Governance is not re-resolved here: the visible_list captured at help-menu
+    open time is the same set the user is allowed to see for the duration of
+    the panel session.  If governance changes mid-session, EVT_VISIBILITY_CHANGED
+    will invalidate the underlying session state through the normal pipeline.
+    """
+    if len(view.children) >= 25:
+        return
+
+    back_btn = discord.ui.Button(  # type: ignore[var-annotated]
+        label="↩ Back to Help",
+        custom_id="help:back",
+        style=discord.ButtonStyle.secondary,
+        row=4,
+    )
+
+    async def _back_callback(interaction: discord.Interaction) -> None:
+        # Recompute visible list at click time — governance may have changed.
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
+        fresh_visible = [
+            name for name, _ in all_subsystems_sorted()
+            if name in vis_result.visible_subsystems
+        ]
+        new_page = min(page, max(0, math.ceil(len(fresh_visible) / _PAGE_SIZE) - 1))
+        new_view = HelpPanelView(fresh_visible, new_page)
+        embed = _build_page_embed(
+            interaction.client,  # type: ignore[arg-type]
+            fresh_visible,
+            new_page,
+            vis_result.member_tier,
+        )
+        await interaction.response.edit_message(embed=embed, view=new_view)
+
+    back_btn.callback = _back_callback  # type: ignore[method-assign]
+    view.add_item(back_btn)
+
+
 def _build_page_embed(
     bot: commands.Bot,
     visible_list: list[str],
@@ -251,6 +297,16 @@ class HelpPanelView(PersistentView):
         return visible_list, vis_result.member_tier
 
     async def _on_select(self, interaction: discord.Interaction) -> None:
+        """Open the chosen subsystem in place — direct navigation, no extra clicks.
+
+        Resolution order:
+          1. If the cog exposes ``build_help_menu_view(interaction)``, call it
+             and replace the help message with the subsystem's actual panel
+             (with a "↩ Back to Help" button appended so the user can return).
+          2. Otherwise, fall back to the inline command-list embed.  This
+             preserves backwards compatibility for cogs that have not yet
+             adopted the direct-navigation hook.
+        """
         subsystem_name = interaction.data["values"][0]  # type: ignore[typeddict-item]
         cog = _cog_for_subsystem(interaction.client, subsystem_name)  # type: ignore[arg-type]
         if not cog:
@@ -258,6 +314,25 @@ class HelpPanelView(PersistentView):
                 "That category is no longer loaded.", ephemeral=True
             )
             return
+
+        # Direct-navigation hook (Phase 5 — help UX completion).
+        build_panel = getattr(cog, "build_help_menu_view", None)
+        if callable(build_panel):
+            try:
+                embed, sub_view = await build_panel(interaction)
+                _attach_back_to_help_button(sub_view, self._visible, self._page)
+                await interaction.response.edit_message(embed=embed, view=sub_view)
+                return
+            except Exception as exc:
+                logger.warning(
+                    "build_help_menu_view failed for subsystem=%r — falling back "
+                    "to inline command list: %s",
+                    subsystem_name,
+                    exc,
+                    exc_info=True,
+                )
+
+        # Fallback: inline cog command list, keep help view's nav controls.
         prefix = getattr(interaction.client, "command_prefix", "!")
         if callable(prefix):
             prefix = "!"
