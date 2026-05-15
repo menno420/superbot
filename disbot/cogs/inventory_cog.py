@@ -5,7 +5,6 @@ import logging
 
 import discord
 from discord.ext import commands
-
 from utils import db
 from views.base import BaseView
 
