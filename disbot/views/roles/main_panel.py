@@ -35,7 +35,7 @@ class RoleHubView(BaseView):
     async def create_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:
+        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.", ephemeral=True
             )
@@ -48,7 +48,7 @@ class RoleHubView(BaseView):
     async def manage_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.manage_roles:
+        if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Manage Roles** permission.", ephemeral=True
             )
@@ -65,7 +65,7 @@ class RoleHubView(BaseView):
     async def time_roles_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.", ephemeral=True
             )
@@ -85,7 +85,7 @@ class RoleHubView(BaseView):
     async def xp_roles_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.", ephemeral=True
             )
@@ -116,14 +116,14 @@ class RoleHubView(BaseView):
     async def diagnostics_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Administrator** permission.", ephemeral=True
             )
             return
         from views.roles.diagnostics_panel import DiagnosticsPanel
 
-        panel = DiagnosticsPanel(self.ctx, self.cog, parent=self)
+        panel = DiagnosticsPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(
             embed=await panel.build_embed(), view=panel

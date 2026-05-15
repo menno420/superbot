@@ -151,6 +151,7 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(
         name="leaderboard",
         aliases=[
@@ -170,10 +171,10 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
         cat = ALIASES_MAP.get(ctx.invoked_with, category.lower()) or ""
         cat = ALIASES_MAP.get(cat, cat)
 
-        view = LeaderboardView(ctx.guild, ctx.channel, ctx.author)
+        view = LeaderboardView(ctx.guild, ctx.channel, ctx.author)  # type: ignore[arg-type]
 
         if cat and cat in CATEGORIES:
-            embed = await _build_embed(cat, ctx.guild, ctx.channel)
+            embed = await _build_embed(cat, ctx.guild, ctx.channel)  # type: ignore[arg-type]
         else:
             embed = discord.Embed(
                 title="📊 Leaderboards",

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import random
 
 import discord
@@ -11,10 +10,8 @@ from utils import db as global_db
 from utils.channels import (
     cleanup_category,
     create_private_channel,
-    get_or_create_category,
 )
 from utils.settings_keys import ACTIVE_TOURNAMENT
-from utils.tournaments import TournamentRegistration
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, INFO_COLOR, SUCCESS_COLOR
 
 logger = logging.getLogger("bot")
@@ -638,7 +635,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             match2["wins"] += 1
             match1["opponent_wins"] += 1
             winning_player = player2
-            losing_player = player1
             self.update_player_stats(player2, "win")
             self.update_player_stats(player1, "loss")
 
@@ -846,7 +842,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                     await ctx.send(f"❌ You only have **{bal}** 🪙.", delete_after=8)
                     return
             bet_str = f"**{bet}** 🪙" if bet else "free play"
-            view = _RpsPvpChallengeView(ctx.author, target, ctx.guild.id, bet)
+            view = _RpsPvpChallengeView(ctx.author, target, ctx.guild.id, bet)  # type: ignore[arg-type]
             embed = discord.Embed(
                 title="✂️ RPS Challenge!",
                 description=(
@@ -865,7 +861,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             if bet > bal:
                 await ctx.send(f"❌ You only have **{bal}** 🪙.", delete_after=10)
                 return
-        view = _RpsView(ctx.author, ctx.guild.id, bet)
+        view = _RpsView(ctx.author, ctx.guild.id, bet)  # type: ignore[assignment, arg-type]
         bet_str = f"**{bet}** 🪙" if bet else f"Free play (win = +{_FREE_WIN} 🪙)"
         embed = discord.Embed(
             title="✂️ Rock · Paper · Scissors",
@@ -902,7 +898,7 @@ class _RpsView(discord.ui.View):
 
     async def _play(self, interaction: discord.Interaction, player_move: str):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
 
         bot_move = random.choice(["rock", "paper", "scissors"])
         pe, be = _RPS_EMOJI[player_move], _RPS_EMOJI[bot_move]
@@ -949,7 +945,7 @@ class _RpsView(discord.ui.View):
 
     async def on_timeout(self):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         try:
             await self.message.edit(content="Game timed out.", view=self)
         except Exception:
@@ -1030,7 +1026,7 @@ class _RpsPvpChallengeView(discord.ui.View):
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.green, emoji="✅")
     async def accept(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
             content="✅ Challenge accepted — both players, choose your move!",
             view=self,
@@ -1045,9 +1041,9 @@ class _RpsPvpChallengeView(discord.ui.View):
         # Send ephemeral choose-views to both players
         ch = interaction.channel
         play_view = _RpsPvpPlayView(
-            self.challenger, self.opponent, self.guild_id, self.bet, ch
+            self.challenger, self.opponent, self.guild_id, self.bet, ch  # type: ignore[arg-type]
         )
-        await ch.send(
+        await ch.send(  # type: ignore[union-attr]
             f"{self.challenger.mention} {self.opponent.mention} — click below to pick your move (only you can see your choice):",
             view=play_view,
         )
@@ -1056,7 +1052,7 @@ class _RpsPvpChallengeView(discord.ui.View):
     @discord.ui.button(label="Decline", style=discord.ButtonStyle.red, emoji="❌")
     async def decline(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
             content=f"❌ {self.opponent.display_name} declined the challenge.",
             view=self,
@@ -1065,7 +1061,7 @@ class _RpsPvpChallengeView(discord.ui.View):
 
     async def on_timeout(self):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         try:
             await self.message.edit(content="⏰ Challenge timed out.", view=self)
         except Exception:
@@ -1123,7 +1119,7 @@ class _RpsPvpPlayView(discord.ui.View):
 
     async def _resolve(self):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         try:
             await self.message.edit(view=self)
         except Exception:
@@ -1217,7 +1213,7 @@ class _RpsMovePickerView(discord.ui.View):
 
     async def _pick(self, interaction: discord.Interaction, move: str):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
             content=f"You chose **{move}** — waiting for opponent…", view=self
         )

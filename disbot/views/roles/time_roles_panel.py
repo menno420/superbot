@@ -70,7 +70,7 @@ class TimeRolesPanel(BaseView):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
         await interaction.response.defer(ephemeral=True)
-        cog = interaction.client.get_cog("RoleCog")
+        cog = interaction.client.get_cog("RoleCog")  # type: ignore[attr-defined]
         if cog:
             count = await cog._assign_roles(interaction.guild)
             await interaction.followup.send(
@@ -93,10 +93,10 @@ class TimeRolesPanel(BaseView):
 class TimeThresholdAddModal(
     discord.ui.Modal, title="Add / Edit Threshold"
 ):  # type: ignore[call-arg]
-    role_name = discord.ui.TextInput(
+    role_name = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Role name (must exist in server)", max_length=100
     )
-    days = discord.ui.TextInput(
+    days = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Days in server required", placeholder="0", max_length=5
     )
 
@@ -125,7 +125,7 @@ class TimeThresholdAddModal(
 
 class _TimeRemoveSelect(discord.ui.Select):
     def __init__(self, parent: TimeRolesPanel, thresholds: list[dict]) -> None:
-        self.parent = parent
+        self.parent = parent  # type: ignore[misc]
         options = [
             discord.SelectOption(
                 label=r["role_name"],
@@ -141,7 +141,7 @@ class _TimeRemoveSelect(discord.ui.Select):
         await interaction.response.send_message(
             f"✅ Removed **{self.values[0]}** from auto-assignment.", ephemeral=True
         )
-        await self.parent._refresh()
+        await self.parent._refresh()  # type: ignore[attr-defined]
 
 
 class _TimeRemoveView(discord.ui.View):

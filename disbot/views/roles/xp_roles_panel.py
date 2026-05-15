@@ -5,7 +5,7 @@ import logging
 import discord
 from discord.ext import commands
 from utils import db
-from utils.ui_constants import ECONOMY_COLOR, ROLE_COLOR, WARNING_COLOR
+from utils.ui_constants import ECONOMY_COLOR
 from views.base import BaseView
 from views.roles._helpers import _find_role_normalized
 
@@ -82,13 +82,13 @@ class XpRolesPanel(BaseView):
 class XpThresholdModal(
     discord.ui.Modal, title="Add / Edit XP Threshold"
 ):  # type: ignore[call-arg]
-    role_name = discord.ui.TextInput(
+    role_name = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Role name (must exist in server)", max_length=100
     )
-    level = discord.ui.TextInput(
+    level = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="XP Level required", placeholder="e.g. 5", max_length=4
     )
-    auto_assign = discord.ui.TextInput(
+    auto_assign = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Enable auto-assign? (yes/no)",
         placeholder="yes",
         required=False,
@@ -135,7 +135,7 @@ class XpThresholdModal(
 
 class _XpRemoveSelect(discord.ui.Select):
     def __init__(self, parent: XpRolesPanel, rows: list[dict]) -> None:
-        self.parent = parent
+        self.parent = parent  # type: ignore[misc]
         options = [
             discord.SelectOption(
                 label=r["role_name"],
@@ -156,7 +156,7 @@ class _XpRemoveSelect(discord.ui.Select):
         await interaction.response.send_message(
             f"✅ Removed XP threshold for **{self.values[0]}**.", ephemeral=True
         )
-        await self.parent._refresh()
+        await self.parent._refresh()  # type: ignore[attr-defined]
 
 
 class _XpRemoveView(discord.ui.View):

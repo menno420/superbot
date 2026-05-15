@@ -189,7 +189,7 @@ class BlackjackView(discord.ui.View):
         key = (self.game.user_id, self.game.guild_id)
         _active.pop(key, None)
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
 
         embed = _game_embed(self.game, reveal=True)
         embed.color = color
@@ -336,7 +336,7 @@ class _ChallengeView(discord.ui.View):
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.green, emoji="✅")
     async def accept(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
             content="✅ Challenge accepted — dealing hands…", view=self
         )
@@ -348,7 +348,7 @@ class _ChallengeView(discord.ui.View):
     @discord.ui.button(label="Decline", style=discord.ButtonStyle.red, emoji="❌")
     async def decline(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
             content=f"❌ {self.opponent.display_name} declined the challenge.",
             view=self,
@@ -392,7 +392,7 @@ async def _start_pvp(
             embed.add_field(
                 name="Blackjack!", value="Waiting for opponent…", inline=False
             )
-            msg = await channel.send(content=player.mention, embed=embed)
+            msg = await channel.send(content=player.mention, embed=embed)  # type: ignore[union-attr]
             state.messages[uid] = msg
             state.results[uid] = 21
             _active.pop((uid, gid), None)
@@ -403,17 +403,17 @@ async def _start_pvp(
             ):
                 _state.results[g.user_id] = hand_val
                 if len(_state.results) == 2:
-                    await _resolve_pvp(_state, channel)
+                    await _resolve_pvp(_state, channel)  # type: ignore[arg-type]
 
             view = BlackjackView(game, on_finish=_pvp_finish)
             embed = _game_embed(game, title=f"🃏 {player.display_name}'s hand")
-            msg = await channel.send(content=player.mention, embed=embed, view=view)
+            msg = await channel.send(content=player.mention, embed=embed, view=view)  # type: ignore[union-attr]
             view.message = msg
             state.messages[uid] = msg
 
     # If both got instant blackjack
     if len(state.results) == 2:
-        await _resolve_pvp(state, channel)
+        await _resolve_pvp(state, channel)  # type: ignore[arg-type]
 
 
 async def _resolve_pvp(state: _PvPState, channel: discord.TextChannel):
@@ -556,7 +556,7 @@ class _TournBlackjackView(discord.ui.View):
     ):
         _active.pop((self.game.user_id, self.game.guild_id), None)
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
 
         self.ps.chips = max(0, self.ps.chips + chip_delta)
         embed = _game_embed(self.game, reveal=reveal)
@@ -700,7 +700,7 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         )
 
     if announce:
-        await announce.send(embed=embed)
+        await announce.send(embed=embed)  # type: ignore[union-attr]
 
     # Clean up private channels
     if tourn.category:
@@ -790,7 +790,7 @@ class BlackjackCog(commands.Cog):
                     await ctx.send(f"❌ You only have **{bal}** 🪙.", delete_after=8)
                     return
             bet_str = f"**{bet}** 🪙" if bet else "free play"
-            view = _ChallengeView(ctx.author, target, ctx.guild.id, bet)
+            view = _ChallengeView(ctx.author, target, ctx.guild.id, bet)  # type: ignore[arg-type]
             embed = discord.Embed(
                 title="🃏 Blackjack Challenge!",
                 description=(
@@ -831,7 +831,7 @@ class BlackjackCog(commands.Cog):
             await ctx.send(embed=embed)
             return
 
-        view = BlackjackView(game)
+        view = BlackjackView(game)  # type: ignore[assignment]
         msg = await ctx.send(embed=_game_embed(game), view=view)
         view.message = msg
 
@@ -914,7 +914,7 @@ async def _launch_tournament(
     announce = bot.get_channel(tourn.announce_id)
     if not tourn.players:
         if announce:
-            await announce.send("❌ Tournament cancelled — no players registered.")
+            await announce.send("❌ Tournament cancelled — no players registered.")  # type: ignore[union-attr]
         _tournaments.pop(tourn.guild_id, None)
         await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
         return
@@ -925,7 +925,7 @@ async def _launch_tournament(
 
     if not tourn.players:
         if announce:
-            await announce.send(
+            await announce.send(  # type: ignore[union-attr]
                 "❌ Tournament cancelled — no players could afford the entry fee."
             )
         _tournaments.pop(tourn.guild_id, None)
@@ -933,7 +933,7 @@ async def _launch_tournament(
         return
 
     if announce:
-        await announce.send(
+        await announce.send(  # type: ignore[union-attr]
             f"🃏 **Blackjack Tournament starting** with {len(tourn.players)} player(s)! "
             "Check your private channel."
         )
@@ -961,7 +961,7 @@ async def _launch_tournament(
             await _start_tourn_round(ps, ch, tourn, bot)
         except discord.Forbidden:
             if announce:
-                await announce.send("❌ I don't have permission to create channels.")
+                await announce.send("❌ I don't have permission to create channels.")  # type: ignore[union-attr]
             _tournaments.pop(tourn.guild_id, None)
             await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
             return

@@ -151,6 +151,7 @@ class DiagnosticCog(commands.Cog):
     # Diagnostics hub
     # ------------------------------------------------------------------
 
+    @commands.cooldown(rate=2, per=15, type=commands.BucketType.user)
     @commands.command(name="diagnostics", aliases=["diag"])
     @commands.has_permissions(administrator=True)
     async def diagnostics_hub(self, ctx):

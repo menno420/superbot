@@ -122,6 +122,11 @@ class Cleanup(commands.Cog):
         return False
 
     @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
+        self._word_cache.pop(guild.id, None)
+        self._pattern_cache.pop(guild.id, None)
+
+    @commands.Cog.listener()
     async def on_message(self, message):
         await self.remove_unwanted_message(message)
 
@@ -193,7 +198,7 @@ class Cleanup(commands.Cog):
         else:
             await ctx.send("No prohibited words are currently set.", delete_after=10)
 
-    @word_cmd.command(name="add")
+    @word_cmd.command(name="add")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def word_add(self, ctx, *, word: str):
         """Adds a word to the prohibited words list."""
@@ -210,7 +215,7 @@ class Cleanup(commands.Cog):
                 f"The word '{word}' is already in the prohibited list.", delete_after=5
             )
 
-    @word_cmd.command(name="remove")
+    @word_cmd.command(name="remove")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def word_remove(self, ctx, *, word: str):
         """Removes a word from the prohibited words list."""
@@ -227,7 +232,7 @@ class Cleanup(commands.Cog):
                 f"The word '{word}' is not in the prohibited list.", delete_after=5
             )
 
-    @word_cmd.command(name="list")
+    @word_cmd.command(name="list")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def word_list(self, ctx):
         """Shows all prohibited words."""
@@ -253,7 +258,7 @@ class Cleanup(commands.Cog):
 
 
 class _AddWordModal(discord.ui.Modal, title="Add Prohibited Word"):  # type: ignore[call-arg]
-    word_input = discord.ui.TextInput(label="Word to prohibit", max_length=100)
+    word_input = discord.ui.TextInput(label="Word to prohibit", max_length=100)  # type: ignore[var-annotated]
 
     def __init__(self, cog: "Cleanup"):
         super().__init__()
@@ -274,7 +279,7 @@ class _AddWordModal(discord.ui.Modal, title="Add Prohibited Word"):  # type: ign
 
 
 class _RemoveWordModal(discord.ui.Modal, title="Remove Prohibited Word"):  # type: ignore[call-arg]
-    word_input = discord.ui.TextInput(label="Word to remove", max_length=100)
+    word_input = discord.ui.TextInput(label="Word to remove", max_length=100)  # type: ignore[var-annotated]
 
     def __init__(self, cog: "Cleanup"):
         super().__init__()
@@ -337,13 +342,13 @@ class _WordMenuView(BaseView):
 
 
 class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type: ignore[call-arg]
-    limit = discord.ui.TextInput(
+    limit = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Messages to scan (1–500)",
         placeholder="100",
         default="100",
         max_length=3,
     )
-    keyword = discord.ui.TextInput(
+    keyword = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Keyword filter (optional)",
         placeholder="Leave blank to scan all messages",
         required=False,
@@ -355,7 +360,7 @@ class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type
         self.cog = cog
 
     async def on_submit(self, interaction: discord.Interaction):
-        if not interaction.user.guild_permissions.manage_messages:
+        if not interaction.user.guild_permissions.manage_messages:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Manage Messages** permission to scan history.",
                 ephemeral=True,
@@ -378,7 +383,7 @@ class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type
 
         scanned = 0
         deleted = 0
-        async for message in interaction.channel.history(limit=scan_limit):
+        async for message in interaction.channel.history(limit=scan_limit):  # type: ignore[union-attr]
             if message.author.bot:
                 continue
             if kw and kw not in message.content.lower():

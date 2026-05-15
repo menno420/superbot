@@ -186,30 +186,30 @@ class _CategoryView(BaseView):
     def _rebuild_buttons(self) -> None:
         self.clear_items()
         if self._total_pages > 1:
-            prev_btn = discord.ui.Button(
+            prev_btn = discord.ui.Button(  # type: ignore[var-annotated]
                 label="◀ Prev",
                 style=discord.ButtonStyle.grey,
                 row=1,
                 disabled=self._page == 0,
             )
-            prev_btn.callback = self._prev_page
+            prev_btn.callback = self._prev_page  # type: ignore[method-assign]
             self.add_item(prev_btn)
 
-            next_btn = discord.ui.Button(
+            next_btn = discord.ui.Button(  # type: ignore[var-annotated]
                 label="Next ▶",
                 style=discord.ButtonStyle.grey,
                 row=1,
                 disabled=self._page >= self._total_pages - 1,
             )
-            next_btn.callback = self._next_page
+            next_btn.callback = self._next_page  # type: ignore[method-assign]
             self.add_item(next_btn)
 
-        back_btn = discord.ui.Button(
+        back_btn = discord.ui.Button(  # type: ignore[var-annotated]
             label="↩ Back",
             style=discord.ButtonStyle.secondary,
             row=1,
         )
-        back_btn.callback = self._back_to_hub
+        back_btn.callback = self._back_to_hub  # type: ignore[method-assign]
         self.add_item(back_btn)
 
     def build_embed(self) -> discord.Embed:
@@ -288,12 +288,12 @@ class UnifiedInventoryView(BaseView):
         for cat in ordered:
             cat_meta = _CATEGORY_META.get(cat, {"emoji": "📦"})
             count = len(self._grouped[cat])
-            btn = discord.ui.Button(
+            btn = discord.ui.Button(  # type: ignore[var-annotated]
                 label=f"{cat_meta['emoji']} {cat} ({count})",
                 style=discord.ButtonStyle.blurple,
                 row=0,
             )
-            btn.callback = functools.partial(self._open_category, category=cat)
+            btn.callback = functools.partial(self._open_category, category=cat)  # type: ignore[method-assign]
             self.add_item(btn)
 
     def build_hub_embed(self) -> discord.Embed:

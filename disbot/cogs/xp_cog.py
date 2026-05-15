@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 from utils import db
 from utils import embeds as em
-from utils.cooldowns import check_cooldown, format_remaining
+from utils.cooldowns import check_cooldown
 from utils.helpers import _parse_member, post_log_embed
 from utils.settings_keys import XP_ANNOUNCE_CHANNEL, XP_COOLDOWN, XP_MAX, XP_MIN
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
@@ -118,9 +118,9 @@ class _XpHubView(BaseView):
         self.ctx = ctx
 
     async def build_embed(self) -> discord.Embed:
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")  # type: ignore[arg-type]
         embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
-        is_admin = self.ctx.author.guild_permissions.administrator
+        is_admin = self.ctx.author.guild_permissions.administrator  # type: ignore[union-attr]
         lines = ["Use the buttons below to switch stat views."]
         if is_admin:
             lines.append("Admin controls: ⚙️ Configure · 🎁 Give XP · 🔄 Reset XP")
@@ -133,25 +133,25 @@ class _XpHubView(BaseView):
 
     @discord.ui.button(label="📊 Both", style=discord.ButtonStyle.blurple, row=0)
     async def btn_both(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")  # type: ignore[arg-type]
         embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="🏆 XP", style=discord.ButtonStyle.blurple, row=0)
     async def btn_xp(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "xp")
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "xp")  # type: ignore[arg-type]
         embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="🪙 Coins", style=discord.ButtonStyle.blurple, row=0)
     async def btn_coins(self, interaction: discord.Interaction, _: discord.ui.Button):
-        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "coins")
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "coins")  # type: ignore[arg-type]
         embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="⚙️ Configure", style=discord.ButtonStyle.grey, row=1)
     async def btn_config(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ Administrator permission required.", ephemeral=True
             )
@@ -164,7 +164,7 @@ class _XpHubView(BaseView):
 
     @discord.ui.button(label="🎁 Give XP", style=discord.ButtonStyle.grey, row=1)
     async def btn_givexp(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ Administrator permission required.", ephemeral=True
             )
@@ -173,7 +173,7 @@ class _XpHubView(BaseView):
 
     @discord.ui.button(label="🔄 Reset XP", style=discord.ButtonStyle.danger, row=1)
     async def btn_resetxp(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ Administrator permission required.", ephemeral=True
             )
@@ -182,8 +182,8 @@ class _XpHubView(BaseView):
 
 
 class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)
-    amount_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)  # type: ignore[var-annotated]
+    amount_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="XP amount", placeholder="e.g. 100", max_length=10
     )
 
@@ -218,8 +218,8 @@ class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
 
 
 class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)
-    confirm_input = discord.ui.TextInput(
+    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)  # type: ignore[var-annotated]
+    confirm_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label='Type "CONFIRM" to reset', placeholder="CONFIRM", max_length=10
     )
 
@@ -285,8 +285,8 @@ class XpCog(commands.Cog):
             channel_id = await db.get_setting(guild_id, XP_ANNOUNCE_CHANNEL, "")
             announce_ch: discord.TextChannel | None = None
             if channel_id:
-                announce_ch = message.guild.get_channel(int(channel_id))
-            announce_ch = announce_ch or message.channel
+                announce_ch = message.guild.get_channel(int(channel_id))  # type: ignore[assignment]
+            announce_ch = announce_ch or message.channel  # type: ignore[assignment]
 
             embed = discord.Embed(
                 title="🎉 Level Up!",
@@ -316,9 +316,9 @@ class XpCog(commands.Cog):
                         discord_role = discord.utils.get(
                             message.guild.roles, name=role_cfg["role_name"]
                         )
-                        if discord_role and discord_role not in message.author.roles:
+                        if discord_role and discord_role not in message.author.roles:  # type: ignore[union-attr]
                             try:
-                                await message.author.add_roles(
+                                await message.author.add_roles(  # type: ignore[union-attr]
                                     discord_role,
                                     reason=f"XP level-up: reached level {new_level}",
                                 )
@@ -350,7 +350,7 @@ class XpCog(commands.Cog):
     @commands.command(name="rank")
     async def rank(self, ctx: commands.Context, *args):
         """Show XP/coin rank.  !rank [user] [xp|coins|both]"""
-        member: discord.Member = ctx.author
+        member: discord.Member = ctx.author  # type: ignore[assignment]
         stat: str = "both"
         for arg in args:
             if arg.lower() in _STAT_TYPES:
@@ -498,7 +498,7 @@ class XpConfigView(discord.ui.View):
 
     _run_checks = interaction_check
 
-    async def _refresh(self, interaction: discord.Interaction):
+    async def _refresh(self, interaction: discord.Interaction):  # type: ignore[override]
         await interaction.message.edit(embed=await self.build_embed(), view=self)
 
     @discord.ui.button(label="XP Range", style=discord.ButtonStyle.blurple, row=0)
@@ -529,10 +529,10 @@ class XpConfigView(discord.ui.View):
 
 
 class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[call-arg]
-    xp_min = discord.ui.TextInput(
+    xp_min = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Min XP per message", placeholder="15", max_length=4
     )
-    xp_max = discord.ui.TextInput(
+    xp_max = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Max XP per message", placeholder="25", max_length=4
     )
 
@@ -559,7 +559,7 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[cal
 
 
 class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: ignore[call-arg]
-    seconds = discord.ui.TextInput(
+    seconds = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Cooldown in seconds", placeholder="60", max_length=5
     )
 
@@ -583,7 +583,7 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: igno
 
 
 class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"):  # type: ignore[call-arg]
-    channel_id = discord.ui.TextInput(
+    channel_id = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Channel ID (leave blank = same channel)",
         required=False,
         max_length=25,

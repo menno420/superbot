@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-import asyncio
 import logging
 import os
 import re
@@ -281,7 +280,7 @@ class _AdminPanelView(BaseView):
 
     @discord.ui.button(label="🔄 Reload All", style=discord.ButtonStyle.grey, row=0)
     async def reload_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await interaction.client.is_owner(interaction.user):
+        if not await interaction.client.is_owner(interaction.user):  # type: ignore[attr-defined]
             await interaction.response.send_message("Owner only.", ephemeral=True)
             return
         await interaction.response.defer()
@@ -319,7 +318,7 @@ class _AdminPanelView(BaseView):
 
 
 class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[call-arg]
-    level = discord.ui.TextInput(
+    level = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)",
         placeholder="INFO",
         max_length=10,

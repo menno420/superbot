@@ -9,7 +9,7 @@ from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.helpers import safe_select_emoji
-from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
+from utils.subsystem_registry import all_subsystems_sorted
 from utils.ui_constants import (
     CHANNEL_COLOR,
     ERROR_COLOR,
@@ -1138,15 +1138,15 @@ class _ChannelSelect(discord.ui.Select):
         self._parent = parent_view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.selected_channel_id = int(self.values[0])
+        self._parent.selected_channel_id = int(self.values[0])  # type: ignore[attr-defined]
         # Resolve the display name from the options list
         chosen_opt = next((o for o in self.options if o.value == self.values[0]), None)
-        self._parent.selected_channel_name = (
+        self._parent.selected_channel_name = (  # type: ignore[attr-defined]
             chosen_opt.label if chosen_opt else self.values[0]
         )
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(), view=self._parent
+                embed=self._parent.build_embed(), view=self._parent  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             if not interaction.response.is_done():
@@ -1168,10 +1168,10 @@ class _NameSelect(discord.ui.Select):
         self._parent = view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.chosen_name = self.values[0]
+        self._parent.chosen_name = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(), view=self._parent
+                embed=self._parent.build_embed(), view=self._parent  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             if not interaction.response.is_done():
@@ -1192,10 +1192,10 @@ class _CategorySelect(discord.ui.Select):
         self._parent = view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.chosen_cat = self.values[0]
+        self._parent.chosen_cat = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(), view=self._parent
+                embed=self._parent.build_embed(), view=self._parent  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             if not interaction.response.is_done():
@@ -1203,7 +1203,7 @@ class _CategorySelect(discord.ui.Select):
 
 
 class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):  # type: ignore[call-arg]
-    channel_name = discord.ui.TextInput(
+    channel_name = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Channel name",
         placeholder="e.g. my-channel",
         max_length=100,
@@ -1257,7 +1257,7 @@ class _ChannelSelectForVisibility(discord.ui.Select):
             return
         sub = _SubsystemToggleView(
             self.view.ctx,
-            channel=channel,
+            channel=channel,  # type: ignore[arg-type]
             manager_message=self.view.manager_message,
         )
         await sub.load(interaction.guild_id)
@@ -1342,13 +1342,13 @@ class _SubsystemToggleView(BaseView):
                 style = discord.ButtonStyle.grey
                 label = f"~ {meta.get('display_name', name)}"
 
-            btn = discord.ui.Button(
+            btn = discord.ui.Button(  # type: ignore[var-annotated]
                 label=label[:80],
                 style=style,
                 row=min(1 + i // 5, 4),
                 custom_id=f"toggle_{name}",
             )
-            btn.callback = self._make_toggle_callback(name)
+            btn.callback = self._make_toggle_callback(name)  # type: ignore[method-assign]
             self.add_item(btn)
 
     def _make_toggle_callback(self, subsystem_name: str):

@@ -12,20 +12,20 @@ logger = logging.getLogger("bot")
 
 
 class RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[call-arg]
-    name = discord.ui.TextInput(label="Role name", max_length=100)
-    color = discord.ui.TextInput(
+    name = discord.ui.TextInput(label="Role name", max_length=100)  # type: ignore[var-annotated]
+    color = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Color (hex, e.g. #3498db)",
         placeholder="#000000",
         required=False,
         max_length=7,
     )
-    hoist = discord.ui.TextInput(
+    hoist = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Show separately in member list? (yes/no)",
         placeholder="no",
         required=False,
         max_length=3,
     )
-    mentionable = discord.ui.TextInput(
+    mentionable = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Mentionable by everyone? (yes/no)",
         placeholder="no",
         required=False,
@@ -107,13 +107,13 @@ class RoleAutomationView(BaseView):
 class RoleAutomationModal(
     discord.ui.Modal, title="Configure XP Automation"
 ):  # type: ignore[call-arg]
-    level_threshold = discord.ui.TextInput(
+    level_threshold = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="XP level required (e.g. 5)",
         placeholder="e.g. 5",
         required=True,
         max_length=4,
     )
-    auto_assign_enabled = discord.ui.TextInput(
+    auto_assign_enabled = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Enable auto-assign? (yes/no)",
         placeholder="yes",
         required=False,

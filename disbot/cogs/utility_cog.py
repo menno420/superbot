@@ -233,7 +233,7 @@ class _UtilityPanelView(BaseView):
         embed.add_field(name="User ID", value=str(member.id), inline=True)
         embed.add_field(
             name="Joined Server",
-            value=member.joined_at.strftime("%Y-%m-%d"),
+            value=member.joined_at.strftime("%Y-%m-%d"),  # type: ignore[union-attr]
             inline=True,
         )
         embed.add_field(
@@ -242,11 +242,11 @@ class _UtilityPanelView(BaseView):
             inline=True,
         )
         embed.add_field(
-            name="Status", value=str(member.status).capitalize(), inline=True
+            name="Status", value=str(member.status).capitalize(), inline=True  # type: ignore[union-attr]
         )
         embed.add_field(
             name="Activity",
-            value=member.activity.name if member.activity else "None",
+            value=member.activity.name if member.activity else "None",  # type: ignore[union-attr]
             inline=True,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
@@ -262,22 +262,22 @@ class _UtilityPanelView(BaseView):
 
     @discord.ui.button(label="📊 Poll", style=discord.ButtonStyle.grey, row=1)
     async def poll_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.send_modal(_PollModal(interaction.channel))
+        await interaction.response.send_modal(_PollModal(interaction.channel))  # type: ignore[arg-type]
 
     @discord.ui.button(label="🔔 Remind Me", style=discord.ButtonStyle.grey, row=1)
     async def remind_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(
-            _RemindModal(interaction.user, interaction.channel)
+            _RemindModal(interaction.user, interaction.channel)  # type: ignore[arg-type]
         )
 
     @discord.ui.button(label="🔗 Invite", style=discord.ButtonStyle.grey, row=1)
     async def invite_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.create_instant_invite:
+        if not interaction.user.guild_permissions.create_instant_invite:  # type: ignore[union-attr]
             await interaction.response.send_message(
                 "❌ You need **Create Invite** permission.", ephemeral=True
             )
             return
-        invite = await interaction.channel.create_invite(max_uses=1, unique=True)
+        invite = await interaction.channel.create_invite(max_uses=1, unique=True)  # type: ignore[union-attr]
         await interaction.response.send_message(
             f"🔗 One-use invite: {invite.url}", ephemeral=True
         )
@@ -295,8 +295,8 @@ class _UtilityPanelView(BaseView):
 
 
 class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-arg]
-    question = discord.ui.TextInput(label="Poll question", max_length=200)
-    options = discord.ui.TextInput(
+    question = discord.ui.TextInput(label="Poll question", max_length=200)  # type: ignore[var-annotated]
+    options = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Options (one per line, 2–10)",
         style=discord.TextStyle.paragraph,
         placeholder="Option 1\nOption 2\nOption 3",
@@ -336,10 +336,10 @@ class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-ar
 
 
 class _RemindModal(discord.ui.Modal, title="Set Reminder"):  # type: ignore[call-arg]
-    minutes = discord.ui.TextInput(
+    minutes = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Minutes from now", placeholder="30", max_length=5
     )
-    message = discord.ui.TextInput(
+    message = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reminder message",
         style=discord.TextStyle.paragraph,
         max_length=500,

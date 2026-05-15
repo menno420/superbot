@@ -1247,7 +1247,7 @@ class _CountingHubView(BaseView):
             current = ch_data.get("current_count", 0)
             turns = ch_data.get("taking_turns", False)
             reset_wrong = ch_data.get("reset_on_wrong_count", False)
-            embed.description = f"Managing {self.ctx.channel.mention}"
+            embed.description = f"Managing {self.ctx.channel.mention}"  # type: ignore[union-attr]
             embed.add_field(name="Mode", value=mode, inline=True)
             embed.add_field(name="Current Count", value=str(current), inline=True)
             embed.add_field(
@@ -1267,7 +1267,7 @@ class _CountingHubView(BaseView):
                 if ch:
                     active_mentions.append(ch.mention)
             embed.description = (
-                f"{self.ctx.channel.mention} is not an active counting channel.\n\n"
+                f"{self.ctx.channel.mention} is not an active counting channel.\n\n"  # type: ignore[union-attr]
                 "Start a new match with `!start_match <mode>`."
             )
             if active_mentions:

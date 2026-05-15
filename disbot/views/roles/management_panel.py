@@ -80,13 +80,13 @@ class ManagementPanel(BaseView):
 
 
 class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-arg]
-    role_name = discord.ui.TextInput(
+    role_name = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Current role name (to find it)", max_length=100
     )
-    new_name = discord.ui.TextInput(
+    new_name = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="New name (blank = keep)", max_length=100, required=False
     )
-    new_color = discord.ui.TextInput(
+    new_color = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="New color hex e.g. #ff0000 (blank = keep)",
         max_length=7,
         required=False,
@@ -144,7 +144,7 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
 
 class _DeleteRoleSelect(discord.ui.Select):
     def __init__(self, parent: ManagementPanel, roles: list[discord.Role]) -> None:
-        self.parent = parent
+        self.parent = parent  # type: ignore[misc]
         options = [
             discord.SelectOption(label=r.name[:100], value=str(r.id)) for r in roles
         ][:25]
@@ -163,9 +163,9 @@ class _DeleteRoleSelect(discord.ui.Select):
             await interaction.response.send_message(
                 f"🗑️ Deleted role **{name}**.", ephemeral=True
             )
-            if self.parent.message:
-                await self.parent.message.edit(
-                    embed=await self.parent.build_embed(), view=self.parent
+            if self.parent.message:  # type: ignore[attr-defined]
+                await self.parent.message.edit(  # type: ignore[attr-defined]
+                    embed=await self.parent.build_embed(), view=self.parent  # type: ignore[attr-defined]
                 )
         except discord.Forbidden:
             await interaction.response.send_message(
