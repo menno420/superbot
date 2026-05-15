@@ -5,6 +5,7 @@ import logging
 
 import discord
 from discord.ext import commands
+from views.base import BaseView
 
 logger = logging.getLogger("discord_bot.prize_cog")
 
@@ -87,6 +88,14 @@ class ProofChannelCog(commands.Cog):
         )
         await ctx.send(embed=embed, delete_after=60)
 
+    @commands.command(name="prizemenu")
+    @commands.has_permissions(manage_channels=True)
+    async def prize_menu(self, ctx):
+        """Open the interactive prize channel management panel."""
+        view = _PrizeManagerView(ctx, self)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
+
     @commands.command(name="timedprize")
     @commands.has_permissions(manage_channels=True)
     async def start_timed_prize_claim(self, ctx, winner: discord.Member, duration: int):
@@ -120,6 +129,147 @@ class ProofChannelCog(commands.Cog):
 
         task = asyncio.create_task(_auto_unlock())
         self._timed_tasks[ctx.guild.id] = task
+
+
+class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: ignore[call-arg]
+    winner_input = discord.ui.TextInput(
+        label="Winner (mention, ID, or name)", max_length=100
+    )
+
+    def __init__(self, cog: "ProofChannelCog", timed: bool = False):
+        super().__init__()
+        self.cog = cog
+        self.timed = timed
+
+    async def on_submit(self, interaction: discord.Interaction):
+        from cogs.moderation_cog import _parse_member
+
+        member = _parse_member(interaction.guild, self.winner_input.value)
+        if not member:
+            await interaction.response.send_message(
+                "❌ Member not found.", ephemeral=True
+            )
+            return
+        ch = self.cog.get_proof_channel(interaction.guild)
+        if not ch:
+            await interaction.response.send_message(
+                "Channel '#proof' not found.", ephemeral=True
+            )
+            return
+        if self.timed:
+            await interaction.response.send_modal(_TimedPrizeModal(self.cog, member))
+        else:
+            await self.cog._lock_for_winner(ch, member)
+            await interaction.response.send_message(
+                f"✅ {member.mention} has been granted access to {ch.mention}!",
+                ephemeral=True,
+            )
+
+
+class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: ignore[call-arg]
+    duration_input = discord.ui.TextInput(
+        label="Duration (minutes)", placeholder="e.g. 10", max_length=5
+    )
+
+    def __init__(self, cog: "ProofChannelCog", winner: discord.Member):
+        super().__init__()
+        self.cog = cog
+        self.winner = winner
+
+    async def on_submit(self, interaction: discord.Interaction):
+        if not self.duration_input.value.isdigit():
+            await interaction.response.send_message(
+                "❌ Duration must be a whole number of minutes.", ephemeral=True
+            )
+            return
+        duration = int(self.duration_input.value)
+        ch = self.cog.get_proof_channel(interaction.guild)
+        if not ch:
+            await interaction.response.send_message(
+                "Channel '#proof' not found.", ephemeral=True
+            )
+            return
+
+        if old_task := self.cog._timed_tasks.pop(interaction.guild_id, None):
+            old_task.cancel()
+
+        await self.cog._lock_for_winner(ch, self.winner)
+
+        async def _auto_unlock():
+            await asyncio.sleep(duration * 60)
+            try:
+                await self.cog._unlock(ch)
+            except Exception:
+                pass
+            finally:
+                self.cog._timed_tasks.pop(interaction.guild_id, None)
+
+        self.cog._timed_tasks[interaction.guild_id] = asyncio.create_task(
+            _auto_unlock()
+        )
+        await interaction.response.send_message(
+            f"✅ {self.winner.mention} has access to {ch.mention} for **{duration}** minute(s).",
+            ephemeral=True,
+        )
+
+
+class _PrizeManagerView(BaseView):
+    """Interactive prize channel management panel."""
+
+    def __init__(self, ctx: commands.Context, cog: "ProofChannelCog"):
+        super().__init__(ctx.author, timeout=180)
+        self.ctx = ctx
+        self.cog = cog
+
+    def build_embed(self) -> discord.Embed:
+        ch = self.cog.get_proof_channel(self.ctx.guild)
+        embed = discord.Embed(
+            title="🏆 Prize Channel Manager",
+            color=discord.Color.gold(),
+        )
+        if ch:
+            embed.description = f"Managing {ch.mention}"
+            formatted = _format_overwrites(ch.overwrites)
+            embed.add_field(
+                name="Current Permissions",
+                value=formatted[:1000] or "Default",
+                inline=False,
+            )
+        else:
+            embed.description = "⚠️ No `#proof` channel found. Create one first."
+        embed.set_footer(text="Use buttons below to manage prize access.")
+        return embed
+
+    @discord.ui.button(label="🏆 Grant Access", style=discord.ButtonStyle.green, row=0)
+    async def btn_grant(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_PrizeWinnerModal(self.cog, timed=False))
+
+    @discord.ui.button(
+        label="⏱️ Timed Access", style=discord.ButtonStyle.blurple, row=0
+    )
+    async def btn_timed(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_PrizeWinnerModal(self.cog, timed=True))
+
+    @discord.ui.button(label="🔒 End Session", style=discord.ButtonStyle.danger, row=0)
+    async def btn_end(self, interaction: discord.Interaction, _: discord.ui.Button):
+        ch = self.cog.get_proof_channel(interaction.guild)
+        if not ch:
+            await interaction.response.send_message(
+                "Channel '#proof' not found.", ephemeral=True
+            )
+            return
+        if task := self.cog._timed_tasks.pop(interaction.guild_id, None):
+            task.cancel()
+        await self.cog._unlock(ch)
+        embed = self.build_embed()
+        embed.description = f"✅ {ch.mention} is now read-only for everyone."
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(
+        label="🔄 Refresh Status", style=discord.ButtonStyle.secondary, row=1
+    )
+    async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
 
 def _format_overwrites(overwrites: dict) -> str:

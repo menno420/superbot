@@ -9,6 +9,7 @@ from discord.ext import commands
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
+from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
@@ -494,21 +495,12 @@ class EconomyCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
-class _EconomyPanelView(discord.ui.View):
+class _EconomyPanelView(BaseView):
     """Interactive economy control panel — hub for all economy actions."""
 
     def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=180)
+        super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
 
     async def build_embed(self) -> discord.Embed:
         uid, gid = self.ctx.author.id, self.ctx.guild.id

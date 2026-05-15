@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from utils import db
 from utils import embeds as em
+from views.base import BaseView
 
 MEDALS = ["🥇", "🥈", "🥉"]
 
@@ -111,7 +112,7 @@ async def _build_embed(
     return embed
 
 
-class LeaderboardView(discord.ui.View):
+class LeaderboardView(BaseView):
     """Category-selector view for the leaderboard panel."""
 
     def __init__(
@@ -120,26 +121,9 @@ class LeaderboardView(discord.ui.View):
         channel: discord.abc.GuildChannel,
         author: discord.Member | discord.User,
     ):
-        super().__init__(timeout=120)
+        super().__init__(author, timeout=120)
         self.guild = guild
         self.channel = channel
-        self.author = author
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message(
-                "This panel isn't yours.", ephemeral=True
-            )
-            return False
-        return True
-
-    async def on_timeout(self):
-        if self.message:
-            try:
-                await self.message.edit(view=None)
-            except Exception:
-                pass
 
     @discord.ui.select(
         placeholder="Choose a leaderboard category…",
