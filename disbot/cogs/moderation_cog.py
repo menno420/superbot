@@ -385,9 +385,7 @@ class _ModPanelView(discord.ui.View):
         await interaction.response.send_modal(_UnbanModal(self.cog))
 
     @discord.ui.button(label="📋 Mod Logs", style=discord.ButtonStyle.grey, row=1)
-    async def modlogs_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
+    async def modlogs_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_ModLogsModal(self.cog))
 
     @discord.ui.button(label="⬛ Clear Warnings", style=discord.ButtonStyle.grey, row=2)

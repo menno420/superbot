@@ -180,9 +180,7 @@ class _XpHubView(BaseView):
 
 
 class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
-        label="User (mention or ID)", max_length=100
-    )
+    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)
     amount_input = discord.ui.TextInput(
         label="XP amount", placeholder="e.g. 100", max_length=10
     )
@@ -196,16 +194,22 @@ class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
 
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
-            await interaction.response.send_message("❌ Member not found.", ephemeral=True)
+            await interaction.response.send_message(
+                "❌ Member not found.", ephemeral=True
+            )
             return
         try:
             amount = int(self.amount_input.value)
             if amount <= 0:
                 raise ValueError
         except ValueError:
-            await interaction.response.send_message("❌ Amount must be a positive integer.", ephemeral=True)
+            await interaction.response.send_message(
+                "❌ Amount must be a positive integer.", ephemeral=True
+            )
             return
-        new_xp, new_level, _ = await db.add_xp(member.id, interaction.guild_id, amount, 0)
+        new_xp, new_level, _ = await db.add_xp(
+            member.id, interaction.guild_id, amount, 0
+        )
         await interaction.response.send_message(
             f"✅ Gave **{amount}** XP to {member.mention}. "
             f"Now **{new_xp}** XP (Level **{new_level}**).",
@@ -214,9 +218,7 @@ class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
 
 
 class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-arg]
-    member_input = discord.ui.TextInput(
-        label="User (mention or ID)", max_length=100
-    )
+    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)
     confirm_input = discord.ui.TextInput(
         label='Type "CONFIRM" to reset', placeholder="CONFIRM", max_length=10
     )
@@ -227,19 +229,25 @@ class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-ar
 
     async def on_submit(self, interaction: discord.Interaction):
         if self.confirm_input.value.strip().upper() != "CONFIRM":
-            await interaction.response.send_message("❌ Reset cancelled — type CONFIRM to proceed.", ephemeral=True)
+            await interaction.response.send_message(
+                "❌ Reset cancelled — type CONFIRM to proceed.", ephemeral=True
+            )
             return
         from cogs.moderation_cog import _parse_member
 
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
-            await interaction.response.send_message("❌ Member not found.", ephemeral=True)
+            await interaction.response.send_message(
+                "❌ Member not found.", ephemeral=True
+            )
             return
         await db.execute(
             "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
             (member.id, interaction.guild_id),
         )
-        await interaction.response.send_message(f"✅ Reset XP for {member.mention}.", ephemeral=True)
+        await interaction.response.send_message(
+            f"✅ Reset XP for {member.mention}.", ephemeral=True
+        )
 
 
 class XpCog(commands.Cog):

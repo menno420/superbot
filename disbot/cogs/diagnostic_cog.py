@@ -71,14 +71,28 @@ class _DiagnosticsHubView(BaseView):
             ),
             color=discord.Color.blue(),
         )
-        embed.add_field(name="🤖 Bot Status", value="Health & performance metrics", inline=True)
+        embed.add_field(
+            name="🤖 Bot Status", value="Health & performance metrics", inline=True
+        )
         embed.add_field(name="📡 Latency", value="WebSocket ping", inline=True)
-        embed.add_field(name="💻 System Info", value="OS, disk & Python version", inline=True)
-        embed.add_field(name="🗄️ Check Database", value="Verify all DB tables exist", inline=True)
-        embed.add_field(name="📄 Validate JSON", value="Check data file integrity", inline=True)
-        embed.add_field(name="📋 Command List", value="Paginated command overview", inline=True)
-        embed.add_field(name="🔍 Recent Errors", value="Last 10 error log entries", inline=True)
-        embed.add_field(name="🔔 Test Notify", value="Fire a test webhook ping", inline=True)
+        embed.add_field(
+            name="💻 System Info", value="OS, disk & Python version", inline=True
+        )
+        embed.add_field(
+            name="🗄️ Check Database", value="Verify all DB tables exist", inline=True
+        )
+        embed.add_field(
+            name="📄 Validate JSON", value="Check data file integrity", inline=True
+        )
+        embed.add_field(
+            name="📋 Command List", value="Paginated command overview", inline=True
+        )
+        embed.add_field(
+            name="🔍 Recent Errors", value="Last 10 error log entries", inline=True
+        )
+        embed.add_field(
+            name="🔔 Test Notify", value="Fire a test webhook ping", inline=True
+        )
         embed.set_footer(text="Diagnostics Hub  •  Admin only")
         return embed
 
@@ -112,12 +126,16 @@ class _DiagnosticsHubView(BaseView):
         await interaction.response.defer()
         await self.ctx.invoke(self.cog.list_commands_detailed)
 
-    @discord.ui.button(label="🔍 Recent Errors", style=discord.ButtonStyle.danger, row=2)
+    @discord.ui.button(
+        label="🔍 Recent Errors", style=discord.ButtonStyle.danger, row=2
+    )
     async def btn_errors(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.defer()
         await self.ctx.invoke(self.cog.recent_errors)
 
-    @discord.ui.button(label="🔔 Test Notify", style=discord.ButtonStyle.secondary, row=2)
+    @discord.ui.button(
+        label="🔔 Test Notify", style=discord.ButtonStyle.secondary, row=2
+    )
     async def btn_notify(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.defer()
         await self.ctx.invoke(self.cog.test_notification)
