@@ -7,9 +7,24 @@ import re
 import config as _config
 import discord
 from discord.ext import commands
+from services import governance_service
+from services.governance_service import GovernanceContext
 from utils import db
 from utils.ui_constants import ADMIN_COLOR
 from views.base import BaseView
+
+
+def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
+    """Extract the bare command name from a prefixed message."""
+    for prefix in prefixes:
+        if content.startswith(prefix):
+            rest = (
+                content[len(prefix) :].split()[0]
+                if content[len(prefix) :].strip()
+                else ""
+            )
+            return rest.lower() if rest else None
+    return None
 
 
 class Cleanup(commands.Cog):
@@ -42,19 +57,47 @@ class Cleanup(commands.Cog):
         return self._pattern_cache[guild_id]
 
     async def remove_unwanted_message(self, message):
-        """Deletes the message if it is a command in a non-whitelisted channel or contains prohibited content."""
+        """Delete message if it is a command in a governed channel or contains prohibited content."""
         if message.author.bot:
             return False
 
         if self.command_pattern.match(message.content):
+            command_name = _extract_command_name(
+                message.content.strip(), self.command_prefixes
+            )
+            if message.guild and command_name:
+                # Route through governance_service for policy-driven decision
+                gctx = GovernanceContext.from_message(message)
+                policy = await governance_service.resolve_command_policy(
+                    gctx, command_name
+                )
+                if not policy.allowed:
+                    try:
+                        if policy.cleanup.delete_message:
+                            await message.delete()
+                            self.logger.info(
+                                "Deleted blocked command from %s: %s",
+                                message.author,
+                                message.content,
+                            )
+                        if policy.feedback:
+                            warn = await message.channel.send(policy.feedback)
+                            await warn.delete(delay=policy.cleanup.delete_after_seconds)
+                    except discord.DiscordException as e:
+                        self.logger.error("Cleanup error: %s", e)
+                    return True
+                return False
+            # DM or unknown guild — fall back to whitelist behavior
             if message.channel.id not in self.whitelisted_channels:
                 try:
                     await message.delete()
                     self.logger.info(
-                        f"Deleted command message from {message.author} in non-whitelisted channel: {message.content}"
+                        "Deleted command message from %s in non-whitelisted channel: %s",
+                        message.author,
+                        message.content,
                     )
                 except discord.DiscordException as e:
-                    self.logger.error(f"Failed to delete command message: {e}")
+                    self.logger.error("Failed to delete command message: %s", e)
                 return True
             return False
 

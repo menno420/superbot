@@ -431,6 +431,18 @@ async def _load_cogs() -> None:
 # Entry point
 # ---------------------------------------------------------------------------
 async def main() -> None:
+    # Validate registry integrity before touching the DB or loading cogs.
+    # Raises GovernanceError (subclass) and aborts on any registry fault.
+    from services.governance_exceptions import GovernanceError
+    from utils.subsystem_registry import validate_registry
+
+    try:
+        validate_registry()
+        logger.info("Registry validated and frozen.")
+    except GovernanceError as exc:
+        logger.critical("Registry validation failed — aborting startup: %s", exc)
+        raise SystemExit(1) from exc
+
     await db.init()
     if reporter:
         await reporter.start()

@@ -801,3 +801,99 @@ async def set_counting_state(guild_id: int, state: dict) -> None:
            ON CONFLICT (guild_id) DO UPDATE SET state=EXCLUDED.state""",
         (guild_id, state),
     )
+
+
+# ---------------------------------------------------------------------------
+# Governance: subsystem_visibility
+# ---------------------------------------------------------------------------
+
+
+async def get_subsystem_visibility(
+    guild_id: int, scope_type: str, scope_id: int
+) -> dict[str, bool | None]:
+    """Return subsystem→enabled mapping for a scope. Missing rows = not in dict."""
+    rows = await get().fetch(
+        "SELECT subsystem, enabled FROM subsystem_visibility"
+        " WHERE guild_id=$1 AND scope_type=$2 AND scope_id=$3",
+        guild_id,
+        scope_type,
+        scope_id,
+    )
+    return {r["subsystem"]: r["enabled"] for r in rows}
+
+
+async def get_all_visibility_for_guild(guild_id: int):
+    """Fetch all visibility rows for a guild (all scopes) in one query."""
+    return await get().fetch(
+        "SELECT scope_type, scope_id, subsystem, enabled"
+        " FROM subsystem_visibility WHERE guild_id=$1",
+        guild_id,
+    )
+
+
+async def set_subsystem_visibility(
+    guild_id: int,
+    scope_type: str,
+    scope_id: int,
+    subsystem: str,
+    enabled: bool | None,
+) -> None:
+    """Upsert a visibility override. enabled=None clears the override (inherit)."""
+    await get().execute(
+        """INSERT INTO subsystem_visibility
+               (guild_id, scope_type, scope_id, subsystem, enabled)
+           VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (guild_id, scope_type, scope_id, subsystem)
+           DO UPDATE SET enabled = EXCLUDED.enabled""",
+        guild_id,
+        scope_type,
+        scope_id,
+        subsystem,
+        enabled,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Governance: cleanup_policies
+# ---------------------------------------------------------------------------
+
+
+async def get_cleanup_policy(
+    guild_id: int, scope_type: str, scope_id: int
+) -> dict | None:
+    """Return cleanup policy for a scope, or None if no row exists."""
+    row = await get().fetchrow(
+        "SELECT delete_invalid_commands, delete_failed_commands, delete_after_seconds"
+        " FROM cleanup_policies WHERE guild_id=$1 AND scope_type=$2 AND scope_id=$3",
+        guild_id,
+        scope_type,
+        scope_id,
+    )
+    return dict(row) if row else None
+
+
+async def set_cleanup_policy(
+    guild_id: int,
+    scope_type: str,
+    scope_id: int,
+    delete_invalid_commands: bool = True,
+    delete_failed_commands: bool = True,
+    delete_after_seconds: int = 5,
+) -> None:
+    await get().execute(
+        """INSERT INTO cleanup_policies
+               (guild_id, scope_type, scope_id,
+                delete_invalid_commands, delete_failed_commands, delete_after_seconds)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (guild_id, scope_type, scope_id)
+           DO UPDATE SET
+               delete_invalid_commands = EXCLUDED.delete_invalid_commands,
+               delete_failed_commands  = EXCLUDED.delete_failed_commands,
+               delete_after_seconds    = EXCLUDED.delete_after_seconds""",
+        guild_id,
+        scope_type,
+        scope_id,
+        delete_invalid_commands,
+        delete_failed_commands,
+        delete_after_seconds,
+    )
