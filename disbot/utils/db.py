@@ -81,9 +81,7 @@ async def _run_migrations() -> None:
 
     async with get().acquire() as conn:
         # Acquire session-scoped advisory lock — blocks until available.
-        await conn.execute(
-            "SELECT pg_advisory_lock($1)", _MIGRATION_ADVISORY_LOCK
-        )
+        await conn.execute("SELECT pg_advisory_lock($1)", _MIGRATION_ADVISORY_LOCK)
         try:
             applied = {
                 r["version"]
@@ -108,7 +106,7 @@ async def _run_migrations() -> None:
                 with open(path, encoding="utf-8") as f:
                     sql = f.read()
                 description = (
-                    filename[len(str(version)) + 1:]
+                    filename[len(str(version)) + 1 :]
                     .replace("_", " ")
                     .removesuffix(".sql")
                 )
@@ -968,6 +966,129 @@ async def set_cleanup_policy(
         delete_invalid_commands,
         delete_failed_commands,
         delete_after_seconds,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Runtime session helpers
+# ---------------------------------------------------------------------------
+
+
+async def get_or_create_session(
+    user_id: int,
+    guild_id: int,
+    channel_id: int,
+    subsystem: str,
+) -> dict:
+    """Return existing session or create a new one (upsert on unique key).
+
+    Returns the session row as a dict with keys:
+    session_id, user_id, guild_id, channel_id, subsystem,
+    created_at, last_active_at, metadata.
+    """
+    row = await get().fetchrow(
+        """INSERT INTO runtime_sessions
+               (user_id, guild_id, channel_id, subsystem)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (user_id, channel_id, subsystem) DO UPDATE
+               SET last_active_at = NOW()
+           RETURNING *""",
+        user_id,
+        guild_id,
+        channel_id,
+        subsystem,
+    )
+    return dict(row)
+
+
+async def touch_session(session_id: str) -> None:
+    """Update last_active_at for an existing session."""
+    await get().execute(
+        "UPDATE runtime_sessions SET last_active_at = NOW() WHERE session_id = $1",
+        session_id,
+    )
+
+
+async def get_session(session_id: str) -> dict | None:
+    """Fetch a session by its UUID, or None if it does not exist."""
+    row = await get().fetchrow(
+        "SELECT * FROM runtime_sessions WHERE session_id = $1", session_id
+    )
+    return dict(row) if row else None
+
+
+async def delete_session(session_id: str) -> None:
+    """Delete a session and cascade to its state rows."""
+    await get().execute(
+        "DELETE FROM runtime_sessions WHERE session_id = $1", session_id
+    )
+
+
+async def delete_sessions_for_subsystem(guild_id: int, subsystem: str) -> list[str]:
+    """Delete all sessions for a subsystem in a guild.
+
+    Returns the list of deleted session_ids (for downstream cleanup).
+    """
+    rows = await get().fetch(
+        """DELETE FROM runtime_sessions
+           WHERE guild_id = $1 AND subsystem = $2
+           RETURNING session_id::text""",
+        guild_id,
+        subsystem,
+    )
+    return [r["session_id"] for r in rows]
+
+
+async def get_session_state(session_id: str, key: str) -> object | None:
+    """Read a single typed value from session state (returns Python object or None)."""
+    row = await get().fetchrow(
+        "SELECT value FROM runtime_session_state WHERE session_id = $1 AND key = $2",
+        session_id,
+        key,
+    )
+    return row["value"] if row else None
+
+
+async def set_session_state(session_id: str, key: str, value: object) -> None:
+    """Write a single typed value to session state (upsert)."""
+    import json as _json
+
+    await get().execute(
+        """INSERT INTO runtime_session_state (session_id, key, value)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (session_id, key) DO UPDATE SET value = EXCLUDED.value""",
+        session_id,
+        key,
+        _json.dumps(value),
+    )
+
+
+async def delete_session_state(session_id: str, key: str) -> None:
+    """Remove a single state key from a session."""
+    await get().execute(
+        "DELETE FROM runtime_session_state WHERE session_id = $1 AND key = $2",
+        session_id,
+        key,
+    )
+
+
+async def get_all_session_state(session_id: str) -> dict:
+    """Return all key-value state for a session as a plain dict."""
+    rows = await get().fetch(
+        "SELECT key, value FROM runtime_session_state WHERE session_id = $1",
+        session_id,
+    )
+    return {r["key"]: r["value"] for r in rows}
+
+
+async def delete_guild_session_state(guild_id: int) -> None:
+    """Purge all session state for every session in a guild (cache invalidation)."""
+    await get().execute(
+        """DELETE FROM runtime_session_state
+           WHERE session_id IN (
+               SELECT session_id FROM runtime_sessions WHERE guild_id = $1
+           )""",
+        guild_id,
     )
 
 

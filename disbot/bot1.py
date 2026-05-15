@@ -123,6 +123,13 @@ async def on_guild_remove(guild: discord.Guild) -> None:
 
 
 @bot.event
+async def on_interaction(interaction: discord.Interaction) -> None:
+    from core.runtime import interaction_router
+
+    await interaction_router.dispatch(interaction)
+
+
+@bot.event
 async def on_command(ctx: commands.Context) -> None:
     logger.info(
         "CMD | %s (%s) | #%s | %s | %s",
@@ -269,7 +276,9 @@ async def _load_cogs() -> None:
         failed_subsystems: set[str] = set()
         for name, meta in SUBSYSTEMS.items():
             entry_points = meta.get("entry_points", [])
-            if entry_points and not any(ep in loaded_command_names for ep in entry_points):
+            if entry_points and not any(
+                ep in loaded_command_names for ep in entry_points
+            ):
                 failed_subsystems.add(name)
                 logger.warning(
                     "Subsystem %r has no loaded commands — marking INTERNAL", name
@@ -295,6 +304,9 @@ async def main() -> None:
         raise SystemExit(1) from exc
 
     await db.init()
+    from core import runtime
+
+    await runtime.setup()
     if reporter:
         await reporter.start()
     health_task: asyncio.Task | None = None
