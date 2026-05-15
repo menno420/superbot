@@ -901,6 +901,29 @@ async def get_all_visibility_for_guild(guild_id: int):
     )
 
 
+async def get_visibility_override(
+    guild_id: int,
+    scope_type: str,
+    scope_id: int,
+    subsystem: str,
+) -> bool | None:
+    """Return the current enabled value for a specific visibility override, or None.
+
+    Used by GovernanceMutationPipeline to read the old value before writing,
+    so the governance audit log captures both before and after state.
+    """
+    row = await get().fetchrow(
+        """SELECT enabled FROM subsystem_visibility
+           WHERE guild_id = $1 AND scope_type = $2
+             AND scope_id = $3 AND subsystem = $4""",
+        guild_id,
+        scope_type,
+        scope_id,
+        subsystem,
+    )
+    return bool(row["enabled"]) if row is not None and row["enabled"] is not None else None
+
+
 async def set_subsystem_visibility(
     guild_id: int,
     scope_type: str,
@@ -1050,6 +1073,57 @@ async def delete_sessions_for_subsystem(guild_id: int, subsystem: str) -> list[s
     return [r["session_id"] for r in rows]
 
 
+async def delete_sessions_for_scope(
+    guild_id: int,
+    subsystem: str,
+    channel_id: int | None = None,
+) -> list[str]:
+    """Delete sessions for a subsystem, optionally scoped to a specific channel.
+
+    Used for scope-aware invalidation: a channel-scoped governance change
+    should only invalidate sessions in that channel, not guild-wide.
+    Falls back to guild-wide deletion when channel_id is None.
+
+    Returns the list of deleted session_ids.
+    """
+    if channel_id is not None:
+        rows = await get().fetch(
+            """DELETE FROM runtime_sessions
+               WHERE guild_id = $1 AND subsystem = $2 AND channel_id = $3
+               RETURNING session_id::text""",
+            guild_id,
+            subsystem,
+            channel_id,
+        )
+    else:
+        rows = await get().fetch(
+            """DELETE FROM runtime_sessions
+               WHERE guild_id = $1 AND subsystem = $2
+               RETURNING session_id::text""",
+            guild_id,
+            subsystem,
+        )
+    return [r["session_id"] for r in rows]
+
+
+def _maybe_decode_legacy(value: object) -> object:
+    """Transparently decode double-encoded legacy session state values.
+
+    Before migration 012 was applied, set_session_state() manually called
+    json.dumps() before asyncpg, so JSONB rows contain a JSON string wrapping
+    the real payload.  After the migration repairs existing rows this shim is
+    a no-op (asyncpg decodes JSONB objects directly into Python dicts).
+    """
+    if isinstance(value, str):
+        try:
+            import json as _json
+
+            return _json.loads(value)
+        except (ValueError, TypeError):
+            return value
+    return value
+
+
 async def get_session_state(session_id: str, key: str) -> object | None:
     """Read a single typed value from session state (returns Python object or None)."""
     row = await get().fetchrow(
@@ -1057,20 +1131,18 @@ async def get_session_state(session_id: str, key: str) -> object | None:
         session_id,
         key,
     )
-    return row["value"] if row else None
+    return _maybe_decode_legacy(row["value"]) if row else None
 
 
 async def set_session_state(session_id: str, key: str, value: object) -> None:
     """Write a single typed value to session state (upsert)."""
-    import json as _json
-
     await get().execute(
         """INSERT INTO runtime_session_state (session_id, key, value)
            VALUES ($1, $2, $3)
            ON CONFLICT (session_id, key) DO UPDATE SET value = EXCLUDED.value""",
         session_id,
         key,
-        _json.dumps(value),
+        value,  # asyncpg JSONB codec handles encoding via _init_conn
     )
 
 
@@ -1089,7 +1161,7 @@ async def get_all_session_state(session_id: str) -> dict:
         "SELECT key, value FROM runtime_session_state WHERE session_id = $1",
         session_id,
     )
-    return {r["key"]: r["value"] for r in rows}
+    return {r["key"]: _maybe_decode_legacy(r["value"]) for r in rows}
 
 
 async def delete_guild_session_state(guild_id: int) -> None:
@@ -1112,10 +1184,9 @@ async def write_governance_audit(
     subsystem: str | None,
     new_value: dict | None,
     old_value: dict | None = None,
+    mutation_id: str | None = None,
 ) -> None:
     """Append a row to governance_audit_log (fire-and-forget; non-blocking)."""
-    import json as _json
-
     await get().execute(
         """INSERT INTO governance_audit_log
                (guild_id, actor_id, action, scope_type, scope_id,
@@ -1127,8 +1198,8 @@ async def write_governance_audit(
         scope_type,
         scope_id,
         subsystem,
-        _json.dumps(old_value) if old_value is not None else None,
-        _json.dumps(new_value) if new_value is not None else None,
+        old_value,   # asyncpg JSONB codec handles encoding via _init_conn
+        new_value,   # asyncpg JSONB codec handles encoding via _init_conn
     )
 
 

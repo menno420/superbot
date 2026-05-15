@@ -62,6 +62,24 @@ def _check_capability_override(guild_id: int, capability: str) -> bool | None:
     return _capability_execution_overrides.get((guild_id, capability))
 
 
+def forget_guild_capabilities(guild_id: int) -> None:
+    """Clear all capability override state for a guild.
+
+    Called from guild_lifecycle.teardown() when the bot leaves a guild so
+    that _loaded_guilds and _capability_execution_overrides do not hold stale
+    data if the bot later rejoins the same guild.
+
+    This function is intentionally not called from governance.cache.forget_guild()
+    to avoid a backward import (cache layer must not import execution layer).
+    The guild_lifecycle module coordinates both calls in the correct order.
+    """
+    _loaded_guilds.discard(guild_id)
+    stale_keys = [k for k in _capability_execution_overrides if k[0] == guild_id]
+    for k in stale_keys:
+        _capability_execution_overrides.pop(k, None)
+    logger.debug("Cleared capability overrides for guild=%d", guild_id)
+
+
 # ---------------------------------------------------------------------------
 # Public resolve_execution
 # ---------------------------------------------------------------------------
@@ -92,15 +110,22 @@ async def resolve_execution(
     subsystem_name = CAPABILITY_TO_SUBSYSTEM.get(capability)
 
     if not subsystem_name:
+        # Unknown capabilities fail CLOSED (Phase 1.4 — ARCH-005 fix).
+        # A typo in a capability string must never silently grant access.
+        logger.warning(
+            "resolve_execution: unknown capability %r — denying (fail-closed). "
+            "Check CAPABILITY_TO_SUBSYSTEM in subsystem_registry.",
+            capability,
+        )
         return ExecutionResult(
-            allowed=True,
-            reason="Unknown capability — no governance restriction",
+            allowed=False,
+            reason="Unknown capability — denied (fail-closed)",
             trace=ExecutionTrace(
                 capability=capability,
                 checked_scopes=[],
                 matched_scope=None,
-                denied_by=None,
-                final_result=True,
+                denied_by="unknown_capability",
+                final_result=False,
             ),
         )
 
@@ -137,14 +162,22 @@ async def resolve_execution(
             ),
         )
 
-    # When check_visibility=False (internal/AI-triggered): skip visibility gate
+    # When check_visibility=False (internal/AI-triggered): skip visibility gate.
+    # The "bypass": True flag in the event payload marks this for audit trail.
     if not check_visibility:
+        logger.info(
+            "resolve_execution: internal bypass for capability=%r subsystem=%r guild=%d",
+            capability,
+            subsystem_name,
+            ctx.guild_id,
+        )
         await _emit_governance_event(
             EVT_EXECUTION_ALLOWED,
             {
                 "guild_id": ctx.guild_id,
                 "capability": capability,
                 "subsystem": subsystem_name,
+                "bypass": True,
             },
         )
         return ExecutionResult(

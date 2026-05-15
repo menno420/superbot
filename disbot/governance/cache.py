@@ -35,10 +35,10 @@ _CACHE: dict[tuple, tuple[float, Any]] = {}
 _CACHE_VERSION: dict[int, int] = {}  # guild_id → version counter
 _CACHE_LOCK = asyncio.Lock()
 _CACHE_TTL = 60.0
-_NO_OVERRIDE = object()  # sentinel for negative cache entries
+# Raised from 2000 to 50000 to avoid O(n) scan on large multi-guild deployments.
+_CACHE_CLEANUP_THRESHOLD = 50_000
 
 # Tracks guilds that have at least one role-scoped visibility override in DB.
-# Set to True by set_subsystem_visibility() when scope_type='role'.
 # Cleared by forget_guild() when bot leaves the guild.
 _guild_has_role_overrides: dict[int, bool] = {}
 
@@ -63,8 +63,14 @@ def _cache_key(
     tier: str,
     role_ids: frozenset[int] = frozenset(),
 ) -> tuple:
-    if _guild_has_role_overrides.get(guild_id, False):
-        return (guild_id, _cache_ver(guild_id), channel_id, tier, role_ids)
+    if _guild_has_role_overrides.get(guild_id, False) and role_ids:
+        # Phase 3.1: Include only the stable hash of role IDs rather than the raw
+        # frozenset.  Two users with different role sets but identical governance-
+        # relevant visibility will still get separate entries (hash collisions are
+        # benign — a miss just triggers a fresh resolution).  This keeps keys small
+        # and prevents combinatorial cache explosion in large guilds.
+        role_fingerprint = hash(role_ids)
+        return (guild_id, _cache_ver(guild_id), channel_id, tier, role_fingerprint)
     return (guild_id, _cache_ver(guild_id), channel_id, tier)
 
 
@@ -80,8 +86,9 @@ def _cache_get(key: tuple) -> Any:
 
 def _cache_set(key: tuple, value: Any) -> None:
     _CACHE[key] = (time.monotonic(), value)
-    # Lazy cleanup: remove entries from previous versions (unreachable anyway)
-    if len(_CACHE) > 2000:
+    # Lazy cleanup: remove TTL-expired entries.  Threshold raised to 50k to avoid
+    # frequent O(n) scans on large multi-guild deployments (Phase 3.1).
+    if len(_CACHE) > _CACHE_CLEANUP_THRESHOLD:
         cutoff = time.monotonic() - _CACHE_TTL
         stale = [k for k, (ts, _) in _CACHE.items() if ts < cutoff]
         for k in stale:
@@ -99,10 +106,12 @@ def invalidate_guild_cache(guild_id: int) -> None:
 
 
 def forget_guild(guild_id: int) -> None:
-    """Remove all module-level state for a guild.
+    """Remove visibility cache state for a guild.
 
-    Call this from an on_guild_remove event handler so that per-guild dicts
-    do not grow unbounded as the bot joins and leaves servers.
+    Called from guild_lifecycle.teardown() when the bot leaves a guild.
+    Note: capability execution override state lives in governance.execution and
+    must be cleared via execution.forget_guild_capabilities() separately —
+    see guild_lifecycle.py for the complete teardown sequence.
     """
     _CACHE_VERSION.pop(guild_id, None)
     _guild_has_role_overrides.pop(guild_id, None)

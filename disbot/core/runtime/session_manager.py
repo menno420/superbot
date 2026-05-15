@@ -84,17 +84,28 @@ async def remove(session_id: str) -> None:
     logger.debug("Removed session %s", session_id)
 
 
-async def invalidate_subsystem_sessions(guild_id: int, subsystem: str) -> None:
-    """Remove all sessions for a subsystem across a guild.
+async def invalidate_subsystem_sessions(
+    guild_id: int,
+    subsystem: str,
+    channel_id: int | None = None,
+) -> None:
+    """Remove sessions for a subsystem, optionally scoped to one channel.
 
     Called when EVT_VISIBILITY_CHANGED fires — affected users must re-open
     their panel to get fresh governance context.
+
+    Scope-aware behaviour (Phase 2.3):
+    - channel_id provided → only invalidate sessions in that channel.
+    - channel_id=None → invalidate all sessions for the subsystem guild-wide
+      (used for guild-scoped and category-scoped changes).
     """
-    removed_ids = await db.delete_sessions_for_subsystem(guild_id, subsystem)
+    removed_ids = await db.delete_sessions_for_scope(guild_id, subsystem, channel_id)
     if removed_ids:
+        scope_label = f"channel={channel_id}" if channel_id else "guild-wide"
         logger.info(
-            "Invalidated %d session(s) for subsystem=%r in guild=%d",
+            "Invalidated %d session(s) for subsystem=%r in guild=%d (%s)",
             len(removed_ids),
             subsystem,
             guild_id,
+            scope_label,
         )

@@ -12,7 +12,6 @@ import logging
 from governance.cache import (
     _CACHE_LOCK,
     _FAILED_SUBSYSTEMS,
-    _NO_OVERRIDE,
     _cache_get,
     _cache_key,
     _cache_set,
@@ -278,7 +277,7 @@ async def resolve_visibility(ctx: GovernanceContext) -> VisibilityResult:
 
     async with _CACHE_LOCK:
         cached = _cache_get(cache_key)
-        if cached is not None and cached is not _NO_OVERRIDE:
+        if cached is not None:
             if _metrics:
                 _metrics.governance_cache_hits.labels(guild_id=_guild_label).inc()
             return cached
