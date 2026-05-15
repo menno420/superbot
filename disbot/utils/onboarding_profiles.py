@@ -3,6 +3,7 @@
 Pure data — no imports, no logic, no DB access.
 Future: profiles become configurable per-guild via governance DB.
 """
+
 from __future__ import annotations
 
 WELCOME_PROFILES: dict[str, dict] = {
@@ -10,9 +11,7 @@ WELCOME_PROFILES: dict[str, dict] = {
         "welcome_channel": "welcome",
         "recommended_channels": ["bot-commands", "economy", "games", "roles"],
         "beginner_commands": ["help", "daily", "work", "inventory"],
-        "description": (
-            "Welcome! Here are the channels and commands to get started."
-        ),
+        "description": ("Welcome! Here are the channels and commands to get started."),
     }
 }
 

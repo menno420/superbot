@@ -25,6 +25,7 @@ Architectural layer terminology:
 Internal pipeline isolation: each concern lives in its own private function.
 No public function may inline more than one concern.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -35,17 +36,16 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-import discord
-
 import config as _config
+import discord
 from utils import db, settings_keys
 from utils.subsystem_registry import (
-    SUBSYSTEMS,
-    COMMAND_TO_SUBSYSTEM,
-    _COMPILED_DEPENDENTS,
     _COMPILED_DEPENDENCY_ORDER,
-    REGISTRY_VERSION,
+    _COMPILED_DEPENDENTS,
+    COMMAND_TO_SUBSYSTEM,
     REGISTRY_SCHEMA_VERSION,
+    REGISTRY_VERSION,
+    SUBSYSTEMS,
     capability_matches,
     get_subsystem_for_command,
 )
@@ -63,10 +63,10 @@ logger = logging.getLogger("bot")
 # ---------------------------------------------------------------------------
 
 EVT_VISIBILITY_CHANGED = "governance.visibility.changed"
-EVT_CLEANUP_CHANGED    = "governance.cleanup.changed"
-EVT_EXECUTION_DENIED   = "governance.execution.denied"
-EVT_EXECUTION_ALLOWED  = "governance.execution.allowed"
-EVT_CACHE_INVALIDATED  = "governance.cache.invalidated"
+EVT_CLEANUP_CHANGED = "governance.cleanup.changed"
+EVT_EXECUTION_DENIED = "governance.execution.denied"
+EVT_EXECUTION_ALLOWED = "governance.execution.allowed"
+EVT_CACHE_INVALIDATED = "governance.cache.invalidated"
 
 # ---------------------------------------------------------------------------
 # Scope resolution constants
@@ -74,9 +74,9 @@ EVT_CACHE_INVALIDATED  = "governance.cache.invalidated"
 
 SCOPE_PRIORITY: list[str] = ["channel", "category", "guild"]
 SCOPE_PARENT: dict[str, str | None] = {
-    "channel":  "category",
+    "channel": "category",
     "category": "guild",
-    "guild":    None,
+    "guild": None,
     # Future: prepend "thread" → "channel"
 }
 
@@ -86,11 +86,11 @@ SCOPE_PARENT: dict[str, str | None] = {
 
 
 class SubsystemState(Enum):
-    ENABLED              = "enabled"
-    DISABLED             = "disabled"
-    INHERITED            = "inherited"       # no override at this scope
-    BLOCKED_DEPENDENCY   = "blocked_dep"    # a hard dependency is disabled
-    INTERNAL             = "internal"       # visibility_mode == "internal"
+    ENABLED = "enabled"
+    DISABLED = "disabled"
+    INHERITED = "inherited"  # no override at this scope
+    BLOCKED_DEPENDENCY = "blocked_dep"  # a hard dependency is disabled
+    INTERNAL = "internal"  # visibility_mode == "internal"
     EXPERIMENTAL_DISABLED = "exp_disabled"  # experimental, not opted in
 
 
@@ -98,14 +98,15 @@ class PolicySource(Enum):
     """Typed provenance for governance decisions.
     Serialized to .value strings only in to_dict().
     """
-    REGISTRY_DEFAULT  = "registry_default"   # derived from registry; no DB override
+
+    REGISTRY_DEFAULT = "registry_default"  # derived from registry; no DB override
     INHERITED_DEFAULT = "inherited_default"  # walked entire scope chain; no override
-    FALLBACK_DEFAULT  = "fallback_default"   # hardcoded compat (e.g. config whitelist)
-    DEPENDENCY_BLOCK  = "dependency_block"   # blocked by a disabled dependency
-    CHANNEL_OVERRIDE  = "channel"
+    FALLBACK_DEFAULT = "fallback_default"  # hardcoded compat (e.g. config whitelist)
+    DEPENDENCY_BLOCK = "dependency_block"  # blocked by a disabled dependency
+    CHANNEL_OVERRIDE = "channel"
     CATEGORY_OVERRIDE = "category"
-    GUILD_OVERRIDE    = "guild"
-    ROLE_OVERRIDE     = "role"
+    GUILD_OVERRIDE = "guild"
+    ROLE_OVERRIDE = "role"
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +121,7 @@ class GovernanceContext:
     Use from_ctx() / from_interaction() rather than constructing directly.
     Future-proofs for threads, DMs, dashboards, AI agents, scheduled jobs.
     """
+
     guild_id: int
     channel_id: int | None = None
     category_id: int | None = None
@@ -199,9 +201,7 @@ class VisibilityResult:
             "resolved_from": {
                 k: v.value for k, v in sorted(self.resolved_from.items())
             },
-            "traces": {
-                k: v.to_dict() for k, v in sorted(self.traces.items())
-            },
+            "traces": {k: v.to_dict() for k, v in sorted(self.traces.items())},
         }
 
 
@@ -261,6 +261,7 @@ class SubsystemEffectiveState:
     """Complete resolved state for one subsystem in one context.
     Powers /why, per-subsystem diagnostics, AI explanations.
     """
+
     name: str
     state: SubsystemState
     visibility_source: PolicySource
@@ -297,6 +298,7 @@ class GovernanceSnapshot:
     Powers dashboards, /why, AI reasoning, export/import.
     All fields JSON-safe. Use to_dict() for serialization.
     """
+
     visible_subsystems: set[str]
     denied_subsystems: set[str]
     dependency_blocks: dict[str, list[str]]
@@ -312,17 +314,14 @@ class GovernanceSnapshot:
             "visible_subsystems": sorted(self.visible_subsystems),
             "denied_subsystems": sorted(self.denied_subsystems),
             "dependency_blocks": {
-                k: sorted(v)
-                for k, v in sorted(self.dependency_blocks.items())
+                k: sorted(v) for k, v in sorted(self.dependency_blocks.items())
             },
             "cleanup_policy": self.cleanup_policy.to_dict(),
             "member_tier": self.member_tier,
             "scope_provenance": {
                 k: v.value for k, v in sorted(self.scope_provenance.items())
             },
-            "capability_map": {
-                k: v for k, v in sorted(self.capability_map.items())
-            },
+            "capability_map": {k: v for k, v in sorted(self.capability_map.items())},
             "registry_version": self.registry_version,
             "registry_schema_version": self.registry_schema_version,
         }
@@ -333,10 +332,10 @@ class GovernanceSnapshot:
 # ---------------------------------------------------------------------------
 
 _CACHE: dict[tuple, tuple[float, Any]] = {}
-_CACHE_VERSION: dict[int, int] = {}    # guild_id → version counter
+_CACHE_VERSION: dict[int, int] = {}  # guild_id → version counter
 _CACHE_LOCK = asyncio.Lock()
 _CACHE_TTL = 60.0
-_NO_OVERRIDE = object()               # sentinel for negative cache entries
+_NO_OVERRIDE = object()  # sentinel for negative cache entries
 
 
 def _cache_ver(guild_id: int) -> int:
@@ -376,6 +375,7 @@ def invalidate_guild_cache(guild_id: int) -> None:
 # Profiling hooks (no-op; wired for future metrics)
 # ---------------------------------------------------------------------------
 
+
 @asynccontextmanager
 async def _profile(operation: str):
     start = time.monotonic()
@@ -406,6 +406,7 @@ def _should_send_feedback(channel_id: int, subsystem: str) -> bool:
 # Internal pipeline — scope chain traversal
 # ---------------------------------------------------------------------------
 
+
 def _build_scope_chain(ctx: GovernanceContext) -> list[tuple[str, int]]:
     """Build ordered scope list via SCOPE_PARENT traversal.
 
@@ -416,9 +417,9 @@ def _build_scope_chain(ctx: GovernanceContext) -> list[tuple[str, int]]:
     This function is the ONLY place that knows the traversal order.
     """
     scope_id_map: dict[str, int | None] = {
-        "channel":  ctx.channel_id,
+        "channel": ctx.channel_id,
         "category": ctx.category_id,
-        "guild":    ctx.guild_id,
+        "guild": ctx.guild_id,
     }
     chain: list[tuple[str, int]] = []
     scope: str | None = "channel"
@@ -433,6 +434,7 @@ def _build_scope_chain(ctx: GovernanceContext) -> list[tuple[str, int]]:
 # ---------------------------------------------------------------------------
 # Internal pipeline — DB override resolution
 # ---------------------------------------------------------------------------
+
 
 async def _fetch_all_visibility(
     guild_id: int, chain: list[tuple[str, int]]
@@ -474,10 +476,10 @@ def _resolve_single_subsystem(
     """
     checked: list[str] = []
     _SCOPE_TO_SOURCE: dict[str, PolicySource] = {
-        "channel":  PolicySource.CHANNEL_OVERRIDE,
+        "channel": PolicySource.CHANNEL_OVERRIDE,
         "category": PolicySource.CATEGORY_OVERRIDE,
-        "guild":    PolicySource.GUILD_OVERRIDE,
-        "role":     PolicySource.ROLE_OVERRIDE,
+        "guild": PolicySource.GUILD_OVERRIDE,
+        "role": PolicySource.ROLE_OVERRIDE,
     }
     for scope_type, scope_id in chain:
         scope_map = scope_data.get((scope_type, scope_id), {})
@@ -495,6 +497,7 @@ def _resolve_single_subsystem(
 # ---------------------------------------------------------------------------
 # Internal pipeline — dependency propagation
 # ---------------------------------------------------------------------------
+
 
 def _apply_dependency_rules(
     states: dict[str, SubsystemState],
@@ -514,8 +517,10 @@ def _apply_dependency_rules(
         if not meta:
             continue
         blocking_deps = [
-            dep for dep in meta.get("dependencies", [])
-            if states.get(dep) in (SubsystemState.DISABLED, SubsystemState.BLOCKED_DEPENDENCY)
+            dep
+            for dep in meta.get("dependencies", [])
+            if states.get(dep)
+            in (SubsystemState.DISABLED, SubsystemState.BLOCKED_DEPENDENCY)
         ]
         if blocking_deps and states[subsystem] == SubsystemState.ENABLED:
             states[subsystem] = SubsystemState.BLOCKED_DEPENDENCY
@@ -530,10 +535,13 @@ def _apply_dependency_rules(
 # Internal pipeline — visibility resolution
 # ---------------------------------------------------------------------------
 
+
 async def _resolve_visibility_overrides(
     ctx: GovernanceContext,
     tier_accessible: set[str],
-) -> tuple[dict[str, SubsystemState], dict[str, ResolutionTrace], dict[str, PolicySource]]:
+) -> tuple[
+    dict[str, SubsystemState], dict[str, ResolutionTrace], dict[str, PolicySource]
+]:
     """Resolve visibility state for all subsystems via scope chain.
 
     Returns (states, traces, resolved_from).
@@ -605,6 +613,7 @@ async def _resolve_visibility_overrides(
 # Internal pipeline — cleanup policy resolution
 # ---------------------------------------------------------------------------
 
+
 async def _resolve_cleanup_overrides(ctx: GovernanceContext) -> CleanupPolicy:
     """Resolve cleanup policy with scope fallback: channel > guild > default.
 
@@ -618,9 +627,9 @@ async def _resolve_cleanup_overrides(ctx: GovernanceContext) -> CleanupPolicy:
             row = await db.get_cleanup_policy(ctx.guild_id, scope_type, scope_id)
         if row is not None:
             source_map = {
-                "channel":  PolicySource.CHANNEL_OVERRIDE,
+                "channel": PolicySource.CHANNEL_OVERRIDE,
                 "category": PolicySource.CATEGORY_OVERRIDE,
-                "guild":    PolicySource.GUILD_OVERRIDE,
+                "guild": PolicySource.GUILD_OVERRIDE,
             }
             return CleanupPolicy(
                 delete_message=row["delete_invalid_commands"],
@@ -649,6 +658,7 @@ async def _resolve_cleanup_overrides(ctx: GovernanceContext) -> CleanupPolicy:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _find_redirect_channel(
     guild: discord.Guild | None, subsystem_meta: dict
 ) -> str | None:
@@ -672,6 +682,7 @@ def _build_feedback(subsystem_meta: dict, redirect: str | None) -> str:
 # ---------------------------------------------------------------------------
 # Public API — visibility
 # ---------------------------------------------------------------------------
+
 
 async def resolve_visibility(ctx: GovernanceContext) -> VisibilityResult:
     """Resolve which subsystems are visible to this member in this context.
@@ -703,8 +714,7 @@ async def resolve_visibility(ctx: GovernanceContext) -> VisibilityResult:
         _apply_dependency_rules(states, traces, resolved_from)
 
     visible = {
-        name for name, state in states.items()
-        if state == SubsystemState.ENABLED
+        name for name, state in states.items() if state == SubsystemState.ENABLED
     }
 
     result = VisibilityResult(
@@ -730,9 +740,8 @@ async def get_visible_subsystems(ctx: GovernanceContext) -> set[str]:
 # Public API — execution
 # ---------------------------------------------------------------------------
 
-async def resolve_execution(
-    ctx: GovernanceContext, capability: str
-) -> ExecutionResult:
+
+async def resolve_execution(ctx: GovernanceContext, capability: str) -> ExecutionResult:
     """Determine if a capability is executable in this context.
 
     Separate from visibility — a subsystem can be hidden but still executable
@@ -743,6 +752,7 @@ async def resolve_execution(
     async with _profile("resolve_execution"):
         vis = await resolve_visibility(ctx)
         from utils.subsystem_registry import CAPABILITY_TO_SUBSYSTEM
+
         subsystem_name = CAPABILITY_TO_SUBSYSTEM.get(capability)
 
         if not subsystem_name:
@@ -760,35 +770,45 @@ async def resolve_execution(
 
         allowed = subsystem_name in vis.visible_subsystems
         trace_obj = vis.traces.get(subsystem_name)
-        denied_by = (
-            trace_obj.final_state.value
-            if trace_obj and not allowed
-            else None
-        )
+        denied_by = trace_obj.final_state.value if trace_obj and not allowed else None
 
         if not allowed:
-            await _emit_governance_event(EVT_EXECUTION_DENIED, {
-                "guild_id": ctx.guild_id,
-                "capability": capability,
-                "subsystem": subsystem_name,
-                "denied_by": denied_by,
-            })
+            await _emit_governance_event(
+                EVT_EXECUTION_DENIED,
+                {
+                    "guild_id": ctx.guild_id,
+                    "capability": capability,
+                    "subsystem": subsystem_name,
+                    "denied_by": denied_by,
+                },
+            )
         else:
-            await _emit_governance_event(EVT_EXECUTION_ALLOWED, {
-                "guild_id": ctx.guild_id,
-                "capability": capability,
-                "subsystem": subsystem_name,
-            })
+            await _emit_governance_event(
+                EVT_EXECUTION_ALLOWED,
+                {
+                    "guild_id": ctx.guild_id,
+                    "capability": capability,
+                    "subsystem": subsystem_name,
+                },
+            )
 
         return ExecutionResult(
             allowed=allowed,
             reason=denied_by,
-            resolved_scope=trace_obj.matched_scope.value if trace_obj and trace_obj.matched_scope else None,
+            resolved_scope=(
+                trace_obj.matched_scope.value
+                if trace_obj and trace_obj.matched_scope
+                else None
+            ),
             matched_capability=capability if allowed else None,
             trace=ExecutionTrace(
                 capability=capability,
                 checked_scopes=trace_obj.checked_scopes if trace_obj else [],
-                matched_scope=trace_obj.matched_scope.value if trace_obj and trace_obj.matched_scope else None,
+                matched_scope=(
+                    trace_obj.matched_scope.value
+                    if trace_obj and trace_obj.matched_scope
+                    else None
+                ),
                 denied_by=denied_by,
                 final_result=allowed,
             ),
@@ -799,6 +819,7 @@ async def resolve_execution(
 # Public API — cleanup policy
 # ---------------------------------------------------------------------------
 
+
 async def resolve_cleanup_policy(ctx: GovernanceContext) -> CleanupPolicy:
     """Resolve cleanup behavior for this context."""
     async with _profile("resolve_cleanup_policy"):
@@ -808,6 +829,7 @@ async def resolve_cleanup_policy(ctx: GovernanceContext) -> CleanupPolicy:
 # ---------------------------------------------------------------------------
 # Public API — command policy (combines visibility + cleanup)
 # ---------------------------------------------------------------------------
+
 
 async def resolve_command_policy(
     ctx: GovernanceContext, command_name: str
@@ -870,20 +892,19 @@ async def resolve_command_policy(
 # Public API — bulk resolution
 # ---------------------------------------------------------------------------
 
+
 async def resolve_all_subsystem_visibility(
     ctx: GovernanceContext,
 ) -> dict[str, bool]:
     """All subsystems with resolved enabled state. Single-trip through resolve_visibility."""
     result = await resolve_visibility(ctx)
-    return {
-        name: (name in result.visible_subsystems)
-        for name in SUBSYSTEMS
-    }
+    return {name: (name in result.visible_subsystems) for name in SUBSYSTEMS}
 
 
 async def resolve_all_capabilities(ctx: GovernanceContext) -> dict[str, bool]:
     """All capabilities with resolved allowed state."""
     from utils.subsystem_registry import CAPABILITY_TO_SUBSYSTEM
+
     visible = await get_visible_subsystems(ctx)
     return {
         cap: (subsystem in visible)
@@ -895,6 +916,7 @@ async def resolve_all_capabilities(ctx: GovernanceContext) -> dict[str, bool]:
 # Public API — effective state (single subsystem)
 # ---------------------------------------------------------------------------
 
+
 async def resolve_subsystem_state(
     ctx: GovernanceContext, subsystem_name: str
 ) -> SubsystemEffectiveState:
@@ -902,7 +924,11 @@ async def resolve_subsystem_state(
     vis = await resolve_visibility(ctx)
     cleanup = await resolve_cleanup_policy(ctx)
 
-    state = SubsystemState.ENABLED if subsystem_name in vis.visible_subsystems else SubsystemState.DISABLED
+    state = (
+        SubsystemState.ENABLED
+        if subsystem_name in vis.visible_subsystems
+        else SubsystemState.DISABLED
+    )
     trace = vis.traces.get(
         subsystem_name,
         ResolutionTrace(
@@ -930,6 +956,7 @@ async def resolve_subsystem_state(
 # ---------------------------------------------------------------------------
 # Public API — governance snapshot
 # ---------------------------------------------------------------------------
+
 
 async def build_governance_snapshot(ctx: GovernanceContext) -> GovernanceSnapshot:
     """Complete governance state for a context.
@@ -963,22 +990,28 @@ async def build_governance_snapshot(ctx: GovernanceContext) -> GovernanceSnapsho
 # Public API — health diagnostics
 # ---------------------------------------------------------------------------
 
+
 async def run_governance_healthcheck(guild_id: int) -> GovernanceHealthReport:
     """Check for orphan overrides, stale versions, and invalid configs."""
     known_subsystems = set(SUBSYSTEMS.keys())
     rows = await db.get_all_visibility_for_guild(guild_id)
     orphans = [
-        {"scope_type": r["scope_type"], "scope_id": r["scope_id"], "subsystem": r["subsystem"]}
+        {
+            "scope_type": r["scope_type"],
+            "scope_id": r["scope_id"],
+            "subsystem": r["subsystem"],
+        }
         for r in rows
         if r["subsystem"] not in known_subsystems
     ]
 
-    stored = await db.get_setting(guild_id, settings_keys.GOVERNANCE_VERSION, default=0)
+    stored = await db.get_setting(
+        guild_id, settings_keys.GOVERNANCE_VERSION, default="0"
+    )
     stale = [guild_id] if int(stored) < REGISTRY_VERSION else []
 
     summary = (
-        f"{len(orphans)} orphan override(s), "
-        f"{len(stale)} stale version guild(s)"
+        f"{len(orphans)} orphan override(s), " f"{len(stale)} stale version guild(s)"
     )
     return GovernanceHealthReport(
         orphan_overrides=orphans,
@@ -992,6 +1025,7 @@ async def run_governance_healthcheck(guild_id: int) -> GovernanceHealthReport:
 # Public API — governance writes (all cogs must route through here)
 # ---------------------------------------------------------------------------
 
+
 async def set_subsystem_visibility(
     ctx: GovernanceContext,
     scope_type: str,
@@ -1004,13 +1038,16 @@ async def set_subsystem_visibility(
         ctx.guild_id, scope_type, scope_id, subsystem, enabled
     )
     invalidate_guild_cache(ctx.guild_id)
-    await _emit_governance_event(EVT_VISIBILITY_CHANGED, {
-        "guild_id": ctx.guild_id,
-        "scope_type": scope_type,
-        "scope_id": scope_id,
-        "subsystem": subsystem,
-        "enabled": enabled,
-    })
+    await _emit_governance_event(
+        EVT_VISIBILITY_CHANGED,
+        {
+            "guild_id": ctx.guild_id,
+            "scope_type": scope_type,
+            "scope_id": scope_id,
+            "subsystem": subsystem,
+            "enabled": enabled,
+        },
+    )
 
 
 async def set_cleanup_policy_for_scope(
@@ -1030,21 +1067,25 @@ async def set_cleanup_policy_for_scope(
         delete_after_seconds=delete_after_seconds,
     )
     invalidate_guild_cache(ctx.guild_id)
-    await _emit_governance_event(EVT_CLEANUP_CHANGED, {
-        "guild_id": ctx.guild_id,
-        "scope_type": scope_type,
-        "scope_id": scope_id,
-    })
+    await _emit_governance_event(
+        EVT_CLEANUP_CHANGED,
+        {
+            "guild_id": ctx.guild_id,
+            "scope_type": scope_type,
+            "scope_id": scope_id,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
 # Governance version management
 # ---------------------------------------------------------------------------
 
+
 async def check_governance_version(guild_id: int) -> None:
     """Check and upgrade governance version for a guild if needed."""
     stored = await db.get_setting(
-        guild_id, settings_keys.GOVERNANCE_VERSION, default=0
+        guild_id, settings_keys.GOVERNANCE_VERSION, default="0"
     )
     if int(stored) < REGISTRY_VERSION:
         await _run_governance_upgrade(guild_id, from_version=int(stored))
@@ -1057,12 +1098,15 @@ async def _run_governance_upgrade(guild_id: int, from_version: int) -> None:
         from_version,
         REGISTRY_VERSION,
     )
-    await db.set_setting(guild_id, settings_keys.GOVERNANCE_VERSION, REGISTRY_VERSION)
+    await db.set_setting(
+        guild_id, settings_keys.GOVERNANCE_VERSION, str(REGISTRY_VERSION)
+    )
 
 
 # ---------------------------------------------------------------------------
 # Internal event hook
 # ---------------------------------------------------------------------------
+
 
 async def _emit_governance_event(event_name: str, payload: dict) -> None:
     """Internal hook. Currently DEBUG-logs only.

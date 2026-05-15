@@ -433,8 +433,9 @@ async def _load_cogs() -> None:
 async def main() -> None:
     # Validate registry integrity before touching the DB or loading cogs.
     # Raises GovernanceError (subclass) and aborts on any registry fault.
-    from utils.subsystem_registry import validate_registry
     from services.governance_exceptions import GovernanceError
+    from utils.subsystem_registry import validate_registry
+
     try:
         validate_registry()
         logger.info("Registry validated and frozen.")

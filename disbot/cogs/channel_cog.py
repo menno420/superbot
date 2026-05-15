@@ -1265,7 +1265,9 @@ class _ChannelSelectForVisibility(discord.ui.Select):
 
 
 class _VisibilitySubView(BaseView):
-    def __init__(self, ctx: commands.Context, *, manager_message: discord.Message | None):
+    def __init__(
+        self, ctx: commands.Context, *, manager_message: discord.Message | None
+    ):
         super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
         self.manager_message = manager_message
@@ -1286,6 +1288,7 @@ class _VisibilitySubView(BaseView):
     @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         from cogs.channel_cog import _ChannelManagerView
+
         view = _ChannelManagerView(self.ctx)
         view.message = self.manager_message
         await interaction.response.edit_message(embed=view.build_embed(), view=view)
@@ -1309,6 +1312,7 @@ class _SubsystemToggleView(BaseView):
 
     async def load(self, guild_id: int) -> None:
         from utils import db
+
         rows = await db.get_subsystem_visibility(guild_id, "channel", self.channel.id)
         self._visibility = rows
         self._rebuild_buttons()
@@ -1322,7 +1326,9 @@ class _SubsystemToggleView(BaseView):
             (name, meta)
             for name, meta in all_subsystems_sorted()
             if meta.get("visibility_mode", "normal") not in ("internal",)
-        ][:20]  # max 20 toggles to stay within Discord's 25-item limit
+        ][
+            :20
+        ]  # max 20 toggles to stay within Discord's 25-item limit
 
         for i, (name, meta) in enumerate(visible_subsystems):
             state = self._visibility.get(name)  # None = inherit

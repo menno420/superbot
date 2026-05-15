@@ -4,7 +4,6 @@ import logging
 
 import discord
 from discord.ext import commands
-
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
@@ -96,7 +95,11 @@ def build_cog_embed(
     """Build a detail embed for one cog/subsystem."""
     meta = SUBSYSTEMS.get(subsystem_name) if subsystem_name else None
     color = discord.Color(meta["color"]) if meta else UTILITY_COLOR
-    display = meta.get("display_name", cog.qualified_name.replace("Cog", "")) if meta else cog.qualified_name.replace("Cog", "")
+    display = (
+        meta.get("display_name", cog.qualified_name.replace("Cog", ""))
+        if meta
+        else cog.qualified_name.replace("Cog", "")
+    )
     emoji = meta.get("emoji", "📖") if meta else "📖"
 
     embed = discord.Embed(title=f"{emoji} {display}", color=color)
@@ -117,9 +120,7 @@ def build_cog_embed(
 class _SubsystemSelect(discord.ui.Select):
     def __init__(self, bot: commands.Bot, visible: set[str]):
         subsystems_sorted = [
-            (name, meta)
-            for name, meta in all_subsystems_sorted()
-            if name in visible
+            (name, meta) for name, meta in all_subsystems_sorted() if name in visible
         ]
         options = [
             discord.SelectOption(
@@ -220,7 +221,10 @@ class HelpCog(commands.Cog):
             for name, meta in SUBSYSTEMS.items():
                 if name not in visible:
                     continue
-                if category.lower() in (name.lower(), meta.get("display_name", "").lower()):
+                if category.lower() in (
+                    name.lower(),
+                    meta.get("display_name", "").lower(),
+                ):
                     cog = _cog_for_subsystem(self.bot, name)
                     if cog:
                         await ctx.send(

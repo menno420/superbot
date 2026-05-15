@@ -7,6 +7,7 @@ Do NOT conflate visibility with permission to execute.
 Allowed imports: utils.subsystem_registry only.
 No async, no DB access, no Discord API calls.
 """
+
 from __future__ import annotations
 
 from utils.subsystem_registry import SUBSYSTEMS
@@ -29,12 +30,12 @@ VISIBILITY_TIERS: list[str] = [
 # Maps tier → Discord guild_permissions attribute name.
 # None = no Discord permission required (all members qualify).
 TIER_DISCORD_PERMISSION: dict[str, str | None] = {
-    "user":          None,
-    "trusted":       None,           # reserved for future trust/progression system
-    "staff":         "manage_guild",
-    "moderator":     "moderate_members",
+    "user": None,
+    "trusted": None,  # reserved for future trust/progression system
+    "staff": "manage_guild",
+    "moderator": "moderate_members",
     "administrator": "administrator",
-    "owner":         None,           # resolved by member.id == guild.owner_id
+    "owner": None,  # resolved by member.id == guild.owner_id
 }
 
 _TIER_INDEX: dict[str, int] = {tier: i for i, tier in enumerate(VISIBILITY_TIERS)}

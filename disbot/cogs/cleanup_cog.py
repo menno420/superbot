@@ -18,7 +18,11 @@ def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
     """Extract the bare command name from a prefixed message."""
     for prefix in prefixes:
         if content.startswith(prefix):
-            rest = content[len(prefix):].split()[0] if content[len(prefix):].strip() else ""
+            rest = (
+                content[len(prefix) :].split()[0]
+                if content[len(prefix) :].strip()
+                else ""
+            )
             return rest.lower() if rest else None
     return None
 
@@ -58,11 +62,15 @@ class Cleanup(commands.Cog):
             return False
 
         if self.command_pattern.match(message.content):
-            command_name = _extract_command_name(message.content.strip(), self.command_prefixes)
+            command_name = _extract_command_name(
+                message.content.strip(), self.command_prefixes
+            )
             if message.guild and command_name:
                 # Route through governance_service for policy-driven decision
                 gctx = GovernanceContext.from_message(message)
-                policy = await governance_service.resolve_command_policy(gctx, command_name)
+                policy = await governance_service.resolve_command_policy(
+                    gctx, command_name
+                )
                 if not policy.allowed:
                     try:
                         if policy.cleanup.delete_message:

@@ -3,6 +3,7 @@
 All governance failures raise subclasses of GovernanceError.
 No bare ValueError or RuntimeError should originate from governance code.
 """
+
 from __future__ import annotations
 
 
@@ -18,9 +19,7 @@ class CircularDependencyError(RegistryValidationError):
     """Circular dependency detected in the subsystem dependency graph."""
 
     def __init__(self, node: str, neighbour: str) -> None:
-        super().__init__(
-            f"Circular dependency detected: '{node}' → '{neighbour}'"
-        )
+        super().__init__(f"Circular dependency detected: '{node}' → '{neighbour}'")
         self.node = node
         self.neighbour = neighbour
 

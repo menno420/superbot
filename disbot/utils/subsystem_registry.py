@@ -9,8 +9,10 @@ Reserved prefixes: _internal.*, system.*, governance.*
 
 See services/governance_service.py for runtime policy resolution.
 """
+
 from __future__ import annotations
 
+from dataclasses import dataclass
 from types import MappingProxyType
 
 from utils.ui_constants import (
@@ -537,11 +539,11 @@ CAPABILITY_TO_SUBSYSTEM: dict[str, str] = {
 # Compiled lookup tables — populated by validate_registry(), O(1) access.
 # ---------------------------------------------------------------------------
 
-_COMPILED_DEPENDENTS: dict[str, list[str]] = {}   # subsystem → dependents list
+_COMPILED_DEPENDENTS: dict[str, list[str]] = {}  # subsystem → dependents list
 _COMPILED_TIERS: dict[str, str] = {}
 _COMPILED_CAPABILITIES: dict[str, list[str]] = {}
 _COMPILED_ENTRYPOINTS: dict[str, list[str]] = {}
-_COMPILED_DEPENDENCY_ORDER: list[str] = []         # topological order
+_COMPILED_DEPENDENCY_ORDER: list[str] = []  # topological order
 
 # ---------------------------------------------------------------------------
 # Reserved capability namespaces
@@ -557,8 +559,44 @@ def is_reserved_capability(cap: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Capability dataclass — centralises parsing, eliminates repeated .split(".")
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Capability:
+    """Immutable representation of a capability string.
+
+    Format: {subsystem}.{resource}.{action}
+    Raises CapabilityNamespaceError if the format is invalid.
+    """
+
+    subsystem: str
+    resource: str
+    action: str
+
+    @classmethod
+    def parse(cls, raw: str) -> "Capability":
+        from services.governance_exceptions import CapabilityNamespaceError
+
+        parts = raw.split(".")
+        if len(parts) != 3:
+            raise CapabilityNamespaceError(
+                f"'{raw}' must be {{subsystem}}.{{resource}}.{{action}}"
+            )
+        return cls(*parts)
+
+    def __str__(self) -> str:
+        return f"{self.subsystem}.{self.resource}.{self.action}"
+
+    def matches_pattern(self, pattern: str) -> bool:
+        return capability_matches(pattern, str(self))
+
+
+# ---------------------------------------------------------------------------
 # Deep freeze helper
 # ---------------------------------------------------------------------------
+
 
 def _deep_freeze(obj):
     """Recursively convert dicts→MappingProxyType, lists→tuple, sets→frozenset."""
@@ -574,6 +612,7 @@ def _deep_freeze(obj):
 # ---------------------------------------------------------------------------
 # Registry validation + compilation
 # ---------------------------------------------------------------------------
+
 
 def validate_registry() -> None:
     """Run once at bot startup. Populates compiled tables and deep-freezes registry.
@@ -598,7 +637,13 @@ def validate_registry() -> None:
     dep_graph: dict[str, list[str]] = {}
 
     for name, meta in SUBSYSTEMS.items():
-        for field in ("display_name", "description", "emoji", "visibility_tier", "visibility_mode"):
+        for field in (
+            "display_name",
+            "description",
+            "emoji",
+            "visibility_tier",
+            "visibility_mode",
+        ):
             if not meta.get(field):
                 raise RegistryValidationError(
                     f"subsystem '{name}': missing required field '{field}'"
@@ -682,9 +727,15 @@ def validate_registry() -> None:
         _topo(name)
 
     # Populate compiled lookup tables
-    compiled_tiers = {name: meta["visibility_tier"] for name, meta in SUBSYSTEMS.items()}
-    compiled_caps = {name: meta.get("capabilities", []) for name, meta in SUBSYSTEMS.items()}
-    compiled_eps = {name: meta.get("entry_points", []) for name, meta in SUBSYSTEMS.items()}
+    compiled_tiers = {
+        name: meta["visibility_tier"] for name, meta in SUBSYSTEMS.items()
+    }
+    compiled_caps = {
+        name: meta.get("capabilities", []) for name, meta in SUBSYSTEMS.items()
+    }
+    compiled_eps = {
+        name: meta.get("entry_points", []) for name, meta in SUBSYSTEMS.items()
+    }
     compiled_dependents: dict[str, list[str]] = {name: [] for name in SUBSYSTEMS}
     for name, deps in dep_graph.items():
         for dep in deps:
@@ -709,6 +760,7 @@ def validate_registry() -> None:
 # ---------------------------------------------------------------------------
 # Public accessors
 # ---------------------------------------------------------------------------
+
 
 def get_subsystem(name: str) -> dict | None:
     return SUBSYSTEMS.get(name)  # type: ignore[return-value]
