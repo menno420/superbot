@@ -261,9 +261,7 @@ class _WordMenuView(BaseView):
 
     def build_embed(self) -> discord.Embed:
         words = self.cog._word_cache.get(self.ctx.guild.id, [])
-        embed = discord.Embed(
-            title="🔤 Prohibited Words Manager", color=ADMIN_COLOR
-        )
+        embed = discord.Embed(title="🔤 Prohibited Words Manager", color=ADMIN_COLOR)
         if words:
             embed.add_field(
                 name="Current Words",
@@ -288,7 +286,9 @@ class _WordMenuView(BaseView):
         await self.cog._load_guild(self.ctx.guild.id)
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
-    @discord.ui.button(label="🔍 Scan History", style=discord.ButtonStyle.blurple, row=1)
+    @discord.ui.button(
+        label="🔍 Scan History", style=discord.ButtonStyle.blurple, row=1
+    )
     async def btn_scan(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_ScanHistoryModal(self.cog))
 

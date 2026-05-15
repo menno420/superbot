@@ -461,7 +461,9 @@ class _MiningHubView(BaseView):
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="📦 Inventory", style=discord.ButtonStyle.grey, row=1)
-    async def inventory_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+    async def inventory_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id)
         if not inventory:
@@ -499,7 +501,9 @@ class _MiningHubView(BaseView):
         await interaction.response.send_modal(_BuildModal(cog))
 
     @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=2)
-    async def overview_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+    async def overview_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
 

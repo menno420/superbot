@@ -18,9 +18,7 @@ class TimeRolesPanel(BaseView):
 
     async def build_embed(self) -> discord.Embed:
         thresholds = await db.get_role_thresholds(self.ctx.guild.id)
-        embed = discord.Embed(
-            title="⏱️ Time-Based Roles", color=ROLE_COLOR
-        )
+        embed = discord.Embed(title="⏱️ Time-Based Roles", color=ROLE_COLOR)
         if thresholds:
             lines = [
                 f"**{r['role_name']}** — {r['days_required']} day(s)"

@@ -155,7 +155,9 @@ class _TriviaRevealView(BaseView):
         self._answer = answer
 
     @discord.ui.button(label="Reveal Answer", style=discord.ButtonStyle.primary)
-    async def reveal_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def reveal_btn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         text = self._answer.strip() if self._answer else "No answer recorded."
         await interaction.response.send_message(f"**Answer:** {text}", ephemeral=True)
 

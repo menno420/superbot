@@ -7,7 +7,13 @@ import discord
 from discord.ext import commands
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.helpers import safe_select_emoji
-from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, INFO_COLOR, SUCCESS_COLOR, WARNING_COLOR
+from utils.ui_constants import (
+    CHANNEL_COLOR,
+    ERROR_COLOR,
+    INFO_COLOR,
+    SUCCESS_COLOR,
+    WARNING_COLOR,
+)
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
@@ -252,9 +258,7 @@ class ChannelCog(commands.Cog):
     )
     @is_admin_or_owner()
     async def list_channels(self, ctx):
-        embed = discord.Embed(
-            title="Categories and Channels", color=INFO_COLOR
-        )
+        embed = discord.Embed(title="Categories and Channels", color=INFO_COLOR)
         for category in ctx.guild.categories:
             channels = "\n".join(f" - {ch.name}" for ch in category.channels)
             embed.add_field(

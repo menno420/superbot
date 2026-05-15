@@ -285,9 +285,7 @@ class BlackjackView(discord.ui.View):
 
         if _is_blackjack(self.game.player):
             payout = int(effective * 1.5) if effective else FREE_WIN_COINS
-            await self._finish(
-                interaction, "🎉 Blackjack!", ECONOMY_COLOR, payout, pv
-            )
+            await self._finish(interaction, "🎉 Blackjack!", ECONOMY_COLOR, payout, pv)
         elif dv > 21:
             payout = effective if effective else FREE_WIN_COINS
             await self._finish(
@@ -299,18 +297,12 @@ class BlackjackView(discord.ui.View):
             )
         elif pv > dv:
             payout = effective if effective else FREE_WIN_COINS
-            await self._finish(
-                interaction, "🎉 You win!", SUCCESS_COLOR, payout, pv
-            )
+            await self._finish(interaction, "🎉 You win!", SUCCESS_COLOR, payout, pv)
         elif pv == dv:
-            await self._finish(
-                interaction, "🤝 Push — tie.", GAME_COLOR, 0, pv
-            )
+            await self._finish(interaction, "🤝 Push — tie.", GAME_COLOR, 0, pv)
         else:
             loss = -effective if effective else 0
-            await self._finish(
-                interaction, "😞 Dealer wins.", ERROR_COLOR, loss, pv
-            )
+            await self._finish(interaction, "😞 Dealer wins.", ERROR_COLOR, loss, pv)
 
 
 # ---------------------------------------------------------------------------
@@ -640,17 +632,11 @@ class _TournBlackjackView(discord.ui.View):
                 interaction, "🎉 Dealer busts!", SUCCESS_COLOR, bet
             )
         elif pv > dv:
-            await self._finish_round(
-                interaction, "🎉 You win!", SUCCESS_COLOR, bet
-            )
+            await self._finish_round(interaction, "🎉 You win!", SUCCESS_COLOR, bet)
         elif pv == dv:
-            await self._finish_round(
-                interaction, "🤝 Push.", GAME_COLOR, 0
-            )
+            await self._finish_round(interaction, "🤝 Push.", GAME_COLOR, 0)
         else:
-            await self._finish_round(
-                interaction, "😞 Dealer wins.", ERROR_COLOR, -bet
-            )
+            await self._finish_round(interaction, "😞 Dealer wins.", ERROR_COLOR, -bet)
 
 
 async def _start_tourn_round(

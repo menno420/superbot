@@ -6,16 +6,16 @@ never raw string literals.
 """
 
 # XP System (owner: xp_cog)
-XP_MIN              = "xp_min"
-XP_MAX              = "xp_max"
-XP_COOLDOWN         = "xp_cooldown"
+XP_MIN = "xp_min"
+XP_MAX = "xp_max"
+XP_COOLDOWN = "xp_cooldown"
 XP_ANNOUNCE_CHANNEL = "xp_announce_channel"
 
 # Economy (owner: economy_cog)
 ECONOMY_LOG_CHANNEL = "economy_log_channel"
 
 # Moderation (owner: moderation_cog)
-WARN_THRESHOLD    = "warn_threshold"
+WARN_THRESHOLD = "warn_threshold"
 WARN_TIMEOUT_MINS = "warn_timeout_minutes"
 
 # Roles (owner: role_cog)

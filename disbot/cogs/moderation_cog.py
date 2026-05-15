@@ -47,9 +47,7 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
         if err:
             await interaction.response.send_message(err, ephemeral=True)
             return
-        threshold = int(
-            await db.get_setting(interaction.guild_id, WARN_THRESHOLD, "3")
-        )
+        threshold = int(await db.get_setting(interaction.guild_id, WARN_THRESHOLD, "3"))
         timeout_minutes = int(
             await db.get_setting(interaction.guild_id, WARN_TIMEOUT_MINS, "10")
         )

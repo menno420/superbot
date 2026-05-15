@@ -481,9 +481,7 @@ class XpConfigView(discord.ui.View):
         cid = await db.get_setting(gid, XP_ANNOUNCE_CHANNEL, "")
         channel_str = f"<#{cid}>" if cid else "Same channel as message"
 
-        embed = discord.Embed(
-            title="⚙️ XP Configuration", color=UTILITY_COLOR
-        )
+        embed = discord.Embed(title="⚙️ XP Configuration", color=UTILITY_COLOR)
         embed.add_field(name="XP per message", value=f"{xp_min}–{xp_max}", inline=True)
         embed.add_field(name="Cooldown", value=f"{cooldown}s", inline=True)
         embed.add_field(name="Level-up channel", value=channel_str, inline=True)

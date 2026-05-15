@@ -20,6 +20,7 @@ def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
         lambda m: m.name == text or m.display_name == text, guild.members
     )
 
+
 _CUSTOM_EMOJI_RE = re.compile(r"<a?:(\w+):(\d+)>")
 
 

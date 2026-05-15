@@ -26,9 +26,7 @@ class DiagnosticsPanel(BaseView):
         reaction_rows = await db.get_all_reaction_roles(guild.id)
         skip_roles = await db.get_setting(guild.id, SKIP_ROLES, "Admin")
 
-        embed = discord.Embed(
-            title="🔧 Role System Diagnostics", color=WARNING_COLOR
-        )
+        embed = discord.Embed(title="🔧 Role System Diagnostics", color=WARNING_COLOR)
         embed.add_field(name="Time Thresholds", value=str(len(thresholds)), inline=True)
         embed.add_field(name="XP Thresholds", value=str(len(xp_rows)), inline=True)
         embed.add_field(
