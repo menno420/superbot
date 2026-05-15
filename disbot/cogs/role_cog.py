@@ -7,82 +7,31 @@ import discord
 from discord.ext import commands, tasks
 from utils import db
 from utils.helpers import normalize_name
+from views.roles._helpers import _ensure_defaults, _find_role_normalized, _parse_color
 
 logger = logging.getLogger("bot")
 
-# Default time-based thresholds seeded into the DB when a guild has none.
-_DEFAULT_THRESHOLDS: list[tuple[str, int]] = [
-    ("Neu", 0),
-    ("Normal", 1),
-    ("Iron", 7),
-    ("Gold", 30),
-    ("Diamand", 365),
-    ("Netherite", 730),
-    ("Beacon", 1825),
-]
-
-_COLOR_OPTIONS = [
-    ("Red", "#e74c3c"),
-    ("Blue", "#3498db"),
-    ("Green", "#2ecc71"),
-    ("Yellow", "#f1c40f"),
-    ("Purple", "#9b59b6"),
-    ("Orange", "#e67e22"),
-    ("White", "#ffffff"),
-    ("Black", "#000000"),
-]
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-async def _ensure_defaults(guild_id: int) -> None:
-    """Seed default thresholds for a guild that has none yet."""
-    existing = await db.get_role_thresholds(guild_id)
-    if not existing:
-        for name, days in _DEFAULT_THRESHOLDS:
-            await db.set_role_threshold(guild_id, name, days)
-
-
-def _parse_color(value: str) -> discord.Color:
-    """Parse a hex string like '#ff0000' or 'ff0000' into a discord.Color."""
-    value = value.strip().lstrip("#")
-    return discord.Color(int(value, 16))
-
-
-def _find_role_normalized(guild: discord.Guild, name: str) -> discord.Role | None:
-    """Case-insensitive, space-insensitive role lookup."""
-    key = normalize_name(name)
-    return discord.utils.find(lambda r: normalize_name(r.name) == key, guild.roles)
-
-
-# ---------------------------------------------------------------------------
-# Cog
-# ---------------------------------------------------------------------------
-
 
 class RoleCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.role_check.start()
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         self.role_check.cancel()
 
-    # ------------------------------------------------------------------ loop
+    # ------------------------------------------------------------------ background loop
 
     @tasks.loop(hours=24)
-    async def role_check(self):
+    async def role_check(self) -> None:
         for guild in self.bot.guilds:
             await self._assign_roles(guild)
 
     @role_check.before_loop
-    async def before_role_check(self):
+    async def before_role_check(self) -> None:
         await self.bot.wait_until_ready()
 
-    # ------------------------------------------------------------------ core role assignment
+    # ------------------------------------------------------------------ core assignment logic
 
     async def _assign_roles(
         self, guild: discord.Guild, ctx: commands.Context = None
@@ -180,59 +129,53 @@ class RoleCog(commands.Cog):
             await ctx.send(f"✅ Role check complete — {assigned} assignment(s) made.")
         return assigned
 
-    # ------------------------------------------------------------------ commands
+    # ------------------------------------------------------------------ primary commands
 
-    @commands.command(name="rolemenu")
-    async def rolemenu(self, ctx: commands.Context):
-        """Open the interactive role management panel."""
-        view = _RolePanelView(ctx, self)
+    @commands.command(name="roles")
+    async def roles_hub(self, ctx: commands.Context) -> None:
+        """Open the role management hub."""
+        from views.roles.main_panel import RoleHubView
+
+        view = RoleHubView(ctx, self)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
 
-    @commands.command(name="assignroles")
+    @commands.command(name="rolesettings")
     @commands.has_permissions(administrator=True)
-    async def assign_roles_cmd(self, ctx: commands.Context):
-        """Manually run the time-based role assignment for all members."""
+    async def rolesettings(self, ctx: commands.Context) -> None:
+        """Open the role management hub (alias for !roles)."""
+        await ctx.invoke(self.roles_hub)
+
+    # ------------------------------------------------------------------ compatibility aliases (hidden)
+
+    @commands.command(name="rolemenu", hidden=True)
+    async def rolemenu(self, ctx: commands.Context) -> None:
+        """Open the role hub (use !roles instead)."""
+        await ctx.invoke(self.roles_hub)
+
+    @commands.command(name="rolecreator", hidden=True)
+    @commands.has_permissions(manage_roles=True)
+    async def rolecreator(self, ctx: commands.Context) -> None:
+        """Open the role hub (use !roles instead)."""
+        await ctx.invoke(self.roles_hub)
+
+    @commands.command(name="assignroles", hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def assign_roles_cmd(self, ctx: commands.Context) -> None:
+        """Manually run time-based role assignment for all members."""
         await ctx.send("🔄 Running role assignment…")
         await self._assign_roles(ctx.guild, ctx)
 
-    @commands.command(name="roles")
-    async def roles(self, ctx: commands.Context):
-        """List all server roles with member counts."""
-        lines = [
-            f"**{role.name}** — {sum(1 for m in ctx.guild.members if role in m.roles)} members"
-            for role in reversed(ctx.guild.roles)
-            if role != ctx.guild.default_role
-        ]
-        embed = discord.Embed(
-            title=f"Roles in {ctx.guild.name}",
-            description="\n".join(lines) or "No roles found.",
-            color=discord.Color.purple(),
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command(name="debugroles")
-    @commands.has_permissions(administrator=True)
-    async def debug_roles(self, ctx: commands.Context):
-        """Print all role names for verification."""
-        names = [r.name for r in ctx.guild.roles]
-        await ctx.send(f"Roles: {', '.join(names)}")
-
-    @commands.command(name="refreshmembers")
-    @commands.has_permissions(administrator=True)
-    async def refresh_members(self, ctx: commands.Context):
-        """Force-fetch all members from Discord."""
-        await ctx.guild.chunk()
-        await ctx.send("✅ Member list refreshed.")
-
-    # ------------------------------------------------------------------ role creation commands
-
-    @commands.command(name="createrole")
+    @commands.command(name="createrole", hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def createrole(
-        self, ctx: commands.Context, name: str, color: str = "000000", hoist: str = "no"
-    ):
-        """Create a new role.  Usage: !createrole <name> [hex_color] [hoist yes/no]"""
+        self,
+        ctx: commands.Context,
+        name: str,
+        color: str = "000000",
+        hoist: str = "no",
+    ) -> None:
+        """Create a role (use !roles → Create instead)."""
         try:
             col = _parse_color(color)
         except (ValueError, OverflowError):
@@ -243,17 +186,15 @@ class RoleCog(commands.Cog):
         do_hoist = hoist.lower() in ("yes", "true", "1", "y")
         try:
             role = await ctx.guild.create_role(name=name, color=col, hoist=do_hoist)
-            await ctx.send(
-                f"✅ Created role **{role.name}** (color `{color}`, hoist={do_hoist})."
-            )
+            await ctx.send(f"✅ Created role **{role.name}**.")
         except discord.Forbidden:
             await ctx.send("❌ I don't have permission to create roles.")
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed: {e}")
 
-    @commands.command(name="deleterole")
+    @commands.command(name="deleterole", hidden=True)
     @commands.has_permissions(manage_roles=True)
-    async def deleterole(self, ctx: commands.Context, *, role: discord.Role):
+    async def deleterole(self, ctx: commands.Context, *, role: discord.Role) -> None:
         """Delete a role by name or mention."""
         if role >= ctx.guild.me.top_role:
             await ctx.send("❌ That role is higher than or equal to my top role.")
@@ -267,25 +208,12 @@ class RoleCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed: {e}")
 
-    @commands.command(name="rolecreator")
-    @commands.has_permissions(manage_roles=True)
-    async def rolecreator(self, ctx: commands.Context):
-        """Open the interactive role management panel (use !rolemenu instead)."""
-        await self.rolemenu(ctx)
-
-    @commands.command(name="rolesettings")
+    @commands.command(name="setrole", hidden=True)
     @commands.has_permissions(administrator=True)
-    async def rolesettings(self, ctx: commands.Context):
-        """Open the time-based role threshold manager."""
-        await _ensure_defaults(ctx.guild.id)
-        view = RoleSettingsView(ctx)
-        msg = await ctx.send(embed=await view.build_embed(), view=view)
-        view.message = msg
-
-    @commands.command(name="setrole")
-    @commands.has_permissions(administrator=True)
-    async def setrole(self, ctx: commands.Context, days: int, *, role_name: str):
-        """Add or update a time-based role threshold.  Usage: !setrole <days> <role name>"""
+    async def setrole(
+        self, ctx: commands.Context, days: int, *, role_name: str
+    ) -> None:
+        """Add or update a time-based role threshold."""
         if days < 0:
             await ctx.send("Days must be 0 or greater.", delete_after=5)
             return
@@ -296,10 +224,10 @@ class RoleCog(commands.Cog):
             f"✅ Role **{store_name}** will be assigned after **{days}** day(s)."
         )
 
-    @commands.command(name="unsetrole")
+    @commands.command(name="unsetrole", hidden=True)
     @commands.has_permissions(administrator=True)
-    async def unsetrole(self, ctx: commands.Context, *, role_name: str):
-        """Remove a role from the time-based assignment system."""
+    async def unsetrole(self, ctx: commands.Context, *, role_name: str) -> None:
+        """Remove a role from time-based assignment."""
         thresholds = await db.get_role_thresholds(ctx.guild.id)
         key = normalize_name(role_name)
         match = next(
@@ -313,10 +241,26 @@ class RoleCog(commands.Cog):
         await db.remove_role_threshold(ctx.guild.id, match)
         await ctx.send(f"✅ Removed **{match}** from the auto-assignment system.")
 
-    # ------------------------------------------------------------------ Reaction Role System (DB-backed)
+    @commands.command(name="debugroles", hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def debug_roles(self, ctx: commands.Context) -> None:
+        """Print all role names for verification."""
+        names = [r.name for r in ctx.guild.roles]
+        await ctx.send(f"Roles: {', '.join(names)}")
+
+    @commands.command(name="refreshmembers", hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def refresh_members(self, ctx: commands.Context) -> None:
+        """Force-fetch all members from Discord."""
+        await ctx.guild.chunk()
+        await ctx.send("✅ Member list refreshed.")
+
+    # ------------------------------------------------------------------ reaction role system
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+    async def on_raw_reaction_add(
+        self, payload: discord.RawReactionActionEvent
+    ) -> None:
         if payload.user_id == self.bot.user.id:
             return
         guild = self.bot.get_guild(payload.guild_id)
@@ -337,7 +281,9 @@ class RoleCog(commands.Cog):
                     pass
 
     @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+    async def on_raw_reaction_remove(
+        self, payload: discord.RawReactionActionEvent
+    ) -> None:
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
             return
@@ -358,8 +304,8 @@ class RoleCog(commands.Cog):
     @commands.command(name="reactroles", aliases=["reaktionsrollen"])
     @commands.has_permissions(manage_roles=True)
     async def setup_reaction_roles(
-        self, ctx, message_id: int, emoji: str, role: discord.Role
-    ):
+        self, ctx: commands.Context, message_id: int, emoji: str, role: discord.Role
+    ) -> None:
         """Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>"""
         try:
             message = await ctx.fetch_message(message_id)
@@ -379,13 +325,15 @@ class RoleCog(commands.Cog):
             )
             return
         await ctx.send(
-            f"✅ Reaction role set: reacting with {emoji} on that message will assign **{role.name}**.",
+            f"✅ Reaction role set: reacting with {emoji} assigns **{role.name}**.",
             delete_after=15,
         )
 
     @commands.command(name="removereactrole")
     @commands.has_permissions(manage_roles=True)
-    async def remove_reaction_role(self, ctx, message_id: int, emoji: str):
+    async def remove_reaction_role(
+        self, ctx: commands.Context, message_id: int, emoji: str
+    ) -> None:
         """Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"""
         await db.remove_reaction_role(ctx.guild.id, message_id, emoji)
         await ctx.send(
@@ -394,7 +342,7 @@ class RoleCog(commands.Cog):
 
     @commands.command(name="listreactroles")
     @commands.has_permissions(manage_roles=True)
-    async def list_reaction_roles(self, ctx):
+    async def list_reaction_roles(self, ctx: commands.Context) -> None:
         """List all active reaction roles in this server."""
         rows = await db.get_all_reaction_roles(ctx.guild.id)
         if not rows:
@@ -415,7 +363,7 @@ class RoleCog(commands.Cog):
     # ------------------------------------------------------------------ on_member_join
 
     @commands.Cog.listener()
-    async def on_member_join(self, member: discord.Member):
+    async def on_member_join(self, member: discord.Member) -> None:
         if member.bot:
             return
         await _ensure_defaults(member.guild.id)
@@ -436,452 +384,6 @@ class RoleCog(commands.Cog):
                 pass
 
 
-# ---------------------------------------------------------------------------
-# Role Panel View
-# ---------------------------------------------------------------------------
-
-
-class _RolePanelView(discord.ui.View):
-    """Interactive role management panel."""
-
-    def __init__(self, ctx: commands.Context, cog: RoleCog):
-        super().__init__(timeout=180)
-        self.ctx = ctx
-        self.cog = cog
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    def build_embed(self) -> discord.Embed:
-        embed = discord.Embed(
-            title="🎭 Role Management Panel",
-            description=(
-                "**🎭 List Roles** — view all server roles with counts\n"
-                "**✨ Create Role** — open the interactive role creator\n"
-                "**⚙️ Role Settings** — manage time-based role thresholds\n"
-                "**🔄 Assign Roles** — run time-based assignment now (admin)"
-            ),
-            color=discord.Color.purple(),
-        )
-        embed.set_footer(text="Only you can interact with this panel.")
-        return embed
-
-    @discord.ui.button(label="🎭 List Roles", style=discord.ButtonStyle.blurple, row=0)
-    async def roles_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        lines = [
-            f"**{role.name}** — {sum(1 for m in interaction.guild.members if role in m.roles)} members"
-            for role in reversed(interaction.guild.roles)
-            if role != interaction.guild.default_role
-        ]
-        description = "\n".join(lines) or "No roles found."
-        if len(description) > 4000:
-            description = description[:3990] + "\n…"
-        embed = discord.Embed(
-            title=f"🎭 Roles in {interaction.guild.name}",
-            description=description,
-            color=discord.Color.purple(),
-        )
-        embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="✨ Create Role", style=discord.ButtonStyle.green, row=0)
-    async def createrole_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
-        if not interaction.user.guild_permissions.manage_roles:
-            await interaction.response.send_message(
-                "❌ You need **Manage Roles** permission.", ephemeral=True
-            )
-            return
-        await interaction.response.send_modal(_RoleCreateModal(self.ctx))
-
-    @discord.ui.button(
-        label="⚙️ Role Settings", style=discord.ButtonStyle.blurple, row=0
-    )
-    async def rolesettings_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
-        if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
-            )
-            return
-        await _ensure_defaults(interaction.guild.id)
-        settings_view = RoleSettingsView(self.ctx, back_panel=self)
-        settings_view.message = self.message
-        await interaction.response.edit_message(
-            embed=await settings_view.build_embed(), view=settings_view
-        )
-
-    @discord.ui.button(label="🔄 Assign Roles", style=discord.ButtonStyle.grey, row=0)
-    async def assign_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
-            )
-            return
-        await interaction.response.defer(ephemeral=True)
-        count = await self.cog._assign_roles(interaction.guild)
-        await interaction.followup.send(
-            f"✅ Assignment complete — {count} role(s) assigned.", ephemeral=True
-        )
-
-    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=1)
-    async def overview_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
-        await interaction.response.edit_message(embed=self.build_embed(), view=self)
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
-
-
-class _RoleAutomationView(discord.ui.View):
-    """Offered after role creation: configure XP-based auto-assignment or skip."""
-
-    def __init__(self, ctx: commands.Context, role_name: str):
-        super().__init__(timeout=120)
-        self.ctx = ctx
-        self.role_name = role_name
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    @discord.ui.button(
-        label="⚙️ Configure Automation", style=discord.ButtonStyle.blurple, row=0
-    )
-    async def configure_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
-        await interaction.response.send_modal(
-            _RoleAutomationModal(self.ctx, self.role_name, self)
-        )
-
-    @discord.ui.button(label="⏭️ Skip", style=discord.ButtonStyle.secondary, row=0)
-    async def skip_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        for item in self.children:
-            item.disabled = True
-        await interaction.response.edit_message(
-            content=f"✅ Role **{self.role_name}** created. No automation configured.",
-            view=self,
-        )
-        self.stop()
-
-    async def on_timeout(self) -> None:
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
-
-
-class _RoleAutomationModal(discord.ui.Modal, title="Configure XP Automation"):  # type: ignore[call-arg]
-    level_threshold = discord.ui.TextInput(
-        label="XP level required (e.g. 5)",
-        placeholder="e.g. 5",
-        required=True,
-        max_length=4,
-    )
-    auto_assign_enabled = discord.ui.TextInput(
-        label="Enable auto-assign? (yes/no)",
-        placeholder="yes",
-        required=False,
-        max_length=3,
-    )
-
-    def __init__(
-        self,
-        ctx: commands.Context,
-        role_name: str,
-        parent_view: _RoleAutomationView,
-    ):
-        super().__init__()
-        self.ctx = ctx
-        self.role_name = role_name
-        self._parent_view = parent_view
-
-    async def on_submit(self, interaction: discord.Interaction):
-        raw_level = self.level_threshold.value.strip()
-        try:
-            level = int(raw_level)
-            if level < 0:
-                raise ValueError
-        except ValueError:
-            await interaction.response.send_message(
-                "❌ Level threshold must be a non-negative integer (e.g. `5`).",
-                ephemeral=True,
-            )
-            return
-
-        raw_auto = self.auto_assign_enabled.value.strip().lower()
-        auto_assign = raw_auto not in ("no", "n", "false", "0")
-
-        try:
-            await db.set_role_xp_threshold(
-                interaction.guild.id, self.role_name, level, auto_assign
-            )
-        except Exception as exc:
-            logger.error("set_role_xp_threshold failed: %s", exc, exc_info=True)
-            await interaction.response.send_message(
-                f"❌ Failed to save automation config: {exc}", ephemeral=True
-            )
-            return
-
-        for item in self._parent_view.children:
-            item.disabled = True
-        status = "enabled" if auto_assign else "saved (auto-assign disabled)"
-        await interaction.response.edit_message(
-            content=(
-                f"✅ Role **{self.role_name}** XP automation {status}.\n"
-                f"Level threshold: **{level}** | "
-                f"Auto-assign: **{'yes' if auto_assign else 'no'}**"
-            ),
-            view=self._parent_view,
-        )
-        self._parent_view.stop()
-
-
-class _RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[call-arg]
-    name = discord.ui.TextInput(label="Role name", max_length=100)
-    color = discord.ui.TextInput(
-        label="Color (hex, e.g. #3498db)",
-        placeholder="#000000",
-        required=False,
-        max_length=7,
-    )
-    hoist = discord.ui.TextInput(
-        label="Show separately in member list? (yes/no)",
-        placeholder="no",
-        required=False,
-        max_length=3,
-    )
-    mentionable = discord.ui.TextInput(
-        label="Mentionable by everyone? (yes/no)",
-        placeholder="no",
-        required=False,
-        max_length=3,
-    )
-
-    def __init__(self, ctx: commands.Context):
-        super().__init__()
-        self.ctx = ctx
-
-    async def on_submit(self, interaction: discord.Interaction):
-        col = discord.Color.default()
-        if self.color.value.strip():
-            try:
-                col = _parse_color(self.color.value)
-            except (ValueError, OverflowError):
-                await interaction.response.send_message(
-                    "❌ Invalid color — use hex like `#3498db`.", ephemeral=True
-                )
-                return
-
-        do_hoist = self.hoist.value.strip().lower() in ("yes", "y", "true", "1")
-        do_mention = self.mentionable.value.strip().lower() in ("yes", "y", "true", "1")
-
-        try:
-            role = await interaction.guild.create_role(
-                name=self.name.value,
-                color=col,
-                hoist=do_hoist,
-                mentionable=do_mention,
-            )
-            automation_view = _RoleAutomationView(self.ctx, role.name)
-            await interaction.response.send_message(
-                f"✅ Created role **{role.name}**.\n"
-                "Would you like to configure XP-based auto-assignment for this role?",
-                ephemeral=True,
-                view=automation_view,
-            )
-            automation_view.message = await interaction.original_response()
-        except discord.Forbidden:
-            await interaction.response.send_message(
-                "❌ I don't have permission to create roles.", ephemeral=True
-            )
-        except discord.HTTPException as e:
-            await interaction.response.send_message(f"❌ Failed: {e}", ephemeral=True)
-
-
-# ---------------------------------------------------------------------------
-# Role Settings UI (time thresholds)
-# ---------------------------------------------------------------------------
-
-
-class RoleSettingsView(discord.ui.View):
-    def __init__(
-        self, ctx: commands.Context, back_panel: "_RolePanelView | None" = None
-    ):
-        super().__init__(timeout=300)
-        self.ctx = ctx
-        self.message: discord.Message | None = None
-        if back_panel is not None:
-            self._back_panel = back_panel
-            self.add_item(_BackButton(back_panel))
-
-    async def build_embed(self) -> discord.Embed:
-        thresholds = await db.get_role_thresholds(self.ctx.guild.id)
-        embed = discord.Embed(
-            title="⏱️ Time-Based Role Thresholds",
-            color=discord.Color.blurple(),
-        )
-        if thresholds:
-            lines = [
-                f"**{r['role_name']}** — {r['days_required']} day(s)"
-                for r in thresholds
-            ]
-            embed.description = "\n".join(lines)
-        else:
-            embed.description = "No thresholds configured."
-        embed.set_footer(text="Add / Edit / Remove thresholds using the buttons below.")
-        return embed
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
-
-    async def _refresh(self, interaction: discord.Interaction):
-        await interaction.message.edit(embed=await self.build_embed(), view=self)
-
-    @discord.ui.button(label="Add / Edit", style=discord.ButtonStyle.green, row=0)
-    async def add_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.send_modal(_ThresholdAddModal(self))
-
-    @discord.ui.button(label="Remove", style=discord.ButtonStyle.red, row=0)
-    async def remove_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        thresholds = await db.get_role_thresholds(self.ctx.guild.id)
-        if not thresholds:
-            await interaction.response.send_message(
-                "No thresholds to remove.", ephemeral=True
-            )
-            return
-        view = _RemoveThresholdView(self, thresholds)
-        await interaction.response.send_message(
-            "Select a role threshold to remove:", view=view, ephemeral=True
-        )
-
-    @discord.ui.button(label="Reset to Defaults", style=discord.ButtonStyle.grey, row=0)
-    async def reset_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        for name, days in _DEFAULT_THRESHOLDS:
-            await db.set_role_threshold(self.ctx.guild.id, name, days)
-        await interaction.response.defer()
-        await self._refresh(interaction)
-
-    @discord.ui.button(
-        label="Run Assignment Now", style=discord.ButtonStyle.blurple, row=1
-    )
-    async def run_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer(ephemeral=True)
-        cog: RoleCog = interaction.client.get_cog("RoleCog")
-        if cog:
-            count = await cog._assign_roles(interaction.guild)
-            await interaction.followup.send(
-                f"✅ Assignment complete — {count} role(s) assigned.", ephemeral=True
-            )
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True
-        try:
-            await self.message.edit(view=self)
-        except Exception:
-            pass
-
-
-class _BackButton(discord.ui.Button):
-    def __init__(self, back_panel: "_RolePanelView"):
-        super().__init__(label="↩ Back", style=discord.ButtonStyle.secondary, row=2)
-        self._back_panel = back_panel
-
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(
-            embed=self._back_panel.build_embed(), view=self._back_panel
-        )
-        self.view.stop()
-
-
-class _ThresholdAddModal(discord.ui.Modal, title="Add / Edit Threshold"):  # type: ignore[call-arg]
-    role_name = discord.ui.TextInput(
-        label="Role name (must exist in server)", max_length=100
-    )
-    days = discord.ui.TextInput(
-        label="Days in server required", placeholder="0", max_length=5
-    )
-
-    def __init__(self, parent: RoleSettingsView):
-        super().__init__()
-        self.parent = parent
-
-    async def on_submit(self, interaction: discord.Interaction):
-        try:
-            d = int(self.days.value)
-            if d < 0:
-                raise ValueError
-        except ValueError:
-            await interaction.response.send_message(
-                "Days must be a non-negative integer.", ephemeral=True
-            )
-            return
-        discord_role = _find_role_normalized(
-            interaction.guild, self.role_name.value.strip()
-        )
-        store_name = discord_role.name if discord_role else self.role_name.value.strip()
-        await db.set_role_threshold(interaction.guild.id, store_name, d)
-        await interaction.response.defer()
-        await self.parent._refresh(interaction)
-
-
-class _RemoveSelect(discord.ui.Select):
-    def __init__(self, parent: RoleSettingsView, thresholds: list[dict]):
-        self.parent = parent
-        options = [
-            discord.SelectOption(
-                label=r["role_name"],
-                value=r["role_name"],
-                description=f"{r['days_required']} day(s)",
-            )
-            for r in thresholds
-        ][:25]
-        super().__init__(placeholder="Choose a threshold to remove…", options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        await db.remove_role_threshold(interaction.guild.id, self.values[0])
-        await interaction.response.send_message(
-            f"✅ Removed **{self.values[0]}** from auto-assignment.", ephemeral=True
-        )
-        await self.parent._refresh(interaction)
-
-
-class _RemoveThresholdView(discord.ui.View):
-    def __init__(self, parent: RoleSettingsView, thresholds: list[dict]):
-        super().__init__(timeout=60)
-        self.add_item(_RemoveSelect(parent, thresholds))
-
-
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(RoleCog(bot))
     logger.info("RoleCog loaded.")
