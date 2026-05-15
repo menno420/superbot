@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import re
@@ -6,6 +8,7 @@ import config as _config
 import discord
 from discord.ext import commands
 from utils import db
+from views.base import BaseView
 
 
 class Cleanup(commands.Cog):
@@ -193,6 +196,96 @@ class Cleanup(commands.Cog):
             await ctx.send(f"Prohibited words: {word_list}", delete_after=15)
         else:
             await ctx.send("No prohibited words are currently set.", delete_after=10)
+
+    @commands.command(name="wordmenu")
+    @commands.has_permissions(administrator=True)
+    async def word_menu(self, ctx):
+        """Open the interactive prohibited words management panel."""
+        if ctx.guild.id not in self._word_cache:
+            await self._load_guild(ctx.guild.id)
+        view = _WordMenuView(ctx, self)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
+
+
+class _AddWordModal(discord.ui.Modal, title="Add Prohibited Word"):  # type: ignore[call-arg]
+    word_input = discord.ui.TextInput(label="Word to prohibit", max_length=100)
+
+    def __init__(self, cog: "Cleanup"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        word = self.word_input.value.lower().strip()
+        added = await db.add_prohibited_word(interaction.guild_id, word)
+        if added:
+            await self.cog._load_guild(interaction.guild_id)
+            await interaction.response.send_message(
+                f"✅ Added `{word}` to the prohibited list.", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f"❌ `{word}` is already in the prohibited list.", ephemeral=True
+            )
+
+
+class _RemoveWordModal(discord.ui.Modal, title="Remove Prohibited Word"):  # type: ignore[call-arg]
+    word_input = discord.ui.TextInput(label="Word to remove", max_length=100)
+
+    def __init__(self, cog: "Cleanup"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        word = self.word_input.value.lower().strip()
+        removed = await db.remove_prohibited_word(interaction.guild_id, word)
+        if removed:
+            await self.cog._load_guild(interaction.guild_id)
+            await interaction.response.send_message(
+                f"✅ Removed `{word}` from the prohibited list.", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f"❌ `{word}` was not in the prohibited list.", ephemeral=True
+            )
+
+
+class _WordMenuView(BaseView):
+    """Interactive prohibited-words management panel."""
+
+    def __init__(self, ctx: commands.Context, cog: "Cleanup"):
+        super().__init__(ctx.author, timeout=180)
+        self.ctx = ctx
+        self.cog = cog
+
+    def build_embed(self) -> discord.Embed:
+        words = self.cog._word_cache.get(self.ctx.guild.id, [])
+        embed = discord.Embed(
+            title="🔤 Prohibited Words Manager", color=discord.Color.red()
+        )
+        if words:
+            embed.add_field(
+                name="Current Words",
+                value=", ".join(f"`{w}`" for w in sorted(words))[:1000],
+                inline=False,
+            )
+        else:
+            embed.description = "No prohibited words are currently set."
+        embed.set_footer(text="Use buttons below to manage prohibited words.")
+        return embed
+
+    @discord.ui.button(label="➕ Add Word", style=discord.ButtonStyle.green, row=0)
+    async def btn_add(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_AddWordModal(self.cog))
+
+    @discord.ui.button(label="➖ Remove Word", style=discord.ButtonStyle.danger, row=0)
+    async def btn_remove(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_RemoveWordModal(self.cog))
+
+    @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.secondary, row=0)
+    async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await self.cog._load_guild(self.ctx.guild.id)
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
 
 async def setup(bot):

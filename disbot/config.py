@@ -42,6 +42,7 @@ INITIAL_EXTENSIONS = [
     "cogs.utility_cog",
     "cogs.cleanup_cog",
     "cogs.channel_cog",
+    "cogs.inventory_cog",
     "cogs.economy_cog",
     "cogs.counting_cog",
     "cogs.deathmatch_cog",

@@ -12,6 +12,7 @@ import discord
 import psutil
 from discord.ext import commands
 from utils import db
+from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
@@ -21,37 +22,20 @@ DATA_DIR = os.path.join(
 JSON_DIR = os.path.join(DATA_DIR, "json")
 
 
-class _PaginatorView(discord.ui.View):
+class _PaginatorView(BaseView):
     """Simple prev/next paginator for multi-page embeds."""
 
     def __init__(
         self, pages: list[discord.Embed], author: discord.Member | discord.User
     ):
-        super().__init__(timeout=120)
+        super().__init__(author, timeout=120)
         self.pages = pages
-        self.author = author
         self.index = 0
-        self.message: discord.Message | None = None
         self._update_buttons()
 
     def _update_buttons(self):
         self.prev_btn.disabled = self.index == 0
         self.next_btn.disabled = self.index == len(self.pages) - 1
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message(
-                "This paginator isn't yours.", ephemeral=True
-            )
-            return False
-        return True
-
-    async def on_timeout(self):
-        if self.message:
-            try:
-                await self.message.edit(view=None)
-            except Exception:
-                pass
 
     @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary)
     async def prev_btn(
@@ -70,11 +54,110 @@ class _PaginatorView(discord.ui.View):
         await interaction.response.edit_message(embed=self.pages[self.index], view=self)
 
 
+class _DiagnosticsHubView(BaseView):
+    """Interactive hub for all diagnostic tools."""
+
+    def __init__(self, ctx: commands.Context, cog: "DiagnosticCog"):
+        super().__init__(ctx.author, timeout=180)
+        self.ctx = ctx
+        self.cog = cog
+
+    def build_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="🔧 Diagnostics Hub",
+            description=(
+                "Select a diagnostic tool below.\n"
+                "All tools require Administrator permission."
+            ),
+            color=discord.Color.blue(),
+        )
+        embed.add_field(
+            name="🤖 Bot Status", value="Health & performance metrics", inline=True
+        )
+        embed.add_field(name="📡 Latency", value="WebSocket ping", inline=True)
+        embed.add_field(
+            name="💻 System Info", value="OS, disk & Python version", inline=True
+        )
+        embed.add_field(
+            name="🗄️ Check Database", value="Verify all DB tables exist", inline=True
+        )
+        embed.add_field(
+            name="📄 Validate JSON", value="Check data file integrity", inline=True
+        )
+        embed.add_field(
+            name="📋 Command List", value="Paginated command overview", inline=True
+        )
+        embed.add_field(
+            name="🔍 Recent Errors", value="Last 10 error log entries", inline=True
+        )
+        embed.add_field(
+            name="🔔 Test Notify", value="Fire a test webhook ping", inline=True
+        )
+        embed.set_footer(text="Diagnostics Hub  •  Admin only")
+        return embed
+
+    @discord.ui.button(label="🤖 Bot Status", style=discord.ButtonStyle.blurple, row=0)
+    async def btn_status(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.diagnostic_bot_status)
+
+    @discord.ui.button(label="📡 Latency", style=discord.ButtonStyle.blurple, row=0)
+    async def btn_latency(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.latency)
+
+    @discord.ui.button(label="💻 System Info", style=discord.ButtonStyle.blurple, row=0)
+    async def btn_sysinfo(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.system_info)
+
+    @discord.ui.button(label="🗄️ Database", style=discord.ButtonStyle.grey, row=1)
+    async def btn_db(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.check_database)
+
+    @discord.ui.button(label="📄 JSON Files", style=discord.ButtonStyle.grey, row=1)
+    async def btn_json(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.validate_json_files)
+
+    @discord.ui.button(label="📋 Commands", style=discord.ButtonStyle.grey, row=1)
+    async def btn_cmds(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.list_commands_detailed)
+
+    @discord.ui.button(
+        label="🔍 Recent Errors", style=discord.ButtonStyle.danger, row=2
+    )
+    async def btn_errors(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.recent_errors)
+
+    @discord.ui.button(
+        label="🔔 Test Notify", style=discord.ButtonStyle.secondary, row=2
+    )
+    async def btn_notify(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.defer()
+        await self.ctx.invoke(self.cog.test_notification)
+
+
 class DiagnosticCog(commands.Cog):
     """Advanced diagnostics and monitoring tools."""
 
     def __init__(self, bot):
         self.bot = bot
+
+    # ------------------------------------------------------------------
+    # Diagnostics hub
+    # ------------------------------------------------------------------
+
+    @commands.command(name="diagnostics", aliases=["diag"])
+    @commands.has_permissions(administrator=True)
+    async def diagnostics_hub(self, ctx):
+        """Open the interactive diagnostics hub panel."""
+        view = _DiagnosticsHubView(ctx, self)
+        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view.message = msg
 
     # ------------------------------------------------------------------
     # Command overview

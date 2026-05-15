@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from typing import Optional
@@ -6,6 +8,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions, has_permissions
 from utils import db
+from views.base import BaseView
 
 logger = logging.getLogger(__name__)
 
@@ -187,6 +190,15 @@ class ChainCog(commands.Cog):
             await ctx.send(f"❌ An error occurred: {str(error)}")
             logger.error(f"Error in remove_limit command: {error}")
 
+    @commands.command(name="chainmenu")
+    @has_permissions(administrator=True)
+    async def chain_menu(self, ctx):
+        """Open the interactive chain management panel."""
+        view = _ChainMenuView(ctx, self)
+        embed = await view.build_embed()
+        msg = await ctx.send(embed=embed, view=view)
+        view.message = msg
+
     @chain.command(name="list")
     async def list_chains(self, ctx):
         """
@@ -292,6 +304,171 @@ class ChainCog(commands.Cog):
     async def on_ready(self):
         """Event handler when the cog is ready."""
         logger.info(f"{self.__class__.__name__} is ready and operational.")
+
+
+def _resolve_channel(
+    interaction: discord.Interaction, raw: str
+) -> discord.TextChannel | None:
+    raw = raw.strip()
+    if not raw:
+        return interaction.channel
+    stripped = raw.strip("<#>")
+    try:
+        return interaction.guild.get_channel(int(stripped))
+    except ValueError:
+        return discord.utils.get(interaction.guild.text_channels, name=raw)
+
+
+class _CreateChainModal(discord.ui.Modal, title="Create Chain"):  # type: ignore[call-arg]
+    channel_input = discord.ui.TextInput(
+        label="Channel (mention/ID, blank = current)", max_length=40, required=False
+    )
+    word_input = discord.ui.TextInput(label="Allowed word", max_length=100)
+
+    def __init__(self, cog: "ChainCog"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        channel = _resolve_channel(interaction, self.channel_input.value)
+        if not channel:
+            await interaction.response.send_message(
+                "❌ Channel not found.", ephemeral=True
+            )
+            return
+        word = self.word_input.value.lower().strip()
+        existing = await db.get_chain_channel(channel.id)
+        if existing and existing.get("word"):
+            await interaction.response.send_message(
+                f"❌ A chain is already active in {channel.mention}.", ephemeral=True
+            )
+            return
+        await db.set_chain_channel(channel.id, interaction.guild_id, word)
+        await interaction.response.send_message(
+            f"✅ Chain created in {channel.mention}. Only `{word}` is allowed.",
+            ephemeral=True,
+        )
+
+
+class _DeleteChainModal(discord.ui.Modal, title="Delete Chain"):  # type: ignore[call-arg]
+    channel_input = discord.ui.TextInput(
+        label="Channel (mention/ID, blank = current)", max_length=40, required=False
+    )
+
+    def __init__(self, cog: "ChainCog"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        channel = _resolve_channel(interaction, self.channel_input.value)
+        if not channel:
+            await interaction.response.send_message(
+                "❌ Channel not found.", ephemeral=True
+            )
+            return
+        existing = await db.get_chain_channel(channel.id)
+        if not existing:
+            await interaction.response.send_message(
+                f"❌ No active chain found in {channel.mention}.", ephemeral=True
+            )
+            return
+        await db.delete_chain_channel(channel.id)
+        await interaction.response.send_message(
+            f"✅ Chain deleted from {channel.mention}.", ephemeral=True
+        )
+
+
+class _SetLimitModal(discord.ui.Modal, title="Set Word Limit"):  # type: ignore[call-arg]
+    channel_input = discord.ui.TextInput(
+        label="Channel (mention/ID, blank = current)", max_length=40, required=False
+    )
+    limit_input = discord.ui.TextInput(
+        label="Word limit (0 = remove limit)", max_length=10
+    )
+
+    def __init__(self, cog: "ChainCog"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        channel = _resolve_channel(interaction, self.channel_input.value)
+        if not channel:
+            await interaction.response.send_message(
+                "❌ Channel not found.", ephemeral=True
+            )
+            return
+        if not self.limit_input.value.strip().isdigit():
+            await interaction.response.send_message(
+                "❌ Limit must be a non-negative integer.", ephemeral=True
+            )
+            return
+        limit = int(self.limit_input.value.strip())
+        existing = await db.get_chain_channel(channel.id)
+        if not existing:
+            await interaction.response.send_message(
+                f"❌ No active chain in {channel.mention}. Create one first.",
+                ephemeral=True,
+            )
+            return
+        await db.set_chain_limit(channel.id, limit)
+        if limit == 0:
+            await interaction.response.send_message(
+                f"✅ Word limit removed from {channel.mention}.", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f"✅ Word limit set to {limit} words in {channel.mention}.",
+                ephemeral=True,
+            )
+
+
+class _ChainMenuView(BaseView):
+    """Interactive chain channel management panel."""
+
+    def __init__(self, ctx: commands.Context, cog: "ChainCog"):
+        super().__init__(ctx.author, timeout=180)
+        self.ctx = ctx
+        self.cog = cog
+
+    async def build_embed(self) -> discord.Embed:
+        channels = await db.get_all_chain_channels(self.ctx.guild.id)
+        embed = discord.Embed(title="⛓️ Chain Manager", color=discord.Color.blue())
+        if not channels:
+            embed.description = "No active chains in this server."
+        else:
+            lines = []
+            for entry in channels:
+                ch = self.cog.bot.get_channel(entry["channel_id"])
+                name = ch.mention if ch else f"<#{entry['channel_id']}>"
+                parts = []
+                if entry.get("word"):
+                    parts.append(f"word: `{entry['word']}`")
+                if entry.get("word_limit"):
+                    parts.append(f"limit: `{entry['word_limit']}`")
+                lines.append(f"{name} — {', '.join(parts) or 'no restrictions'}")
+            embed.description = "\n".join(lines)
+        embed.set_footer(text="Use buttons below to manage chains.")
+        return embed
+
+    @discord.ui.button(label="➕ Create Chain", style=discord.ButtonStyle.green, row=0)
+    async def btn_create(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_CreateChainModal(self.cog))
+
+    @discord.ui.button(label="🗑️ Delete Chain", style=discord.ButtonStyle.danger, row=0)
+    async def btn_delete(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_DeleteChainModal(self.cog))
+
+    @discord.ui.button(label="📏 Set Limit", style=discord.ButtonStyle.blurple, row=0)
+    async def btn_setlimit(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        await interaction.response.send_modal(_SetLimitModal(self.cog))
+
+    @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.secondary, row=1)
+    async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.edit_message(
+            embed=await self.build_embed(), view=self
+        )
 
 
 # Asynchronous setup for discord.py 2.x

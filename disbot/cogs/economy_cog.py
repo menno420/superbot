@@ -9,6 +9,7 @@ from discord.ext import commands
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
+from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
@@ -416,30 +417,6 @@ class EconomyCog(commands.Cog):
         msg = await ctx.send(embed=_shop_embed(), view=view)
         view.message = msg
 
-    # ------------------------------------------------------------------ !inventory
-
-    @commands.command(name="inventory", aliases=["inv"])
-    async def inventory(self, ctx: commands.Context, member: discord.Member = None):
-        """Show your (or another user's) inventory."""
-        target = member or ctx.author
-        inv = await db.get_inventory(target.id, ctx.guild.id)
-        embed = discord.Embed(
-            title=f"🎒 {target.display_name}'s Inventory",
-            color=discord.Color.blurple(),
-        )
-        if inv:
-            lines = []
-            for item_name, qty in inv.items():
-                data = SHOP_ITEMS.get(item_name, {})
-                emoji = data.get("emoji", "📦")
-                lines.append(
-                    f"{emoji} **{item_name.replace('_', ' ').title()}** × {qty}"
-                )
-            embed.description = "\n".join(lines)
-        else:
-            embed.description = "Empty — visit `!shop` to buy items!"
-        await ctx.send(embed=embed)
-
     # ------------------------------------------------------------------ !balance
 
     @commands.command(name="balance", aliases=["bal", "wallet"])
@@ -518,21 +495,12 @@ class EconomyCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
-class _EconomyPanelView(discord.ui.View):
+class _EconomyPanelView(BaseView):
     """Interactive economy control panel — hub for all economy actions."""
 
     def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=180)
+        super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
-            )
-            return False
-        return True
 
     async def build_embed(self) -> discord.Embed:
         uid, gid = self.ctx.author.id, self.ctx.guild.id
@@ -692,25 +660,13 @@ class _EconomyPanelView(discord.ui.View):
     async def inventory_btn(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ):
+        from cogs.inventory_cog import UnifiedInventoryView, _build_combined_inventory
+
         uid, gid = self.ctx.author.id, self.ctx.guild.id
-        inv = await db.get_inventory(uid, gid)
-        embed = discord.Embed(
-            title=f"🎒 {self.ctx.author.display_name}'s Inventory",
-            color=discord.Color.blurple(),
-        )
-        if inv:
-            lines = []
-            for item_name, qty in inv.items():
-                data = SHOP_ITEMS.get(item_name, {})
-                emoji = data.get("emoji", "📦")
-                lines.append(
-                    f"{emoji} **{item_name.replace('_', ' ').title()}** × {qty}"
-                )
-            embed.description = "\n".join(lines)
-        else:
-            embed.description = "Empty — click 🛒 Shop to buy items!"
-        embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        grouped = await _build_combined_inventory(uid, gid)
+        view = UnifiedInventoryView(self.ctx.author, self.ctx, self.ctx.author, grouped)
+        await interaction.response.send_message(embed=view.build_hub_embed(), view=view)
+        view.message = await interaction.original_response()
 
     @discord.ui.button(label="📋 Jobs", style=discord.ButtonStyle.grey, row=1)
     async def jobs_btn(self, interaction: discord.Interaction, _: discord.ui.Button):

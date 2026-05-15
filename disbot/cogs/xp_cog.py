@@ -9,7 +9,8 @@ from discord.ext import commands
 from utils import db
 from utils import embeds as em
 from utils.cooldowns import check_cooldown, format_remaining
-from utils.helpers import CogMenuView, post_log_embed
+from utils.helpers import post_log_embed
+from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
@@ -107,15 +108,158 @@ async def _build_rank_embed(
 # ---------------------------------------------------------------------------
 
 
+class _XpHubView(BaseView):
+    """Interactive XP hub — shows rank card with quick admin actions."""
+
+    def __init__(self, ctx: commands.Context):
+        super().__init__(ctx.author, timeout=180)
+        self.ctx = ctx
+
+    async def build_embed(self) -> discord.Embed:
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")
+        embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
+        is_admin = self.ctx.author.guild_permissions.administrator
+        lines = ["Use the buttons below to switch stat views."]
+        if is_admin:
+            lines.append("Admin controls: ⚙️ Configure · 🎁 Give XP · 🔄 Reset XP")
+        embed.set_footer(text=" · ".join(lines))
+        # Show or hide admin buttons based on permissions
+        for item in self.children:
+            if hasattr(item, "_admin_only"):
+                item.disabled = not is_admin
+        return embed
+
+    @discord.ui.button(label="📊 Both", style=discord.ButtonStyle.blurple, row=0)
+    async def btn_both(self, interaction: discord.Interaction, _: discord.ui.Button):
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "both")
+        embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="🏆 XP", style=discord.ButtonStyle.blurple, row=0)
+    async def btn_xp(self, interaction: discord.Interaction, _: discord.ui.Button):
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "xp")
+        embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="🪙 Coins", style=discord.ButtonStyle.blurple, row=0)
+    async def btn_coins(self, interaction: discord.Interaction, _: discord.ui.Button):
+        embed = await _build_rank_embed(self.ctx.author, self.ctx.guild, "coins")
+        embed.title = f"🏆 XP Panel — {self.ctx.author.display_name}"
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="⚙️ Configure", style=discord.ButtonStyle.grey, row=1)
+    async def btn_config(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ Administrator permission required.", ephemeral=True
+            )
+            return
+        config_view = XpConfigView(self.ctx)
+        config_view.message = self.message
+        await interaction.response.edit_message(
+            embed=await config_view.build_embed(), view=config_view
+        )
+
+    @discord.ui.button(label="🎁 Give XP", style=discord.ButtonStyle.grey, row=1)
+    async def btn_givexp(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ Administrator permission required.", ephemeral=True
+            )
+            return
+        await interaction.response.send_modal(_GiveXpModal(self))
+
+    @discord.ui.button(label="🔄 Reset XP", style=discord.ButtonStyle.danger, row=1)
+    async def btn_resetxp(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ Administrator permission required.", ephemeral=True
+            )
+            return
+        await interaction.response.send_modal(_ResetXpModal(self))
+
+
+class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
+    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)
+    amount_input = discord.ui.TextInput(
+        label="XP amount", placeholder="e.g. 100", max_length=10
+    )
+
+    def __init__(self, hub: _XpHubView):
+        super().__init__()
+        self._hub = hub
+
+    async def on_submit(self, interaction: discord.Interaction):
+        from cogs.moderation_cog import _parse_member
+
+        member = _parse_member(interaction.guild, self.member_input.value)
+        if not member:
+            await interaction.response.send_message(
+                "❌ Member not found.", ephemeral=True
+            )
+            return
+        try:
+            amount = int(self.amount_input.value)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            await interaction.response.send_message(
+                "❌ Amount must be a positive integer.", ephemeral=True
+            )
+            return
+        new_xp, new_level, _ = await db.add_xp(
+            member.id, interaction.guild_id, amount, 0
+        )
+        await interaction.response.send_message(
+            f"✅ Gave **{amount}** XP to {member.mention}. "
+            f"Now **{new_xp}** XP (Level **{new_level}**).",
+            ephemeral=True,
+        )
+
+
+class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-arg]
+    member_input = discord.ui.TextInput(label="User (mention or ID)", max_length=100)
+    confirm_input = discord.ui.TextInput(
+        label='Type "CONFIRM" to reset', placeholder="CONFIRM", max_length=10
+    )
+
+    def __init__(self, hub: _XpHubView):
+        super().__init__()
+        self._hub = hub
+
+    async def on_submit(self, interaction: discord.Interaction):
+        if self.confirm_input.value.strip().upper() != "CONFIRM":
+            await interaction.response.send_message(
+                "❌ Reset cancelled — type CONFIRM to proceed.", ephemeral=True
+            )
+            return
+        from cogs.moderation_cog import _parse_member
+
+        member = _parse_member(interaction.guild, self.member_input.value)
+        if not member:
+            await interaction.response.send_message(
+                "❌ Member not found.", ephemeral=True
+            )
+            return
+        await db.execute(
+            "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
+            (member.id, interaction.guild_id),
+        )
+        await interaction.response.send_message(
+            f"✅ Reset XP for {member.mention}.", ephemeral=True
+        )
+
+
 class XpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.command(name="xpmenu")
     async def xp_menu(self, ctx: commands.Context):
-        """Show a quick-reference menu for all XP commands."""
-        view = CogMenuView(ctx, "🏆 XP Commands", _XP_MENU_COMMANDS)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
+        """Open the XP panel showing your rank and quick admin actions."""
+        view = _XpHubView(ctx)
+        embed = await view.build_embed()
+        msg = await ctx.send(embed=embed, view=view)
         view.message = msg
 
     # ------------------------------------------------------------------ events

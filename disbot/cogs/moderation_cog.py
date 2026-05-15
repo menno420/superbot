@@ -266,6 +266,64 @@ class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-
             await interaction.followup.send(f"❌ Failed to unban: {e}")
 
 
+class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[call-arg]
+    member_input = discord.ui.TextInput(
+        label="User (mention, ID, or name)", max_length=100
+    )
+
+    def __init__(self, cog: "ModerationCog"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        member = _parse_member(interaction.guild, self.member_input.value)
+        if not member:
+            await interaction.response.send_message(
+                "❌ Member not found.", ephemeral=True
+            )
+            return
+        logs = await db.get_mod_logs(member.id, interaction.guild_id, limit=10)
+        embed = discord.Embed(
+            title=f"📋 Mod Logs — {member.display_name}",
+            color=discord.Color.orange(),
+        )
+        if not logs:
+            embed.description = "No moderation history found."
+        else:
+            for entry in logs:
+                embed.add_field(
+                    name=f"{entry['action'].upper()} — {entry['timestamp']}",
+                    value=f"By <@{entry['moderator_id']}> | {entry['reason']}",
+                    inline=False,
+                )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ignore[call-arg]
+    member_input = discord.ui.TextInput(
+        label="User (mention, ID, or name)", max_length=100
+    )
+
+    def __init__(self, cog: "ModerationCog"):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        member = _parse_member(interaction.guild, self.member_input.value)
+        if not member:
+            await interaction.response.send_message(
+                "❌ Member not found.", ephemeral=True
+            )
+            return
+        await db.clear_warnings(member.id, interaction.guild_id)
+        await db.log_mod_action(
+            interaction.guild_id, "clearwarnings", member.id, interaction.user.id, ""
+        )
+        await interaction.response.send_message(
+            f"✅ Warnings cleared for {member.mention}.", ephemeral=True
+        )
+
+
 # ---------------------------------------------------------------------------
 # Moderation action panel view
 # ---------------------------------------------------------------------------
@@ -288,9 +346,11 @@ class _ModPanelView(discord.ui.View):
         return True
 
     async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
         if self.message:
             try:
-                await self.message.edit(view=None)
+                await self.message.edit(view=self)
             except Exception:
                 pass
 
@@ -323,6 +383,16 @@ class _ModPanelView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.send_modal(_UnbanModal(self.cog))
+
+    @discord.ui.button(label="📋 Mod Logs", style=discord.ButtonStyle.grey, row=1)
+    async def modlogs_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        await interaction.response.send_modal(_ModLogsModal(self.cog))
+
+    @discord.ui.button(label="⬛ Clear Warnings", style=discord.ButtonStyle.grey, row=2)
+    async def clearwarn_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        await interaction.response.send_modal(_ClearWarningsModal(self.cog))
 
 
 # ---------------------------------------------------------------------------
