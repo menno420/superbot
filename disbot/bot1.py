@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import atexit
 import datetime
-import json
 import logging
 import os
 import signal
@@ -275,31 +274,6 @@ bot = commands.Bot(
 ALLOWED_CHANNELS = config.ALLOWED_CHANNELS
 
 # ---------------------------------------------------------------------------
-# Load aliases from localization.json
-# ---------------------------------------------------------------------------
-LOCALIZATION_PATH = os.path.join(
-    os.path.dirname(__file__), "data/json/localization.json"
-)
-
-
-def _load_aliases() -> dict:
-    if not os.path.exists(LOCALIZATION_PATH):
-        return {}
-    try:
-        with open(LOCALIZATION_PATH, encoding="utf-8") as f:
-            data = json.load(f)
-        return data.get("en", {}).get("aliases", {})
-    except json.JSONDecodeError:
-        logger.error("localization.json is corrupted.")
-    except Exception as exc:
-        logger.error("Failed to load aliases: %s", exc)
-    return {}
-
-
-_aliases = _load_aliases()
-
-
-# ---------------------------------------------------------------------------
 # Bot events
 # ---------------------------------------------------------------------------
 @bot.event
@@ -309,11 +283,6 @@ async def on_ready() -> None:
     logger.info("Logged in as %s (ID: %s)", bot.user, bot.user.id)
     logger.info("Connected to %d server(s)", len(bot.guilds))
     logger.info("Loaded cogs: %s", ", ".join(bot.cogs.keys()))
-
-    for cmd_name, alias_list in _aliases.items():
-        cmd = bot.get_command(cmd_name)
-        if cmd:
-            cmd.aliases = alias_list
 
     if reporter:
         await reporter.on_startup(bot)

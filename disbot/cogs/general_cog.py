@@ -1,49 +1,18 @@
+from __future__ import annotations
+
+import json
+import logging
+import os
 import random
 
 import discord
 from discord.ext import commands
 
-FACTS = [
-    "Honey never spoils — archaeologists found 3000-year-old honey in Egyptian tombs.",
-    "Octopuses have three hearts and blue blood.",
-    "Bananas are berries, but strawberries aren't.",
-    "A day on Venus is longer than a year on Venus.",
-    "Cleopatra lived closer in time to the Moon landing than to the construction of the Great Pyramid.",
-    "Water can boil and freeze at the same time — this is called the triple point.",
-    "The Eiffel Tower grows about 15 cm taller in summer due to thermal expansion.",
-]
+logger = logging.getLogger("bot")
 
-JOKES = [
-    "Why can't skeletons fight each other? They don't have the guts.",
-    "I told my doctor I broke my arm in two places. He told me to stop going to those places.",
-    "Why do cows wear bells? Because their horns don't work.",
-    "What do you call fake spaghetti? An impasta.",
-    "I'm reading a book about anti-gravity. It's impossible to put down.",
-]
-
-QUOTES = [
-    '"The only way to do great work is to love what you do." — Steve Jobs',
-    '"In the middle of difficulty lies opportunity." — Albert Einstein',
-    '"It does not matter how slowly you go as long as you do not stop." — Confucius',
-    '"Life is what happens when you\'re busy making other plans." — John Lennon',
-    '"The future belongs to those who believe in the beauty of their dreams." — Eleanor Roosevelt',
-]
-
-TRIVIA = [
-    "What is the capital of Australia? || Canberra (not Sydney!)",
-    "How many bones does a shark have? || Zero — sharks have no bones, only cartilage.",
-    "What element does 'Au' represent on the periodic table? || Gold.",
-    "How many sides does a heptagon have? || Seven.",
-    "What is the fastest land animal? || The cheetah, reaching up to 120 km/h.",
-]
-
-MOTIVATIONS = [
-    "Believe in yourself and all that you are!",
-    "Every expert was once a beginner. Keep going.",
-    "You are capable of amazing things.",
-    "Small steps every day lead to big results.",
-    "Difficult roads often lead to beautiful destinations.",
-]
+_CONTENT_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "json", "general_content.json"
+)
 
 EIGHTBALL = [
     "Yes!",
@@ -58,28 +27,62 @@ EIGHTBALL = [
 
 GREETINGS = ["Hello!", "Hi there!", "Greetings!", "Hey!", "What's up?"]
 
+MOTIVATIONS = [
+    "Believe in yourself and all that you are!",
+    "Every expert was once a beginner. Keep going.",
+    "You are capable of amazing things.",
+    "Small steps every day lead to big results.",
+    "Difficult roads often lead to beautiful destinations.",
+]
+
+
+def _load_content() -> dict:
+    try:
+        with open(_CONTENT_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as exc:
+        logger.error("Failed to load general_content.json: %s", exc)
+        return {}
+
 
 class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        content = _load_content()
+        self._facts: list[str] = content.get("facts", [])
+        self._jokes: list[str] = content.get("jokes", [])
+        self._quotes: list[str] = content.get("quotes", [])
+        self._trivia: list[str] = content.get("trivia", [])
 
     @commands.command(name="fact", help="Sends a random interesting fact.")
     async def fact(self, ctx):
-        await ctx.send(random.choice(FACTS))
+        if not self._facts:
+            await ctx.send("No facts available.")
+            return
+        await ctx.send(random.choice(self._facts))
 
     @commands.command(name="joke", help="Sends a random joke.")
     async def joke(self, ctx):
-        await ctx.send(random.choice(JOKES))
+        if not self._jokes:
+            await ctx.send("No jokes available.")
+            return
+        await ctx.send(random.choice(self._jokes))
 
     @commands.command(name="quote", help="Sends a random famous quote.")
     async def quote(self, ctx):
-        await ctx.send(random.choice(QUOTES))
+        if not self._quotes:
+            await ctx.send("No quotes available.")
+            return
+        await ctx.send(random.choice(self._quotes))
 
     @commands.command(
         name="trivia", help="Asks a trivia question (answer hidden in spoiler tag)."
     )
     async def trivia(self, ctx):
-        await ctx.send(random.choice(TRIVIA))
+        if not self._trivia:
+            await ctx.send("No trivia available.")
+            return
+        await ctx.send(random.choice(self._trivia))
 
     @commands.command(name="motivate", help="Sends a motivational message.")
     async def motivate(self, ctx):

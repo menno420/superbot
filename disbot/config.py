@@ -39,7 +39,6 @@ INITIAL_EXTENSIONS = [
     "cogs.xp_cog",
     "cogs.blackjack_cog",
     "cogs.rps_tournament_cog",
-    "cogs.German_cog",
     "cogs.utility_cog",
     "cogs.cleanup_cog",
     "cogs.channel_cog",
