@@ -5,10 +5,14 @@ Provides the infrastructure that separates concern between:
   - runtime (session lifecycle, interaction routing, governance gating)
 
 Public aliases:
-    router   — interaction_router module
-    sessions — session_manager module
-    store    — state_store module
-    perms    — ui_permissions module
+    router     — interaction_router module
+    sessions   — session_manager module
+    store      — state_store module
+    perms      — ui_permissions module
+    components — component_registry module
+    nav        — navigation_stack module
+    surfaces   — ephemeral_surface_manager module
+    scheduler  — live_update_scheduler module
 
 EventBus subscriptions are established in setup(), called once from bot1.py
 after the DB is initialised.
@@ -18,8 +22,14 @@ from __future__ import annotations
 
 import logging
 
+from core.runtime import component_registry as components  # noqa: F401 — re-exported
+from core.runtime import (  # noqa: F401 — re-exported
+    ephemeral_surface_manager as surfaces,
+)
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported
+from core.runtime import live_update_scheduler as scheduler  # noqa: F401 — re-exported
 from core.runtime import message_anchor_manager as anchors  # noqa: F401 — re-exported
+from core.runtime import navigation_stack as nav  # noqa: F401 — re-exported
 from core.runtime import panel_manager as panels  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
 from core.runtime import session_gc as gc  # noqa: F401 — re-exported

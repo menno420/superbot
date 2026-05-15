@@ -4,6 +4,9 @@ import logging
 from datetime import datetime
 
 import discord
+from core.runtime import panel_manager
+from core.runtime.component_registry import stats_block
+from core.runtime.persistent_views import PersistentView, register
 from discord.ext import commands, tasks
 from utils import db
 from utils.helpers import normalize_name
@@ -11,6 +14,174 @@ from utils.ui_constants import ROLE_COLOR
 from views.roles._helpers import _ensure_defaults, _find_role_normalized, _parse_color
 
 logger = logging.getLogger("bot")
+
+
+def _build_role_hub_embed() -> discord.Embed:
+    return stats_block(
+        "🎭 Role Hub",
+        [
+            ("📝 Create", "Create a new server role", True),
+            ("🗂️ Manage", "View, edit, or delete roles", True),
+            ("⏱️ Time Roles", "Days-in-server auto-assignment", True),
+            ("⚡ XP Roles", "Level-based auto-assignment", True),
+            ("💬 Reaction Roles", "Emoji reaction role bindings", True),
+            ("🔧 Diagnostics", "System status & debug tools", True),
+        ],
+        ROLE_COLOR,
+    )
+
+
+class _CtxAdapter:
+    """Duck-type adapter exposing the ctx fields that role sub-panels need.
+
+    Role sub-panels were written against commands.Context and access
+    ctx.guild, ctx.author, and ctx.bot.  This adapter lets them work
+    from an interaction without requiring a full sub-panel rewrite.
+    """
+
+    def __init__(self, interaction: discord.Interaction) -> None:
+        self.guild = interaction.guild
+        self.author = interaction.user
+        self.bot = interaction.client
+
+
+@register
+class RoleHubPanelView(PersistentView):
+    """Persistent role management hub — one panel per user per channel."""
+
+    SUBSYSTEM = "role"
+
+    def build_embed(self) -> discord.Embed:
+        return _build_role_hub_embed()
+
+    @discord.ui.button(
+        label="📝 Create",
+        style=discord.ButtonStyle.green,
+        row=0,
+        custom_id="role:create",
+    )
+    async def create_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
+        if not interaction.user.guild_permissions.manage_roles:
+            await interaction.response.send_message(
+                "❌ You need **Manage Roles** permission.", ephemeral=True
+            )
+            return
+        from views.roles.creation_panel import RoleCreateModal
+
+        await interaction.response.send_modal(RoleCreateModal(_CtxAdapter(interaction)))
+
+    @discord.ui.button(
+        label="🗂️ Manage",
+        style=discord.ButtonStyle.blurple,
+        row=0,
+        custom_id="role:manage",
+    )
+    async def manage_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
+        if not interaction.user.guild_permissions.manage_roles:
+            await interaction.response.send_message(
+                "❌ You need **Manage Roles** permission.", ephemeral=True
+            )
+            return
+        from views.roles.management_panel import ManagementPanel
+
+        self.message = interaction.message
+        panel = ManagementPanel(_CtxAdapter(interaction), parent=self)
+        panel.message = interaction.message
+        await interaction.response.edit_message(
+            embed=await panel.build_embed(), view=panel
+        )
+
+    @discord.ui.button(
+        label="⏱️ Time Roles",
+        style=discord.ButtonStyle.blurple,
+        row=0,
+        custom_id="role:time",
+    )
+    async def time_roles_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ You need **Administrator** permission.", ephemeral=True
+            )
+            return
+        from views.roles.time_roles_panel import TimeRolesPanel
+
+        await _ensure_defaults(interaction.guild.id)
+        self.message = interaction.message
+        panel = TimeRolesPanel(_CtxAdapter(interaction), parent=self)
+        panel.message = interaction.message
+        await interaction.response.edit_message(
+            embed=await panel.build_embed(), view=panel
+        )
+
+    @discord.ui.button(
+        label="⚡ XP Roles",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+        custom_id="role:xp",
+    )
+    async def xp_roles_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ You need **Administrator** permission.", ephemeral=True
+            )
+            return
+        from views.roles.xp_roles_panel import XpRolesPanel
+
+        self.message = interaction.message
+        panel = XpRolesPanel(_CtxAdapter(interaction), parent=self)
+        panel.message = interaction.message
+        await interaction.response.edit_message(
+            embed=await panel.build_embed(), view=panel
+        )
+
+    @discord.ui.button(
+        label="💬 Reaction Roles",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+        custom_id="role:reaction",
+    )
+    async def reaction_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
+        from views.roles.reaction_panel import ReactionRolesPanel
+
+        self.message = interaction.message
+        panel = ReactionRolesPanel(_CtxAdapter(interaction), parent=self)
+        panel.message = interaction.message
+        await interaction.response.edit_message(
+            embed=await panel.build_embed(), view=panel
+        )
+
+    @discord.ui.button(
+        label="🔧 Diagnostics",
+        style=discord.ButtonStyle.grey,
+        row=1,
+        custom_id="role:diagnostics",
+    )
+    async def diagnostics_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ You need **Administrator** permission.", ephemeral=True
+            )
+            return
+        from views.roles.diagnostics_panel import DiagnosticsPanel
+
+        self.message = interaction.message
+        panel = DiagnosticsPanel(_CtxAdapter(interaction), parent=self)
+        panel.message = interaction.message
+        await interaction.response.edit_message(
+            embed=await panel.build_embed(), view=panel
+        )
 
 
 class RoleCog(commands.Cog):
@@ -135,10 +306,9 @@ class RoleCog(commands.Cog):
     @commands.command(name="roles")
     async def roles_hub(self, ctx: commands.Context) -> None:
         """Open the role management hub."""
-        from views.roles.main_panel import RoleHubView
-
-        view = RoleHubView(ctx, self)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
+        view = RoleHubPanelView()
+        embed = _build_role_hub_embed()
+        msg = await panel_manager.get_or_render_panel(ctx, "role", embed, view)
         view.message = msg
 
     @commands.command(name="rolesettings")

@@ -123,7 +123,7 @@ class RoleHubView(BaseView):
             return
         from views.roles.diagnostics_panel import DiagnosticsPanel
 
-        panel = DiagnosticsPanel(self.ctx, self.cog, parent=self)
+        panel = DiagnosticsPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(
             embed=await panel.build_embed(), view=panel

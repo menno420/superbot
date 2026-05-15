@@ -11,12 +11,9 @@ from views.base import BaseView
 class DiagnosticsPanel(BaseView):
     """Role system diagnostics — counts, skip_roles, member cache status."""
 
-    def __init__(
-        self, ctx: commands.Context, cog, parent: BaseView | None = None
-    ) -> None:
+    def __init__(self, ctx: commands.Context, parent: BaseView | None = None) -> None:
         super().__init__(ctx.author, timeout=300)
         self.ctx = ctx
-        self.cog = cog
         self.parent = parent
 
     async def build_embed(self) -> discord.Embed:
@@ -58,7 +55,8 @@ class DiagnosticsPanel(BaseView):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
         await interaction.response.defer(ephemeral=True)
-        count = await self.cog._assign_roles(interaction.guild)
+        cog = interaction.client.get_cog("RoleCog")
+        count = await cog._assign_roles(interaction.guild) if cog else 0
         await interaction.followup.send(
             f"✅ Assignment complete — {count} role(s) assigned.", ephemeral=True
         )

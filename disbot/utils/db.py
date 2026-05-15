@@ -1204,6 +1204,23 @@ async def delete_stale_panel_anchors() -> int:
         return 0
 
 
+async def get_user_subsystem_anchors(
+    user_id: int, guild_id: int, subsystem: str
+) -> list[dict]:
+    """Return all active panel anchors for a user+guild+subsystem combination."""
+    rows = await get().fetch(
+        """
+        SELECT anchor_id, user_id, guild_id, channel_id, message_id, subsystem
+        FROM panel_anchors
+        WHERE user_id = $1 AND guild_id = $2 AND subsystem = $3 AND NOT is_stale
+        """,
+        user_id,
+        guild_id,
+        subsystem,
+    )
+    return [dict(r) for r in rows]
+
+
 async def delete_expired_sessions(cutoff_epoch: float) -> int:
     """Delete sessions whose last_active_at is older than cutoff. Returns count."""
     from datetime import datetime, timezone

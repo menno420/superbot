@@ -111,9 +111,10 @@ async def on_ready() -> None:
     logger.info("Logged in as %s (ID: %s)", bot.user, bot.user.id)
     logger.info("Connected to %d server(s)", len(bot.guilds))
     logger.info("Loaded cogs: %s", ", ".join(bot.cogs.keys()))
-    from core.runtime import message_anchor_manager
+    from core.runtime import live_update_scheduler, message_anchor_manager
 
     await message_anchor_manager.restore_anchors(bot)
+    live_update_scheduler.setup(bot)
     if reporter:
         await reporter.on_startup(bot)
 
