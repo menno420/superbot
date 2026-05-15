@@ -548,6 +548,119 @@ class _RolePanelView(discord.ui.View):
                 pass
 
 
+class _RoleAutomationView(discord.ui.View):
+    """Offered after role creation: configure XP-based auto-assignment or skip."""
+
+    def __init__(self, ctx: commands.Context, role_name: str):
+        super().__init__(timeout=120)
+        self.ctx = ctx
+        self.role_name = role_name
+        self.message: discord.Message | None = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.ctx.author:
+            await interaction.response.send_message(
+                "This panel isn't for you.", ephemeral=True
+            )
+            return False
+        return True
+
+    @discord.ui.button(
+        label="⚙️ Configure Automation", style=discord.ButtonStyle.blurple, row=0
+    )
+    async def configure_btn(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        await interaction.response.send_modal(
+            _RoleAutomationModal(self.ctx, self.role_name, self)
+        )
+
+    @discord.ui.button(label="⏭️ Skip", style=discord.ButtonStyle.secondary, row=0)
+    async def skip_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(
+            content=f"✅ Role **{self.role_name}** created. No automation configured.",
+            view=self,
+        )
+        self.stop()
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except Exception:
+                pass
+
+
+class _RoleAutomationModal(discord.ui.Modal, title="Configure XP Automation"):  # type: ignore[call-arg]
+    level_threshold = discord.ui.TextInput(
+        label="XP level required (e.g. 5)",
+        placeholder="e.g. 5",
+        required=True,
+        max_length=4,
+    )
+    auto_assign_enabled = discord.ui.TextInput(
+        label="Enable auto-assign? (yes/no)",
+        placeholder="yes",
+        required=False,
+        max_length=3,
+    )
+
+    def __init__(
+        self,
+        ctx: commands.Context,
+        role_name: str,
+        parent_view: _RoleAutomationView,
+    ):
+        super().__init__()
+        self.ctx = ctx
+        self.role_name = role_name
+        self._parent_view = parent_view
+
+    async def on_submit(self, interaction: discord.Interaction):
+        raw_level = self.level_threshold.value.strip()
+        try:
+            level = int(raw_level)
+            if level < 0:
+                raise ValueError
+        except ValueError:
+            await interaction.response.send_message(
+                "❌ Level threshold must be a non-negative integer (e.g. `5`).",
+                ephemeral=True,
+            )
+            return
+
+        raw_auto = self.auto_assign_enabled.value.strip().lower()
+        auto_assign = raw_auto not in ("no", "n", "false", "0")
+
+        try:
+            await db.set_role_xp_threshold(
+                interaction.guild.id, self.role_name, level, auto_assign
+            )
+        except Exception as exc:
+            logger.error("set_role_xp_threshold failed: %s", exc, exc_info=True)
+            await interaction.response.send_message(
+                f"❌ Failed to save automation config: {exc}", ephemeral=True
+            )
+            return
+
+        for item in self._parent_view.children:
+            item.disabled = True
+        status = "enabled" if auto_assign else "saved (auto-assign disabled)"
+        await interaction.response.edit_message(
+            content=(
+                f"✅ Role **{self.role_name}** XP automation {status}.\n"
+                f"Level threshold: **{level}** | "
+                f"Auto-assign: **{'yes' if auto_assign else 'no'}**"
+            ),
+            view=self._parent_view,
+        )
+        self._parent_view.stop()
+
+
 class _RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[call-arg]
     name = discord.ui.TextInput(label="Role name", max_length=100)
     color = discord.ui.TextInput(
@@ -594,9 +707,14 @@ class _RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[c
                 hoist=do_hoist,
                 mentionable=do_mention,
             )
+            automation_view = _RoleAutomationView(self.ctx, role.name)
             await interaction.response.send_message(
-                f"✅ Created role **{role.name}**.", ephemeral=True
+                f"✅ Created role **{role.name}**.\n"
+                "Would you like to configure XP-based auto-assignment for this role?",
+                ephemeral=True,
+                view=automation_view,
             )
+            automation_view.message = await interaction.original_response()
         except discord.Forbidden:
             await interaction.response.send_message(
                 "❌ I don't have permission to create roles.", ephemeral=True

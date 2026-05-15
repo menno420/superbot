@@ -1,7 +1,38 @@
 from __future__ import annotations
 
+import re
+
 import discord
 from discord.ext import commands
+
+_CUSTOM_EMOJI_RE = re.compile(r"<a?:(\w+):(\d+)>")
+
+
+def safe_select_emoji(
+    value: str | discord.PartialEmoji | None,
+) -> str | discord.PartialEmoji | None:
+    """Return a valid SelectOption emoji or None if the value cannot be used.
+
+    Handles unicode emoji strings, <:name:id> custom emoji, and PartialEmoji
+    objects. Rejects plain ASCII characters that Discord rejects.
+    """
+    if value is None:
+        return None
+    if isinstance(value, discord.PartialEmoji):
+        return value
+    if not isinstance(value, str) or not value.strip():
+        return None
+    stripped = value.strip()
+    m = _CUSTOM_EMOJI_RE.match(stripped)
+    if m:
+        animated = stripped.startswith("<a:")
+        return discord.PartialEmoji(
+            name=m.group(1), id=int(m.group(2)), animated=animated
+        )
+    # Reject single plain ASCII characters (e.g. "#") — not valid Discord emoji
+    if len(stripped) == 1 and ord(stripped) < 128:
+        return None
+    return stripped
 
 
 async def post_log_embed(

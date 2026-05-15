@@ -334,8 +334,8 @@ async def set_setting(guild_id: int, key: str, value: str) -> None:
 
 async def get_role_thresholds(guild_id: int) -> list[dict]:
     return await fetchall(
-        "SELECT role_name, days_required FROM role_thresholds "
-        "WHERE guild_id=$1 ORDER BY days_required",
+        "SELECT role_name, days_required, level_required, xp_auto_assign "
+        "FROM role_thresholds WHERE guild_id=$1 ORDER BY days_required",
         (guild_id,),
     )
 
@@ -353,6 +353,38 @@ async def remove_role_threshold(guild_id: int, role_name: str) -> None:
     await execute(
         "DELETE FROM role_thresholds WHERE guild_id=$1 AND role_name=$2",
         (guild_id, role_name),
+    )
+
+
+async def get_xp_threshold_roles(guild_id: int) -> list[dict]:
+    """Return rows with xp_auto_assign=TRUE and a configured level_required."""
+    return await fetchall(
+        "SELECT role_name, level_required FROM role_thresholds "
+        "WHERE guild_id=$1 AND xp_auto_assign=TRUE AND level_required IS NOT NULL "
+        "ORDER BY level_required",
+        (guild_id,),
+    )
+
+
+async def set_role_xp_threshold(
+    guild_id: int,
+    role_name: str,
+    level_required: int | None,
+    auto_assign: bool,
+) -> None:
+    """Upsert the XP automation columns for a role threshold row.
+
+    If no row exists for (guild_id, role_name), inserts one with days_required=0.
+    Only updates the XP columns; existing days_required is preserved on conflict.
+    """
+    await execute(
+        """INSERT INTO role_thresholds
+               (guild_id, role_name, days_required, level_required, xp_auto_assign)
+           VALUES ($1, $2, 0, $3, $4)
+           ON CONFLICT (guild_id, role_name) DO UPDATE SET
+               level_required = EXCLUDED.level_required,
+               xp_auto_assign = EXCLUDED.xp_auto_assign""",
+        (guild_id, role_name, level_required, auto_assign),
     )
 
 
