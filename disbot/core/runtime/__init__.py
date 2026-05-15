@@ -63,6 +63,7 @@ async def setup() -> None:
     from core.events import bus
     from services.governance_service import (
         EVT_CACHE_INVALIDATED,
+        EVT_CLEANUP_CHANGED,
         EVT_VISIBILITY_CHANGED,
     )
 
@@ -93,7 +94,34 @@ async def setup() -> None:
     async def _on_cache_invalidated(guild_id: int, **_: object) -> None:
         await store.invalidate_guild_state(guild_id)
 
+    async def _on_cleanup_changed(
+        guild_id: int,
+        scope_type: str = "guild",
+        scope_id: int | None = None,
+        **_: object,
+    ) -> None:
+        """Subscription hook for EVT_CLEANUP_CHANGED (DEBT-003).
+
+        Cleanup policy is currently resolved uncached (governance/cleanup.py
+        queries the DB on every call).  This handler exists so any future
+        cleanup-policy cache MUST register its invalidation here rather than
+        introducing a parallel invalidation path.
+
+        The GovernanceMutationPipeline already calls invalidate_guild_cache()
+        and emits EVT_CACHE_INVALIDATED inside set_cleanup_policy, so the
+        in-process visibility cache is already coherent — this hook covers
+        only future cleanup-specific caching.
+        """
+        logger.debug(
+            "EVT_CLEANUP_CHANGED received | guild=%d scope=%s/%s — "
+            "no cleanup cache present, hook reserved for future use",
+            guild_id,
+            scope_type,
+            scope_id,
+        )
+
     bus.on(EVT_VISIBILITY_CHANGED, _on_visibility_changed)
     bus.on(EVT_CACHE_INVALIDATED, _on_cache_invalidated)
+    bus.on(EVT_CLEANUP_CHANGED, _on_cleanup_changed)
 
     logger.info("Runtime layer initialised — EventBus subscriptions active.")

@@ -25,12 +25,13 @@ async def teardown(guild_id: int) -> None:
     fully initialised (all operations are no-ops on missing keys).
 
     Teardown order (high-level → low-level):
-      1. Live update scheduler — stop sending edits for the guild's channels.
-      2. Runtime sessions      — delete DB sessions + cascade session_state rows.
-      3. Session state store   — any remaining orphan state rows for the guild.
-      4. Governance capability cache — clear per-guild execution overrides.
-      5. Governance visibility cache — bump version, clear role-override flag.
-      6. Governance feedback cooldown — clear governance/__init__ rate-limit dict.
+      1. Live update scheduler  — drop _last_edit throttle entries for the guild.
+      2. Runtime sessions       — delete DB sessions + cascade session_state rows.
+      3. Session state store    — remaining orphan state rows for the guild.
+      4. Panel anchors          — delete all panel_anchors rows for the guild.
+      5. Governance capability cache — clear per-guild execution overrides.
+      6. Governance visibility cache — bump version, clear role-override flag.
+      7. Governance feedback cooldown — documented, no per-guild cleanup needed.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -43,13 +44,16 @@ async def teardown(guild_id: int) -> None:
     # 3. Session state store — purge any orphan state rows not caught by cascade.
     await _teardown_session_state(guild_id)
 
-    # 4. Governance capability overrides — clear execution-layer in-process dict.
+    # 4. Panel anchors — delete all panel_anchors rows for the guild (GAP-001).
+    await _teardown_panel_anchors(guild_id)
+
+    # 5. Governance capability overrides — clear execution-layer in-process dict.
     _teardown_capability_overrides(guild_id)
 
-    # 5. Governance visibility cache — version bump + role flag removal.
+    # 6. Governance visibility cache — version bump + role flag removal.
     _teardown_visibility_cache(guild_id)
 
-    # 6. Governance feedback cooldown dict in governance/__init__.
+    # 7. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
@@ -61,26 +65,22 @@ async def teardown(guild_id: int) -> None:
 
 
 def _teardown_scheduler(guild_id: int) -> None:
-    """Remove _last_edit rate-limit entries for all channels in the guild.
+    """Drop _last_edit rate-limit entries for the departed guild.
 
-    We do not have a guild→channels mapping in memory, so we cannot enumerate
-    channels directly.  Instead, we rely on the GC / on_guild_remove pattern:
-    next time a panel refresh is attempted for a stale channel it will fail
-    gracefully.  We reset the _last_edit dict entirely if the entry count is
-    small; for large deployments the scheduled panel edits will simply produce
-    no-ops (channel not found / bot not in guild).
-
-    A future improvement: track guild_id in the scheduler's _last_edit dict
-    keyed as (guild_id, channel_id) to allow precise cleanup.
+    Always runs — no size-gated bypass (DEBT-006).  The scheduler keys
+    _last_edit by (guild_id, channel_id) so cleanup is deterministic and
+    isolated to the departed guild's channels.
     """
     try:
-        from core.runtime.live_update_scheduler import _last_edit
+        from core.runtime.live_update_scheduler import forget_guild as _sched_forget
 
-        # Purge all entries; the dict will refill only for active channels.
-        # This is safe because _last_edit is only a rate-limit hint.
-        if len(_last_edit) < 5_000:
-            _last_edit.clear()
-            logger.debug("Scheduler _last_edit cleared for guild=%d", guild_id)
+        removed = _sched_forget(guild_id)
+        if removed:
+            logger.debug(
+                "Scheduler _last_edit purged %d entries for guild=%d",
+                removed,
+                guild_id,
+            )
     except Exception as exc:
         logger.warning("guild_lifecycle: scheduler teardown failed: %s", exc)
 
@@ -110,6 +110,27 @@ async def _teardown_session_state(guild_id: int) -> None:
         await db.delete_guild_session_state(guild_id)
     except Exception as exc:
         logger.warning("guild_lifecycle: session state teardown failed: %s", exc)
+
+
+async def _teardown_panel_anchors(guild_id: int) -> None:
+    """Delete all panel_anchors rows for the departed guild (GAP-001).
+
+    Without this step, panel anchors for departed guilds accumulate
+    indefinitely in the DB.  Index idx_panel_anchors_guild (migration 013)
+    supports the DELETE.
+    """
+    try:
+        from utils import db
+
+        count = await db.delete_guild_panel_anchors(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d panel anchor(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning("guild_lifecycle: panel anchor teardown failed: %s", exc)
 
 
 def _teardown_capability_overrides(guild_id: int) -> None:

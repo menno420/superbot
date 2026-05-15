@@ -7,6 +7,7 @@ Imports from governance.models, governance.events, governance.resolver.
 from __future__ import annotations
 
 import logging
+import time
 
 from governance.events import (
     EVT_EXECUTION_ALLOWED,
@@ -35,12 +36,28 @@ except Exception:
 _capability_execution_overrides: dict[tuple[int, str], bool] = {}
 _loaded_guilds: set[int] = set()
 
+# Guild → monotonic timestamp of last successful override load (DEBT-001).
+# Used to bound staleness: long-running processes will never serve overrides
+# older than _OVERRIDE_TTL without a deterministic refresh from DB.  Cache TTL
+# is intentionally coarse because capability_execution_overrides is rarely
+# mutated; the goal is bounded drift, not zero drift.
+_loaded_guilds_at: dict[int, float] = {}
+_OVERRIDE_TTL: float = 600.0  # 10 minutes
+
 
 async def _load_capability_overrides(guild_id: int) -> None:
     """Load capability overrides from DB for a guild.
 
-    Fails gracefully if the capability_execution_overrides table does not exist yet.
+    Reloads are deterministic: any prior entries for this guild are cleared
+    before the fresh row set is inserted, so stale rows cannot survive a
+    refresh.  Fails gracefully if the capability_execution_overrides table
+    does not yet exist (legacy deployments).
     """
+    # Clear any existing entries so a reload cannot leave stale rows behind.
+    stale_keys = [k for k in _capability_execution_overrides if k[0] == guild_id]
+    for k in stale_keys:
+        _capability_execution_overrides.pop(k, None)
+
     try:
         rows = await db.get().fetch(
             """SELECT capability, allowed
@@ -56,10 +73,20 @@ async def _load_capability_overrides(guild_id: int) -> None:
         # Table may not exist yet — fail gracefully
         logger.debug("capability_execution_overrides table not available: %s", exc)
 
+    _loaded_guilds_at[guild_id] = time.monotonic()
+
 
 def _check_capability_override(guild_id: int, capability: str) -> bool | None:
     """Return explicit override (True/False) or None if no override set."""
     return _capability_execution_overrides.get((guild_id, capability))
+
+
+def _overrides_stale(guild_id: int) -> bool:
+    """True if this guild's override cache is older than _OVERRIDE_TTL."""
+    loaded_at = _loaded_guilds_at.get(guild_id)
+    if loaded_at is None:
+        return True
+    return (time.monotonic() - loaded_at) > _OVERRIDE_TTL
 
 
 def forget_guild_capabilities(guild_id: int) -> None:
@@ -74,10 +101,52 @@ def forget_guild_capabilities(guild_id: int) -> None:
     The guild_lifecycle module coordinates both calls in the correct order.
     """
     _loaded_guilds.discard(guild_id)
+    _loaded_guilds_at.pop(guild_id, None)
     stale_keys = [k for k in _capability_execution_overrides if k[0] == guild_id]
     for k in stale_keys:
         _capability_execution_overrides.pop(k, None)
     logger.debug("Cleared capability overrides for guild=%d", guild_id)
+
+
+async def _audit_internal_bypass(
+    ctx: GovernanceContext,
+    capability: str,
+    subsystem_name: str,
+) -> None:
+    """Persist a DB audit row for an internal/AI-triggered execution bypass.
+
+    Internal bypasses skip the visibility gate; without a durable audit row the
+    only record is the EVT_EXECUTION_ALLOWED event (in-process, non-persistent).
+    This function writes a fact row to governance_audit_log so AI/scheduled
+    invocations remain reconstructable from the DB alone.
+
+    Best-effort: an audit failure must not prevent the legitimate execution
+    from proceeding (the bypass decision is already made).  Errors are logged
+    at WARNING and swallowed.
+    """
+    try:
+        await db.write_governance_audit(
+            guild_id=ctx.guild_id,
+            actor_id=ctx.member.id if ctx.member else 0,
+            action="execution_bypass",
+            scope_type=None,
+            scope_id=None,
+            subsystem=subsystem_name,
+            old_value=None,
+            new_value={
+                "capability": capability,
+                "subsystem": subsystem_name,
+                "reason": "internal_or_ai_invocation",
+                "visibility_check_skipped": True,
+            },
+        )
+    except Exception as exc:
+        logger.warning(
+            "internal bypass audit write failed (capability=%r guild=%d): %s",
+            capability,
+            ctx.guild_id,
+            exc,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -103,7 +172,10 @@ async def resolve_execution(
         When False (internal/AI-triggered): skip the visibility gate.
         An explicit denial in capability_execution_overrides always wins.
     """
-    if ctx.guild_id not in _loaded_guilds:
+    # Deterministic refresh: first access OR cache older than _OVERRIDE_TTL.
+    # _load_capability_overrides() clears stale rows before reloading so a
+    # refresh cannot leave drift behind.
+    if ctx.guild_id not in _loaded_guilds or _overrides_stale(ctx.guild_id):
         await _load_capability_overrides(ctx.guild_id)
         _loaded_guilds.add(ctx.guild_id)
 
@@ -163,7 +235,9 @@ async def resolve_execution(
         )
 
     # When check_visibility=False (internal/AI-triggered): skip visibility gate.
-    # The "bypass": True flag in the event payload marks this for audit trail.
+    # The "bypass": True flag in the event payload marks the event stream; the
+    # accompanying audit row makes the bypass reconstructable from the DB alone
+    # (DEBT-002 — required before AI/plugin expansion).
     if not check_visibility:
         logger.info(
             "resolve_execution: internal bypass for capability=%r subsystem=%r guild=%d",
@@ -171,6 +245,7 @@ async def resolve_execution(
             subsystem_name,
             ctx.guild_id,
         )
+        await _audit_internal_bypass(ctx, capability, subsystem_name)
         await _emit_governance_event(
             EVT_EXECUTION_ALLOWED,
             {

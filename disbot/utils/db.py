@@ -1287,6 +1287,21 @@ async def delete_stale_panel_anchors() -> int:
         return 0
 
 
+async def delete_guild_panel_anchors(guild_id: int) -> int:
+    """Delete every panel anchor for a guild. Returns count removed.
+
+    Called from guild_lifecycle.teardown() so departed guilds leave no orphan
+    rows in panel_anchors.  Index on (guild_id, subsystem) supports this query.
+    """
+    result = await get().execute(
+        "DELETE FROM panel_anchors WHERE guild_id = $1", guild_id
+    )
+    try:
+        return int(result.split()[-1])
+    except (IndexError, ValueError):
+        return 0
+
+
 async def get_user_subsystem_anchors(
     user_id: int, guild_id: int, subsystem: str
 ) -> list[dict]:
