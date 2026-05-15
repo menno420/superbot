@@ -289,6 +289,7 @@ class HelpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @commands.cooldown(rate=3, per=10, type=commands.BucketType.user)
     @commands.command(name="help", aliases=["hilfe"])
     async def help_command(self, ctx: commands.Context, *, category: str = None):
         """Shows available commands. Pass a category name for details."""

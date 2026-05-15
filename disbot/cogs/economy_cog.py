@@ -240,6 +240,7 @@ class EconomyCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @commands.cooldown(rate=3, per=10, type=commands.BucketType.user)
     @commands.command(name="economymenu")
     async def economy_menu(self, ctx: commands.Context):
         """Open the interactive economy control panel."""
@@ -310,6 +311,7 @@ class EconomyCog(commands.Cog):
 
     # ------------------------------------------------------------------ !daily
 
+    @commands.cooldown(rate=2, per=5, type=commands.BucketType.user)
     @commands.command(name="daily")
     async def daily(self, ctx: commands.Context):
         """Claim your daily reward. Higher streaks unlock better odds!"""
@@ -370,6 +372,7 @@ class EconomyCog(commands.Cog):
 
     # ------------------------------------------------------------------ !work
 
+    @commands.cooldown(rate=2, per=5, type=commands.BucketType.user)
     @commands.command(name="work")
     async def work(self, ctx: commands.Context):
         """Open the job selector and earn coins + XP (1 h cooldown)."""

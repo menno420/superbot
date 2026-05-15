@@ -13,6 +13,7 @@ Public aliases:
     nav        — navigation_stack module
     surfaces   — ephemeral_surface_manager module
     scheduler  — live_update_scheduler module
+    plugins    — plugin_contract module
 
 EventBus subscriptions are established in setup(), called once from bot1.py
 after the DB is initialised.
@@ -32,6 +33,7 @@ from core.runtime import message_anchor_manager as anchors  # noqa: F401 — re-
 from core.runtime import navigation_stack as nav  # noqa: F401 — re-exported
 from core.runtime import panel_manager as panels  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
+from core.runtime import plugin_contract as plugins  # noqa: F401 — re-exported
 from core.runtime import session_gc as gc  # noqa: F401 — re-exported
 from core.runtime import session_manager as sessions  # noqa: F401 — re-exported
 from core.runtime import state_store as store  # noqa: F401 — re-exported

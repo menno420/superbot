@@ -151,6 +151,7 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(
         name="leaderboard",
         aliases=[

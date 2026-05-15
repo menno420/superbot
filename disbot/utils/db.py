@@ -942,6 +942,17 @@ async def get_cleanup_policy(
     return dict(row) if row else None
 
 
+async def get_all_cleanup_for_guild(guild_id: int) -> list[dict]:
+    """Fetch all cleanup policy rows for a guild (all scopes)."""
+    rows = await get().fetch(
+        "SELECT scope_type, scope_id, delete_invalid_commands,"
+        " delete_failed_commands, delete_after_seconds"
+        " FROM cleanup_policies WHERE guild_id=$1",
+        guild_id,
+    )
+    return [dict(r) for r in rows]
+
+
 async def set_cleanup_policy(
     guild_id: int,
     scope_type: str,
