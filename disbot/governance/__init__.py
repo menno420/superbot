@@ -21,9 +21,6 @@ from governance.cache import (  # noqa: F401
     register_failed_subsystems,
 )
 from governance.cleanup import resolve_cleanup_policy  # noqa: F401
-from governance.cleanup import (
-    _resolve_cleanup_overrides,
-)
 from governance.events import (  # noqa: F401
     EVT_CACHE_INVALIDATED,
     EVT_CLEANUP_CHANGED,
@@ -115,7 +112,7 @@ async def resolve_command_policy(
         )
 
     # Blocked — build cleanup + feedback
-    cleanup = await _resolve_cleanup_overrides(ctx)
+    cleanup = await resolve_cleanup_policy(ctx)
     guild = ctx.member.guild if ctx.member else None
     redirect = _find_redirect_channel(guild, subsystem_meta)
 

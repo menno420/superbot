@@ -45,6 +45,7 @@ class PolicySource(Enum):
     INHERITED_DEFAULT = "inherited_default"  # walked entire scope chain; no override
     FALLBACK_DEFAULT = "fallback_default"  # hardcoded compat (e.g. config whitelist)
     DEPENDENCY_BLOCK = "dependency_block"  # blocked by a disabled dependency
+    THREAD_OVERRIDE = "thread"
     CHANNEL_OVERRIDE = "channel"
     CATEGORY_OVERRIDE = "category"
     GUILD_OVERRIDE = "guild"
@@ -74,12 +75,20 @@ class GovernanceContext:
     @classmethod
     def from_ctx(cls, ctx) -> "GovernanceContext":
         channel = ctx.channel
-        category_id = getattr(channel, "category_id", None)
+        thread_id = None
+        if isinstance(channel, discord.Thread):
+            thread_id = channel.id
+            channel_id = channel.parent_id
+            category_id = getattr(channel.parent, "category_id", None)
+        else:
+            channel_id = getattr(channel, "id", None)
+            category_id = getattr(channel, "category_id", None)
         member = ctx.author
         return cls(
             guild_id=ctx.guild.id,
-            channel_id=getattr(channel, "id", None),
+            channel_id=channel_id,
             category_id=category_id,
+            thread_id=thread_id,
             member=member,
             role_ids={r.id for r in getattr(member, "roles", [])},
         )
@@ -87,12 +96,20 @@ class GovernanceContext:
     @classmethod
     def from_interaction(cls, interaction: discord.Interaction) -> "GovernanceContext":
         channel = interaction.channel
-        category_id = getattr(channel, "category_id", None)
+        thread_id = None
+        if isinstance(channel, discord.Thread):
+            thread_id = channel.id
+            channel_id = channel.parent_id
+            category_id = getattr(channel.parent, "category_id", None)
+        else:
+            channel_id = getattr(channel, "id", None)
+            category_id = getattr(channel, "category_id", None)
         member = interaction.user
         return cls(
             guild_id=interaction.guild_id,
-            channel_id=getattr(channel, "id", None),
+            channel_id=channel_id,
             category_id=category_id,
+            thread_id=thread_id,
             member=member,
             role_ids={r.id for r in getattr(member, "roles", [])},
         )
@@ -100,12 +117,20 @@ class GovernanceContext:
     @classmethod
     def from_message(cls, message: discord.Message) -> "GovernanceContext":
         channel = message.channel
-        category_id = getattr(channel, "category_id", None)
+        thread_id = None
+        if isinstance(channel, discord.Thread):
+            thread_id = channel.id
+            channel_id = channel.parent_id
+            category_id = getattr(channel.parent, "category_id", None)
+        else:
+            channel_id = getattr(channel, "id", None)
+            category_id = getattr(channel, "category_id", None)
         member = message.author
         return cls(
             guild_id=message.guild.id if message.guild else 0,
-            channel_id=getattr(channel, "id", None),
+            channel_id=channel_id,
             category_id=category_id,
+            thread_id=thread_id,
             member=member,
             role_ids={r.id for r in getattr(member, "roles", [])},
         )

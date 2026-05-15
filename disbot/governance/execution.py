@@ -33,6 +33,7 @@ except Exception:
 # ---------------------------------------------------------------------------
 
 _capability_execution_overrides: dict[tuple[int, str], bool] = {}
+_loaded_guilds: set[int] = set()
 
 
 async def _load_capability_overrides(guild_id: int) -> None:
@@ -84,6 +85,10 @@ async def resolve_execution(
         When False (internal/AI-triggered): skip the visibility gate.
         An explicit denial in capability_execution_overrides always wins.
     """
+    if ctx.guild_id not in _loaded_guilds:
+        await _load_capability_overrides(ctx.guild_id)
+        _loaded_guilds.add(ctx.guild_id)
+
     subsystem_name = CAPABILITY_TO_SUBSYSTEM.get(capability)
 
     if not subsystem_name:

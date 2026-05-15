@@ -1143,7 +1143,8 @@ async def get_panel_anchor(
     """Return the active anchor for (user, channel, subsystem), or None."""
     row = await get().fetchrow(
         """SELECT * FROM panel_anchors
-           WHERE user_id = $1 AND channel_id = $2 AND subsystem = $3""",
+           WHERE user_id = $1 AND channel_id = $2 AND subsystem = $3
+             AND NOT is_stale""",
         user_id,
         channel_id,
         subsystem,

@@ -113,7 +113,7 @@ def _resolve_single_subsystem(
     """
     checked: list[str] = []
     _SCOPE_TO_SOURCE: dict[str, PolicySource] = {
-        "thread": PolicySource.CHANNEL_OVERRIDE,  # thread uses channel source label
+        "thread": PolicySource.THREAD_OVERRIDE,
         "channel": PolicySource.CHANNEL_OVERRIDE,
         "category": PolicySource.CATEGORY_OVERRIDE,
         "guild": PolicySource.GUILD_OVERRIDE,
@@ -153,7 +153,7 @@ async def _resolve_member_tier(ctx: GovernanceContext) -> str:
     if tier == "user":
         try:
             trusted_role_id = await db.get_setting(
-                ctx.guild_id, settings_keys.TRUSTED_TIER_ROLE_ID, default=None
+                ctx.guild_id, settings_keys.TRUSTED_TIER_ROLE_ID, default=""
             )
             if (
                 trusted_role_id
