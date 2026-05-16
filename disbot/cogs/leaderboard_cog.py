@@ -68,7 +68,7 @@ async def _build_embed(
         embed.description = "\n".join(lines) or "No data yet!"
 
     elif category == "mining":
-        rows = await db.get_all_mining_totals()
+        rows = await db.get_all_mining_totals(guild.id)
         lines = []
         for i, (user_id, total) in enumerate(rows):
             m = guild.get_member(int(user_id)) if user_id.isdigit() else None
