@@ -1189,7 +1189,10 @@ class BlackjackCog(commands.Cog):
         # debited at launch; if the bot crashed before _check_tourn_done
         # paid out the pot, those coins are still in limbo.  Refund
         # each player and clear the row.
-        tasks.spawn("blackjack:recover_tournament", self._recover_blackjack_tournament())
+        tasks.spawn(
+            "blackjack:recover_tournament",
+            self._recover_blackjack_tournament(),
+        )
 
     def cog_unload(self):
         """Cancel cleanup + tournament-timer tasks so a reload doesn't leak them."""

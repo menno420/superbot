@@ -142,11 +142,7 @@ async def test_save_failure_does_not_raise():
 
 @pytest.mark.asyncio
 async def test_clear_solo_game_deletes_state():
-    from cogs.blackjack_cog import (
-        BLACKJACK_SOLO_SUBSYSTEM,
-        _Game,
-        _clear_solo_game,
-    )
+    from cogs.blackjack_cog import BLACKJACK_SOLO_SUBSYSTEM, _clear_solo_game, _Game
 
     game = _Game(user_id=222, guild_id=111, bet=50, channel_id=333)
     with patch(
@@ -164,7 +160,7 @@ async def test_clear_solo_game_deletes_state():
 
 @pytest.mark.asyncio
 async def test_clear_solo_game_skips_pvp_and_tournament():
-    from cogs.blackjack_cog import _Game, _clear_solo_game
+    from cogs.blackjack_cog import _clear_solo_game, _Game
 
     pvp_game = _Game(user_id=222, guild_id=111, bet=50, channel_id=333)
     pvp_game.pvp_peer_id = 999

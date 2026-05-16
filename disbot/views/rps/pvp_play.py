@@ -15,9 +15,9 @@ import discord
 from services import economy_service, game_state_service
 from utils.ui_constants import GAME_COLOR, SUCCESS_COLOR
 from views.rps._helpers import (
+    _FREE_WIN,
     RPS_PVP_PENDING_SUBSYSTEM,
     RPS_PVP_PENDING_VERSION,
-    _FREE_WIN,
     rps_pvp_canonical_user_id,
 )
 

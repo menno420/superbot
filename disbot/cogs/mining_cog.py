@@ -260,7 +260,10 @@ class MiningCog(commands.Cog):
             # Subtract cost and give the user the new buildable item
             for item, amount_needed in required_items.items():
                 await self.update_inventory(
-                    ctx.author.id, gid, item, -amount_needed,
+                    ctx.author.id,
+                    gid,
+                    item,
+                    -amount_needed,
                 )
             await self.update_inventory(ctx.author.id, gid, structure_lower, 1)
 
@@ -457,7 +460,9 @@ class MiningHubView(PersistentView):
             return
         cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         view = MiningCog.MineView(
-            interaction.user.id, interaction.guild_id, cog,
+            interaction.user.id,
+            interaction.guild_id,
+            cog,
         )
         embed = discord.Embed(
             title="Mining",

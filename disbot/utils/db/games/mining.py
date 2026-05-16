@@ -72,11 +72,7 @@ async def set_mining_inventory(
                 "INSERT INTO mining_inventory "
                 "(user_id, guild_id, item_name, quantity) "
                 "VALUES ($1, $2, $3, $4)",
-                [
-                    (user_id, guild_id, k, v)
-                    for k, v in inventory.items()
-                    if v > 0
-                ],
+                [(user_id, guild_id, k, v) for k, v in inventory.items() if v > 0],
             )
 
 

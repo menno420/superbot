@@ -197,8 +197,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                         refunded += 1
                     except Exception as exc:
                         logger.warning(
-                            "rps_tournament refund failed for user=%d "
-                            "guild=%d: %s",
+                            "rps_tournament refund failed for user=%d guild=%d: %s",
                             row.get("user_id"),
                             row.get("guild_id"),
                             exc,
@@ -213,8 +212,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                 )
         if cleared or refunded:
             logger.info(
-                "rps_tournament recovery: cleared %d row(s), "
-                "issued %d refund(s)",
+                "rps_tournament recovery: cleared %d row(s), issued %d refund(s)",
                 cleared,
                 refunded,
             )
@@ -280,8 +278,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                     await game_state_service.clear_by_id(row["id"])
                 except Exception as exc:
                     logger.warning(
-                        "rps_tournament on_guild_remove: clear id=%s "
-                        "failed: %s",
+                        "rps_tournament on_guild_remove: clear id=%s failed: %s",
                         row.get("id"),
                         exc,
                     )

@@ -98,12 +98,7 @@ async def test_save_pvp_match_handles_finished_player():
     serialiser returns None for that side.  The match is still
     persistable so the cog_load sweep can find it.
     """
-    from cogs.blackjack_cog import (
-        _active,
-        _Game,
-        _PvPState,
-        _save_pvp_match,
-    )
+    from cogs.blackjack_cog import _active, _Game, _PvPState, _save_pvp_match
 
     state = _PvPState(p1=100, p2=200, guild_id=111, bet=50, channel_id=333)
     state.results = {100: 19}  # p1 finished with hand value 19
@@ -143,11 +138,7 @@ async def test_save_pvp_match_failure_is_logged_not_raised():
 
 @pytest.mark.asyncio
 async def test_clear_pvp_match_uses_canonical_user_id():
-    from cogs.blackjack_cog import (
-        BLACKJACK_PVP_SUBSYSTEM,
-        _clear_pvp_match,
-        _PvPState,
-    )
+    from cogs.blackjack_cog import BLACKJACK_PVP_SUBSYSTEM, _clear_pvp_match, _PvPState
 
     state = _PvPState(p1=100, p2=200, guild_id=111, bet=50, channel_id=333)
     with patch(

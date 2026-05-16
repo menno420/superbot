@@ -37,10 +37,7 @@ def test_rps_tournament_subsystem_constants_exist():
     what cog_load recovery looks for.  A typo here would silently
     leave entries stranded forever.
     """
-    from cogs.rps_tournament_cog import (
-        RPS_TOURNAMENT_SUBSYSTEM,
-        RPS_TOURNAMENT_VERSION,
-    )
+    from cogs.rps_tournament_cog import RPS_TOURNAMENT_SUBSYSTEM, RPS_TOURNAMENT_VERSION
 
     assert RPS_TOURNAMENT_SUBSYSTEM == "rps_tournament"
     assert RPS_TOURNAMENT_VERSION == 1

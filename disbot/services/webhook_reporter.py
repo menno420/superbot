@@ -67,12 +67,18 @@ class WebhookReporter:
         summary contains at least one ``fatal``-tier finding — the bot
         will exit shortly after this coroutine returns.
         """
-        by_tier = summary.get("by_tier", {})
-        by_kind = summary.get("by_kind", {})
+        # ``summary`` is the return value of
+        # ``utils.subsystem_registry.summarize_findings`` which produces
+        # a dict[str, object]; the by_tier / by_kind values are themselves
+        # dicts and total is an int.  Cast at the boundary so mypy sees
+        # the runtime shape the helper guarantees.
+        by_tier: dict[str, int] = summary.get("by_tier") or {}  # type: ignore[assignment]
+        by_kind: dict[str, int] = summary.get("by_kind") or {}  # type: ignore[assignment]
         fatal = int(by_tier.get("fatal", 0))
         auto = int(by_tier.get("auto_healable", 0))
         warn = int(by_tier.get("warn_only", 0))
-        total = int(summary.get("total", 0))
+        total_obj = summary.get("total", 0)
+        total = int(total_obj) if isinstance(total_obj, int) else 0
         if aborting:
             title = "🛑 Identity contract — STRICT abort"
             color = discord.Color.dark_red()

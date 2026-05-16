@@ -45,8 +45,7 @@ async def rps_update_stat(user_id: int, guild_id: int, result: str) -> None:
     match result:
         case "win":
             query = (
-                "UPDATE rps_players SET wins=wins+1 "
-                "WHERE user_id=$1 AND guild_id=$2"
+                "UPDATE rps_players SET wins=wins+1 WHERE user_id=$1 AND guild_id=$2"
             )
         case "loss":
             query = (
@@ -55,8 +54,7 @@ async def rps_update_stat(user_id: int, guild_id: int, result: str) -> None:
             )
         case "tie":
             query = (
-                "UPDATE rps_players SET ties=ties+1 "
-                "WHERE user_id=$1 AND guild_id=$2"
+                "UPDATE rps_players SET ties=ties+1 WHERE user_id=$1 AND guild_id=$2"
             )
         case _:
             return

@@ -92,8 +92,7 @@ async def set_last_worked(user_id: int, guild_id: int, ts: int) -> None:
     update statement, no dynamic SQL identifier interpolation.
     """
     await pool.execute(
-        "UPDATE economy SET last_worked=$1 "
-        "WHERE user_id=$2 AND guild_id=$3",
+        "UPDATE economy SET last_worked=$1 WHERE user_id=$2 AND guild_id=$3",
         (ts, user_id, guild_id),
     )
 

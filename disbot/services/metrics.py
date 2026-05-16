@@ -152,5 +152,5 @@ identity_contract_findings_total = Counter(
     "kind so operators can alert on the kind that matters to them.  This "
     "is a cumulative detection count, NOT an active-state gauge.",
     ["kind"],  # entry_point_missing_command | router_prefix_unknown |
-               # view_subsystem_unknown | db_anchor_subsystem_unknown
+    # view_subsystem_unknown | db_anchor_subsystem_unknown
 )
