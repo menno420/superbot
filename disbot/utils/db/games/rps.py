@@ -1,4 +1,4 @@
-"""rps_players + rps_matches CRUD.
+"""rps_players CRUD.
 
 PR R1 (mining-shape sibling fix): every public function now requires
 ``guild_id``.  Two production bugs are closed here:
@@ -13,6 +13,10 @@ PR R1 (mining-shape sibling fix): every public function now requires
 
 ``rps_ensure_player`` and ``rps_get_leaderboard`` shared the same
 default-guild-0 bug and are tightened in this PR for parity.
+
+PR C1: the companion ``rps_matches`` table was dropped (migration 019)
+— it was created in the inlined baseline schema for an unshipped
+match-history feature and had zero CRUD callers.
 """
 
 from __future__ import annotations

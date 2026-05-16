@@ -336,7 +336,6 @@ class DiagnosticCog(commands.Cog):
             "logs",
             "reaction_roles",
             "rps_players",
-            "rps_matches",
             "mining_inventory",
             "prohibited_words",
             "deathmatch_stats",
