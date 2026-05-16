@@ -522,7 +522,8 @@ class DiagnosticCog(commands.Cog):
     async def platform_grp(self, ctx):
         """Runtime introspection group. Usage: !platform <status|anchors|identity>."""
         await ctx.send(
-            "Usage: `!platform status` · `!platform anchors` · `!platform identity`",
+            "Usage: `!platform status` · `!platform anchors` · "
+            "`!platform identity [--fix]`",
             delete_after=15,
         )
 
@@ -609,20 +610,49 @@ class DiagnosticCog(commands.Cog):
 
     @platform_grp.command(name="identity")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
-    async def platform_identity(self, ctx):
-        """Run the identity-contract validator and show findings."""
-        from utils.subsystem_registry import validate_identity_contract
+    async def platform_identity(self, ctx, mode: str = ""):
+        """Run the identity-contract validator and show findings.
+
+        Usage:
+            !platform identity          run validator, show findings
+            !platform identity --fix    also remediate auto_healable
+                                        findings (fatal-tier are never
+                                        auto-fixed; cog reload required).
+        """
+        from utils.subsystem_registry import (
+            apply_self_heal,
+            summarize_findings,
+            validate_identity_contract,
+        )
 
         findings = await validate_identity_contract(self.bot)
-        total = sum(len(v) for v in findings.values())
-        color = discord.Color.green() if total == 0 else discord.Color.orange()
+        summary = summarize_findings(findings)
+        total = summary["total"]
+        fatal = summary["by_tier"]["fatal"]
+        auto = summary["by_tier"]["auto_healable"]
+
+        heal_requested = mode.strip() in ("--fix", "-f", "fix")
+        heal_counts: dict[str, int] | None = None
+        if heal_requested:
+            heal_counts = await apply_self_heal(findings)
+
+        if total == 0:
+            color = discord.Color.green()
+            desc = "All four identity surfaces agree."
+        elif fatal:
+            color = discord.Color.red()
+            desc = (
+                f"{total} finding(s) — **{fatal} fatal**, "
+                f"{auto} auto-healable.  Fatal findings require operator "
+                "review (likely a cog failed to load)."
+            )
+        else:
+            color = discord.Color.orange()
+            desc = f"{total} finding(s) — {auto} auto-healable."
+
         embed = discord.Embed(
             title="🪪 Identity contract",
-            description=(
-                "All four identity surfaces agree."
-                if total == 0
-                else f"{total} finding(s) — see fields."
-            ),
+            description=desc,
             color=color,
         )
         for bucket, items in findings.items():
@@ -631,6 +661,19 @@ class DiagnosticCog(commands.Cog):
             embed.add_field(
                 name=f"{bucket} ({len(items)})",
                 value="\n".join(items)[:1024],
+                inline=False,
+            )
+        if heal_counts is not None:
+            embed.add_field(
+                name="Self-heal result",
+                value=(
+                    f"router prefixes unregistered: "
+                    f"`{heal_counts['router_prefixes_unregistered']}` · "
+                    f"views unregistered: `{heal_counts['views_unregistered']}` · "
+                    f"anchors marked stale: "
+                    f"`{heal_counts['anchors_marked_stale']}` · "
+                    f"fatal-tier skipped: `{heal_counts['skipped_fatal']}`"
+                ),
                 inline=False,
             )
         await ctx.send(embed=embed)

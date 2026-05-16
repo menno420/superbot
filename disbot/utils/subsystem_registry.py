@@ -978,6 +978,121 @@ async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
     return findings
 
 
+async def apply_self_heal(findings: dict[str, list[str]]) -> dict[str, int]:
+    """Remediate ``auto_healable`` identity-contract findings.
+
+    This helper is *opt-in*; the startup orchestrator never invokes it
+    unattended in PR I1b.  It is called manually via
+    ``!platform identity --fix`` so an operator can review the validator
+    output before consenting to destructive cleanup.
+
+    Actions taken (only for buckets tier-classified ``auto_healable``):
+
+    * ``router_prefix_unknown`` — the orphan handler is popped from
+      ``core.runtime.interaction_router._handlers``.  Subsequent
+      interactions for that prefix fall through to the
+      ``interaction_unhandled_total`` metric path instead of running an
+      unauthorised handler.
+    * ``view_subsystem_unknown`` — the orphan PersistentView class is
+      removed from ``core.runtime.persistent_views._REGISTRY`` so the
+      next anchor-restore pass treats it as missing.
+    * ``db_anchor_subsystem_unknown`` — every active anchor row whose
+      subsystem string is orphaned is bulk-marked stale; the session_gc
+      loop deletes stale rows on its next sweep.
+
+    ``fatal``-tier findings (``entry_point_missing_command``) are NEVER
+    auto-healed: a missing entry-point command means a cog failed to
+    load, and silently "fixing" the registry would mask that.
+
+    Returns a counts dict so callers can render an operator-friendly
+    summary:
+        {"router_prefixes_unregistered": int,
+         "views_unregistered": int,
+         "anchors_marked_stale": int,
+         "skipped_fatal": int}
+    """
+    import logging
+
+    logger = logging.getLogger("bot.identity_contract")
+
+    counts = {
+        "router_prefixes_unregistered": 0,
+        "views_unregistered": 0,
+        "anchors_marked_stale": 0,
+        "skipped_fatal": 0,
+    }
+
+    # router_prefix_unknown → unregister
+    if findings.get("router_prefix_unknown"):
+        try:
+            from core.runtime.interaction_router import _handlers as _router_handlers
+
+            for prefix in findings["router_prefix_unknown"]:
+                if _router_handlers.pop(prefix, None) is not None:
+                    counts["router_prefixes_unregistered"] += 1
+                    logger.info(
+                        "Identity-contract self-heal: unregistered orphan "
+                        "router prefix %r",
+                        prefix,
+                    )
+        except Exception as exc:
+            logger.warning(
+                "Identity-contract self-heal: router unregister skipped (%s)",
+                exc,
+            )
+
+    # view_subsystem_unknown → unregister
+    if findings.get("view_subsystem_unknown"):
+        try:
+            from core.runtime.persistent_views import _REGISTRY as _VIEW_REGISTRY
+
+            for sub_name in findings["view_subsystem_unknown"]:
+                if _VIEW_REGISTRY.pop(sub_name, None) is not None:
+                    counts["views_unregistered"] += 1
+                    logger.info(
+                        "Identity-contract self-heal: unregistered orphan "
+                        "PersistentView for subsystem %r",
+                        sub_name,
+                    )
+        except Exception as exc:
+            logger.warning(
+                "Identity-contract self-heal: view unregister skipped (%s)",
+                exc,
+            )
+
+    # db_anchor_subsystem_unknown → mark stale
+    if findings.get("db_anchor_subsystem_unknown"):
+        try:
+            from utils import db as _db
+
+            for sub_name in findings["db_anchor_subsystem_unknown"]:
+                rows = await _db.mark_anchors_stale_for_subsystem(sub_name)
+                counts["anchors_marked_stale"] += rows
+                logger.info(
+                    "Identity-contract self-heal: marked %d anchor row(s) "
+                    "stale for orphan subsystem %r",
+                    rows,
+                    sub_name,
+                )
+        except Exception as exc:
+            logger.warning(
+                "Identity-contract self-heal: anchor cleanup skipped (%s)",
+                exc,
+            )
+
+    # fatal-tier findings are recorded but never auto-healed
+    counts["skipped_fatal"] = len(findings.get("entry_point_missing_command", []))
+    if counts["skipped_fatal"]:
+        logger.warning(
+            "Identity-contract self-heal: skipped %d fatal-tier finding(s) "
+            "(entry_point_missing_command — requires operator review, likely "
+            "a cog failed to load).",
+            counts["skipped_fatal"],
+        )
+
+    return counts
+
+
 def capability_matches(pattern: str, capability: str) -> bool:
     """Wildcard capability matching for future declarative policy rules.
 

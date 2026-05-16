@@ -45,6 +45,7 @@ from utils.db.anchors import (
     get_panel_anchor,
     get_panel_anchor_by_message,
     get_user_subsystem_anchors,
+    mark_anchors_stale_for_subsystem,
     mark_panel_anchor_stale,
     upsert_panel_anchor,
 )
@@ -224,6 +225,7 @@ __all__ = [
     "get_panel_anchor",
     "get_panel_anchor_by_message",
     "get_user_subsystem_anchors",
+    "mark_anchors_stale_for_subsystem",
     "mark_panel_anchor_stale",
     "upsert_panel_anchor",
     # games

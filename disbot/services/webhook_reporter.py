@@ -53,6 +53,64 @@ class WebhookReporter:
         embed.set_footer(text=f"Logged in as {bot.user}")
         await self._send(embed, username="Bot Status")
 
+    async def on_identity_findings(
+        self,
+        summary: dict[str, object],
+        *,
+        strict: bool,
+        aborting: bool,
+    ) -> None:
+        """Post the identity-contract finding summary (PR I1b).
+
+        Called from ``bot1.py`` at startup when the validator reports any
+        findings.  ``aborting`` is True when STRICT mode is on AND the
+        summary contains at least one ``fatal``-tier finding — the bot
+        will exit shortly after this coroutine returns.
+        """
+        by_tier = summary.get("by_tier", {})
+        by_kind = summary.get("by_kind", {})
+        fatal = int(by_tier.get("fatal", 0))
+        auto = int(by_tier.get("auto_healable", 0))
+        warn = int(by_tier.get("warn_only", 0))
+        total = int(summary.get("total", 0))
+        if aborting:
+            title = "🛑 Identity contract — STRICT abort"
+            color = discord.Color.dark_red()
+        elif fatal:
+            title = "🪪 Identity contract — fatal finding(s)"
+            color = discord.Color.red()
+        else:
+            title = "🪪 Identity contract — auto-healable finding(s)"
+            color = discord.Color.orange()
+        embed = discord.Embed(
+            title=title,
+            description=(
+                f"**total** {total}  ·  **fatal** {fatal}  ·  "
+                f"**auto_healable** {auto}  ·  **warn_only** {warn}"
+            ),
+            color=color,
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        if by_kind:
+            lines = [f"`{k}` — {v}" for k, v in by_kind.items() if v]
+            if lines:
+                embed.add_field(
+                    name="By kind",
+                    value="\n".join(lines)[:1024],
+                    inline=False,
+                )
+        embed.add_field(
+            name="STRICT",
+            value="on" if strict else "off",
+            inline=True,
+        )
+        embed.add_field(
+            name="Action",
+            value="aborting startup" if aborting else "continuing",
+            inline=True,
+        )
+        await self._send(embed, username="Identity Contract")
+
     async def on_cog_fail(self, ext: str, error: Exception) -> None:
         tb = "".join(
             traceback.format_exception(type(error), error, error.__traceback__),

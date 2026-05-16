@@ -114,6 +114,19 @@ def _begin_shutdown(*_) -> None:
     _remove_pid()
 
 
+def _identity_contract_strict() -> bool:
+    """Return True if ``IDENTITY_CONTRACT_STRICT`` is set to a truthy value.
+
+    Accepts ``1`` / ``true`` / ``yes`` / ``on`` (case-insensitive).
+    Any other value, or the env var being unset, returns False.  The
+    flag gates the PR I1b behaviour where fatal-tier identity-contract
+    findings abort startup; in default mode the validator's findings
+    are advisory only.
+    """
+    raw = os.getenv("IDENTITY_CONTRACT_STRICT", "").strip().lower()
+    return raw in ("1", "true", "yes", "on")
+
+
 signal.signal(signal.SIGTERM, _begin_shutdown)
 
 # ---------------------------------------------------------------------------
@@ -454,9 +467,15 @@ async def main() -> None:
             # PR I1a: the orchestrator owns summary logging and metric
             # emission.  The validator emits per-finding WARNINGs for
             # diagnostic detail; here we add a tiered summary and bump
-            # ``identity_contract_findings_total`` so drift is visible in
-            # Prometheus.  Startup remains non-fatal in I1a; STRICT
-            # enforcement (abort on fatal findings) is deferred to I1b.
+            # ``identity_contract_findings_total`` so drift is visible
+            # in Prometheus.
+            #
+            # PR I1b: ``IDENTITY_CONTRACT_STRICT=true`` makes
+            # fatal-tier findings abort startup after emitting the
+            # webhook alert.  Default is off; production opts in by
+            # setting the env var.  ``auto_healable`` and ``warn_only``
+            # tiers never abort — they remain advisory until an operator
+            # runs ``!platform identity --fix`` (PR I1b admin command).
             try:
                 from services import metrics as _metrics
                 from utils.subsystem_registry import (
@@ -471,26 +490,51 @@ async def main() -> None:
                         _metrics.identity_contract_findings_total.labels(
                             kind=kind,
                         ).inc(count)
+                strict = _identity_contract_strict()
+                fatal = summary["by_tier"]["fatal"]
+                aborting = bool(strict and fatal)
+
                 if summary["total"] == 0:
                     logger.info(
                         "Identity-contract: clean (all four surfaces agree).",
                     )
                 else:
-                    log_fn = (
-                        logger.warning
-                        if summary["by_tier"]["fatal"]
-                        else logger.info
-                    )
+                    log_fn = logger.warning if fatal else logger.info
                     log_fn(
                         "Identity-contract findings | total=%d | fatal=%d | "
                         "auto_healable=%d | warn_only=%d | by_kind=%s | "
-                        "STRICT abort-on-fatal is deferred to I1b",
+                        "STRICT=%s | abort=%s",
                         summary["total"],
-                        summary["by_tier"]["fatal"],
+                        fatal,
                         summary["by_tier"]["auto_healable"],
                         summary["by_tier"]["warn_only"],
                         summary["by_kind"],
+                        "on" if strict else "off",
+                        "yes" if aborting else "no",
                     )
+                    if reporter:
+                        try:
+                            await reporter.on_identity_findings(
+                                summary,
+                                strict=strict,
+                                aborting=aborting,
+                            )
+                        except Exception as exc:
+                            logger.debug(
+                                "Identity webhook post skipped: %s",
+                                exc,
+                            )
+                if aborting:
+                    logger.critical(
+                        "Identity-contract: STRICT mode aborting startup "
+                        "(%d fatal-tier finding(s)).  Inspect bot.log for "
+                        "per-finding WARNINGs.",
+                        fatal,
+                    )
+                    raise SystemExit(1)
+            except SystemExit:
+                # Strict-mode abort — propagate so main() exits cleanly.
+                raise
             except Exception as exc:
                 logger.warning("Identity-contract validation skipped: %s", exc)
 

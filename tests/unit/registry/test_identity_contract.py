@@ -10,6 +10,8 @@ Covers:
 - DB error is swallowed (no raise)
 - PR I1a: tier classification map + summarize_findings sibling helper
 - PR I1a: invariant — every finding bucket has a tier classification
+- PR I1b: apply_self_heal remediates auto_healable findings only
+- PR I1b: apply_self_heal skips fatal-tier findings
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ import pytest
 from utils.subsystem_registry import (
     IDENTITY_FINDING_TIER,
     SUBSYSTEMS,
+    apply_self_heal,
     summarize_findings,
     validate_identity_contract,
 )
@@ -265,6 +268,193 @@ class TestSummarizeFindings:
         assert summary["total"] == 2
         # Unknown bucket counts as fatal in by_tier.
         assert summary["by_tier"]["fatal"] == 2
+
+
+class TestApplySelfHeal:
+    """PR I1b — apply_self_heal remediates auto_healable findings."""
+
+    @pytest.mark.asyncio
+    async def test_unregisters_orphan_router_prefixes(self):
+        fake_router = {"ghost": object(), "alive": object()}
+        findings = {
+            "entry_point_missing_command": [],
+            "router_prefix_unknown": ["ghost"],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": [],
+        }
+        with (
+            patch(
+                "core.runtime.interaction_router._handlers",
+                fake_router,
+            ),
+            patch(
+                "core.runtime.persistent_views._REGISTRY",
+                {},
+            ),
+            patch(
+                "utils.db.mark_anchors_stale_for_subsystem",
+                new_callable=AsyncMock,
+            ) as mock_mark,
+        ):
+            counts = await apply_self_heal(findings)
+        assert counts["router_prefixes_unregistered"] == 1
+        assert "ghost" not in fake_router
+        assert "alive" in fake_router
+        mock_mark.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_unregisters_orphan_views(self):
+        fake_view_registry = {"ghost_view": object(), "alive_view": object()}
+        findings = {
+            "entry_point_missing_command": [],
+            "router_prefix_unknown": [],
+            "view_subsystem_unknown": ["ghost_view"],
+            "db_anchor_subsystem_unknown": [],
+        }
+        with (
+            patch("core.runtime.interaction_router._handlers", {}),
+            patch(
+                "core.runtime.persistent_views._REGISTRY",
+                fake_view_registry,
+            ),
+            patch(
+                "utils.db.mark_anchors_stale_for_subsystem",
+                new_callable=AsyncMock,
+            ),
+        ):
+            counts = await apply_self_heal(findings)
+        assert counts["views_unregistered"] == 1
+        assert "ghost_view" not in fake_view_registry
+        assert "alive_view" in fake_view_registry
+
+    @pytest.mark.asyncio
+    async def test_marks_orphan_anchors_stale(self):
+        findings = {
+            "entry_point_missing_command": [],
+            "router_prefix_unknown": [],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": ["ghost_a", "ghost_b"],
+        }
+        mock_mark = AsyncMock(side_effect=[3, 2])
+        with (
+            patch("core.runtime.interaction_router._handlers", {}),
+            patch("core.runtime.persistent_views._REGISTRY", {}),
+            patch("utils.db.mark_anchors_stale_for_subsystem", mock_mark),
+        ):
+            counts = await apply_self_heal(findings)
+        assert counts["anchors_marked_stale"] == 5  # 3 + 2
+        assert mock_mark.await_count == 2
+        # Calls are by subsystem name, in order.
+        names = [c.args[0] for c in mock_mark.await_args_list]
+        assert names == ["ghost_a", "ghost_b"]
+
+    @pytest.mark.asyncio
+    async def test_fatal_findings_are_skipped(self):
+        """``entry_point_missing_command`` is fatal-tier — never auto-healed.
+
+        Cog load failure must be diagnosed by the operator (reload the
+        cog, check logs), not silently masked by registry pruning.
+        """
+        findings = {
+            "entry_point_missing_command": ["lost_cmd_1", "lost_cmd_2"],
+            "router_prefix_unknown": [],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": [],
+        }
+        # Sanity: the tier map agrees this is fatal.
+        assert IDENTITY_FINDING_TIER["entry_point_missing_command"] == "fatal"
+        with (
+            patch("core.runtime.interaction_router._handlers", {}),
+            patch("core.runtime.persistent_views._REGISTRY", {}),
+            patch(
+                "utils.db.mark_anchors_stale_for_subsystem",
+                new_callable=AsyncMock,
+            ) as mock_mark,
+        ):
+            counts = await apply_self_heal(findings)
+        assert counts["skipped_fatal"] == 2
+        assert counts["router_prefixes_unregistered"] == 0
+        assert counts["views_unregistered"] == 0
+        assert counts["anchors_marked_stale"] == 0
+        mock_mark.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_clean_state_returns_zero_counts(self):
+        findings = {
+            "entry_point_missing_command": [],
+            "router_prefix_unknown": [],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": [],
+        }
+        with (
+            patch("core.runtime.interaction_router._handlers", {}),
+            patch("core.runtime.persistent_views._REGISTRY", {}),
+            patch(
+                "utils.db.mark_anchors_stale_for_subsystem",
+                new_callable=AsyncMock,
+            ),
+        ):
+            counts = await apply_self_heal(findings)
+        assert counts == {
+            "router_prefixes_unregistered": 0,
+            "views_unregistered": 0,
+            "anchors_marked_stale": 0,
+            "skipped_fatal": 0,
+        }
+
+    @pytest.mark.asyncio
+    async def test_db_unavailable_does_not_abort(self):
+        """If the DB cleanup raises, self-heal logs a warning and
+        continues — partial healing is better than no healing.
+        """
+        findings = {
+            "entry_point_missing_command": [],
+            "router_prefix_unknown": ["ghost_prefix"],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": ["ghost_anchor"],
+        }
+        fake_router = {"ghost_prefix": object()}
+        with (
+            patch(
+                "core.runtime.interaction_router._handlers",
+                fake_router,
+            ),
+            patch("core.runtime.persistent_views._REGISTRY", {}),
+            patch(
+                "utils.db.mark_anchors_stale_for_subsystem",
+                new_callable=AsyncMock,
+                side_effect=RuntimeError("DB down"),
+            ),
+        ):
+            counts = await apply_self_heal(findings)
+        # Router cleanup succeeded …
+        assert counts["router_prefixes_unregistered"] == 1
+        # … even though DB cleanup failed.
+        assert counts["anchors_marked_stale"] == 0
+
+
+class TestStrictMode:
+    """PR I1b — IDENTITY_CONTRACT_STRICT env var gates fatal abort."""
+
+    def test_strict_flag_helper_truthy_values(self, monkeypatch):
+        from bot1 import _identity_contract_strict
+
+        for value in ("1", "true", "TRUE", "yes", "Yes", "on", "ON"):
+            monkeypatch.setenv("IDENTITY_CONTRACT_STRICT", value)
+            assert _identity_contract_strict() is True, value
+
+    def test_strict_flag_helper_falsy_values(self, monkeypatch):
+        from bot1 import _identity_contract_strict
+
+        for value in ("", "0", "false", "FALSE", "no", "off", "anything-else"):
+            monkeypatch.setenv("IDENTITY_CONTRACT_STRICT", value)
+            assert _identity_contract_strict() is False, value
+
+    def test_strict_flag_helper_unset_defaults_to_false(self, monkeypatch):
+        from bot1 import _identity_contract_strict
+
+        monkeypatch.delenv("IDENTITY_CONTRACT_STRICT", raising=False)
+        assert _identity_contract_strict() is False
 
 
 class TestMetricEmission:
