@@ -54,7 +54,8 @@ _EXPECTED_PUBLIC = [
     "set_coins",
     "get_economy",
     "claim_daily_if_ready",
-    "set_economy",
+    "set_daily_claim",
+    "set_last_worked",
     "get_job_times",
     "increment_job",
     # inventory

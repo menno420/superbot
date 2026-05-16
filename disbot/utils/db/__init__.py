@@ -61,7 +61,8 @@ from utils.db.economy import (
     get_job_times,
     increment_job,
     set_coins,
-    set_economy,
+    set_daily_claim,
+    set_last_worked,
 )
 
 # ──────────────────────────────────────────────────────────────────────
@@ -190,7 +191,8 @@ __all__ = [
     "get_job_times",
     "increment_job",
     "set_coins",
-    "set_economy",
+    "set_daily_claim",
+    "set_last_worked",
     # inventory
     "add_item",
     "get_inventory",
