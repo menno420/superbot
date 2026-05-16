@@ -15,6 +15,7 @@ Public aliases:
     scheduler  — live_update_scheduler module
     plugins    — plugin_contract module
     tasks      — managed background-task helper (see CRIT-1 fix)
+    interaction — safe_defer / safe_followup / safe_edit (see CRIT-2 fix)
 
 EventBus subscriptions are established in setup(), called once from bot1.py
 after the DB is initialised.
@@ -28,6 +29,7 @@ from core.runtime import component_registry as components  # noqa: F401 — re-e
 from core.runtime import (  # noqa: F401 — re-exported
     ephemeral_surface_manager as surfaces,
 )
+from core.runtime import interaction_helpers as interaction  # noqa: F401 — re-exported
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported
 from core.runtime import live_update_scheduler as scheduler  # noqa: F401 — re-exported
 from core.runtime import message_anchor_manager as anchors  # noqa: F401 — re-exported
