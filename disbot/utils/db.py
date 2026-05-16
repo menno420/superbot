@@ -597,14 +597,23 @@ async def get_job_times(user_id: int, guild_id: int, job_name: str) -> int:
 
 
 async def increment_job(user_id: int, guild_id: int, job_name: str) -> int:
-    await execute(
+    """Atomically increment the times_worked counter and return the new value.
+
+    Previously this issued two round-trips (upsert + SELECT) — the SELECT
+    could observe a value bumped by another concurrent caller, returning
+    a count larger than this caller's own increment produced.  RETURNING
+    closes that race: the UPDATE and the read of the new value happen in
+    a single statement.
+    """
+    row = await fetchone(
         """INSERT INTO job_progress (user_id, guild_id, job_name, times_worked)
            VALUES ($1, $2, $3, 1)
            ON CONFLICT (user_id, guild_id, job_name)
-           DO UPDATE SET times_worked=job_progress.times_worked + 1""",
+           DO UPDATE SET times_worked = job_progress.times_worked + 1
+           RETURNING times_worked""",
         (user_id, guild_id, job_name),
     )
-    return await get_job_times(user_id, guild_id, job_name)
+    return row["times_worked"] if row else 1
 
 
 # ---------------------------------------------------------------------------
