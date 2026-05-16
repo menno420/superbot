@@ -119,7 +119,7 @@ signal.signal(signal.SIGTERM, _begin_shutdown)
 
 @bot.event
 async def on_ready() -> None:
-    bot.uptime = datetime.datetime.utcnow()  # type: ignore[attr-defined]
+    bot.uptime = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[attr-defined]
     bot._reporter = reporter  # type: ignore[attr-defined]
     logger.info("Logged in as %s (ID: %s)", bot.user, bot.user.id)
     logger.info("Connected to %d server(s)", len(bot.guilds))

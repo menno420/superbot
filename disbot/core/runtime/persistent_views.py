@@ -75,3 +75,30 @@ class PersistentView(discord.ui.View):
             )
             return False
         return True
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,  # type: ignore[type-arg]
+    ) -> None:
+        logger.error(
+            "PersistentView error | view=%s item_type=%s custom_id=%r label=%r "
+            "user=%s guild=%s channel=%s message=%s",
+            type(self).__name__,
+            type(item).__name__,
+            getattr(item, "custom_id", None),
+            getattr(item, "label", None),
+            getattr(interaction.user, "id", None),
+            interaction.guild_id,
+            interaction.channel_id,
+            interaction.message.id if interaction.message else None,
+            exc_info=error,
+        )
+        if not interaction.response.is_done():
+            try:
+                await interaction.response.send_message(
+                    "An error occurred. Please try again.", ephemeral=True
+                )
+            except Exception:
+                pass

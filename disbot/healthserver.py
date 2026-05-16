@@ -47,7 +47,7 @@ async def _health_handler(request: web.Request) -> web.Response:
     """Liveness probe — always 200 while the event loop is alive."""
     bot: commands.Bot = request.app["bot"]
     uptime = (
-        str(datetime.datetime.utcnow() - bot.uptime)
+        str(datetime.datetime.now(tz=datetime.timezone.utc) - bot.uptime)
         if hasattr(bot, "uptime")
         else "starting"
     )

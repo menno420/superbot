@@ -44,7 +44,7 @@ class WebhookReporter:
         embed = discord.Embed(
             title="🚀 Bot Online",
             color=discord.Color.green(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(name="Prefix", value=f"`{bot.command_prefix}`", inline=True)
         embed.add_field(name="Servers", value=str(len(bot.guilds)), inline=True)
@@ -63,7 +63,7 @@ class WebhookReporter:
             title="🔴 Cog Load Failure",
             description=f"**Extension:** `{ext}`\n```py\n{tb}\n```",
             color=discord.Color.dark_red(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         await self._send(embed, username="Bot Loader")
 
@@ -71,7 +71,7 @@ class WebhookReporter:
         embed = discord.Embed(
             title="📥 Command Invoked",
             color=discord.Color.blue(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(
             name="Input", value=f"`{ctx.message.content[:200]}`", inline=False
@@ -89,7 +89,7 @@ class WebhookReporter:
         embed = discord.Embed(
             title="✅ Command Completed",
             color=discord.Color.green(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(
             name="Command", value=f"`{ctx.command.qualified_name}`", inline=True
@@ -109,7 +109,7 @@ class WebhookReporter:
                 title="❓ Unknown Command",
                 description=f"Input: `{ctx.message.content[:150]}`",
                 color=discord.Color.greyple(),
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
             embed.add_field(name="User", value=str(ctx.author), inline=True)
             embed.add_field(name="Server", value=str(ctx.guild), inline=True)
@@ -124,7 +124,7 @@ class WebhookReporter:
                     f"Input: `{ctx.message.content[:150]}`"
                 ),
                 color=discord.Color.orange(),
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
             embed.add_field(name="User", value=str(ctx.author), inline=True)
             embed.add_field(name="Server", value=str(ctx.guild), inline=True)
@@ -136,7 +136,7 @@ class WebhookReporter:
                 title="⚠️ Bad Argument",
                 description=f"{error}\nInput: `{ctx.message.content[:150]}`",
                 color=discord.Color.orange(),
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
             embed.add_field(name="User", value=str(ctx.author), inline=True)
             embed.add_field(name="Server", value=str(ctx.guild), inline=True)
@@ -151,7 +151,7 @@ class WebhookReporter:
                 title=f"🔒 {label} Missing Permissions",
                 description=str(error),
                 color=discord.Color.orange(),
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
             embed.add_field(name="Command", value=f"`!{ctx.command}`", inline=True)
             embed.add_field(name="User", value=str(ctx.author), inline=True)
@@ -164,7 +164,7 @@ class WebhookReporter:
                 title="⏰ Command on Cooldown",
                 description=f"`!{ctx.command}` — retry in **{error.retry_after:.1f}s**",
                 color=discord.Color.yellow(),
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
             embed.add_field(name="User", value=str(ctx.author), inline=True)
             embed.add_field(name="Server", value=str(ctx.guild), inline=True)
@@ -180,7 +180,7 @@ class WebhookReporter:
             title="❌ Unexpected Error",
             description=f"**{type(error).__name__}**: {error}\n\n```py\n{tb}\n```",
             color=discord.Color.red(),
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(
             name="Input", value=f"`{ctx.message.content[:150]}`", inline=False

@@ -8,7 +8,7 @@ import math
 import operator as op
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands
@@ -396,7 +396,7 @@ class CountingCog(commands.Cog):
 
         async with self.lock:
             # Create a channel named after the mode with a timestamp for uniqueness
-            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M%S")
             channel_name = f"{mode}-counting-{timestamp}"
             existing_channel = discord.utils.get(guild.text_channels, name=channel_name)
             if existing_channel:
@@ -469,7 +469,7 @@ class CountingCog(commands.Cog):
                 "multiple": multiple if mode == "multiples" else None,
                 "custom_sequence": custom_sequence if mode == "custom" else None,
                 "sequence_index": 0,
-                "last_count_time": datetime.utcnow().timestamp(),
+                "last_count_time": datetime.now(tz=timezone.utc).timestamp(),
                 "reset_on_wrong_count": False,
                 # For random mode: pre-roll the first expected value
                 "next_expected": (
@@ -583,7 +583,7 @@ class CountingCog(commands.Cog):
             channel_data["sequence_index"] = 0
             channel_data["last_user"] = None
             channel_data["leaderboard"] = {}
-            channel_data["last_count_time"] = datetime.utcnow().timestamp()
+            channel_data["last_count_time"] = datetime.now(tz=timezone.utc).timestamp()
             if mode == "random":
                 rand_range = channel_data.get("random_range", [1, 3])
                 channel_data["next_expected"] = start + random.randint(*rand_range)
@@ -860,7 +860,9 @@ class CountingCog(commands.Cog):
                     channel_data["sequence_index"] = 0
                     channel_data["last_user"] = None
                     channel_data["leaderboard"] = {}
-                    channel_data["last_count_time"] = datetime.utcnow().timestamp()
+                    channel_data["last_count_time"] = datetime.now(
+                        tz=timezone.utc
+                    ).timestamp()
                     asyncio.create_task(self._save_guild(guild_id))
 
                     await message.channel.send(
@@ -913,7 +915,7 @@ class CountingCog(commands.Cog):
             # Update count
             channel_data["current_count"] = parsed_count
             channel_data["last_user"] = user_id
-            channel_data["last_count_time"] = datetime.utcnow().timestamp()
+            channel_data["last_count_time"] = datetime.now(tz=timezone.utc).timestamp()
             # Roll next expected value for random mode
             if mode == "random":
                 rand_range = channel_data.get("random_range", [1, 3])
@@ -1342,7 +1344,7 @@ class _CountingHubView(BaseView):
             ch_data["sequence_index"] = 0
             ch_data["last_user"] = None
             ch_data["leaderboard"] = {}
-            ch_data["last_count_time"] = datetime.utcnow().timestamp()
+            ch_data["last_count_time"] = datetime.now(tz=timezone.utc).timestamp()
             if mode == "random":
                 rand_range = ch_data.get("random_range", [1, 3])
                 ch_data["next_expected"] = start + random.randint(*rand_range)

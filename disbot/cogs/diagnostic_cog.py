@@ -343,8 +343,8 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def diagnostic_bot_status(self, ctx):
         """Display bot health and performance metrics."""
-        uptime_delta = datetime.datetime.utcnow() - getattr(
-            self.bot, "uptime", datetime.datetime.utcnow()
+        uptime_delta = datetime.datetime.now(tz=datetime.timezone.utc) - getattr(
+            self.bot, "uptime", datetime.datetime.now(tz=datetime.timezone.utc)
         )
         uptime_str = str(uptime_delta).split(".")[0]
 
@@ -458,7 +458,7 @@ class DiagnosticCog(commands.Cog):
                 title="🧪 Test Notification",
                 description="This is a test error notification from DiagnosticCog.",
                 color=discord.Color.orange(),
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
             await reporter._send(embed, username="Diagnostic")
             await ctx.send("✅ Test notification sent.", delete_after=10)

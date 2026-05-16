@@ -467,9 +467,9 @@ async def log_mod_action(
     moderator_id: int,
     reason: str = "No reason provided",
 ) -> None:
-    from datetime import datetime
+    from datetime import datetime, timezone
 
-    ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    ts = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     await execute(
         "INSERT INTO mod_logs (timestamp, guild_id, action, target_id, moderator_id, reason) "
         "VALUES ($1, $2, $3, $4, $5, $6)",

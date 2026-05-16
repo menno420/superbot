@@ -152,8 +152,18 @@ def _attach_back_to_help_button(
 
     async def _back_callback(interaction: discord.Interaction) -> None:
         # Recompute visible list at click time — governance may have changed.
-        gctx = GovernanceContext.from_interaction(interaction)
-        vis_result = await governance_service.resolve_visibility(gctx)
+        try:
+            gctx = GovernanceContext.from_interaction(interaction)
+            vis_result = await governance_service.resolve_visibility(gctx)
+        except Exception as exc:
+            logger.warning(
+                "Back-to-help visibility resolve failed: %s", exc, exc_info=True
+            )
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "Could not load help menu. Please try again.", ephemeral=True
+                )
+            return
         fresh_visible = [
             name
             for name, _ in all_subsystems_sorted()
