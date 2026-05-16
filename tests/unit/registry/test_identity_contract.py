@@ -8,6 +8,8 @@ Covers:
 - unknown view SUBSYSTEM is reported
 - unknown panel_anchors row is reported
 - DB error is swallowed (no raise)
+- PR I1a: tier classification map + summarize_findings sibling helper
+- PR I1a: invariant — every finding bucket has a tier classification
 """
 
 from __future__ import annotations
@@ -16,7 +18,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from utils.subsystem_registry import SUBSYSTEMS, validate_identity_contract
+from utils.subsystem_registry import (
+    IDENTITY_FINDING_TIER,
+    SUBSYSTEMS,
+    summarize_findings,
+    validate_identity_contract,
+)
 
 
 def _bot_with_commands(*names: str) -> MagicMock:
@@ -145,3 +152,169 @@ async def test_db_error_does_not_abort(_empty_registries):
         findings = await validate_identity_contract(bot)
     # DB-based finding bucket is empty when DB is unreachable.
     assert findings["db_anchor_subsystem_unknown"] == []
+
+
+# ---------------------------------------------------------------------------
+# PR I1a — tier classification, summarize_findings, invariant tests
+# ---------------------------------------------------------------------------
+
+
+class TestIdentityFindingTier:
+    """The tier map must cover every finding bucket the validator emits."""
+
+    @pytest.mark.asyncio
+    async def test_tier_map_covers_every_finding_bucket(self, _empty_registries):
+        """Invariant: ``set(IDENTITY_FINDING_TIER) == set(validator findings)``.
+
+        Adding a new finding bucket without a tier classification must
+        fail this test — it's the durable guard the user requested.
+        """
+        bot = _bot_with_commands()
+        findings = await validate_identity_contract(bot)
+        assert set(IDENTITY_FINDING_TIER) == set(findings), (
+            "IDENTITY_FINDING_TIER must classify every validator finding "
+            f"bucket; missing: {set(findings) - set(IDENTITY_FINDING_TIER)}; "
+            f"extra: {set(IDENTITY_FINDING_TIER) - set(findings)}"
+        )
+
+    def test_tier_values_are_known(self):
+        """Every tier value must be one of the three documented severities."""
+        valid_tiers = {"fatal", "auto_healable", "warn_only"}
+        for kind, tier in IDENTITY_FINDING_TIER.items():
+            assert tier in valid_tiers, (
+                f"Unknown tier {tier!r} for finding kind {kind!r}; "
+                f"must be one of {valid_tiers}"
+            )
+
+    def test_entry_point_missing_is_fatal(self):
+        """``entry_point_missing_command`` violates routing/help integrity
+        and is classified fatal-tier per the I1a refinement.
+        """
+        assert IDENTITY_FINDING_TIER["entry_point_missing_command"] == "fatal"
+
+
+class TestSummarizeFindings:
+    """``summarize_findings`` returns total + by_kind + by_tier."""
+
+    def test_summary_totals_match_findings(self):
+        findings = {
+            "entry_point_missing_command": ["a", "b"],
+            "router_prefix_unknown": ["x"],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": ["y", "z", "w"],
+        }
+        summary = summarize_findings(findings)
+        assert summary["total"] == 6
+        assert summary["by_kind"] == {
+            "entry_point_missing_command": 2,
+            "router_prefix_unknown": 1,
+            "view_subsystem_unknown": 0,
+            "db_anchor_subsystem_unknown": 3,
+        }
+
+    def test_summary_groups_by_tier(self):
+        findings = {
+            "entry_point_missing_command": ["a", "b"],  # fatal
+            "router_prefix_unknown": ["x"],             # auto_healable
+            "view_subsystem_unknown": ["y"],            # auto_healable
+            "db_anchor_subsystem_unknown": ["z", "w"],  # auto_healable
+        }
+        summary = summarize_findings(findings)
+        assert summary["by_tier"] == {
+            "fatal": 2,
+            "auto_healable": 4,
+            "warn_only": 0,
+        }
+
+    def test_summary_clean_state(self):
+        findings = {
+            "entry_point_missing_command": [],
+            "router_prefix_unknown": [],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": [],
+        }
+        summary = summarize_findings(findings)
+        assert summary["total"] == 0
+        assert summary["by_tier"] == {
+            "fatal": 0,
+            "auto_healable": 0,
+            "warn_only": 0,
+        }
+        # Schema is stable even when empty.
+        assert summary["by_kind"] == {
+            "entry_point_missing_command": 0,
+            "router_prefix_unknown": 0,
+            "view_subsystem_unknown": 0,
+            "db_anchor_subsystem_unknown": 0,
+        }
+
+    def test_unknown_kind_is_counted_as_fatal(self):
+        """Defensive: an un-tier-classified bucket counts under fatal so
+        the invariant test detects the omission instead of silently
+        miscounting.
+        """
+        findings = {
+            "entry_point_missing_command": [],
+            "router_prefix_unknown": [],
+            "view_subsystem_unknown": [],
+            "db_anchor_subsystem_unknown": [],
+            "made_up_future_bucket": ["x", "y"],
+        }
+        summary = summarize_findings(findings)
+        # Total still correct.
+        assert summary["total"] == 2
+        # Unknown bucket counts as fatal in by_tier.
+        assert summary["by_tier"]["fatal"] == 2
+
+
+class TestMetricEmission:
+    """The startup orchestrator increments the metric per finding kind.
+
+    We test the contract — every non-zero ``summary["by_kind"]`` value
+    becomes a single ``.labels(kind=...).inc(count)`` call — rather than
+    re-running bot1.main(), which would require the full async harness.
+    """
+
+    def test_metric_increments_per_kind(self):
+        from services import metrics
+
+        findings = {
+            "entry_point_missing_command": ["a", "b"],
+            "router_prefix_unknown": [],
+            "view_subsystem_unknown": ["x"],
+            "db_anchor_subsystem_unknown": ["y", "z", "w"],
+        }
+        summary = summarize_findings(findings)
+
+        labeled: list[tuple[str, int]] = []
+        # Patch the labels() chain so we can record inc() arguments.
+        original = metrics.identity_contract_findings_total
+        try:
+            tracker = MagicMock()
+
+            def make_label_call(kind):
+                m = MagicMock()
+                m.inc = lambda n=1: labeled.append((kind, n))
+                return m
+
+            tracker.labels = MagicMock(side_effect=make_label_call)
+            metrics.identity_contract_findings_total = tracker
+
+            # Mirror the orchestrator loop from bot1.py.
+            for kind, count in summary["by_kind"].items():
+                if count:
+                    metrics.identity_contract_findings_total.labels(
+                        kind=kind,
+                    ).inc(count)
+        finally:
+            metrics.identity_contract_findings_total = original
+
+        # No-zero kinds were skipped.
+        labeled_dict = dict(labeled)
+        assert labeled_dict == {
+            "entry_point_missing_command": 2,
+            "view_subsystem_unknown": 1,
+            "db_anchor_subsystem_unknown": 3,
+        }
+        # router_prefix_unknown had zero findings — must not be emitted.
+        assert "router_prefix_unknown" not in labeled_dict

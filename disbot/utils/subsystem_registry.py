@@ -788,6 +788,69 @@ def all_subsystems_sorted() -> list[tuple[str, dict]]:
     )
 
 
+# ---------------------------------------------------------------------------
+# Identity-contract findings — tier classification (PR I1a).
+#
+# ``validate_identity_contract`` returns findings grouped by *kind*; this
+# table maps each kind to a severity tier.  The startup orchestrator
+# (bot1.py) consumes the tiers to decide whether to log, emit a metric,
+# or (in a later PR I1b) abort startup / self-heal.
+#
+# Tier semantics:
+#   fatal          — violates routing or help/navigation integrity.  In
+#                    I1a these still WARN (no abort); STRICT enforcement
+#                    is deferred to I1b.  Listed here so future code can
+#                    gate on the classification without changing it.
+#   auto_healable  — safe for an admin (or, in I1b, an automated job) to
+#                    remediate without operator intervention: orphan
+#                    router prefixes can be unregistered, orphan view
+#                    classes can be skipped, orphan anchor rows can be
+#                    marked stale.
+#   warn_only      — informational; surfaced but not actionable as a
+#                    finding in isolation (none currently classified).
+#
+# Invariant: ``set(IDENTITY_FINDING_TIER) == set(findings)`` after every
+# validator run.  The regression test enforces this — a new finding
+# bucket added without a tier classification will fail CI.
+# ---------------------------------------------------------------------------
+IDENTITY_FINDING_TIER: dict[str, str] = {
+    "entry_point_missing_command": "fatal",
+    "router_prefix_unknown": "auto_healable",
+    "view_subsystem_unknown": "auto_healable",
+    "db_anchor_subsystem_unknown": "auto_healable",
+}
+
+
+def summarize_findings(findings: dict[str, list[str]]) -> dict[str, object]:
+    """Compute a tiered summary of identity-contract findings.
+
+    Returns a dict with three keys:
+      * ``total`` (int): total findings across all kinds.
+      * ``by_kind`` (dict[str, int]): per-bucket counts.
+      * ``by_tier`` (dict[str, int]): counts grouped by severity tier
+        (``fatal`` / ``auto_healable`` / ``warn_only``).  Tiers with
+        zero findings are still included so the schema is stable.
+
+    The validator's return shape is unchanged; this is a sibling helper
+    consumed by the startup orchestrator and the ``!platform identity``
+    admin command.
+    """
+    by_kind: dict[str, int] = {kind: len(items) for kind, items in findings.items()}
+    by_tier: dict[str, int] = {"fatal": 0, "auto_healable": 0, "warn_only": 0}
+    for kind, count in by_kind.items():
+        tier = IDENTITY_FINDING_TIER.get(kind)
+        if tier is None:
+            # Unknown kind — defensively count under fatal so the
+            # invariant test catches the missing classification.
+            tier = "fatal"
+        by_tier[tier] += count
+    return {
+        "total": sum(by_kind.values()),
+        "by_kind": by_kind,
+        "by_tier": by_tier,
+    }
+
+
 async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
     """Cross-check that the four subsystem-identity surfaces agree.
 
@@ -906,15 +969,12 @@ async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
             exc,
         )
 
-    total = sum(len(v) for v in findings.values())
-    if total == 0:
-        logger.info("Identity-contract: clean (all four surfaces agree).")
-    else:
-        logger.warning(
-            "Identity-contract: %d finding(s) — %s",
-            total,
-            {k: len(v) for k, v in findings.items() if v},
-        )
+    # No trailing summary log here — the startup orchestrator in
+    # ``bot1.py`` owns summary logging so the validator and orchestrator
+    # do not both emit duplicate WARNING lines.  Per-finding WARNINGs
+    # above retain the diagnostic detail that operators need; callers
+    # interested in a tiered summary should pass ``findings`` to
+    # :func:`summarize_findings`.
     return findings
 
 

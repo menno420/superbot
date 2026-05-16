@@ -450,11 +450,47 @@ async def main() -> None:
             # Cross-check subsystem identity surfaces (C1 / INV-B):
             # SUBSYSTEMS keys vs bot commands vs PersistentView SUBSYSTEM
             # vs interaction_router prefixes vs panel_anchors rows.
-            # WARN-only — findings are logged but do not abort startup.
+            #
+            # PR I1a: the orchestrator owns summary logging and metric
+            # emission.  The validator emits per-finding WARNINGs for
+            # diagnostic detail; here we add a tiered summary and bump
+            # ``identity_contract_findings_total`` so drift is visible in
+            # Prometheus.  Startup remains non-fatal in I1a; STRICT
+            # enforcement (abort on fatal findings) is deferred to I1b.
             try:
-                from utils.subsystem_registry import validate_identity_contract
+                from services import metrics as _metrics
+                from utils.subsystem_registry import (
+                    summarize_findings,
+                    validate_identity_contract,
+                )
 
-                await validate_identity_contract(bot)
+                findings = await validate_identity_contract(bot)
+                summary = summarize_findings(findings)
+                for kind, count in summary["by_kind"].items():
+                    if count:
+                        _metrics.identity_contract_findings_total.labels(
+                            kind=kind,
+                        ).inc(count)
+                if summary["total"] == 0:
+                    logger.info(
+                        "Identity-contract: clean (all four surfaces agree).",
+                    )
+                else:
+                    log_fn = (
+                        logger.warning
+                        if summary["by_tier"]["fatal"]
+                        else logger.info
+                    )
+                    log_fn(
+                        "Identity-contract findings | total=%d | fatal=%d | "
+                        "auto_healable=%d | warn_only=%d | by_kind=%s | "
+                        "STRICT abort-on-fatal is deferred to I1b",
+                        summary["total"],
+                        summary["by_tier"]["fatal"],
+                        summary["by_tier"]["auto_healable"],
+                        summary["by_tier"]["warn_only"],
+                        summary["by_kind"],
+                    )
             except Exception as exc:
                 logger.warning("Identity-contract validation skipped: %s", exc)
 
