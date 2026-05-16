@@ -4,7 +4,6 @@ import logging
 import math
 
 import discord
-from core.runtime import panel_manager
 from core.runtime.persistent_views import PersistentView, register
 from discord.ext import commands
 from services import governance_service
@@ -436,7 +435,28 @@ class HelpCog(commands.Cog):
 
         view = HelpPanelView(visible_list, page=0)
         embed = _build_page_embed(self.bot, visible_list, 0, member_tier)
-        await panel_manager.get_or_render_panel(ctx, "help", embed, view)
+
+        # The help panel is invoke-and-see, not a stable hub: each !help should
+        # appear at the bottom of the channel where the user just typed.
+        # Delete any prior anchored help message so the new one is the only
+        # active panel and the channel doesn't accumulate dead help embeds.
+        from core.runtime import message_anchor_manager
+
+        old_anchor = await message_anchor_manager.get(
+            ctx.author.id, ctx.channel.id, "help"
+        )
+        if old_anchor and not old_anchor["is_stale"]:
+            try:
+                old_msg = await ctx.channel.fetch_message(old_anchor["message_id"])
+                await old_msg.delete()
+            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                pass
+            await message_anchor_manager.mark_stale(str(old_anchor["anchor_id"]))
+
+        msg = await ctx.send(embed=embed, view=view)
+        await message_anchor_manager.upsert(
+            ctx.author.id, ctx.guild.id, ctx.channel.id, "help", msg.id
+        )
 
 
 async def setup(bot: commands.Bot):
