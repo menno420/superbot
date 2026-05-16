@@ -50,22 +50,30 @@ async def save(
     channel_id: int,
     subsystem: str,
     state: dict[str, Any],
+    *,
+    version: int = 1,
 ) -> None:
     """Upsert a game-state checkpoint.
 
     The state dict is JSON-encoded; only JSON-safe primitives (int,
     str, bool, None, list, dict of strings) are supported.
+
+    PR G0: the ``version`` column lets adopting cogs detect schema
+    drift across deploys.  On load, an adopting cog should compare
+    the stored version to its current schema version and decide
+    whether to resume the game or refund + clear.
     """
     payload = json.dumps(state)
     await pool.execute(
         """INSERT INTO game_state
-             (guild_id, user_id, channel_id, subsystem, state)
-           VALUES ($1, $2, $3, $4, $5::jsonb)
+             (guild_id, user_id, channel_id, subsystem, state, version)
+           VALUES ($1, $2, $3, $4, $5::jsonb, $6)
            ON CONFLICT (guild_id, user_id, channel_id, subsystem)
            DO UPDATE SET
                state      = EXCLUDED.state,
+               version    = EXCLUDED.version,
                updated_at = NOW()""",
-        (guild_id, user_id, channel_id, subsystem, payload),
+        (guild_id, user_id, channel_id, subsystem, payload, version),
     )
 
 
@@ -114,18 +122,18 @@ async def list_active_for_subsystem(
 
     Used at cog_load to enumerate games that need restoring.  Each
     row dict contains: guild_id, user_id, channel_id, state (decoded
-    dict), updated_at.
+    dict), version, updated_at.
     """
     if guild_id is None:
         rows = await pool.get().fetch(
-            """SELECT guild_id, user_id, channel_id, state, updated_at
+            """SELECT guild_id, user_id, channel_id, state, version, updated_at
                FROM game_state
                WHERE subsystem=$1""",
             subsystem,
         )
     else:
         rows = await pool.get().fetch(
-            """SELECT guild_id, user_id, channel_id, state, updated_at
+            """SELECT guild_id, user_id, channel_id, state, version, updated_at
                FROM game_state
                WHERE subsystem=$1 AND guild_id=$2""",
             subsystem,
@@ -141,7 +149,61 @@ async def list_active_for_subsystem(
                 "user_id": r["user_id"],
                 "channel_id": r["channel_id"],
                 "state": state,
+                "version": r["version"],
                 "updated_at": r["updated_at"],
             },
         )
     return result
+
+
+# ---------------------------------------------------------------------------
+# GC helpers (PR G0) — used by session_gc to prune stale checkpoints.
+# ---------------------------------------------------------------------------
+
+GAME_STATE_TTL_HOURS: int = 24
+
+
+async def list_stale(cutoff_hours: int = GAME_STATE_TTL_HOURS) -> list[dict[str, Any]]:
+    """Return every game_state row older than *cutoff_hours*.
+
+    Used by session_gc to find checkpoints that survived past their
+    expected lifetime — usually because the bot crashed mid-game and
+    the cog never called ``clear``.  Each returned dict includes the
+    synthetic row ``id`` so the GC can issue precise per-row deletes
+    via :func:`clear_by_id` (the natural key may have been reused by
+    a brand-new game with the same player/channel/subsystem).
+    """
+    rows = await pool.get().fetch(
+        """SELECT id, guild_id, user_id, channel_id, subsystem,
+                  state, version, updated_at
+             FROM game_state
+            WHERE updated_at < NOW() - make_interval(hours => $1)""",
+        cutoff_hours,
+    )
+    result: list[dict[str, Any]] = []
+    for r in rows:
+        raw = r["state"]
+        state = json.loads(raw) if isinstance(raw, str) else raw
+        result.append(
+            {
+                "id": r["id"],
+                "guild_id": r["guild_id"],
+                "user_id": r["user_id"],
+                "channel_id": r["channel_id"],
+                "subsystem": r["subsystem"],
+                "state": state,
+                "version": r["version"],
+                "updated_at": r["updated_at"],
+            },
+        )
+    return result
+
+
+async def clear_by_id(row_id: int) -> None:
+    """Delete a game_state checkpoint by its synthetic ``id``.
+
+    Distinct from :func:`clear` so the GC can target the exact row it
+    listed without racing a freshly-restarted game that already
+    upserted at the same natural key.
+    """
+    await pool.execute("DELETE FROM game_state WHERE id=$1", (row_id,))
