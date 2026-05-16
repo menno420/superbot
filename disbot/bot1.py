@@ -118,10 +118,19 @@ def _identity_contract_strict() -> bool:
     """Return True if ``IDENTITY_CONTRACT_STRICT`` is set to a truthy value.
 
     Accepts ``1`` / ``true`` / ``yes`` / ``on`` (case-insensitive).
-    Any other value, or the env var being unset, returns False.  The
-    flag gates the PR I1b behaviour where fatal-tier identity-contract
-    findings abort startup; in default mode the validator's findings
-    are advisory only.
+    Any other value, or the env var being unset, returns False.
+
+    When True and the startup validator reports any fatal-tier
+    identity-contract finding, the orchestrator emits the webhook
+    alert and raises ``SystemExit(1)`` so the bot refuses to start on
+    drift.  When False (the default), findings are advisory: they
+    surface in logs, the ``identity_contract_findings_total`` metric,
+    and ``!platform identity``, but startup continues.
+
+    Operator recommendation: opt in on production
+    (``IDENTITY_CONTRACT_STRICT=true``) once a clean ``!platform
+    identity`` run has confirmed zero findings under the current cog
+    load.  See ``docs/runtime_contracts.md`` §12.
     """
     raw = os.getenv("IDENTITY_CONTRACT_STRICT", "").strip().lower()
     return raw in ("1", "true", "yes", "on")
@@ -496,7 +505,9 @@ async def main() -> None:
 
                 if summary["total"] == 0:
                     logger.info(
-                        "Identity-contract: clean (all four surfaces agree).",
+                        "Identity-contract: clean (all four surfaces agree). "
+                        "STRICT=%s.",
+                        "on" if strict else "off",
                     )
                 else:
                     log_fn = logger.warning if fatal else logger.info
