@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 import config as _config
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils import db
@@ -266,6 +266,16 @@ class Cleanup(commands.Cog):
         view = _WordMenuView(ctx, self)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the word-list panel)."""
+        if interaction.guild_id not in self._word_cache:
+            await self._load_guild(interaction.guild_id)
+        view = _WordMenuView(help_ctx_shim(interaction), self)
+        return view.build_embed(), view
 
 
 class _AddWordModal(discord.ui.Modal, title="Add Prohibited Word"):  # type: ignore[call-arg]

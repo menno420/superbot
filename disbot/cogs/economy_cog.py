@@ -69,6 +69,15 @@ class EconomyCog(commands.Cog):
         embed = await _build_economy_embed(ctx.author, ctx.guild.id)
         await panel_manager.get_or_render_panel(ctx, "economy", embed, view)
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the economy hub panel)."""
+        view = EconomyPanelView()
+        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
+        return embed, view
+
     # ------------------------------------------------------------------ events
 
     @commands.Cog.listener()

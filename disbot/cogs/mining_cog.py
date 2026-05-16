@@ -182,6 +182,14 @@ class MiningCog(commands.Cog):
         view = MiningHubView()
         await panel_manager.get_or_render_panel(ctx, "mining", view.build_embed(), view)
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the mining hub panel)."""
+        view = MiningHubView()
+        return view.build_embed(), view
+
     @commands.command()
     async def mine(self, ctx):
         """Start mining with interactive buttons."""

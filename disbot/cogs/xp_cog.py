@@ -7,7 +7,7 @@ import time
 import discord
 from discord.ext import commands
 
-from core.runtime.interaction_helpers import safe_defer, safe_edit
+from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
 from services import xp_service
 from utils import db
 from utils import embeds as em
@@ -283,6 +283,15 @@ class XpCog(commands.Cog):
         embed = await view.build_embed()
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the XP hub panel)."""
+        view = _XpHubView(help_ctx_shim(interaction))
+        embed = await view.build_embed()
+        return embed, view
 
     # ------------------------------------------------------------------ events
 

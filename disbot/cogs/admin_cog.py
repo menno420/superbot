@@ -9,7 +9,7 @@ import sys
 import discord
 from discord.ext import commands
 
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
@@ -66,6 +66,14 @@ class AdminCog(commands.Cog):
         view = _AdminPanelView(ctx, self)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the admin control panel)."""
+        view = _AdminPanelView(help_ctx_shim(interaction), self)
+        return view.build_embed(), view
 
     # ------------------------------------------------------------------
     # Server Statistics

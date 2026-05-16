@@ -19,6 +19,27 @@ from utils.ui_constants import MOD_COLOR
 logger = logging.getLogger("bot")
 
 
+def _build_mod_panel_embed() -> discord.Embed:
+    return stats_block(
+        "🔨 Moderation Panel",
+        [
+            ("⚠️ Warn", "Issue a warning (auto-timeout at 3)", True),
+            ("⏳ Timeout", "Temporarily mute for N minutes", True),
+            ("👢 Kick", "Remove from server", True),
+            ("🚫 Ban", "Permanently ban", True),
+            ("✅ Unban", "Lift a ban by user ID", True),
+            ("📋 Mod Logs", "View moderation history", True),
+            ("⬛ Clear Warnings", "Reset warning count", True),
+        ],
+        MOD_COLOR,
+        description=(
+            "Click a button to take a moderation action.\n"
+            "You'll be prompted to enter the user and reason."
+        ),
+        footer="Any staff member with Moderate Members permission may use this panel.",
+    )
+
+
 def _can_act_on_interaction(
     interaction: discord.Interaction,
     member: Member,
@@ -504,26 +525,16 @@ class ModerationCog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def mod_menu(self, ctx):
         """Show the interactive moderation action panel."""
-        embed = stats_block(
-            "🔨 Moderation Panel",
-            [
-                ("⚠️ Warn", "Issue a warning (auto-timeout at 3)", True),
-                ("⏳ Timeout", "Temporarily mute for N minutes", True),
-                ("👢 Kick", "Remove from server", True),
-                ("🚫 Ban", "Permanently ban", True),
-                ("✅ Unban", "Lift a ban by user ID", True),
-                ("📋 Mod Logs", "View moderation history", True),
-                ("⬛ Clear Warnings", "Reset warning count", True),
-            ],
-            MOD_COLOR,
-            description=(
-                "Click a button to take a moderation action.\n"
-                "You'll be prompted to enter the user and reason."
-            ),
-            footer="Any staff member with Moderate Members permission may use this panel.",
-        )
+        embed = _build_mod_panel_embed()
         view = ModPanelView()
         await panel_manager.get_or_render_panel(ctx, "moderation", embed, view)
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the moderation panel)."""
+        return _build_mod_panel_embed(), ModPanelView()
 
     # ------------------------------------------------------------------
     # Traditional text commands (kept for direct use)
