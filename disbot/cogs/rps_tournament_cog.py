@@ -853,9 +853,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                 await cleanup_category(cat)
 
     def cog_unload(self):
-        """Cleanup when the cog is unloaded."""
+        """Cancel reminder + all spawned RPS tasks so a reload doesn't leak them."""
         if self.reminder_task and not self.reminder_task.done():
             self.reminder_task.cancel()
+        tasks.cancel_by_prefix("rps:")
 
     # ------------------------------------------------------------------
     # Quick-play RPS with coins (button-based, single-player vs bot)

@@ -20,6 +20,11 @@ class ProofChannelCog(commands.Cog):
         # track timed prize tasks so they can be cancelled if needed
         self._timed_tasks: dict[int, asyncio.Task] = {}
 
+    def cog_unload(self):
+        """Cancel auto-unlock tasks so a reload doesn't leave winners locked out."""
+        tasks.cancel_by_prefix("proof:")
+        self._timed_tasks.clear()
+
     def get_proof_channel(self, guild: discord.Guild) -> discord.TextChannel | None:
         return discord.utils.get(guild.text_channels, name="proof")
 

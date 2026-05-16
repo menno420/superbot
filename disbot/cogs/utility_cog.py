@@ -28,6 +28,14 @@ class UtilityCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def cog_unload(self):
+        """Cancel pending reminders so a reload doesn't leak them.
+
+        Reminders are in-memory only; a reload would lose state regardless,
+        so cancellation matches the user expectation.
+        """
+        tasks.cancel_by_prefix("utility:")
+
     @commands.command(name="utilitymenu")
     async def utility_menu(self, ctx):
         """Open the interactive utility panel."""

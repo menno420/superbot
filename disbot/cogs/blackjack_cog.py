@@ -882,6 +882,10 @@ class BlackjackCog(commands.Cog):
     async def cog_load(self):
         tasks.spawn("blackjack:cleanup_orphaned", self._cleanup_orphaned_tournaments())
 
+    def cog_unload(self):
+        """Cancel cleanup + tournament-timer tasks so a reload doesn't leak them."""
+        tasks.cancel_by_prefix("blackjack:")
+
     async def _cleanup_orphaned_tournaments(self):
         """On startup, find leftover BJ Tournament categories and notify players."""
         await self.bot.wait_until_ready()
