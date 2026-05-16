@@ -7,6 +7,7 @@ import time
 import discord
 from discord.ext import commands
 
+from services import xp_service
 from utils import db
 from utils import embeds as em
 from utils.cooldowns import check_cooldown
@@ -219,15 +220,15 @@ class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
                 ephemeral=True,
             )
             return
-        new_xp, new_level, _ = await db.add_xp(
-            member.id,
-            interaction.guild_id,
-            amount,
-            0,
+        result = await xp_service.award(
+            guild_id=interaction.guild_id,
+            user_id=member.id,
+            amount=amount,
+            source="admin:modal_grant",
         )
         await interaction.response.send_message(
             f"✅ Gave **{amount}** XP to {member.mention}. "
-            f"Now **{new_xp}** XP (Level **{new_level}**).",
+            f"Now **{result.new_xp}** XP (Level **{result.new_level}**).",
             ephemeral=True,
         )
 
@@ -393,10 +394,15 @@ class XpCog(commands.Cog):
         if amount <= 0:
             await ctx.send(embed=em.error("Amount must be positive."), delete_after=5)
             return
-        new_xp, new_level, _ = await db.add_xp(member.id, ctx.guild.id, amount, 0)
+        result = await xp_service.award(
+            guild_id=ctx.guild.id,
+            user_id=member.id,
+            amount=amount,
+            source="admin:givexp",
+        )
         await ctx.send(
             f"✅ Gave **{amount}** XP to {member.mention}. "
-            f"They now have **{new_xp}** XP (Level **{new_level}**).",
+            f"They now have **{result.new_xp}** XP (Level **{result.new_level}**).",
         )
 
     @commands.command(name="resetxp")
