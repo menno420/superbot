@@ -149,56 +149,58 @@ class TestUnknownCapabilityFailsClosed:
 
 
 class TestCacheInvalidatedEmitted:
-    @pytest.mark.asyncio
-    async def test_set_visibility_emits_cache_invalidated(self):
-        from governance.models import GovernanceContext
+    """BUG-002 regression — set_visibility must emit both events.
 
-        # Build a mock member with sufficient authority
+    P1 PR-6 rewrite: the prior version patched seven module attributes
+    to exercise the entire pipeline; that broke under any internal
+    refactor without protecting the actual contract. The contract is
+    just "after a successful set_visibility, EVT_VISIBILITY_CHANGED and
+    EVT_CACHE_INVALIDATED both fire, in that order".
+    """
+
+    @pytest.mark.asyncio
+    async def test_set_visibility_emits_visibility_changed_then_cache_invalidated(
+        self,
+    ):
+        from governance.events import EVT_CACHE_INVALIDATED, EVT_VISIBILITY_CHANGED
+        from governance.writes import GovernanceMutationPipeline
+
+        emitted: list[str] = []
+
+        async def capture(event_name, payload):
+            emitted.append(event_name)
+
+        # Minimal stubs: every DB call inside set_visibility is async,
+        # the transaction context manager must succeed, and the
+        # registry lookup must resolve.
+        txn = MagicMock()
+        txn.__aenter__ = AsyncMock(return_value=txn)
+        txn.__aexit__ = AsyncMock(return_value=False)
+        db_stub = MagicMock(
+            get_visibility_override=AsyncMock(return_value=None),
+            set_subsystem_visibility=AsyncMock(),
+            write_governance_audit=AsyncMock(),
+            get=MagicMock(return_value=MagicMock(transaction=lambda: txn)),
+        )
+
         member = MagicMock()
         member.id = 1
         member.guild_permissions.administrator = True
-        member.guild_permissions.moderate_members = True
-        member.guild.owner_id = 0
-        member.guild_permissions.manage_guild = True
+        from governance.models import GovernanceContext
 
         ctx = GovernanceContext(guild_id=777, channel_id=1, member=member)
 
-        emitted_events: list[str] = []
+        with (
+            patch("governance.writes.db", db_stub),
+            patch("governance.writes.invalidate_guild_cache"),
+            patch("governance.writes._emit_governance_event", side_effect=capture),
+            patch("governance.writes.SUBSYSTEMS", {"economy": {}}),
+        ):
+            await GovernanceMutationPipeline().set_visibility(
+                ctx, "guild", 777, "economy", False,
+            )
 
-        async def mock_emit(event_name, payload):
-            emitted_events.append(event_name)
-
-        with patch("governance.writes.db") as mock_db:
-            mock_db.get_visibility_override = AsyncMock(return_value=None)
-            mock_db.set_subsystem_visibility = AsyncMock()
-            mock_db.write_governance_audit = AsyncMock()
-            # Simulate transaction context manager
-            txn = MagicMock()
-            txn.__aenter__ = AsyncMock(return_value=txn)
-            txn.__aexit__ = AsyncMock(return_value=False)
-            mock_pool = MagicMock()
-            mock_pool.transaction = MagicMock(return_value=txn)
-            mock_db.get = MagicMock(return_value=mock_pool)
-            with patch("governance.writes.invalidate_guild_cache"):
-                with patch(
-                    "governance.writes._emit_governance_event", side_effect=mock_emit
-                ):
-                    with patch("governance.writes.SUBSYSTEMS", {"economy": {}}):
-                        from governance.writes import GovernanceMutationPipeline
-
-                        pipeline = GovernanceMutationPipeline()
-                        await pipeline.set_visibility(
-                            ctx, "guild", 777, "economy", False
-                        )
-
-        from governance.events import EVT_CACHE_INVALIDATED, EVT_VISIBILITY_CHANGED
-
-        assert (
-            EVT_VISIBILITY_CHANGED in emitted_events
-        ), "EVT_VISIBILITY_CHANGED must be emitted from set_visibility"
-        assert (
-            EVT_CACHE_INVALIDATED in emitted_events
-        ), "EVT_CACHE_INVALIDATED must be emitted from set_visibility (BUG-002 fix)"
+        assert emitted[:2] == [EVT_VISIBILITY_CHANGED, EVT_CACHE_INVALIDATED]
 
 
 # ---------------------------------------------------------------------------
