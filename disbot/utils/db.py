@@ -1183,6 +1183,32 @@ async def set_session_state(session_id: str, key: str, value: object) -> None:
     )
 
 
+async def set_session_state_many(
+    session_id: str,
+    items: dict[str, object],
+) -> None:
+    """Upsert several state keys for *session_id* atomically.
+
+    Wraps the per-key upserts in a single transaction so a network hiccup
+    mid-batch cannot leave the session in a partial state. Empty *items*
+    is a no-op.
+    """
+    if not items:
+        return
+    pool = get()
+    async with pool.acquire() as conn, conn.transaction():
+        for key, value in items.items():
+            await conn.execute(
+                """INSERT INTO runtime_session_state (session_id, key, value)
+                   VALUES ($1, $2, $3)
+                   ON CONFLICT (session_id, key) DO UPDATE
+                     SET value = EXCLUDED.value""",
+                session_id,
+                key,
+                value,
+            )
+
+
 async def delete_session_state(session_id: str, key: str) -> None:
     """Remove a single state key from a session."""
     await get().execute(
