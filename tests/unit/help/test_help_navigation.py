@@ -97,9 +97,9 @@ def test_every_subsystem_has_at_least_one_matching_command():
 def test_general_cog_has_generalmenu():
     """The General cog must register the generalmenu command (registry contract)."""
     cog_commands = _commands_declared_in_cogs()
-    assert "generalmenu" in cog_commands, (
-        "general_cog.py must define @commands.command(name='generalmenu')"
-    )
+    assert (
+        "generalmenu" in cog_commands
+    ), "general_cog.py must define @commands.command(name='generalmenu')"
 
 
 def test_general_cog_has_build_help_menu_view():
@@ -208,9 +208,9 @@ def test_apply_template_uses_pipeline():
     from governance import templates as templates_module
 
     src = inspect.getsource(templates_module.apply_template)
-    assert "GovernanceMutationPipeline" in src or "pipeline." in src, (
-        "apply_template must route through GovernanceMutationPipeline (INV-003)"
-    )
+    assert (
+        "GovernanceMutationPipeline" in src or "pipeline." in src
+    ), "apply_template must route through GovernanceMutationPipeline (INV-003)"
     # Must NOT bypass pipeline with direct db.set_* calls.
     assert "db.set_subsystem_visibility" not in src, (
         "apply_template must not call db.set_subsystem_visibility directly — "
