@@ -5,6 +5,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
+from core.runtime import tasks
 from utils import embeds as em
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import BaseView
@@ -147,7 +148,10 @@ class UtilityCog(commands.Cog):
             )
             return
         await ctx.send(f"⏳ Reminder set for **{time}** minute(s): {message}")
-        asyncio.create_task(_remind_later(ctx.author, ctx.channel, time * 60, message))
+        tasks.spawn(
+            f"utility:remind:{ctx.author.id}",
+            _remind_later(ctx.author, ctx.channel, time * 60, message),
+        )
 
     @commands.command(name="invite")
     @commands.has_permissions(create_instant_invite=True)
@@ -396,7 +400,8 @@ class _RemindModal(discord.ui.Modal, title="Set Reminder"):  # type: ignore[call
             f"⏳ Reminder set for **{t}** minute(s): {self.message.value}",
             ephemeral=True,
         )
-        asyncio.create_task(
+        tasks.spawn(
+            f"utility:remind:{self.user.id}",
             _remind_later(self.user, self.channel, t * 60, self.message.value),
         )
 

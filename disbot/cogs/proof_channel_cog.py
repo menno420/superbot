@@ -6,6 +6,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import tasks
 from utils.helpers import _parse_member
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.base import BaseView
@@ -135,7 +136,7 @@ class ProofChannelCog(commands.Cog):
             finally:
                 self._timed_tasks.pop(ctx.guild.id, None)
 
-        task = asyncio.create_task(_auto_unlock())
+        task = tasks.spawn(f"proof:unlock:{ctx.guild.id}", _auto_unlock())
         self._timed_tasks[ctx.guild.id] = task
 
 
@@ -217,7 +218,8 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
             finally:
                 self.cog._timed_tasks.pop(interaction.guild_id, None)
 
-        self.cog._timed_tasks[interaction.guild_id] = asyncio.create_task(
+        self.cog._timed_tasks[interaction.guild_id] = tasks.spawn(
+            f"proof:unlock:{interaction.guild_id}",
             _auto_unlock(),
         )
         await interaction.response.send_message(

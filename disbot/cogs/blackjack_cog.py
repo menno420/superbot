@@ -7,6 +7,7 @@ import random
 import discord
 from discord.ext import commands
 
+from core.runtime import tasks
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -825,7 +826,7 @@ class BlackjackCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self):
-        asyncio.create_task(self._cleanup_orphaned_tournaments())
+        tasks.spawn("blackjack:cleanup_orphaned", self._cleanup_orphaned_tournaments())
 
     async def _cleanup_orphaned_tournaments(self):
         """On startup, find leftover BJ Tournament categories and notify players."""
@@ -989,7 +990,10 @@ class BlackjackCog(commands.Cog):
             if not tourn.started and tourn.guild_id in _tournaments:
                 await _launch_tournament(tourn, ctx.guild, ctx.bot)
 
-        tourn.timer_task = asyncio.create_task(_auto_start())
+        tourn.timer_task = tasks.spawn(
+            f"blackjack:autostart:{tourn.guild_id}",
+            _auto_start(),
+        )
 
     @commands.command(name="bjstart")
     @commands.has_permissions(administrator=True)

@@ -7,6 +7,7 @@ import random
 import discord
 from discord.ext import commands
 
+from core.runtime import tasks
 from utils import db as global_db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -68,8 +69,8 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         }
 
     async def cog_load(self) -> None:
-        asyncio.create_task(self._clear_stale_tournament_flag())
-        asyncio.create_task(self._cleanup_orphaned_channels())
+        tasks.spawn("rps:clear_stale_flag", self._clear_stale_tournament_flag())
+        tasks.spawn("rps:cleanup_orphaned", self._cleanup_orphaned_channels())
 
     async def _clear_stale_tournament_flag(self) -> None:
         await self.bot.wait_until_ready()
@@ -127,7 +128,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         await self.registration_message.add_reaction(self.registration_emoji)
 
         # Start the registration timer
-        self.reminder_task = asyncio.create_task(self.registration_countdown(ctx))
+        self.reminder_task = tasks.spawn(
+            f"rps:countdown:{ctx.guild.id}",
+            self.registration_countdown(ctx),
+        )
 
     async def registration_countdown(self, ctx):
         """Handles the registration timer and reminders."""
@@ -682,7 +686,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
 
     def update_player_stats(self, player, result: str) -> None:
         """Schedule an async stats update without blocking the event loop."""
-        asyncio.create_task(self._async_update_stat(player.id, result))
+        tasks.spawn(
+            f"rps:stat:{player.id}",
+            self._async_update_stat(player.id, result),
+        )
 
     async def _async_update_stat(self, user_id: int, result: str) -> None:
         try:

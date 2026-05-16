@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, Any
 import discord
 
 from core.events import bus
+from core.runtime import tasks
 from services import metrics as _metrics
 from utils import db
 
@@ -122,7 +123,8 @@ async def _on_event(event: str, **payload: Any) -> None:
 
         for anchor in anchors:
             for refresh_fn in refresh_fns:
-                asyncio.create_task(
+                tasks.spawn(
+                    f"panel_refresh:{subsystem}:{anchor['message_id']}",
                     _refresh_panel(
                         _bot,
                         refresh_fn,
@@ -132,7 +134,6 @@ async def _on_event(event: str, **payload: Any) -> None:
                         anchor["message_id"],
                         subsystem,
                     ),
-                    name=f"panel_refresh:{subsystem}:{anchor['message_id']}",
                 )
 
 

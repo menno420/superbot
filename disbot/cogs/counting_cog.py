@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
+from core.runtime import tasks
 from utils import db
 from views.base import BaseView
 
@@ -270,7 +271,7 @@ class CountingCog(commands.Cog):
 
     async def cog_load(self):
         """Schedule DB state load for after the bot is connected."""
-        asyncio.create_task(self._load_when_ready())
+        tasks.spawn("counting:load_when_ready", self._load_when_ready())
 
     async def _load_when_ready(self):
         await self.bot.wait_until_ready()
@@ -484,7 +485,7 @@ class CountingCog(commands.Cog):
                 )  # Optional: Track prime numbers if needed
 
             self.count_data[guild_id]["channels"][channel_id] = channel_config
-            asyncio.create_task(self._save_guild(guild_id))
+            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
         await ctx.send(
             f"Started a **{mode.capitalize()}** counting match in {channel.mention}!",
@@ -534,7 +535,7 @@ class CountingCog(commands.Cog):
 
             # Remove channel data
             del self.count_data[guild_id]["channels"][channel_id]
-            asyncio.create_task(self._save_guild(guild_id))
+            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
         await ctx.send(
             f"Ended and deleted the counting match in {channel.name}.",
@@ -588,7 +589,7 @@ class CountingCog(commands.Cog):
             if mode == "random":
                 rand_range = channel_data.get("random_range", [1, 3])
                 channel_data["next_expected"] = start + random.randint(*rand_range)
-            asyncio.create_task(self._save_guild(guild_id))
+            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
         await ctx.send(
             f"The count has been reset in {channel.mention}.",
@@ -617,7 +618,7 @@ class CountingCog(commands.Cog):
 
             channel_data = self.count_data[guild_id]["channels"][channel_id]
             channel_data["taking_turns"] = not channel_data.get("taking_turns", False)
-            asyncio.create_task(self._save_guild(guild_id))
+            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
             status = "enabled" if channel_data["taking_turns"] else "disabled"
         await ctx.send(
@@ -735,7 +736,7 @@ class CountingCog(commands.Cog):
             try:
                 skip_numbers = [int(num.strip()) for num in numbers.split(",")]
                 channel_data["skip_numbers"] = skip_numbers
-                asyncio.create_task(self._save_guild(guild_id))
+                tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
                 await ctx.send(
                     f"Skip numbers updated to: {skip_numbers}",
                     delete_after=10,
@@ -777,7 +778,7 @@ class CountingCog(commands.Cog):
                 "reset_on_wrong_count",
                 False,
             )
-            asyncio.create_task(self._save_guild(guild_id))
+            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
             status = "enabled" if channel_data["reset_on_wrong_count"] else "disabled"
         await ctx.send(
@@ -869,7 +870,7 @@ class CountingCog(commands.Cog):
                     channel_data["last_count_time"] = datetime.now(
                         tz=timezone.utc,
                     ).timestamp()
-                    asyncio.create_task(self._save_guild(guild_id))
+                    tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
                     await message.channel.send(
                         f"{message.author.mention}, incorrect count! The count has been reset.",
@@ -935,7 +936,7 @@ class CountingCog(commands.Cog):
             leaderboard = channel_data.get("leaderboard", {})
             leaderboard[user_id] = leaderboard.get(user_id, 0) + 1
             channel_data["leaderboard"] = leaderboard
-            asyncio.create_task(self._save_guild(guild_id))
+            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
         # Add reaction to acknowledge correct count
         try:
@@ -1298,7 +1299,7 @@ class _CountingHubView(BaseView):
                 )
                 return
             ch_data["taking_turns"] = not ch_data.get("taking_turns", False)
-            asyncio.create_task(self.cog._save_guild(gid))
+            tasks.spawn(f"counting:save:{gid}", self.cog._save_guild(gid))
         await interaction.response.edit_message(
             embed=await self.build_embed(),
             view=self,
@@ -1328,7 +1329,7 @@ class _CountingHubView(BaseView):
                 "reset_on_wrong_count",
                 False,
             )
-            asyncio.create_task(self.cog._save_guild(gid))
+            tasks.spawn(f"counting:save:{gid}", self.cog._save_guild(gid))
         await interaction.response.edit_message(
             embed=await self.build_embed(),
             view=self,
@@ -1360,7 +1361,7 @@ class _CountingHubView(BaseView):
             if mode == "random":
                 rand_range = ch_data.get("random_range", [1, 3])
                 ch_data["next_expected"] = start + random.randint(*rand_range)
-            asyncio.create_task(self.cog._save_guild(gid))
+            tasks.spawn(f"counting:save:{gid}", self.cog._save_guild(gid))
         await interaction.response.edit_message(
             embed=await self.build_embed(),
             view=self,
