@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import tasks
+from services import economy_service
 from utils import db as global_db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -718,11 +719,21 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             pot = self.entry_fee * len(self.paid_players)
             msg_lines = [f"🏆 **{winner.display_name}** has won the RPS Tournament! 🏆"]
             if pot:
-                new_bal = await global_db.add_coins(winner.id, guild.id, pot)
+                new_bal = await economy_service.credit(
+                    guild.id,
+                    winner.id,
+                    pot,
+                    reason="rps:tournament_win",
+                )
                 msg_lines.append(f"💰 Payout: **{pot}** 🪙 (Balance: {new_bal} 🪙)")
             elif self.entry_fee == 0:
                 reward = 100
-                new_bal = await global_db.add_coins(winner.id, guild.id, reward)
+                new_bal = await economy_service.credit(
+                    guild.id,
+                    winner.id,
+                    reward,
+                    reason="rps:tournament_free_reward",
+                )
                 msg_lines.append(f"🎁 Free tournament reward: **{reward}** 🪙")
             announce = guild.system_channel or last_channel
             await announce.send("\n".join(msg_lines))

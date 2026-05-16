@@ -10,6 +10,7 @@ from discord.ext import commands
 from core.runtime import panel_manager
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
+from services import economy_service
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
@@ -340,7 +341,13 @@ class EconomyCog(commands.Cog):
 
         amount, tier_label, tier_emoji = _pick_daily(streak)
         new_count = row["daily_count"] + 1
-        new_bal = await db.add_coins(uid, gid, amount)
+        new_bal = await economy_service.credit(
+            gid,
+            uid,
+            amount,
+            reason="daily",
+            actor_id=uid,
+        )
         await db.set_economy(
             uid,
             gid,
@@ -593,7 +600,13 @@ class EconomyPanelView(PersistentView):
 
         amount, tier_label, tier_emoji = _pick_daily(streak)
         new_count = row["daily_count"] + 1
-        new_bal = await db.add_coins(uid, gid, amount)
+        new_bal = await economy_service.credit(
+            gid,
+            uid,
+            amount,
+            reason="daily",
+            actor_id=uid,
+        )
         await db.set_economy(
             uid,
             gid,
@@ -872,7 +885,13 @@ class _JobSelect(discord.ui.Select):
         xp_gain = job["xp"]
 
         new_times = await db.increment_job(uid, gid, job_name)
-        new_bal = await db.add_coins(uid, gid, pay)
+        new_bal = await economy_service.credit(
+            gid,
+            uid,
+            pay,
+            reason=f"work:{job_name}",
+            actor_id=uid,
+        )
         new_xp, new_lv, lvup = await db.add_xp(uid, gid, xp_gain, now)
         await db.set_economy(uid, gid, last_worked=now)
 

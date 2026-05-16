@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from core.runtime import tasks
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
+from services import economy_service
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -798,7 +799,12 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         color=ECONOMY_COLOR,
     )
     if winner_id and pot:
-        new_bal = await db.add_coins(winner_id, tourn.guild_id, pot)
+        new_bal = await economy_service.credit(
+            tourn.guild_id,
+            winner_id,
+            pot,
+            reason="blackjack:tournament_win",
+        )
         embed.add_field(
             name="Winner's payout",
             value=f"<@{winner_id}> receives **{pot}** 🪙 (Balance: {new_bal} 🪙)",
@@ -806,7 +812,12 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         )
     elif winner_id and not pot:
         reward = 200
-        new_bal = await db.add_coins(winner_id, tourn.guild_id, reward)
+        new_bal = await economy_service.credit(
+            tourn.guild_id,
+            winner_id,
+            reward,
+            reason="blackjack:tournament_free_reward",
+        )
         embed.add_field(
             name="Winner's reward",
             value=f"<@{winner_id}> receives **{reward}** 🪙 (Balance: {new_bal} 🪙)",
