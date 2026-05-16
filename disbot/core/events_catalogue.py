@@ -50,9 +50,10 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         EVT_CLEANUP_CHANGED,
         EVT_EXECUTION_ALLOWED,
         EVT_EXECUTION_DENIED,
+        # ── Economy (services/economy_service.py) ────────────────────────
+        "economy.balance_changed",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
-        # "economy.balance_changed",
         # "xp.awarded",
         # "xp.level_up",
         # "mining.harvested",
