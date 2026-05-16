@@ -216,7 +216,7 @@ class _TriviaRevealView(BaseView):
 
 
 class _EightBallModal(discord.ui.Modal, title="🎱 Magic 8-Ball"):  # type: ignore[call-arg]
-    question = discord.ui.TextInput(
+    question = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Ask a yes/no question",
         placeholder="Will I win the lottery?",
         max_length=200,
