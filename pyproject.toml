@@ -42,6 +42,7 @@ select = [
     "S",                # security (bandit)
     "D",                # docstrings (pydocstyle)
     "ANN",              # type annotations
+    "DTZ003",           # no bare datetime.utcnow() — INV-N
 ]
 ignore = [
     # Pydocstyle layout knobs that conflict with the google convention.

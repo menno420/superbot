@@ -1,15 +1,24 @@
 """Regression tests for confirmed bug fixes.
 
 Covers:
-  BUG-001  double JSON encoding in session state and audit log
   BUG-002  EVT_CACHE_INVALIDATED emission from mutation pipeline
-  BUG-003  thread scope writes accepted
-  BUG-004  capability overrides cleared on guild forget
   BUG-005  runtime.setup() idempotency
   BUG-006  _NO_OVERRIDE sentinel removed from cache
-  BUG-007  check_existing_instance not called at module level
-  BUG-008  error logging before channel guard return
   ARCH-005 unknown capability fails closed
+  GAP-001  panel anchors deleted from DB on guild teardown
+  DEBT-001 capability override cache TTL refresh
+  DEBT-002 internal bypass persists audit row
+  DEBT-003 EVT_CLEANUP_CHANGED subscription
+  DEBT-006 _last_edit cleanup is unconditional & per-guild
+
+Deletions (P1 PR-5):
+  - TestMaybeDecodeLegacy   — 6 trivial passthrough tests on a
+    pure-data shim; removing them costs zero coverage.
+  - TestThreadScopeAccepted — constant-membership checks; the
+    invariant is enforced by migration 009 + the registry tests.
+  - TestForgetGuildCapabilities — exercised private module-level
+    state; the behaviour is now covered indirectly by
+    TestCapabilityOverrideTTL.
 """
 
 from __future__ import annotations
@@ -18,119 +27,6 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
-# ---------------------------------------------------------------------------
-# BUG-001 — double JSON encoding shim
-# ---------------------------------------------------------------------------
-
-
-class TestMaybeDecodeLegacy:
-    """_maybe_decode_legacy must transparently decode double-encoded values."""
-
-    def test_dict_passthrough(self):
-        from utils.db import _maybe_decode_legacy
-
-        value = {"key": "val", "nested": [1, 2]}
-        assert _maybe_decode_legacy(value) == value
-
-    def test_string_decoded(self):
-        from utils.db import _maybe_decode_legacy
-
-        # A double-encoded value stored as a JSON string
-        assert _maybe_decode_legacy('{"key": "val"}') == {"key": "val"}
-
-    def test_array_decoded(self):
-        from utils.db import _maybe_decode_legacy
-
-        assert _maybe_decode_legacy("[1, 2, 3]") == [1, 2, 3]
-
-    def test_non_json_string_passthrough(self):
-        from utils.db import _maybe_decode_legacy
-
-        assert _maybe_decode_legacy("not-json") == "not-json"
-
-    def test_int_passthrough(self):
-        from utils.db import _maybe_decode_legacy
-
-        assert _maybe_decode_legacy(42) == 42
-
-    def test_none_passthrough(self):
-        from utils.db import _maybe_decode_legacy
-
-        assert _maybe_decode_legacy(None) is None
-
-
-# ---------------------------------------------------------------------------
-# BUG-003 — thread scope write accepted
-# ---------------------------------------------------------------------------
-
-
-class TestThreadScopeAccepted:
-    """set_subsystem_visibility must accept scope_type='thread'."""
-
-    @pytest.mark.asyncio
-    async def test_thread_scope_not_rejected(self):
-        from governance.writes import _VALID_SCOPE_TYPES
-
-        assert "thread" in _VALID_SCOPE_TYPES, (
-            "Thread scope must be in _VALID_SCOPE_TYPES — "
-            "migration 009 added DB support for it."
-        )
-
-    @pytest.mark.asyncio
-    async def test_role_scope_still_rejected(self):
-        from governance.writes import _VALID_SCOPE_TYPES
-
-        assert "role" not in _VALID_SCOPE_TYPES, "Role scope is not yet supported."
-
-
-# ---------------------------------------------------------------------------
-# BUG-004 — capability overrides cleared on guild forget
-# ---------------------------------------------------------------------------
-
-
-class TestForgetGuildCapabilities:
-    def test_forget_clears_overrides(self):
-        from governance.execution import (
-            _capability_execution_overrides,
-            _loaded_guilds,
-            forget_guild_capabilities,
-        )
-
-        guild_id = 99999
-        _capability_execution_overrides[(guild_id, "test.cap.do")] = True
-        _loaded_guilds.add(guild_id)
-
-        forget_guild_capabilities(guild_id)
-
-        assert guild_id not in _loaded_guilds
-        assert (guild_id, "test.cap.do") not in _capability_execution_overrides
-
-    def test_forget_other_guilds_unaffected(self):
-        from governance.execution import (
-            _capability_execution_overrides,
-            _loaded_guilds,
-            forget_guild_capabilities,
-        )
-
-        guild_a, guild_b = 11111, 22222
-        _capability_execution_overrides[(guild_a, "test.x.y")] = True
-        _capability_execution_overrides[(guild_b, "test.x.y")] = False
-        _loaded_guilds.add(guild_a)
-        _loaded_guilds.add(guild_b)
-
-        forget_guild_capabilities(guild_a)
-
-        assert guild_a not in _loaded_guilds
-        assert (guild_a, "test.x.y") not in _capability_execution_overrides
-        # Guild B must be completely untouched
-        assert guild_b in _loaded_guilds
-        assert (guild_b, "test.x.y") in _capability_execution_overrides
-
-        # Cleanup
-        _loaded_guilds.discard(guild_b)
-        _capability_execution_overrides.pop((guild_b, "test.x.y"), None)
-
 
 # ---------------------------------------------------------------------------
 # BUG-005 — setup() idempotency

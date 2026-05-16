@@ -130,7 +130,7 @@ string.  **Do not rename a subsystem in place.**
 | INV-K | Every `asyncio.create_task` outside the entry-point layer uses `core.runtime.tasks.spawn`. | Regression tests `tests/unit/runtime/test_tasks.py`; new naked `create_task` calls trigger code review. |
 | INV-L | Every interaction handler that performs I/O defers within 2 s. | `core.runtime.interaction_helpers.safe_defer` adoption + cog review. |
 | INV-M | No `print()` under `disbot/` (other than `tests/`). | Ruff rule `T20`. |
-| INV-N | No bare `datetime.utcnow()` in production. | `tests/unit/views/test_view_error_handling.test_no_datetime_utcnow_in_production_code`. |
+| INV-N | No bare `datetime.utcnow()` in production. | Ruff rule `DTZ003`. |
 
 ---
 
