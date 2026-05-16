@@ -206,10 +206,16 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         if user.id in self.paid_players or user in self.players:
             return False  # already registered
         if self.entry_fee > 0:
-            bal = await global_db.get_coins(user.id, guild_id)
-            if bal < self.entry_fee:
+            try:
+                await economy_service.debit(
+                    guild_id,
+                    user.id,
+                    self.entry_fee,
+                    reason="rps:entry_fee",
+                    actor_id=user.id,
+                )
+            except economy_service.InsufficientFundsError:
                 return False
-            await global_db.add_coins(user.id, guild_id, -self.entry_fee)
             self.paid_players.add(user.id)
         self.players.append(user)
         self.scores[user] = 0
@@ -942,7 +948,28 @@ class _RpsView(discord.ui.View):
             coin_delta = loss
             color = ERROR_COLOR
 
-        new_bal = await global_db.add_coins(self.user.id, self.guild_id, coin_delta)
+        # Single-player RPS: bet was not pre-deducted, outcome is applied
+        # directly. Positive coin_delta = win (credit), negative = loss (debit
+        # with overdraft to preserve the original floor-at-zero behaviour).
+        if coin_delta > 0:
+            new_bal = await economy_service.credit(
+                self.guild_id,
+                self.user.id,
+                coin_delta,
+                reason="rps:solo_win",
+                actor_id=self.user.id,
+            )
+        elif coin_delta < 0:
+            new_bal = await economy_service.debit(
+                self.guild_id,
+                self.user.id,
+                -coin_delta,
+                reason="rps:solo_loss",
+                actor_id=self.user.id,
+                allow_overdraft=True,
+            )
+        else:
+            new_bal = await global_db.get_coins(self.user.id, self.guild_id)
         embed = discord.Embed(
             title="✂️ Rock · Paper · Scissors",
             description=(
@@ -1206,8 +1233,25 @@ class _RpsPvpPlayView(discord.ui.View):
         if coin_delta and winner_id:
             loser_id = self.p2.id if winner_id == self.p1.id else self.p1.id
             payout = coin_delta if coin_delta else _FREE_WIN
-            await global_db.add_coins(winner_id, self.guild_id, payout)
-            await global_db.add_coins(loser_id, self.guild_id, -payout)
+            # Preserves prior semantics: winner always credited the full
+            # payout; loser debited down to floor-zero if short (overdraft
+            # allowed). Using economy_service.transfer would atomically
+            # reject the move on insufficient loser balance — that is the
+            # safer pattern but a behaviour change; revisit when game
+            # rules formalise bet escrow.
+            await economy_service.credit(
+                self.guild_id,
+                winner_id,
+                payout,
+                reason="rps:pvp_win",
+            )
+            await economy_service.debit(
+                self.guild_id,
+                loser_id,
+                payout,
+                reason="rps:pvp_loss",
+                allow_overdraft=True,
+            )
 
         embed = discord.Embed(
             title="✂️ RPS PvP Result",

@@ -1018,7 +1018,13 @@ class _ShopSelect(discord.ui.Select):
             )
             return
 
-        new_bal = await db.add_coins(uid, gid, -data["price"])
+        new_bal = await economy_service.debit(
+            gid,
+            uid,
+            data["price"],
+            reason=f"shop:{item_name}",
+            actor_id=uid,
+        )
         await db.add_item(uid, gid, item_name)
 
         embed = discord.Embed(
@@ -1112,7 +1118,13 @@ class _ShopPanelSelect(discord.ui.Select):
             )
             return
 
-        new_bal = await db.add_coins(uid, gid, -data["price"])
+        new_bal = await economy_service.debit(
+            gid,
+            uid,
+            data["price"],
+            reason=f"shop:{item_name}",
+            actor_id=uid,
+        )
         await db.add_item(uid, gid, item_name)
 
         embed = discord.Embed(

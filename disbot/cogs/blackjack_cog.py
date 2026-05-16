@@ -241,11 +241,32 @@ class BlackjackView(discord.ui.View):
         embed.color = color
 
         if self.game.tournament_chips is None:
-            new_bal = await db.add_coins(
-                self.game.user_id,
-                self.game.guild_id,
-                coin_delta,
-            )
+            # Solo blackjack: bet is not pre-escrowed, the outcome delta
+            # is applied directly. Sign decides credit vs debit; loss
+            # path keeps overdraft-tolerant flooring to preserve prior
+            # add_coins(GREATEST(0, …)) semantics.
+            if coin_delta > 0:
+                new_bal = await economy_service.credit(
+                    self.game.guild_id,
+                    self.game.user_id,
+                    coin_delta,
+                    reason="blackjack:solo_win",
+                    actor_id=self.game.user_id,
+                )
+            elif coin_delta < 0:
+                new_bal = await economy_service.debit(
+                    self.game.guild_id,
+                    self.game.user_id,
+                    -coin_delta,
+                    reason="blackjack:solo_loss",
+                    actor_id=self.game.user_id,
+                    allow_overdraft=True,
+                )
+            else:
+                new_bal = await db.get_coins(
+                    self.game.user_id,
+                    self.game.guild_id,
+                )
             delta_str = f"+{coin_delta}" if coin_delta >= 0 else str(coin_delta)
             embed.add_field(
                 name=result,
@@ -534,8 +555,22 @@ async def _resolve_pvp(state: _PvPState, channel: discord.TextChannel):
     if coin_change and winner_id:
         loser_id = state.p2 if winner_id == state.p1 else state.p1
         payout = coin_change if coin_change else FREE_WIN_COINS
-        await db.add_coins(winner_id, state.guild_id, payout)
-        await db.add_coins(loser_id, state.guild_id, -payout)
+        # Two-side payout: preserve prior add_coins floor-at-zero
+        # semantics for the loser (overdraft permitted). See the
+        # matching RPS PvP comment for the bet-escrow follow-up.
+        await economy_service.credit(
+            state.guild_id,
+            winner_id,
+            payout,
+            reason="blackjack:pvp_win",
+        )
+        await economy_service.debit(
+            state.guild_id,
+            loser_id,
+            payout,
+            reason="blackjack:pvp_loss",
+            allow_overdraft=True,
+        )
 
     embed = discord.Embed(
         title="🃏 Blackjack PvP Result",
@@ -948,7 +983,13 @@ class BlackjackCog(commands.Cog):
 
         if _is_blackjack(game.player):
             payout = int(bet * 1.5) if bet else FREE_WIN_COINS
-            new_bal = await db.add_coins(ctx.author.id, ctx.guild.id, payout)
+            new_bal = await economy_service.credit(
+                ctx.guild.id,
+                ctx.author.id,
+                payout,
+                reason="blackjack:natural_blackjack",
+                actor_id=ctx.author.id,
+            )
             embed = _game_embed(game, reveal=True)
             embed.color = ECONOMY_COLOR
             embed.add_field(

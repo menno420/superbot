@@ -56,14 +56,30 @@ class TournamentRegistration:
 
         Returns the set of player IDs who successfully paid.
         Players who can no longer afford the fee are removed.
+
+        Routes through services.economy_service so the deductions are
+        audit-logged and emit ``economy.balance_changed`` like every
+        other balance mutation.
         """
         if not self.entry_fee:
             return set(self.players)
+        # Local import — utils.tournaments must not import services at
+        # module load (services may import utils transitively).
+        from services import economy_service
+
         paid: set[int] = set()
         for uid in list(self.players):
-            bal = await db.get_coins(uid, self.guild_id)
-            if bal >= self.entry_fee:
-                await db.add_coins(uid, self.guild_id, -self.entry_fee)
+            try:
+                await economy_service.debit(
+                    self.guild_id,
+                    uid,
+                    self.entry_fee,
+                    reason="tournament:entry_fee",
+                    actor_id=uid,
+                )
                 paid.add(uid)
+            except economy_service.InsufficientFundsError:
+                # Player can no longer afford — silently drop from set.
+                continue
         self.players = paid
         return paid
