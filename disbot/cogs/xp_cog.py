@@ -7,6 +7,7 @@ import time
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from services import xp_service
 from utils import db
 from utils import embeds as em
@@ -610,7 +611,8 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[cal
         gid = self.view.ctx.guild.id
         await db.set_setting(gid, XP_MIN, str(mn))
         await db.set_setting(gid, XP_MAX, str(mx))
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.view._refresh(interaction)
 
 
@@ -637,7 +639,8 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: igno
             )
             return
         await db.set_setting(self.view.ctx.guild.id, XP_COOLDOWN, str(val))
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.view._refresh(interaction)
 
 
@@ -661,7 +664,8 @@ class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"): 
             )
             return
         await db.set_setting(self.view.ctx.guild.id, XP_ANNOUNCE_CHANNEL, val)
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.view._refresh(interaction)
 
 

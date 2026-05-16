@@ -10,6 +10,7 @@ import discord
 import psutil
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils import db
 from views.base import BaseView
 
@@ -118,32 +119,38 @@ class _DiagnosticsHubView(BaseView):
 
     @discord.ui.button(label="🤖 Bot Status", style=discord.ButtonStyle.blurple, row=0)
     async def btn_status(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.diagnostic_bot_status)
 
     @discord.ui.button(label="📡 Latency", style=discord.ButtonStyle.blurple, row=0)
     async def btn_latency(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.latency)
 
     @discord.ui.button(label="💻 System Info", style=discord.ButtonStyle.blurple, row=0)
     async def btn_sysinfo(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.system_info)
 
     @discord.ui.button(label="🗄️ Database", style=discord.ButtonStyle.grey, row=1)
     async def btn_db(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.check_database)
 
     @discord.ui.button(label="📄 JSON Files", style=discord.ButtonStyle.grey, row=1)
     async def btn_json(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.validate_json_files)
 
     @discord.ui.button(label="📋 Commands", style=discord.ButtonStyle.grey, row=1)
     async def btn_cmds(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.list_commands_detailed)
 
     @discord.ui.button(
@@ -152,7 +159,8 @@ class _DiagnosticsHubView(BaseView):
         row=2,
     )
     async def btn_errors(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.recent_errors)
 
     @discord.ui.button(
@@ -161,7 +169,8 @@ class _DiagnosticsHubView(BaseView):
         row=2,
     )
     async def btn_notify(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.ctx.invoke(self.cog.test_notification)
 
 

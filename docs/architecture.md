@@ -128,7 +128,7 @@ string.  **Do not rename a subsystem in place.**
 | INV-I | Migrations are idempotent and run under `pg_advisory_lock`. | `utils/db/migrations.run_migrations`. |
 | INV-J | Cog load failures register the subsystem as INTERNAL. | `bot1._load_cogs`. |
 | INV-K | Every `asyncio.create_task` outside the entry-point layer uses `core.runtime.tasks.spawn`. | Regression tests `tests/unit/runtime/test_tasks.py`; new naked `create_task` calls trigger code review. |
-| INV-L | Every interaction handler that performs I/O defers within 2 s. | `core.runtime.interaction_helpers.safe_defer` adoption + cog review. |
+| INV-L | Every interaction handler that performs I/O defers within 2 s, via `safe_defer`. | `core.runtime.interaction_helpers.safe_defer` + AST scan `tests/unit/invariants/test_no_raw_defer.py` (bans raw `interaction.response.defer(` outside the helper). |
 | INV-M | No `print()` under `disbot/` (other than `tests/`). | Ruff rule `T20`. |
 | INV-N | No bare `datetime.utcnow()` in production. | Ruff rule `DTZ003`. |
 

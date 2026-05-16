@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from core.runtime import panel_manager
 from core.runtime.component_registry import stats_block
+from core.runtime.interaction_helpers import safe_defer
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
 from utils.helpers import _parse_member
@@ -271,7 +272,8 @@ class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-
         super().__init__()
 
     async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         raw = self.user_id_input.value.strip()
         if not raw.isdigit():
             await interaction.followup.send("❌ Please enter a valid numeric user ID.")
