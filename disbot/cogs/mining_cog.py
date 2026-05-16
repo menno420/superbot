@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import panel_manager
-from core.runtime.interaction_helpers import safe_defer, safe_edit
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
@@ -78,14 +78,26 @@ class MiningCog(commands.Cog):
         self.bot = bot
         self.recipes = load_recipes()
 
+    # PR M3: mining commands require a guild context.  DM invocations
+    # used to silently AttributeError on ``ctx.guild.id`` once the
+    # CRUD started requiring guild_id; this turns it into a clean,
+    # user-visible refusal.
+    async def cog_check(self, ctx):
+        if ctx.guild is None:
+            raise commands.NoPrivateMessage()
+        return True
+
     #
     # ====== INTERNAL HELPER METHOD ======
     #
-    async def update_inventory(self, user_id, item, amount=1):
-        """Updates a user's inventory by 'amount' of 'item'.
+    async def update_inventory(self, user_id, guild_id: int, item, amount=1):
+        """Updates a user's inventory by 'amount' of 'item' for *guild_id*.
+
         Delegates to the DB helper which clamps to 0 automatically.
+        PR M3: ``guild_id`` is now required to prevent cross-guild
+        inventory contamination.
         """
-        await db.update_mining_item(str(user_id), item, amount)
+        await db.update_mining_item(str(user_id), guild_id, item, amount)
 
     #
     # ====== VIEW FOR MINING BUTTONS ======
@@ -93,9 +105,10 @@ class MiningCog(commands.Cog):
     class MineView(discord.ui.View):
         """Simple View for the !mine command: 'Mine Left', 'Mine Right', 'Mine Down'."""
 
-        def __init__(self, user_id, cog):
+        def __init__(self, user_id, guild_id: int, cog):
             super().__init__(timeout=30)
             self.user_id = user_id
+            self.guild_id = guild_id
             self.cog = cog
             self.message: discord.Message | None = None
 
@@ -139,7 +152,7 @@ class MiningCog(commands.Cog):
                 return
 
             user_id = str(self.user_id)
-            inventory = await db.get_mining_inventory(user_id)
+            inventory = await db.get_mining_inventory(user_id, self.guild_id)
             pickaxe_bonus = 2 if inventory.get("pickaxe", 0) > 0 else 1
             # Weighted random resource
             ores = {"stone": 3, "iron": 2, "gold": 1, "diamond": 0.5}
@@ -148,7 +161,7 @@ class MiningCog(commands.Cog):
             ]
             amount = random.randint(1, 3) * pickaxe_bonus
 
-            await self.cog.update_inventory(user_id, found, amount)
+            await self.cog.update_inventory(user_id, self.guild_id, found, amount)
 
             new_content = f"{interaction.user.mention} mined {amount}x **{found}** by going {direction}!"
             await interaction.message.edit(content=new_content, embed=None, view=None)
@@ -167,7 +180,7 @@ class MiningCog(commands.Cog):
     @commands.command()
     async def mine(self, ctx):
         """Start mining with interactive buttons."""
-        view = self.MineView(ctx.author.id, self)
+        view = self.MineView(ctx.author.id, ctx.guild.id, self)
         embed = discord.Embed(
             title="Mining",
             description="Choose a direction to mine.\nIf you own a pickaxe, you'll get extra loot!",
@@ -179,10 +192,10 @@ class MiningCog(commands.Cog):
     async def chop(self, ctx):
         """Chop wood. If you have an 'axe', you'll collect double."""
         user_id = str(ctx.author.id)
-        inventory = await db.get_mining_inventory(user_id)
+        inventory = await db.get_mining_inventory(user_id, ctx.guild.id)
         multiplier = 2 if inventory.get("axe", 0) > 0 else 1
         wood_amount = random.randint(1, 3) * multiplier
-        await self.update_inventory(ctx.author.id, "wood", wood_amount)
+        await self.update_inventory(ctx.author.id, ctx.guild.id, "wood", wood_amount)
         await ctx.send(
             f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!",
         )
@@ -200,7 +213,7 @@ class MiningCog(commands.Cog):
     async def stats(self, ctx):
         """Shows your total mining items and number of unique items."""
         user_id = str(ctx.author.id)
-        inventory = await db.get_mining_inventory(user_id)
+        inventory = await db.get_mining_inventory(user_id, ctx.guild.id)
         total_items = sum(inventory.values())
         unique_items = len(inventory)
 
@@ -226,7 +239,8 @@ class MiningCog(commands.Cog):
                 return await ctx.invoke(self.bot.get_command("buildlist"))
 
             user_id = str(ctx.author.id)
-            inventory = await db.get_mining_inventory(user_id)
+            gid = ctx.guild.id
+            inventory = await db.get_mining_inventory(user_id, gid)
 
             structure_lower = structure.lower()
             required_items = self.recipes.get(structure_lower)
@@ -245,8 +259,13 @@ class MiningCog(commands.Cog):
 
             # Subtract cost and give the user the new buildable item
             for item, amount_needed in required_items.items():
-                await self.update_inventory(ctx.author.id, item, -amount_needed)
-            await self.update_inventory(ctx.author.id, structure_lower, 1)
+                await self.update_inventory(
+                    ctx.author.id,
+                    gid,
+                    item,
+                    -amount_needed,
+                )
+            await self.update_inventory(ctx.author.id, gid, structure_lower, 1)
 
             await ctx.send(
                 f"{ctx.author.mention} successfully built a **{structure}**!",
@@ -287,7 +306,7 @@ class MiningCog(commands.Cog):
     async def buildable(self, ctx):
         """Lists only what the user can currently build based on their inventory."""
         user_id = str(ctx.author.id)
-        inventory = await db.get_mining_inventory(user_id)
+        inventory = await db.get_mining_inventory(user_id, ctx.guild.id)
 
         can_build = []
         for structure_name, requirements in self.recipes.items():
@@ -314,6 +333,7 @@ class MiningCog(commands.Cog):
     async def explore(self, ctx):
         """Discover random events or items."""
         user_id = str(ctx.author.id)
+        gid = ctx.guild.id
         outcomes = [
             "found 1 gold in an abandoned camp!",
             "stumbled upon a hidden diamond vein and got 1 diamond!",
@@ -324,13 +344,13 @@ class MiningCog(commands.Cog):
         result = random.choice(outcomes)
 
         if "found 1 gold" in result:
-            await self.update_inventory(user_id, "gold", 1)
+            await self.update_inventory(user_id, gid, "gold", 1)
         elif "1 diamond" in result:
-            await self.update_inventory(user_id, "diamond", 1)
+            await self.update_inventory(user_id, gid, "diamond", 1)
         elif "lost 2 stone" in result:
-            await self.update_inventory(user_id, "stone", -2)
+            await self.update_inventory(user_id, gid, "stone", -2)
         elif "3 wood" in result:
-            await self.update_inventory(user_id, "wood", 3)
+            await self.update_inventory(user_id, gid, "wood", 3)
 
         await ctx.send(f"{ctx.author.mention} {result}")
 
@@ -341,9 +361,10 @@ class MiningCog(commands.Cog):
             return await ctx.send("Please specify an item to use, e.g. `!use torch`.")
 
         user_id = str(ctx.author.id)
+        gid = ctx.guild.id
         item = item.lower()
 
-        inventory = await db.get_mining_inventory(user_id)
+        inventory = await db.get_mining_inventory(user_id, gid)
         if inventory.get(item, 0) < 1:
             return await ctx.send(f"You don't have **{item}** to use.")
 
@@ -354,7 +375,7 @@ class MiningCog(commands.Cog):
         else:
             message = f"You used **{item}**, but nothing special happened."
 
-        await self.update_inventory(user_id, item, -1)
+        await self.update_inventory(user_id, gid, item, -1)
         await ctx.send(f"{ctx.author.mention} {message}")
 
     #
@@ -363,11 +384,17 @@ class MiningCog(commands.Cog):
 
     @commands.command()
     async def reset_inventory(self, ctx, member: discord.Member):
-        """Admin-only: reset a user's inventory."""
+        """Admin-only: reset a user's inventory in THIS guild.
+
+        PR M3: the reset is now guild-scoped.  The previous unscoped
+        DELETE swept every guild's inventory for the target user — a
+        cross-guild data-destruction risk if the user was a member of
+        multiple bot-managed guilds.
+        """
         if not ctx.author.guild_permissions.administrator:
             return await ctx.send("You don't have permission to do that.")
 
-        await db.set_mining_inventory(str(member.id), {})
+        await db.set_mining_inventory(str(member.id), ctx.guild.id, {})
         await ctx.send(f"{member.name}'s inventory has been reset.")
 
     @commands.command()
@@ -377,7 +404,7 @@ class MiningCog(commands.Cog):
             return await ctx.send("You don't have permission to do that.")
 
         item = item.lower()
-        await db.update_mining_item(str(member.id), item, amount)
+        await db.update_mining_item(str(member.id), ctx.guild.id, item, amount)
         await ctx.send(f"Gave {amount}x **{item}** to {member.name}.")
 
 
@@ -424,8 +451,19 @@ class MiningHubView(PersistentView):
         row=0,
     )
     async def mine_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
         cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
-        view = MiningCog.MineView(interaction.user.id, cog)
+        view = MiningCog.MineView(
+            interaction.user.id,
+            interaction.guild_id,
+            cog,
+        )
         embed = discord.Embed(
             title="Mining",
             description="Choose a direction to mine.\nIf you own a pickaxe, you'll get extra loot!",
@@ -443,12 +481,20 @@ class MiningHubView(PersistentView):
     async def harvest_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
         cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         user_id = str(interaction.user.id)
-        inventory = await db.get_mining_inventory(user_id)
+        gid = interaction.guild_id
+        inventory = await db.get_mining_inventory(user_id, gid)
         multiplier = 2 if inventory.get("axe", 0) > 0 else 1
         wood_amount = random.randint(1, 3) * multiplier
-        await cog.update_inventory(user_id, "wood", wood_amount)
+        await cog.update_inventory(user_id, gid, "wood", wood_amount)
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=f"{interaction.user.mention} chopped wood and collected **{wood_amount}x wood**!",
@@ -466,8 +512,16 @@ class MiningHubView(PersistentView):
     async def explore_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
         cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         user_id = str(interaction.user.id)
+        gid = interaction.guild_id
         outcomes = [
             ("found 1 gold in an abandoned camp!", "gold", 1),
             ("stumbled upon a hidden diamond vein and got 1 diamond!", "diamond", 1),
@@ -477,7 +531,7 @@ class MiningHubView(PersistentView):
         ]
         text, item, amount = random.choice(outcomes)
         if item:
-            await cog.update_inventory(user_id, item, amount)
+            await cog.update_inventory(user_id, gid, item, amount)
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=f"{interaction.user.mention} {text}",
@@ -499,8 +553,15 @@ class MiningHubView(PersistentView):
     ):
         if not await safe_defer(interaction):
             return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
         user_id = str(interaction.user.id)
-        inventory = await db.get_mining_inventory(user_id)
+        inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
         if not inventory:
             description = "Your mining inventory is empty."
         else:
@@ -524,8 +585,15 @@ class MiningHubView(PersistentView):
     async def stats_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
         user_id = str(interaction.user.id)
-        inventory = await db.get_mining_inventory(user_id)
+        inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
         total_items = sum(inventory.values())
         unique_items = len(inventory)
         embed = discord.Embed(
@@ -578,7 +646,14 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
         self.cog = cog
 
     async def on_submit(self, interaction: discord.Interaction):
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
         user_id = str(interaction.user.id)
+        gid = interaction.guild_id
         structure_lower = self.structure.value.strip().lower()
 
         required_items = self.cog.recipes.get(structure_lower)
@@ -589,7 +664,7 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
             )
             return
 
-        inventory = await db.get_mining_inventory(user_id)
+        inventory = await db.get_mining_inventory(user_id, gid)
         for item, amount_needed in required_items.items():
             if inventory.get(item, 0) < amount_needed:
                 await interaction.response.send_message(
@@ -599,8 +674,8 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
                 return
 
         for item, amount_needed in required_items.items():
-            await self.cog.update_inventory(user_id, item, -amount_needed)
-        await self.cog.update_inventory(user_id, structure_lower, 1)
+            await self.cog.update_inventory(user_id, gid, item, -amount_needed)
+        await self.cog.update_inventory(user_id, gid, structure_lower, 1)
 
         await interaction.response.send_message(
             f"{interaction.user.mention} successfully built a **{self.structure.value}**!",

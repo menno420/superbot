@@ -18,6 +18,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
+from core.runtime import navigation_stack
 from utils import db
 
 logger = logging.getLogger("bot.runtime.sessions")
@@ -79,8 +80,14 @@ async def touch(session_id: str) -> None:
 
 
 async def remove(session_id: str) -> None:
-    """Delete a session and all its associated state rows."""
+    """Delete a session and all its associated state rows.
+
+    PR N1: also drops the per-session ``navigation_stack`` lock so the
+    in-process dict stays bounded.  ``forget`` is a no-op when no lock
+    exists for the id.
+    """
     await db.delete_session(session_id)
+    navigation_stack.forget(session_id)
     logger.debug("Removed session %s", session_id)
 
 
@@ -98,8 +105,13 @@ async def invalidate_subsystem_sessions(
     - channel_id provided → only invalidate sessions in that channel.
     - channel_id=None → invalidate all sessions for the subsystem guild-wide
       (used for guild-scoped and category-scoped changes).
+
+    PR N1: drops the in-process ``navigation_stack`` lock for every
+    removed session so the dict tracks DB state.
     """
     removed_ids = await db.delete_sessions_for_scope(guild_id, subsystem, channel_id)
+    for sid in removed_ids:
+        navigation_stack.forget(sid)
     if removed_ids:
         scope_label = f"channel={channel_id}" if channel_id else "guild-wide"
         logger.info(

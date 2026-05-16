@@ -345,5 +345,69 @@ future work in Phase T).
 | Help category shows commands that don't run | `!platform identity` | identity-contract drift |
 | Balance "lost" coins | `economy_audit_log` for the user_id | overdraft path; missing debit reason |
 | Tournament didn't pay out | `economy_audit_log` filtered to `tournament:*` / `rps:*` / `blackjack:*` reasons | service exception was silenced; check ERROR logs |
+| Tournament-entry refund on restart | `economy_audit_log` filtered to `*_tournament:restart_refund` or `*_tournament:guild_remove_refund` | normal cog_load / on_guild_remove recovery for an interrupted tournament |
 | Bot eats CPU | `task_outcome_total` rate | runaway `tasks.spawn` loop |
 | Migrations stuck | `pg_advisory_lock` may be held; check `pg_stat_activity` for the lock owner | concurrent deploy holding the lock |
+
+---
+
+## 12. Identity contract — STRICT mode promotion
+
+`utils.subsystem_registry.validate_identity_contract` runs at every
+startup and surfaces drift between the five identity surfaces (see §1).
+Two enforcement modes coexist:
+
+| Mode | Trigger | Behaviour on fatal-tier finding |
+|---|---|---|
+| **Advisory** (default) | `IDENTITY_CONTRACT_STRICT` unset or falsy | Logs the structured summary at WARNING, increments `identity_contract_findings_total{kind}`, posts a Discord webhook embed via `WebhookReporter.on_identity_findings`, startup continues. |
+| **STRICT** | `IDENTITY_CONTRACT_STRICT=true` (or `1`/`yes`/`on`) | Everything Advisory does, plus `SystemExit(1)` after the webhook fires.  Bot refuses to start on drift. |
+
+### Tier classification
+
+| Bucket | Tier | Auto-heal? |
+|---|---|---|
+| `entry_point_missing_command` | fatal | No (likely cog load failure — operator must reload) |
+| `router_prefix_unknown` | auto_healable | Yes via `!platform identity --fix` (unregister) |
+| `view_subsystem_unknown` | auto_healable | Yes via `!platform identity --fix` (unregister) |
+| `db_anchor_subsystem_unknown` | auto_healable | Yes via `!platform identity --fix` (mark stale) |
+
+Source of truth: `IDENTITY_FINDING_TIER` in
+`utils/subsystem_registry.py`.  The invariant test
+`tests/unit/registry/test_identity_contract.py::TestIdentityFindingTier::
+test_tier_map_covers_every_finding_bucket` fails CI if a new bucket
+is added without a classification.
+
+### Production-promotion runbook
+
+1. **Verify clean state.** SSH or `!platform identity`; expected
+   output: ``All four identity surfaces agree.`` (the all-green
+   embed).
+2. **Apply auto-heal if necessary.** Run `!platform identity --fix`
+   to clear any orphan router prefixes, orphan view subsystems, or
+   orphan `panel_anchors` rows surfaced by step 1.  Fatal-tier
+   findings require a cog reload (`!reload <cog>`); auto-heal will
+   not touch them.
+3. **Re-verify clean state.** Re-run `!platform identity`; expected
+   output: clean.
+4. **Set the env var.** On the host, export
+   `IDENTITY_CONTRACT_STRICT=true` (or set it in the platform's
+   environment configuration — Render dashboard, Railway env, etc.).
+5. **Roll the deploy.** Startup will refuse the launch if any
+   fatal-tier finding reappears; the webhook embed names the
+   offending surface so operators can roll back or fix forward.
+
+### Failure modes once STRICT is on
+
+- **Cog fails to load** → `entry_point_missing_command` → STRICT
+  aborts startup.  Recovery: revert the deploy or fix the cog and
+  redeploy.  Do NOT turn STRICT off as a workaround — the abort is
+  the safety net catching a real regression.
+- **DB anchor row references a removed subsystem** → STRICT does
+  NOT abort (this is `auto_healable`-tier, not `fatal`).  Run
+  `!platform identity --fix` from any admin channel.
+
+### Backing out
+
+Setting `IDENTITY_CONTRACT_STRICT=false` (or unset) and redeploying
+restores Advisory mode.  No data migration required — the env var is
+the only switch.

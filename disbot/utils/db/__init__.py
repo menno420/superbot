@@ -45,6 +45,7 @@ from utils.db.anchors import (
     get_panel_anchor,
     get_panel_anchor_by_message,
     get_user_subsystem_anchors,
+    mark_anchors_stale_for_subsystem,
     mark_panel_anchor_stale,
     upsert_panel_anchor,
 )
@@ -60,7 +61,8 @@ from utils.db.economy import (
     get_job_times,
     increment_job,
     set_coins,
-    set_economy,
+    set_daily_claim,
+    set_last_worked,
 )
 
 # ──────────────────────────────────────────────────────────────────────
@@ -131,6 +133,7 @@ from utils.db.sessions import (
     delete_guild_session_state,
     delete_session,
     delete_session_state,
+    delete_sessions_for_guild,
     delete_sessions_for_scope,
     delete_sessions_for_subsystem,
     get_all_session_state,
@@ -188,7 +191,8 @@ __all__ = [
     "get_job_times",
     "increment_job",
     "set_coins",
-    "set_economy",
+    "set_daily_claim",
+    "set_last_worked",
     # inventory
     "add_item",
     "get_inventory",
@@ -208,6 +212,7 @@ __all__ = [
     "delete_guild_session_state",
     "delete_session",
     "delete_session_state",
+    "delete_sessions_for_guild",
     "delete_sessions_for_scope",
     "delete_sessions_for_subsystem",
     "get_all_session_state",
@@ -224,6 +229,7 @@ __all__ = [
     "get_panel_anchor",
     "get_panel_anchor_by_message",
     "get_user_subsystem_anchors",
+    "mark_anchors_stale_for_subsystem",
     "mark_panel_anchor_stale",
     "upsert_panel_anchor",
     # games

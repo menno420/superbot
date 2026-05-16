@@ -7,9 +7,19 @@ can interact) either accepts — which transitions to a
 
 from __future__ import annotations
 
+import logging
+
 import discord
 
-from views.rps._helpers import _rps_pvp_pending
+from services import game_state_service
+from views.rps._helpers import (
+    RPS_PVP_PENDING_SUBSYSTEM,
+    RPS_PVP_PENDING_VERSION,
+    _rps_pvp_pending,
+    rps_pvp_canonical_user_id,
+)
+
+logger = logging.getLogger("bot.rps.pvp_challenge")
 
 
 class _RpsPvpChallengeView(discord.ui.View):
@@ -55,6 +65,34 @@ class _RpsPvpChallengeView(discord.ui.View):
             "bet": self.bet,
             "channel_id": interaction.channel_id,
         }
+        # PR G1 — persist the pending match so cog_load can drop
+        # stranded rows after a restart.  The view itself cannot be
+        # restored (live view objects do not survive a process bounce),
+        # so the saved state is recovery telemetry, not a resume
+        # surface: cog_load lists and clears.  Failures are non-fatal —
+        # the in-memory dict above is the authoritative source while
+        # the bot is alive.
+        try:
+            await game_state_service.save(
+                guild_id=self.guild_id,
+                user_id=rps_pvp_canonical_user_id(
+                    self.challenger.id,
+                    self.opponent.id,
+                ),
+                channel_id=interaction.channel_id,
+                subsystem=RPS_PVP_PENDING_SUBSYSTEM,
+                state={
+                    "p1_id": self.challenger.id,
+                    "p2_id": self.opponent.id,
+                    "guild_id": self.guild_id,
+                    "channel_id": interaction.channel_id,
+                    "bet": self.bet,
+                    "choices": {},
+                },
+                version=RPS_PVP_PENDING_VERSION,
+            )
+        except Exception as exc:
+            logger.warning("rps_pvp_pending save (accept) failed: %s", exc)
         ch = interaction.channel
         play_view = _RpsPvpPlayView(
             self.challenger,

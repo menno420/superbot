@@ -81,13 +81,7 @@ class EconomyPanelView(PersistentView):
             reason="daily",
             actor_id=uid,
         )
-        await db.set_economy(
-            uid,
-            gid,
-            last_daily=now,
-            daily_streak=streak,
-            daily_count=new_count,
-        )
+        await db.set_daily_claim(uid, gid, now, streak, new_count)
 
         embed = discord.Embed(
             title="🎁 Daily Reward",

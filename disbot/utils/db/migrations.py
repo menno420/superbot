@@ -197,15 +197,10 @@ async def create_tables() -> None:
             losses  INTEGER NOT NULL DEFAULT 0,
             ties    INTEGER NOT NULL DEFAULT 0
         )""",
-        """CREATE TABLE IF NOT EXISTS rps_matches (
-            id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            player1_id BIGINT  NOT NULL,
-            player2_id BIGINT  NOT NULL,
-            winner_id  BIGINT,
-            mode       TEXT    NOT NULL DEFAULT 'classic',
-            best_of    INTEGER NOT NULL DEFAULT 3,
-            timestamp  TEXT    NOT NULL
-        )""",
+        # PR C1 — ``rps_matches`` removed.  It was created here for an
+        # unshipped match-history feature and had zero CRUD callers.
+        # Migration 019 drops the table on existing deploys; fresh
+        # installs never create it.
         """CREATE TABLE IF NOT EXISTS mining_inventory (
             user_id   TEXT    NOT NULL,
             item_name TEXT    NOT NULL,

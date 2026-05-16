@@ -85,17 +85,37 @@ async def claim_daily_if_ready(
     return result == "UPDATE 1"
 
 
-async def set_economy(user_id: int, guild_id: int, **kwargs) -> None:
-    allowed = {"last_daily", "daily_streak", "daily_count", "last_worked"}
-    cols = {k: v for k, v in kwargs.items() if k in allowed}
-    if not cols:
-        return
-    keys = list(cols)
-    sets = ", ".join(f"{k}=${i + 1}" for i, k in enumerate(keys))
-    n = len(keys)
+async def set_last_worked(user_id: int, guild_id: int, ts: int) -> None:
+    """Record the user's most recent successful work.
+
+    Replaces the kwargs+f-string ``set_economy`` (PR R2): one explicit
+    update statement, no dynamic SQL identifier interpolation.
+    """
     await pool.execute(
-        f"UPDATE economy SET {sets} WHERE user_id=${n + 1} AND guild_id=${n + 2}",
-        (*cols.values(), user_id, guild_id),
+        "UPDATE economy SET last_worked=$1 WHERE user_id=$2 AND guild_id=$3",
+        (ts, user_id, guild_id),
+    )
+
+
+async def set_daily_claim(
+    user_id: int,
+    guild_id: int,
+    last_daily: int,
+    daily_streak: int,
+    daily_count: int,
+) -> None:
+    """Record a daily-claim completion atomically.
+
+    The three columns (``last_daily``, ``daily_streak``, ``daily_count``)
+    are always written together — this single statement preserves the
+    atomicity the previous ``set_economy`` provided, without the
+    dynamic-SQL pattern.
+    """
+    await pool.execute(
+        "UPDATE economy "
+        "   SET last_daily=$1, daily_streak=$2, daily_count=$3 "
+        " WHERE user_id=$4 AND guild_id=$5",
+        (last_daily, daily_streak, daily_count, user_id, guild_id),
     )
 
 

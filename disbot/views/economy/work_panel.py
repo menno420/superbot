@@ -112,7 +112,7 @@ class _JobSelect(discord.ui.Select):
         )
         new_lv = xp_result.new_level
         lvup = xp_result.leveled_up
-        await db.set_economy(uid, gid, last_worked=now)
+        await db.set_last_worked(uid, gid, now)
 
         bonus_pct = min(times, 100)
         embed = discord.Embed(

@@ -137,7 +137,7 @@ async def _build_combined_inventory(
     non-empty categories and items sorted rarest-first within each category.
     """
     eco_inv: dict[str, int] = await db.get_inventory(user_id, guild_id)
-    mine_inv: dict[str, int] = await db.get_mining_inventory(str(user_id))
+    mine_inv: dict[str, int] = await db.get_mining_inventory(str(user_id), guild_id)
 
     combined: dict[str, int] = {}
     for k, v in mine_inv.items():

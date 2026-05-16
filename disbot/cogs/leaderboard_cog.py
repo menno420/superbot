@@ -68,7 +68,7 @@ async def _build_embed(
         embed.description = "\n".join(lines) or "No data yet!"
 
     elif category == "mining":
-        rows = await db.get_all_mining_totals()
+        rows = await db.get_all_mining_totals(guild.id)
         lines = []
         for i, (user_id, total) in enumerate(rows):
             m = guild.get_member(int(user_id)) if user_id.isdigit() else None
@@ -88,7 +88,7 @@ async def _build_embed(
         embed.description = "\n".join(lines) or "No data yet!"
 
     elif category == "rps":
-        rows = await db.rps_get_leaderboard()
+        rows = await db.rps_get_leaderboard(guild.id)
         lines = []
         for i, row in enumerate(rows):
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"

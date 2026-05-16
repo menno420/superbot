@@ -141,25 +141,41 @@ class GovernanceMutationPipeline:
         mutation_id = str(uuid.uuid4())
         occurred_at = datetime.now(tz=timezone.utc).isoformat()
 
-        # 4. DB write + audit in a single transaction
-        async with db.get().transaction():
-            await db.set_subsystem_visibility(
+        # 4. DB write + audit in a single transaction.
+        # ``asyncpg.Pool`` does not implement ``.transaction()`` — only an
+        # acquired ``Connection`` does — so the transaction MUST be opened
+        # on a connection.  We inline the SQL (matching
+        # ``services.economy_service.transfer``) so the visibility upsert
+        # and the audit-log insert really share one transaction; calling
+        # ``db.set_subsystem_visibility`` / ``db.write_governance_audit``
+        # here would acquire fresh pool connections and break atomicity.
+        pool = db.get()
+        async with pool.acquire() as conn, conn.transaction():
+            await conn.execute(
+                """INSERT INTO subsystem_visibility
+                       (guild_id, scope_type, scope_id, subsystem, enabled)
+                   VALUES ($1, $2, $3, $4, $5)
+                   ON CONFLICT (guild_id, scope_type, scope_id, subsystem)
+                   DO UPDATE SET enabled = EXCLUDED.enabled""",
                 ctx.guild_id,
                 scope_type,
                 scope_id,
                 subsystem,
                 enabled,
             )
-            await db.write_governance_audit(
-                guild_id=ctx.guild_id,
-                actor_id=ctx.member.id if ctx.member else 0,
-                action="set_visibility",
-                scope_type=scope_type,
-                scope_id=scope_id,
-                subsystem=subsystem,
-                old_value={"enabled": old_enabled},
-                new_value={"enabled": enabled},
-                mutation_id=mutation_id,
+            await conn.execute(
+                """INSERT INTO governance_audit_log
+                       (guild_id, actor_id, action, scope_type, scope_id,
+                        subsystem, old_value, new_value)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                ctx.guild_id,
+                ctx.member.id if ctx.member else 0,
+                "set_visibility",
+                scope_type,
+                scope_id,
+                subsystem,
+                {"enabled": old_enabled},  # JSONB codec handles encoding
+                {"enabled": enabled},
             )
 
         # 5. In-memory cache invalidation (after successful commit)
@@ -216,29 +232,46 @@ class GovernanceMutationPipeline:
         mutation_id = str(uuid.uuid4())
         occurred_at = datetime.now(tz=timezone.utc).isoformat()
 
-        async with db.get().transaction():
-            await db.set_cleanup_policy(
+        # DB write + audit in a single transaction.  Same constraint as
+        # set_visibility: transactions live on connections, not pools.  We
+        # inline the SQL so both writes share one transaction.
+        pool = db.get()
+        async with pool.acquire() as conn, conn.transaction():
+            await conn.execute(
+                """INSERT INTO cleanup_policies
+                       (guild_id, scope_type, scope_id,
+                        delete_invalid_commands, delete_failed_commands,
+                        delete_after_seconds)
+                   VALUES ($1, $2, $3, $4, $5, $6)
+                   ON CONFLICT (guild_id, scope_type, scope_id)
+                   DO UPDATE SET
+                       delete_invalid_commands = EXCLUDED.delete_invalid_commands,
+                       delete_failed_commands  = EXCLUDED.delete_failed_commands,
+                       delete_after_seconds    = EXCLUDED.delete_after_seconds""",
                 ctx.guild_id,
                 scope_type,
                 scope_id,
-                delete_invalid_commands=delete_invalid_commands,
-                delete_failed_commands=delete_failed_commands,
-                delete_after_seconds=delete_after_seconds,
+                delete_invalid_commands,
+                delete_failed_commands,
+                delete_after_seconds,
             )
-            await db.write_governance_audit(
-                guild_id=ctx.guild_id,
-                actor_id=ctx.member.id if ctx.member else 0,
-                action="set_cleanup",
-                scope_type=scope_type,
-                scope_id=scope_id,
-                subsystem=None,
-                old_value=None,
-                new_value={
+            await conn.execute(
+                """INSERT INTO governance_audit_log
+                       (guild_id, actor_id, action, scope_type, scope_id,
+                        subsystem, old_value, new_value)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                ctx.guild_id,
+                ctx.member.id if ctx.member else 0,
+                "set_cleanup",
+                scope_type,
+                scope_id,
+                None,
+                None,  # JSONB codec handles None
+                {
                     "delete_invalid_commands": delete_invalid_commands,
                     "delete_failed_commands": delete_failed_commands,
                     "delete_after_seconds": delete_after_seconds,
                 },
-                mutation_id=mutation_id,
             )
 
         invalidate_guild_cache(ctx.guild_id)

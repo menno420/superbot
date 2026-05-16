@@ -148,6 +148,34 @@ class TestUnknownCapabilityFailsClosed:
 # ---------------------------------------------------------------------------
 
 
+def _make_pool_stub():
+    """Return ``(db_stub, conn_mock)`` mirroring the real asyncpg Pool API.
+
+    asyncpg.Pool exposes ``acquire()`` returning an async-context-manager
+    that yields a Connection.  ``Connection.transaction()`` returns its
+    own async-context-manager.  This helper assembles a MagicMock graph
+    that matches that shape so tests exercise the same call path as
+    production rather than a synthetic ``.transaction()`` on the pool.
+    """
+    conn = MagicMock()
+    conn.execute = AsyncMock()
+
+    txn_cm = MagicMock()
+    txn_cm.__aenter__ = AsyncMock(return_value=txn_cm)
+    txn_cm.__aexit__ = AsyncMock(return_value=False)
+    conn.transaction = MagicMock(return_value=txn_cm)
+
+    acquire_cm = MagicMock()
+    acquire_cm.__aenter__ = AsyncMock(return_value=conn)
+    acquire_cm.__aexit__ = AsyncMock(return_value=False)
+
+    pool_stub = MagicMock()
+    pool_stub.acquire = MagicMock(return_value=acquire_cm)
+
+    db_stub = MagicMock(get=MagicMock(return_value=pool_stub))
+    return db_stub, conn
+
+
 class TestCacheInvalidatedEmitted:
     """BUG-002 regression — set_visibility must emit both events.
 
@@ -170,18 +198,14 @@ class TestCacheInvalidatedEmitted:
         async def capture(event_name, payload):
             emitted.append(event_name)
 
-        # Minimal stubs: every DB call inside set_visibility is async,
-        # the transaction context manager must succeed, and the
-        # registry lookup must resolve.
-        txn = MagicMock()
-        txn.__aenter__ = AsyncMock(return_value=txn)
-        txn.__aexit__ = AsyncMock(return_value=False)
-        db_stub = MagicMock(
-            get_visibility_override=AsyncMock(return_value=None),
-            set_subsystem_visibility=AsyncMock(),
-            write_governance_audit=AsyncMock(),
-            get=MagicMock(return_value=MagicMock(transaction=lambda: txn)),
-        )
+        # Mock shape mirrors the real asyncpg Pool API: pool.acquire()
+        # returns an async-context-manager yielding a Connection, and
+        # conn.transaction() returns an async-context-manager.  An older
+        # version of this test mocked .transaction() on the pool itself,
+        # which hid a production regression where ``pool.transaction()``
+        # was called directly — asyncpg.Pool has no such method.
+        db_stub, conn = _make_pool_stub()
+        db_stub.get_visibility_override = AsyncMock(return_value=None)
 
         member = MagicMock()
         member.id = 1
@@ -201,6 +225,105 @@ class TestCacheInvalidatedEmitted:
             )
 
         assert emitted[:2] == [EVT_VISIBILITY_CHANGED, EVT_CACHE_INVALIDATED]
+        # The pipeline must execute SQL on the acquired connection, not on
+        # the pool: every transactional write goes through conn.execute.
+        assert conn.execute.await_count >= 2, (
+            "set_visibility must run both the visibility upsert and the "
+            "audit-log insert on the acquired connection (got "
+            f"{conn.execute.await_count} conn.execute call(s))."
+        )
+
+    @pytest.mark.asyncio
+    async def test_set_visibility_uses_connection_transaction_not_pool(self):
+        """Pool.transaction() does not exist on asyncpg.Pool — only Connection
+        has .transaction().  This test would have caught the production
+        regression where pipeline called ``db.get().transaction()`` directly
+        on a Pool, raising AttributeError at runtime.
+        """
+        from governance.writes import GovernanceMutationPipeline
+
+        db_stub, conn = _make_pool_stub()
+        db_stub.get_visibility_override = AsyncMock(return_value=None)
+        pool_stub = db_stub.get.return_value
+
+        # If production code calls pool.transaction() directly, hasattr is
+        # False on the real pool — but a MagicMock would silently create
+        # one.  We assert that .transaction is NEVER called on the pool,
+        # only on conn (the canonical asyncpg pattern).
+        pool_stub.transaction = MagicMock(
+            side_effect=AttributeError(
+                "'Pool' object has no attribute 'transaction'",
+            ),
+        )
+
+        member = MagicMock()
+        member.id = 1
+        member.guild_permissions.administrator = True
+        from governance.models import GovernanceContext
+
+        ctx = GovernanceContext(guild_id=778, channel_id=1, member=member)
+
+        async def _noop(*_args, **_kwargs):
+            pass
+
+        with (
+            patch("governance.writes.db", db_stub),
+            patch("governance.writes.invalidate_guild_cache"),
+            patch("governance.writes._emit_governance_event", side_effect=_noop),
+            patch("governance.writes.SUBSYSTEMS", {"economy": {}}),
+        ):
+            # Must complete without AttributeError.
+            await GovernanceMutationPipeline().set_visibility(
+                ctx, "guild", 778, "economy", True,
+            )
+
+        assert (
+            pool_stub.transaction.call_count == 0
+        ), "Pipeline must not call .transaction() on the pool (asyncpg.Pool has no such method)."
+        assert conn.transaction.call_count >= 1, (
+            "Pipeline must open the transaction on the acquired connection."
+        )
+
+    @pytest.mark.asyncio
+    async def test_set_cleanup_policy_uses_connection_transaction(self):
+        """Mirrors the visibility-pipeline regression for cleanup_policies —
+        both pipeline methods are affected by the same bug class.
+        """
+        from governance.writes import GovernanceMutationPipeline
+
+        db_stub, conn = _make_pool_stub()
+        pool_stub = db_stub.get.return_value
+        pool_stub.transaction = MagicMock(
+            side_effect=AttributeError(
+                "'Pool' object has no attribute 'transaction'",
+            ),
+        )
+
+        member = MagicMock()
+        member.id = 1
+        member.guild_permissions.administrator = True
+        from governance.models import GovernanceContext
+
+        ctx = GovernanceContext(guild_id=779, channel_id=1, member=member)
+
+        async def _noop(*_args, **_kwargs):
+            pass
+
+        with (
+            patch("governance.writes.db", db_stub),
+            patch("governance.writes.invalidate_guild_cache"),
+            patch("governance.writes._emit_governance_event", side_effect=_noop),
+        ):
+            await GovernanceMutationPipeline().set_cleanup_policy(
+                ctx, "guild", 779,
+                delete_invalid_commands=True,
+                delete_failed_commands=True,
+                delete_after_seconds=5,
+            )
+
+        assert pool_stub.transaction.call_count == 0
+        assert conn.transaction.call_count >= 1
+        assert conn.execute.await_count >= 2
 
 
 # ---------------------------------------------------------------------------
@@ -215,20 +338,23 @@ class TestPanelAnchorTeardown:
         import guild_lifecycle
 
         guild_id = 4242
-        with patch(
-            "utils.db.delete_guild_panel_anchors", new_callable=AsyncMock
-        ) as mock_del:
+        with (
+            patch(
+                "utils.db.delete_guild_panel_anchors",
+                new_callable=AsyncMock,
+            ) as mock_del,
+            patch(
+                "utils.db.delete_sessions_for_guild",
+                new_callable=AsyncMock,
+                return_value=[],
+            ),
+            patch(
+                "utils.db.delete_guild_session_state",
+                new_callable=AsyncMock,
+            ),
+        ):
             mock_del.return_value = 3
-            # Patch the other DB-touching steps so we isolate the anchor path.
-            with patch("utils.db.get") as mock_get:
-                pool = MagicMock()
-                pool.execute = AsyncMock(return_value="DELETE 0")
-                mock_get.return_value = pool
-                with patch(
-                    "utils.db.delete_guild_session_state", new_callable=AsyncMock
-                ):
-                    await guild_lifecycle.teardown(guild_id)
-
+            await guild_lifecycle.teardown(guild_id)
             mock_del.assert_awaited_once_with(guild_id)
 
     def test_db_function_signature(self):
@@ -237,6 +363,294 @@ class TestPanelAnchorTeardown:
         assert hasattr(
             db_module, "delete_guild_panel_anchors"
         ), "db.delete_guild_panel_anchors must exist (GAP-001)"
+
+
+# ---------------------------------------------------------------------------
+# PR N1 — navigation_stack.forget is wired into every session deletion path
+# ---------------------------------------------------------------------------
+
+
+class TestNavigationForgetWiring:
+    """Every session-deletion path calls navigation_stack.forget so the
+    in-process lock dict cannot accumulate stale entries.
+    """
+
+    @pytest.mark.asyncio
+    async def test_session_manager_remove_calls_forget(self):
+        from core.runtime import navigation_stack, session_manager
+
+        forgotten: list[str] = []
+        with (
+            patch("utils.db.delete_session", new_callable=AsyncMock),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            await session_manager.remove("session-abc")
+        assert forgotten == ["session-abc"]
+
+    @pytest.mark.asyncio
+    async def test_invalidate_subsystem_sessions_forgets_every_id(self):
+        from core.runtime import navigation_stack, session_manager
+
+        forgotten: list[str] = []
+        with (
+            patch(
+                "utils.db.delete_sessions_for_scope",
+                new_callable=AsyncMock,
+                return_value=["sid-1", "sid-2", "sid-3"],
+            ),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            await session_manager.invalidate_subsystem_sessions(
+                guild_id=99,
+                subsystem="economy",
+                channel_id=None,
+            )
+        assert forgotten == ["sid-1", "sid-2", "sid-3"]
+
+    @pytest.mark.asyncio
+    async def test_session_gc_loop_forgets_every_expired_id(self):
+        """One synthetic GC sweep is exercised by patching the
+        cancellation point so the loop runs exactly once.
+        """
+        import asyncio as _asyncio
+
+        from core.runtime import navigation_stack, session_gc
+
+        forgotten: list[str] = []
+        expired = ["expired-1", "expired-2"]
+        # Force the loop body to run exactly once: first sleep returns
+        # immediately, second sleep raises CancelledError to exit.
+        sleeps_remaining = [None, _asyncio.CancelledError()]
+
+        async def fake_sleep(_seconds):
+            nxt = sleeps_remaining.pop(0)
+            if isinstance(nxt, BaseException):
+                raise nxt
+            return nxt
+
+        with (
+            patch.object(session_gc.asyncio, "sleep", side_effect=fake_sleep),
+            patch(
+                "utils.db.delete_expired_sessions",
+                new_callable=AsyncMock,
+                return_value=expired,
+            ),
+            patch(
+                "utils.db.delete_stale_panel_anchors",
+                new_callable=AsyncMock,
+                return_value=0,
+            ),
+            patch(
+                "utils.db.count_active_sessions",
+                new_callable=AsyncMock,
+                return_value=0,
+            ),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            with pytest.raises(_asyncio.CancelledError):
+                await session_gc._run_gc_loop()
+        assert forgotten == expired
+
+    @pytest.mark.asyncio
+    async def test_guild_lifecycle_teardown_forgets_every_session_id(self):
+        import guild_lifecycle
+        from core.runtime import navigation_stack
+
+        forgotten: list[str] = []
+        with (
+            patch(
+                "utils.db.delete_sessions_for_guild",
+                new_callable=AsyncMock,
+                return_value=["g-sid-1", "g-sid-2"],
+            ),
+            patch(
+                "utils.db.delete_guild_session_state",
+                new_callable=AsyncMock,
+            ),
+            patch(
+                "utils.db.delete_guild_panel_anchors",
+                new_callable=AsyncMock,
+                return_value=0,
+            ),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            await guild_lifecycle.teardown(7777)
+        assert forgotten == ["g-sid-1", "g-sid-2"]
+
+
+# ---------------------------------------------------------------------------
+# PR G0 — game_state GC: refund-then-delete for stale rows
+# ---------------------------------------------------------------------------
+
+
+class TestGameStateGcSweep:
+    """``session_gc._sweep_stale_game_state`` refunds stakes before delete."""
+
+    @pytest.mark.asyncio
+    async def test_no_stale_rows_is_noop(self):
+        from core.runtime import session_gc
+
+        with patch(
+            "services.game_state_service.list_stale",
+            new_callable=AsyncMock,
+            return_value=[],
+        ):
+            removed, refunded = await session_gc._sweep_stale_game_state()
+        assert removed == 0
+        assert refunded == 0
+
+    @pytest.mark.asyncio
+    async def test_stale_row_with_bet_triggers_refund(self):
+        from core.runtime import session_gc
+
+        stale = [
+            {
+                "id": 7,
+                "guild_id": 111,
+                "user_id": 222,
+                "channel_id": 333,
+                "subsystem": "blackjack_solo",
+                "state": {"bet": 50, "hand": []},
+                "version": 1,
+                "updated_at": "2025-01-01",
+            },
+        ]
+        with (
+            patch(
+                "services.game_state_service.list_stale",
+                new_callable=AsyncMock,
+                return_value=stale,
+            ),
+            patch(
+                "services.game_state_service.clear_by_id",
+                new_callable=AsyncMock,
+            ) as mock_clear,
+            patch(
+                "services.economy_service.refund",
+                new_callable=AsyncMock,
+                return_value=50,
+            ) as mock_refund,
+        ):
+            removed, refunded = await session_gc._sweep_stale_game_state()
+        assert removed == 1
+        assert refunded == 1
+        mock_refund.assert_awaited_once()
+        kwargs = mock_refund.await_args.kwargs
+        assert kwargs["guild_id"] == 111
+        assert kwargs["user_id"] == 222
+        assert kwargs["amount"] == 50
+        assert "game_state:gc:blackjack_solo" in kwargs["reason"]
+        # Delete uses the synthetic id, not the natural key.
+        mock_clear.assert_awaited_once_with(7)
+
+    @pytest.mark.asyncio
+    async def test_stale_row_without_bet_deletes_without_refund(self):
+        from core.runtime import session_gc
+
+        stale = [
+            {
+                "id": 8,
+                "guild_id": 111,
+                "user_id": 222,
+                "channel_id": 333,
+                "subsystem": "counting",
+                "state": {"current_count": 42},  # no "bet" key
+                "version": 1,
+                "updated_at": "2025-01-01",
+            },
+        ]
+        with (
+            patch(
+                "services.game_state_service.list_stale",
+                new_callable=AsyncMock,
+                return_value=stale,
+            ),
+            patch(
+                "services.game_state_service.clear_by_id",
+                new_callable=AsyncMock,
+            ) as mock_clear,
+            patch(
+                "services.economy_service.refund",
+                new_callable=AsyncMock,
+            ) as mock_refund,
+        ):
+            removed, refunded = await session_gc._sweep_stale_game_state()
+        assert removed == 1
+        assert refunded == 0
+        mock_refund.assert_not_called()
+        mock_clear.assert_awaited_once_with(8)
+
+    @pytest.mark.asyncio
+    async def test_refund_failure_does_not_block_delete(self):
+        """A permanently-failing refund must not loop forever — the row
+        is still deleted so the next sweep moves on.
+        """
+        from core.runtime import session_gc
+
+        stale = [
+            {
+                "id": 9,
+                "guild_id": 111,
+                "user_id": 222,
+                "channel_id": 333,
+                "subsystem": "blackjack_solo",
+                "state": {"bet": 100},
+                "version": 1,
+                "updated_at": "2025-01-01",
+            },
+        ]
+        with (
+            patch(
+                "services.game_state_service.list_stale",
+                new_callable=AsyncMock,
+                return_value=stale,
+            ),
+            patch(
+                "services.game_state_service.clear_by_id",
+                new_callable=AsyncMock,
+            ) as mock_clear,
+            patch(
+                "services.economy_service.refund",
+                new_callable=AsyncMock,
+                side_effect=RuntimeError("refund DB hiccup"),
+            ),
+        ):
+            removed, refunded = await session_gc._sweep_stale_game_state()
+        # Refund failed → not counted.
+        assert refunded == 0
+        # Delete still ran → counted.
+        assert removed == 1
+        mock_clear.assert_awaited_once_with(9)
+
+    @pytest.mark.asyncio
+    async def test_list_stale_failure_is_logged_not_raised(self):
+        """If list_stale itself fails, the GC sweep does not crash."""
+        from core.runtime import session_gc
+
+        with patch(
+            "services.game_state_service.list_stale",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("DB down"),
+        ):
+            removed, refunded = await session_gc._sweep_stale_game_state()
+        assert removed == 0
+        assert refunded == 0
 
 
 # ---------------------------------------------------------------------------

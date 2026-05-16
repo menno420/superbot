@@ -197,19 +197,43 @@ async def delete_guild_session_state(guild_id: int) -> None:
 # ---------------------------------------------------------------------------
 
 
-async def delete_expired_sessions(cutoff_epoch: float) -> int:
-    """Delete sessions whose last_active_at is older than the cutoff."""
+async def delete_expired_sessions(cutoff_epoch: float) -> list[str]:
+    """Delete expired sessions and return the session_ids that were deleted.
+
+    PR N1: the GC sweep now propagates the removed IDs to per-session
+    cleanup hooks (currently ``navigation_stack.forget``) so process-local
+    lock dicts cannot grow unbounded.  Callers wanting a count can use
+    ``len(...)`` on the return value.
+    """
     from datetime import datetime, timezone
 
     cutoff_dt = datetime.fromtimestamp(cutoff_epoch, tz=timezone.utc)
-    result = await pool.get().execute(
-        "DELETE FROM runtime_sessions WHERE last_active_at < $1",
+    rows = await pool.get().fetch(
+        """DELETE FROM runtime_sessions
+            WHERE last_active_at < $1
+           RETURNING session_id::text""",
         cutoff_dt,
     )
-    try:
-        return int(result.split()[-1])
-    except (IndexError, ValueError):
-        return 0
+    return [r["session_id"] for r in rows]
+
+
+async def delete_sessions_for_guild(guild_id: int) -> list[str]:
+    """Delete every runtime session for a guild; return the IDs.
+
+    Mirrors ``delete_sessions_for_subsystem`` /
+    ``delete_sessions_for_scope`` so guild-removal teardown
+    (:mod:`guild_lifecycle`) has the same shape as the other
+    delete-and-return-ids helpers.  The returned IDs feed
+    ``navigation_stack.forget`` so in-process per-session state is
+    purged in lockstep with the DB rows.
+    """
+    rows = await pool.get().fetch(
+        """DELETE FROM runtime_sessions
+            WHERE guild_id = $1
+           RETURNING session_id::text""",
+        guild_id,
+    )
+    return [r["session_id"] for r in rows]
 
 
 async def count_active_sessions() -> int:

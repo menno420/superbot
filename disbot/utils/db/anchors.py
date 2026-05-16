@@ -73,6 +73,26 @@ async def mark_panel_anchor_stale(anchor_id: str) -> None:
     )
 
 
+async def mark_anchors_stale_for_subsystem(subsystem: str) -> int:
+    """Mark every active anchor for *subsystem* stale; return rows touched.
+
+    Used by the identity-contract self-heal path (PR I1b) to evacuate
+    orphan anchor rows whose subsystem string no longer matches the
+    SUBSYSTEMS registry — typically because a cog was removed or
+    renamed.  The session_gc loop sweeps stale rows on its next pass.
+    """
+    result = await pool.get().execute(
+        """UPDATE panel_anchors
+              SET is_stale = TRUE
+            WHERE subsystem = $1 AND NOT is_stale""",
+        subsystem,
+    )
+    try:
+        return int(result.split()[-1])
+    except (IndexError, ValueError):
+        return 0
+
+
 async def get_all_active_panel_anchors() -> list[dict]:
     """All non-stale anchors, ordered by last_updated_at (for restart recovery)."""
     rows = await pool.get().fetch(

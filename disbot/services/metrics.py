@@ -143,3 +143,14 @@ unknown_event_total = Counter(
     "leftover from a removed cog.",
     ["event", "op"],  # op: emit | on
 )
+
+identity_contract_findings_total = Counter(
+    "identity_contract_findings_total",
+    "Cumulative identity-contract findings detected during validation runs. "
+    "Counts every finding observed across startup checks and on-demand "
+    "`!platform identity` invocations.  Labels distinguish the finding "
+    "kind so operators can alert on the kind that matters to them.  This "
+    "is a cumulative detection count, NOT an active-state gauge.",
+    ["kind"],  # entry_point_missing_command | router_prefix_unknown |
+    # view_subsystem_unknown | db_anchor_subsystem_unknown
+)

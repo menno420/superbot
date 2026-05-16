@@ -86,19 +86,24 @@ def _teardown_scheduler(guild_id: int) -> None:
 
 
 async def _teardown_sessions(guild_id: int) -> None:
-    """Delete all runtime sessions for the guild from the DB."""
+    """Delete all runtime sessions for the guild from the DB.
+
+    PR N1: uses ``db.delete_sessions_for_guild`` so the returned IDs can
+    feed ``navigation_stack.forget``.  The previous raw DELETE returned
+    only a Postgres command tag; the per-session lock dict would have
+    accumulated stale entries for departed guilds.
+    """
     try:
+        from core.runtime import navigation_stack
         from utils import db
 
-        result = await db.get().execute(
-            "DELETE FROM runtime_sessions WHERE guild_id = $1",
-            guild_id,
-        )
-        count = _parse_pg_count(result)
-        if count:
+        removed_ids = await db.delete_sessions_for_guild(guild_id)
+        for sid in removed_ids:
+            navigation_stack.forget(sid)
+        if removed_ids:
             logger.debug(
                 "guild_lifecycle: deleted %d session(s) for guild=%d",
-                count,
+                len(removed_ids),
                 guild_id,
             )
     except Exception as exc:
@@ -165,10 +170,3 @@ def _teardown_feedback_cooldown(guild_id: int) -> None:
     The dict's own size guard (>500 entries → purge expired) handles unbounded
     growth without per-guild teardown.
     """
-
-
-def _parse_pg_count(result: str) -> int:
-    try:
-        return int(result.split()[-1])
-    except (IndexError, ValueError):
-        return 0
