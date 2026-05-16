@@ -7,6 +7,8 @@ import time
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
+from services import xp_service
 from utils import db
 from utils import embeds as em
 from utils.cooldowns import check_cooldown
@@ -219,15 +221,15 @@ class _GiveXpModal(discord.ui.Modal, title="Give XP"):  # type: ignore[call-arg]
                 ephemeral=True,
             )
             return
-        new_xp, new_level, _ = await db.add_xp(
-            member.id,
-            interaction.guild_id,
-            amount,
-            0,
+        result = await xp_service.award(
+            guild_id=interaction.guild_id,
+            user_id=member.id,
+            amount=amount,
+            source="admin:modal_grant",
         )
         await interaction.response.send_message(
             f"✅ Gave **{amount}** XP to {member.mention}. "
-            f"Now **{new_xp}** XP (Level **{new_level}**).",
+            f"Now **{result.new_xp}** XP (Level **{result.new_level}**).",
             ephemeral=True,
         )
 
@@ -258,9 +260,11 @@ class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-ar
                 ephemeral=True,
             )
             return
-        await db.execute(
-            "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
-            (member.id, interaction.guild_id),
+        await xp_service.reset(
+            guild_id=interaction.guild_id,
+            user_id=member.id,
+            source="admin:modal_reset",
+            actor_id=interaction.user.id,
         )
         await interaction.response.send_message(
             f"✅ Reset XP for {member.mention}.",
@@ -299,7 +303,18 @@ class XpCog(commands.Cog):
             return
 
         amount = random.randint(xp_min, xp_max)
-        new_xp, new_level, leveled_up = await db.add_xp(user_id, guild_id, amount, now)
+        result = await xp_service.award(
+            guild_id=guild_id,
+            user_id=user_id,
+            amount=amount,
+            source="chat",
+            now=now,
+        )
+        new_xp, new_level, leveled_up = (
+            result.new_xp,
+            result.new_level,
+            result.leveled_up,
+        )
 
         if leveled_up:
             channel_id = await db.get_setting(guild_id, XP_ANNOUNCE_CHANNEL, "")
@@ -393,19 +408,26 @@ class XpCog(commands.Cog):
         if amount <= 0:
             await ctx.send(embed=em.error("Amount must be positive."), delete_after=5)
             return
-        new_xp, new_level, _ = await db.add_xp(member.id, ctx.guild.id, amount, 0)
+        result = await xp_service.award(
+            guild_id=ctx.guild.id,
+            user_id=member.id,
+            amount=amount,
+            source="admin:givexp",
+        )
         await ctx.send(
             f"✅ Gave **{amount}** XP to {member.mention}. "
-            f"They now have **{new_xp}** XP (Level **{new_level}**).",
+            f"They now have **{result.new_xp}** XP (Level **{result.new_level}**).",
         )
 
     @commands.command(name="resetxp")
     @commands.has_permissions(administrator=True)
     async def resetxp(self, ctx: commands.Context, member: discord.Member):
         """Reset a user's XP to zero (admin only)."""
-        await db.execute(
-            "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
-            (member.id, ctx.guild.id),
+        await xp_service.reset(
+            guild_id=ctx.guild.id,
+            user_id=member.id,
+            source="admin:resetxp",
+            actor_id=ctx.author.id,
         )
         await ctx.send(f"✅ Reset XP for {member.mention}.")
 
@@ -589,7 +611,8 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[cal
         gid = self.view.ctx.guild.id
         await db.set_setting(gid, XP_MIN, str(mn))
         await db.set_setting(gid, XP_MAX, str(mx))
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.view._refresh(interaction)
 
 
@@ -616,7 +639,8 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: igno
             )
             return
         await db.set_setting(self.view.ctx.guild.id, XP_COOLDOWN, str(val))
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.view._refresh(interaction)
 
 
@@ -640,7 +664,8 @@ class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"): 
             )
             return
         await db.set_setting(self.view.ctx.guild.id, XP_ANNOUNCE_CHANNEL, val)
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.view._refresh(interaction)
 
 

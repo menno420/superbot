@@ -1,28 +1,40 @@
 """Tests for the startup registry validation pipeline.
 
-Covers:
-- validate_registry() succeeds on the real registry (smoke test)
-- CircularDependencyError raised on a cycle
-- RegistryValidationError raised for missing required fields
-- RegistryValidationError raised for invalid visibility_tier
-- CapabilityNamespaceError raised for bad capability format
-- CapabilityNamespaceError raised for reserved namespace prefix
-- RegistryValidationError raised for duplicate entry_point
-- RegistryValidationError raised for unknown dependency reference
+Covers, via parametrized error-case clusters:
+- The real registry validates cleanly (smoke test)
+- Required-field absence raises RegistryValidationError
+- Invalid tier/mode/color raise RegistryValidationError
+- Duplicate entry_point / duplicate capability raise
+  RegistryValidationError
+- Unknown dependency / related_subsystem references raise
+  RegistryValidationError
+- Self-referential / circular dependencies raise
+  CircularDependencyError
+- Bad capability format / reserved prefix raise
+  CapabilityNamespaceError
 
-Each test that injects a bad registry uses monkeypatch to temporarily replace
-the module-level SUBSYSTEMS and _COMPILED_DEPENDENCY_ORDER, then restores them.
-validate_registry() raises before modifying compiled tables for all error cases.
+Each negative test injects a mutated registry, runs validation,
+and asserts the expected exception class.  Restoration is handled
+by monkeypatch.
+
+P1 PR-7 consolidation: 12+ individual error tests were collapsed
+into three parametrized clusters keyed by exception class.  The
+mutators stay small (one-line registry tweaks), and reading any
+single case in the parameter list explains the failure mode.
 """
 
 from __future__ import annotations
 
-import copy
-import importlib
+from typing import Callable
 
 import pytest
 
 import utils.subsystem_registry as reg
+from services.governance_exceptions import (
+    CapabilityNamespaceError,
+    CircularDependencyError,
+    RegistryValidationError,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -76,9 +88,12 @@ def _minimal_good_registry() -> dict:
 
 
 def _run_validation_with(monkeypatch, subsystems: dict) -> None:
-    """Patch SUBSYSTEMS and run validate_registry(). Restores originals via monkeypatch."""
+    """Patch SUBSYSTEMS and run validate_registry().
+
+    Resets every compiled lookup table so validate_registry() rebuilds
+    them from scratch under the new registry.
+    """
     monkeypatch.setattr(reg, "SUBSYSTEMS", subsystems)
-    # Also reset computed tables so validate_registry() re-populates them.
     monkeypatch.setattr(reg, "COMMAND_TO_SUBSYSTEM", {})
     monkeypatch.setattr(reg, "CAPABILITY_TO_SUBSYSTEM", {})
     monkeypatch.setattr(reg, "_COMPILED_DEPENDENTS", {})
@@ -89,160 +104,112 @@ def _run_validation_with(monkeypatch, subsystems: dict) -> None:
     reg.validate_registry()
 
 
+Mutator = Callable[[dict], None]
+
+
+def _set_field(name: str, value: object) -> Mutator:
+    def mutate(r: dict) -> None:
+        r["alpha"][name] = value
+    return mutate
+
+
+def _delete_field(name: str) -> Mutator:
+    def mutate(r: dict) -> None:
+        del r["alpha"][name]
+    return mutate
+
+
 # ---------------------------------------------------------------------------
 # Smoke test: real registry is valid
 # ---------------------------------------------------------------------------
 
 
 def test_real_registry_passes_validation():
-    """The real SUBSYSTEMS registry must pass all integrity checks with no exceptions."""
-    # validated_registry session fixture already ran this; we just assert the
-    # compiled tables are non-empty as a result.
+    """The real SUBSYSTEMS registry must pass all integrity checks."""
     assert len(reg.SUBSYSTEMS) > 0
     assert len(reg._COMPILED_TIERS) > 0
     assert len(reg._COMPILED_DEPENDENCY_ORDER) > 0
 
 
 # ---------------------------------------------------------------------------
-# Circular dependency detection
-# ---------------------------------------------------------------------------
-
-
-def test_circular_dependency_raises(monkeypatch):
-    from services.governance_exceptions import CircularDependencyError
-
-    bad = _minimal_good_registry()
-    bad["alpha"]["dependencies"] = ["beta"]  # alpha→beta + beta→alpha = cycle
-    with pytest.raises(CircularDependencyError):
-        _run_validation_with(monkeypatch, bad)
-
-
-def test_self_referential_dependency_raises(monkeypatch):
-    from services.governance_exceptions import CircularDependencyError
-
-    bad = _minimal_good_registry()
-    bad["alpha"]["dependencies"] = ["alpha"]
-    with pytest.raises(CircularDependencyError):
-        _run_validation_with(monkeypatch, bad)
-
-
-# ---------------------------------------------------------------------------
-# Missing required field
+# Error cases — grouped by raised exception class
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize(
-    "field",
-    ["display_name", "description", "emoji", "visibility_tier", "visibility_mode"],
+    "mutator",
+    [
+        # Missing required fields (one case per critical field)
+        _delete_field("display_name"),
+        _delete_field("description"),
+        _delete_field("emoji"),
+        _delete_field("visibility_tier"),
+        _delete_field("visibility_mode"),
+        # Invalid enum values
+        _set_field("visibility_tier", "superadmin"),
+        _set_field("visibility_mode", "turbo"),
+        # Color must be int, not an arbitrary object
+        _set_field("color", object()),
+        # Duplicate entry_point across subsystems
+        lambda r: r["beta"].__setitem__("entry_points", ["alpha"]),
+        # Duplicate capability across subsystems
+        lambda r: r["beta"].__setitem__("capabilities", ["alpha.resource.read"]),
+        # Unknown dependency reference
+        _set_field("dependencies", ["nonexistent_subsystem"]),
+        # Unknown related_subsystem reference
+        _set_field("related_subsystems", ["phantom"]),
+    ],
+    ids=[
+        "missing_display_name",
+        "missing_description",
+        "missing_emoji",
+        "missing_visibility_tier",
+        "missing_visibility_mode",
+        "invalid_tier",
+        "invalid_mode",
+        "color_not_int",
+        "duplicate_entry_point",
+        "duplicate_capability",
+        "unknown_dependency",
+        "unknown_related",
+    ],
 )
-def test_missing_required_field_raises(monkeypatch, field):
-    from services.governance_exceptions import RegistryValidationError
-
+def test_registry_validation_error_cases(monkeypatch, mutator: Mutator):
     bad = _minimal_good_registry()
-    del bad["alpha"][field]
+    mutator(bad)
     with pytest.raises(RegistryValidationError):
         _run_validation_with(monkeypatch, bad)
 
 
-# ---------------------------------------------------------------------------
-# Invalid tier / mode
-# ---------------------------------------------------------------------------
-
-
-def test_invalid_visibility_tier_raises(monkeypatch):
-    from services.governance_exceptions import RegistryValidationError
-
+@pytest.mark.parametrize(
+    "mutator",
+    [
+        # alpha→beta + beta→alpha → cycle
+        lambda r: r["alpha"].__setitem__("dependencies", ["beta"]),
+        # alpha→alpha → self cycle
+        _set_field("dependencies", ["alpha"]),
+    ],
+    ids=["mutual_cycle", "self_reference"],
+)
+def test_circular_dependency_cases(monkeypatch, mutator: Mutator):
     bad = _minimal_good_registry()
-    bad["alpha"]["visibility_tier"] = "superadmin"  # not a valid tier
-    with pytest.raises(RegistryValidationError):
+    mutator(bad)
+    with pytest.raises(CircularDependencyError):
         _run_validation_with(monkeypatch, bad)
 
 
-def test_invalid_visibility_mode_raises(monkeypatch):
-    from services.governance_exceptions import RegistryValidationError
-
+@pytest.mark.parametrize(
+    "mutator",
+    [
+        # Wrong part count — capabilities must be exactly subsystem.resource.action
+        _set_field("capabilities", ["alpha.read"]),
+        # Reserved namespace prefix
+        _set_field("capabilities", ["_internal.resource.action"]),
+    ],
+    ids=["wrong_part_count", "reserved_prefix"],
+)
+def test_capability_namespace_error_cases(monkeypatch, mutator: Mutator):
     bad = _minimal_good_registry()
-    bad["alpha"]["visibility_mode"] = "turbo"  # not a valid mode
-    with pytest.raises(RegistryValidationError):
-        _run_validation_with(monkeypatch, bad)
-
-
-# ---------------------------------------------------------------------------
-# Capability namespace violations
-# ---------------------------------------------------------------------------
-
-
-def test_capability_wrong_part_count_raises(monkeypatch):
-    from services.governance_exceptions import CapabilityNamespaceError
-
-    bad = _minimal_good_registry()
-    bad["alpha"]["capabilities"] = ["alpha.read"]  # only 2 parts, needs 3
+    mutator(bad)
     with pytest.raises(CapabilityNamespaceError):
-        _run_validation_with(monkeypatch, bad)
-
-
-def test_capability_reserved_prefix_raises(monkeypatch):
-    from services.governance_exceptions import CapabilityNamespaceError
-
-    bad = _minimal_good_registry()
-    bad["alpha"]["capabilities"] = ["_internal.resource.action"]
-    with pytest.raises(CapabilityNamespaceError):
-        _run_validation_with(monkeypatch, bad)
-
-
-def test_duplicate_capability_across_subsystems_raises(monkeypatch):
-    from services.governance_exceptions import RegistryValidationError
-
-    bad = _minimal_good_registry()
-    bad["beta"]["capabilities"] = ["alpha.resource.read"]  # same as alpha's cap
-    with pytest.raises(RegistryValidationError):
-        _run_validation_with(monkeypatch, bad)
-
-
-# ---------------------------------------------------------------------------
-# Entry point and dependency reference validation
-# ---------------------------------------------------------------------------
-
-
-def test_duplicate_entry_point_raises(monkeypatch):
-    from services.governance_exceptions import RegistryValidationError
-
-    bad = _minimal_good_registry()
-    bad["beta"]["entry_points"] = ["alpha"]  # "alpha" already registered by alpha
-    with pytest.raises(RegistryValidationError):
-        _run_validation_with(monkeypatch, bad)
-
-
-def test_unknown_dependency_raises(monkeypatch):
-    from services.governance_exceptions import RegistryValidationError
-
-    bad = _minimal_good_registry()
-    bad["alpha"]["dependencies"] = ["nonexistent_subsystem"]
-    with pytest.raises(RegistryValidationError):
-        _run_validation_with(monkeypatch, bad)
-
-
-def test_unknown_related_subsystem_raises(monkeypatch):
-    from services.governance_exceptions import RegistryValidationError
-
-    bad = _minimal_good_registry()
-    bad["alpha"]["related_subsystems"] = ["phantom"]
-    with pytest.raises(RegistryValidationError):
-        _run_validation_with(monkeypatch, bad)
-
-
-# ---------------------------------------------------------------------------
-# Color type validation
-# ---------------------------------------------------------------------------
-
-
-def test_color_must_be_int_not_discord_color(monkeypatch):
-    from services.governance_exceptions import RegistryValidationError
-
-    class FakeColor:
-        pass
-
-    bad = _minimal_good_registry()
-    bad["alpha"]["color"] = FakeColor()
-    with pytest.raises(RegistryValidationError):
         _run_validation_with(monkeypatch, bad)

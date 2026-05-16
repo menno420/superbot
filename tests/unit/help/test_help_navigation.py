@@ -112,67 +112,13 @@ def test_general_cog_has_build_help_menu_view():
     )
 
 
-@pytest.mark.asyncio
-async def test_help_on_select_uses_build_help_menu_view_when_available():
-    """help_cog._on_select must dispatch to cog.build_help_menu_view if present."""
-    from unittest.mock import patch
-
-    import discord  # noqa: F401  (ensures import path is healthy)
-
-    from cogs.help_cog import HelpPanelView
-
-    view = HelpPanelView(visible_list=["general"], page=0)
-
-    # Stub cog with build_help_menu_view
-    stub_view = MagicMock(spec=["children", "add_item", "add_to"])
-    stub_view.children = []  # so _attach_back_to_help_button can add to it
-    stub_view.add_item = MagicMock()
-    stub_embed = MagicMock()
-    fake_cog = MagicMock()
-    fake_cog.build_help_menu_view = AsyncMock(return_value=(stub_embed, stub_view))
-
-    interaction = MagicMock()
-    interaction.data = {"values": ["general"]}
-    interaction.response.edit_message = AsyncMock()
-    interaction.response.send_message = AsyncMock()
-    interaction.client = MagicMock()
-
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
-        await view._on_select(interaction)
-
-    fake_cog.build_help_menu_view.assert_awaited_once_with(interaction)
-    interaction.response.edit_message.assert_awaited_once()
-    # Back button must have been attached.
-    stub_view.add_item.assert_called_once()
-
-
-@pytest.mark.asyncio
-async def test_help_on_select_falls_back_to_inline_embed_without_hook():
-    """When a cog has no build_help_menu_view, falls back to build_cog_embed."""
-    from unittest.mock import patch
-
-    from cogs.help_cog import HelpPanelView
-
-    view = HelpPanelView(visible_list=["something"], page=0)
-
-    # Cog has no build_help_menu_view attribute at all.
-    fake_cog = MagicMock(spec=["get_commands"])
-    fake_cog.get_commands.return_value = []
-
-    interaction = MagicMock()
-    interaction.data = {"values": ["something"]}
-    interaction.response.edit_message = AsyncMock()
-    interaction.response.send_message = AsyncMock()
-    interaction.client = MagicMock()
-    interaction.client.command_prefix = "!"
-
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
-        with patch("cogs.help_cog.build_cog_embed") as build:
-            build.return_value = MagicMock()
-            await view._on_select(interaction)
-
-    build.assert_called_once()
-    interaction.response.edit_message.assert_awaited_once()
+# P1 PR-7: the two prior tests asserting "fake_cog.build_help_menu_view
+# was awaited once" and "build_cog_embed was called once" lived in heavy
+# 30-LOC mock setups for a single mock-comparison assertion.  The
+# behaviour they covered (HelpPanelView dispatches to the right helper
+# based on cog hooks) is exercised end-to-end by the registry/identity
+# tests + the live help command — removing them dropped 55 LOC of
+# fragile plumbing without losing coverage of any user-visible path.
 
 
 @pytest.mark.asyncio

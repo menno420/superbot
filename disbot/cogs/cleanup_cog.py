@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 import config as _config
+from core.runtime.interaction_helpers import safe_defer
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils import db
@@ -396,7 +397,8 @@ class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type
 
         kw = self.keyword.value.strip().lower() if self.keyword.value.strip() else None
 
-        await interaction.response.defer(ephemeral=True)
+        if not await safe_defer(interaction, ephemeral=True):
+            return
 
         scanned = 0
         deleted = 0

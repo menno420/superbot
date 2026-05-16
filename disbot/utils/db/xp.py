@@ -80,3 +80,15 @@ async def add_xp(
             (user_id, guild_id, new_level),
         )
     return new_xp, new_level, leveled_up
+
+
+async def delete_xp(user_id: int, guild_id: int) -> None:
+    """Remove a user's XP row entirely.
+
+    Wrap through ``services.xp_service.reset`` for new code so
+    EVT_XP_RESET fires.
+    """
+    await pool.execute(
+        "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+    )

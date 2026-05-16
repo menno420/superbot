@@ -237,3 +237,37 @@ class TestBetAndSettle:
                     outcome_delta=-50,
                     reason="blackjack:lose",
                 )
+
+
+# ---------------------------------------------------------------------------
+# refund() — P2 PR-13: shutdown / cancelled-game money return
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_refund_credits_amount_with_reason_attribution():
+    with (
+        patch(
+            "services.economy_service.db.add_coins",
+            new_callable=AsyncMock,
+            return_value=750,
+        ) as add_coins,
+        patch("services.economy_service.db.execute", new_callable=AsyncMock),
+        patch(
+            "services.economy_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        new_balance = await economy_service.refund(
+            guild_id=1,
+            user_id=2,
+            amount=250,
+            reason="blackjack:refund:shutdown",
+            actor_id=None,
+        )
+
+    assert new_balance == 750
+    add_coins.assert_awaited_once_with(2, 1, 250)
+    emit.assert_awaited_once()
+    assert emit.await_args.kwargs["delta"] == 250
+    assert emit.await_args.kwargs["reason"] == "blackjack:refund:shutdown"

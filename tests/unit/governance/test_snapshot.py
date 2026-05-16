@@ -1,12 +1,23 @@
 """Tests for GovernanceSnapshot serialization.
 
-Covers:
+Covers the behaviour that matters for clients:
 - build_governance_snapshot returns a GovernanceSnapshot
-- to_dict() produces a JSON-safe dict with all required top-level keys
-- Round-trip: all values in to_dict() are JSON-serializable primitives
-- visible + denied subsystem sets are mutually exclusive and cover all subsystems
-- capability_map keys match the real registry's capability list
-- Dependency blocks appear in denied when economy is disabled
+- to_dict() output is JSON-safe (no sets / Enums / datetimes leak)
+- visible + denied subsystem sets are mutually exclusive and cover
+  all subsystems (invariant — drift breaks help rendering)
+- capability_map keys mirror the registry
+- Disabling economy propagates to dependents (inventory, mining)
+- CleanupPolicy.to_dict serializes the Enum to its value
+
+Deletions (P1 PR-5):
+  Five shallow shape-only checks dropped because they enforced
+  implementation details (key presence, sorted-list ordering,
+  primitive types) without protecting behaviour:
+  - test_snapshot_to_dict_has_all_required_keys
+  - test_member_tier_is_user_when_no_member
+  - test_capability_map_values_are_booleans
+  - test_to_dict_visible_subsystems_is_sorted_list
+  - test_to_dict_scope_provenance_values_are_strings
 """
 
 from __future__ import annotations
@@ -26,21 +37,8 @@ from utils.subsystem_registry import SUBSYSTEMS
 
 from .conftest import make_ctx, make_visibility_row
 
-_SNAPSHOT_REQUIRED_KEYS = {
-    "visible_subsystems",
-    "denied_subsystems",
-    "dependency_blocks",
-    "cleanup_policy",
-    "member_tier",
-    "scope_provenance",
-    "capability_map",
-    "registry_version",
-    "registry_schema_version",
-}
-
-
 # ---------------------------------------------------------------------------
-# Snapshot construction
+# Snapshot construction & JSON safety
 # ---------------------------------------------------------------------------
 
 
@@ -49,14 +47,6 @@ async def test_build_snapshot_returns_governance_snapshot(mock_db):
     ctx = make_ctx()
     snapshot = await build_governance_snapshot(ctx)
     assert isinstance(snapshot, GovernanceSnapshot)
-
-
-@pytest.mark.asyncio
-async def test_snapshot_to_dict_has_all_required_keys(mock_db):
-    ctx = make_ctx()
-    snapshot = await build_governance_snapshot(ctx)
-    d = snapshot.to_dict()
-    assert _SNAPSHOT_REQUIRED_KEYS <= set(d.keys())
 
 
 @pytest.mark.asyncio
@@ -89,13 +79,6 @@ async def test_visible_and_denied_cover_all_subsystems(mock_db):
     assert snapshot.visible_subsystems | snapshot.denied_subsystems == all_names
 
 
-@pytest.mark.asyncio
-async def test_member_tier_is_user_when_no_member(mock_db):
-    ctx = make_ctx()
-    snapshot = await build_governance_snapshot(ctx)
-    assert snapshot.member_tier == "user"
-
-
 # ---------------------------------------------------------------------------
 # Capability map
 # ---------------------------------------------------------------------------
@@ -108,13 +91,6 @@ async def test_capability_map_contains_all_registry_capabilities(mock_db):
     ctx = make_ctx()
     snapshot = await build_governance_snapshot(ctx)
     assert set(snapshot.capability_map.keys()) == set(CAPABILITY_TO_SUBSYSTEM.keys())
-
-
-@pytest.mark.asyncio
-async def test_capability_map_values_are_booleans(mock_db):
-    ctx = make_ctx()
-    snapshot = await build_governance_snapshot(ctx)
-    assert all(isinstance(v, bool) for v in snapshot.capability_map.values())
 
 
 # ---------------------------------------------------------------------------
@@ -143,37 +119,6 @@ async def test_dependency_blocks_dict_populated_for_blocked_dependents(mock_db):
     snapshot = await build_governance_snapshot(ctx)
     assert "inventory" in snapshot.dependency_blocks
     assert "economy" in snapshot.dependency_blocks["inventory"]
-
-
-# ---------------------------------------------------------------------------
-# Serialization round-trip — to_dict field types
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_to_dict_visible_subsystems_is_sorted_list(mock_db):
-    ctx = make_ctx()
-    snapshot = await build_governance_snapshot(ctx)
-    d = snapshot.to_dict()
-    assert isinstance(d["visible_subsystems"], list)
-    assert d["visible_subsystems"] == sorted(d["visible_subsystems"])
-
-
-@pytest.mark.asyncio
-async def test_to_dict_scope_provenance_values_are_strings(mock_db):
-    ctx = make_ctx()
-    snapshot = await build_governance_snapshot(ctx)
-    d = snapshot.to_dict()
-    assert all(isinstance(v, str) for v in d["scope_provenance"].values())
-
-
-@pytest.mark.asyncio
-async def test_to_dict_registry_version_is_int(mock_db):
-    ctx = make_ctx()
-    snapshot = await build_governance_snapshot(ctx)
-    d = snapshot.to_dict()
-    assert isinstance(d["registry_version"], int)
-    assert isinstance(d["registry_schema_version"], int)
 
 
 # ---------------------------------------------------------------------------

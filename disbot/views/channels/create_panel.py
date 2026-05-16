@@ -14,6 +14,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import SUCCESS_COLOR
 from views.base import BaseView
@@ -120,7 +121,8 @@ class _CreateSubView(BaseView):
             )
             return
 
-        await interaction.response.defer(ephemeral=True)
+        if not await safe_defer(interaction, ephemeral=True):
+            return
 
         guild = interaction.guild
         safe = await safe_channel_name(guild, self.chosen_name)
@@ -241,8 +243,7 @@ class _NameSelect(discord.ui.Select):
                 view=self._parent,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
-            if not interaction.response.is_done():
-                await interaction.response.defer()
+            await safe_defer(interaction)
 
 
 class _CategorySelect(discord.ui.Select):
@@ -266,8 +267,7 @@ class _CategorySelect(discord.ui.Select):
                 view=self._parent,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
-            if not interaction.response.is_done():
-                await interaction.response.defer()
+            await safe_defer(interaction)
 
 
 class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):  # type: ignore[call-arg]
@@ -284,7 +284,8 @@ class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):  # type: 
     async def on_submit(self, interaction: discord.Interaction):
         name = self.channel_name.value.strip().lower().replace(" ", "-")
         self._view.chosen_name = name
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         if self._view.manager_message:
             await self._view.manager_message.edit(
                 embed=self._view.build_embed(),

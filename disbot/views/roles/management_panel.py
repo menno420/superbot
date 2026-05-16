@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.roles._helpers import _find_role_normalized, _parse_color
@@ -149,7 +150,8 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
 
         try:
             await role.edit(**kwargs)
-            await interaction.response.defer()
+            if not await safe_defer(interaction):
+                return
             if self.parent.message:
                 await self.parent.message.edit(
                     embed=await self.parent.build_embed(),

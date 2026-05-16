@@ -13,7 +13,7 @@ import time
 import discord
 
 from cogs.economy._helpers import _WORK_COOLDOWN, JOBS, _build_economy_embed, _job_pay
-from services import economy_service
+from services import economy_service, xp_service
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
@@ -103,7 +103,15 @@ class _JobSelect(discord.ui.Select):
             reason=f"work:{job_name}",
             actor_id=uid,
         )
-        new_xp, new_lv, lvup = await db.add_xp(uid, gid, xp_gain, now)
+        xp_result = await xp_service.award(
+            guild_id=gid,
+            user_id=uid,
+            amount=xp_gain,
+            source=f"work:{job_name}",
+            now=now,
+        )
+        new_lv = xp_result.new_level
+        lvup = xp_result.leveled_up
         await db.set_economy(uid, gid, last_worked=now)
 
         bonus_pct = min(times, 100)

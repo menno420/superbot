@@ -140,3 +140,53 @@ class TestCancelAll:
         assert long1.cancelled()
         assert long2.cancelled()
         assert not short.cancelled()
+
+
+class TestCancelByPrefix:
+    @pytest.mark.asyncio
+    async def test_cancels_only_matching_prefix(self):
+        async def waiter():
+            await asyncio.sleep(60)
+
+        a1 = tasks.spawn("counting:a", waiter())
+        a2 = tasks.spawn("counting:b", waiter())
+        b1 = tasks.spawn("rps:a", waiter())
+        b2 = tasks.spawn("rps:b", waiter())
+
+        cancelled = tasks.cancel_by_prefix("counting:")
+        # Only wait on the counting:* tasks; rps:* must still be running.
+        await asyncio.gather(a1, a2, return_exceptions=True)
+
+        assert cancelled == 2
+        assert a1.cancelled() and a2.cancelled()
+        assert not b1.cancelled() and not b2.cancelled()
+
+        # Cleanup the leftover rps:* tasks for the next test.
+        b1.cancel()
+        b2.cancel()
+        await asyncio.gather(b1, b2, return_exceptions=True)
+
+    @pytest.mark.asyncio
+    async def test_skips_already_completed_tasks(self):
+        async def done():
+            return None
+
+        finished = tasks.spawn("counting:finished", done())
+        await finished
+
+        cancelled = tasks.cancel_by_prefix("counting:")
+        assert cancelled == 0  # already-done tasks not counted
+
+    @pytest.mark.asyncio
+    async def test_returns_zero_when_no_match(self):
+        async def waiter():
+            await asyncio.sleep(60)
+
+        t = tasks.spawn("counting:only", waiter())
+        try:
+            cancelled = tasks.cancel_by_prefix("rps:")
+            assert cancelled == 0
+            assert not t.cancelled()
+        finally:
+            t.cancel()
+            await asyncio.gather(t, return_exceptions=True)

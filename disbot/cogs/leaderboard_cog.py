@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils import db
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
 from views.base import BaseView
@@ -144,7 +145,8 @@ class LeaderboardView(BaseView):
         interaction: discord.Interaction,
         select: discord.ui.Select,
     ):
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         embed = await _build_embed(select.values[0], self.guild, self.channel)
         await interaction.edit_original_response(embed=embed, view=self)
 

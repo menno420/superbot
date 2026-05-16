@@ -247,6 +247,33 @@ async def bet_and_settle(
     return new_balance
 
 
+async def refund(
+    guild_id: int,
+    user_id: int,
+    amount: int,
+    *,
+    reason: str,
+    actor_id: int | None = None,
+) -> int:
+    """Return *amount* coins to *user_id* — alias for :func:`credit`.
+
+    Distinct entry point so audit-log readers can filter on
+    ``reason LIKE '%:refund:%'`` to recover money-flow events caused
+    by graceful shutdowns or interrupted games (e.g. blackjack hand
+    cancelled by restart).
+
+    The audit row's reason field captures the original transaction
+    context so refunds remain attributable.
+    """
+    return await credit(
+        guild_id=guild_id,
+        user_id=user_id,
+        amount=amount,
+        reason=reason,
+        actor_id=actor_id,
+    )
+
+
 async def _audit(
     guild_id: int,
     user_id: int,

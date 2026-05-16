@@ -697,8 +697,8 @@ class CountingCog(commands.Cog):
     # --------------------------------------------
 
     def cog_unload(self):
-        """Handles cleanup when the cog is unloaded."""
-        pass
+        """Cancel in-flight save / load tasks so a reload doesn't leak them."""
+        tasks.cancel_by_prefix("counting:")
 
 
 async def setup(bot):

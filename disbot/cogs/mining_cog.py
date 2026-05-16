@@ -135,7 +135,8 @@ class MiningCog(commands.Cog):
             await self.handle_mine(interaction, "down")
 
         async def handle_mine(self, interaction: discord.Interaction, direction: str):
-            await interaction.response.defer()
+            if not await safe_defer(interaction):
+                return
 
             user_id = str(self.user_id)
             inventory = await db.get_mining_inventory(user_id)

@@ -99,3 +99,24 @@ def cancel_all() -> None:
     for t in list(_TASKS):
         if not t.done():
             t.cancel()
+
+
+def cancel_by_prefix(prefix: str) -> int:
+    """Cancel every still-running spawned task whose name starts with *prefix*.
+
+    Intended for cog ``cog_unload`` hooks so a cog reload doesn't leak
+    its in-flight background work.  Convention: name tasks as
+    ``"<subsystem>:<purpose>[:<id>]"`` and pass ``"<subsystem>:"`` as
+    the prefix.
+
+    Returns the number of tasks that were cancelled (already-done
+    tasks are skipped).
+    """
+    cancelled = 0
+    for t in list(_TASKS):
+        if t.done():
+            continue
+        if t.get_name().startswith(prefix):
+            t.cancel()
+            cancelled += 1
+    return cancelled

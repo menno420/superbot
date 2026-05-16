@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils import db
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
@@ -82,7 +83,8 @@ class TimeRolesPanel(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.defer(ephemeral=True)
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         cog = interaction.client.get_cog("RoleCog")  # type: ignore[attr-defined]
         if cog:
             count = await cog._assign_roles(interaction.guild)
@@ -142,7 +144,8 @@ class TimeThresholdAddModal(
         )
         store_name = discord_role.name if discord_role else self.role_name.value.strip()
         await db.set_role_threshold(interaction.guild.id, store_name, d)
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.parent._refresh()
 
 

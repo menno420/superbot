@@ -6,12 +6,12 @@ Covers:
   - _SubsystemToggleView handles set_subsystem_visibility exceptions gracefully
   - _back_callback handles resolve_visibility exceptions gracefully
   - No exception silently swallowed when interaction already responded
-  - datetime.utcnow() is not used anywhere in production code paths
+
+datetime.utcnow() is enforced by ruff DTZ003 (pyproject.toml).
 """
 
 from __future__ import annotations
 
-import ast
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -304,37 +304,9 @@ class TestSubsystemToggleViewErrorHandling:
 
 
 # ---------------------------------------------------------------------------
-# datetime.utcnow() not present in production code
+# datetime.utcnow() is now caught by ruff DTZ003 (configured in pyproject.toml).
+# The previous AST scan duplicated that lint rule; deleted in P1 PR-5.
 # ---------------------------------------------------------------------------
-
-
-def _py_files_under(root: Path) -> list[Path]:
-    return [p for p in root.rglob("*.py") if "__pycache__" not in str(p)]
-
-
-def test_no_datetime_utcnow_in_production_code():
-    """datetime.utcnow() must not appear in any disbot source file.
-
-    Regression guard: all occurrences must have been replaced with
-    datetime.now(tz=...) / datetime.now(tz=timezone.utc).
-
-    Note: discord.utils.utcnow() is a Discord.py-provided timezone-aware helper
-    and is NOT deprecated — this test only catches bare datetime.utcnow() calls.
-    """
-    import re
-
-    # Match .utcnow() not preceded by "discord.utils" — avoids flagging the
-    # discord.utils.utcnow() helper which is timezone-aware and not deprecated.
-    _PATTERN = re.compile(r"(?<!discord\.utils)\.utcnow\(\)")
-    violations: list[str] = []
-    for path in _py_files_under(_DISBOT):
-        src = path.read_text()
-        if _PATTERN.search(src):
-            violations.append(str(path.relative_to(_DISBOT)))
-    assert not violations, (
-        "datetime.utcnow() is deprecated — replace with "
-        "datetime.now(tz=timezone.utc). Violations:\n" + "\n".join(violations)
-    )
 
 
 # ---------------------------------------------------------------------------

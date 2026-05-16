@@ -9,6 +9,7 @@ import sys
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
@@ -288,7 +289,8 @@ class _AdminPanelView(BaseView):
         if not await interaction.client.is_owner(interaction.user):  # type: ignore[attr-defined]
             await interaction.response.send_message("Owner only.", ephemeral=True)
             return
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         reloaded, failed = [], []
         for module in list(self.cog.bot.extensions.keys()):
             try:

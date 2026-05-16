@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils import db
 from utils.settings_keys import SKIP_ROLES
 from utils.ui_constants import WARNING_COLOR
@@ -55,7 +56,8 @@ class DiagnosticsPanel(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.defer(ephemeral=True)
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         await interaction.guild.chunk()
         await interaction.followup.send("✅ Member list refreshed.", ephemeral=True)
 
@@ -65,7 +67,8 @@ class DiagnosticsPanel(BaseView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.defer(ephemeral=True)
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         cog = interaction.client.get_cog("RoleCog")  # type: ignore[attr-defined]
         count = await cog._assign_roles(interaction.guild) if cog else 0
         await interaction.followup.send(

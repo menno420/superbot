@@ -292,9 +292,13 @@ When the bot restarts:
 - `live_update_scheduler._last_edit` rate-limit dict — drops to empty.
 - Per-session `navigation_stack._locks` — replaced lazily on next push.
 - In-progress tournaments not persisted to DB.
-- In-process counting/blackjack/rps game state — cogs that hold these
-  in instance attributes lose them; restart-safe restoration is a
-  Phase D follow-up for those god-cogs.
+- In-process counting/blackjack/rps game state held in cog instance
+  attributes — but cogs can now checkpoint via
+  :mod:`services.game_state_service` (migration 015) and restore at
+  cog_load. Adoption is per-cog; cogs not yet wired in retain the
+  pre-existing "restart cancels" behaviour. For money flow, use
+  :func:`services.economy_service.refund` to return staked coins
+  with audit-trail attribution so the user is never out money.
 
 ---
 

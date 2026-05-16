@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import random
 
 import discord
 from discord.ext import commands
@@ -10,6 +9,11 @@ from discord.ext import commands
 from core.runtime import tasks
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import economy_service
+from services.blackjack_engine import hand_str as _hand_str
+from services.blackjack_engine import hand_value as _hand_value
+from services.blackjack_engine import is_blackjack as _is_blackjack
+from services.blackjack_engine import new_deck as _new_deck
+from services.blackjack_engine import rank_value as _rank_value
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -49,47 +53,14 @@ async def _on_view_error(
 
 
 # ---------------------------------------------------------------------------
-# Card engine
+# Card engine — pure card/hand math lives in services.blackjack_engine.
+# This cog imports _rank_value, _hand_value, _new_deck, _hand_str,
+# _is_blackjack from the service (see top-of-file imports).  See P3 PR-14.
 # ---------------------------------------------------------------------------
 
-SUITS = ("♠", "♥", "♦", "♣")
-RANKS = ("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K")
 FREE_WIN_COINS = 50
 TOURN_START_CHIPS = 1000
 TOURN_BET_PER_ROUND = 200
-
-
-def _rank_value(rank: str) -> int:
-    if rank in ("J", "Q", "K"):
-        return 10
-    if rank == "A":
-        return 11
-    return int(rank)
-
-
-def _hand_value(hand: list[str]) -> int:
-    total = sum(_rank_value(c.split()[0]) for c in hand)
-    aces = sum(1 for c in hand if c.startswith("A"))
-    while total > 21 and aces:
-        total -= 10
-        aces -= 1
-    return total
-
-
-def _new_deck() -> list[str]:
-    deck = [f"{r} {s}" for r in RANKS for s in SUITS]
-    random.shuffle(deck)
-    return deck
-
-
-def _hand_str(hand: list[str], hide_second: bool = False) -> str:
-    if hide_second:
-        return f"{hand[0]}  ||?||"
-    return "  ".join(hand)
-
-
-def _is_blackjack(hand: list[str]) -> bool:
-    return len(hand) == 2 and _hand_value(hand) == 21
 
 
 # ---------------------------------------------------------------------------
@@ -881,6 +852,10 @@ class BlackjackCog(commands.Cog):
 
     async def cog_load(self):
         tasks.spawn("blackjack:cleanup_orphaned", self._cleanup_orphaned_tournaments())
+
+    def cog_unload(self):
+        """Cancel cleanup + tournament-timer tasks so a reload doesn't leak them."""
+        tasks.cancel_by_prefix("blackjack:")
 
     async def _cleanup_orphaned_tournaments(self):
         """On startup, find leftover BJ Tournament categories and notify players."""
