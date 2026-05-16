@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install black isort ruff mypy
           pip install pytest pytest-asyncio
-          pip install discord.py asyncpg aiohttp python-dotenv
+          pip install -r requirements.txt
 
       - name: Run Black (check only)
         run: black --check . --exclude '(\.github|tests|venv|env|build|dist)'
