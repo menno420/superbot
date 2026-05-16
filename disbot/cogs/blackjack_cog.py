@@ -14,6 +14,35 @@ from utils.ui_constants import ECONOMY_COLOR, ERROR_COLOR, GAME_COLOR, SUCCESS_C
 
 logger = logging.getLogger("bot")
 
+
+async def _on_view_error(
+    view: discord.ui.View,
+    interaction: discord.Interaction,
+    error: Exception,
+    item: discord.ui.Item,  # type: ignore[type-arg]
+) -> None:
+    logger.error(
+        "View error | view=%s item_type=%s custom_id=%r label=%r "
+        "user=%s guild=%s channel=%s message=%s",
+        type(view).__name__,
+        type(item).__name__,
+        getattr(item, "custom_id", None),
+        getattr(item, "label", None),
+        getattr(interaction.user, "id", None),
+        interaction.guild_id,
+        interaction.channel_id,
+        interaction.message.id if interaction.message else None,
+        exc_info=error,
+    )
+    if not interaction.response.is_done():
+        try:
+            await interaction.response.send_message(
+                "An error occurred. Please try again.", ephemeral=True
+            )
+        except Exception:
+            pass
+
+
 # ---------------------------------------------------------------------------
 # Card engine
 # ---------------------------------------------------------------------------
@@ -232,6 +261,14 @@ class BlackjackView(discord.ui.View):
         if self.on_finish:
             await self.on_finish(self.game, -1)  # treat as bust on timeout
 
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,  # type: ignore[type-arg]
+    ) -> None:
+        await _on_view_error(self, interaction, error, item)
+
     @discord.ui.button(label="Hit", style=discord.ButtonStyle.green, emoji="👊")
     async def hit_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.game.hit()
@@ -363,6 +400,14 @@ class _ChallengeView(discord.ui.View):
         except Exception:
             pass
 
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,  # type: ignore[type-arg]
+    ) -> None:
+        await _on_view_error(self, interaction, error, item)
+
 
 async def _start_pvp(
     interaction: discord.Interaction,
@@ -487,6 +532,14 @@ class _TournRegistrationView(discord.ui.View):
         if ok:
             await _update_tourn_embed(self.tourn)
 
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,  # type: ignore[type-arg]
+    ) -> None:
+        await _on_view_error(self, interaction, error, item)
+
 
 async def _update_tourn_embed(t: _BjTournament):
     if not t.reg_message:
@@ -602,6 +655,14 @@ class _TournBlackjackView(discord.ui.View):
             await _check_tourn_done(self.tourn, self.bot)
         else:
             await _start_tourn_round(self.ps, self.channel, self.tourn, self.bot)
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,  # type: ignore[type-arg]
+    ) -> None:
+        await _on_view_error(self, interaction, error, item)
 
     @discord.ui.button(label="Hit", style=discord.ButtonStyle.green, emoji="👊")
     async def hit(self, interaction: discord.Interaction, _: discord.ui.Button):

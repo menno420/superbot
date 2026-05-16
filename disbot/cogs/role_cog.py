@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 import discord
 from core.runtime import panel_manager
@@ -241,7 +241,7 @@ class RoleCog(commands.Cog):
             if not member.joined_at:
                 continue
 
-            days = (datetime.utcnow() - member.joined_at.replace(tzinfo=None)).days
+            days = (datetime.now(tz=timezone.utc) - member.joined_at).days
 
             target_name = None
             for name in progression:

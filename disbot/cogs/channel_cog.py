@@ -1363,9 +1363,23 @@ class _SubsystemToggleView(BaseView):
                 new_val = None
 
             gctx = GovernanceContext.from_interaction(interaction)
-            await governance_service.set_subsystem_visibility(
-                gctx, "channel", self.channel.id, subsystem_name, new_val
-            )
+            try:
+                await governance_service.set_subsystem_visibility(
+                    gctx, "channel", self.channel.id, subsystem_name, new_val
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Subsystem visibility toggle failed | subsystem=%r exc=%s",
+                    subsystem_name,
+                    exc,
+                    exc_info=True,
+                )
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        f"Could not update visibility for **{subsystem_name}**: {exc}",
+                        ephemeral=True,
+                    )
+                return
             self._visibility[subsystem_name] = new_val
             self._rebuild_buttons()
             await interaction.response.edit_message(embed=self.build_embed(), view=self)

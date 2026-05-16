@@ -178,9 +178,9 @@ class TestNoOverrideSentinelRemoved:
     def test_no_override_not_exported(self):
         import governance.cache as cache_module
 
-        assert not hasattr(cache_module, "_NO_OVERRIDE"), (
-            "_NO_OVERRIDE was removed as dead code — it should not exist in cache.py"
-        )
+        assert not hasattr(
+            cache_module, "_NO_OVERRIDE"
+        ), "_NO_OVERRIDE was removed as dead code — it should not exist in cache.py"
 
     def test_resolver_does_not_import_no_override(self):
         import inspect
@@ -188,9 +188,9 @@ class TestNoOverrideSentinelRemoved:
         import governance.resolver as resolver_module
 
         source = inspect.getsource(resolver_module)
-        assert "_NO_OVERRIDE" not in source, (
-            "resolver.py must not reference the removed _NO_OVERRIDE sentinel"
-        )
+        assert (
+            "_NO_OVERRIDE" not in source
+        ), "resolver.py must not reference the removed _NO_OVERRIDE sentinel"
 
 
 # ---------------------------------------------------------------------------
@@ -265,9 +265,7 @@ class TestCacheInvalidatedEmitted:
         member.guild.owner_id = 0
         member.guild_permissions.manage_guild = True
 
-        ctx = GovernanceContext(
-            guild_id=777, channel_id=1, member=member
-        )
+        ctx = GovernanceContext(guild_id=777, channel_id=1, member=member)
 
         emitted_events: list[str] = []
 
@@ -286,21 +284,25 @@ class TestCacheInvalidatedEmitted:
             mock_pool.transaction = MagicMock(return_value=txn)
             mock_db.get = MagicMock(return_value=mock_pool)
             with patch("governance.writes.invalidate_guild_cache"):
-                with patch("governance.writes._emit_governance_event", side_effect=mock_emit):
+                with patch(
+                    "governance.writes._emit_governance_event", side_effect=mock_emit
+                ):
                     with patch("governance.writes.SUBSYSTEMS", {"economy": {}}):
                         from governance.writes import GovernanceMutationPipeline
 
                         pipeline = GovernanceMutationPipeline()
-                        await pipeline.set_visibility(ctx, "guild", 777, "economy", False)
+                        await pipeline.set_visibility(
+                            ctx, "guild", 777, "economy", False
+                        )
 
         from governance.events import EVT_CACHE_INVALIDATED, EVT_VISIBILITY_CHANGED
 
-        assert EVT_VISIBILITY_CHANGED in emitted_events, (
-            "EVT_VISIBILITY_CHANGED must be emitted from set_visibility"
-        )
-        assert EVT_CACHE_INVALIDATED in emitted_events, (
-            "EVT_CACHE_INVALIDATED must be emitted from set_visibility (BUG-002 fix)"
-        )
+        assert (
+            EVT_VISIBILITY_CHANGED in emitted_events
+        ), "EVT_VISIBILITY_CHANGED must be emitted from set_visibility"
+        assert (
+            EVT_CACHE_INVALIDATED in emitted_events
+        ), "EVT_CACHE_INVALIDATED must be emitted from set_visibility (BUG-002 fix)"
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +317,9 @@ class TestPanelAnchorTeardown:
         import guild_lifecycle
 
         guild_id = 4242
-        with patch("utils.db.delete_guild_panel_anchors", new_callable=AsyncMock) as mock_del:
+        with patch(
+            "utils.db.delete_guild_panel_anchors", new_callable=AsyncMock
+        ) as mock_del:
             mock_del.return_value = 3
             # Patch the other DB-touching steps so we isolate the anchor path.
             with patch("utils.db.get") as mock_get:
@@ -332,9 +336,9 @@ class TestPanelAnchorTeardown:
     def test_db_function_signature(self):
         from utils import db as db_module
 
-        assert hasattr(db_module, "delete_guild_panel_anchors"), (
-            "db.delete_guild_panel_anchors must exist (GAP-001)"
-        )
+        assert hasattr(
+            db_module, "delete_guild_panel_anchors"
+        ), "db.delete_guild_panel_anchors must exist (GAP-001)"
 
 
 # ---------------------------------------------------------------------------
@@ -418,9 +422,9 @@ class TestCapabilityOverrideTTL:
         from governance import execution as exec_module
 
         source = inspect.getsource(exec_module._load_capability_overrides)
-        assert "stale_keys" in source or "pop" in source, (
-            "_load_capability_overrides must clear prior entries before insert"
-        )
+        assert (
+            "stale_keys" in source or "pop" in source
+        ), "_load_capability_overrides must clear prior entries before insert"
 
 
 # ---------------------------------------------------------------------------
@@ -500,9 +504,9 @@ class TestCleanupChangedSubscription:
                     ):
                         await rt.setup()
 
-        assert "cleanup" in subscribed_events, (
-            "runtime.setup() must subscribe to EVT_CLEANUP_CHANGED (DEBT-003)"
-        )
+        assert (
+            "cleanup" in subscribed_events
+        ), "runtime.setup() must subscribe to EVT_CLEANUP_CHANGED (DEBT-003)"
         rt._SETUP_DONE = False
 
 
@@ -537,9 +541,9 @@ class TestLastEditTeardown:
         import guild_lifecycle
 
         src = inspect.getsource(guild_lifecycle._teardown_scheduler)
-        assert "5_000" not in src and "5000" not in src, (
-            "guild_lifecycle._teardown_scheduler must not size-gate cleanup"
-        )
-        assert "_sched_forget" in src or "forget_guild" in src, (
-            "_teardown_scheduler must call scheduler.forget_guild(guild_id)"
-        )
+        assert (
+            "5_000" not in src and "5000" not in src
+        ), "guild_lifecycle._teardown_scheduler must not size-gate cleanup"
+        assert (
+            "_sched_forget" in src or "forget_guild" in src
+        ), "_teardown_scheduler must call scheduler.forget_guild(guild_id)"
