@@ -208,3 +208,46 @@ async def test_resetxp_command_calls_xp_service_reset():
         source="admin:resetxp",
         actor_id=ctx.author.id,
     )
+
+
+@pytest.mark.asyncio
+async def test_on_message_routes_through_xp_service():
+    """The on_message hot path must call xp_service.award (PR-4)."""
+    from cogs.xp_cog import XpCog
+
+    cog = XpCog(bot=MagicMock())
+
+    message = MagicMock()
+    message.author = MagicMock()
+    message.author.bot = False
+    message.author.id = 12345
+    message.guild = MagicMock()
+    message.guild.id = 99999
+
+    # Below cooldown so XP awards
+    db_row = {"last_xp": 0, "messages": 1}
+    award_result = _xp_award_result(new_xp=100, new_level=1)
+    award_result.leveled_up = False
+
+    with (
+        patch("cogs.xp_cog.db.get_xp", new_callable=AsyncMock, return_value=db_row),
+        patch(
+            "cogs.xp_cog._guild_xp_settings",
+            new_callable=AsyncMock,
+            return_value=(15, 25, 60),
+        ),
+        patch("cogs.xp_cog.check_cooldown", return_value=(False, 0)),
+        patch(
+            "cogs.xp_cog.xp_service.award",
+            new_callable=AsyncMock,
+            return_value=award_result,
+        ) as award,
+    ):
+        await cog.on_message(message)
+
+    award.assert_awaited_once()
+    call = award.await_args
+    assert call.kwargs["guild_id"] == 99999
+    assert call.kwargs["user_id"] == 12345
+    assert call.kwargs["source"] == "chat"
+    assert 15 <= call.kwargs["amount"] <= 25

@@ -302,7 +302,18 @@ class XpCog(commands.Cog):
             return
 
         amount = random.randint(xp_min, xp_max)
-        new_xp, new_level, leveled_up = await db.add_xp(user_id, guild_id, amount, now)
+        result = await xp_service.award(
+            guild_id=guild_id,
+            user_id=user_id,
+            amount=amount,
+            source="chat",
+            now=now,
+        )
+        new_xp, new_level, leveled_up = (
+            result.new_xp,
+            result.new_level,
+            result.leveled_up,
+        )
 
         if leveled_up:
             channel_id = await db.get_setting(guild_id, XP_ANNOUNCE_CHANNEL, "")

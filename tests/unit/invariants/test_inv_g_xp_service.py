@@ -13,9 +13,8 @@ level-role assignment — see every grant or reset).
 Also scans for inline raw SQL that writes or deletes the ``xp`` table,
 since a cog could route around xp_service by executing custom SQL.
 
-Mirrors INV-F (test_inv_f_economy_service.py).  The cogs/xp_cog.py
-exception is temporary — the on_message hot path is migrated in P0
-PR-4, which also removes the file from this allowlist.
+Mirrors INV-F (test_inv_f_economy_service.py).  No cog or view may
+write XP directly: every grant or reset routes through the service.
 """
 
 from __future__ import annotations
@@ -36,10 +35,6 @@ _ALLOWED_PATHS = {
     _DISBOT / "utils" / "db" / "xp.py",
     _DISBOT / "utils" / "db" / "__init__.py",
     _DISBOT / "utils" / "db" / "pool.py",
-    # TEMPORARY: xp_cog.on_message still calls db.add_xp directly on
-    # the hot path; PR-4 migrates it through xp_service.award and
-    # removes this exception.
-    _DISBOT / "cogs" / "xp_cog.py",
 }
 
 _FORBIDDEN_NAMES = {"add_xp", "delete_xp"}

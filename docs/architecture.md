@@ -123,7 +123,7 @@ string.  **Do not rename a subsystem in place.**
 | INV-D | At most one `runtime_sessions` row per `(user, channel, subsystem)`. | DB UNIQUE constraint (migration 007). |
 | INV-E | Every governance write flows through `GovernanceMutationPipeline`. | Regression test in `tests/unit/help/test_help_navigation.py` (`test_apply_template_uses_pipeline`). |
 | INV-F | Every balance mutation flows through `services.economy_service`. | AST scan `tests/unit/invariants/test_inv_f_economy_service.py`. |
-| INV-G | Every XP mutation flows through `services.xp_service`. | AST scan `tests/unit/invariants/test_inv_g_xp_service.py`. (Temporary `cogs/xp_cog.py` allowlist entry covers `on_message`; PR-4 removes it.) |
+| INV-G | Every XP mutation flows through `services.xp_service`. | AST scan `tests/unit/invariants/test_inv_g_xp_service.py`. |
 | INV-H | `SUBSYSTEMS` registry is deep-frozen after `validate_registry()`. | `MappingProxyType` raises on mutation. |
 | INV-I | Migrations are idempotent and run under `pg_advisory_lock`. | `utils/db/migrations.run_migrations`. |
 | INV-J | Cog load failures register the subsystem as INTERNAL. | `bot1._load_cogs`. |
