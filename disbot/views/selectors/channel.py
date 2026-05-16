@@ -9,6 +9,7 @@ right extension (Phase D follow-up).
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Iterable
+from typing import Any
 
 import discord
 
@@ -50,7 +51,9 @@ class ChannelSelector(discord.ui.Select):
             discord.SelectOption(label=f"#{ch.name}"[:100], value=str(ch.id))
             for ch in bounded
         ]
-        kwargs: dict[str, object] = {
+        # dict[str, Any] (not object) so **kwargs unpacks into Select.__init__
+        # without mypy demanding str|int|list|bool per declared param.
+        kwargs: dict[str, Any] = {
             "placeholder": placeholder,
             "options": options,
             "min_values": 1,

@@ -9,6 +9,7 @@ useful pick.  Callers may pass a ``role_filter`` to restrict further
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Iterable
+from typing import Any
 
 import discord
 
@@ -49,7 +50,9 @@ class RoleSelector(discord.ui.Select):
         options = [
             discord.SelectOption(label=r.name[:100], value=str(r.id)) for r in bounded
         ]
-        kwargs: dict[str, object] = {
+        # dict[str, Any] (not object) so **kwargs unpacks into Select.__init__
+        # without mypy demanding str|int|list|bool per declared param.
+        kwargs: dict[str, Any] = {
             "placeholder": placeholder,
             "options": options
             or [

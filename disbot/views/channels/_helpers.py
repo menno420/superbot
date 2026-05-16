@@ -96,7 +96,7 @@ class _ChannelSelect(discord.ui.Select):
         )
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),
+                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
                 view=self._parent,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:

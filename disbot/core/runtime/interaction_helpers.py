@@ -33,6 +33,7 @@ the platform-hardening plan.  Adoption across cogs lands in F5.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import discord
 
@@ -92,7 +93,10 @@ async def safe_followup(
 
     Returns the sent message, or ``None`` if delivery failed.
     """
-    kwargs: dict[str, object] = {}
+    # dict[str, Any] so **kwargs unpacks into the typed Discord signatures
+    # (followup.send / response.send_message / response.edit_message) without
+    # mypy demanding the exact type of each value.
+    kwargs: dict[str, Any] = {}
     if content is not None:
         kwargs["content"] = content
     if embed is not None:
@@ -137,7 +141,10 @@ async def safe_edit(
 
     Returns ``True`` on success, ``False`` if the edit failed.
     """
-    kwargs: dict[str, object] = {}
+    # dict[str, Any] so **kwargs unpacks into the typed Discord signatures
+    # (followup.send / response.send_message / response.edit_message) without
+    # mypy demanding the exact type of each value.
+    kwargs: dict[str, Any] = {}
     if content is not None:
         kwargs["content"] = content
     if embed is not None:
@@ -147,12 +154,13 @@ async def safe_edit(
 
     try:
         if interaction.response.is_done():
-            await interaction.followup.edit_message(
-                message_id=(
-                    interaction.message.id if interaction.message else "@original"
-                ),
-                **kwargs,
-            )
+            if interaction.message is not None:
+                await interaction.followup.edit_message(
+                    message_id=interaction.message.id,
+                    **kwargs,
+                )
+            else:
+                await interaction.edit_original_response(**kwargs)
         else:
             await interaction.response.edit_message(**kwargs)
         return True

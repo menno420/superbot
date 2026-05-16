@@ -12,6 +12,7 @@ that needs to act on internal subsystems passes ``visible_only=False``.
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from typing import Any
 
 import discord
 
@@ -46,7 +47,9 @@ class SubsystemSelector(discord.ui.Select):
             )
             for name, meta in entries[:25]
         ]
-        kwargs: dict[str, object] = {
+        # dict[str, Any] (not object) so **kwargs unpacks into Select.__init__
+        # without mypy demanding str|int|list|bool per declared param.
+        kwargs: dict[str, Any] = {
             "placeholder": placeholder,
             "options": options
             or [

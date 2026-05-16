@@ -13,6 +13,7 @@ callback; callers feed that directly into
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from typing import Any
 
 import discord
 
@@ -61,7 +62,9 @@ class ScopeSelector(discord.ui.Select):
                 emoji="🌐",
             ),
         )
-        kwargs: dict[str, object] = {
+        # dict[str, Any] (not object) so **kwargs unpacks into Select.__init__
+        # without mypy demanding str|int|list|bool per declared param.
+        kwargs: dict[str, Any] = {
             "placeholder": placeholder,
             "options": options,
             "min_values": 1,

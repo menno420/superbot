@@ -268,8 +268,8 @@ class _UtilityPanelView(BaseView):
         )
         embed.add_field(
             name="Status",
-            value=str(member.status).capitalize(),
-            inline=True,  # type: ignore[union-attr]
+            value=str(member.status).capitalize(),  # type: ignore[union-attr]
+            inline=True,
         )
         embed.add_field(
             name="Activity",

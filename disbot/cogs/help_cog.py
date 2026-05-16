@@ -363,10 +363,10 @@ class HelpPanelView(PersistentView):
         new_page = max(0, self._page - 1)
         new_view = HelpPanelView(visible_list, new_page)
         embed = _build_page_embed(
-            interaction.client,
+            interaction.client,  # type: ignore[arg-type]
             visible_list,
             new_page,
-            member_tier,  # type: ignore[arg-type]
+            member_tier,
         )
         await interaction.response.edit_message(embed=embed, view=new_view)
 
@@ -376,10 +376,10 @@ class HelpPanelView(PersistentView):
         new_page = min(self._page + 1, num_pages - 1)
         new_view = HelpPanelView(visible_list, new_page)
         embed = _build_page_embed(
-            interaction.client,
+            interaction.client,  # type: ignore[arg-type]
             visible_list,
             new_page,
-            member_tier,  # type: ignore[arg-type]
+            member_tier,
         )
         await interaction.response.edit_message(embed=embed, view=new_view)
 

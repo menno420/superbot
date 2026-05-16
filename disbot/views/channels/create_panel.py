@@ -237,7 +237,7 @@ class _NameSelect(discord.ui.Select):
         self._parent.chosen_name = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),
+                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
                 view=self._parent,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
@@ -262,7 +262,7 @@ class _CategorySelect(discord.ui.Select):
         self._parent.chosen_cat = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),
+                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
                 view=self._parent,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:

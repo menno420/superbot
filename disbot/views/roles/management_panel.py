@@ -189,7 +189,7 @@ class _DeleteRoleSelect(discord.ui.Select):
             )
             if self.parent.message:  # type: ignore[attr-defined]
                 await self.parent.message.edit(  # type: ignore[attr-defined]
-                    embed=await self.parent.build_embed(),
+                    embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
                     view=self.parent,  # type: ignore[attr-defined]
                 )
         except discord.Forbidden:
