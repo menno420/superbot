@@ -103,3 +103,9 @@ governance_denials_total = Counter(
     "Total governance execution denials by subsystem and scope",
     ["subsystem", "scope"],
 )
+
+task_outcome_total = Counter(
+    "task_outcome_total",
+    "Outcomes of managed background tasks spawned via core.runtime.tasks",
+    ["name", "outcome"],  # outcome: ok | error | cancelled
+)

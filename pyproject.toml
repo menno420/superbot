@@ -11,6 +11,10 @@ python_functions = ["test_*"]
 target-version = "py310"
 line-length = 88
 src = ["disbot"]
+# Mirror the `--exclude` flag CI uses so local and CI agree on scope.
+# Tests use pytest assert and ad-hoc imports that the strict ruleset
+# would flag; they have their own conventions enforced by review.
+extend-exclude = [".github", "tests", "venv", "env", "build", "dist"]
 
 [tool.ruff.lint]
 # Rules are split into two tiers:
@@ -81,11 +85,6 @@ ignore = [
     "RET503", # missing explicit return None          — discord.py callbacks often early-return
 ]
 
-[tool.ruff.lint.per-file-ignores]
-# Tests legitimately use prints and have looser doc/annotation requirements.
-"tests/**" = ["T20", "D", "ANN"]
-# Migration scripts and data files are not Python source in the linting sense.
-
 [tool.ruff.lint.mccabe]
 max-complexity = 8
 
@@ -116,5 +115,5 @@ allow_untyped_defs = true          # codebase lacks full annotations
 strict_optional = false
 explicit_package_bases = true      # avoid duplicate-module errors under disbot/
 # discord.py uses metaclass kwargs (title=, name=) that mypy can't see through
-disable_error_codes = ["call-arg", "index", "call-overload"]
+disable_error_code = ["call-arg", "index", "call-overload"]
 exclude = ["^\\.github/", "^tests/", "^venv/", "^env/", "^build/", "^dist/"]
