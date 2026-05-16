@@ -338,20 +338,23 @@ class TestPanelAnchorTeardown:
         import guild_lifecycle
 
         guild_id = 4242
-        with patch(
-            "utils.db.delete_guild_panel_anchors", new_callable=AsyncMock
-        ) as mock_del:
+        with (
+            patch(
+                "utils.db.delete_guild_panel_anchors",
+                new_callable=AsyncMock,
+            ) as mock_del,
+            patch(
+                "utils.db.delete_sessions_for_guild",
+                new_callable=AsyncMock,
+                return_value=[],
+            ),
+            patch(
+                "utils.db.delete_guild_session_state",
+                new_callable=AsyncMock,
+            ),
+        ):
             mock_del.return_value = 3
-            # Patch the other DB-touching steps so we isolate the anchor path.
-            with patch("utils.db.get") as mock_get:
-                pool = MagicMock()
-                pool.execute = AsyncMock(return_value="DELETE 0")
-                mock_get.return_value = pool
-                with patch(
-                    "utils.db.delete_guild_session_state", new_callable=AsyncMock
-                ):
-                    await guild_lifecycle.teardown(guild_id)
-
+            await guild_lifecycle.teardown(guild_id)
             mock_del.assert_awaited_once_with(guild_id)
 
     def test_db_function_signature(self):
@@ -360,6 +363,135 @@ class TestPanelAnchorTeardown:
         assert hasattr(
             db_module, "delete_guild_panel_anchors"
         ), "db.delete_guild_panel_anchors must exist (GAP-001)"
+
+
+# ---------------------------------------------------------------------------
+# PR N1 — navigation_stack.forget is wired into every session deletion path
+# ---------------------------------------------------------------------------
+
+
+class TestNavigationForgetWiring:
+    """Every session-deletion path calls navigation_stack.forget so the
+    in-process lock dict cannot accumulate stale entries.
+    """
+
+    @pytest.mark.asyncio
+    async def test_session_manager_remove_calls_forget(self):
+        from core.runtime import navigation_stack, session_manager
+
+        forgotten: list[str] = []
+        with (
+            patch("utils.db.delete_session", new_callable=AsyncMock),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            await session_manager.remove("session-abc")
+        assert forgotten == ["session-abc"]
+
+    @pytest.mark.asyncio
+    async def test_invalidate_subsystem_sessions_forgets_every_id(self):
+        from core.runtime import navigation_stack, session_manager
+
+        forgotten: list[str] = []
+        with (
+            patch(
+                "utils.db.delete_sessions_for_scope",
+                new_callable=AsyncMock,
+                return_value=["sid-1", "sid-2", "sid-3"],
+            ),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            await session_manager.invalidate_subsystem_sessions(
+                guild_id=99,
+                subsystem="economy",
+                channel_id=None,
+            )
+        assert forgotten == ["sid-1", "sid-2", "sid-3"]
+
+    @pytest.mark.asyncio
+    async def test_session_gc_loop_forgets_every_expired_id(self):
+        """One synthetic GC sweep is exercised by patching the
+        cancellation point so the loop runs exactly once.
+        """
+        import asyncio as _asyncio
+
+        from core.runtime import navigation_stack, session_gc
+
+        forgotten: list[str] = []
+        expired = ["expired-1", "expired-2"]
+        # Force the loop body to run exactly once: first sleep returns
+        # immediately, second sleep raises CancelledError to exit.
+        sleeps_remaining = [None, _asyncio.CancelledError()]
+
+        async def fake_sleep(_seconds):
+            nxt = sleeps_remaining.pop(0)
+            if isinstance(nxt, BaseException):
+                raise nxt
+            return nxt
+
+        with (
+            patch.object(session_gc.asyncio, "sleep", side_effect=fake_sleep),
+            patch(
+                "utils.db.delete_expired_sessions",
+                new_callable=AsyncMock,
+                return_value=expired,
+            ),
+            patch(
+                "utils.db.delete_stale_panel_anchors",
+                new_callable=AsyncMock,
+                return_value=0,
+            ),
+            patch(
+                "utils.db.count_active_sessions",
+                new_callable=AsyncMock,
+                return_value=0,
+            ),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            with pytest.raises(_asyncio.CancelledError):
+                await session_gc._run_gc_loop()
+        assert forgotten == expired
+
+    @pytest.mark.asyncio
+    async def test_guild_lifecycle_teardown_forgets_every_session_id(self):
+        import guild_lifecycle
+        from core.runtime import navigation_stack
+
+        forgotten: list[str] = []
+        with (
+            patch(
+                "utils.db.delete_sessions_for_guild",
+                new_callable=AsyncMock,
+                return_value=["g-sid-1", "g-sid-2"],
+            ),
+            patch(
+                "utils.db.delete_guild_session_state",
+                new_callable=AsyncMock,
+            ),
+            patch(
+                "utils.db.delete_guild_panel_anchors",
+                new_callable=AsyncMock,
+                return_value=0,
+            ),
+            patch.object(
+                navigation_stack,
+                "forget",
+                side_effect=forgotten.append,
+            ),
+        ):
+            await guild_lifecycle.teardown(7777)
+        assert forgotten == ["g-sid-1", "g-sid-2"]
 
 
 # ---------------------------------------------------------------------------

@@ -3,7 +3,10 @@
 Runs every SESSION_GC_INTERVAL seconds (default: 5 minutes) and:
   1. Deletes runtime_sessions older than SESSION_TTL seconds (default: 2 hours).
      Cascade delete removes associated runtime_session_state rows.
-  2. Deletes panel_anchors marked is_stale=TRUE.
+  2. Calls :func:`core.runtime.navigation_stack.forget` for each deleted
+     session id so the per-session lock dict cannot grow unbounded
+     (PR N1).
+  3. Deletes panel_anchors marked is_stale=TRUE.
 
 The GC is started as an asyncio Task from bot1.py's main() after db.init().
 
@@ -17,6 +20,7 @@ import asyncio
 import logging
 import time
 
+from core.runtime import navigation_stack
 from services import metrics as _metrics
 from utils import db
 
@@ -32,14 +36,19 @@ async def _run_gc_loop() -> None:
         await asyncio.sleep(SESSION_GC_INTERVAL)
         try:
             cutoff = time.time() - SESSION_TTL
-            sessions_removed = await db.delete_expired_sessions(cutoff)
+            expired_ids = await db.delete_expired_sessions(cutoff)
+            # Drop in-process navigation_stack locks for the now-gone
+            # sessions.  ``forget`` is a no-op when no lock exists, so
+            # safe to call on every id unconditionally.
+            for sid in expired_ids:
+                navigation_stack.forget(sid)
             anchors_removed = await db.delete_stale_panel_anchors()
             active_count = await db.count_active_sessions()
             _metrics.session_active_count.set(active_count)
-            if sessions_removed or anchors_removed:
+            if expired_ids or anchors_removed:
                 logger.info(
                     "GC sweep complete — %d session(s), %d anchor(s) removed",
-                    sessions_removed,
+                    len(expired_ids),
                     anchors_removed,
                 )
         except asyncio.CancelledError:
