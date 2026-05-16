@@ -20,10 +20,7 @@ import pytest
 
 from core.events_catalogue import KNOWN_EVENTS
 from services import economy_service
-from services.economy_service import (
-    EVT_BALANCE_CHANGED,
-    InsufficientFundsError,
-)
+from services.economy_service import EVT_BALANCE_CHANGED, InsufficientFundsError
 
 
 def test_event_is_catalogued():

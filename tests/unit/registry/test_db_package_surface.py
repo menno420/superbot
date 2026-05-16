@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import pytest
 
-
 # Symbols that have always been part of utils.db's public surface and
 # must continue to be importable through the package root.
 _EXPECTED_PUBLIC = [

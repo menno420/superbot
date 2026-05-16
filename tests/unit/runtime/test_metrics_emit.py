@@ -15,7 +15,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
-from core.runtime import interaction_router, live_update_scheduler, message_anchor_manager
+from core.runtime import (
+    interaction_router,
+    live_update_scheduler,
+    message_anchor_manager,
+)
 
 
 def _interaction(custom_id: str) -> MagicMock:
