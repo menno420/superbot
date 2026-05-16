@@ -43,6 +43,7 @@ from collections.abc import Awaitable, Callable
 import discord
 
 from core.runtime import session_manager
+from services import metrics
 
 logger = logging.getLogger("bot.runtime.router")
 
@@ -83,7 +84,11 @@ async def dispatch(interaction: discord.Interaction) -> None:
     prefix, _, rest = custom_id.partition(":")
     handler = _handlers.get(prefix)
     if handler is None:
-        # Not a runtime-managed interaction — ignore.
+        # Not a runtime-managed interaction.  Emit a counter so leftover
+        # buttons from removed cogs and typo'd register() prefixes are
+        # observable instead of silently broken.
+        metrics.interaction_unhandled_total.labels(prefix=prefix).inc()
+        logger.debug("Unhandled interaction prefix: %r", prefix)
         return
 
     request_id = str(uuid.uuid4())
@@ -121,6 +126,10 @@ async def dispatch(interaction: discord.Interaction) -> None:
                     )
                 return
         except Exception as exc:
+            # Fail-open: prefer availability over security if governance
+            # itself is broken.  The metric makes the spike visible so
+            # operators can investigate before users notice.
+            metrics.governance_fail_open_total.labels(subsystem=prefix).inc()
             logger.warning(
                 "Governance gate failed for req=%s | prefix=%s: %s — allowing (fail-open fallback)",
                 request_id,

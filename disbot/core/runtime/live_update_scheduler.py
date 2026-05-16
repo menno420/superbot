@@ -155,6 +155,10 @@ async def _refresh_panel(
     try:
         result = await refresh_fn(bot, user_id, guild_id, channel_id)
     except Exception as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="refresh_fn_error",
+        ).inc()
         logger.error(
             "refresh_fn failed for user=%d channel=%d: %s",
             user_id,
@@ -164,27 +168,49 @@ async def _refresh_panel(
         return
 
     if result is None:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="skipped",
+        ).inc()
         return
 
     embed, view = result
     channel = bot.get_channel(channel_id)
     if channel is None or not isinstance(channel, discord.abc.Messageable):
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="channel_missing",
+        ).inc()
         return
 
     try:
         message = await channel.fetch_message(message_id)
         await message.edit(embed=embed, view=view)
         _last_edit[(guild_id, channel_id)] = time.monotonic()
-        _metrics.panel_refresh_total.labels(subsystem=subsystem).inc()
+        _metrics.panel_refresh_total.labels(subsystem=subsystem, result="ok").inc()
         logger.debug(
             "Panel refreshed | user=%d | channel=%d | message=%d",
             user_id,
             channel_id,
             message_id,
         )
-    except (discord.NotFound, discord.Forbidden) as exc:
-        logger.debug("Panel refresh skipped — message gone or forbidden: %s", exc)
+    except discord.NotFound as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="message_not_found",
+        ).inc()
+        logger.debug("Panel refresh skipped — message gone: %s", exc)
+    except discord.Forbidden as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="forbidden",
+        ).inc()
+        logger.debug("Panel refresh skipped — forbidden: %s", exc)
     except discord.HTTPException as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="http_error",
+        ).inc()
         logger.warning("Panel refresh HTTP error for message %d: %s", message_id, exc)
 
 

@@ -22,6 +22,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from services import metrics
 from utils import db
 
 logger = logging.getLogger("bot.runtime.anchors")
@@ -79,29 +80,53 @@ async def restore_anchors(bot: commands.Bot) -> None:
     anchors = await db.get_all_active_panel_anchors()
     restored = 0
     stale = 0
+    view_missing = 0
 
     for anchor in anchors:
-        view_cls = get_view_class(anchor["subsystem"])
+        subsystem = anchor["subsystem"]
+        view_cls = get_view_class(subsystem)
         if view_cls is None:
+            # Cog with PersistentView didn't register — leftover anchor.
+            # Surface via metric so operators can spot orphaned anchors.
+            metrics.anchor_restore_total.labels(
+                subsystem=subsystem,
+                result="view_missing",
+            ).inc()
+            view_missing += 1
+            logger.warning(
+                "Anchor %s for subsystem=%r has no registered PersistentView "
+                "class — panel will be unresponsive until the cog loads.",
+                anchor["anchor_id"],
+                subsystem,
+            )
             continue
         try:
             view = view_cls()
             bot.add_view(view, message_id=anchor["message_id"])
             restored += 1
+            metrics.anchor_restore_total.labels(
+                subsystem=subsystem,
+                result="ok",
+            ).inc()
         except Exception as exc:
             logger.warning(
                 "Could not restore anchor %s (msg=%d subsystem=%s): %s",
                 anchor["anchor_id"],
                 anchor["message_id"],
-                anchor["subsystem"],
+                subsystem,
                 exc,
             )
             await mark_stale(str(anchor["anchor_id"]))
             stale += 1
+            metrics.anchor_restore_total.labels(
+                subsystem=subsystem,
+                result="restore_failed",
+            ).inc()
 
     logger.info(
-        "Anchor recovery complete — %d restored, %d marked stale",
+        "Anchor recovery complete — %d restored, %d view-missing, %d marked stale",
         restored,
+        view_missing,
         stale,
     )
 

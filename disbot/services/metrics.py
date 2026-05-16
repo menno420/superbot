@@ -94,8 +94,10 @@ session_active_count = Gauge(
 
 panel_refresh_total = Counter(
     "panel_refresh_total",
-    "Total panel edits triggered by the live update scheduler",
-    ["subsystem"],
+    # `result` label values:  ok / skipped / channel_missing /
+    # message_not_found / forbidden / http_error / refresh_fn_error.
+    "Total panel edits triggered by the live update scheduler.",
+    ["subsystem", "result"],
 )
 
 governance_denials_total = Counter(
@@ -108,4 +110,27 @@ task_outcome_total = Counter(
     "task_outcome_total",
     "Outcomes of managed background tasks spawned via core.runtime.tasks",
     ["name", "outcome"],  # outcome: ok | error | cancelled
+)
+
+governance_fail_open_total = Counter(
+    "governance_fail_open_total",
+    "Interaction-router governance gate fell open due to resolver error. "
+    "A sustained non-zero rate indicates the governance layer is failing to "
+    "resolve visibility and interactions are being allowed without checks.",
+    ["subsystem"],
+)
+
+interaction_unhandled_total = Counter(
+    "interaction_unhandled_total",
+    "Interactions routed to a custom_id prefix with no registered handler. "
+    "Indicates a typo in a cog's register() call or a leftover button from a "
+    "removed cog.",
+    ["prefix"],
+)
+
+anchor_restore_total = Counter(
+    "anchor_restore_total",
+    # `result` label values:  ok / view_missing / restore_failed.
+    "Outcomes of PersistentView restoration during on_ready.",
+    ["subsystem", "result"],
 )
