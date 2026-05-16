@@ -61,7 +61,7 @@ platform concerns the cog simply *uses*.
 |---|---|---|
 | **bot1.py** | Process entrypoint. Sets up `commands.Bot`, the global checks, the governance gate, cog loading, identity-contract validation. | Discord, all of the above. |
 | **cogs/** | Subsystem business logic — Discord command handlers, listeners, panel UX. | services/, views/, utils/db/, governance/ (read-side: `get_visible_subsystems`). |
-| **views/** | Reusable UI components per subsystem.  Mirrors `views/roles/*` as the reference pattern. | `discord.ui.View`, `BaseView`, `PersistentView`. May call services. May *not* import cogs. |
+| **views/** | Reusable UI components per subsystem (ephemeral `BaseView` hubs, modals, selectors, child panels).  See "PersistentView placement" below for the entry-point convention. | `discord.ui.View`, `BaseView`, `PersistentView`. May call services. May *not* import cogs. |
 | **services/** | Audited cross-subsystem mutation paths (economy, xp, governance). The **only** legitimate writers of shared state. | `utils/db/*`, `core/events.bus`, audit-log tables. |
 | **governance/** | Per-guild visibility/execution/cleanup policy engine.  Strict internal layer order; see `governance/__init__.py` docstring. | `utils/db/governance`, `utils/db/sessions`, `core/events.bus`. |
 | **core/runtime/** | Platform primitives: session manager, panel anchor manager, interaction router, EventBus, scheduler, persistent views, navigation stack, identity contract, managed tasks. | `utils/db/*`, `core/events.bus`. May *not* import cogs or services. |
@@ -176,4 +176,69 @@ SuperBot runs as one shard, one process.
    `tests/unit/<area>/` in the same PR as the feature.
 
 The `role_cog` + `views/roles/*` directory is the reference pattern
-when the cog grows past ~400 LOC.
+for **splitting supporting UI** out of a cog when the cog grows past
+~400 LOC.  See "PersistentView placement" below for the persistent-
+panel entry-point convention.
+
+---
+
+## PersistentView placement
+
+A subsystem's persistent panel (`PersistentView` subclass with
+`SUBSYSTEM = "<name>"`) is the **identity-bearing** UI surface — its
+class must be importable at module-load time so the
+`persistent_views._REGISTRY` is populated before `restore_anchors`
+runs at `on_ready`.  Two placements satisfy this invariant and both
+are in production use:
+
+### Pattern A — PersistentView in the cog file
+
+The cog hosts the `PersistentView` class directly, alongside the
+commands that open it.  Supporting child views, modals, selectors,
+and ephemeral hubs live in `disbot/views/<name>/*`.
+
+```
+disbot/cogs/<name>_cog.py
+    class <Name>PanelView(PersistentView):
+        SUBSYSTEM = "<name>"
+        ...
+disbot/views/<name>/
+    _helpers.py     # shared constants
+    main_panel.py   # ephemeral BaseView for !<name> command
+    *.py            # modals, selectors, child panels
+```
+
+Used by `help`, `mining`, `moderation`, and `role` (4 of 5
+PersistentView-bearing subsystems).  Trade-off: the cog file grows
+with both lifecycle and UI; mitigated by extracting supporting views
+to `views/<name>/`.
+
+### Pattern B — PersistentView in views/
+
+The `PersistentView` lives in `disbot/views/<name>/main_panel.py`
+and is re-exported by the cog via `from views.<name>.main_panel
+import …`.  The cog file stays focused on commands and lifecycle.
+
+```
+disbot/cogs/<name>_cog.py
+    from views.<name>.main_panel import <Name>PanelView   # re-export
+disbot/views/<name>/
+    main_panel.py
+        class <Name>PanelView(PersistentView):
+            SUBSYSTEM = "<name>"
+            ...
+```
+
+Used by `economy` (1 of 5).  Trade-off: requires the import
+side-effect (which runs `@register`) to happen at cog-load time —
+the cog must import the view class for the registry to be populated
+before `on_ready`.
+
+### Which to use
+
+Both patterns satisfy the identity contract (the `SUBSYSTEM` string
+matches a `SUBSYSTEMS` key in `utils/subsystem_registry`), so
+`!platform identity` reports clean for both.  Prefer **Pattern A**
+for new subsystems unless the cog file is already very large; in
+that case Pattern B keeps the cog under the ~400 LOC guideline.  Do
+not mix patterns within a single subsystem.
