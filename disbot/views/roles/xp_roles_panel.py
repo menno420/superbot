@@ -5,6 +5,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils import db
 from utils.ui_constants import ECONOMY_COLOR
 from views.base import BaseView
@@ -150,7 +151,8 @@ class XpThresholdModal(
             )
             return
 
-        await interaction.response.defer()
+        if not await safe_defer(interaction):
+            return
         await self.parent._refresh()
 
 

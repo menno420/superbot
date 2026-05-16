@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer
 from utils.helpers import safe_select_emoji
 
 # Keyword presets shown in the dropdown menus
@@ -100,5 +101,4 @@ class _ChannelSelect(discord.ui.Select):
                 view=self._parent,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
-            if not interaction.response.is_done():
-                await interaction.response.defer()
+            await safe_defer(interaction)
