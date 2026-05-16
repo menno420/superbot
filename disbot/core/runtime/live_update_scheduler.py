@@ -41,6 +41,15 @@ if TYPE_CHECKING:
 logger = logging.getLogger("bot.runtime.scheduler")
 
 # Minimum seconds between edits to the same Discord channel.
+#
+# Rationale: Discord's per-channel global rate-limit is 5 edits / 5 s for
+# the bot user, but bursts of panel refreshes within the same channel
+# (e.g. an active counting game with multiple players) routinely
+# tripped that limit and produced 429 responses.  A 1.0 s floor keeps
+# bursts under the limit without making panels feel laggy — a click
+# arriving inside the 1 s window simply sleeps until the floor elapses.
+# Per-channel granularity (rather than per-message or per-subsystem)
+# matches Discord's rate-limit bucket key.
 _MIN_EDIT_INTERVAL: float = 1.0
 
 # (guild_id, channel_id) → monotonic timestamp of last edit.
