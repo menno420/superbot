@@ -15,7 +15,7 @@ from utils.cooldowns import check_cooldown
 from utils.helpers import _parse_member, post_log_embed
 from utils.settings_keys import XP_ANNOUNCE_CHANNEL, XP_COOLDOWN, XP_MAX, XP_MIN
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
 logger = logging.getLogger("bot")
 
@@ -281,8 +281,7 @@ class XpCog(commands.Cog):
         """Open the XP panel showing your rank and quick admin actions."""
         view = _XpHubView(ctx)
         embed = await view.build_embed()
-        msg = await ctx.send(embed=embed, view=view)
-        view.message = msg
+        await send_panel(ctx, embed=embed, view=view)
 
     async def build_help_menu_view(
         self,

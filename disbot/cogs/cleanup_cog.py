@@ -13,7 +13,7 @@ from services import governance_service
 from services.governance_service import GovernanceContext
 from utils import db
 from utils.ui_constants import ADMIN_COLOR
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
 
 def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
@@ -264,8 +264,7 @@ class Cleanup(commands.Cog):
         if ctx.guild.id not in self._word_cache:
             await self._load_guild(ctx.guild.id)
         view = _WordMenuView(ctx, self)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_embed(), view=view)
 
     async def build_help_menu_view(
         self,

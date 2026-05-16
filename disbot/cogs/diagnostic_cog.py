@@ -12,7 +12,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils import db
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
 logger = logging.getLogger("bot")
 
@@ -190,8 +190,7 @@ class DiagnosticCog(commands.Cog):
     async def diagnostics_hub(self, ctx):
         """Open the interactive diagnostics hub panel."""
         view = _DiagnosticsHubView(ctx, self)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_embed(), view=view)
 
     async def build_help_menu_view(
         self,

@@ -11,7 +11,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
 COGS_DIR = os.path.dirname(os.path.abspath(__file__))
 PID_FILE = os.path.join(os.path.dirname(COGS_DIR), "bot.pid")
@@ -59,13 +59,13 @@ class AdminCog(commands.Cog):
     # Admin menu
     # ------------------------------------------------------------------
 
+    @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(name="adminmenu")
     @commands.has_permissions(administrator=True)
     async def admin_menu(self, ctx):
         """Open the interactive admin control panel."""
         view = _AdminPanelView(ctx, self)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_embed(), view=view)
 
     async def build_help_menu_view(
         self,

@@ -9,7 +9,7 @@ from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import embeds as em
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
 
 async def _remind_later(
@@ -37,12 +37,12 @@ class UtilityCog(commands.Cog):
         """
         tasks.cancel_by_prefix("utility:")
 
+    @commands.cooldown(rate=3, per=10, type=commands.BucketType.user)
     @commands.command(name="utilitymenu")
     async def utility_menu(self, ctx):
         """Open the interactive utility panel."""
         view = _UtilityPanelView(ctx)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_embed(), view=view)
 
     async def build_help_menu_view(
         self,

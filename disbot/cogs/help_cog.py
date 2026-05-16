@@ -152,6 +152,11 @@ def _attach_back_to_help_button(
     will invalidate the underlying session state through the normal pipeline.
     """
     if len(view.children) >= 25:
+        logger.warning(
+            "Back-to-help button skipped — %s already has 25 children. "
+            "User cannot return to the help menu from this panel.",
+            type(view).__name__,
+        )
         return
 
     back_btn = discord.ui.Button(  # type: ignore[var-annotated]

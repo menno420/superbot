@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from utils import db
 from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR, MINING_COLOR, WARNING_COLOR
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
 logger = logging.getLogger("bot")
 
@@ -371,8 +371,7 @@ class InventoryCog(commands.Cog):
         target = member or ctx.author
         grouped = await _build_combined_inventory(target.id, ctx.guild.id)
         view = UnifiedInventoryView(ctx.author, target, grouped)
-        msg = await ctx.send(embed=view.build_hub_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_hub_embed(), view=view)
 
     async def build_help_menu_view(
         self,

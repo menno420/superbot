@@ -10,9 +10,9 @@ from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils.helpers import _parse_member
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
-logger = logging.getLogger("discord_bot.prize_cog")
+logger = logging.getLogger("bot.cogs.proof_channel")
 
 
 class ProofChannelCog(commands.Cog):
@@ -102,13 +102,13 @@ class ProofChannelCog(commands.Cog):
         )
         await ctx.send(embed=embed, delete_after=60)
 
+    @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(name="prizemenu")
     @commands.has_permissions(manage_channels=True)
     async def prize_menu(self, ctx):
         """Open the interactive prize channel management panel."""
         view = _PrizeManagerView(ctx, self)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_embed(), view=view)
 
     async def build_help_menu_view(
         self,

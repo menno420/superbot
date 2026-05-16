@@ -3,8 +3,30 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord.ext import commands
 
 logger = logging.getLogger("bot.views")
+
+
+async def send_panel(
+    ctx: commands.Context,
+    *,
+    embed: discord.Embed,
+    view: BaseView,
+) -> discord.Message:
+    """Send ``embed`` + ``view`` in ``ctx.channel`` and bind the message to view.
+
+    Centralises the ``msg = await ctx.send(...); view.message = msg`` pattern
+    so panel commands stay one line.  Binding ``view.message`` is what lets
+    :meth:`BaseView.on_timeout` edit the message to disable the buttons when
+    the view expires.
+
+    Returns the sent message so callers that still need the reference can
+    use it directly.
+    """
+    msg = await ctx.send(embed=embed, view=view)
+    view.message = msg
+    return msg
 
 
 class BaseView(discord.ui.View):

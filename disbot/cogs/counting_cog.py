@@ -28,12 +28,13 @@ from cogs.counting._constants import word_to_num as _word_to_num  # noqa: F401
 from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
+from views.base import send_panel
 
 # Re-export the hub view so legacy ``from cogs.counting_cog import
 # _CountingHubView`` imports keep resolving.
 from views.counting import _CountingHubView  # noqa: F401
 
-logger = logging.getLogger("CountingCog")
+logger = logging.getLogger("bot.cogs.counting")
 
 
 class CountingCog(commands.Cog):
@@ -91,8 +92,7 @@ class CountingCog(commands.Cog):
         """Open the interactive counting game management panel."""
         view = _CountingHubView(ctx, self)
         embed = await view.build_embed()
-        msg = await ctx.send(embed=embed, view=view)
-        view.message = msg
+        await send_panel(ctx, embed=embed, view=view)
 
     async def build_help_menu_view(
         self,
