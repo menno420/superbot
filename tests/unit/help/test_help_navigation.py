@@ -196,6 +196,129 @@ async def test_help_on_select_handles_missing_cog():
     interaction.response.edit_message.assert_not_called()
 
 
+@pytest.mark.asyncio
+async def test_help_command_deletes_stale_anchor_and_sends_new():
+    """!help must always send a fresh message; old anchor message must be deleted.
+
+    Regression: after bot restart, the help anchor may point to an old message
+    that has scrolled out of view. The bot was editing that off-screen message
+    so the user saw nothing appear. The fix deletes the old message and posts
+    a new one at the bottom of the channel.
+    """
+    from unittest.mock import patch
+
+    from cogs.help_cog import HelpCog
+
+    bot = MagicMock()
+    bot.command_prefix = "!"
+    cog = HelpCog(bot)
+
+    ctx = MagicMock()
+    ctx.author.id = 111
+    ctx.guild.id = 222
+    ctx.channel.id = 333
+    ctx.message.id = 99999
+    ctx.send = AsyncMock(return_value=MagicMock(id=88888))
+    ctx.prefix = "!"
+
+    vis_result = MagicMock()
+    vis_result.visible_subsystems = {"general"}
+    vis_result.member_tier = "user"
+
+    old_msg = MagicMock()
+    old_msg.delete = AsyncMock()
+    ctx.channel.fetch_message = AsyncMock(return_value=old_msg)
+
+    old_anchor = {
+        "anchor_id": "abc-123",
+        "message_id": 55555,
+        "is_stale": False,
+    }
+
+    with (
+        patch(
+            "cogs.help_cog.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            return_value=vis_result,
+        ),
+        patch(
+            "cogs.help_cog.GovernanceContext.from_ctx",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "core.runtime.message_anchor_manager.get",
+            new_callable=AsyncMock,
+            return_value=old_anchor,
+        ),
+        patch(
+            "core.runtime.message_anchor_manager.mark_stale",
+            new_callable=AsyncMock,
+        ) as mark_stale,
+        patch(
+            "core.runtime.message_anchor_manager.upsert",
+            new_callable=AsyncMock,
+        ) as upsert,
+    ):
+        await cog.help_command.callback(cog, ctx)
+
+    old_msg.delete.assert_awaited_once()
+    mark_stale.assert_awaited_once_with("abc-123")
+    ctx.send.assert_awaited_once()
+    upsert.assert_awaited_once_with(111, 222, 333, "help", 88888)
+
+
+@pytest.mark.asyncio
+async def test_help_command_no_stale_anchor_sends_new_directly():
+    """When no prior anchor exists, !help sends new without trying to delete."""
+    from unittest.mock import patch
+
+    from cogs.help_cog import HelpCog
+
+    bot = MagicMock()
+    cog = HelpCog(bot)
+
+    ctx = MagicMock()
+    ctx.author.id = 111
+    ctx.guild.id = 222
+    ctx.channel.id = 333
+    ctx.send = AsyncMock(return_value=MagicMock(id=77777))
+    ctx.prefix = "!"
+
+    vis_result = MagicMock()
+    vis_result.visible_subsystems = set()
+    vis_result.member_tier = "user"
+
+    with (
+        patch(
+            "cogs.help_cog.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            return_value=vis_result,
+        ),
+        patch(
+            "cogs.help_cog.GovernanceContext.from_ctx",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "core.runtime.message_anchor_manager.get",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "core.runtime.message_anchor_manager.mark_stale",
+            new_callable=AsyncMock,
+        ) as mark_stale,
+        patch(
+            "core.runtime.message_anchor_manager.upsert",
+            new_callable=AsyncMock,
+        ) as upsert,
+    ):
+        await cog.help_command.callback(cog, ctx)
+
+    mark_stale.assert_not_awaited()
+    ctx.send.assert_awaited_once()
+    upsert.assert_awaited_once_with(111, 222, 333, "help", 77777)
+
+
 # ---------------------------------------------------------------------------
 # INV-003 verification: apply_template routes through the pipeline
 # ---------------------------------------------------------------------------
