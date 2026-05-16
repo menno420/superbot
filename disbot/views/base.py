@@ -45,8 +45,13 @@ class BaseView(discord.ui.View):
         if self.message:
             try:
                 await self.message.edit(view=self)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug(
+                    "%s.on_timeout: message.edit failed (msg=%s): %s",
+                    type(self).__name__,
+                    self.message.id,
+                    exc,
+                )
 
     async def on_error(
         self,

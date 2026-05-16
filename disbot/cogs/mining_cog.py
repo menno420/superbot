@@ -164,7 +164,12 @@ class MiningCog(commands.Cog):
             await self.cog.update_inventory(user_id, self.guild_id, found, amount)
 
             new_content = f"{interaction.user.mention} mined {amount}x **{found}** by going {direction}!"
-            await interaction.message.edit(content=new_content, embed=None, view=None)
+            await interaction.followup.edit_message(
+                message_id=interaction.message.id,
+                content=new_content,
+                embed=None,
+                view=None,
+            )
             self.stop()
 
     #

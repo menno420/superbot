@@ -467,8 +467,15 @@ class HelpCog(commands.Cog):
             try:
                 old_msg = await ctx.channel.fetch_message(old_anchor["message_id"])
                 await old_msg.delete()
-            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+            except discord.NotFound:
                 pass
+            except (discord.Forbidden, discord.HTTPException) as exc:
+                logger.debug(
+                    "Could not delete prior help message | user=%d | msg=%d: %s",
+                    ctx.author.id,
+                    old_anchor["message_id"],
+                    exc,
+                )
             await message_anchor_manager.mark_stale(str(old_anchor["anchor_id"]))
 
         msg = await ctx.send(embed=embed, view=view)
