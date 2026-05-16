@@ -25,8 +25,11 @@ that service.  No exceptions for cogs or other services.
 
 | Service | Owns | Writers must… |
 |---|---|---|
-| `services/economy_service.py` | every coin-balance mutation (`xp.coins` column, `economy_audit_log` rows) | call `credit`/`debit`/`transfer`/`bet_and_settle`. No `db.add_coins`/`db.set_coins` outside the service.  INV-F (AST test). |
-| `services/xp_service.py` | XP grants + level-up event emission | call `award(...)`.  `db.add_xp` is still callable as the primitive but the service is the canonical path for new code. |
+| `services/economy_service.py` | every coin-balance mutation (`xp.coins` column, `economy_audit_log` rows) | call `credit`/`debit`/`transfer`/`bet_and_settle`/`refund`. No `db.add_coins`/`db.set_coins` outside the service.  INV-F (AST test). |
+| `services/xp_service.py` | every XP mutation (`xp.xp` column, level transitions, XP row deletion) | call `award(...)` for grants and `reset(...)` for clears. No `db.add_xp`/`db.delete_xp` outside the service.  INV-G (AST test). |
+| `services/moderation_service.py` | every moderation action (`warnings`, `mod_logs`, Discord ban/kick/timeout calls) | call `warn`/`timeout`/`kick`/`ban`/`unban`/`clear_warnings`. Emits `moderation.action_taken`. |
+| `services/blackjack_engine.py` | pure card/hand/deck math (no I/O) | call `rank_value`/`hand_value`/`new_deck`/`hand_str`/`is_blackjack`. No copy-pasted card logic in cogs. |
+| `services/game_state_service.py` | in-flight game state checkpoints (`game_state` table) | call `save`/`load`/`clear`/`list_active_for_subsystem`.  JSONB payload; cogs own their schemas. |
 | `services/governance_service.py` (legacy shim) | the public surface re-exported from `governance/*` | re-exports only.  No business logic should live here. |
 | `governance/writes.py:GovernanceMutationPipeline` | every governance write (subsystem_visibility, cleanup_policies, capability_overrides, audit log) | use the pipeline.  INV-E (`test_apply_template_uses_pipeline`). |
 
@@ -44,7 +47,7 @@ writes must come from the owning cog or a shared service.
 | `diagnostic`   | (uses `logs` for queries)                    | n/a |
 | `general`      | (loads `data/json/general_content.json`)      | n/a |
 | `role`         | `role_thresholds`, `reaction_roles`            | direct via `utils/db/roles.py` |
-| `moderation`   | `warnings`, `mod_logs`                         | direct via `utils/db/moderation.py` |
+| `moderation`   | `warnings`, `mod_logs`                         | `services/moderation_service.py` (preferred); `utils/db/moderation.py` direct for read-only / legacy callers |
 | `xp`           | `xp.xp`, `xp.level`, `xp.messages`, `xp.last_xp` | `services/xp_service.py` |
 | `economy`      | `economy`, `job_progress`, `economy_audit_log`   | `services/economy_service.py` |
 | `inventory`    | `inventory`                                    | direct via `utils/db/inventory.py` |
@@ -82,6 +85,7 @@ writes must come from the owning cog or a shared service.
 | `governance_audit_log` | `GovernanceMutationPipeline` | append-only via the pipeline; never updated or deleted. |
 | `governance_templates` | `governance.templates` | only the template API. |
 | `economy_audit_log` | `services/economy_service.py` | append-only inside the service. |
+| `game_state` | `services/game_state_service.py` | only the service.  JSONB payload per (guild, user, channel, subsystem). |
 | `schema_migrations` | `utils/db/migrations.py` | only the migration runner. |
 
 ---
@@ -101,6 +105,8 @@ allowed event name.  Owners of each event:
 | `economy.balance_changed` | `services/economy_service.py` | `guild_id`, `user_id`, `delta`, `new_balance`, `reason` |
 | `xp.awarded` | `services/xp_service.py` | `guild_id`, `user_id`, `delta`, `new_xp`, `new_level`, `source` |
 | `xp.level_up` | `services/xp_service.py` | `guild_id`, `user_id`, `new_level`, `source` |
+| `xp.reset` | `services/xp_service.py` | `guild_id`, `user_id`, `actor_id`, `source` |
+| `moderation.action_taken` | `services/moderation_service.py` | `guild_id`, `target_id`, `actor_id`, `action` (`warn`/`timeout`/`kick`/`ban`/`unban`/`clear_warnings`), `reason` |
 
 Adding a new event:
 1. Add the literal string to `core/events_catalogue.KNOWN_EVENTS`.
