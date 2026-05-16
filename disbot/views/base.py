@@ -33,7 +33,8 @@ class BaseView(discord.ui.View):
             return True
         if interaction.user.id != self._author.id:
             await interaction.response.send_message(
-                "This panel isn't yours.", ephemeral=True
+                "This panel isn't yours.",
+                ephemeral=True,
             )
             return False
         return True
@@ -69,7 +70,8 @@ class BaseView(discord.ui.View):
         if not interaction.response.is_done():
             try:
                 await interaction.response.send_message(
-                    "An error occurred. Please try again.", ephemeral=True
+                    "An error occurred. Please try again.",
+                    ephemeral=True,
                 )
             except Exception:
                 pass

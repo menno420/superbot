@@ -5,6 +5,7 @@ import logging
 
 import discord
 from discord.ext import commands
+
 from utils import db
 from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR, MINING_COLOR, WARNING_COLOR
 from views.base import BaseView
@@ -127,7 +128,8 @@ _RARITY_ORDER: dict[str, int] = {
 # Shared async helper — used by both the cog command and economy_cog panel
 # ---------------------------------------------------------------------------
 async def _build_combined_inventory(
-    user_id: int, guild_id: int
+    user_id: int,
+    guild_id: int,
 ) -> dict[str, list[tuple[str, int, dict]]]:
     """Fetch both inventory tables and return items grouped by category.
 
@@ -214,7 +216,8 @@ class _CategoryView(BaseView):
 
     def build_embed(self) -> discord.Embed:
         cat_meta = _CATEGORY_META.get(
-            self._category, {"emoji": "📦", "color": MINING_COLOR}
+            self._category,
+            {"emoji": "📦", "color": MINING_COLOR},
         )
         embed = discord.Embed(
             title=f"{cat_meta['emoji']} {self._category}",
@@ -238,7 +241,7 @@ class _CategoryView(BaseView):
 
         embed.description = "\n".join(lines) if lines else "Nothing here."
         embed.set_footer(
-            text=f"Page {self._page + 1}/{self._total_pages}  •  Click ↩ Back to return."
+            text=f"Page {self._page + 1}/{self._total_pages}  •  Click ↩ Back to return.",
         )
         return embed
 
@@ -255,7 +258,8 @@ class _CategoryView(BaseView):
     async def _back_to_hub(self, interaction: discord.Interaction) -> None:
         self._hub.message = self.message
         await interaction.response.edit_message(
-            embed=self._hub.build_hub_embed(), view=self._hub
+            embed=self._hub.build_hub_embed(),
+            view=self._hub,
         )
         self.stop()
 
@@ -329,7 +333,10 @@ class UnifiedInventoryView(BaseView):
         return embed
 
     async def _open_category(
-        self, interaction: discord.Interaction, *, category: str
+        self,
+        interaction: discord.Interaction,
+        *,
+        category: str,
     ) -> None:
         items = self._grouped.get(category, [])
         view = _CategoryView(self.ctx.author, self.ctx, category, items, hub=self)
@@ -346,7 +353,9 @@ class InventoryCog(commands.Cog):
 
     @commands.command(name="inventory", aliases=["inv"])
     async def inventory(
-        self, ctx: commands.Context, member: discord.Member = None
+        self,
+        ctx: commands.Context,
+        member: discord.Member = None,
     ) -> None:
         """Show your (or another user's) unified inventory hub."""
         target = member or ctx.author

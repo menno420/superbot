@@ -73,7 +73,8 @@ def _build_scope_chain(ctx: GovernanceContext) -> list[tuple[str, int]]:
 
 
 async def _fetch_all_visibility(
-    guild_id: int, chain: list[tuple[str, int]]
+    guild_id: int,
+    chain: list[tuple[str, int]],
 ) -> dict[tuple[str, int], dict[str, bool | None]]:
     """Fetch all visibility rows for the scope chain in a single DB query."""
     if not chain:
@@ -152,7 +153,9 @@ async def _resolve_member_tier(ctx: GovernanceContext) -> str:
     if tier == "user":
         try:
             trusted_role_id = await db.get_setting(
-                ctx.guild_id, settings_keys.TRUSTED_TIER_ROLE_ID, default=""
+                ctx.guild_id,
+                settings_keys.TRUSTED_TIER_ROLE_ID,
+                default="",
             )
             if (
                 trusted_role_id
@@ -176,7 +179,9 @@ async def _resolve_visibility_overrides(
     ctx: GovernanceContext,
     tier_accessible: set[str],
 ) -> tuple[
-    dict[str, SubsystemState], dict[str, ResolutionTrace], dict[str, PolicySource]
+    dict[str, SubsystemState],
+    dict[str, ResolutionTrace],
+    dict[str, PolicySource],
 ]:
     """Resolve visibility state for all subsystems via scope chain.
 
@@ -232,7 +237,9 @@ async def _resolve_visibility_overrides(
 
         # Scope chain resolution
         override_val, source, checked = _resolve_single_subsystem(
-            name, chain, scope_data
+            name,
+            chain,
+            scope_data,
         )
 
         if override_val is False:
@@ -288,7 +295,8 @@ async def resolve_visibility(ctx: GovernanceContext) -> VisibilityResult:
     tier_accessible = set(get_subsystems_for_tier(tier))
 
     states, traces, resolved_from = await _resolve_visibility_overrides(
-        ctx, tier_accessible
+        ctx,
+        tier_accessible,
     )
     _apply_dependency_rules(states, traces, resolved_from)
 

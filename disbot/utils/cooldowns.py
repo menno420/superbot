@@ -4,8 +4,7 @@ import time
 
 
 def check_cooldown(last_ts: int, cooldown_seconds: int) -> tuple[bool, int]:
-    """
-    Check whether a unix-timestamp cooldown has expired.
+    """Check whether a unix-timestamp cooldown has expired.
 
     Returns (on_cooldown: bool, remaining_seconds: int).
     remaining_seconds is 0 when not on cooldown.

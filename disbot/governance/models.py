@@ -95,7 +95,7 @@ class GovernanceContext:
     role_ids: set[int] = field(default_factory=set)
 
     @classmethod
-    def from_ctx(cls, ctx) -> "GovernanceContext":
+    def from_ctx(cls, ctx) -> GovernanceContext:
         channel = ctx.channel
         thread_id = None
         if isinstance(channel, discord.Thread):
@@ -116,7 +116,7 @@ class GovernanceContext:
         )
 
     @classmethod
-    def from_interaction(cls, interaction: discord.Interaction) -> "GovernanceContext":
+    def from_interaction(cls, interaction: discord.Interaction) -> GovernanceContext:
         channel = interaction.channel
         thread_id = None
         if isinstance(channel, discord.Thread):
@@ -138,7 +138,7 @@ class GovernanceContext:
         )
 
     @classmethod
-    def from_message(cls, message: discord.Message) -> "GovernanceContext":
+    def from_message(cls, message: discord.Message) -> GovernanceContext:
         channel = message.channel
         thread_id = None
         if isinstance(channel, discord.Thread):
@@ -333,7 +333,8 @@ class GovernanceDiff:
     added_visible: set[str]
     removed_visible: set[str]
     changed_sources: dict[
-        str, tuple[str, str]
+        str,
+        tuple[str, str],
     ]  # subsystem → (old, new) PolicySource value
     capability_changes: dict[str, tuple[bool, bool]]  # cap → (old, new)
     cleanup_changed: bool

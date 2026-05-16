@@ -56,6 +56,8 @@ def start() -> asyncio.Task:
     """
     task = asyncio.create_task(_run_gc_loop(), name="session_gc")
     logger.info(
-        "Session GC started — TTL=%ds, interval=%ds", SESSION_TTL, SESSION_GC_INTERVAL
+        "Session GC started — TTL=%ds, interval=%ds",
+        SESSION_TTL,
+        SESSION_GC_INTERVAL,
     )
     return task

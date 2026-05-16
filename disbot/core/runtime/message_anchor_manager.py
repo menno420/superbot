@@ -21,9 +21,50 @@ import logging
 
 import discord
 from discord.ext import commands
+
+from services import metrics
 from utils import db
 
 logger = logging.getLogger("bot.runtime.anchors")
+
+# on_ready fires on every Discord gateway reconnect, not just at process
+# start.  Without this guard restore_anchors() would call bot.add_view()
+# again for every anchor each reconnect, leaving duplicate view instances
+# bound to the same message — discord.py would then dispatch the
+# callback once per registered instance.  Guard makes restore a no-op
+# on second-and-subsequent calls; reset() is available for tests and
+# for the (rare) case where an admin really wants a fresh restore.
+_RESTORED_ONCE: bool = False
+
+# Last restoration summary, exposed for admin diagnostics.
+# Cleared by reset_restoration_state.
+_LAST_RESTORE_STATS: dict[str, int] = {
+    "anchors_seen": 0,
+    "restored": 0,
+    "view_missing": 0,
+    "stale": 0,
+}
+
+
+def reset_restoration_state() -> None:
+    """Clear the once-only guard so the next restore_anchors() runs again.
+
+    Intended for tests and for an explicit admin command that wants to
+    force a fresh restoration pass.  Normal runtime never needs this.
+    """
+    global _RESTORED_ONCE
+    _RESTORED_ONCE = False
+    _LAST_RESTORE_STATS.update(
+        anchors_seen=0,
+        restored=0,
+        view_missing=0,
+        stale=0,
+    )
+
+
+def last_restore_stats() -> dict[str, int]:
+    """Return a snapshot of the most recent ``restore_anchors`` outcome."""
+    return dict(_LAST_RESTORE_STATS)
 
 
 async def get(user_id: int, channel_id: int, subsystem: str) -> dict | None:
@@ -40,7 +81,11 @@ async def upsert(
 ) -> dict:
     """Create or replace the anchor, resetting is_stale on conflict."""
     row = await db.upsert_panel_anchor(
-        user_id, guild_id, channel_id, subsystem, message_id
+        user_id,
+        guild_id,
+        channel_id,
+        subsystem,
+        message_id,
     )
     logger.debug(
         "Anchor upserted | subsystem=%s | user=%d | msg=%d",
@@ -68,39 +113,84 @@ async def restore_anchors(bot: commands.Bot) -> None:
     Fetches every non-stale anchor from DB and calls bot.add_view() with a
     fresh view instance so button interactions survive a bot restart.
     Messages that no longer exist are marked stale.
+
+    Idempotent: subsequent calls (e.g. when on_ready re-fires after a
+    Discord gateway reconnect) are no-ops.  Use ``reset_restoration_state()``
+    to force a re-run if needed.
     """
+    global _RESTORED_ONCE
+    if _RESTORED_ONCE:
+        logger.debug(
+            "restore_anchors() called again — skipping (already restored).",
+        )
+        return
+    _RESTORED_ONCE = True
     from core.runtime.persistent_views import get_view_class
 
     anchors = await db.get_all_active_panel_anchors()
     restored = 0
     stale = 0
+    view_missing = 0
 
     for anchor in anchors:
-        view_cls = get_view_class(anchor["subsystem"])
+        subsystem = anchor["subsystem"]
+        view_cls = get_view_class(subsystem)
         if view_cls is None:
+            # Cog with PersistentView didn't register — leftover anchor.
+            # Surface via metric so operators can spot orphaned anchors.
+            metrics.anchor_restore_total.labels(
+                subsystem=subsystem,
+                result="view_missing",
+            ).inc()
+            view_missing += 1
+            logger.warning(
+                "Anchor %s for subsystem=%r has no registered PersistentView "
+                "class — panel will be unresponsive until the cog loads.",
+                anchor["anchor_id"],
+                subsystem,
+            )
             continue
         try:
             view = view_cls()
             bot.add_view(view, message_id=anchor["message_id"])
             restored += 1
+            metrics.anchor_restore_total.labels(
+                subsystem=subsystem,
+                result="ok",
+            ).inc()
         except Exception as exc:
             logger.warning(
                 "Could not restore anchor %s (msg=%d subsystem=%s): %s",
                 anchor["anchor_id"],
                 anchor["message_id"],
-                anchor["subsystem"],
+                subsystem,
                 exc,
             )
             await mark_stale(str(anchor["anchor_id"]))
             stale += 1
+            metrics.anchor_restore_total.labels(
+                subsystem=subsystem,
+                result="restore_failed",
+            ).inc()
 
+    _LAST_RESTORE_STATS.update(
+        anchors_seen=len(anchors),
+        restored=restored,
+        view_missing=view_missing,
+        stale=stale,
+    )
     logger.info(
-        "Anchor recovery complete — %d restored, %d marked stale", restored, stale
+        "Anchor recovery complete — %d restored, %d view-missing, %d marked stale",
+        restored,
+        view_missing,
+        stale,
     )
 
 
 async def try_fetch_message(
-    bot: commands.Bot, channel_id: int, message_id: int
+    bot: commands.Bot,
+    channel_id: int,
+    message_id: int,
 ) -> discord.Message | None:
     """Fetch a Discord message, returning None if it no longer exists."""
     channel = bot.get_channel(channel_id)

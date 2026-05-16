@@ -1,0 +1,225 @@
+"""Channel-deletion sub-panel + confirmation step.
+
+Two-stage flow: ``_DeleteSubView`` picks the channel; pressing
+"Delete Selected" transitions to ``_DeleteConfirmView`` which actually
+performs the delete after a confirmation click.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+
+import discord
+from discord.ext import commands
+
+from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
+from views.base import BaseView
+from views.channels._helpers import _build_channel_options, _ChannelSelect
+
+logger = logging.getLogger("bot")
+
+
+class _DeleteSubView(BaseView):
+    """Channel-deletion sub-panel with a select menu and confirmation flow."""
+
+    def __init__(
+        self,
+        ctx: commands.Context,
+        *,
+        options: list[discord.SelectOption],
+        manager_message: discord.Message | None,
+    ):
+        super().__init__(ctx.author, timeout=120)
+        self.ctx = ctx
+        self.manager_message = manager_message
+        self.selected_channel_id: int | None = None
+        self.selected_channel_name: str | None = None
+
+        self.channel_select = _ChannelSelect(
+            options,
+            self,
+            placeholder="Select a channel to delete…",
+        )
+        self.add_item(self.channel_select)
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,
+    ) -> None:
+        logger.error("DeleteSubView error on %s: %s", item, error, exc_info=True)
+        msg = f"❌ {type(error).__name__}: {error}"
+        try:
+            if not interaction.response.is_done():
+                await interaction.response.send_message(msg, ephemeral=True)
+            else:
+                await interaction.followup.send(msg, ephemeral=True)
+        except Exception:
+            pass
+
+    def build_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="🗑️ Delete Channel",
+            description="Select the channel you want to delete, then press **Delete Selected**.",
+            color=ERROR_COLOR,
+        )
+        embed.add_field(
+            name="Selected channel",
+            value=(
+                f"`{self.selected_channel_name}`"
+                if self.selected_channel_name
+                else "*(none)*"
+            ),
+            inline=False,
+        )
+        return embed
+
+    def _confirm_embed(self) -> discord.Embed:
+        return discord.Embed(
+            title="⚠️ Confirm Deletion",
+            description=(
+                f"Are you sure you want to delete **`{self.selected_channel_name}`**?\n"
+                "**This action cannot be undone.**"
+            ),
+            color=ERROR_COLOR,
+        )
+
+    @discord.ui.button(
+        label="Delete Selected",
+        style=discord.ButtonStyle.red,
+        emoji="🗑️",
+        row=1,
+    )
+    async def delete_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not self.selected_channel_id:
+            await interaction.response.send_message(
+                "Please select a channel first.",
+                ephemeral=True,
+            )
+            return
+        confirm_view = _DeleteConfirmView(
+            self.ctx,
+            channel_id=self.selected_channel_id,
+            channel_name=self.selected_channel_name,
+            manager_message=self.manager_message,
+        )
+        await interaction.response.edit_message(
+            embed=self._confirm_embed(),
+            view=confirm_view,
+        )
+        self.stop()
+
+    @discord.ui.button(label="↩️ Back", style=discord.ButtonStyle.grey, row=1)
+    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        from views.channels.main_panel import _ChannelManagerView
+
+        manager = _ChannelManagerView(self.ctx)
+        manager.message = self.manager_message
+        await interaction.response.edit_message(
+            embed=manager.build_embed(),
+            view=manager,
+        )
+        self.stop()
+
+
+class _DeleteConfirmView(BaseView):
+    """Confirmation step before actually deleting a channel."""
+
+    def __init__(
+        self,
+        ctx: commands.Context,
+        *,
+        channel_id: int,
+        channel_name: str,
+        manager_message: discord.Message | None,
+    ):
+        super().__init__(ctx.author, timeout=60)
+        self.ctx = ctx
+        self.channel_id = channel_id
+        self.channel_name = channel_name
+        self.manager_message = manager_message
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,
+    ) -> None:
+        logger.error("DeleteConfirmView error on %s: %s", item, error, exc_info=True)
+        msg = f"❌ {type(error).__name__}: {error}"
+        try:
+            if not interaction.response.is_done():
+                await interaction.response.send_message(msg, ephemeral=True)
+            else:
+                await interaction.followup.send(msg, ephemeral=True)
+        except Exception:
+            pass
+
+    @discord.ui.button(
+        label="Confirm Delete",
+        style=discord.ButtonStyle.red,
+        emoji="🗑️",
+        row=0,
+    )
+    async def confirm_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        channel = interaction.guild.get_channel(self.channel_id)
+        if channel is None:
+            result_embed = discord.Embed(
+                title="❌ Channel Not Found",
+                description=f"Channel `{self.channel_name}` could not be found — it may have already been deleted.",
+                color=WARNING_COLOR,
+            )
+        else:
+            try:
+                await channel.delete()
+                result_embed = discord.Embed(
+                    title="✅ Channel Deleted",
+                    description=f"`{self.channel_name}` has been deleted.",
+                    color=SUCCESS_COLOR,
+                )
+            except discord.Forbidden:
+                result_embed = discord.Embed(
+                    title="❌ Permission Denied",
+                    description="I don't have permission to delete that channel.",
+                    color=ERROR_COLOR,
+                )
+            except discord.HTTPException as exc:
+                result_embed = discord.Embed(
+                    title="❌ Error",
+                    description=f"Failed to delete channel: {exc}",
+                    color=ERROR_COLOR,
+                )
+
+        for item in self.children:
+            item.disabled = True
+        result_embed.set_footer(text="Returning to the management panel…")
+        await interaction.response.edit_message(embed=result_embed, view=self)
+        self.stop()
+
+        await asyncio.sleep(2)
+        from views.channels.main_panel import _ChannelManagerView
+
+        manager = _ChannelManagerView(self.ctx)
+        manager.message = self.manager_message
+        try:
+            await self.manager_message.edit(embed=manager.build_embed(), view=manager)
+        except Exception:
+            pass
+
+    @discord.ui.button(
+        label="Cancel",
+        style=discord.ButtonStyle.grey,
+        emoji="❌",
+        row=0,
+    )
+    async def cancel_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        options = _build_channel_options(interaction.guild)
+        sub = _DeleteSubView(
+            self.ctx,
+            options=options,
+            manager_message=self.manager_message,
+        )
+        await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
+        self.stop()

@@ -9,6 +9,7 @@ Scope priority under test: channel > category > guild > registry default.
 from __future__ import annotations
 
 import pytest
+
 import services.governance_service as gs
 from services.governance_service import (
     GovernanceContext,

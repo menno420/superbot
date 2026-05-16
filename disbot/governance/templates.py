@@ -54,7 +54,7 @@ class GovernanceTemplate:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "GovernanceTemplate":
+    def from_dict(cls, data: dict) -> GovernanceTemplate:
         return cls(
             name=data.get("name", ""),
             description=data.get("description", ""),

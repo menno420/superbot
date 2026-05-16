@@ -6,6 +6,7 @@ State is persisted to runtime_session_state in PostgreSQL and is keyed by
 Public surface:
     get(session_id, key)               → object | None
     set(session_id, key, value)        → None
+    set_many(session_id, items)        → None  (atomic multi-key upsert)
     delete(session_id, key)            → None
     get_all(session_id)                → dict
     invalidate_guild_state(guild_id)   → None
@@ -28,6 +29,19 @@ async def get(session_id: str, key: str) -> object | None:
 async def set(session_id: str, key: str, value: object) -> None:  # noqa: A001
     """Write (upsert) one state value for a session."""
     await db.set_session_state(session_id, key, value)
+
+
+async def set_many(session_id: str, items: dict[str, object]) -> None:
+    """Upsert several state keys for one session in a single transaction.
+
+    Prefer this over calling ``set`` repeatedly when a handler needs to
+    update more than one key — eliminates the partial-state window a
+    network hiccup between two ``set`` calls would otherwise create.
+    Empty ``items`` is a no-op.
+    """
+    if not items:
+        return
+    await db.set_session_state_many(session_id, items)
 
 
 async def delete(session_id: str, key: str) -> None:

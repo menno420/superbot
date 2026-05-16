@@ -7,10 +7,7 @@ Imports from governance.models only (within governance/).
 from __future__ import annotations
 
 from governance.models import PolicySource, ResolutionTrace, SubsystemState
-from utils.subsystem_registry import (
-    _COMPILED_DEPENDENCY_ORDER,
-    SUBSYSTEMS,
-)
+from utils.subsystem_registry import _COMPILED_DEPENDENCY_ORDER, SUBSYSTEMS
 
 
 def _apply_dependency_rules(

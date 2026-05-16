@@ -20,8 +20,9 @@ from __future__ import annotations
 import logging
 
 import discord
-from core.runtime import message_anchor_manager
 from discord.ext import commands
+
+from core.runtime import message_anchor_manager
 
 logger = logging.getLogger("bot.runtime.panels")
 
@@ -72,7 +73,11 @@ async def get_or_render_panel(
 
     msg = await ctx.send(embed=embed, view=view)
     await message_anchor_manager.upsert(
-        user_id, guild_id, channel_id, subsystem, msg.id
+        user_id,
+        guild_id,
+        channel_id,
+        subsystem,
+        msg.id,
     )
     logger.debug(
         "New panel anchored | subsystem=%s | user=%d | msg=%d",

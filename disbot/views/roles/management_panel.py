@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
-from utils.ui_constants import ECONOMY_COLOR, ROLE_COLOR, WARNING_COLOR
+
+from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.roles._helpers import _find_role_normalized, _parse_color
 
@@ -36,7 +37,9 @@ class ManagementPanel(BaseView):
 
     @discord.ui.button(label="📝 Create", style=discord.ButtonStyle.green, row=0)
     async def create_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         from views.roles.creation_panel import RoleCreateModal
 
@@ -44,13 +47,17 @@ class ManagementPanel(BaseView):
 
     @discord.ui.button(label="✏️ Edit Role", style=discord.ButtonStyle.blurple, row=0)
     async def edit_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         await interaction.response.send_modal(EditRoleModal(self))
 
     @discord.ui.button(label="🗑️ Delete Role", style=discord.ButtonStyle.red, row=0)
     async def delete_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         guild = interaction.guild
         roles = [
@@ -58,21 +65,27 @@ class ManagementPanel(BaseView):
         ]
         if not roles:
             await interaction.response.send_message(
-                "No deletable roles available.", ephemeral=True
+                "No deletable roles available.",
+                ephemeral=True,
             )
             return
         view = _DeleteRoleView(self, roles)
         await interaction.response.send_message(
-            "Select a role to delete:", view=view, ephemeral=True
+            "Select a role to delete:",
+            view=view,
+            ephemeral=True,
         )
 
     @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.secondary, row=1)
     async def back_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if self.parent:
             await interaction.response.edit_message(
-                embed=self.parent.build_embed(), view=self.parent
+                embed=self.parent.build_embed(),
+                view=self.parent,
             )
         else:
             await interaction.response.edit_message(view=None)
@@ -81,10 +94,13 @@ class ManagementPanel(BaseView):
 
 class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-arg]
     role_name = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Current role name (to find it)", max_length=100
+        label="Current role name (to find it)",
+        max_length=100,
     )
     new_name = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="New name (blank = keep)", max_length=100, required=False
+        label="New name (blank = keep)",
+        max_length=100,
+        required=False,
     )
     new_color = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="New color hex e.g. #ff0000 (blank = keep)",
@@ -100,12 +116,14 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
         role = _find_role_normalized(interaction.guild, self.role_name.value.strip())
         if not role:
             await interaction.response.send_message(
-                f"❌ Role **{self.role_name.value}** not found.", ephemeral=True
+                f"❌ Role **{self.role_name.value}** not found.",
+                ephemeral=True,
             )
             return
         if role >= interaction.guild.me.top_role:
             await interaction.response.send_message(
-                "❌ That role is above my top role — I can't edit it.", ephemeral=True
+                "❌ That role is above my top role — I can't edit it.",
+                ephemeral=True,
             )
             return
 
@@ -117,13 +135,15 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
                 kwargs["color"] = _parse_color(self.new_color.value)
             except (ValueError, OverflowError):
                 await interaction.response.send_message(
-                    "❌ Invalid color — use hex like `#ff0000`.", ephemeral=True
+                    "❌ Invalid color — use hex like `#ff0000`.",
+                    ephemeral=True,
                 )
                 return
 
         if not kwargs:
             await interaction.response.send_message(
-                "Nothing to change — provide a new name or color.", ephemeral=True
+                "Nothing to change — provide a new name or color.",
+                ephemeral=True,
             )
             return
 
@@ -132,11 +152,13 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
             await interaction.response.defer()
             if self.parent.message:
                 await self.parent.message.edit(
-                    embed=await self.parent.build_embed(), view=self.parent
+                    embed=await self.parent.build_embed(),
+                    view=self.parent,
                 )
         except discord.Forbidden:
             await interaction.response.send_message(
-                "❌ I don't have permission to edit that role.", ephemeral=True
+                "❌ I don't have permission to edit that role.",
+                ephemeral=True,
             )
         except discord.HTTPException as e:
             await interaction.response.send_message(f"❌ Failed: {e}", ephemeral=True)
@@ -154,22 +176,26 @@ class _DeleteRoleSelect(discord.ui.Select):
         role = interaction.guild.get_role(int(self.values[0]))
         if not role:
             await interaction.response.send_message(
-                "❌ Role no longer exists.", ephemeral=True
+                "❌ Role no longer exists.",
+                ephemeral=True,
             )
             return
         name = role.name
         try:
             await role.delete()
             await interaction.response.send_message(
-                f"🗑️ Deleted role **{name}**.", ephemeral=True
+                f"🗑️ Deleted role **{name}**.",
+                ephemeral=True,
             )
             if self.parent.message:  # type: ignore[attr-defined]
                 await self.parent.message.edit(  # type: ignore[attr-defined]
-                    embed=await self.parent.build_embed(), view=self.parent  # type: ignore[attr-defined]
+                    embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
+                    view=self.parent,  # type: ignore[attr-defined]
                 )
         except discord.Forbidden:
             await interaction.response.send_message(
-                "❌ I don't have permission to delete that role.", ephemeral=True
+                "❌ I don't have permission to delete that role.",
+                ephemeral=True,
             )
         except discord.HTTPException as e:
             await interaction.response.send_message(f"❌ Failed: {e}", ephemeral=True)

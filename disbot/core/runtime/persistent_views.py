@@ -71,7 +71,8 @@ class PersistentView(discord.ui.View):
 
         if interaction.user.id != anchor["user_id"]:
             await interaction.response.send_message(
-                "This panel isn't yours.", ephemeral=True
+                "This panel isn't yours.",
+                ephemeral=True,
             )
             return False
         return True
@@ -98,7 +99,8 @@ class PersistentView(discord.ui.View):
         if not interaction.response.is_done():
             try:
                 await interaction.response.send_message(
-                    "An error occurred. Please try again.", ephemeral=True
+                    "An error occurred. Please try again.",
+                    ephemeral=True,
                 )
             except Exception:
                 pass

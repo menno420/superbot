@@ -14,6 +14,7 @@ from __future__ import annotations
 import time as _time
 
 import discord
+
 from governance.cache import (  # noqa: F401
     GovernanceCacheBackend,
     forget_guild,
@@ -47,10 +48,7 @@ from governance.models import (  # noqa: F401
     SubsystemState,
     VisibilityResult,
 )
-from governance.resolver import (  # noqa: F401
-    get_visible_subsystems,
-    resolve_visibility,
-)
+from governance.resolver import get_visible_subsystems, resolve_visibility  # noqa: F401
 from governance.snapshot import (  # noqa: F401
     build_governance_snapshot,
     diff_governance_snapshots,
@@ -85,7 +83,8 @@ from utils.subsystem_registry import (
 
 
 async def resolve_command_policy(
-    ctx: GovernanceContext, command_name: str
+    ctx: GovernanceContext,
+    command_name: str,
 ) -> CommandPolicy:
     """Full policy resolution for a message command invocation attempt.
 
@@ -128,7 +127,8 @@ async def resolve_command_policy(
     redirect = _find_redirect_channel(guild, subsystem_meta)
 
     send_fb = cleanup.send_feedback and _should_send_feedback(
-        ctx.channel_id or 0, subsystem_name
+        ctx.channel_id or 0,
+        subsystem_name,
     )
     feedback = _build_feedback(subsystem_meta, redirect) if send_fb else None
 
@@ -158,7 +158,8 @@ async def resolve_all_capabilities(ctx: GovernanceContext) -> dict[str, bool]:
 
 
 async def resolve_subsystem_state(
-    ctx: GovernanceContext, subsystem_name: str
+    ctx: GovernanceContext,
+    subsystem_name: str,
 ) -> SubsystemEffectiveState:
     """Complete resolved state for one subsystem. Powers /why, admin diagnostics."""
     vis = await resolve_visibility(ctx)
@@ -219,7 +220,8 @@ def _should_send_feedback(channel_id: int, subsystem: str) -> bool:
 
 
 def _find_redirect_channel(
-    guild: discord.Guild | None, subsystem_meta: dict
+    guild: discord.Guild | None,
+    subsystem_meta: dict,
 ) -> str | None:
     if guild is None:
         return None

@@ -61,5 +61,5 @@ async def require_execution(interaction: discord.Interaction, capability: str) -
                 ephemeral=True,
             )
         raise PermissionError(
-            f"Capability {capability!r} denied for user {interaction.user.id}"
+            f"Capability {capability!r} denied for user {interaction.user.id}",
         )

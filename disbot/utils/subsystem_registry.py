@@ -501,7 +501,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "admin",
         "tags": ["diagnostics", "health", "latency", "debug"],
-        "entry_points": ["diagnosticmenu", "diagnostics", "ping"],
+        "entry_points": ["diagnosticmenu", "diagnostics", "ping", "platform"],
         "default_channels": ["staff", "bot-spam"],
         "related_subsystems": ["admin"],
         "dependencies": [],
@@ -550,7 +550,7 @@ _COMPILED_DEPENDENCY_ORDER: list[str] = []  # topological order
 # ---------------------------------------------------------------------------
 
 _RESERVED_CAPABILITY_PREFIXES: frozenset[str] = frozenset(
-    {"_internal", "system", "governance"}
+    {"_internal", "system", "governance"},
 )
 
 
@@ -576,13 +576,13 @@ class Capability:
     action: str
 
     @classmethod
-    def parse(cls, raw: str) -> "Capability":
+    def parse(cls, raw: str) -> Capability:
         from services.governance_exceptions import CapabilityNamespaceError
 
         parts = raw.split(".")
         if len(parts) != 3:
             raise CapabilityNamespaceError(
-                f"'{raw}' must be {{subsystem}}.{{resource}}.{{action}}"
+                f"'{raw}' must be {{subsystem}}.{{resource}}.{{action}}",
             )
         return cls(*parts)
 
@@ -646,30 +646,30 @@ def validate_registry() -> None:
         ):
             if not meta.get(field):
                 raise RegistryValidationError(
-                    f"subsystem '{name}': missing required field '{field}'"
+                    f"subsystem '{name}': missing required field '{field}'",
                 )
         if meta["visibility_tier"] not in valid_tiers:
             raise RegistryValidationError(
-                f"subsystem '{name}': invalid visibility_tier '{meta['visibility_tier']}'"
+                f"subsystem '{name}': invalid visibility_tier '{meta['visibility_tier']}'",
             )
         if meta["visibility_mode"] not in valid_modes:
             raise RegistryValidationError(
-                f"subsystem '{name}': invalid visibility_mode '{meta['visibility_mode']}'"
+                f"subsystem '{name}': invalid visibility_mode '{meta['visibility_mode']}'",
             )
         if not isinstance(meta.get("color", 0), int):
             raise RegistryValidationError(
-                f"subsystem '{name}': color must be int (.value), not discord.Color"
+                f"subsystem '{name}': color must be int (.value), not discord.Color",
             )
 
         for cap in meta.get("capabilities", []):
             if is_reserved_capability(cap):
                 raise CapabilityNamespaceError(
-                    f"subsystem '{name}': capability '{cap}' uses reserved namespace"
+                    f"subsystem '{name}': capability '{cap}' uses reserved namespace",
                 )
             if len(cap.split(".")) != 3:
                 raise CapabilityNamespaceError(
                     f"subsystem '{name}': capability '{cap}' must be"
-                    " {subsystem}.{resource}.{action}"
+                    " {subsystem}.{resource}.{action}",
                 )
             if cap in seen_caps:
                 raise RegistryValidationError(f"Duplicate capability: '{cap}'")
@@ -683,12 +683,12 @@ def validate_registry() -> None:
         for dep in meta.get("dependencies", []):
             if dep not in all_names:
                 raise RegistryValidationError(
-                    f"subsystem '{name}': unknown dependency '{dep}'"
+                    f"subsystem '{name}': unknown dependency '{dep}'",
                 )
         for rel in meta.get("related_subsystems", []):
             if rel not in all_names:
                 raise RegistryValidationError(
-                    f"subsystem '{name}': unknown related_subsystem '{rel}'"
+                    f"subsystem '{name}': unknown related_subsystem '{rel}'",
                 )
 
         dep_graph[name] = list(meta.get("dependencies", []))
@@ -788,6 +788,136 @@ def all_subsystems_sorted() -> list[tuple[str, dict]]:
     )
 
 
+async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
+    """Cross-check that the four subsystem-identity surfaces agree.
+
+    Runs after cogs load.  The four surfaces that MUST all use the same
+    subsystem-name strings are:
+
+      1. ``SUBSYSTEMS`` keys (this module's manifest)
+      2. ``commands.Cog`` command names registered on the bot
+      3. ``core.runtime.persistent_views._REGISTRY`` keys (the
+         ``SUBSYSTEM`` class-var of every ``PersistentView`` subclass)
+      4. ``core.runtime.interaction_router._handlers`` prefixes
+      5. distinct ``panel_anchors.subsystem`` values from the DB
+
+    A mismatch in any of these silently breaks: help menus show
+    categories whose commands don't exist; ``restore_anchors`` skips
+    panels; the interaction router drops button clicks; old anchor rows
+    point at removed cogs.
+
+    The validator logs a WARNING per finding and returns the structured
+    report so callers (admin commands, tests) can inspect it.  It does
+    NOT raise on findings — a mismatched DB row from a removed cog
+    should never abort startup.
+
+    Implements INV-B from the platform-hardening plan.
+
+    Args:
+        bot: a ``commands.Bot`` instance.  Typed as ``object`` here so
+            this module needn't import discord at validation time.
+
+    Returns:
+        Dict with keys ``entry_point_missing_command``,
+        ``router_prefix_unknown``, ``view_subsystem_unknown``,
+        ``db_anchor_subsystem_unknown``.  Values are lists of
+        descriptive strings (one per finding).
+    """
+    import logging
+
+    logger = logging.getLogger("bot.identity_contract")
+
+    findings: dict[str, list[str]] = {
+        "entry_point_missing_command": [],
+        "router_prefix_unknown": [],
+        "view_subsystem_unknown": [],
+        "db_anchor_subsystem_unknown": [],
+    }
+
+    # Surface 2: bot commands.
+    loaded_commands: set[str] = {cmd.name for cmd in getattr(bot, "commands", ())}
+
+    # Surface 1 vs Surface 2.
+    for sub_name, meta in SUBSYSTEMS.items():
+        if meta.get("visibility_mode") == "internal":
+            continue
+        eps = meta.get("entry_points", ())
+        for ep in eps:
+            if ep not in loaded_commands:
+                msg = f"subsystem={sub_name!r} entry_point={ep!r}"
+                findings["entry_point_missing_command"].append(msg)
+                logger.warning(
+                    "Identity-contract: entry_point %r declared by subsystem "
+                    "%r is not a loaded command (cog may have failed to load).",
+                    ep,
+                    sub_name,
+                )
+
+    # Surface 4: interaction_router prefixes.
+    try:
+        from core.runtime.interaction_router import _handlers as _router_handlers
+    except Exception:
+        _router_handlers = {}
+    for prefix in _router_handlers:
+        if prefix not in SUBSYSTEMS:
+            findings["router_prefix_unknown"].append(prefix)
+            logger.warning(
+                "Identity-contract: interaction_router prefix %r has no "
+                "matching SUBSYSTEMS entry.",
+                prefix,
+            )
+
+    # Surface 3: PersistentView SUBSYSTEM class vars.
+    try:
+        from core.runtime.persistent_views import _REGISTRY as _VIEW_REGISTRY
+    except Exception:
+        _VIEW_REGISTRY = {}
+    for sub_name in _VIEW_REGISTRY:
+        if sub_name not in SUBSYSTEMS:
+            findings["view_subsystem_unknown"].append(sub_name)
+            logger.warning(
+                "Identity-contract: PersistentView SUBSYSTEM=%r has no "
+                "matching SUBSYSTEMS entry.",
+                sub_name,
+            )
+
+    # Surface 5: distinct panel_anchors.subsystem values from the DB.
+    try:
+        from utils import db as _db
+
+        rows = await _db.fetchall(
+            "SELECT DISTINCT subsystem FROM panel_anchors WHERE NOT is_stale",
+            (),
+        )
+        for row in rows or ():
+            sub_name = row["subsystem"] if isinstance(row, dict) else row[0]
+            if sub_name not in SUBSYSTEMS:
+                findings["db_anchor_subsystem_unknown"].append(sub_name)
+                logger.warning(
+                    "Identity-contract: panel_anchors row references "
+                    "subsystem %r which has no matching SUBSYSTEMS entry "
+                    "(likely orphaned from a removed cog).",
+                    sub_name,
+                )
+    except Exception as exc:
+        # DB unavailable at startup, or table not migrated yet — not fatal.
+        logger.debug(
+            "Identity-contract: skipping panel_anchors check (%s)",
+            exc,
+        )
+
+    total = sum(len(v) for v in findings.values())
+    if total == 0:
+        logger.info("Identity-contract: clean (all four surfaces agree).")
+    else:
+        logger.warning(
+            "Identity-contract: %d finding(s) — %s",
+            total,
+            {k: len(v) for k, v in findings.items() if v},
+        )
+    return findings
+
+
 def capability_matches(pattern: str, capability: str) -> bool:
     """Wildcard capability matching for future declarative policy rules.
 
@@ -798,4 +928,4 @@ def capability_matches(pattern: str, capability: str) -> bool:
     c_parts = capability.split(".")
     if len(p_parts) != len(c_parts) or len(p_parts) != 3:
         return False
-    return all(p == "*" or p == c for p, c in zip(p_parts, c_parts))
+    return all(p == "*" or p == c for p, c in zip(p_parts, c_parts, strict=True))

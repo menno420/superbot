@@ -41,7 +41,9 @@ import uuid
 from collections.abc import Awaitable, Callable
 
 import discord
+
 from core.runtime import session_manager
+from services import metrics
 
 logger = logging.getLogger("bot.runtime.router")
 
@@ -52,6 +54,12 @@ _Handler = Callable[
 ]
 
 _handlers: dict[str, _Handler] = {}
+
+# One-shot WARNING dedup for unhandled custom_id prefixes — the metric
+# increments on every occurrence, the log fires once per process per
+# prefix to avoid drowning the log file when a removed cog has buttons
+# sitting in old Discord messages.
+_WARNED_UNHANDLED: set[str] = set()
 
 
 def register(prefix: str, handler: _Handler) -> None:
@@ -82,7 +90,20 @@ async def dispatch(interaction: discord.Interaction) -> None:
     prefix, _, rest = custom_id.partition(":")
     handler = _handlers.get(prefix)
     if handler is None:
-        # Not a runtime-managed interaction — ignore.
+        # Not a runtime-managed interaction.  The metric increments on
+        # every occurrence; the WARNING fires once per process per prefix
+        # so leftover buttons from a removed cog (or a typo'd register()
+        # call) surface without spamming the log on every click.
+        metrics.interaction_unhandled_total.labels(prefix=prefix).inc()
+        if prefix not in _WARNED_UNHANDLED:
+            _WARNED_UNHANDLED.add(prefix)
+            logger.warning(
+                "Unhandled interaction prefix %r — no handler registered "
+                "via interaction_router.register(). Likely a typo in a "
+                "cog's register() call or a leftover button from a "
+                "removed cog.",
+                prefix,
+            )
         return
 
     request_id = str(uuid.uuid4())
@@ -120,6 +141,10 @@ async def dispatch(interaction: discord.Interaction) -> None:
                     )
                 return
         except Exception as exc:
+            # Fail-open: prefer availability over security if governance
+            # itself is broken.  The metric makes the spike visible so
+            # operators can investigate before users notice.
+            metrics.governance_fail_open_total.labels(subsystem=prefix).inc()
             logger.warning(
                 "Governance gate failed for req=%s | prefix=%s: %s — allowing (fail-open fallback)",
                 request_id,

@@ -10,6 +10,7 @@ resolve_visibility (integration, DB-mocked) to cover the full pipeline.
 from __future__ import annotations
 
 import pytest
+
 from services.governance_service import (
     PolicySource,
     ResolutionTrace,

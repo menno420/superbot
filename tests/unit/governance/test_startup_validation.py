@@ -21,6 +21,7 @@ import copy
 import importlib
 
 import pytest
+
 import utils.subsystem_registry as reg
 
 # ---------------------------------------------------------------------------

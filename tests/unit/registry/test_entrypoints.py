@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 
 import pytest
+
 from utils.subsystem_registry import SUBSYSTEMS
 
 # ---------------------------------------------------------------------------

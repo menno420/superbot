@@ -4,6 +4,8 @@ import asyncio
 
 import discord
 from discord.ext import commands
+
+from core.runtime import tasks
 from utils import embeds as em
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
 from views.base import BaseView
@@ -76,7 +78,9 @@ class UtilityCog(commands.Cog):
                 inline=True,
             )
             embed.add_field(
-                name="Status", value=str(member.status).capitalize(), inline=True
+                name="Status",
+                value=str(member.status).capitalize(),
+                inline=True,
             )
             embed.add_field(
                 name="Activity",
@@ -94,16 +98,24 @@ class UtilityCog(commands.Cog):
             embed.add_field(name="Owner", value=guild.owner.mention, inline=True)
             embed.add_field(name="Members", value=str(guild.member_count), inline=True)
             embed.add_field(
-                name="Boost Level", value=str(guild.premium_tier), inline=True
+                name="Boost Level",
+                value=str(guild.premium_tier),
+                inline=True,
             )
             embed.add_field(
-                name="Created", value=guild.created_at.strftime("%Y-%m-%d"), inline=True
+                name="Created",
+                value=guild.created_at.strftime("%Y-%m-%d"),
+                inline=True,
             )
             embed.add_field(
-                name="Text Channels", value=str(len(guild.text_channels)), inline=True
+                name="Text Channels",
+                value=str(len(guild.text_channels)),
+                inline=True,
             )
             embed.add_field(
-                name="Voice Channels", value=str(len(guild.voice_channels)), inline=True
+                name="Voice Channels",
+                value=str(len(guild.voice_channels)),
+                inline=True,
             )
             if guild.icon:
                 embed.set_thumbnail(url=guild.icon.url)
@@ -132,11 +144,14 @@ class UtilityCog(commands.Cog):
         """Set a reminder.  !remind <minutes> <message>"""
         if time <= 0:
             await ctx.send(
-                embed=em.error("Please specify a time greater than 0 minutes.")
+                embed=em.error("Please specify a time greater than 0 minutes."),
             )
             return
         await ctx.send(f"⏳ Reminder set for **{time}** minute(s): {message}")
-        asyncio.create_task(_remind_later(ctx.author, ctx.channel, time * 60, message))
+        tasks.spawn(
+            f"utility:remind:{ctx.author.id}",
+            _remind_later(ctx.author, ctx.channel, time * 60, message),
+        )
 
     @commands.command(name="invite")
     @commands.has_permissions(create_instant_invite=True)
@@ -194,7 +209,9 @@ class _UtilityPanelView(BaseView):
 
     @discord.ui.button(label="🖥️ Server Info", style=discord.ButtonStyle.blurple, row=0)
     async def serverinfo_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         guild = interaction.guild
         embed = discord.Embed(
@@ -206,13 +223,19 @@ class _UtilityPanelView(BaseView):
         embed.add_field(name="Members", value=str(guild.member_count), inline=True)
         embed.add_field(name="Boost Level", value=str(guild.premium_tier), inline=True)
         embed.add_field(
-            name="Created", value=guild.created_at.strftime("%Y-%m-%d"), inline=True
+            name="Created",
+            value=guild.created_at.strftime("%Y-%m-%d"),
+            inline=True,
         )
         embed.add_field(
-            name="Text Channels", value=str(len(guild.text_channels)), inline=True
+            name="Text Channels",
+            value=str(len(guild.text_channels)),
+            inline=True,
         )
         embed.add_field(
-            name="Voice Channels", value=str(len(guild.voice_channels)), inline=True
+            name="Voice Channels",
+            value=str(len(guild.voice_channels)),
+            inline=True,
         )
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
@@ -221,7 +244,9 @@ class _UtilityPanelView(BaseView):
 
     @discord.ui.button(label="👤 User Info", style=discord.ButtonStyle.blurple, row=0)
     async def userinfo_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         member = interaction.user
         embed = discord.Embed(
@@ -242,7 +267,9 @@ class _UtilityPanelView(BaseView):
             inline=True,
         )
         embed.add_field(
-            name="Status", value=str(member.status).capitalize(), inline=True  # type: ignore[union-attr]
+            name="Status",
+            value=str(member.status).capitalize(),  # type: ignore[union-attr]
+            inline=True,
         )
         embed.add_field(
             name="Activity",
@@ -267,24 +294,28 @@ class _UtilityPanelView(BaseView):
     @discord.ui.button(label="🔔 Remind Me", style=discord.ButtonStyle.grey, row=1)
     async def remind_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(
-            _RemindModal(interaction.user, interaction.channel)  # type: ignore[arg-type]
+            _RemindModal(interaction.user, interaction.channel),  # type: ignore[arg-type]
         )
 
     @discord.ui.button(label="🔗 Invite", style=discord.ButtonStyle.grey, row=1)
     async def invite_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not interaction.user.guild_permissions.create_instant_invite:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Create Invite** permission.", ephemeral=True
+                "❌ You need **Create Invite** permission.",
+                ephemeral=True,
             )
             return
         invite = await interaction.channel.create_invite(max_uses=1, unique=True)  # type: ignore[union-attr]
         await interaction.response.send_message(
-            f"🔗 One-use invite: {invite.url}", ephemeral=True
+            f"🔗 One-use invite: {invite.url}",
+            ephemeral=True,
         )
 
     @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=2)
     async def overview_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
@@ -311,12 +342,14 @@ class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-ar
         opts = [o.strip() for o in self.options.value.split("\n") if o.strip()]
         if len(opts) < 2:
             await interaction.response.send_message(
-                "❌ Need at least 2 options.", ephemeral=True
+                "❌ Need at least 2 options.",
+                ephemeral=True,
             )
             return
         if len(opts) > 10:
             await interaction.response.send_message(
-                "❌ Max 10 options.", ephemeral=True
+                "❌ Max 10 options.",
+                ephemeral=True,
             )
             return
         embed = discord.Embed(
@@ -337,7 +370,9 @@ class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-ar
 
 class _RemindModal(discord.ui.Modal, title="Set Reminder"):  # type: ignore[call-arg]
     minutes = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Minutes from now", placeholder="30", max_length=5
+        label="Minutes from now",
+        placeholder="30",
+        max_length=5,
     )
     message = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reminder message",
@@ -357,15 +392,17 @@ class _RemindModal(discord.ui.Modal, title="Set Reminder"):  # type: ignore[call
                 raise ValueError
         except ValueError:
             await interaction.response.send_message(
-                "❌ Minutes must be a positive integer.", ephemeral=True
+                "❌ Minutes must be a positive integer.",
+                ephemeral=True,
             )
             return
         await interaction.response.send_message(
             f"⏳ Reminder set for **{t}** minute(s): {self.message.value}",
             ephemeral=True,
         )
-        asyncio.create_task(
-            _remind_later(self.user, self.channel, t * 60, self.message.value)
+        tasks.spawn(
+            f"utility:remind:{self.user.id}",
+            _remind_later(self.user, self.channel, t * 60, self.message.value),
         )
 
 

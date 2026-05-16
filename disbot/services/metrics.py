@@ -24,7 +24,7 @@ except ImportError:
     class _NoOp:
         """Silent no-op that accepts any attribute access or call."""
 
-        def labels(self, **_: object) -> "_NoOp":
+        def labels(self, **_: object) -> _NoOp:
             return self
 
         def inc(self, *_: object, **__: object) -> None:
@@ -36,13 +36,29 @@ except ImportError:
         def set(self, *_: object, **__: object) -> None:
             pass
 
-    def Counter(name: str, doc: str, labelnames: object = (), **_: object) -> _NoOp:  # type: ignore[no-redef]
+    def Counter(  # type: ignore[no-redef]  # noqa: N802
+        name: str,
+        doc: str,
+        labelnames: object = (),
+        **_: object,
+    ) -> _NoOp:
         return _NoOp()
 
-    def Gauge(name: str, doc: str, labelnames: object = (), **_: object) -> _NoOp:  # type: ignore[no-redef]
+    def Gauge(  # type: ignore[no-redef]  # noqa: N802
+        name: str,
+        doc: str,
+        labelnames: object = (),
+        **_: object,
+    ) -> _NoOp:
         return _NoOp()
 
-    def Histogram(name: str, doc: str, labelnames: object = (), buckets: object = (), **_: object) -> _NoOp:  # type: ignore[no-redef]
+    def Histogram(  # type: ignore[no-redef]  # noqa: N802
+        name: str,
+        doc: str,
+        labelnames: object = (),
+        buckets: object = (),
+        **_: object,
+    ) -> _NoOp:
         return _NoOp()
 
 
@@ -78,12 +94,52 @@ session_active_count = Gauge(
 
 panel_refresh_total = Counter(
     "panel_refresh_total",
-    "Total panel edits triggered by the live update scheduler",
-    ["subsystem"],
+    # `result` label values:  ok / skipped / channel_missing /
+    # message_not_found / forbidden / http_error / refresh_fn_error.
+    "Total panel edits triggered by the live update scheduler.",
+    ["subsystem", "result"],
 )
 
 governance_denials_total = Counter(
     "governance_denials_total",
     "Total governance execution denials by subsystem and scope",
     ["subsystem", "scope"],
+)
+
+task_outcome_total = Counter(
+    "task_outcome_total",
+    "Outcomes of managed background tasks spawned via core.runtime.tasks",
+    ["name", "outcome"],  # outcome: ok | error | cancelled
+)
+
+governance_fail_open_total = Counter(
+    "governance_fail_open_total",
+    "Interaction-router governance gate fell open due to resolver error. "
+    "A sustained non-zero rate indicates the governance layer is failing to "
+    "resolve visibility and interactions are being allowed without checks.",
+    ["subsystem"],
+)
+
+interaction_unhandled_total = Counter(
+    "interaction_unhandled_total",
+    "Interactions routed to a custom_id prefix with no registered handler. "
+    "Indicates a typo in a cog's register() call or a leftover button from a "
+    "removed cog.",
+    ["prefix"],
+)
+
+anchor_restore_total = Counter(
+    "anchor_restore_total",
+    # `result` label values:  ok / view_missing / restore_failed.
+    "Outcomes of PersistentView restoration during on_ready.",
+    ["subsystem", "result"],
+)
+
+unknown_event_total = Counter(
+    "unknown_event_total",
+    "EventBus emit/on calls referencing an event name not in the catalogue "
+    "(disbot/core/events_catalogue.py). A non-zero count indicates an "
+    "emitter/listener has drifted from the catalogue — likely a typo or "
+    "leftover from a removed cog.",
+    ["event", "op"],  # op: emit | on
 )

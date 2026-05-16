@@ -26,7 +26,8 @@ class CircularDependencyError(RegistryValidationError):
 
 class CapabilityNamespaceError(RegistryValidationError):
     """Capability does not follow the required {subsystem}.{resource}.{action} format,
-    or uses a reserved namespace prefix (_internal, system, governance)."""
+    or uses a reserved namespace prefix (_internal, system, governance).
+    """
 
 
 class GovernanceUpgradeError(GovernanceError):

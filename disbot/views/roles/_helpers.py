@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import discord
+
 from utils.helpers import normalize_name
 
 _DEFAULT_THRESHOLDS: list[tuple[str, int]] = [

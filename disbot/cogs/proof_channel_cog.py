@@ -5,6 +5,8 @@ import logging
 
 import discord
 from discord.ext import commands
+
+from core.runtime import tasks
 from utils.helpers import _parse_member
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.base import BaseView
@@ -22,11 +24,13 @@ class ProofChannelCog(commands.Cog):
         return discord.utils.get(guild.text_channels, name="proof")
 
     async def _lock_for_winner(
-        self, proof_channel: discord.TextChannel, winner: discord.Member
+        self,
+        proof_channel: discord.TextChannel,
+        winner: discord.Member,
     ) -> None:
         overwrites = {
             proof_channel.guild.default_role: discord.PermissionOverwrite(
-                view_channel=False
+                view_channel=False,
             ),
             winner: discord.PermissionOverwrite(view_channel=True, send_messages=True),
             proof_channel.guild.me: discord.PermissionOverwrite(view_channel=True),
@@ -37,7 +41,8 @@ class ProofChannelCog(commands.Cog):
     async def _unlock(self, proof_channel: discord.TextChannel) -> None:
         overwrites = {
             proof_channel.guild.default_role: discord.PermissionOverwrite(
-                view_channel=True, send_messages=False
+                view_channel=True,
+                send_messages=False,
             ),
             proof_channel.guild.me: discord.PermissionOverwrite(view_channel=True),
         }
@@ -51,7 +56,8 @@ class ProofChannelCog(commands.Cog):
         ch = self.get_proof_channel(ctx.guild)
         if not ch:
             await ctx.send(
-                "Channel '#proof' not found. Please create one first.", delete_after=10
+                "Channel '#proof' not found. Please create one first.",
+                delete_after=10,
             )
             return
         await self._lock_for_winner(ch, winner)
@@ -122,23 +128,25 @@ class ProofChannelCog(commands.Cog):
             try:
                 await self._unlock(ch)
                 await ctx.send(
-                    f"Time is up! {ch.mention} is now read-only again.", delete_after=10
+                    f"Time is up! {ch.mention} is now read-only again.",
+                    delete_after=10,
                 )
             except Exception:
                 pass
             finally:
                 self._timed_tasks.pop(ctx.guild.id, None)
 
-        task = asyncio.create_task(_auto_unlock())
+        task = tasks.spawn(f"proof:unlock:{ctx.guild.id}", _auto_unlock())
         self._timed_tasks[ctx.guild.id] = task
 
 
 class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: ignore[call-arg]
     winner_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Winner (mention, ID, or name)", max_length=100
+        label="Winner (mention, ID, or name)",
+        max_length=100,
     )
 
-    def __init__(self, cog: "ProofChannelCog", timed: bool = False):
+    def __init__(self, cog: ProofChannelCog, timed: bool = False):
         super().__init__()
         self.cog = cog
         self.timed = timed
@@ -147,13 +155,15 @@ class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: 
         member = _parse_member(interaction.guild, self.winner_input.value)
         if not member:
             await interaction.response.send_message(
-                "❌ Member not found.", ephemeral=True
+                "❌ Member not found.",
+                ephemeral=True,
             )
             return
         ch = self.cog.get_proof_channel(interaction.guild)
         if not ch:
             await interaction.response.send_message(
-                "Channel '#proof' not found.", ephemeral=True
+                "Channel '#proof' not found.",
+                ephemeral=True,
             )
             return
         if self.timed:
@@ -168,10 +178,12 @@ class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: 
 
 class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: ignore[call-arg]
     duration_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Duration (minutes)", placeholder="e.g. 10", max_length=5
+        label="Duration (minutes)",
+        placeholder="e.g. 10",
+        max_length=5,
     )
 
-    def __init__(self, cog: "ProofChannelCog", winner: discord.Member):
+    def __init__(self, cog: ProofChannelCog, winner: discord.Member):
         super().__init__()
         self.cog = cog
         self.winner = winner
@@ -179,14 +191,16 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
     async def on_submit(self, interaction: discord.Interaction):
         if not self.duration_input.value.isdigit():
             await interaction.response.send_message(
-                "❌ Duration must be a whole number of minutes.", ephemeral=True
+                "❌ Duration must be a whole number of minutes.",
+                ephemeral=True,
             )
             return
         duration = int(self.duration_input.value)
         ch = self.cog.get_proof_channel(interaction.guild)
         if not ch:
             await interaction.response.send_message(
-                "Channel '#proof' not found.", ephemeral=True
+                "Channel '#proof' not found.",
+                ephemeral=True,
             )
             return
 
@@ -204,8 +218,9 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
             finally:
                 self.cog._timed_tasks.pop(interaction.guild_id, None)
 
-        self.cog._timed_tasks[interaction.guild_id] = asyncio.create_task(
-            _auto_unlock()
+        self.cog._timed_tasks[interaction.guild_id] = tasks.spawn(
+            f"proof:unlock:{interaction.guild_id}",
+            _auto_unlock(),
         )
         await interaction.response.send_message(
             f"✅ {self.winner.mention} has access to {ch.mention} for **{duration}** minute(s).",
@@ -216,7 +231,7 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
 class _PrizeManagerView(BaseView):
     """Interactive prize channel management panel."""
 
-    def __init__(self, ctx: commands.Context, cog: "ProofChannelCog"):
+    def __init__(self, ctx: commands.Context, cog: ProofChannelCog):
         super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
         self.cog = cog
@@ -245,7 +260,9 @@ class _PrizeManagerView(BaseView):
         await interaction.response.send_modal(_PrizeWinnerModal(self.cog, timed=False))
 
     @discord.ui.button(
-        label="⏱️ Timed Access", style=discord.ButtonStyle.blurple, row=0
+        label="⏱️ Timed Access",
+        style=discord.ButtonStyle.blurple,
+        row=0,
     )
     async def btn_timed(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_PrizeWinnerModal(self.cog, timed=True))
@@ -255,7 +272,8 @@ class _PrizeManagerView(BaseView):
         ch = self.cog.get_proof_channel(interaction.guild)
         if not ch:
             await interaction.response.send_message(
-                "Channel '#proof' not found.", ephemeral=True
+                "Channel '#proof' not found.",
+                ephemeral=True,
             )
             return
         if task := self.cog._timed_tasks.pop(interaction.guild_id, None):
@@ -266,7 +284,9 @@ class _PrizeManagerView(BaseView):
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
-        label="🔄 Refresh Status", style=discord.ButtonStyle.secondary, row=1
+        label="🔄 Refresh Status",
+        style=discord.ButtonStyle.secondary,
+        row=1,
     )
     async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
@@ -287,7 +307,7 @@ def _format_overwrites(overwrites: dict) -> str:
             p.replace("_", " ").title() for p, v in iter(perms) if v is False
         )
         lines.append(
-            f"**{name}**\nAllowed: {allow or 'None'}\nDenied: {deny or 'None'}"
+            f"**{name}**\nAllowed: {allow or 'None'}\nDenied: {deny or 'None'}",
         )
     return "\n\n".join(lines) or "No overwrites."
 

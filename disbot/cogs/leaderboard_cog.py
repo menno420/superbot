@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
+
 from utils import db
-from utils import embeds as em
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
 from views.base import BaseView
 
@@ -33,7 +33,9 @@ ALIASES_MAP = {
 
 
 async def _build_embed(
-    category: str, guild: discord.Guild, ctx_channel: discord.abc.GuildChannel
+    category: str,
+    guild: discord.Guild,
+    ctx_channel: discord.abc.GuildChannel,
 ) -> discord.Embed:
     title, _ = CATEGORIES.get(category, ("Leaderboard", ""))
     embed = discord.Embed(title=title, color=ECONOMY_COLOR)
@@ -90,7 +92,7 @@ async def _build_embed(
         for i, row in enumerate(rows):
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(
-                f"{icon} **{row['name']}** — {row['wins']}W / {row['losses']}L / {row['ties']}T"
+                f"{icon} **{row['name']}** — {row['wins']}W / {row['losses']}L / {row['ties']}T",
             )
         embed.description = "\n".join(lines) or "No data yet!"
 
@@ -138,7 +140,9 @@ class LeaderboardView(BaseView):
         ],
     )
     async def select_category(
-        self, interaction: discord.Interaction, select: discord.ui.Select
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select,
     ):
         await interaction.response.defer()
         embed = await _build_embed(select.values[0], self.guild, self.channel)

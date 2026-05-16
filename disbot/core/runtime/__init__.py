@@ -13,7 +13,8 @@ Public aliases:
     nav        — navigation_stack module
     surfaces   — ephemeral_surface_manager module
     scheduler  — live_update_scheduler module
-    plugins    — plugin_contract module
+    tasks      — managed background-task helper (see CRIT-1 fix)
+    interaction — safe_defer / safe_followup / safe_edit (see CRIT-2 fix)
 
 EventBus subscriptions are established in setup(), called once from bot1.py
 after the DB is initialised.
@@ -27,13 +28,14 @@ from core.runtime import component_registry as components  # noqa: F401 — re-e
 from core.runtime import (  # noqa: F401 — re-exported
     ephemeral_surface_manager as surfaces,
 )
+from core.runtime import interaction_helpers as interaction  # noqa: F401 — re-exported
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported
 from core.runtime import live_update_scheduler as scheduler  # noqa: F401 — re-exported
 from core.runtime import message_anchor_manager as anchors  # noqa: F401 — re-exported
 from core.runtime import navigation_stack as nav  # noqa: F401 — re-exported
 from core.runtime import panel_manager as panels  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
-from core.runtime import plugin_contract as plugins  # noqa: F401 — re-exported
+from core.runtime import tasks  # noqa: F401 — re-exported
 from core.runtime import session_gc as gc  # noqa: F401 — re-exported
 from core.runtime import session_manager as sessions  # noqa: F401 — re-exported
 from core.runtime import state_store as store  # noqa: F401 — re-exported
@@ -81,14 +83,18 @@ async def setup() -> None:
         guild-subsystem invalidation to be safe.
         """
         channel_id: int | None = None
-        if scope_type == "channel" and scope_id is not None:
-            channel_id = scope_id
-        # thread-scoped: the thread_id IS the channel_id in Discord's model
-        elif scope_type == "thread" and scope_id is not None:
+        if (
+            scope_type == "channel"
+            and scope_id is not None
+            or scope_type == "thread"
+            and scope_id is not None
+        ):
             channel_id = scope_id
 
         await sessions.invalidate_subsystem_sessions(
-            guild_id, subsystem, channel_id=channel_id
+            guild_id,
+            subsystem,
+            channel_id=channel_id,
         )
 
     async def _on_cache_invalidated(guild_id: int, **_: object) -> None:

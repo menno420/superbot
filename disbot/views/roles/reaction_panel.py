@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
+
 from utils import db
-from utils.ui_constants import ECONOMY_COLOR, ROLE_COLOR, WARNING_COLOR
+from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 
 
@@ -36,19 +37,25 @@ class ReactionRolesPanel(BaseView):
 
     @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.grey, row=0)
     async def refresh_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         await interaction.response.edit_message(
-            embed=await self.build_embed(), view=self
+            embed=await self.build_embed(),
+            view=self,
         )
 
     @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.secondary, row=0)
     async def back_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if self.parent:
             await interaction.response.edit_message(
-                embed=self.parent.build_embed(), view=self.parent
+                embed=self.parent.build_embed(),
+                view=self.parent,
             )
         else:
             await interaction.response.edit_message(view=None)

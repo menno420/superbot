@@ -64,6 +64,7 @@ class TestBaseViewOnError:
         import logging
 
         import discord
+
         from views.base import BaseView
 
         author = MagicMock(spec=discord.Member)
@@ -85,6 +86,7 @@ class TestBaseViewOnError:
     @pytest.mark.asyncio
     async def test_sends_ephemeral_when_not_responded(self):
         import discord
+
         from views.base import BaseView
 
         author = MagicMock(spec=discord.Member)
@@ -100,6 +102,7 @@ class TestBaseViewOnError:
     @pytest.mark.asyncio
     async def test_no_double_respond_when_already_responded(self):
         import discord
+
         from views.base import BaseView
 
         author = MagicMock(spec=discord.Member)
@@ -231,8 +234,11 @@ class TestSubsystemToggleViewErrorHandling:
     @pytest.mark.asyncio
     async def test_set_visibility_failure_sends_ephemeral(self):
         import discord
+
+        # The view moved from cogs.channel_cog to views.channels.visibility_panel
+        # in D2; the cog re-exports it for backwards compatibility.
         from cogs.channel_cog import _SubsystemToggleView
-        from services.governance_service import GovernanceContext
+        from services.governance_service import GovernanceContext  # noqa: F401
 
         ctx = MagicMock()
         ctx.author = MagicMock(spec=discord.Member)
@@ -248,7 +254,7 @@ class TestSubsystemToggleViewErrorHandling:
         interaction.guild = MagicMock()
 
         with patch(
-            "cogs.channel_cog.governance_service.set_subsystem_visibility",
+            "views.channels.visibility_panel.governance_service.set_subsystem_visibility",
             side_effect=Exception("authority denied"),
         ):
             callback = view._make_toggle_callback("general")
@@ -263,6 +269,7 @@ class TestSubsystemToggleViewErrorHandling:
     @pytest.mark.asyncio
     async def test_set_visibility_success_calls_edit_message(self):
         import discord
+
         from cogs.channel_cog import _SubsystemToggleView
 
         ctx = MagicMock()
@@ -280,11 +287,11 @@ class TestSubsystemToggleViewErrorHandling:
 
         with (
             patch(
-                "cogs.channel_cog.governance_service.set_subsystem_visibility",
+                "views.channels.visibility_panel.governance_service.set_subsystem_visibility",
                 new_callable=AsyncMock,
             ) as mock_set,
             patch(
-                "cogs.channel_cog.GovernanceContext.from_interaction",
+                "views.channels.visibility_panel.GovernanceContext.from_interaction",
                 return_value=MagicMock(),
             ),
         ):

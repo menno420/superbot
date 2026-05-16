@@ -130,7 +130,7 @@ async def resolve_action_states(
                 capability=action.capability,
                 row=action.row,
                 disabled=disabled,
-            )
+            ),
         )
     return result
 

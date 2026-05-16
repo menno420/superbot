@@ -4,10 +4,11 @@ import logging
 from datetime import datetime, timezone
 
 import discord
+from discord.ext import commands, tasks
+
 from core.runtime import panel_manager
 from core.runtime.component_registry import stats_block
 from core.runtime.persistent_views import PersistentView, register
-from discord.ext import commands, tasks
 from utils import db
 from utils.helpers import normalize_name
 from utils.ui_constants import ROLE_COLOR
@@ -61,11 +62,14 @@ class RoleHubPanelView(PersistentView):
         custom_id="role:create",
     )
     async def create_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Manage Roles** permission.", ephemeral=True
+                "❌ You need **Manage Roles** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.creation_panel import RoleCreateModal
@@ -79,11 +83,14 @@ class RoleHubPanelView(PersistentView):
         custom_id="role:manage",
     )
     async def manage_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Manage Roles** permission.", ephemeral=True
+                "❌ You need **Manage Roles** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.management_panel import ManagementPanel
@@ -92,7 +99,8 @@ class RoleHubPanelView(PersistentView):
         panel = ManagementPanel(_CtxAdapter(interaction), parent=self)
         panel.message = interaction.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     @discord.ui.button(
@@ -102,11 +110,14 @@ class RoleHubPanelView(PersistentView):
         custom_id="role:time",
     )
     async def time_roles_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
+                "❌ You need **Administrator** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.time_roles_panel import TimeRolesPanel
@@ -116,7 +127,8 @@ class RoleHubPanelView(PersistentView):
         panel = TimeRolesPanel(_CtxAdapter(interaction), parent=self)
         panel.message = interaction.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     @discord.ui.button(
@@ -126,11 +138,14 @@ class RoleHubPanelView(PersistentView):
         custom_id="role:xp",
     )
     async def xp_roles_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
+                "❌ You need **Administrator** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.xp_roles_panel import XpRolesPanel
@@ -139,7 +154,8 @@ class RoleHubPanelView(PersistentView):
         panel = XpRolesPanel(_CtxAdapter(interaction), parent=self)
         panel.message = interaction.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     @discord.ui.button(
@@ -149,7 +165,9 @@ class RoleHubPanelView(PersistentView):
         custom_id="role:reaction",
     )
     async def reaction_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         from views.roles.reaction_panel import ReactionRolesPanel
 
@@ -157,7 +175,8 @@ class RoleHubPanelView(PersistentView):
         panel = ReactionRolesPanel(_CtxAdapter(interaction), parent=self)
         panel.message = interaction.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     @discord.ui.button(
@@ -167,11 +186,14 @@ class RoleHubPanelView(PersistentView):
         custom_id="role:diagnostics",
     )
     async def diagnostics_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
+                "❌ You need **Administrator** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.diagnostics_panel import DiagnosticsPanel
@@ -180,7 +202,8 @@ class RoleHubPanelView(PersistentView):
         panel = DiagnosticsPanel(_CtxAdapter(interaction), parent=self)
         panel.message = interaction.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
 
@@ -206,7 +229,9 @@ class RoleCog(commands.Cog):
     # ------------------------------------------------------------------ core assignment logic
 
     async def _assign_roles(
-        self, guild: discord.Guild, ctx: commands.Context = None
+        self,
+        guild: discord.Guild,
+        ctx: commands.Context = None,
     ) -> int:
         """Assign time-based roles to all members. Returns count of assignments made."""
         await _ensure_defaults(guild.id)
@@ -264,7 +289,7 @@ class RoleCog(commands.Cog):
                 )
                 if matched:
                     if current_highest is None or progression.index(
-                        matched
+                        matched,
                     ) > progression.index(current_highest):
                         current_highest = matched
 
@@ -292,7 +317,9 @@ class RoleCog(commands.Cog):
                     await member.add_roles(target_role)
                     assigned += 1
                     logger.info(
-                        "Assigned %s to %s", target_role.name, member.display_name
+                        "Assigned %s to %s",
+                        target_role.name,
+                        member.display_name,
                     )
                 except (discord.Forbidden, discord.HTTPException):
                     pass
@@ -351,7 +378,8 @@ class RoleCog(commands.Cog):
             col = _parse_color(color)
         except (ValueError, OverflowError):
             await ctx.send(
-                "❌ Invalid color — use a hex code like `#3498db`.", delete_after=10
+                "❌ Invalid color — use a hex code like `#3498db`.",
+                delete_after=10,
             )
             return
         do_hoist = hoist.lower() in ("yes", "true", "1", "y")
@@ -382,7 +410,11 @@ class RoleCog(commands.Cog):
     @commands.command(name="setrole", hidden=True)
     @commands.has_permissions(administrator=True)
     async def setrole(
-        self, ctx: commands.Context, days: int, *, role_name: str
+        self,
+        ctx: commands.Context,
+        days: int,
+        *,
+        role_name: str,
     ) -> None:
         """Add or update a time-based role threshold."""
         if days < 0:
@@ -392,7 +424,7 @@ class RoleCog(commands.Cog):
         store_name = discord_role.name if discord_role else role_name
         await db.set_role_threshold(ctx.guild.id, store_name, days)
         await ctx.send(
-            f"✅ Role **{store_name}** will be assigned after **{days}** day(s)."
+            f"✅ Role **{store_name}** will be assigned after **{days}** day(s).",
         )
 
     @commands.command(name="unsetrole", hidden=True)
@@ -430,7 +462,8 @@ class RoleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(
-        self, payload: discord.RawReactionActionEvent
+        self,
+        payload: discord.RawReactionActionEvent,
     ) -> None:
         if payload.user_id == self.bot.user.id:
             return
@@ -441,7 +474,9 @@ class RoleCog(commands.Cog):
         if not member or member.bot:
             return
         role_id = await db.get_reaction_role(
-            payload.guild_id, payload.message_id, str(payload.emoji)
+            payload.guild_id,
+            payload.message_id,
+            str(payload.emoji),
         )
         if role_id:
             role = guild.get_role(role_id)
@@ -453,7 +488,8 @@ class RoleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(
-        self, payload: discord.RawReactionActionEvent
+        self,
+        payload: discord.RawReactionActionEvent,
     ) -> None:
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
@@ -462,7 +498,9 @@ class RoleCog(commands.Cog):
         if not member or member.bot:
             return
         role_id = await db.get_reaction_role(
-            payload.guild_id, payload.message_id, str(payload.emoji)
+            payload.guild_id,
+            payload.message_id,
+            str(payload.emoji),
         )
         if role_id:
             role = guild.get_role(role_id)
@@ -475,7 +513,11 @@ class RoleCog(commands.Cog):
     @commands.command(name="reactroles", aliases=["reaktionsrollen"])
     @commands.has_permissions(manage_roles=True)
     async def setup_reaction_roles(
-        self, ctx: commands.Context, message_id: int, emoji: str, role: discord.Role
+        self,
+        ctx: commands.Context,
+        message_id: int,
+        emoji: str,
+        role: discord.Role,
     ) -> None:
         """Attach a reaction role to a message. Usage: !reactroles <message_id> <emoji> <@role>"""
         try:
@@ -492,7 +534,7 @@ class RoleCog(commands.Cog):
             await message.add_reaction(emoji)
         except discord.HTTPException:
             await ctx.send(
-                "⚠️ Role saved, but I couldn't add the reaction (invalid emoji?)."
+                "⚠️ Role saved, but I couldn't add the reaction (invalid emoji?).",
             )
             return
         await ctx.send(
@@ -503,12 +545,16 @@ class RoleCog(commands.Cog):
     @commands.command(name="removereactrole")
     @commands.has_permissions(manage_roles=True)
     async def remove_reaction_role(
-        self, ctx: commands.Context, message_id: int, emoji: str
+        self,
+        ctx: commands.Context,
+        message_id: int,
+        emoji: str,
     ) -> None:
         """Remove a reaction role binding. Usage: !removereactrole <message_id> <emoji>"""
         await db.remove_reaction_role(ctx.guild.id, message_id, emoji)
         await ctx.send(
-            f"✅ Reaction role for {emoji} on that message removed.", delete_after=10
+            f"✅ Reaction role for {emoji} on that message removed.",
+            delete_after=10,
         )
 
     @commands.command(name="listreactroles")
@@ -540,7 +586,8 @@ class RoleCog(commands.Cog):
         await _ensure_defaults(member.guild.id)
         thresholds = await db.get_role_thresholds(member.guild.id)
         zero_day = next(
-            (r["role_name"] for r in thresholds if r["days_required"] == 0), None
+            (r["role_name"] for r in thresholds if r["days_required"] == 0),
+            None,
         )
         if not zero_day:
             return
@@ -549,7 +596,9 @@ class RoleCog(commands.Cog):
             try:
                 await member.add_roles(role)
                 logger.info(
-                    "Assigned '%s' to %s on join.", zero_day, member.display_name
+                    "Assigned '%s' to %s on join.",
+                    zero_day,
+                    member.display_name,
                 )
             except (discord.Forbidden, discord.HTTPException):
                 pass

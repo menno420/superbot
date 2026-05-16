@@ -16,7 +16,8 @@ import pytest
 # Must be set before importing config.py, which validates at import time.
 os.environ.setdefault("DISCORD_BOT_TOKEN_PRODUCTION", "TEST_TOKEN_PLACEHOLDER")
 
-_DISBOT = Path(__file__).parent / "disbot"
+# conftest.py lives in tests/, so disbot/ is one level up.
+_DISBOT = Path(__file__).parent.parent / "disbot"
 if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
 

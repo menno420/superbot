@@ -7,11 +7,7 @@ Imports from governance.models, governance.resolver, governance.cleanup.
 from __future__ import annotations
 
 from governance.cleanup import resolve_cleanup_policy
-from governance.models import (
-    GovernanceContext,
-    GovernanceDiff,
-    GovernanceSnapshot,
-)
+from governance.models import GovernanceContext, GovernanceDiff, GovernanceSnapshot
 from governance.resolver import get_visible_subsystems, resolve_visibility
 from utils.subsystem_registry import (
     CAPABILITY_TO_SUBSYSTEM,
@@ -60,7 +56,8 @@ async def build_governance_snapshot(ctx: GovernanceContext) -> GovernanceSnapsho
 
 
 def diff_governance_snapshots(
-    before: GovernanceSnapshot, after: GovernanceSnapshot
+    before: GovernanceSnapshot,
+    after: GovernanceSnapshot,
 ) -> GovernanceDiff:
     """Compute the difference between two GovernanceSnapshots.
 

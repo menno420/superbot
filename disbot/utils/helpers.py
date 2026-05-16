@@ -4,6 +4,7 @@ import re
 
 import discord
 from discord.ext import commands
+
 from utils.settings_keys import ECONOMY_LOG_CHANNEL
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR
 
@@ -17,7 +18,8 @@ def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
     if text.isdigit():
         return guild.get_member(int(text))
     return discord.utils.find(
-        lambda m: m.name == text or m.display_name == text, guild.members
+        lambda m: m.name == text or m.display_name == text,
+        guild.members,
     )
 
 
@@ -43,7 +45,9 @@ def safe_select_emoji(
     if m:
         animated = stripped.startswith("<a:")
         return discord.PartialEmoji(
-            name=m.group(1), id=int(m.group(2)), animated=animated
+            name=m.group(1),
+            id=int(m.group(2)),
+            animated=animated,
         )
     # Reject single plain ASCII characters (e.g. "#") — not valid Discord emoji
     if len(stripped) == 1 and ord(stripped) < 128:
@@ -52,7 +56,9 @@ def safe_select_emoji(
 
 
 async def post_log_embed(
-    bot: commands.Bot, guild_id: int, embed: discord.Embed
+    bot: commands.Bot,
+    guild_id: int,
+    embed: discord.Embed,
 ) -> None:
     """Post an embed to the guild's configured economy_log_channel (if set)."""
     from utils import db
@@ -108,7 +114,7 @@ class CogMenuView(discord.ui.View):
             description="Select a command below to see its full usage details.",
             color=INFO_COLOR,
         )
-        for name, usage, desc in self.commands_info:
+        for name, _usage, desc in self.commands_info:
             embed.add_field(name=f"`!{name}`", value=desc[:120], inline=True)
         return embed
 
@@ -118,7 +124,7 @@ class CogMenuView(discord.ui.View):
         embed.add_field(name="Usage", value=f"`{usage}`", inline=False)
         embed.add_field(name="Description", value=desc, inline=False)
         embed.set_footer(
-            text=f"{self.title} • Select another command or click Overview"
+            text=f"{self.title} • Select another command or click Overview",
         )
         return embed
 
@@ -135,7 +141,10 @@ class CogMenuView(discord.ui.View):
 class _CommandSelect(discord.ui.Select):
     def __init__(self, options: list[discord.SelectOption], menu: CogMenuView):
         super().__init__(
-            placeholder="Select a command…", options=options, min_values=1, max_values=1
+            placeholder="Select a command…",
+            options=options,
+            min_values=1,
+            max_values=1,
         )
         self.menu = menu
 
@@ -152,5 +161,6 @@ class _OverviewButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.edit_message(
-            embed=self.menu.build_embed(), view=self.view
+            embed=self.menu.build_embed(),
+            view=self.view,
         )

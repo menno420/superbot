@@ -29,7 +29,9 @@ from collections.abc import Callable, Coroutine
 from typing import TYPE_CHECKING, Any
 
 import discord
+
 from core.events import bus
+from core.runtime import tasks
 from services import metrics as _metrics
 from utils import db
 
@@ -39,6 +41,15 @@ if TYPE_CHECKING:
 logger = logging.getLogger("bot.runtime.scheduler")
 
 # Minimum seconds between edits to the same Discord channel.
+#
+# Rationale: Discord's per-channel global rate-limit is 5 edits / 5 s for
+# the bot user, but bursts of panel refreshes within the same channel
+# (e.g. an active counting game with multiple players) routinely
+# tripped that limit and produced 429 responses.  A 1.0 s floor keeps
+# bursts under the limit without making panels feel laggy — a click
+# arriving inside the 1 s window simply sleeps until the floor elapses.
+# Per-channel granularity (rather than per-message or per-subsystem)
+# matches Discord's rate-limit bucket key.
 _MIN_EDIT_INTERVAL: float = 1.0
 
 # (guild_id, channel_id) → monotonic timestamp of last edit.
@@ -121,7 +132,8 @@ async def _on_event(event: str, **payload: Any) -> None:
 
         for anchor in anchors:
             for refresh_fn in refresh_fns:
-                asyncio.create_task(
+                tasks.spawn(
+                    f"panel_refresh:{subsystem}:{anchor['message_id']}",
                     _refresh_panel(
                         _bot,
                         refresh_fn,
@@ -131,12 +143,11 @@ async def _on_event(event: str, **payload: Any) -> None:
                         anchor["message_id"],
                         subsystem,
                     ),
-                    name=f"panel_refresh:{subsystem}:{anchor['message_id']}",
                 )
 
 
 async def _refresh_panel(
-    bot: "commands.Bot",
+    bot: commands.Bot,
     refresh_fn: RefreshFn,
     user_id: int,
     guild_id: int,
@@ -153,33 +164,62 @@ async def _refresh_panel(
     try:
         result = await refresh_fn(bot, user_id, guild_id, channel_id)
     except Exception as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="refresh_fn_error",
+        ).inc()
         logger.error(
-            "refresh_fn failed for user=%d channel=%d: %s", user_id, channel_id, exc
+            "refresh_fn failed for user=%d channel=%d: %s",
+            user_id,
+            channel_id,
+            exc,
         )
         return
 
     if result is None:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="skipped",
+        ).inc()
         return
 
     embed, view = result
     channel = bot.get_channel(channel_id)
     if channel is None or not isinstance(channel, discord.abc.Messageable):
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="channel_missing",
+        ).inc()
         return
 
     try:
         message = await channel.fetch_message(message_id)
         await message.edit(embed=embed, view=view)
         _last_edit[(guild_id, channel_id)] = time.monotonic()
-        _metrics.panel_refresh_total.labels(subsystem=subsystem).inc()
+        _metrics.panel_refresh_total.labels(subsystem=subsystem, result="ok").inc()
         logger.debug(
             "Panel refreshed | user=%d | channel=%d | message=%d",
             user_id,
             channel_id,
             message_id,
         )
-    except (discord.NotFound, discord.Forbidden) as exc:
-        logger.debug("Panel refresh skipped — message gone or forbidden: %s", exc)
+    except discord.NotFound as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="message_not_found",
+        ).inc()
+        logger.debug("Panel refresh skipped — message gone: %s", exc)
+    except discord.Forbidden as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="forbidden",
+        ).inc()
+        logger.debug("Panel refresh skipped — forbidden: %s", exc)
     except discord.HTTPException as exc:
+        _metrics.panel_refresh_total.labels(
+            subsystem=subsystem,
+            result="http_error",
+        ).inc()
         logger.warning("Panel refresh HTTP error for message %d: %s", message_id, exc)
 
 

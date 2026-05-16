@@ -7,13 +7,18 @@ import random
 
 import discord
 from discord.ext import commands
+
 from utils.ui_constants import GENERAL_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
 _CONTENT_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "data", "json", "general_content.json"
+    os.path.dirname(__file__),
+    "..",
+    "data",
+    "json",
+    "general_content.json",
 )
 
 EIGHTBALL = [
@@ -141,7 +146,8 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        name="trivia", help="Asks a trivia question with a reveal button."
+        name="trivia",
+        help="Asks a trivia question with a reveal button.",
     )
     async def trivia(self, ctx):
         if not self._trivia:
@@ -204,7 +210,9 @@ class _TriviaRevealView(BaseView):
 
     @discord.ui.button(label="Reveal Answer", style=discord.ButtonStyle.primary)
     async def reveal_btn(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
     ):
         text = self._answer.strip() if self._answer else "No answer recorded."
         await interaction.response.send_message(f"**Answer:** {text}", ephemeral=True)
@@ -250,7 +258,9 @@ class _GeneralPanelView(BaseView):
 
     @discord.ui.button(label="💡 Fact", style=discord.ButtonStyle.blurple, row=0)
     async def fact_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         embed = discord.Embed(
             title="💡 Random Fact",
@@ -262,7 +272,9 @@ class _GeneralPanelView(BaseView):
 
     @discord.ui.button(label="😄 Joke", style=discord.ButtonStyle.blurple, row=0)
     async def joke_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         embed = discord.Embed(
             title="😄 Random Joke",
@@ -274,7 +286,9 @@ class _GeneralPanelView(BaseView):
 
     @discord.ui.button(label="💬 Quote", style=discord.ButtonStyle.blurple, row=0)
     async def quote_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         embed = discord.Embed(
             title="💬 Quote",
@@ -286,11 +300,14 @@ class _GeneralPanelView(BaseView):
 
     @discord.ui.button(label="🧠 Trivia", style=discord.ButtonStyle.grey, row=1)
     async def trivia_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not self._cog._trivia:
             await interaction.response.send_message(
-                "No trivia available.", ephemeral=True
+                "No trivia available.",
+                ephemeral=True,
             )
             return
         raw = random.choice(self._cog._trivia)
@@ -308,7 +325,9 @@ class _GeneralPanelView(BaseView):
 
     @discord.ui.button(label="💪 Motivate", style=discord.ButtonStyle.grey, row=1)
     async def motivate_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         embed = discord.Embed(
             title="💪 Motivation",
@@ -320,13 +339,17 @@ class _GeneralPanelView(BaseView):
 
     @discord.ui.button(label="🎱 8-Ball", style=discord.ButtonStyle.grey, row=1)
     async def eightball_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         await interaction.response.send_modal(_EightBallModal())
 
     @discord.ui.button(label="👋 Greet", style=discord.ButtonStyle.green, row=2)
     async def greet_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         embed = discord.Embed(
             title="👋 Greeting",
@@ -338,7 +361,9 @@ class _GeneralPanelView(BaseView):
 
     @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=2)
     async def overview_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         await interaction.response.edit_message(embed=self._build_overview(), view=self)
 

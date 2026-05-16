@@ -5,6 +5,7 @@ import random
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType, cooldown
+
 from utils import db
 
 
@@ -37,7 +38,7 @@ class _Duel:
 class _DuelView(discord.ui.View):
     def __init__(
         self,
-        cog: "Deathmatch",
+        cog: Deathmatch,
         duel: _Duel,
         duel_key: tuple,
         ctx: commands.Context,
@@ -52,7 +53,8 @@ class _DuelView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.duel.turn:
             await interaction.response.send_message(
-                "It's not your turn!", ephemeral=True
+                "It's not your turn!",
+                ephemeral=True,
             )
             return False
         return True
@@ -113,11 +115,14 @@ class _DuelView(discord.ui.View):
         current = duel.turn
         duel.defend(current.id)
         await self._resolve(
-            interaction, f"🛡️ **{current.display_name}** takes a defensive stance!"
+            interaction,
+            f"🛡️ **{current.display_name}** takes a defensive stance!",
         )
 
     async def _resolve(
-        self, interaction: discord.Interaction, action_text: str
+        self,
+        interaction: discord.Interaction,
+        action_text: str,
     ) -> None:
         duel = self.duel
         current = duel.turn
@@ -149,14 +154,15 @@ class _DuelView(discord.ui.View):
             await interaction.response.edit_message(embed=embed, view=self)
         else:
             await interaction.response.edit_message(
-                embed=self.build_embed(action_text), view=self
+                embed=self.build_embed(action_text),
+                view=self,
             )
 
 
 class _ChallengeView(discord.ui.View):
     def __init__(
         self,
-        cog: "Deathmatch",
+        cog: Deathmatch,
         challenger: discord.Member,
         opponent: discord.Member,
         duel_key: tuple,
@@ -173,7 +179,8 @@ class _ChallengeView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.opponent:
             await interaction.response.send_message(
-                "This challenge is not for you!", ephemeral=True
+                "This challenge is not for you!",
+                ephemeral=True,
             )
             return False
         return True
@@ -200,7 +207,8 @@ class _ChallengeView(discord.ui.View):
         self.cog.active_duels[self.duel_key] = duel
         duel_view = _DuelView(self.cog, duel, self.duel_key, self.ctx)
         await interaction.response.edit_message(
-            embed=duel_view.build_embed(), view=duel_view
+            embed=duel_view.build_embed(),
+            view=duel_view,
         )
         duel_view.message = await interaction.original_response()
 
@@ -235,7 +243,7 @@ class Deathmatch(commands.Cog):
         duel_key = tuple(sorted([ctx.author.id, opponent.id]))
         if duel_key in self.active_duels:
             await ctx.send(
-                "A duel between you and the opponent is already in progress."
+                "A duel between you and the opponent is already in progress.",
             )
             return
         for existing_key in self.active_duels:
@@ -262,7 +270,7 @@ class Deathmatch(commands.Cog):
     async def challenge_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(
-                f"You're on cooldown! Please try again in {int(error.retry_after)} seconds."
+                f"You're on cooldown! Please try again in {int(error.retry_after)} seconds.",
             )
         elif isinstance(error, commands.BadArgument):
             await ctx.send("Couldn't find the user. Please mention a valid member.")

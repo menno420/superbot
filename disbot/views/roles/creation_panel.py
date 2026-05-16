@@ -4,6 +4,7 @@ import logging
 
 import discord
 from discord.ext import commands
+
 from utils import db
 from views.base import BaseView
 from views.roles._helpers import _parse_color
@@ -43,7 +44,8 @@ class RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[ca
                 col = _parse_color(self.color.value)
             except (ValueError, OverflowError):
                 await interaction.response.send_message(
-                    "❌ Invalid color — use hex like `#3498db`.", ephemeral=True
+                    "❌ Invalid color — use hex like `#3498db`.",
+                    ephemeral=True,
                 )
                 return
 
@@ -67,7 +69,8 @@ class RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[ca
             automation_view.message = await interaction.original_response()
         except discord.Forbidden:
             await interaction.response.send_message(
-                "❌ I don't have permission to create roles.", ephemeral=True
+                "❌ I don't have permission to create roles.",
+                ephemeral=True,
             )
         except discord.HTTPException as e:
             await interaction.response.send_message(f"❌ Failed: {e}", ephemeral=True)
@@ -82,18 +85,24 @@ class RoleAutomationView(BaseView):
         self.role_name = role_name
 
     @discord.ui.button(
-        label="⚙️ Configure Automation", style=discord.ButtonStyle.blurple, row=0
+        label="⚙️ Configure Automation",
+        style=discord.ButtonStyle.blurple,
+        row=0,
     )
     async def configure_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         await interaction.response.send_modal(
-            RoleAutomationModal(self.ctx, self.role_name, self)
+            RoleAutomationModal(self.ctx, self.role_name, self),
         )
 
     @discord.ui.button(label="⏭️ Skip", style=discord.ButtonStyle.secondary, row=0)
     async def skip_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         for item in self.children:
             item.disabled = True
@@ -105,7 +114,8 @@ class RoleAutomationView(BaseView):
 
 
 class RoleAutomationModal(
-    discord.ui.Modal, title="Configure XP Automation"
+    discord.ui.Modal,
+    title="Configure XP Automation",
 ):  # type: ignore[call-arg]
     level_threshold = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="XP level required (e.g. 5)",
@@ -148,12 +158,16 @@ class RoleAutomationModal(
 
         try:
             await db.set_role_xp_threshold(
-                interaction.guild.id, self.role_name, level, auto_assign
+                interaction.guild.id,
+                self.role_name,
+                level,
+                auto_assign,
             )
         except Exception as exc:
             logger.error("set_role_xp_threshold failed: %s", exc, exc_info=True)
             await interaction.response.send_message(
-                f"❌ Failed to save automation config: {exc}", ephemeral=True
+                f"❌ Failed to save automation config: {exc}",
+                ephemeral=True,
             )
             return
 
