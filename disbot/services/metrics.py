@@ -36,29 +36,29 @@ except ImportError:
         def set(self, *_: object, **__: object) -> None:
             pass
 
-    def Counter(  # noqa: N802 (matches prometheus_client signature)
+    def Counter(  # type: ignore[no-redef]  # noqa: N802
         name: str,
         doc: str,
         labelnames: object = (),
         **_: object,
-    ) -> _NoOp:  # type: ignore[no-redef]
+    ) -> _NoOp:
         return _NoOp()
 
-    def Gauge(  # noqa: N802 (matches prometheus_client signature)
+    def Gauge(  # type: ignore[no-redef]  # noqa: N802
         name: str,
         doc: str,
         labelnames: object = (),
         **_: object,
-    ) -> _NoOp:  # type: ignore[no-redef]
+    ) -> _NoOp:
         return _NoOp()
 
-    def Histogram(  # noqa: N802 (matches prometheus_client signature)
+    def Histogram(  # type: ignore[no-redef]  # noqa: N802
         name: str,
         doc: str,
         labelnames: object = (),
         buckets: object = (),
         **_: object,
-    ) -> _NoOp:  # type: ignore[no-redef]
+    ) -> _NoOp:
         return _NoOp()
 
 
