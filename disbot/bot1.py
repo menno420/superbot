@@ -446,6 +446,18 @@ async def main() -> None:
             )
             _APP_TASKS.append(session_gc.start())
             await _load_cogs()
+
+            # Cross-check subsystem identity surfaces (C1 / INV-B):
+            # SUBSYSTEMS keys vs bot commands vs PersistentView SUBSYSTEM
+            # vs interaction_router prefixes vs panel_anchors rows.
+            # WARN-only — findings are logged but do not abort startup.
+            try:
+                from utils.subsystem_registry import validate_identity_contract
+
+                await validate_identity_contract(bot)
+            except Exception as exc:
+                logger.warning("Identity-contract validation skipped: %s", exc)
+
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:

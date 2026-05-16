@@ -788,6 +788,136 @@ def all_subsystems_sorted() -> list[tuple[str, dict]]:
     )
 
 
+async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
+    """Cross-check that the four subsystem-identity surfaces agree.
+
+    Runs after cogs load.  The four surfaces that MUST all use the same
+    subsystem-name strings are:
+
+      1. ``SUBSYSTEMS`` keys (this module's manifest)
+      2. ``commands.Cog`` command names registered on the bot
+      3. ``core.runtime.persistent_views._REGISTRY`` keys (the
+         ``SUBSYSTEM`` class-var of every ``PersistentView`` subclass)
+      4. ``core.runtime.interaction_router._handlers`` prefixes
+      5. distinct ``panel_anchors.subsystem`` values from the DB
+
+    A mismatch in any of these silently breaks: help menus show
+    categories whose commands don't exist; ``restore_anchors`` skips
+    panels; the interaction router drops button clicks; old anchor rows
+    point at removed cogs.
+
+    The validator logs a WARNING per finding and returns the structured
+    report so callers (admin commands, tests) can inspect it.  It does
+    NOT raise on findings — a mismatched DB row from a removed cog
+    should never abort startup.
+
+    Implements INV-B from the platform-hardening plan.
+
+    Args:
+        bot: a ``commands.Bot`` instance.  Typed as ``object`` here so
+            this module needn't import discord at validation time.
+
+    Returns:
+        Dict with keys ``entry_point_missing_command``,
+        ``router_prefix_unknown``, ``view_subsystem_unknown``,
+        ``db_anchor_subsystem_unknown``.  Values are lists of
+        descriptive strings (one per finding).
+    """
+    import logging
+
+    logger = logging.getLogger("bot.identity_contract")
+
+    findings: dict[str, list[str]] = {
+        "entry_point_missing_command": [],
+        "router_prefix_unknown": [],
+        "view_subsystem_unknown": [],
+        "db_anchor_subsystem_unknown": [],
+    }
+
+    # Surface 2: bot commands.
+    loaded_commands: set[str] = {cmd.name for cmd in getattr(bot, "commands", ())}
+
+    # Surface 1 vs Surface 2.
+    for sub_name, meta in SUBSYSTEMS.items():
+        if meta.get("visibility_mode") == "internal":
+            continue
+        eps = meta.get("entry_points", ())
+        for ep in eps:
+            if ep not in loaded_commands:
+                msg = f"subsystem={sub_name!r} entry_point={ep!r}"
+                findings["entry_point_missing_command"].append(msg)
+                logger.warning(
+                    "Identity-contract: entry_point %r declared by subsystem "
+                    "%r is not a loaded command (cog may have failed to load).",
+                    ep,
+                    sub_name,
+                )
+
+    # Surface 4: interaction_router prefixes.
+    try:
+        from core.runtime.interaction_router import _handlers as _router_handlers
+    except Exception:
+        _router_handlers = {}
+    for prefix in _router_handlers:
+        if prefix not in SUBSYSTEMS:
+            findings["router_prefix_unknown"].append(prefix)
+            logger.warning(
+                "Identity-contract: interaction_router prefix %r has no "
+                "matching SUBSYSTEMS entry.",
+                prefix,
+            )
+
+    # Surface 3: PersistentView SUBSYSTEM class vars.
+    try:
+        from core.runtime.persistent_views import _REGISTRY as _VIEW_REGISTRY
+    except Exception:
+        _VIEW_REGISTRY = {}
+    for sub_name in _VIEW_REGISTRY:
+        if sub_name not in SUBSYSTEMS:
+            findings["view_subsystem_unknown"].append(sub_name)
+            logger.warning(
+                "Identity-contract: PersistentView SUBSYSTEM=%r has no "
+                "matching SUBSYSTEMS entry.",
+                sub_name,
+            )
+
+    # Surface 5: distinct panel_anchors.subsystem values from the DB.
+    try:
+        from utils import db as _db
+
+        rows = await _db.fetchall(
+            "SELECT DISTINCT subsystem FROM panel_anchors WHERE NOT is_stale",
+            (),
+        )
+        for row in rows or ():
+            sub_name = row["subsystem"] if isinstance(row, dict) else row[0]
+            if sub_name not in SUBSYSTEMS:
+                findings["db_anchor_subsystem_unknown"].append(sub_name)
+                logger.warning(
+                    "Identity-contract: panel_anchors row references "
+                    "subsystem %r which has no matching SUBSYSTEMS entry "
+                    "(likely orphaned from a removed cog).",
+                    sub_name,
+                )
+    except Exception as exc:
+        # DB unavailable at startup, or table not migrated yet — not fatal.
+        logger.debug(
+            "Identity-contract: skipping panel_anchors check (%s)",
+            exc,
+        )
+
+    total = sum(len(v) for v in findings.values())
+    if total == 0:
+        logger.info("Identity-contract: clean (all four surfaces agree).")
+    else:
+        logger.warning(
+            "Identity-contract: %d finding(s) — %s",
+            total,
+            {k: len(v) for k, v in findings.items() if v},
+        )
+    return findings
+
+
 def capability_matches(pattern: str, capability: str) -> bool:
     """Wildcard capability matching for future declarative policy rules.
 
