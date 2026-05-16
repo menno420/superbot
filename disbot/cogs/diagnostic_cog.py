@@ -12,7 +12,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils import db
-from views.base import BaseView, send_panel
+from views.base import BaseView, HubView, send_panel
 
 logger = logging.getLogger("bot")
 
@@ -61,11 +61,11 @@ class _PaginatorView(BaseView):
         await interaction.response.edit_message(embed=self.pages[self.index], view=self)
 
 
-class _DiagnosticsHubView(BaseView):
+class _DiagnosticsHubView(HubView):
     """Interactive hub for all diagnostic tools."""
 
     def __init__(self, ctx: commands.Context, cog: DiagnosticCog):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 

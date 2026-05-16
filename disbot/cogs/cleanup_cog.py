@@ -13,7 +13,7 @@ from services import governance_service
 from services.governance_service import GovernanceContext
 from utils import db
 from utils.ui_constants import ADMIN_COLOR
-from views.base import BaseView, send_panel
+from views.base import HubView, send_panel
 
 
 def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
@@ -323,11 +323,11 @@ class _RemoveWordModal(discord.ui.Modal, title="Remove Prohibited Word"):  # typ
             )
 
 
-class _WordMenuView(BaseView):
+class _WordMenuView(HubView):
     """Interactive prohibited-words management panel."""
 
     def __init__(self, ctx: commands.Context, cog: Cleanup):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 

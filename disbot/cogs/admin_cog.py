@@ -11,7 +11,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
-from views.base import BaseView, send_panel
+from views.base import HubView, send_panel
 
 COGS_DIR = os.path.dirname(os.path.abspath(__file__))
 PID_FILE = os.path.join(os.path.dirname(COGS_DIR), "bot.pid")
@@ -225,11 +225,11 @@ class AdminCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
-class _AdminPanelView(BaseView):
+class _AdminPanelView(HubView):
     """Interactive admin control panel."""
 
     def __init__(self, ctx: commands.Context, cog: AdminCog):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 

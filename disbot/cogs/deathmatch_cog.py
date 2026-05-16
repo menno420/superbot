@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType, cooldown
 
+from core.runtime.component_registry import stats_block
 from utils import db
 from utils.ui_constants import GAME_COLOR
 
@@ -240,25 +241,27 @@ class Deathmatch(commands.Cog):
         hub panel. The returned overview embed describes the flow; the
         help-cog appends the "↩ Back to Help" control automatically.
         """
-        embed = discord.Embed(
-            title="⚔️ Deathmatch",
+        embed = stats_block(
+            "⚔️ Deathmatch",
+            [
+                (
+                    "Challenge",
+                    "`!deathmatch @user`  (alias of `!dm_challenge @user`)",
+                    False,
+                ),
+                (
+                    "Stats",
+                    "`!leaderboard deathmatch` — top duelists",
+                    False,
+                ),
+            ],
+            GAME_COLOR,
             description=(
                 "Challenge another player to a 1v1 duel.  Attack and defend "
                 "via buttons on the duel message until one combatant falls."
             ),
-            color=GAME_COLOR,
+            footer="30-second cooldown between challenges.",
         )
-        embed.add_field(
-            name="Challenge",
-            value="`!deathmatch @user`  (alias of `!dm_challenge @user`)",
-            inline=False,
-        )
-        embed.add_field(
-            name="Stats",
-            value="`!leaderboard deathmatch` — top duelists",
-            inline=False,
-        )
-        embed.set_footer(text="30-second cooldown between challenges.")
         return embed, discord.ui.View(timeout=300)
 
     @commands.command(name="dm_challenge", aliases=["deathmatch", "challenge", "dm"])

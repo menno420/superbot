@@ -13,17 +13,17 @@ import discord
 from discord.ext import commands
 
 from utils.ui_constants import CHANNEL_COLOR
-from views.base import BaseView
+from views.base import HubView
 from views.channels._helpers import _build_channel_options
 
 logger = logging.getLogger("bot")
 
 
-class _ChannelManagerView(BaseView):
+class _ChannelManagerView(HubView):
     """Top-level channel management panel with three action modes."""
 
     def __init__(self, ctx: commands.Context):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
 
     async def on_error(

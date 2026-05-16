@@ -15,14 +15,14 @@ import discord
 from discord.ext import commands
 
 from core.runtime import tasks
-from views.base import BaseView
+from views.base import HubView
 
 
-class _CountingHubView(BaseView):
+class _CountingHubView(HubView):
     """Admin hub for managing the counting game in the current channel."""
 
     def __init__(self, ctx: commands.Context, cog):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 

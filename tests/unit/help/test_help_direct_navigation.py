@@ -234,6 +234,40 @@ async def test_moderation_build_help_menu_view_returns_embed_and_view():
 
 
 @pytest.mark.asyncio
+async def test_blackjack_build_help_menu_view_returns_embed_and_view():
+    """Game cogs return a stats_block overview + empty view (back-btn appended later)."""
+    from cogs.blackjack_cog import BlackjackCog
+
+    cog = BlackjackCog(MagicMock())
+    embed, view = await cog.build_help_menu_view(_stub_interaction())
+    assert isinstance(embed, discord.Embed)
+    assert isinstance(view, discord.ui.View)
+    assert embed.title == "🃏 Blackjack"
+
+
+@pytest.mark.asyncio
+async def test_rps_build_help_menu_view_returns_embed_and_view():
+    from cogs.rps_tournament_cog import RPSTournamentCog
+
+    cog = RPSTournamentCog(MagicMock())
+    embed, view = await cog.build_help_menu_view(_stub_interaction())
+    assert isinstance(embed, discord.Embed)
+    assert isinstance(view, discord.ui.View)
+    assert embed.title == "✂️ Rock-Paper-Scissors"
+
+
+@pytest.mark.asyncio
+async def test_deathmatch_build_help_menu_view_returns_embed_and_view():
+    from cogs.deathmatch_cog import Deathmatch
+
+    cog = Deathmatch(MagicMock())
+    embed, view = await cog.build_help_menu_view(_stub_interaction())
+    assert isinstance(embed, discord.Embed)
+    assert isinstance(view, discord.ui.View)
+    assert embed.title == "⚔️ Deathmatch"
+
+
+@pytest.mark.asyncio
 async def test_help_ctx_shim_exposes_required_attrs():
     """The shim must expose author/guild/channel/bot — nothing else needed."""
     from core.runtime.interaction_helpers import help_ctx_shim

@@ -9,7 +9,7 @@ from discord.ext.commands import MissingPermissions, has_permissions
 
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
-from views.base import BaseView, send_panel
+from views.base import HubView, send_panel
 
 logger = logging.getLogger("bot.cogs.chain")
 
@@ -446,11 +446,11 @@ class _SetLimitModal(discord.ui.Modal, title="Set Word Limit"):  # type: ignore[
             )
 
 
-class _ChainMenuView(BaseView):
+class _ChainMenuView(HubView):
     """Interactive chain channel management panel."""
 
     def __init__(self, ctx: commands.Context, cog: ChainCog):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 

@@ -9,7 +9,7 @@ from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import embeds as em
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR, UTILITY_COLOR
-from views.base import BaseView, send_panel
+from views.base import HubView, send_panel
 
 
 async def _remind_later(
@@ -201,11 +201,11 @@ class UtilityCog(commands.Cog):
 # ---------------------------------------------------------------------------
 
 
-class _UtilityPanelView(BaseView):
+class _UtilityPanelView(HubView):
     """Interactive utility panel — quick access to common utility actions."""
 
     def __init__(self, ctx: commands.Context):
-        super().__init__(ctx.author, public=True, timeout=180)
+        super().__init__(ctx.author, public=True)
         self.ctx = ctx
 
     def build_embed(self) -> discord.Embed:

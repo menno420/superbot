@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import tasks
+from core.runtime.component_registry import stats_block
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import economy_service, game_state_service
 from services.blackjack_engine import hand_str as _hand_str
@@ -19,37 +20,9 @@ from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.tournaments import TournamentRegistration
 from utils.ui_constants import ECONOMY_COLOR, ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
+from views.base import handle_view_error as _on_view_error
 
 logger = logging.getLogger("bot")
-
-
-async def _on_view_error(
-    view: discord.ui.View,
-    interaction: discord.Interaction,
-    error: Exception,
-    item: discord.ui.Item,  # type: ignore[type-arg]
-) -> None:
-    logger.error(
-        "View error | view=%s item_type=%s custom_id=%r label=%r "
-        "user=%s guild=%s channel=%s message=%s",
-        type(view).__name__,
-        type(item).__name__,
-        getattr(item, "custom_id", None),
-        getattr(item, "label", None),
-        getattr(interaction.user, "id", None),
-        interaction.guild_id,
-        interaction.channel_id,
-        interaction.message.id if interaction.message else None,
-        exc_info=error,
-    )
-    if not interaction.response.is_done():
-        try:
-            await interaction.response.send_message(
-                "An error occurred. Please try again.",
-                ephemeral=True,
-            )
-        except Exception:
-            pass
 
 
 # ---------------------------------------------------------------------------
@@ -1187,30 +1160,20 @@ class BlackjackCog(commands.Cog):
         embed with no buttons. The help-cog appends the "↩ Back to Help"
         control automatically.
         """
-        embed = discord.Embed(
-            title="🃏 Blackjack",
+        embed = stats_block(
+            "🃏 Blackjack",
+            [
+                ("Solo vs bot", "`!blackjack <bet>` or `!bj <bet>`", False),
+                ("PvP challenge", "`!blackjack @user <bet>`", False),
+                ("Tournament", "`!bjtournament` — open registration", False),
+            ],
+            GAME_COLOR,
             description=(
                 "Classic 21 — play solo against the bot or challenge another "
                 "player. Tournament mode runs scheduled brackets."
             ),
-            color=GAME_COLOR,
+            footer="Bets are in 🪙 coins. Bet 0 for a free game.",
         )
-        embed.add_field(
-            name="Solo vs bot",
-            value="`!blackjack <bet>` or `!bj <bet>`",
-            inline=False,
-        )
-        embed.add_field(
-            name="PvP challenge",
-            value="`!blackjack @user <bet>`",
-            inline=False,
-        )
-        embed.add_field(
-            name="Tournament",
-            value="`!bjtournament` — open registration",
-            inline=False,
-        )
-        embed.set_footer(text="Bets are in 🪙 coins. Bet 0 for a free game.")
         return embed, discord.ui.View(timeout=300)
 
     async def cog_load(self):

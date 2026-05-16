@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import tasks
+from core.runtime.component_registry import stats_block
 from services import economy_service, game_state_service
 from utils import db as global_db
 from utils.channels import cleanup_category, create_private_channel
@@ -87,29 +88,31 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         The returned overview embed describes both flows; the help-cog
         appends the "↩ Back to Help" control automatically.
         """
-        embed = discord.Embed(
-            title="✂️ Rock-Paper-Scissors",
+        embed = stats_block(
+            "✂️ Rock-Paper-Scissors",
+            [
+                (
+                    "Quick match",
+                    "`!rps` solo vs bot · `!rps @user` PvP · `!rps @user <bet>`",
+                    False,
+                ),
+                (
+                    "Tournament",
+                    (
+                        "`!rpsregister` — open registration\n"
+                        "`!rpsstart` — begin bracket\n"
+                        "`!rpshelp` — full tournament help"
+                    ),
+                    False,
+                ),
+            ],
+            GAME_COLOR,
             description=(
                 "Quick matches vs the bot or another player, plus scheduled "
                 "tournaments with optional entry fees."
             ),
-            color=GAME_COLOR,
+            footer="Default mode: classic · best of 3.",
         )
-        embed.add_field(
-            name="Quick match",
-            value="`!rps` solo vs bot · `!rps @user` PvP · `!rps @user <bet>`",
-            inline=False,
-        )
-        embed.add_field(
-            name="Tournament",
-            value=(
-                "`!rpsregister` — open registration\n"
-                "`!rpsstart` — begin bracket\n"
-                "`!rpshelp` — full tournament help"
-            ),
-            inline=False,
-        )
-        embed.set_footer(text="Default mode: classic · best of 3.")
         return embed, discord.ui.View(timeout=300)
 
     def create_move_aliases(self):

@@ -10,7 +10,7 @@ from core.runtime import tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils.helpers import _parse_member
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
-from views.base import BaseView, send_panel
+from views.base import HubView, send_panel
 
 logger = logging.getLogger("bot.cogs.proof_channel")
 
@@ -242,11 +242,11 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
         )
 
 
-class _PrizeManagerView(BaseView):
+class _PrizeManagerView(HubView):
     """Interactive prize channel management panel."""
 
     def __init__(self, ctx: commands.Context, cog: ProofChannelCog):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 
