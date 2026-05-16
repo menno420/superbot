@@ -207,10 +207,15 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         if len(self.players) < 2:
             await global_db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
 
-    async def add_player_to_db(self, user) -> None:
-        """Ensures the player exists in the async RPS stats table."""
+    async def add_player_to_db(self, user, guild_id: int) -> None:
+        """Ensures the player exists in the async RPS stats table.
+
+        PR R1: ``guild_id`` is now required.  rps_players' PK is
+        (user_id, guild_id) since migration 005; defaulting to 0 made
+        every guild's stats collide at the same row.
+        """
         try:
-            await global_db.rps_ensure_player(user.id, user.display_name)
+            await global_db.rps_ensure_player(user.id, guild_id, user.display_name)
         except Exception as e:
             logger.exception("Error adding RPS player to database: %s", e)
 
@@ -232,7 +237,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             self.paid_players.add(user.id)
         self.players.append(user)
         self.scores[user] = 0
-        await self.add_player_to_db(user)
+        await self.add_player_to_db(user, guild_id)
         return True
 
     @commands.command(name="rpsstart", aliases=["rpsbegin"])
@@ -705,15 +710,35 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             await channel.send("Next round! Please enter your move.")
 
     def update_player_stats(self, player, result: str) -> None:
-        """Schedule an async stats update without blocking the event loop."""
+        """Schedule an async stats update without blocking the event loop.
+
+        PR R1: derives ``guild_id`` from ``player.guild`` and passes it
+        through so ``rps_update_stat`` writes to the correct guild row.
+        Players passed in here always come from a guild context (bot
+        matches and tournament matches both originate in guild channels)
+        so ``player.guild`` is non-None.
+        """
+        guild = getattr(player, "guild", None)
+        if guild is None:
+            logger.warning(
+                "update_player_stats: player=%s has no guild context; "
+                "skipping stat update",
+                player.id,
+            )
+            return
         tasks.spawn(
             f"rps:stat:{player.id}",
-            self._async_update_stat(player.id, result),
+            self._async_update_stat(player.id, guild.id, result),
         )
 
-    async def _async_update_stat(self, user_id: int, result: str) -> None:
+    async def _async_update_stat(
+        self,
+        user_id: int,
+        guild_id: int,
+        result: str,
+    ) -> None:
         try:
-            await global_db.rps_update_stat(user_id, result)
+            await global_db.rps_update_stat(user_id, guild_id, result)
         except Exception as e:
             logger.exception("Error updating RPS player stats: %s", e)
 
