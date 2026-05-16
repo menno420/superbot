@@ -275,8 +275,92 @@ async def _save_game_state(game: _Game) -> None:
         await _save_pvp_match(game.pvp_state)
     elif _is_solo_game(game):
         await _save_solo_game(game)
-    # Tournament games (game.tournament_chips is not None) are
-    # handled by PR G5's blackjack_tournament subsystem.
+    # Tournament games carry their own per-player rows persisted by
+    # ``_save_tournament_entry`` at launch time; per-hand state inside
+    # a tournament round is intentionally NOT persisted — recovery is
+    # cancel-and-refund (Option 2), so cards in flight don't matter
+    # but the entry fee does.
+
+
+# ---------------------------------------------------------------------------
+# PR G5 — blackjack tournament persistence (entry-fee refund on restart).
+#
+# Tournaments are the highest-stakes path in the cog: ``deduct_fees``
+# debits each player's ``entry_fee`` BEFORE any rounds run, so a crash
+# mid-tournament leaves money in limbo unless we refund on recovery.
+#
+# Per-player row design avoids the "sentinel user_id" question for
+# guild-wide tournaments: one row per registered participant, keyed
+# at ``(guild_id, user_id, channel_id, "blackjack_tournament")`` where
+# channel_id is the player's private tournament channel.  Each row's
+# payload carries ``bet=entry_fee`` so the G0 GC sweep already knows
+# how to refund (24 h safety net); ``_recover_blackjack_tournament``
+# acts at cog_load instead so players get their coins back on the
+# next restart rather than a day later.
+# ---------------------------------------------------------------------------
+
+BLACKJACK_TOURNAMENT_SUBSYSTEM = "blackjack_tournament"
+BLACKJACK_TOURNAMENT_VERSION = 1
+
+
+async def _save_tournament_entry(
+    *,
+    guild_id: int,
+    user_id: int,
+    channel_id: int,
+    entry_fee: int,
+    rounds: int,
+) -> None:
+    """Persist the post-deduct_fees state for one tournament player.
+
+    The ``bet`` payload key matches the G0 GC convention so even if
+    the bot loses both the cog_load recovery AND the on_guild_remove
+    listener, the 24 h sweep still issues the refund.
+    """
+    try:
+        await game_state_service.save(
+            guild_id=guild_id,
+            user_id=user_id,
+            channel_id=channel_id,
+            subsystem=BLACKJACK_TOURNAMENT_SUBSYSTEM,
+            state={
+                "bet": entry_fee,  # GC sweep refund convention
+                "rounds": rounds,
+            },
+            version=BLACKJACK_TOURNAMENT_VERSION,
+        )
+    except Exception as exc:
+        logger.warning(
+            "blackjack_tournament save failed (user=%d guild=%d): %s",
+            user_id,
+            guild_id,
+            exc,
+        )
+
+
+async def _clear_tournament_entry(
+    *,
+    guild_id: int,
+    user_id: int,
+    channel_id: int,
+) -> None:
+    """Drop a tournament player's persisted entry after natural
+    tournament completion (winner declared and pot paid).
+    """
+    try:
+        await game_state_service.clear(
+            guild_id=guild_id,
+            user_id=user_id,
+            channel_id=channel_id,
+            subsystem=BLACKJACK_TOURNAMENT_SUBSYSTEM,
+        )
+    except Exception as exc:
+        logger.warning(
+            "blackjack_tournament clear failed (user=%d guild=%d): %s",
+            user_id,
+            guild_id,
+            exc,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -820,12 +904,23 @@ def _tourn_embed(t: _BjTournament) -> discord.Embed:
 
 
 class _TournPlayerState:
-    def __init__(self, user_id: int, guild_id: int, rounds: int):
+    def __init__(
+        self,
+        user_id: int,
+        guild_id: int,
+        rounds: int,
+        *,
+        channel_id: int | None = None,
+    ):
         self.user_id = user_id
         self.guild_id = guild_id
         self.chips = TOURN_START_CHIPS
         self.rounds_left = rounds
         self.done = False
+        # PR G5 — recorded so ``_check_tourn_done`` can clear the
+        # persisted entry-fee row precisely without needing a list
+        # sweep at natural tournament completion.
+        self.channel_id = channel_id
 
 
 class _TournBlackjackView(discord.ui.View):
@@ -1041,6 +1136,33 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
     if tourn.category:
         await cleanup_category(tourn.category)
 
+    # PR G5 — natural completion: clear the persisted entry-fee rows
+    # WITHOUT refunding (payouts above already settled the pot).  The
+    # cog_load recovery path is the ONLY one that refunds; clearing
+    # here prevents it from double-paying on the next restart.
+    try:
+        rows = await game_state_service.list_active_for_subsystem(
+            BLACKJACK_TOURNAMENT_SUBSYSTEM,
+            guild_id=tourn.guild_id,
+        )
+        for row in rows:
+            try:
+                await game_state_service.clear_by_id(row["id"])
+            except Exception as exc:
+                logger.warning(
+                    "blackjack_tournament natural-completion clear "
+                    "failed for id=%s: %s",
+                    row.get("id"),
+                    exc,
+                )
+    except Exception as exc:
+        logger.warning(
+            "blackjack_tournament natural-completion sweep failed for "
+            "guild=%d: %s — entries will be cleared by the 24 h GC sweep",
+            tourn.guild_id,
+            exc,
+        )
+
     _tournaments.pop(tourn.guild_id, None)
     await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
 
@@ -1063,6 +1185,11 @@ class BlackjackCog(commands.Cog):
         # balance and starts a new game.
         tasks.spawn("blackjack:recover_solo", self._recover_blackjack_solo())
         tasks.spawn("blackjack:recover_pvp", self._recover_blackjack_pvp())
+        # PR G5 — tournament recovery DOES refund.  Entry fees were
+        # debited at launch; if the bot crashed before _check_tourn_done
+        # paid out the pot, those coins are still in limbo.  Refund
+        # each player and clear the row.
+        tasks.spawn("blackjack:recover_tournament", self._recover_blackjack_tournament())
 
     def cog_unload(self):
         """Cancel cleanup + tournament-timer tasks so a reload doesn't leak them."""
@@ -1140,9 +1267,124 @@ class BlackjackCog(commands.Cog):
                 cleared,
             )
 
+    async def _recover_blackjack_tournament(self) -> None:
+        """Refund every stranded tournament entry then clear the row.
+
+        Unlike the solo/PvP recovery paths, this one MUST refund:
+        entry fees were debited at launch and never paid back if the
+        bot crashed before _check_tourn_done.  The refund reason
+        string is filterable in economy_audit_log for incident
+        forensics.
+        """
+        try:
+            rows = await game_state_service.list_active_for_subsystem(
+                BLACKJACK_TOURNAMENT_SUBSYSTEM,
+            )
+        except Exception as exc:
+            logger.warning("blackjack_tournament recovery skipped: %s", exc)
+            return
+        if not rows:
+            return
+        refunded = 0
+        cleared = 0
+        for row in rows:
+            try:
+                version = row.get("version")
+                if version != BLACKJACK_TOURNAMENT_VERSION:
+                    logger.info(
+                        "blackjack_tournament recovery: dropping "
+                        "version-mismatch row id=%s (saved=%s, current=%s)",
+                        row["id"],
+                        version,
+                        BLACKJACK_TOURNAMENT_VERSION,
+                    )
+                    await game_state_service.clear_by_id(row["id"])
+                    cleared += 1
+                    continue
+                state = row.get("state") or {}
+                bet = state.get("bet")
+                if isinstance(bet, int) and bet > 0:
+                    try:
+                        await economy_service.refund(
+                            guild_id=row["guild_id"],
+                            user_id=row["user_id"],
+                            amount=bet,
+                            reason="blackjack_tournament:restart_refund",
+                        )
+                        refunded += 1
+                    except Exception as exc:
+                        logger.warning(
+                            "blackjack_tournament refund failed for "
+                            "user=%d guild=%d: %s",
+                            row.get("user_id"),
+                            row.get("guild_id"),
+                            exc,
+                        )
+                await game_state_service.clear_by_id(row["id"])
+                cleared += 1
+            except Exception as exc:
+                logger.warning(
+                    "blackjack_tournament recovery: row id=%s failed: %s",
+                    row.get("id"),
+                    exc,
+                )
+        if cleared or refunded:
+            logger.info(
+                "blackjack_tournament recovery: cleared %d row(s), "
+                "issued %d refund(s)",
+                cleared,
+                refunded,
+            )
+
     @commands.Cog.listener()
     async def on_guild_remove(self, guild) -> None:
-        """PR G2/G3 — wipe blackjack solo + PvP rows for a departed guild."""
+        """PR G2/G3/G5 — wipe blackjack rows for a departed guild.
+
+        Tournament rows additionally trigger a refund — guild removal
+        before tournament resolution is equivalent to a crash from the
+        player's perspective.
+        """
+        # Tournament path: refund + clear (entries were pre-debited).
+        try:
+            rows = await game_state_service.list_active_for_subsystem(
+                BLACKJACK_TOURNAMENT_SUBSYSTEM,
+                guild_id=guild.id,
+            )
+            for row in rows:
+                state = row.get("state") or {}
+                bet = state.get("bet")
+                if isinstance(bet, int) and bet > 0:
+                    try:
+                        await economy_service.refund(
+                            guild_id=row["guild_id"],
+                            user_id=row["user_id"],
+                            amount=bet,
+                            reason="blackjack_tournament:guild_remove_refund",
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "blackjack_tournament on_guild_remove "
+                            "refund failed for user=%d: %s",
+                            row.get("user_id"),
+                            exc,
+                        )
+                try:
+                    await game_state_service.clear_by_id(row["id"])
+                except Exception as exc:
+                    logger.warning(
+                        "blackjack_tournament on_guild_remove clear "
+                        "failed for id=%s: %s",
+                        row.get("id"),
+                        exc,
+                    )
+        except Exception as exc:
+            logger.warning(
+                "blackjack_tournament on_guild_remove failed for guild=%d: %s",
+                guild.id,
+                exc,
+            )
+
+        # Solo + PvP paths: clear without refund (no pre-debit).
         for subsystem in (BLACKJACK_SOLO_SUBSYSTEM, BLACKJACK_PVP_SUBSYSTEM):
             try:
                 rows = await game_state_service.list_active_for_subsystem(
@@ -1417,7 +1659,23 @@ async def _launch_tournament(
             )
             if tourn.category is None:
                 tourn.category = ch.category
-            ps = _TournPlayerState(uid, tourn.guild_id, tourn.rounds)
+            ps = _TournPlayerState(
+                uid,
+                tourn.guild_id,
+                tourn.rounds,
+                channel_id=ch.id,
+            )
+            # PR G5 — persist the paid-entry state so a crash before
+            # the tournament resolves can refund this player on
+            # cog_load.  ``bet`` matches the G0 GC convention so the
+            # 24 h sweep is a secondary safety net.
+            await _save_tournament_entry(
+                guild_id=tourn.guild_id,
+                user_id=uid,
+                channel_id=ch.id,
+                entry_fee=tourn.entry_fee,
+                rounds=tourn.rounds,
+            )
             await ch.send(
                 f"Welcome, {member.mention}! You have **{tourn.rounds}** rounds "
                 f"and start with **{TOURN_START_CHIPS}** chips. Good luck! 🃏",

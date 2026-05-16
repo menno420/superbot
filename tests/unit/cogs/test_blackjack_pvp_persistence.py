@@ -240,21 +240,26 @@ async def test_recover_blackjack_pvp_drops_version_mismatch():
 
 
 @pytest.mark.asyncio
-async def test_on_guild_remove_clears_both_solo_and_pvp():
-    """After PR G3, ``on_guild_remove`` covers BOTH blackjack_solo
-    and blackjack_pvp subsystems for the departed guild.
+async def test_on_guild_remove_clears_solo_and_pvp_and_tournament():
+    """After PR G3 + PR G5, ``on_guild_remove`` covers ALL three
+    blackjack subsystems for the departed guild.  This test focuses on
+    solo + PvP non-refund clears; the tournament-refund behaviour is
+    exercised in the tournament test pack.
     """
     from cogs.blackjack_cog import BlackjackCog
 
     cog = BlackjackCog.__new__(BlackjackCog)
     guild = MagicMock()
     guild.id = 999
-    # Return different rows for each subsystem call.
     seen_subsystems: list[str] = []
 
     async def fake_list(subsystem, *, guild_id):
         seen_subsystems.append(subsystem)
-        return [{"id": hash(subsystem) % 1000}]
+        # Solo + PvP have one row each; tournament has none (covered
+        # by the tournament test pack).
+        if subsystem in {"blackjack_solo", "blackjack_pvp"}:
+            return [{"id": hash(subsystem) % 1000, "state": {}}]
+        return []
 
     with (
         patch(
@@ -265,10 +270,15 @@ async def test_on_guild_remove_clears_both_solo_and_pvp():
             "services.game_state_service.clear_by_id",
             new_callable=AsyncMock,
         ) as mock_clear,
+        patch(
+            "services.economy_service.refund",
+            new_callable=AsyncMock,
+        ),
     ):
         await cog.on_guild_remove(guild)
-    # Both subsystems queried.
+    # All three subsystems queried.
     assert "blackjack_solo" in seen_subsystems
     assert "blackjack_pvp" in seen_subsystems
-    # Each subsystem's row cleared.
+    assert "blackjack_tournament" in seen_subsystems
+    # Solo + PvP rows cleared (one each).  Tournament was empty.
     assert mock_clear.await_count == 2
