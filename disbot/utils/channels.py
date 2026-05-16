@@ -46,7 +46,7 @@ async def create_private_channel(
         name = await safe_channel_name(guild, name)
 
     cat_overwrites = {
-        guild.default_role: discord.PermissionOverwrite(read_messages=False)
+        guild.default_role: discord.PermissionOverwrite(read_messages=False),
     }
     cat = await get_or_create_category(guild, category_name, overwrites=cat_overwrites)
 
@@ -56,14 +56,16 @@ async def create_private_channel(
     }
     for m in members:
         overwrites[m] = discord.PermissionOverwrite(
-            read_messages=True, send_messages=True
+            read_messages=True,
+            send_messages=True,
         )
 
     return await guild.create_text_channel(name, overwrites=overwrites, category=cat)
 
 
 async def cleanup_category(
-    category: discord.CategoryChannel, delay: float = 0.0
+    category: discord.CategoryChannel,
+    delay: float = 0.0,
 ) -> None:
     """Delete every channel in *category*, then delete the category itself."""
     if delay:

@@ -50,7 +50,7 @@ logger = logging.getLogger("bot")
 # Scope types accepted by the pipeline.
 # "thread" is supported since migration 009 added it to subsystem_visibility.
 _VALID_SCOPE_TYPES: frozenset[str] = frozenset(
-    {"channel", "category", "guild", "thread"}
+    {"channel", "category", "guild", "thread"},
 )
 
 # Minimum tier required to mutate governance state.
@@ -68,14 +68,14 @@ def _validate_authority(ctx: GovernanceContext) -> None:
     """
     if ctx.member is None:
         raise UnauthorizedGovernanceWriteError(
-            "Governance writes require a guild member context (member is None)."
+            "Governance writes require a guild member context (member is None).",
         )
     guild_owner_id = ctx.member.guild.owner_id if ctx.member.guild else 0
     tier = get_member_visibility_tier(ctx.member, guild_owner_id)
     if not is_tier_sufficient(tier, _WRITE_AUTHORITY_TIER):
         raise UnauthorizedGovernanceWriteError(
             f"Member {ctx.member.id!r} (tier={tier!r}) requires at least "
-            f"{_WRITE_AUTHORITY_TIER!r} to mutate governance state."
+            f"{_WRITE_AUTHORITY_TIER!r} to mutate governance state.",
         )
 
 
@@ -119,12 +119,12 @@ class GovernanceMutationPipeline:
             raise GovernanceError(
                 f"Invalid scope_type {scope_type!r}. "
                 f"Must be one of: {sorted(_VALID_SCOPE_TYPES)}. "
-                "Role-scoped overrides are not yet supported."
+                "Role-scoped overrides are not yet supported.",
             )
         if subsystem not in SUBSYSTEMS:
             raise GovernanceError(
                 f"Unknown subsystem {subsystem!r}.  "
-                "Only registered subsystems may have visibility overrides."
+                "Only registered subsystems may have visibility overrides.",
             )
 
         # 2. Validate authority (infrastructure boundary — always enforced)
@@ -132,7 +132,10 @@ class GovernanceMutationPipeline:
 
         # 3. Read old value for full audit trail
         old_enabled = await db.get_visibility_override(
-            ctx.guild_id, scope_type, scope_id, subsystem
+            ctx.guild_id,
+            scope_type,
+            scope_id,
+            subsystem,
         )
 
         mutation_id = str(uuid.uuid4())
@@ -141,7 +144,11 @@ class GovernanceMutationPipeline:
         # 4. DB write + audit in a single transaction
         async with db.get().transaction():
             await db.set_subsystem_visibility(
-                ctx.guild_id, scope_type, scope_id, subsystem, enabled
+                ctx.guild_id,
+                scope_type,
+                scope_id,
+                subsystem,
+                enabled,
             )
             await db.write_governance_audit(
                 guild_id=ctx.guild_id,
@@ -201,7 +208,7 @@ class GovernanceMutationPipeline:
         if scope_type not in _VALID_SCOPE_TYPES:
             raise GovernanceError(
                 f"Invalid scope_type {scope_type!r}. "
-                f"Must be one of: {sorted(_VALID_SCOPE_TYPES)}."
+                f"Must be one of: {sorted(_VALID_SCOPE_TYPES)}.",
             )
 
         _validate_authority(ctx)
@@ -307,7 +314,9 @@ async def set_cleanup_policy_for_scope(
 async def check_governance_version(guild_id: int) -> None:
     """Check and upgrade governance version for a guild if needed."""
     stored = await db.get_setting(
-        guild_id, settings_keys.GOVERNANCE_VERSION, default="0"
+        guild_id,
+        settings_keys.GOVERNANCE_VERSION,
+        default="0",
     )
     if int(stored) < REGISTRY_VERSION:
         await _run_governance_upgrade(guild_id, from_version=int(stored))
@@ -341,5 +350,7 @@ async def _run_governance_upgrade(guild_id: int, from_version: int) -> None:
             )
 
     await db.set_setting(
-        guild_id, settings_keys.GOVERNANCE_VERSION, str(REGISTRY_VERSION)
+        guild_id,
+        settings_keys.GOVERNANCE_VERSION,
+        str(REGISTRY_VERSION),
     )

@@ -41,6 +41,7 @@ import uuid
 from collections.abc import Awaitable, Callable
 
 import discord
+
 from core.runtime import session_manager
 
 logger = logging.getLogger("bot.runtime.router")

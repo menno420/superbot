@@ -13,7 +13,7 @@ from dataclasses import dataclass
 class PolicyRule:
     """A single governance policy rule.
 
-    Attributes
+    Attributes:
     ----------
     rule_id:
         Unique identifier for this rule.
@@ -48,7 +48,7 @@ class PolicyRuleResult:
     effect: str  # "ENABLE" or "DISABLE"
 
 
-async def evaluate_rules(ctx: object, subsystem: str) -> "PolicyRuleResult | None":
+async def evaluate_rules(ctx: object, subsystem: str) -> PolicyRuleResult | None:
     """Evaluate all applicable policy rules for a context and subsystem.
 
     Returns the winning PolicyRuleResult or None if no rules apply.

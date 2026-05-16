@@ -4,11 +4,12 @@ import logging
 from datetime import timedelta
 
 import discord
+from discord import Member
+from discord.ext import commands
+
 from core.runtime import panel_manager
 from core.runtime.component_registry import stats_block
 from core.runtime.persistent_views import PersistentView, register
-from discord import Member
-from discord.ext import commands
 from utils import db
 from utils.helpers import _parse_member
 from utils.settings_keys import WARN_THRESHOLD, WARN_TIMEOUT_MINS
@@ -18,7 +19,8 @@ logger = logging.getLogger("bot")
 
 
 def _can_act_on_interaction(
-    interaction: discord.Interaction, member: Member
+    interaction: discord.Interaction,
+    member: Member,
 ) -> str | None:
     """Return an error string if the actor cannot moderate *member*, else None."""
     if member == interaction.guild.owner:
@@ -42,7 +44,8 @@ def _can_act_on_interaction(
 
 class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="User (mention, ID, or name)", max_length=100
+        label="User (mention, ID, or name)",
+        max_length=100,
     )
     reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
@@ -59,7 +62,8 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(
-                "❌ Member not found.", ephemeral=True
+                "❌ Member not found.",
+                ephemeral=True,
             )
             return
         reason = self.reason_input.value or "No reason provided"
@@ -69,7 +73,7 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             return
         threshold = int(await db.get_setting(interaction.guild_id, WARN_THRESHOLD, "3"))
         timeout_minutes = int(
-            await db.get_setting(interaction.guild_id, WARN_TIMEOUT_MINS, "10")
+            await db.get_setting(interaction.guild_id, WARN_TIMEOUT_MINS, "10"),
         )
         count = await db.add_warning(member.id, interaction.guild_id)
         await interaction.response.send_message(
@@ -77,7 +81,11 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             ephemeral=False,
         )
         await db.log_mod_action(
-            interaction.guild_id, "warn", member.id, interaction.user.id, reason
+            interaction.guild_id,
+            "warn",
+            member.id,
+            interaction.user.id,
+            reason,
         )
         if count >= threshold:
             try:
@@ -85,7 +93,7 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
                 await member.timeout(until, reason=f"{threshold} warnings reached.")
                 await interaction.followup.send(
                     f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
-                    f"({threshold} warnings)."
+                    f"({threshold} warnings).",
                 )
                 await db.clear_warnings(member.id, interaction.guild_id)
             except discord.Forbidden:
@@ -97,10 +105,13 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
 
 class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="User (mention, ID, or name)", max_length=100
+        label="User (mention, ID, or name)",
+        max_length=100,
     )
     duration_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="Duration (minutes)", placeholder="e.g. 30", max_length=10
+        label="Duration (minutes)",
+        placeholder="e.g. 30",
+        max_length=10,
     )
     reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
@@ -117,12 +128,14 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[c
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(
-                "❌ Member not found.", ephemeral=True
+                "❌ Member not found.",
+                ephemeral=True,
             )
             return
         if not self.duration_input.value.isdigit():
             await interaction.response.send_message(
-                "❌ Duration must be a whole number of minutes.", ephemeral=True
+                "❌ Duration must be a whole number of minutes.",
+                ephemeral=True,
             )
             return
         duration = int(self.duration_input.value)
@@ -135,7 +148,7 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[c
             until = discord.utils.utcnow() + timedelta(minutes=duration)
             await member.timeout(until, reason=reason)
             await interaction.response.send_message(
-                f"⏳ {member.mention} timed out for {duration} minute(s)."
+                f"⏳ {member.mention} timed out for {duration} minute(s).",
             )
             await db.log_mod_action(
                 interaction.guild_id,
@@ -146,13 +159,15 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[c
             )
         except discord.Forbidden:
             await interaction.response.send_message(
-                "❌ No permission to timeout that user.", ephemeral=True
+                "❌ No permission to timeout that user.",
+                ephemeral=True,
             )
 
 
 class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="User (mention, ID, or name)", max_length=100
+        label="User (mention, ID, or name)",
+        max_length=100,
     )
     reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
@@ -169,7 +184,8 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(
-                "❌ Member not found.", ephemeral=True
+                "❌ Member not found.",
+                ephemeral=True,
             )
             return
         reason = self.reason_input.value or "No reason provided"
@@ -180,20 +196,26 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
         try:
             await member.kick(reason=reason)
             await interaction.response.send_message(
-                f"👢 {member.mention} kicked. Reason: {reason}"
+                f"👢 {member.mention} kicked. Reason: {reason}",
             )
             await db.log_mod_action(
-                interaction.guild_id, "kick", member.id, interaction.user.id, reason
+                interaction.guild_id,
+                "kick",
+                member.id,
+                interaction.user.id,
+                reason,
             )
         except discord.Forbidden:
             await interaction.response.send_message(
-                "❌ No permission to kick that user.", ephemeral=True
+                "❌ No permission to kick that user.",
+                ephemeral=True,
             )
 
 
 class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="User (mention, ID, or name)", max_length=100
+        label="User (mention, ID, or name)",
+        max_length=100,
     )
     reason_input = discord.ui.TextInput(  # type: ignore[var-annotated]
         label="Reason",
@@ -210,7 +232,8 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(
-                "❌ Member not found.", ephemeral=True
+                "❌ Member not found.",
+                ephemeral=True,
             )
             return
         reason = self.reason_input.value or "No reason provided"
@@ -221,20 +244,27 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
         try:
             await member.ban(reason=reason)
             await interaction.response.send_message(
-                f"🚫 {member.mention} banned. Reason: {reason}"
+                f"🚫 {member.mention} banned. Reason: {reason}",
             )
             await db.log_mod_action(
-                interaction.guild_id, "ban", member.id, interaction.user.id, reason
+                interaction.guild_id,
+                "ban",
+                member.id,
+                interaction.user.id,
+                reason,
             )
         except discord.Forbidden:
             await interaction.response.send_message(
-                "❌ No permission to ban that user.", ephemeral=True
+                "❌ No permission to ban that user.",
+                ephemeral=True,
             )
 
 
 class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-arg]
     user_id_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="User ID", placeholder="Right-click user → Copy ID", max_length=20
+        label="User ID",
+        placeholder="Right-click user → Copy ID",
+        max_length=20,
     )
 
     def __init__(self) -> None:
@@ -259,7 +289,11 @@ class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-
             await interaction.guild.unban(user)
             await interaction.followup.send(f"✅ {user.mention} unbanned.")
             await db.log_mod_action(
-                interaction.guild_id, "unban", user.id, interaction.user.id, ""
+                interaction.guild_id,
+                "unban",
+                user.id,
+                interaction.user.id,
+                "",
             )
         except discord.NotFound:
             await interaction.followup.send(f"❌ User `{user_id}` is not banned.")
@@ -271,7 +305,8 @@ class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-
 
 class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="User (mention, ID, or name)", max_length=100
+        label="User (mention, ID, or name)",
+        max_length=100,
     )
 
     def __init__(self) -> None:
@@ -281,7 +316,8 @@ class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[ca
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(
-                "❌ Member not found.", ephemeral=True
+                "❌ Member not found.",
+                ephemeral=True,
             )
             return
         logs = await db.get_mod_logs(member.id, interaction.guild_id, limit=10)
@@ -303,7 +339,8 @@ class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[ca
 
 class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ignore[call-arg]
     member_input = discord.ui.TextInput(  # type: ignore[var-annotated]
-        label="User (mention, ID, or name)", max_length=100
+        label="User (mention, ID, or name)",
+        max_length=100,
     )
 
     def __init__(self) -> None:
@@ -313,15 +350,21 @@ class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ig
         member = _parse_member(interaction.guild, self.member_input.value)
         if not member:
             await interaction.response.send_message(
-                "❌ Member not found.", ephemeral=True
+                "❌ Member not found.",
+                ephemeral=True,
             )
             return
         await db.clear_warnings(member.id, interaction.guild_id)
         await db.log_mod_action(
-            interaction.guild_id, "clearwarnings", member.id, interaction.user.id, ""
+            interaction.guild_id,
+            "clearwarnings",
+            member.id,
+            interaction.user.id,
+            "",
         )
         await interaction.response.send_message(
-            f"✅ Warnings cleared for {member.mention}.", ephemeral=True
+            f"✅ Warnings cleared for {member.mention}.",
+            ephemeral=True,
         )
 
 
@@ -343,13 +386,17 @@ class ModPanelView(PersistentView):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not interaction.user.guild_permissions.moderate_members:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need Moderate Members permission.", ephemeral=True
+                "❌ You need Moderate Members permission.",
+                ephemeral=True,
             )
             return False
         return True
 
     @discord.ui.button(
-        label="⚠️ Warn", style=discord.ButtonStyle.primary, row=0, custom_id="mod:warn"
+        label="⚠️ Warn",
+        style=discord.ButtonStyle.primary,
+        row=0,
+        custom_id="mod:warn",
     )
     async def warn_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_WarnModal())
@@ -364,13 +411,19 @@ class ModPanelView(PersistentView):
         await interaction.response.send_modal(_TimeoutModal())
 
     @discord.ui.button(
-        label="👢 Kick", style=discord.ButtonStyle.danger, row=0, custom_id="mod:kick"
+        label="👢 Kick",
+        style=discord.ButtonStyle.danger,
+        row=0,
+        custom_id="mod:kick",
     )
     async def kick_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_KickModal())
 
     @discord.ui.button(
-        label="🚫 Ban", style=discord.ButtonStyle.danger, row=1, custom_id="mod:ban"
+        label="🚫 Ban",
+        style=discord.ButtonStyle.danger,
+        row=1,
+        custom_id="mod:ban",
     )
     async def ban_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_BanModal())
@@ -400,7 +453,9 @@ class ModPanelView(PersistentView):
         custom_id="mod:clearwarn",
     )
     async def clearwarn_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         await interaction.response.send_modal(_ClearWarningsModal())
 
@@ -424,11 +479,19 @@ class ModerationCog(commands.Cog):
         return None
 
     async def log_action(
-        self, ctx, action: str, member, reason: str = "No reason provided"
+        self,
+        ctx,
+        action: str,
+        member,
+        reason: str = "No reason provided",
     ):
         await db.log_mod_action(ctx.guild.id, action, member.id, ctx.author.id, reason)
         logger.info(
-            "MOD | %s | %s | by %s | %s", action.upper(), member, ctx.author, reason
+            "MOD | %s | %s | by %s | %s",
+            action.upper(),
+            member,
+            ctx.author,
+            reason,
         )
 
     # ------------------------------------------------------------------
@@ -474,11 +537,11 @@ class ModerationCog(commands.Cog):
             return
         threshold = int(await db.get_setting(ctx.guild.id, WARN_THRESHOLD, "3"))
         timeout_minutes = int(
-            await db.get_setting(ctx.guild.id, WARN_TIMEOUT_MINS, "10")
+            await db.get_setting(ctx.guild.id, WARN_TIMEOUT_MINS, "10"),
         )
         count = await db.add_warning(member.id, ctx.guild.id)
         await ctx.send(
-            f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}"
+            f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
         )
         await self.log_action(ctx, "warn", member, reason)
         if count >= threshold:
@@ -487,12 +550,12 @@ class ModerationCog(commands.Cog):
                 await member.timeout(until, reason=f"{threshold} warnings reached.")
                 await ctx.send(
                     f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
-                    f"({threshold} warnings)."
+                    f"({threshold} warnings).",
                 )
                 await db.clear_warnings(member.id, ctx.guild.id)
             except discord.Forbidden:
                 await ctx.send(
-                    f"⚠️ Reached {threshold} warnings but I lack permission to timeout this user."
+                    f"⚠️ Reached {threshold} warnings but I lack permission to timeout this user.",
                 )
 
     @commands.command(name="timeout", hidden=True)

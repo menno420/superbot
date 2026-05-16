@@ -29,6 +29,7 @@ from collections.abc import Callable, Coroutine
 from typing import TYPE_CHECKING, Any
 
 import discord
+
 from core.events import bus
 from services import metrics as _metrics
 from utils import db
@@ -136,7 +137,7 @@ async def _on_event(event: str, **payload: Any) -> None:
 
 
 async def _refresh_panel(
-    bot: "commands.Bot",
+    bot: commands.Bot,
     refresh_fn: RefreshFn,
     user_id: int,
     guild_id: int,
@@ -154,7 +155,10 @@ async def _refresh_panel(
         result = await refresh_fn(bot, user_id, guild_id, channel_id)
     except Exception as exc:
         logger.error(
-            "refresh_fn failed for user=%d channel=%d: %s", user_id, channel_id, exc
+            "refresh_fn failed for user=%d channel=%d: %s",
+            user_id,
+            channel_id,
+            exc,
         )
         return
 

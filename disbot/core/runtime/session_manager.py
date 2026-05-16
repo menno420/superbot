@@ -35,7 +35,7 @@ class Session:
     metadata: dict
 
     @classmethod
-    def _from_row(cls, row: dict) -> "Session":
+    def _from_row(cls, row: dict) -> Session:
         return cls(
             session_id=str(row["session_id"]),
             user_id=row["user_id"],

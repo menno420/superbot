@@ -550,7 +550,7 @@ _COMPILED_DEPENDENCY_ORDER: list[str] = []  # topological order
 # ---------------------------------------------------------------------------
 
 _RESERVED_CAPABILITY_PREFIXES: frozenset[str] = frozenset(
-    {"_internal", "system", "governance"}
+    {"_internal", "system", "governance"},
 )
 
 
@@ -576,13 +576,13 @@ class Capability:
     action: str
 
     @classmethod
-    def parse(cls, raw: str) -> "Capability":
+    def parse(cls, raw: str) -> Capability:
         from services.governance_exceptions import CapabilityNamespaceError
 
         parts = raw.split(".")
         if len(parts) != 3:
             raise CapabilityNamespaceError(
-                f"'{raw}' must be {{subsystem}}.{{resource}}.{{action}}"
+                f"'{raw}' must be {{subsystem}}.{{resource}}.{{action}}",
             )
         return cls(*parts)
 
@@ -646,30 +646,30 @@ def validate_registry() -> None:
         ):
             if not meta.get(field):
                 raise RegistryValidationError(
-                    f"subsystem '{name}': missing required field '{field}'"
+                    f"subsystem '{name}': missing required field '{field}'",
                 )
         if meta["visibility_tier"] not in valid_tiers:
             raise RegistryValidationError(
-                f"subsystem '{name}': invalid visibility_tier '{meta['visibility_tier']}'"
+                f"subsystem '{name}': invalid visibility_tier '{meta['visibility_tier']}'",
             )
         if meta["visibility_mode"] not in valid_modes:
             raise RegistryValidationError(
-                f"subsystem '{name}': invalid visibility_mode '{meta['visibility_mode']}'"
+                f"subsystem '{name}': invalid visibility_mode '{meta['visibility_mode']}'",
             )
         if not isinstance(meta.get("color", 0), int):
             raise RegistryValidationError(
-                f"subsystem '{name}': color must be int (.value), not discord.Color"
+                f"subsystem '{name}': color must be int (.value), not discord.Color",
             )
 
         for cap in meta.get("capabilities", []):
             if is_reserved_capability(cap):
                 raise CapabilityNamespaceError(
-                    f"subsystem '{name}': capability '{cap}' uses reserved namespace"
+                    f"subsystem '{name}': capability '{cap}' uses reserved namespace",
                 )
             if len(cap.split(".")) != 3:
                 raise CapabilityNamespaceError(
                     f"subsystem '{name}': capability '{cap}' must be"
-                    " {subsystem}.{resource}.{action}"
+                    " {subsystem}.{resource}.{action}",
                 )
             if cap in seen_caps:
                 raise RegistryValidationError(f"Duplicate capability: '{cap}'")
@@ -683,12 +683,12 @@ def validate_registry() -> None:
         for dep in meta.get("dependencies", []):
             if dep not in all_names:
                 raise RegistryValidationError(
-                    f"subsystem '{name}': unknown dependency '{dep}'"
+                    f"subsystem '{name}': unknown dependency '{dep}'",
                 )
         for rel in meta.get("related_subsystems", []):
             if rel not in all_names:
                 raise RegistryValidationError(
-                    f"subsystem '{name}': unknown related_subsystem '{rel}'"
+                    f"subsystem '{name}': unknown related_subsystem '{rel}'",
                 )
 
         dep_graph[name] = list(meta.get("dependencies", []))
@@ -798,4 +798,4 @@ def capability_matches(pattern: str, capability: str) -> bool:
     c_parts = capability.split(".")
     if len(p_parts) != len(c_parts) or len(p_parts) != 3:
         return False
-    return all(p == "*" or p == c for p, c in zip(p_parts, c_parts))
+    return all(p == "*" or p == c for p, c in zip(p_parts, c_parts, strict=True))

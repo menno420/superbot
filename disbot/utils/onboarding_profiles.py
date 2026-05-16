@@ -12,7 +12,7 @@ WELCOME_PROFILES: dict[str, dict] = {
         "recommended_channels": ["bot-commands", "economy", "games", "roles"],
         "beginner_commands": ["help", "daily", "work", "inventory"],
         "description": ("Welcome! Here are the channels and commands to get started."),
-    }
+    },
 }
 
 

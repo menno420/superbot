@@ -17,7 +17,7 @@ def _get_dsn() -> str:
         return dsn
     raise RuntimeError(
         "DATABASE_URL environment variable is required. "
-        "Format: postgres://user:password@host:5432/dbname"
+        "Format: postgres://user:password@host:5432/dbname",
     )
 
 
@@ -86,7 +86,7 @@ async def _run_migrations() -> None:
             applied = {
                 r["version"]
                 for r in await conn.fetch(
-                    "SELECT version FROM schema_migrations ORDER BY version"
+                    "SELECT version FROM schema_migrations ORDER BY version",
                 )
             }
             migration_files = sorted(
@@ -97,7 +97,8 @@ async def _run_migrations() -> None:
                     version = int(filename.split("_")[0])
                 except (ValueError, IndexError):
                     logger.warning(
-                        "Migration file with unexpected name skipped: %s", filename
+                        "Migration file with unexpected name skipped: %s",
+                        filename,
                     )
                     continue
                 if version in applied:
@@ -123,12 +124,16 @@ async def _run_migrations() -> None:
                     logger.info("Applied migration %03d: %s", version, description)
                 except Exception as exc:
                     logger.error(
-                        "Migration %03d failed: %s", version, exc, exc_info=True
+                        "Migration %03d failed: %s",
+                        version,
+                        exc,
+                        exc_info=True,
                     )
                     raise
         finally:
             await conn.execute(
-                "SELECT pg_advisory_unlock($1)", _MIGRATION_ADVISORY_LOCK
+                "SELECT pg_advisory_unlock($1)",
+                _MIGRATION_ADVISORY_LOCK,
             )
 
 
@@ -300,7 +305,8 @@ def level_progress(total_xp: int) -> tuple[int, int, int]:
 
 async def get_xp(user_id: int, guild_id: int) -> dict:
     row = await fetchone(
-        "SELECT * FROM xp WHERE user_id=$1 AND guild_id=$2", (user_id, guild_id)
+        "SELECT * FROM xp WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
     )
     return row or {
         "user_id": user_id,
@@ -314,7 +320,10 @@ async def get_xp(user_id: int, guild_id: int) -> dict:
 
 
 async def add_xp(
-    user_id: int, guild_id: int, amount: int, now: int
+    user_id: int,
+    guild_id: int,
+    amount: int,
+    now: int,
 ) -> tuple[int, int, bool]:
     # Atomic increment — avoids read-modify-write race under concurrent messages.
     row = await get().fetchrow(
@@ -350,7 +359,8 @@ async def add_xp(
 
 async def get_setting(guild_id: int, key: str, default: str = "") -> str:
     row = await fetchone(
-        "SELECT value FROM guild_settings WHERE guild_id=$1 AND key=$2", (guild_id, key)
+        "SELECT value FROM guild_settings WHERE guild_id=$1 AND key=$2",
+        (guild_id, key),
     )
     return row["value"] if row else default
 
@@ -451,7 +461,8 @@ async def add_warning(user_id: int, guild_id: int) -> int:
 
 async def clear_warnings(user_id: int, guild_id: int) -> None:
     await execute(
-        "DELETE FROM warnings WHERE user_id=$1 AND guild_id=$2", (user_id, guild_id)
+        "DELETE FROM warnings WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
     )
 
 
@@ -492,7 +503,8 @@ async def get_mod_logs(target_id: int, guild_id: int, limit: int = 10) -> list[d
 
 async def get_coins(user_id: int, guild_id: int) -> int:
     row = await fetchone(
-        "SELECT coins FROM xp WHERE user_id=$1 AND guild_id=$2", (user_id, guild_id)
+        "SELECT coins FROM xp WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
     )
     return row["coins"] if row else 0
 
@@ -526,13 +538,17 @@ async def get_economy(user_id: int, guild_id: int) -> dict:
         (user_id, guild_id),
     )
     row = await fetchone(
-        "SELECT * FROM economy WHERE user_id=$1 AND guild_id=$2", (user_id, guild_id)
+        "SELECT * FROM economy WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
     )
     return dict(row)
 
 
 async def claim_daily_if_ready(
-    user_id: int, guild_id: int, now: int, cooldown_seconds: int
+    user_id: int,
+    guild_id: int,
+    now: int,
+    cooldown_seconds: int,
 ) -> bool:
     """Atomically claim daily reward.
 
@@ -605,7 +621,10 @@ async def get_inventory(user_id: int, guild_id: int) -> dict[str, int]:
 
 
 async def add_item(
-    user_id: int, guild_id: int, item_name: str, quantity: int = 1
+    user_id: int,
+    guild_id: int,
+    item_name: str,
+    quantity: int = 1,
 ) -> None:
     await execute(
         """INSERT INTO inventory (user_id, guild_id, item_name, quantity)
@@ -630,7 +649,10 @@ async def has_item(user_id: int, guild_id: int, item_name: str) -> bool:
 
 
 async def add_reaction_role(
-    guild_id: int, message_id: int, emoji: str, role_id: int
+    guild_id: int,
+    message_id: int,
+    emoji: str,
+    role_id: int,
 ) -> None:
     await execute(
         """INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
@@ -697,7 +719,8 @@ async def rps_get_leaderboard(guild_id: int = 0) -> list[dict]:
 
 async def get_mining_inventory(user_id: str) -> dict[str, int]:
     rows = await fetchall(
-        "SELECT item_name, quantity FROM mining_inventory WHERE user_id=$1", (user_id,)
+        "SELECT item_name, quantity FROM mining_inventory WHERE user_id=$1",
+        (user_id,),
     )
     return {r["item_name"]: r["quantity"] for r in rows}
 
@@ -728,7 +751,7 @@ async def set_mining_inventory(user_id: str, inventory: dict[str, int]) -> None:
 async def get_all_mining_totals() -> list[tuple[str, int]]:
     """Return [(user_id, total_items)] sorted descending — for leaderboard."""
     rows = await fetchall(
-        "SELECT user_id, SUM(quantity) AS total FROM mining_inventory GROUP BY user_id ORDER BY total DESC LIMIT 10"
+        "SELECT user_id, SUM(quantity) AS total FROM mining_inventory GROUP BY user_id ORDER BY total DESC LIMIT 10",
     )
     return [(r["user_id"], r["total"]) for r in rows]
 
@@ -740,7 +763,8 @@ async def get_all_mining_totals() -> list[tuple[str, int]]:
 
 async def get_prohibited_words(guild_id: int) -> list[str]:
     rows = await fetchall(
-        "SELECT word FROM prohibited_words WHERE guild_id=$1", (guild_id,)
+        "SELECT word FROM prohibited_words WHERE guild_id=$1",
+        (guild_id,),
     )
     return [r["word"] for r in rows]
 
@@ -758,7 +782,9 @@ async def add_prohibited_word(guild_id: int, word: str) -> bool:
 async def remove_prohibited_word(guild_id: int, word: str) -> bool:
     """Returns True if removed, False if not found."""
     result = await get().execute(
-        "DELETE FROM prohibited_words WHERE guild_id=$1 AND word=$2", guild_id, word
+        "DELETE FROM prohibited_words WHERE guild_id=$1 AND word=$2",
+        guild_id,
+        word,
     )
     return result == "DELETE 1"
 
@@ -781,20 +807,19 @@ async def update_deathmatch(winner_id: int, loser_id: int, guild_id: int = 0) ->
     # second statement does not leave the winner's record updated without the
     # loser's record being updated.
     pool = get()
-    async with pool.acquire() as conn:
-        async with conn.transaction():
-            await conn.execute(
-                """INSERT INTO deathmatch_stats (user_id, guild_id, wins) VALUES ($1, $2, 1)
-                   ON CONFLICT (user_id, guild_id) DO UPDATE SET wins=deathmatch_stats.wins+1""",
-                winner_id,
-                guild_id,
-            )
-            await conn.execute(
-                """INSERT INTO deathmatch_stats (user_id, guild_id, losses) VALUES ($1, $2, 1)
-                   ON CONFLICT (user_id, guild_id) DO UPDATE SET losses=deathmatch_stats.losses+1""",
-                loser_id,
-                guild_id,
-            )
+    async with pool.acquire() as conn, conn.transaction():
+        await conn.execute(
+            """INSERT INTO deathmatch_stats (user_id, guild_id, wins) VALUES ($1, $2, 1)
+               ON CONFLICT (user_id, guild_id) DO UPDATE SET wins=deathmatch_stats.wins+1""",
+            winner_id,
+            guild_id,
+        )
+        await conn.execute(
+            """INSERT INTO deathmatch_stats (user_id, guild_id, losses) VALUES ($1, $2, 1)
+               ON CONFLICT (user_id, guild_id) DO UPDATE SET losses=deathmatch_stats.losses+1""",
+            loser_id,
+            guild_id,
+        )
 
 
 async def get_deathmatch_leaderboard(guild_id: int = 0) -> list[dict]:
@@ -817,7 +842,10 @@ async def get_chain_channel(channel_id: int) -> dict | None:
 
 
 async def set_chain_channel(
-    channel_id: int, guild_id: int, word: str, limit: int = 0
+    channel_id: int,
+    guild_id: int,
+    word: str,
+    limit: int = 0,
 ) -> None:
     await execute(
         """INSERT INTO chain_channels (channel_id, guild_id, word, word_limit, chain_count)
@@ -860,7 +888,8 @@ async def get_all_chain_channels(guild_id: int) -> list[dict]:
 
 async def get_counting_state(guild_id: int) -> dict:
     row = await fetchone(
-        "SELECT state FROM counting_state WHERE guild_id=$1", (guild_id,)
+        "SELECT state FROM counting_state WHERE guild_id=$1",
+        (guild_id,),
     )
     return row["state"] if row else {}
 
@@ -874,12 +903,14 @@ async def set_counting_state(guild_id: int, state: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Governance: subsystem_visibility
+# Governance: subsystem_visibility  # noqa: ERA001 (section header, not code)
 # ---------------------------------------------------------------------------
 
 
 async def get_subsystem_visibility(
-    guild_id: int, scope_type: str, scope_id: int
+    guild_id: int,
+    scope_type: str,
+    scope_id: int,
 ) -> dict[str, bool | None]:
     """Return subsystem→enabled mapping for a scope. Missing rows = not in dict."""
     rows = await get().fetch(
@@ -949,12 +980,14 @@ async def set_subsystem_visibility(
 
 
 # ---------------------------------------------------------------------------
-# Governance: cleanup_policies
+# Governance: cleanup_policies  # noqa: ERA001 (section header, not code)
 # ---------------------------------------------------------------------------
 
 
 async def get_cleanup_policy(
-    guild_id: int, scope_type: str, scope_id: int
+    guild_id: int,
+    scope_type: str,
+    scope_id: int,
 ) -> dict | None:
     """Return cleanup policy for a scope, or None if no row exists."""
     row = await get().fetchrow(
@@ -1048,7 +1081,8 @@ async def touch_session(session_id: str) -> None:
 async def get_session(session_id: str) -> dict | None:
     """Fetch a session by its UUID, or None if it does not exist."""
     row = await get().fetchrow(
-        "SELECT * FROM runtime_sessions WHERE session_id = $1", session_id
+        "SELECT * FROM runtime_sessions WHERE session_id = $1",
+        session_id,
     )
     return dict(row) if row else None
 
@@ -1056,7 +1090,8 @@ async def get_session(session_id: str) -> dict | None:
 async def delete_session(session_id: str) -> None:
     """Delete a session and cascade to its state rows."""
     await get().execute(
-        "DELETE FROM runtime_sessions WHERE session_id = $1", session_id
+        "DELETE FROM runtime_sessions WHERE session_id = $1",
+        session_id,
     )
 
 
@@ -1211,7 +1246,9 @@ async def write_governance_audit(
 
 
 async def get_panel_anchor(
-    user_id: int, channel_id: int, subsystem: str
+    user_id: int,
+    channel_id: int,
+    subsystem: str,
 ) -> dict | None:
     """Return the active anchor for (user, channel, subsystem), or None."""
     row = await get().fetchrow(
@@ -1275,7 +1312,7 @@ async def mark_panel_anchor_stale(anchor_id: str) -> None:
 async def get_all_active_panel_anchors() -> list[dict]:
     """Return all non-stale anchors for restart recovery."""
     rows = await get().fetch(
-        "SELECT * FROM panel_anchors WHERE NOT is_stale ORDER BY last_updated_at DESC"
+        "SELECT * FROM panel_anchors WHERE NOT is_stale ORDER BY last_updated_at DESC",
     )
     return [dict(r) for r in rows]
 
@@ -1296,7 +1333,8 @@ async def delete_guild_panel_anchors(guild_id: int) -> int:
     rows in panel_anchors.  Index on (guild_id, subsystem) supports this query.
     """
     result = await get().execute(
-        "DELETE FROM panel_anchors WHERE guild_id = $1", guild_id
+        "DELETE FROM panel_anchors WHERE guild_id = $1",
+        guild_id,
     )
     try:
         return int(result.split()[-1])
@@ -1305,7 +1343,9 @@ async def delete_guild_panel_anchors(guild_id: int) -> int:
 
 
 async def get_user_subsystem_anchors(
-    user_id: int, guild_id: int, subsystem: str
+    user_id: int,
+    guild_id: int,
+    subsystem: str,
 ) -> list[dict]:
     """Return all active panel anchors for a user+guild+subsystem combination."""
     rows = await get().fetch(

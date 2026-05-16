@@ -91,12 +91,15 @@ async def _teardown_sessions(guild_id: int) -> None:
         from utils import db
 
         result = await db.get().execute(
-            "DELETE FROM runtime_sessions WHERE guild_id = $1", guild_id
+            "DELETE FROM runtime_sessions WHERE guild_id = $1",
+            guild_id,
         )
         count = _parse_pg_count(result)
         if count:
             logger.debug(
-                "guild_lifecycle: deleted %d session(s) for guild=%d", count, guild_id
+                "guild_lifecycle: deleted %d session(s) for guild=%d",
+                count,
+                guild_id,
             )
     except Exception as exc:
         logger.warning("guild_lifecycle: session teardown failed: %s", exc)

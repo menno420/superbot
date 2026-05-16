@@ -8,6 +8,7 @@ import sys
 
 import discord
 from discord.ext import commands
+
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 
@@ -42,7 +43,7 @@ def _all_cog_modules() -> list[str]:
 def _syntax_ok(fname: str) -> bool:
     """Return True if the file parses without syntax errors."""
     try:
-        with open(os.path.join(COGS_DIR, fname), "r", encoding="utf-8") as fh:
+        with open(os.path.join(COGS_DIR, fname), encoding="utf-8") as fh:
             ast.parse(fh.read(), fname)
         return True
     except SyntaxError:
@@ -74,7 +75,8 @@ class AdminCog(commands.Cog):
         """Display server statistics."""
         guild = ctx.guild
         embed = discord.Embed(
-            title=f"Server Stats for {guild.name}", color=SUCCESS_COLOR
+            title=f"Server Stats for {guild.name}",
+            color=SUCCESS_COLOR,
         )
         embed.add_field(name="Total Members", value=guild.member_count)
         embed.add_field(
@@ -96,7 +98,7 @@ class AdminCog(commands.Cog):
         action = action.lower()
         if action not in ("load", "unload", "reload"):
             await ctx.send(
-                f"❌ Invalid action `{action}`. Use `load`, `unload`, or `reload`."
+                f"❌ Invalid action `{action}`. Use `load`, `unload`, or `reload`.",
             )
             return
         module = _find_module(cog_name)
@@ -187,7 +189,7 @@ class AdminCog(commands.Cog):
         level_int = getattr(logging, level.upper(), None)
         if not isinstance(level_int, int):
             await ctx.send(
-                f"❌ Unknown level `{level}`. Choose from: DEBUG, INFO, WARNING, ERROR, CRITICAL"
+                f"❌ Unknown level `{level}`. Choose from: DEBUG, INFO, WARNING, ERROR, CRITICAL",
             )
             return
         logging.getLogger().setLevel(level_int)
@@ -203,7 +205,7 @@ class AdminCog(commands.Cog):
             if channel and channel.permissions_for(guild.me).send_messages:
                 try:
                     await channel.send(
-                        f"Hello everyone! {self.bot.user.name} is now online and ready to rumble!"
+                        f"Hello everyone! {self.bot.user.name} is now online and ready to rumble!",
                     )
                 except Exception as e:
                     logging.error(f"Error sending startup message: {e}")
@@ -239,12 +241,15 @@ class _AdminPanelView(BaseView):
         return embed
 
     @discord.ui.button(
-        label="📊 Server Stats", style=discord.ButtonStyle.blurple, row=0
+        label="📊 Server Stats",
+        style=discord.ButtonStyle.blurple,
+        row=0,
     )
     async def stats_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         guild = interaction.guild
         embed = discord.Embed(
-            title=f"📊 Server Stats — {guild.name}", color=SUCCESS_COLOR
+            title=f"📊 Server Stats — {guild.name}",
+            color=SUCCESS_COLOR,
         )
         embed.add_field(name="Total Members", value=str(guild.member_count))
         embed.add_field(
@@ -274,7 +279,7 @@ class _AdminPanelView(BaseView):
             color=INFO_COLOR,
         )
         embed.set_footer(
-            text="✅ Loaded  ❌ Unloaded  🟢 OK  🔴 Syntax Error  •  ↩ Overview to return"
+            text="✅ Loaded  ❌ Unloaded  🟢 OK  🔴 Syntax Error  •  ↩ Overview to return",
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -306,13 +311,17 @@ class _AdminPanelView(BaseView):
 
     @discord.ui.button(label="📝 Log Level", style=discord.ButtonStyle.grey, row=0)
     async def loglevel_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         await interaction.response.send_modal(_LogLevelModal(self))
 
     @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=1)
     async def overview_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 

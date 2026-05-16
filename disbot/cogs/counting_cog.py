@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands
+
 from utils import db
 from views.base import BaseView
 
@@ -160,7 +161,7 @@ class CountingCog(commands.Cog):
                 "eighteenth",
                 "nineteenth",
                 "twentieth",
-            ]
+            ],
         )
 
         self.phrase_number_mapping = {
@@ -296,10 +297,7 @@ class CountingCog(commands.Cog):
             "Admin",
             "Moderator",
         ]  # Adjust these role names as per your server
-        for role in ctx.author.roles:
-            if role.name in staff_roles:
-                return True
-        return False
+        return any(role.name in staff_roles for role in ctx.author.roles)
 
     # Decorator to check if the user is staff or owner
     def staff_or_owner():  # type: ignore[misc]
@@ -327,8 +325,7 @@ class CountingCog(commands.Cog):
     @commands.command(name="start_match", aliases=["sm"])
     @staff_or_owner()
     async def start_match(self, ctx, mode: str, *args):
-        """
-        Starts a new counting match with the specified mode.
+        """Starts a new counting match with the specified mode.
         Available modes: normal, reverse, skip, random, multiples, prime, fibonacci, squares, cubes, factorials, custom
         For 'multiples' mode, specify the multiple (e.g., 3 for multiples of 3).
         For 'custom' mode, provide a sequence of numbers separated by commas.
@@ -364,7 +361,8 @@ class CountingCog(commands.Cog):
         if mode == "multiples":
             if not args:
                 await ctx.send(
-                    "Please specify a multiple for 'multiples' mode.", delete_after=10
+                    "Please specify a multiple for 'multiples' mode.",
+                    delete_after=10,
                 )
                 return
             try:
@@ -401,29 +399,32 @@ class CountingCog(commands.Cog):
             existing_channel = discord.utils.get(guild.text_channels, name=channel_name)
             if existing_channel:
                 await ctx.send(
-                    f"A channel named '{channel_name}' already exists.", delete_after=10
+                    f"A channel named '{channel_name}' already exists.",
+                    delete_after=10,
                 )
                 return
 
             try:
                 channel = await guild.create_text_channel(channel_name)
                 self.logger.info(
-                    f"Created channel '{channel_name}' in guild '{guild.name}'."
+                    f"Created channel '{channel_name}' in guild '{guild.name}'.",
                 )
             except discord.Forbidden:
                 self.logger.error(
-                    f"Missing permissions to create channel in guild '{guild.name}'."
+                    f"Missing permissions to create channel in guild '{guild.name}'.",
                 )
                 await ctx.send(
-                    "I don't have permission to create channels.", delete_after=10
+                    "I don't have permission to create channels.",
+                    delete_after=10,
                 )
                 return
             except Exception as e:
                 self.logger.error(
-                    f"Error creating channel '{channel_name}' in guild '{guild.name}': {e}"
+                    f"Error creating channel '{channel_name}' in guild '{guild.name}': {e}",
                 )
                 await ctx.send(
-                    "An error occurred while creating the channel.", delete_after=10
+                    "An error occurred while creating the channel.",
+                    delete_after=10,
                 )
                 return
 
@@ -493,9 +494,7 @@ class CountingCog(commands.Cog):
     @commands.command(name="end_match", aliases=["em"])
     @staff_or_owner()
     async def end_match(self, ctx, channel: discord.TextChannel):
-        """
-        Ends the counting match in the specified channel and deletes the channel.
-        """
+        """Ends the counting match in the specified channel and deletes the channel."""
         guild_id = str(ctx.guild.id)
         channel_id = str(channel.id)
 
@@ -512,22 +511,24 @@ class CountingCog(commands.Cog):
             try:
                 await channel.delete()
                 self.logger.info(
-                    f"Deleted channel '{channel.name}' in guild '{ctx.guild.name}'."
+                    f"Deleted channel '{channel.name}' in guild '{ctx.guild.name}'.",
                 )
             except discord.Forbidden:
                 self.logger.error(
-                    f"Missing permissions to delete channel '{channel.name}' in guild '{ctx.guild.name}'."
+                    f"Missing permissions to delete channel '{channel.name}' in guild '{ctx.guild.name}'.",
                 )
                 await ctx.send(
-                    "I don't have permission to delete that channel.", delete_after=10
+                    "I don't have permission to delete that channel.",
+                    delete_after=10,
                 )
                 return
             except Exception as e:
                 self.logger.error(
-                    f"Error deleting channel '{channel.name}' in guild '{ctx.guild.name}': {e}"
+                    f"Error deleting channel '{channel.name}' in guild '{ctx.guild.name}': {e}",
                 )
                 await ctx.send(
-                    "An error occurred while deleting the channel.", delete_after=10
+                    "An error occurred while deleting the channel.",
+                    delete_after=10,
                 )
                 return
 
@@ -536,15 +537,14 @@ class CountingCog(commands.Cog):
             asyncio.create_task(self._save_guild(guild_id))
 
         await ctx.send(
-            f"Ended and deleted the counting match in {channel.name}.", delete_after=10
+            f"Ended and deleted the counting match in {channel.name}.",
+            delete_after=10,
         )
 
     @commands.command(name="reset_count", aliases=["rc"])
     @staff_or_owner()
     async def reset_count(self, ctx, channel: discord.TextChannel = None):
-        """
-        Resets the count to the starting value in the specified channel or current channel if none specified.
-        """
+        """Resets the count to the starting value in the specified channel or current channel if none specified."""
         if not channel:
             channel = ctx.channel
 
@@ -556,7 +556,8 @@ class CountingCog(commands.Cog):
                 guild_id
             ].get("channels", {}):
                 await ctx.send(
-                    "Counting game is not set up for this channel.", delete_after=10
+                    "Counting game is not set up for this channel.",
+                    delete_after=10,
                 )
                 return
 
@@ -590,15 +591,14 @@ class CountingCog(commands.Cog):
             asyncio.create_task(self._save_guild(guild_id))
 
         await ctx.send(
-            f"The count has been reset in {channel.mention}.", delete_after=10
+            f"The count has been reset in {channel.mention}.",
+            delete_after=10,
         )
 
     @commands.command(name="toggle_turns", aliases=["tt"])
     @staff_or_owner()
     async def toggle_turns(self, ctx, channel: discord.TextChannel = None):
-        """
-        Toggles the 'taking turns' mode on or off in the specified channel or current channel.
-        """
+        """Toggles the 'taking turns' mode on or off in the specified channel or current channel."""
         if not channel:
             channel = ctx.channel
 
@@ -610,7 +610,8 @@ class CountingCog(commands.Cog):
                 guild_id
             ].get("channels", {}):
                 await ctx.send(
-                    "Counting game is not set up for this channel.", delete_after=10
+                    "Counting game is not set up for this channel.",
+                    delete_after=10,
                 )
                 return
 
@@ -626,9 +627,7 @@ class CountingCog(commands.Cog):
 
     @commands.command(name="count_info", aliases=["ci"])
     async def count_info(self, ctx, channel: discord.TextChannel = None):
-        """
-        Displays the current count and whether taking turns mode is enabled or disabled in the specified channel or current channel.
-        """
+        """Displays the current count and whether taking turns mode is enabled or disabled in the specified channel or current channel."""
         if not channel:
             channel = ctx.channel
 
@@ -640,7 +639,8 @@ class CountingCog(commands.Cog):
                 guild_id
             ].get("channels", {}):
                 await ctx.send(
-                    "Counting game is not set up for this channel.", delete_after=10
+                    "Counting game is not set up for this channel.",
+                    delete_after=10,
                 )
                 return
 
@@ -656,7 +656,9 @@ class CountingCog(commands.Cog):
         embed.add_field(name="Current Count", value=str(current_count), inline=False)
         embed.add_field(name="Taking Turns Mode", value=str(taking_turns), inline=False)
         embed.add_field(
-            name="Reset on Wrong Count", value=str(reset_on_wrong_count), inline=False
+            name="Reset on Wrong Count",
+            value=str(reset_on_wrong_count),
+            inline=False,
         )
         embed.add_field(name="Step", value=str(step), inline=False)
 
@@ -664,9 +666,7 @@ class CountingCog(commands.Cog):
 
     @commands.command(name="count_rules", aliases=["cr"])
     async def count_rules(self, ctx):
-        """
-        Displays the counting game rules.
-        """
+        """Displays the counting game rules."""
         embed = discord.Embed(title="Counting Game Rules", color=discord.Color.green())
         embed.add_field(
             name="1. Follow the Sequence",
@@ -698,10 +698,13 @@ class CountingCog(commands.Cog):
     @commands.command(name="set_skip_numbers", aliases=["ssn"])
     @staff_or_owner()
     async def set_skip_numbers(
-        self, ctx, channel: discord.TextChannel = None, *, numbers: str = ""
+        self,
+        ctx,
+        channel: discord.TextChannel = None,
+        *,
+        numbers: str = "",
     ):
-        """
-        Sets the skip numbers for the 'skip' mode in the specified or current channel.
+        """Sets the skip numbers for the 'skip' mode in the specified or current channel.
         Usage: !set_skip_numbers [channel] <numbers>
         Example: !set_skip_numbers #counting 5,10,15
         """
@@ -716,14 +719,16 @@ class CountingCog(commands.Cog):
                 guild_id
             ].get("channels", {}):
                 await ctx.send(
-                    "Counting game is not set up for this channel.", delete_after=10
+                    "Counting game is not set up for this channel.",
+                    delete_after=10,
                 )
                 return
 
             channel_data = self.count_data[guild_id]["channels"][channel_id]
             if channel_data.get("mode") != "skip":
                 await ctx.send(
-                    "Skip numbers can only be set for 'skip' mode.", delete_after=10
+                    "Skip numbers can only be set for 'skip' mode.",
+                    delete_after=10,
                 )
                 return
 
@@ -732,7 +737,8 @@ class CountingCog(commands.Cog):
                 channel_data["skip_numbers"] = skip_numbers
                 asyncio.create_task(self._save_guild(guild_id))
                 await ctx.send(
-                    f"Skip numbers updated to: {skip_numbers}", delete_after=10
+                    f"Skip numbers updated to: {skip_numbers}",
+                    delete_after=10,
                 )
             except ValueError:
                 await ctx.send(
@@ -743,10 +749,11 @@ class CountingCog(commands.Cog):
     @commands.command(name="toggle_reset_on_wrong_count", aliases=["trwc"])
     @staff_or_owner()
     async def toggle_reset_on_wrong_count(
-        self, ctx, channel: discord.TextChannel = None
+        self,
+        ctx,
+        channel: discord.TextChannel = None,
     ):
-        """
-        Toggles the 'reset on wrong count' feature on or off in the specified channel or current channel.
+        """Toggles the 'reset on wrong count' feature on or off in the specified channel or current channel.
         Usage: !toggle_reset_on_wrong_count [channel]
         """
         if not channel:
@@ -760,13 +767,15 @@ class CountingCog(commands.Cog):
                 guild_id
             ].get("channels", {}):
                 await ctx.send(
-                    "Counting game is not set up for this channel.", delete_after=10
+                    "Counting game is not set up for this channel.",
+                    delete_after=10,
                 )
                 return
 
             channel_data = self.count_data[guild_id]["channels"][channel_id]
             channel_data["reset_on_wrong_count"] = not channel_data.get(
-                "reset_on_wrong_count", False
+                "reset_on_wrong_count",
+                False,
             )
             asyncio.create_task(self._save_guild(guild_id))
 
@@ -806,12 +815,7 @@ class CountingCog(commands.Cog):
             taking_turns = channel_data.get("taking_turns", False)
             current_count = channel_data.get("current_count", 0)
             last_user = channel_data.get("last_user", None)
-            step = channel_data.get("step", 1)
-            skip_numbers = channel_data.get("skip_numbers", [])
-            random_range = channel_data.get("random_range", [1, 3])
             multiple = channel_data.get("multiple", None)
-            sequence_index = channel_data.get("sequence_index", 0)
-            custom_sequence = channel_data.get("custom_sequence", [])
             reset_on_wrong_count = channel_data.get("reset_on_wrong_count", False)
 
             # Parse the message to extract the count
@@ -830,7 +834,9 @@ class CountingCog(commands.Cog):
                 return
 
             expected_count = self.calculate_expected_count(
-                channel_data, current_count, mode
+                channel_data,
+                current_count,
+                mode,
             )
 
             # Validate the parsed count against expected count
@@ -861,7 +867,7 @@ class CountingCog(commands.Cog):
                     channel_data["last_user"] = None
                     channel_data["leaderboard"] = {}
                     channel_data["last_count_time"] = datetime.now(
-                        tz=timezone.utc
+                        tz=timezone.utc,
                     ).timestamp()
                     asyncio.create_task(self._save_guild(guild_id))
 
@@ -920,7 +926,7 @@ class CountingCog(commands.Cog):
             if mode == "random":
                 rand_range = channel_data.get("random_range", [1, 3])
                 channel_data["next_expected"] = parsed_count + random.randint(
-                    *rand_range
+                    *rand_range,
                 )
             # Update sequence index for custom sequences
             if mode in ["fibonacci", "squares", "cubes", "factorials", "custom"]:
@@ -942,8 +948,7 @@ class CountingCog(commands.Cog):
     # --------------------------------------------
 
     def parse_message(self, content: str) -> int:
-        """
-        Parses the message content to extract the numerical count.
+        """Parses the message content to extract the numerical count.
         Returns the integer count if valid, else None.
         """
         content = content.strip().lower()
@@ -1015,7 +1020,10 @@ class CountingCog(commands.Cog):
             else:
                 # Try fuzzy matching for misspellings
                 close_matches = difflib.get_close_matches(
-                    lower_token, self.number_words_set, n=1, cutoff=0.8
+                    lower_token,
+                    self.number_words_set,
+                    n=1,
+                    cutoff=0.8,
                 )
                 if close_matches:
                     number_word_tokens.append(close_matches[0])
@@ -1048,8 +1056,7 @@ class CountingCog(commands.Cog):
         result = self.eval_expr(expr)
         if result is not None:
             return int(result)
-        else:
-            return None
+        return None
 
     def parse_number_word(self, text: str) -> int:
         """Parses a number word or ordinal into an integer."""
@@ -1059,9 +1066,7 @@ class CountingCog(commands.Cog):
         return _word_to_num(lower)
 
     def split_concatenated_numbers(self, text: str) -> str:
-        """
-        Splits concatenated number words in the text by inserting spaces between them.
-        """
+        """Splits concatenated number words in the text by inserting spaces between them."""
         number_words = self.number_words_set
 
         # Lowercase the text for consistent matching
@@ -1089,9 +1094,7 @@ class CountingCog(commands.Cog):
         return result
 
     def roman_to_int(self, s: str) -> int:
-        """
-        Converts a Roman numeral to an integer.
-        """
+        """Converts a Roman numeral to an integer."""
         roman_map = self.roman_numeral_mapping
         i = 0
         num = 0
@@ -1107,8 +1110,7 @@ class CountingCog(commands.Cog):
         return num
 
     def eval_expr(self, expr):
-        """
-        Safely evaluate an arithmetic expression and return the result.
+        """Safely evaluate an arithmetic expression and return the result.
         Supports basic arithmetic operations.
         """
         try:
@@ -1126,18 +1128,14 @@ class CountingCog(commands.Cog):
                 right_val = self.safe_eval(right_expr)
                 if left_val == right_val:
                     return right_val  # Return the numeric result
-                else:
-                    return None  # Invalid equation
-            else:
-                return self.safe_eval(expr)
+                return None  # Invalid equation
+            return self.safe_eval(expr)
         except Exception as e:
             self.logger.error(f"Error evaluating expression '{expr}': {e}")
             return None
 
     def safe_eval(self, expr):
-        """
-        Safely evaluate an arithmetic expression without '=' and return the result.
-        """
+        """Safely evaluate an arithmetic expression without '=' and return the result."""
         try:
             node = ast.parse(expr, mode="eval").body
             return self.eval_(node)
@@ -1148,30 +1146,30 @@ class CountingCog(commands.Cog):
     def eval_(self, node):
         if isinstance(node, ast.Constant):  # For Python 3.8 and above
             return node.value
-        elif isinstance(node, ast.Num):  # For Python versions before 3.8
+        if isinstance(node, ast.Num):  # For Python versions before 3.8
             return node.n
-        elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
+        if isinstance(node, ast.BinOp):  # <left> <operator> <right>
             left = self.eval_(node.left)
             right = self.eval_(node.right)
             operator = self.operators.get(type(node.op))
             if operator is None:
                 raise TypeError(f"Unsupported operator: {node.op}")
             return operator(left, right)
-        elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
+        if isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
             operand = self.eval_(node.operand)
             operator = self.operators.get(type(node.op))
             if operator is None:
                 raise TypeError(f"Unsupported operator: {node.op}")
             return operator(operand)
-        else:
-            raise TypeError(f"Unsupported expression: {node}")
+        raise TypeError(f"Unsupported expression: {node}")
 
     def calculate_expected_count(
-        self, channel_data: dict, current_count: int, mode: str
+        self,
+        channel_data: dict,
+        current_count: int,
+        mode: str,
     ) -> int:
-        """
-        Calculates the expected next count based on the current count and mode.
-        """
+        """Calculates the expected next count based on the current count and mode."""
         if mode == "reverse":
             expected = current_count - channel_data.get("step", 1)
         elif mode == "skip":
@@ -1198,10 +1196,7 @@ class CountingCog(commands.Cog):
         elif mode == "custom":
             sequence = channel_data.get("custom_sequence", [])
             index = channel_data.get("sequence_index", 0)
-            if index < len(sequence):
-                expected = sequence[index]
-            else:
-                expected = None  # End of custom sequence
+            expected = sequence[index] if index < len(sequence) else None
         else:  # normal, multiples, prime
             expected = current_count + channel_data.get("step", 1)
         return expected
@@ -1214,10 +1209,7 @@ class CountingCog(commands.Cog):
             return True
         if number % 2 == 0:
             return False
-        for i in range(3, int(number**0.5) + 1, 2):
-            if number % i == 0:
-                return False
-        return True
+        return all(number % i != 0 for i in range(3, int(number**0.5) + 1, 2))
 
     # --------------------------------------------
     # Cog Unload
@@ -1231,7 +1223,7 @@ class CountingCog(commands.Cog):
 class _CountingHubView(BaseView):
     """Admin hub for managing the counting game in the current channel."""
 
-    def __init__(self, ctx: commands.Context, cog: "CountingCog"):
+    def __init__(self, ctx: commands.Context, cog: CountingCog):
         super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
         self.cog = cog
@@ -1253,15 +1245,19 @@ class _CountingHubView(BaseView):
             embed.add_field(name="Mode", value=mode, inline=True)
             embed.add_field(name="Current Count", value=str(current), inline=True)
             embed.add_field(
-                name="Taking Turns", value="✅" if turns else "❌", inline=True
+                name="Taking Turns",
+                value="✅" if turns else "❌",
+                inline=True,
             )
             embed.add_field(
-                name="Reset on Wrong", value="✅" if reset_wrong else "❌", inline=True
+                name="Reset on Wrong",
+                value="✅" if reset_wrong else "❌",
+                inline=True,
             )
         else:
             gid = str(self.ctx.guild.id)
             active_ids = list(
-                self.cog.count_data.get(gid, {}).get("channels", {}).keys()
+                self.cog.count_data.get(gid, {}).get("channels", {}).keys(),
             )
             active_mentions = []
             for cid in active_ids:
@@ -1282,10 +1278,14 @@ class _CountingHubView(BaseView):
         return embed
 
     @discord.ui.button(
-        label="🔄 Toggle Turns", style=discord.ButtonStyle.blurple, row=0
+        label="🔄 Toggle Turns",
+        style=discord.ButtonStyle.blurple,
+        row=0,
     )
     async def btn_toggle_turns(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         gid = str(self.ctx.guild.id)
         cid = str(self.ctx.channel.id)
@@ -1293,20 +1293,26 @@ class _CountingHubView(BaseView):
             ch_data = self.cog.count_data.get(gid, {}).get("channels", {}).get(cid)
             if not ch_data:
                 await interaction.response.send_message(
-                    "This channel is not an active counting channel.", ephemeral=True
+                    "This channel is not an active counting channel.",
+                    ephemeral=True,
                 )
                 return
             ch_data["taking_turns"] = not ch_data.get("taking_turns", False)
             asyncio.create_task(self.cog._save_guild(gid))
         await interaction.response.edit_message(
-            embed=await self.build_embed(), view=self
+            embed=await self.build_embed(),
+            view=self,
         )
 
     @discord.ui.button(
-        label="♻️ Toggle Reset", style=discord.ButtonStyle.blurple, row=0
+        label="♻️ Toggle Reset",
+        style=discord.ButtonStyle.blurple,
+        row=0,
     )
     async def btn_toggle_reset(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         gid = str(self.ctx.guild.id)
         cid = str(self.ctx.channel.id)
@@ -1314,20 +1320,25 @@ class _CountingHubView(BaseView):
             ch_data = self.cog.count_data.get(gid, {}).get("channels", {}).get(cid)
             if not ch_data:
                 await interaction.response.send_message(
-                    "This channel is not an active counting channel.", ephemeral=True
+                    "This channel is not an active counting channel.",
+                    ephemeral=True,
                 )
                 return
             ch_data["reset_on_wrong_count"] = not ch_data.get(
-                "reset_on_wrong_count", False
+                "reset_on_wrong_count",
+                False,
             )
             asyncio.create_task(self.cog._save_guild(gid))
         await interaction.response.edit_message(
-            embed=await self.build_embed(), view=self
+            embed=await self.build_embed(),
+            view=self,
         )
 
     @discord.ui.button(label="🔁 Reset Count", style=discord.ButtonStyle.danger, row=0)
     async def btn_reset_count(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         gid = str(self.ctx.guild.id)
         cid = str(self.ctx.channel.id)
@@ -1335,7 +1346,8 @@ class _CountingHubView(BaseView):
             ch_data = self.cog.count_data.get(gid, {}).get("channels", {}).get(cid)
             if not ch_data:
                 await interaction.response.send_message(
-                    "This channel is not an active counting channel.", ephemeral=True
+                    "This channel is not an active counting channel.",
+                    ephemeral=True,
                 )
                 return
             mode = ch_data.get("mode", "normal")
@@ -1350,13 +1362,15 @@ class _CountingHubView(BaseView):
                 ch_data["next_expected"] = start + random.randint(*rand_range)
             asyncio.create_task(self.cog._save_guild(gid))
         await interaction.response.edit_message(
-            embed=await self.build_embed(), view=self
+            embed=await self.build_embed(),
+            view=self,
         )
 
     @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.secondary, row=1)
     async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.edit_message(
-            embed=await self.build_embed(), view=self
+            embed=await self.build_embed(),
+            view=self,
         )
 
 

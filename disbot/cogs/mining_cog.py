@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import random
 
 import discord
+from discord.ext import commands
+
 from core.runtime import panel_manager
 from core.runtime.persistent_views import PersistentView, register
-from discord.ext import commands
 from utils import db
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
+
+logger = logging.getLogger("bot.cogs.mining")
 
 RECIPES_FILE = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -25,8 +29,7 @@ RECIPES_FILE = os.path.join(
 
 
 def load_recipes():
-    """
-    Loads build/crafting recipes from recipes.json.
+    """Loads build/crafting recipes from recipes.json.
     Falls back to a default dict if the file is missing/invalid.
     Ensures all keys are lowercase for consistency and skips invalid entries.
     """
@@ -42,7 +45,7 @@ def load_recipes():
         return default_recipes
 
     try:
-        with open(RECIPES_FILE, "r", encoding="utf-8") as f:
+        with open(RECIPES_FILE, encoding="utf-8") as f:
             data = json.load(f)
             if not isinstance(data, dict):
                 return default_recipes
@@ -78,8 +81,7 @@ class MiningCog(commands.Cog):
     # ====== INTERNAL HELPER METHOD ======
     #
     async def update_inventory(self, user_id, item, amount=1):
-        """
-        Updates a user's inventory by 'amount' of 'item'.
+        """Updates a user's inventory by 'amount' of 'item'.
         Delegates to the DB helper which clamps to 0 automatically.
         """
         await db.update_mining_item(str(user_id), item, amount)
@@ -109,19 +111,25 @@ class MiningCog(commands.Cog):
 
         @discord.ui.button(label="Mine Left", style=discord.ButtonStyle.primary)
         async def mine_left(
-            self, interaction: discord.Interaction, button: discord.ui.Button
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button,
         ):
             await self.handle_mine(interaction, "left")
 
         @discord.ui.button(label="Mine Right", style=discord.ButtonStyle.primary)
         async def mine_right(
-            self, interaction: discord.Interaction, button: discord.ui.Button
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button,
         ):
             await self.handle_mine(interaction, "right")
 
         @discord.ui.button(label="Mine Down", style=discord.ButtonStyle.primary)
         async def mine_down(
-            self, interaction: discord.Interaction, button: discord.ui.Button
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button,
         ):
             await self.handle_mine(interaction, "down")
 
@@ -174,7 +182,7 @@ class MiningCog(commands.Cog):
         wood_amount = random.randint(1, 3) * multiplier
         await self.update_inventory(ctx.author.id, "wood", wood_amount)
         await ctx.send(
-            f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!"
+            f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!",
         )
 
     @commands.command(name="mineinv", aliases=["mineinventory"], hidden=True)
@@ -195,7 +203,8 @@ class MiningCog(commands.Cog):
         unique_items = len(inventory)
 
         embed = discord.Embed(
-            title=f"{ctx.author.name}'s Mining Stats", color=MINING_COLOR
+            title=f"{ctx.author.name}'s Mining Stats",
+            color=MINING_COLOR,
         )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
@@ -207,8 +216,7 @@ class MiningCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def build(self, ctx, *, structure: str = None):
-        """
-        Build a structure based on recipes.
+        """Build a structure based on recipes.
         If no structure is specified, calls !buildlist to show all.
         """
         try:
@@ -223,14 +231,14 @@ class MiningCog(commands.Cog):
 
             if not required_items:
                 return await ctx.send(
-                    "Unknown structure. Use `!buildlist` to see all available structures."
+                    "Unknown structure. Use `!buildlist` to see all available structures.",
                 )
 
             # Check resources
             for item, amount_needed in required_items.items():
                 if inventory.get(item, 0) < amount_needed:
                     return await ctx.send(
-                        f"You don't have enough **{item}** to build **{structure}**."
+                        f"You don't have enough **{item}** to build **{structure}**.",
                     )
 
             # Subtract cost and give the user the new buildable item
@@ -239,10 +247,10 @@ class MiningCog(commands.Cog):
             await self.update_inventory(ctx.author.id, structure_lower, 1)
 
             await ctx.send(
-                f"{ctx.author.mention} successfully built a **{structure}**!"
+                f"{ctx.author.mention} successfully built a **{structure}**!",
             )
-        except Exception as e:
-            print(f"[ERROR in build command]: {e}")
+        except Exception:
+            logger.exception("build command failed")
             await ctx.send("An unexpected error occurred while trying to build.")
 
     @commands.command(hidden=True)
@@ -257,7 +265,7 @@ class MiningCog(commands.Cog):
                 if not isinstance(requirements, dict):
                     continue
                 req_str = ", ".join(
-                    [f"{mat}: {amt}" for mat, amt in requirements.items()]
+                    [f"{mat}: {amt}" for mat, amt in requirements.items()],
                 )
                 recipe_lines.append(f"**{structure_name.title()}**: Requires {req_str}")
 
@@ -267,17 +275,15 @@ class MiningCog(commands.Cog):
                 color=SUCCESS_COLOR,
             )
             await ctx.send(embed=embed)
-        except Exception as e:
-            print(f"[ERROR in buildlist command]: {e}")
+        except Exception:
+            logger.exception("buildlist command failed")
             await ctx.send(
-                "An unexpected error occurred while listing buildable structures."
+                "An unexpected error occurred while listing buildable structures.",
             )
 
     @commands.command(hidden=True)
     async def buildable(self, ctx):
-        """
-        Lists only what the user can currently build based on their inventory.
-        """
+        """Lists only what the user can currently build based on their inventory."""
         user_id = str(ctx.author.id)
         inventory = await db.get_mining_inventory(user_id)
 
@@ -288,7 +294,7 @@ class MiningCog(commands.Cog):
 
         if not can_build:
             return await ctx.send(
-                "You currently don't have enough resources to build anything."
+                "You currently don't have enough resources to build anything.",
             )
 
         embed = discord.Embed(
@@ -481,7 +487,9 @@ class MiningHubView(PersistentView):
         row=1,
     )
     async def inventory_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id)
@@ -536,7 +544,9 @@ class MiningHubView(PersistentView):
         row=2,
     )
     async def overview_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
@@ -553,7 +563,7 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
         max_length=100,
     )
 
-    def __init__(self, cog: "MiningCog"):
+    def __init__(self, cog: MiningCog):
         super().__init__()
         self.cog = cog
 

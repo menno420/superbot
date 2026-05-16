@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands
-from utils.ui_constants import ECONOMY_COLOR, ROLE_COLOR, WARNING_COLOR
+
+from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.roles._helpers import _ensure_defaults
 
@@ -33,11 +34,14 @@ class RoleHubView(BaseView):
 
     @discord.ui.button(label="📝 Create", style=discord.ButtonStyle.green, row=0)
     async def create_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Manage Roles** permission.", ephemeral=True
+                "❌ You need **Manage Roles** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.creation_panel import RoleCreateModal
@@ -46,11 +50,14 @@ class RoleHubView(BaseView):
 
     @discord.ui.button(label="🗂️ Manage", style=discord.ButtonStyle.blurple, row=0)
     async def manage_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.manage_roles:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Manage Roles** permission.", ephemeral=True
+                "❌ You need **Manage Roles** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.management_panel import ManagementPanel
@@ -58,16 +65,20 @@ class RoleHubView(BaseView):
         panel = ManagementPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     @discord.ui.button(label="⏱️ Time Roles", style=discord.ButtonStyle.blurple, row=0)
     async def time_roles_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
+                "❌ You need **Administrator** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.time_roles_panel import TimeRolesPanel
@@ -76,18 +87,22 @@ class RoleHubView(BaseView):
         panel = TimeRolesPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     # ---- Row 1: XP Roles · Reaction Roles · Diagnostics
 
     @discord.ui.button(label="⚡ XP Roles", style=discord.ButtonStyle.blurple, row=1)
     async def xp_roles_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
+                "❌ You need **Administrator** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.xp_roles_panel import XpRolesPanel
@@ -95,30 +110,39 @@ class RoleHubView(BaseView):
         panel = XpRolesPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     @discord.ui.button(
-        label="💬 Reaction Roles", style=discord.ButtonStyle.blurple, row=1
+        label="💬 Reaction Roles",
+        style=discord.ButtonStyle.blurple,
+        row=1,
     )
     async def reaction_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         from views.roles.reaction_panel import ReactionRolesPanel
 
         panel = ReactionRolesPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )
 
     @discord.ui.button(label="🔧 Diagnostics", style=discord.ButtonStyle.grey, row=1)
     async def diagnostics_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ) -> None:
         if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
             await interaction.response.send_message(
-                "❌ You need **Administrator** permission.", ephemeral=True
+                "❌ You need **Administrator** permission.",
+                ephemeral=True,
             )
             return
         from views.roles.diagnostics_panel import DiagnosticsPanel
@@ -126,5 +150,6 @@ class RoleHubView(BaseView):
         panel = DiagnosticsPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(
-            embed=await panel.build_embed(), view=panel
+            embed=await panel.build_embed(),
+            view=panel,
         )

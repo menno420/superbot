@@ -6,6 +6,7 @@ import random
 
 import discord
 from discord.ext import commands
+
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -37,7 +38,8 @@ async def _on_view_error(
     if not interaction.response.is_done():
         try:
             await interaction.response.send_message(
-                "An error occurred. Please try again.", ephemeral=True
+                "An error occurred. Please try again.",
+                ephemeral=True,
             )
         except Exception:
             pass
@@ -94,7 +96,11 @@ def _is_blackjack(hand: list[str]) -> bool:
 
 class _Game:
     def __init__(
-        self, user_id: int, guild_id: int, bet: int, tournament_chips: int | None = None
+        self,
+        user_id: int,
+        guild_id: int,
+        bet: int,
+        tournament_chips: int | None = None,
     ):
         self.user_id = user_id
         self.guild_id = guild_id
@@ -170,7 +176,9 @@ _tournaments: dict[int, _BjTournament] = {}  # guild_id → tournament
 
 
 def _game_embed(
-    game: _Game, reveal: bool = False, title: str = "🃏 Blackjack"
+    game: _Game,
+    reveal: bool = False,
+    title: str = "🃏 Blackjack",
 ) -> discord.Embed:
     pv = _hand_value(game.player)
     if reveal:
@@ -188,7 +196,9 @@ def _game_embed(
     embed = discord.Embed(title=title, color=SUCCESS_COLOR)
     embed.add_field(name=d_lbl, value=d_str, inline=False)
     embed.add_field(
-        name=f"Your hand ({pv})", value=_hand_str(game.player), inline=False
+        name=f"Your hand ({pv})",
+        value=_hand_str(game.player),
+        inline=False,
     )
     embed.add_field(name="Bet", value=bet_str, inline=True)
     return embed
@@ -225,7 +235,9 @@ class BlackjackView(discord.ui.View):
 
         if self.game.tournament_chips is None:
             new_bal = await db.add_coins(
-                self.game.user_id, self.game.guild_id, coin_delta
+                self.game.user_id,
+                self.game.guild_id,
+                coin_delta,
             )
             delta_str = f"+{coin_delta}" if coin_delta >= 0 else str(coin_delta)
             embed.add_field(
@@ -245,7 +257,8 @@ class BlackjackView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.game.user_id:
             await interaction.response.send_message(
-                "This isn't your hand.", ephemeral=True
+                "This isn't your hand.",
+                ephemeral=True,
             )
             return False
         return True
@@ -291,7 +304,9 @@ class BlackjackView(discord.ui.View):
         await self._resolve(interaction)
 
     @discord.ui.button(
-        label="Double Down", style=discord.ButtonStyle.blurple, emoji="✌️"
+        label="Double Down",
+        style=discord.ButtonStyle.blurple,
+        emoji="✌️",
     )
     async def double_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         bal = await db.get_coins(self.game.user_id, self.game.guild_id)
@@ -365,7 +380,8 @@ class _ChallengeView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.opponent.id:
             await interaction.response.send_message(
-                "This challenge isn't for you.", ephemeral=True
+                "This challenge isn't for you.",
+                ephemeral=True,
             )
             return False
         return True
@@ -375,11 +391,16 @@ class _ChallengeView(discord.ui.View):
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(
-            content="✅ Challenge accepted — dealing hands…", view=self
+            content="✅ Challenge accepted — dealing hands…",
+            view=self,
         )
         self.stop()
         await _start_pvp(
-            interaction, self.challenger, self.opponent, self.guild_id, self.bet
+            interaction,
+            self.challenger,
+            self.opponent,
+            self.guild_id,
+            self.bet,
         )
 
     @discord.ui.button(label="Decline", style=discord.ButtonStyle.red, emoji="❌")
@@ -431,11 +452,15 @@ async def _start_pvp(
 
         if _is_blackjack(game.player):
             embed = _game_embed(
-                game, reveal=True, title=f"🃏 {player.display_name}'s hand"
+                game,
+                reveal=True,
+                title=f"🃏 {player.display_name}'s hand",
             )
             embed.color = ECONOMY_COLOR
             embed.add_field(
-                name="Blackjack!", value="Waiting for opponent…", inline=False
+                name="Blackjack!",
+                value="Waiting for opponent…",
+                inline=False,
             )
             msg = await channel.send(content=player.mention, embed=embed)  # type: ignore[union-attr]
             state.messages[uid] = msg
@@ -444,7 +469,10 @@ async def _start_pvp(
         else:
 
             async def _pvp_finish(
-                g: _Game, hand_val: int, _player=player, _state=state
+                g: _Game,
+                hand_val: int,
+                _player=player,
+                _state=state,
             ):
                 _state.results[g.user_id] = hand_val
                 if len(_state.results) == 2:
@@ -505,10 +533,14 @@ async def _resolve_pvp(state: _PvPState, channel: discord.TextChannel):
         color=ECONOMY_COLOR if winner_id else GAME_COLOR,
     )
     embed.add_field(
-        name=f"<@{state.p1}>", value=f"**{v1 if v1 >= 0 else 'Bust'}**", inline=True
+        name=f"<@{state.p1}>",
+        value=f"**{v1 if v1 >= 0 else 'Bust'}**",
+        inline=True,
     )
     embed.add_field(
-        name=f"<@{state.p2}>", value=f"**{v2 if v2 >= 0 else 'Bust'}**", inline=True
+        name=f"<@{state.p2}>",
+        value=f"**{v2 if v2 >= 0 else 'Bust'}**",
+        inline=True,
     )
     await channel.send(embed=embed)
 
@@ -524,7 +556,9 @@ class _TournRegistrationView(discord.ui.View):
         self.tourn = tournament
 
     @discord.ui.button(
-        label="Join Tournament", style=discord.ButtonStyle.green, emoji="🃏"
+        label="Join Tournament",
+        style=discord.ButtonStyle.green,
+        emoji="🃏",
     )
     async def join_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         ok, msg = await self.tourn.try_join(interaction.user.id)
@@ -627,7 +661,7 @@ class _TournBlackjackView(discord.ui.View):
             self.ps.done = True
             self.tourn.results[self.ps.user_id] = self.ps.chips
             await self.channel.send(
-                f"✅ You finished the tournament with **{self.ps.chips}** chips!"
+                f"✅ You finished the tournament with **{self.ps.chips}** chips!",
             )
             await _check_tourn_done(self.tourn, self.bot)
         else:
@@ -669,7 +703,10 @@ class _TournBlackjackView(discord.ui.View):
         self.game.hit()
         if _hand_value(self.game.player) > 21:
             await self._finish_round(
-                interaction, "💥 Bust!", ERROR_COLOR, -TOURN_BET_PER_ROUND
+                interaction,
+                "💥 Bust!",
+                ERROR_COLOR,
+                -TOURN_BET_PER_ROUND,
             )
             return
         await interaction.response.edit_message(embed=_game_embed(self.game), view=self)
@@ -686,11 +723,17 @@ class _TournBlackjackView(discord.ui.View):
 
         if _is_blackjack(self.game.player):
             await self._finish_round(
-                interaction, "🎉 Blackjack!", ECONOMY_COLOR, int(bet * 1.5)
+                interaction,
+                "🎉 Blackjack!",
+                ECONOMY_COLOR,
+                int(bet * 1.5),
             )
         elif dv > 21:
             await self._finish_round(
-                interaction, "🎉 Dealer busts!", SUCCESS_COLOR, bet
+                interaction,
+                "🎉 Dealer busts!",
+                SUCCESS_COLOR,
+                bet,
             )
         elif pv > dv:
             await self._finish_round(interaction, "🎉 You win!", SUCCESS_COLOR, bet)
@@ -712,7 +755,8 @@ async def _start_tourn_round(
     mention = member.mention if member else f"<@{ps.user_id}>"
 
     embed = _game_embed(
-        game, title=f"🃏 Round {tourn.rounds - ps.rounds_left + 1}/{tourn.rounds}"
+        game,
+        title=f"🃏 Round {tourn.rounds - ps.rounds_left + 1}/{tourn.rounds}",
     )
     view = _TournBlackjackView(game, ps, channel, tourn, bot)
     msg = await channel.send(content=mention, embed=embed, view=view)
@@ -798,7 +842,7 @@ class BlackjackCog(commands.Cog):
                     await ch.send(
                         "⚠️ The bot restarted and this tournament was interrupted. "
                         "This channel will be deleted in 5 minutes. "
-                        "Use `!bjtournament` to start a new one."
+                        "Use `!bjtournament` to start a new one.",
                     )
                 except Exception:
                     pass
@@ -827,7 +871,10 @@ class BlackjackCog(commands.Cog):
 
     @commands.command(name="blackjack", aliases=["bj"])
     async def blackjack(
-        self, ctx: commands.Context, target: discord.Member | None = None, bet: int = 0
+        self,
+        ctx: commands.Context,
+        target: discord.Member | None = None,
+        bet: int = 0,
     ):
         """Play blackjack.  !bj [bet]  or  !bj @player [bet]"""
         if bet < 0:
@@ -842,7 +889,8 @@ class BlackjackCog(commands.Cog):
             key = frozenset({ctx.author.id, target.id})
             if key in _pvp:
                 await ctx.send(
-                    "There's already a PvP game between these players.", delete_after=8
+                    "There's already a PvP game between these players.",
+                    delete_after=8,
                 )
                 return
             if bet > 0:
@@ -966,7 +1014,9 @@ class BlackjackCog(commands.Cog):
 
 
 async def _launch_tournament(
-    tourn: _BjTournament, guild: discord.Guild, bot: commands.Bot
+    tourn: _BjTournament,
+    guild: discord.Guild,
+    bot: commands.Bot,
 ):
     if tourn.started:
         return
@@ -987,7 +1037,7 @@ async def _launch_tournament(
     if not tourn.players:
         if announce:
             await announce.send(  # type: ignore[union-attr]
-                "❌ Tournament cancelled — no players could afford the entry fee."
+                "❌ Tournament cancelled — no players could afford the entry fee.",
             )
         _tournaments.pop(tourn.guild_id, None)
         await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
@@ -996,7 +1046,7 @@ async def _launch_tournament(
     if announce:
         await announce.send(  # type: ignore[union-attr]
             f"🃏 **Blackjack Tournament starting** with {len(tourn.players)} player(s)! "
-            "Check your private channel."
+            "Check your private channel.",
         )
 
     # Create private channels via shared utility
@@ -1017,7 +1067,7 @@ async def _launch_tournament(
             ps = _TournPlayerState(uid, tourn.guild_id, tourn.rounds)
             await ch.send(
                 f"Welcome, {member.mention}! You have **{tourn.rounds}** rounds "
-                f"and start with **{TOURN_START_CHIPS}** chips. Good luck! 🃏"
+                f"and start with **{TOURN_START_CHIPS}** chips. Good luck! 🃏",
             )
             await _start_tourn_round(ps, ch, tourn, bot)
         except discord.Forbidden:

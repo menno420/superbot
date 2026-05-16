@@ -1,23 +1,23 @@
 from __future__ import annotations
 
-import asyncio
 import datetime
 import logging
 import os
 import platform
-import re
 import shutil
 
 import discord
 import psutil
 from discord.ext import commands
+
 from utils import db
 from views.base import BaseView
 
 logger = logging.getLogger("bot")
 
 DATA_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "data",
 )
 JSON_DIR = os.path.join(DATA_DIR, "json")
 
@@ -26,7 +26,9 @@ class _PaginatorView(BaseView):
     """Simple prev/next paginator for multi-page embeds."""
 
     def __init__(
-        self, pages: list[discord.Embed], author: discord.Member | discord.User
+        self,
+        pages: list[discord.Embed],
+        author: discord.Member | discord.User,
     ):
         super().__init__(author, timeout=120)
         self.pages = pages
@@ -39,7 +41,9 @@ class _PaginatorView(BaseView):
 
     @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary)
     async def prev_btn(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
     ):
         self.index -= 1
         self._update_buttons()
@@ -47,7 +51,9 @@ class _PaginatorView(BaseView):
 
     @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary)
     async def next_btn(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
     ):
         self.index += 1
         self._update_buttons()
@@ -57,7 +63,7 @@ class _PaginatorView(BaseView):
 class _DiagnosticsHubView(BaseView):
     """Interactive hub for all diagnostic tools."""
 
-    def __init__(self, ctx: commands.Context, cog: "DiagnosticCog"):
+    def __init__(self, ctx: commands.Context, cog: DiagnosticCog):
         super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
         self.cog = cog
@@ -72,26 +78,40 @@ class _DiagnosticsHubView(BaseView):
             color=discord.Color.blue(),
         )
         embed.add_field(
-            name="🤖 Bot Status", value="Health & performance metrics", inline=True
+            name="🤖 Bot Status",
+            value="Health & performance metrics",
+            inline=True,
         )
         embed.add_field(name="📡 Latency", value="WebSocket ping", inline=True)
         embed.add_field(
-            name="💻 System Info", value="OS, disk & Python version", inline=True
+            name="💻 System Info",
+            value="OS, disk & Python version",
+            inline=True,
         )
         embed.add_field(
-            name="🗄️ Check Database", value="Verify all DB tables exist", inline=True
+            name="🗄️ Check Database",
+            value="Verify all DB tables exist",
+            inline=True,
         )
         embed.add_field(
-            name="📄 Validate JSON", value="Check data file integrity", inline=True
+            name="📄 Validate JSON",
+            value="Check data file integrity",
+            inline=True,
         )
         embed.add_field(
-            name="📋 Command List", value="Paginated command overview", inline=True
+            name="📋 Command List",
+            value="Paginated command overview",
+            inline=True,
         )
         embed.add_field(
-            name="🔍 Recent Errors", value="Last 10 error log entries", inline=True
+            name="🔍 Recent Errors",
+            value="Last 10 error log entries",
+            inline=True,
         )
         embed.add_field(
-            name="🔔 Test Notify", value="Fire a test webhook ping", inline=True
+            name="🔔 Test Notify",
+            value="Fire a test webhook ping",
+            inline=True,
         )
         embed.set_footer(text="Diagnostics Hub  •  Admin only")
         return embed
@@ -127,14 +147,18 @@ class _DiagnosticsHubView(BaseView):
         await self.ctx.invoke(self.cog.list_commands_detailed)
 
     @discord.ui.button(
-        label="🔍 Recent Errors", style=discord.ButtonStyle.danger, row=2
+        label="🔍 Recent Errors",
+        style=discord.ButtonStyle.danger,
+        row=2,
     )
     async def btn_errors(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.defer()
         await self.ctx.invoke(self.cog.recent_errors)
 
     @discord.ui.button(
-        label="🔔 Test Notify", style=discord.ButtonStyle.secondary, row=2
+        label="🔔 Test Notify",
+        style=discord.ButtonStyle.secondary,
+        row=2,
     )
     async def btn_notify(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.defer()
@@ -196,7 +220,7 @@ class DiagnosticCog(commands.Cog):
                     aliases = ", ".join(cmd.aliases) if cmd.aliases else "—"
                     lines.append(
                         f"**`!{cmd.name}`** — {(cmd.help or 'No description')[:80]}\n"
-                        f"  CD: {cd_text} | Aliases: {aliases}"
+                        f"  CD: {cd_text} | Aliases: {aliases}",
                     )
                 embed.add_field(
                     name=cog_name,
@@ -217,7 +241,8 @@ class DiagnosticCog(commands.Cog):
     async def find_command_cmd(self, ctx, keyword: str):
         """Search for commands by keyword in their name or description."""
         embed = discord.Embed(
-            title=f"Search Results for '{keyword}'", color=discord.Color.green()
+            title=f"Search Results for '{keyword}'",
+            color=discord.Color.green(),
         )
         found = False
         for cog_name, cog_obj in self.bot.cogs.items():
@@ -253,7 +278,8 @@ class DiagnosticCog(commands.Cog):
         import json
 
         embed = discord.Embed(
-            title="JSON Files Validation", color=discord.Color.orange()
+            title="JSON Files Validation",
+            color=discord.Color.orange(),
         )
         if not os.path.isdir(JSON_DIR):
             embed.description = f"JSON directory not found: `{JSON_DIR}`"
@@ -272,7 +298,9 @@ class DiagnosticCog(commands.Cog):
                     embed.add_field(name=filename, value="✅ Valid", inline=True)
                 else:
                     embed.add_field(
-                        name=filename, value="⚠️ Expected list or dict", inline=True
+                        name=filename,
+                        value="⚠️ Expected list or dict",
+                        inline=True,
                     )
                     any_issues = True
             except Exception as exc:
@@ -308,7 +336,8 @@ class DiagnosticCog(commands.Cog):
         }
         try:
             rows = await db.fetchall(
-                "SELECT tablename FROM pg_tables WHERE schemaname='public'", ()
+                "SELECT tablename FROM pg_tables WHERE schemaname='public'",
+                (),
             )
             existing = {r["tablename"] for r in rows}
         except Exception as exc:
@@ -319,7 +348,8 @@ class DiagnosticCog(commands.Cog):
         extra = existing - expected
 
         embed = discord.Embed(
-            title="Database Schema Check", color=discord.Color.purple()
+            title="Database Schema Check",
+            color=discord.Color.purple(),
         )
         embed.add_field(
             name="Missing Tables",
@@ -344,7 +374,9 @@ class DiagnosticCog(commands.Cog):
     async def diagnostic_bot_status(self, ctx):
         """Display bot health and performance metrics."""
         uptime_delta = datetime.datetime.now(tz=datetime.timezone.utc) - getattr(
-            self.bot, "uptime", datetime.datetime.now(tz=datetime.timezone.utc)
+            self.bot,
+            "uptime",
+            datetime.datetime.now(tz=datetime.timezone.utc),
         )
         uptime_str = str(uptime_delta).split(".")[0]
 
@@ -360,7 +392,9 @@ class DiagnosticCog(commands.Cog):
         )
         embed.add_field(name="Commands", value=str(len(self.bot.commands)), inline=True)
         embed.add_field(
-            name="Latency", value=f"{self.bot.latency*1000:.1f} ms", inline=True
+            name="Latency",
+            value=f"{self.bot.latency*1000:.1f} ms",
+            inline=True,
         )
         embed.add_field(name="CPU", value=f"{cpu_usage}%", inline=True)
         embed.add_field(name="RAM", value=f"{memory.percent}%", inline=True)
@@ -381,12 +415,14 @@ class DiagnosticCog(commands.Cog):
     async def system_info(self, ctx):
         """Display system-level stats."""
         total, used, free = shutil.disk_usage(
-            DATA_DIR if os.path.isdir(DATA_DIR) else "/"
+            DATA_DIR if os.path.isdir(DATA_DIR) else "/",
         )
         embed = discord.Embed(title="System Information", color=discord.Color.teal())
         embed.add_field(name="Python", value=platform.python_version(), inline=True)
         embed.add_field(
-            name="OS", value=f"{platform.system()} {platform.release()}", inline=True
+            name="OS",
+            value=f"{platform.system()} {platform.release()}",
+            inline=True,
         )
         embed.add_field(
             name="Disk",

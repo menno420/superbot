@@ -4,9 +4,10 @@ import asyncio
 import logging
 import re
 
-import config as _config
 import discord
 from discord.ext import commands
+
+import config as _config
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils import db
@@ -63,13 +64,15 @@ class Cleanup(commands.Cog):
 
         if self.command_pattern.match(message.content):
             command_name = _extract_command_name(
-                message.content.strip(), self.command_prefixes
+                message.content.strip(),
+                self.command_prefixes,
             )
             if message.guild and command_name:
                 # Route through governance_service for policy-driven decision
                 gctx = GovernanceContext.from_message(message)
                 policy = await governance_service.resolve_command_policy(
-                    gctx, command_name
+                    gctx,
+                    command_name,
                 )
                 if not policy.allowed:
                     try:
@@ -107,15 +110,15 @@ class Cleanup(commands.Cog):
                 try:
                     await message.delete()
                     warning_msg = await message.channel.send(
-                        f"A message from {message.author.mention} was deleted because it contained prohibited content."
+                        f"A message from {message.author.mention} was deleted because it contained prohibited content.",
                     )
                     self.logger.info(
-                        f"Deleted message from {message.author}: {message.content}"
+                        f"Deleted message from {message.author}: {message.content}",
                     )
                     await warning_msg.delete(delay=10)
                 except discord.DiscordException as e:
                     self.logger.error(
-                        f"Failed to delete message from {message.author}: {e}"
+                        f"Failed to delete message from {message.author}: {e}",
                     )
                 return True
 
@@ -137,14 +140,15 @@ class Cleanup(commands.Cog):
         """Cleans up messages containing prohibited content or disallowed commands from the channel history."""
         if limit <= 0:
             await ctx.send(
-                "Please provide a positive number of messages to scan.", delete_after=5
+                "Please provide a positive number of messages to scan.",
+                delete_after=5,
             )
             return
 
         confirmation_msg = await ctx.send(
             f"Are you sure you want to clean up the last {limit} messages"
             + (f" filtering by `{keyword}`" if keyword else "")
-            + "? React with ✅ to confirm or ❌ to cancel."
+            + "? React with ✅ to confirm or ❌ to cancel.",
         )
         await confirmation_msg.add_reaction("✅")
         await confirmation_msg.add_reaction("❌")
@@ -158,7 +162,9 @@ class Cleanup(commands.Cog):
 
         try:
             reaction, _ = await self.bot.wait_for(
-                "reaction_add", timeout=30.0, check=check
+                "reaction_add",
+                timeout=30.0,
+                check=check,
             )
             if str(reaction.emoji) == "✅":
                 await ctx.send(
@@ -174,7 +180,7 @@ class Cleanup(commands.Cog):
                     await self.remove_unwanted_message(message)
                 await ctx.send("Cleanup completed.", delete_after=5)
                 self.logger.info(
-                    f"Cleanup completed for the last {limit} messages in {ctx.channel.name}"
+                    f"Cleanup completed for the last {limit} messages in {ctx.channel.name}",
                 )
             else:
                 await ctx.send("Cleanup canceled.", delete_after=5)
@@ -207,12 +213,14 @@ class Cleanup(commands.Cog):
         if added:
             await self._load_guild(ctx.guild.id)
             await ctx.send(
-                f"Added '{word}' to the prohibited words list.", delete_after=5
+                f"Added '{word}' to the prohibited words list.",
+                delete_after=5,
             )
             self.logger.info(f"Added prohibited word: {word}")
         else:
             await ctx.send(
-                f"The word '{word}' is already in the prohibited list.", delete_after=5
+                f"The word '{word}' is already in the prohibited list.",
+                delete_after=5,
             )
 
     @word_cmd.command(name="remove")  # type: ignore[arg-type]
@@ -224,12 +232,14 @@ class Cleanup(commands.Cog):
         if removed:
             await self._load_guild(ctx.guild.id)
             await ctx.send(
-                f"Removed '{word}' from the prohibited words list.", delete_after=5
+                f"Removed '{word}' from the prohibited words list.",
+                delete_after=5,
             )
             self.logger.info(f"Removed prohibited word: {word}")
         else:
             await ctx.send(
-                f"The word '{word}' is not in the prohibited list.", delete_after=5
+                f"The word '{word}' is not in the prohibited list.",
+                delete_after=5,
             )
 
     @word_cmd.command(name="list")  # type: ignore[arg-type]
@@ -260,7 +270,7 @@ class Cleanup(commands.Cog):
 class _AddWordModal(discord.ui.Modal, title="Add Prohibited Word"):  # type: ignore[call-arg]
     word_input = discord.ui.TextInput(label="Word to prohibit", max_length=100)  # type: ignore[var-annotated]
 
-    def __init__(self, cog: "Cleanup"):
+    def __init__(self, cog: Cleanup):
         super().__init__()
         self.cog = cog
 
@@ -270,18 +280,20 @@ class _AddWordModal(discord.ui.Modal, title="Add Prohibited Word"):  # type: ign
         if added:
             await self.cog._load_guild(interaction.guild_id)
             await interaction.response.send_message(
-                f"✅ Added `{word}` to the prohibited list.", ephemeral=True
+                f"✅ Added `{word}` to the prohibited list.",
+                ephemeral=True,
             )
         else:
             await interaction.response.send_message(
-                f"❌ `{word}` is already in the prohibited list.", ephemeral=True
+                f"❌ `{word}` is already in the prohibited list.",
+                ephemeral=True,
             )
 
 
 class _RemoveWordModal(discord.ui.Modal, title="Remove Prohibited Word"):  # type: ignore[call-arg]
     word_input = discord.ui.TextInput(label="Word to remove", max_length=100)  # type: ignore[var-annotated]
 
-    def __init__(self, cog: "Cleanup"):
+    def __init__(self, cog: Cleanup):
         super().__init__()
         self.cog = cog
 
@@ -291,18 +303,20 @@ class _RemoveWordModal(discord.ui.Modal, title="Remove Prohibited Word"):  # typ
         if removed:
             await self.cog._load_guild(interaction.guild_id)
             await interaction.response.send_message(
-                f"✅ Removed `{word}` from the prohibited list.", ephemeral=True
+                f"✅ Removed `{word}` from the prohibited list.",
+                ephemeral=True,
             )
         else:
             await interaction.response.send_message(
-                f"❌ `{word}` was not in the prohibited list.", ephemeral=True
+                f"❌ `{word}` was not in the prohibited list.",
+                ephemeral=True,
             )
 
 
 class _WordMenuView(BaseView):
     """Interactive prohibited-words management panel."""
 
-    def __init__(self, ctx: commands.Context, cog: "Cleanup"):
+    def __init__(self, ctx: commands.Context, cog: Cleanup):
         super().__init__(ctx.author, timeout=180)
         self.ctx = ctx
         self.cog = cog
@@ -335,7 +349,9 @@ class _WordMenuView(BaseView):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
     @discord.ui.button(
-        label="🔍 Scan History", style=discord.ButtonStyle.blurple, row=1
+        label="🔍 Scan History",
+        style=discord.ButtonStyle.blurple,
+        row=1,
     )
     async def btn_scan(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_ScanHistoryModal(self.cog))
@@ -355,7 +371,7 @@ class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type
         max_length=100,
     )
 
-    def __init__(self, cog: "Cleanup"):
+    def __init__(self, cog: Cleanup):
         super().__init__()
         self.cog = cog
 
@@ -373,7 +389,8 @@ class _ScanHistoryModal(discord.ui.Modal, title="Scan Channel History"):  # type
                 raise ValueError
         except ValueError:
             await interaction.response.send_message(
-                "❌ Limit must be a number between 1 and 500.", ephemeral=True
+                "❌ Limit must be a number between 1 and 500.",
+                ephemeral=True,
             )
             return
 

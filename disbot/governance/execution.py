@@ -208,7 +208,8 @@ async def resolve_execution(
         denied_by = "capability_override" if not allowed else None
         if not allowed and _metrics:
             _metrics.governance_denials_total.labels(
-                subsystem=subsystem_name, scope="override"
+                subsystem=subsystem_name,
+                scope="override",
             ).inc()
         evt = EVT_EXECUTION_DENIED if not allowed else EVT_EXECUTION_ALLOWED
         await _emit_governance_event(
@@ -284,7 +285,8 @@ async def resolve_execution(
         )
         if _metrics:
             _metrics.governance_denials_total.labels(
-                subsystem=subsystem_name, scope=scope_label
+                subsystem=subsystem_name,
+                scope=scope_label,
             ).inc()
         await _emit_governance_event(
             EVT_EXECUTION_DENIED,

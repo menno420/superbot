@@ -9,9 +9,10 @@ import os
 import signal
 import uuid
 
-import config
 import discord
 from discord.ext import commands
+
+import config
 from services.webhook_reporter import WebhookReporter
 from utils import db
 from utils.synonyms import find_command as _find_synonym
@@ -34,7 +35,10 @@ _root.setLevel(logging.INFO)
 
 for _h in (
     logging.handlers.RotatingFileHandler(
-        "bot.log", maxBytes=10_000_000, backupCount=5, encoding="utf-8"
+        "bot.log",
+        maxBytes=10_000_000,
+        backupCount=5,
+        encoding="utf-8",
     ),
     logging.StreamHandler(),
 ):
@@ -172,7 +176,9 @@ async def on_command_completion(ctx: commands.Context) -> None:
     cog_name = type(ctx.cog).__name__ if ctx.cog else "unknown"
     cmd_name = ctx.command.qualified_name if ctx.command else "unknown"
     _metrics.command_total.labels(
-        cog=cog_name, command=cmd_name, result="success"
+        cog=cog_name,
+        command=cmd_name,
+        result="success",
     ).inc()
     logger.info(
         "CMD ✅ %s/%s",
@@ -233,7 +239,8 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
 
     if isinstance(error, commands.MissingPermissions):
         await ctx.send(
-            "❌ You do not have permission to use this command.", delete_after=10
+            "❌ You do not have permission to use this command.",
+            delete_after=10,
         )
     elif isinstance(error, commands.BotMissingPermissions):
         await ctx.send(
@@ -267,7 +274,8 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         )
     else:
         await ctx.send(
-            "⚠️ An unexpected error occurred. Please try again.", delete_after=10
+            "⚠️ An unexpected error occurred. Please try again.",
+            delete_after=10,
         )
 
 
@@ -326,7 +334,8 @@ async def _governance_guard(ctx: commands.Context) -> None:
     if policy.feedback:
         try:
             await ctx.send(
-                policy.feedback, delete_after=policy.cleanup.delete_after_seconds or 10
+                policy.feedback,
+                delete_after=policy.cleanup.delete_after_seconds or 10,
             )
         except Exception:
             pass
@@ -337,7 +346,7 @@ async def _governance_guard(ctx: commands.Context) -> None:
             pass
 
     raise commands.CheckFailure(
-        f"Subsystem disabled for command {ctx.command.qualified_name!r}"
+        f"Subsystem disabled for command {ctx.command.qualified_name!r}",
     )
 
 
@@ -393,7 +402,8 @@ async def _load_cogs() -> None:
             ):
                 failed_subsystems.add(name)
                 logger.warning(
-                    "Subsystem %r has no loaded commands — marking INTERNAL", name
+                    "Subsystem %r has no loaded commands — marking INTERNAL",
+                    name,
                 )
         if failed_subsystems:
             governance_service.register_failed_subsystems(failed_subsystems)
@@ -432,7 +442,7 @@ async def main() -> None:
             # Track app-owned tasks so shutdown only cancels OUR tasks,
             # not discord.py-internal ones (OPS-001 fix).
             _APP_TASKS.append(
-                asyncio.create_task(start_health_server(bot), name="health_server")
+                asyncio.create_task(start_health_server(bot), name="health_server"),
             )
             _APP_TASKS.append(session_gc.start())
             await _load_cogs()

@@ -21,6 +21,7 @@ import logging
 
 import discord
 from discord.ext import commands
+
 from utils import db
 
 logger = logging.getLogger("bot.runtime.anchors")
@@ -40,7 +41,11 @@ async def upsert(
 ) -> dict:
     """Create or replace the anchor, resetting is_stale on conflict."""
     row = await db.upsert_panel_anchor(
-        user_id, guild_id, channel_id, subsystem, message_id
+        user_id,
+        guild_id,
+        channel_id,
+        subsystem,
+        message_id,
     )
     logger.debug(
         "Anchor upserted | subsystem=%s | user=%d | msg=%d",
@@ -95,12 +100,16 @@ async def restore_anchors(bot: commands.Bot) -> None:
             stale += 1
 
     logger.info(
-        "Anchor recovery complete — %d restored, %d marked stale", restored, stale
+        "Anchor recovery complete — %d restored, %d marked stale",
+        restored,
+        stale,
     )
 
 
 async def try_fetch_message(
-    bot: commands.Bot, channel_id: int, message_id: int
+    bot: commands.Bot,
+    channel_id: int,
+    message_id: int,
 ) -> discord.Message | None:
     """Fetch a Discord message, returning None if it no longer exists."""
     channel = bot.get_channel(channel_id)

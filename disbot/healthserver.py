@@ -57,7 +57,7 @@ async def _health_handler(request: web.Request) -> web.Response:
             "uptime": uptime,
             "guilds": len(bot.guilds),
             "latency_ms": round(bot.latency * 1000, 1),
-        }
+        },
     )
     return web.Response(text=body, content_type="application/json")
 

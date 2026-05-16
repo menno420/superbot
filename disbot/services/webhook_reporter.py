@@ -55,7 +55,7 @@ class WebhookReporter:
 
     async def on_cog_fail(self, ext: str, error: Exception) -> None:
         tb = "".join(
-            traceback.format_exception(type(error), error, error.__traceback__)
+            traceback.format_exception(type(error), error, error.__traceback__),
         )
         if len(tb) > 1800:
             tb = tb[-1800:]
@@ -74,10 +74,14 @@ class WebhookReporter:
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(
-            name="Input", value=f"`{ctx.message.content[:200]}`", inline=False
+            name="Input",
+            value=f"`{ctx.message.content[:200]}`",
+            inline=False,
         )
         embed.add_field(
-            name="User", value=f"{ctx.author} (`{ctx.author.id}`)", inline=True
+            name="User",
+            value=f"{ctx.author} (`{ctx.author.id}`)",
+            inline=True,
         )
         embed.add_field(name="Channel", value=f"#{ctx.channel}", inline=True)
         embed.add_field(name="Server", value=str(ctx.guild), inline=True)
@@ -92,7 +96,9 @@ class WebhookReporter:
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(
-            name="Command", value=f"`{ctx.command.qualified_name}`", inline=True
+            name="Command",
+            value=f"`{ctx.command.qualified_name}`",
+            inline=True,
         )
         embed.add_field(name="User", value=str(ctx.author), inline=True)
         embed.add_field(name="Server", value=str(ctx.guild), inline=True)
@@ -144,7 +150,8 @@ class WebhookReporter:
             return
 
         if isinstance(
-            error, (commands.MissingPermissions, commands.BotMissingPermissions)
+            error,
+            (commands.MissingPermissions, commands.BotMissingPermissions),
         ):
             label = "User" if isinstance(error, commands.MissingPermissions) else "Bot"
             embed = discord.Embed(
@@ -183,13 +190,19 @@ class WebhookReporter:
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(
-            name="Input", value=f"`{ctx.message.content[:150]}`", inline=False
+            name="Input",
+            value=f"`{ctx.message.content[:150]}`",
+            inline=False,
         )
         embed.add_field(name="Command", value=f"`{ctx.command}`", inline=True)
         embed.add_field(
-            name="User", value=f"{ctx.author} (`{ctx.author.id}`)", inline=True
+            name="User",
+            value=f"{ctx.author} (`{ctx.author.id}`)",
+            inline=True,
         )
         embed.add_field(
-            name="Channel", value=f"#{ctx.channel} in {ctx.guild}", inline=True
+            name="Channel",
+            value=f"#{ctx.channel} in {ctx.guild}",
+            inline=True,
         )
         await self._send(embed)

@@ -5,9 +5,10 @@ import random
 import time
 
 import discord
+from discord.ext import commands
+
 from core.runtime import panel_manager
 from core.runtime.persistent_views import PersistentView, register
-from discord.ext import commands
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
@@ -276,14 +277,17 @@ class EconomyCog(commands.Cog):
 
         try:
             cat = discord.utils.get(guild.categories, name="Bot") or discord.utils.get(
-                guild.categories, name="General"
+                guild.categories,
+                name="General",
             )
             overwrites = {
                 guild.default_role: discord.PermissionOverwrite(
-                    read_messages=True, send_messages=False
+                    read_messages=True,
+                    send_messages=False,
                 ),
                 guild.me: discord.PermissionOverwrite(
-                    read_messages=True, send_messages=True
+                    read_messages=True,
+                    send_messages=True,
                 ),
             }
             ch = await guild.create_text_channel(
@@ -337,12 +341,16 @@ class EconomyCog(commands.Cog):
         new_count = row["daily_count"] + 1
         new_bal = await db.add_coins(uid, gid, amount)
         await db.set_economy(
-            uid, gid, last_daily=now, daily_streak=streak, daily_count=new_count
+            uid,
+            gid,
+            last_daily=now,
+            daily_streak=streak,
+            daily_count=new_count,
         )
 
         weights = _daily_weights(streak)
         chance_preview = " · ".join(
-            f"{t[0]}: {w:.1f}%" for t, w in zip(_DAILY_TIERS, weights)
+            f"{t[0]}: {w:.1f}%" for t, w in zip(_DAILY_TIERS, weights, strict=True)
         )
 
         embed = discord.Embed(
@@ -351,7 +359,8 @@ class EconomyCog(commands.Cog):
             color=ECONOMY_COLOR,
         )
         embed.set_author(
-            name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url
+            name=ctx.author.display_name,
+            icon_url=ctx.author.display_avatar.url,
         )
         embed.add_field(name="Coins earned", value=f"**+{amount}** 🪙", inline=True)
         embed.add_field(name="Balance", value=f"**{new_bal}** 🪙", inline=True)
@@ -377,7 +386,6 @@ class EconomyCog(commands.Cog):
     async def work(self, ctx: commands.Context):
         """Open the job selector and earn coins + XP (1 h cooldown)."""
         uid, gid = ctx.author.id, ctx.guild.id
-        now = int(time.time())
         row = await db.get_economy(uid, gid)
 
         on_cd, secs = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
@@ -483,7 +491,7 @@ class EconomyCog(commands.Cog):
                 mastery = f" | mastery {times}/100" if times else ""
                 lines.append(
                     f"{lock_str} {data['emoji']} **{name.replace('_', ' ').title()}** "
-                    f"— {pay} 🪙 / work{req}{mastery}"
+                    f"— {pay} 🪙 / work{req}{mastery}",
                 )
             embed.add_field(
                 name=f"Tier {tier_num}",
@@ -491,7 +499,7 @@ class EconomyCog(commands.Cog):
                 inline=False,
             )
         embed.set_footer(
-            text=f"Your level: {level}  |  Pay shown includes mastery bonus."
+            text=f"Your level: {level}  |  Pay shown includes mastery bonus.",
         )
         await ctx.send(embed=embed)
 
@@ -502,7 +510,8 @@ class EconomyCog(commands.Cog):
 
 
 async def _build_economy_embed(
-    user: discord.Member | discord.User, guild_id: int
+    user: discord.Member | discord.User,
+    guild_id: int,
 ) -> discord.Embed:
     """Build the economy overview embed for *user* (stateless, no ctx needed)."""
     uid = user.id
@@ -518,7 +527,9 @@ async def _build_economy_embed(
     embed.add_field(name="🪙 Coins", value=f"{coins:,}", inline=True)
     embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
     embed.add_field(
-        name="🔥 Daily Streak", value=str(row.get("daily_streak", 0)), inline=True
+        name="🔥 Daily Streak",
+        value=str(row.get("daily_streak", 0)),
+        inline=True,
     )
     embed.add_field(
         name="🎁 Daily",
@@ -577,7 +588,11 @@ class EconomyPanelView(PersistentView):
         new_count = row["daily_count"] + 1
         new_bal = await db.add_coins(uid, gid, amount)
         await db.set_economy(
-            uid, gid, last_daily=now, daily_streak=streak, daily_count=new_count
+            uid,
+            gid,
+            last_daily=now,
+            daily_streak=streak,
+            daily_count=new_count,
         )
 
         embed = discord.Embed(
@@ -685,7 +700,9 @@ class EconomyPanelView(PersistentView):
         row=1,
     )
     async def inventory_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         from cogs.inventory_cog import UnifiedInventoryView, _build_combined_inventory
 
@@ -730,10 +747,12 @@ class EconomyPanelView(PersistentView):
                 req = f" *(req: {', '.join(req_parts)})*" if req_parts else ""
                 lines.append(
                     f"{lock_str} {data['emoji']} **{name.replace('_', ' ').title()}** "
-                    f"— {pay} 🪙 / work{req}"
+                    f"— {pay} 🪙 / work{req}",
                 )
             embed.add_field(
-                name=f"Tier {tier_num}", value="\n".join(lines), inline=False
+                name=f"Tier {tier_num}",
+                value="\n".join(lines),
+                inline=False,
             )
 
         embed.set_footer(text=f"Your level: {level}  •  Click ↩ Overview to return.")
@@ -746,7 +765,9 @@ class EconomyPanelView(PersistentView):
         row=2,
     )
     async def overview_btn(
-        self, interaction: discord.Interaction, _: discord.ui.Button
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
     ):
         embed = await _build_economy_embed(interaction.user, interaction.guild_id)
         await interaction.response.edit_message(embed=embed, view=self)
@@ -768,7 +789,8 @@ class _WorkView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
             await interaction.response.send_message(
-                "This job menu isn't for you.", ephemeral=True
+                "This job menu isn't for you.",
+                ephemeral=True,
             )
             return False
         return True
@@ -785,7 +807,11 @@ class _WorkView(discord.ui.View):
 
 class _JobSelect(discord.ui.Select):
     def __init__(
-        self, user_id: int, guild_id: int, available: list[str], view: _WorkView
+        self,
+        user_id: int,
+        guild_id: int,
+        available: list[str],
+        view: _WorkView,
     ):
         self._user_id = user_id
         self._guild_id = guild_id
@@ -798,7 +824,7 @@ class _JobSelect(discord.ui.Select):
                     label=f"{j['emoji']} {name.replace('_', ' ').title()}",
                     value=name,
                     description=f"Base pay: {j['pay']} 🪙  |  +{j['xp']} XP  |  Tier {j['tier']}",
-                )
+                ),
             )
         super().__init__(
             placeholder="Choose a job to work…",
@@ -817,7 +843,8 @@ class _JobSelect(discord.ui.Select):
         on_cd, secs = check_cooldown(eco["last_worked"], _WORK_COOLDOWN)
         if on_cd:
             await interaction.response.send_message(
-                f"⏰ Still on cooldown! {format_remaining(secs)} left.", ephemeral=True
+                f"⏰ Still on cooldown! {format_remaining(secs)} left.",
+                ephemeral=True,
             )
             return
 
@@ -907,7 +934,8 @@ class _ShopView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
             await interaction.response.send_message(
-                "This shop isn't for you.", ephemeral=True
+                "This shop isn't for you.",
+                ephemeral=True,
             )
             return False
         return True
@@ -940,7 +968,8 @@ class _ShopSelect(discord.ui.Select):
 
         if await db.has_item(uid, gid, item_name):
             await interaction.response.send_message(
-                f"You already own a **{item_name}**!", ephemeral=True
+                f"You already own a **{item_name}**!",
+                ephemeral=True,
             )
             return
 
@@ -995,7 +1024,8 @@ class _ShopSubView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
             await interaction.response.send_message(
-                "This panel isn't for you.", ephemeral=True
+                "This panel isn't for you.",
+                ephemeral=True,
             )
             return False
         return True
@@ -1032,7 +1062,8 @@ class _ShopPanelSelect(discord.ui.Select):
 
         if await db.has_item(uid, gid, item_name):
             await interaction.response.send_message(
-                f"You already own a **{item_name}**!", ephemeral=True
+                f"You already own a **{item_name}**!",
+                ephemeral=True,
             )
             return
 

@@ -24,7 +24,7 @@ except ImportError:
     class _NoOp:
         """Silent no-op that accepts any attribute access or call."""
 
-        def labels(self, **_: object) -> "_NoOp":
+        def labels(self, **_: object) -> _NoOp:
             return self
 
         def inc(self, *_: object, **__: object) -> None:
@@ -36,13 +36,29 @@ except ImportError:
         def set(self, *_: object, **__: object) -> None:
             pass
 
-    def Counter(name: str, doc: str, labelnames: object = (), **_: object) -> _NoOp:  # type: ignore[no-redef]
+    def Counter(  # noqa: N802 (matches prometheus_client signature)
+        name: str,
+        doc: str,
+        labelnames: object = (),
+        **_: object,
+    ) -> _NoOp:  # type: ignore[no-redef]
         return _NoOp()
 
-    def Gauge(name: str, doc: str, labelnames: object = (), **_: object) -> _NoOp:  # type: ignore[no-redef]
+    def Gauge(  # noqa: N802 (matches prometheus_client signature)
+        name: str,
+        doc: str,
+        labelnames: object = (),
+        **_: object,
+    ) -> _NoOp:  # type: ignore[no-redef]
         return _NoOp()
 
-    def Histogram(name: str, doc: str, labelnames: object = (), buckets: object = (), **_: object) -> _NoOp:  # type: ignore[no-redef]
+    def Histogram(  # noqa: N802 (matches prometheus_client signature)
+        name: str,
+        doc: str,
+        labelnames: object = (),
+        buckets: object = (),
+        **_: object,
+    ) -> _NoOp:  # type: ignore[no-redef]
         return _NoOp()
 
 

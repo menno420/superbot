@@ -26,7 +26,9 @@ async def run_governance_healthcheck(guild_id: int) -> GovernanceHealthReport:
     ]
 
     stored = await db.get_setting(
-        guild_id, settings_keys.GOVERNANCE_VERSION, default="0"
+        guild_id,
+        settings_keys.GOVERNANCE_VERSION,
+        default="0",
     )
     stale = [guild_id] if int(stored) < REGISTRY_VERSION else []
 

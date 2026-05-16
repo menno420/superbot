@@ -81,14 +81,18 @@ async def setup() -> None:
         guild-subsystem invalidation to be safe.
         """
         channel_id: int | None = None
-        if scope_type == "channel" and scope_id is not None:
-            channel_id = scope_id
-        # thread-scoped: the thread_id IS the channel_id in Discord's model
-        elif scope_type == "thread" and scope_id is not None:
+        if (
+            scope_type == "channel"
+            and scope_id is not None
+            or scope_type == "thread"
+            and scope_id is not None
+        ):
             channel_id = scope_id
 
         await sessions.invalidate_subsystem_sessions(
-            guild_id, subsystem, channel_id=channel_id
+            guild_id,
+            subsystem,
+            channel_id=channel_id,
         )
 
     async def _on_cache_invalidated(guild_id: int, **_: object) -> None:

@@ -4,8 +4,9 @@ import logging
 import math
 
 import discord
-from core.runtime.persistent_views import PersistentView, register
 from discord.ext import commands
+
+from core.runtime.persistent_views import PersistentView, register
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
@@ -53,7 +54,10 @@ def _get_visible_commands(cog: commands.Cog) -> list[commands.Command]:
 
 
 async def build_overview_embed(
-    bot: commands.Bot, ctx: commands.Context, visible: set[str], member_tier: str
+    bot: commands.Bot,
+    ctx: commands.Context,
+    visible: set[str],
+    member_tier: str,
 ) -> discord.Embed:
     """Build a governance-aware overview embed grouped by visibility tier."""
     embed = discord.Embed(
@@ -120,7 +124,7 @@ def build_cog_embed(
     return embed
 
 
-def _build_help_page_view(visible_list: list[str], page: int) -> "HelpPanelView":
+def _build_help_page_view(visible_list: list[str], page: int) -> HelpPanelView:
     """Construct a HelpPanelView for the given page of visible subsystems."""
     return HelpPanelView(visible_list, page)
 
@@ -156,11 +160,14 @@ def _attach_back_to_help_button(
             vis_result = await governance_service.resolve_visibility(gctx)
         except Exception as exc:
             logger.warning(
-                "Back-to-help visibility resolve failed: %s", exc, exc_info=True
+                "Back-to-help visibility resolve failed: %s",
+                exc,
+                exc_info=True,
             )
             if not interaction.response.is_done():
                 await interaction.response.send_message(
-                    "Could not load help menu. Please try again.", ephemeral=True
+                    "Could not load help menu. Please try again.",
+                    ephemeral=True,
                 )
             return
         fresh_visible = [
@@ -295,7 +302,8 @@ class HelpPanelView(PersistentView):
         self.add_item(next_btn)
 
     async def _resolve_visible(
-        self, interaction: discord.Interaction
+        self,
+        interaction: discord.Interaction,
     ) -> tuple[list[str], str]:
         """Return (sorted visible subsystem names, member_tier) via governance."""
         gctx = GovernanceContext.from_interaction(interaction)
@@ -321,7 +329,8 @@ class HelpPanelView(PersistentView):
         cog = _cog_for_subsystem(interaction.client, subsystem_name)  # type: ignore[arg-type]
         if not cog:
             await interaction.response.send_message(
-                "That category is no longer loaded.", ephemeral=True
+                "That category is no longer loaded.",
+                ephemeral=True,
             )
             return
 
@@ -354,7 +363,10 @@ class HelpPanelView(PersistentView):
         new_page = max(0, self._page - 1)
         new_view = HelpPanelView(visible_list, new_page)
         embed = _build_page_embed(
-            interaction.client, visible_list, new_page, member_tier  # type: ignore[arg-type]
+            interaction.client,
+            visible_list,
+            new_page,
+            member_tier,  # type: ignore[arg-type]
         )
         await interaction.response.edit_message(embed=embed, view=new_view)
 
@@ -364,7 +376,10 @@ class HelpPanelView(PersistentView):
         new_page = min(self._page + 1, num_pages - 1)
         new_view = HelpPanelView(visible_list, new_page)
         embed = _build_page_embed(
-            interaction.client, visible_list, new_page, member_tier  # type: ignore[arg-type]
+            interaction.client,
+            visible_list,
+            new_page,
+            member_tier,  # type: ignore[arg-type]
         )
         await interaction.response.edit_message(embed=embed, view=new_view)
 
@@ -429,7 +444,8 @@ class HelpCog(commands.Cog):
                 await ctx.send(embed=embed, delete_after=60)
                 return
             await ctx.send(
-                f"No command or category named `{category}` found.", delete_after=10
+                f"No command or category named `{category}` found.",
+                delete_after=10,
             )
             return
 
@@ -443,7 +459,9 @@ class HelpCog(commands.Cog):
         from core.runtime import message_anchor_manager
 
         old_anchor = await message_anchor_manager.get(
-            ctx.author.id, ctx.channel.id, "help"
+            ctx.author.id,
+            ctx.channel.id,
+            "help",
         )
         if old_anchor and not old_anchor["is_stale"]:
             try:
@@ -455,7 +473,11 @@ class HelpCog(commands.Cog):
 
         msg = await ctx.send(embed=embed, view=view)
         await message_anchor_manager.upsert(
-            ctx.author.id, ctx.guild.id, ctx.channel.id, "help", msg.id
+            ctx.author.id,
+            ctx.guild.id,
+            ctx.channel.id,
+            "help",
+            msg.id,
         )
 
 
