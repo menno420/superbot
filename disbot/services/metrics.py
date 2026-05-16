@@ -134,3 +134,12 @@ anchor_restore_total = Counter(
     "Outcomes of PersistentView restoration during on_ready.",
     ["subsystem", "result"],
 )
+
+unknown_event_total = Counter(
+    "unknown_event_total",
+    "EventBus emit/on calls referencing an event name not in the catalogue "
+    "(disbot/core/events_catalogue.py). A non-zero count indicates an "
+    "emitter/listener has drifted from the catalogue — likely a typo or "
+    "leftover from a removed cog.",
+    ["event", "op"],  # op: emit | on
+)
