@@ -148,6 +148,34 @@ class TestUnknownCapabilityFailsClosed:
 # ---------------------------------------------------------------------------
 
 
+def _make_pool_stub():
+    """Return ``(db_stub, conn_mock)`` mirroring the real asyncpg Pool API.
+
+    asyncpg.Pool exposes ``acquire()`` returning an async-context-manager
+    that yields a Connection.  ``Connection.transaction()`` returns its
+    own async-context-manager.  This helper assembles a MagicMock graph
+    that matches that shape so tests exercise the same call path as
+    production rather than a synthetic ``.transaction()`` on the pool.
+    """
+    conn = MagicMock()
+    conn.execute = AsyncMock()
+
+    txn_cm = MagicMock()
+    txn_cm.__aenter__ = AsyncMock(return_value=txn_cm)
+    txn_cm.__aexit__ = AsyncMock(return_value=False)
+    conn.transaction = MagicMock(return_value=txn_cm)
+
+    acquire_cm = MagicMock()
+    acquire_cm.__aenter__ = AsyncMock(return_value=conn)
+    acquire_cm.__aexit__ = AsyncMock(return_value=False)
+
+    pool_stub = MagicMock()
+    pool_stub.acquire = MagicMock(return_value=acquire_cm)
+
+    db_stub = MagicMock(get=MagicMock(return_value=pool_stub))
+    return db_stub, conn
+
+
 class TestCacheInvalidatedEmitted:
     """BUG-002 regression — set_visibility must emit both events.
 
@@ -170,18 +198,14 @@ class TestCacheInvalidatedEmitted:
         async def capture(event_name, payload):
             emitted.append(event_name)
 
-        # Minimal stubs: every DB call inside set_visibility is async,
-        # the transaction context manager must succeed, and the
-        # registry lookup must resolve.
-        txn = MagicMock()
-        txn.__aenter__ = AsyncMock(return_value=txn)
-        txn.__aexit__ = AsyncMock(return_value=False)
-        db_stub = MagicMock(
-            get_visibility_override=AsyncMock(return_value=None),
-            set_subsystem_visibility=AsyncMock(),
-            write_governance_audit=AsyncMock(),
-            get=MagicMock(return_value=MagicMock(transaction=lambda: txn)),
-        )
+        # Mock shape mirrors the real asyncpg Pool API: pool.acquire()
+        # returns an async-context-manager yielding a Connection, and
+        # conn.transaction() returns an async-context-manager.  An older
+        # version of this test mocked .transaction() on the pool itself,
+        # which hid a production regression where ``pool.transaction()``
+        # was called directly — asyncpg.Pool has no such method.
+        db_stub, conn = _make_pool_stub()
+        db_stub.get_visibility_override = AsyncMock(return_value=None)
 
         member = MagicMock()
         member.id = 1
@@ -201,6 +225,105 @@ class TestCacheInvalidatedEmitted:
             )
 
         assert emitted[:2] == [EVT_VISIBILITY_CHANGED, EVT_CACHE_INVALIDATED]
+        # The pipeline must execute SQL on the acquired connection, not on
+        # the pool: every transactional write goes through conn.execute.
+        assert conn.execute.await_count >= 2, (
+            "set_visibility must run both the visibility upsert and the "
+            "audit-log insert on the acquired connection (got "
+            f"{conn.execute.await_count} conn.execute call(s))."
+        )
+
+    @pytest.mark.asyncio
+    async def test_set_visibility_uses_connection_transaction_not_pool(self):
+        """Pool.transaction() does not exist on asyncpg.Pool — only Connection
+        has .transaction().  This test would have caught the production
+        regression where pipeline called ``db.get().transaction()`` directly
+        on a Pool, raising AttributeError at runtime.
+        """
+        from governance.writes import GovernanceMutationPipeline
+
+        db_stub, conn = _make_pool_stub()
+        db_stub.get_visibility_override = AsyncMock(return_value=None)
+        pool_stub = db_stub.get.return_value
+
+        # If production code calls pool.transaction() directly, hasattr is
+        # False on the real pool — but a MagicMock would silently create
+        # one.  We assert that .transaction is NEVER called on the pool,
+        # only on conn (the canonical asyncpg pattern).
+        pool_stub.transaction = MagicMock(
+            side_effect=AttributeError(
+                "'Pool' object has no attribute 'transaction'",
+            ),
+        )
+
+        member = MagicMock()
+        member.id = 1
+        member.guild_permissions.administrator = True
+        from governance.models import GovernanceContext
+
+        ctx = GovernanceContext(guild_id=778, channel_id=1, member=member)
+
+        async def _noop(*_args, **_kwargs):
+            pass
+
+        with (
+            patch("governance.writes.db", db_stub),
+            patch("governance.writes.invalidate_guild_cache"),
+            patch("governance.writes._emit_governance_event", side_effect=_noop),
+            patch("governance.writes.SUBSYSTEMS", {"economy": {}}),
+        ):
+            # Must complete without AttributeError.
+            await GovernanceMutationPipeline().set_visibility(
+                ctx, "guild", 778, "economy", True,
+            )
+
+        assert (
+            pool_stub.transaction.call_count == 0
+        ), "Pipeline must not call .transaction() on the pool (asyncpg.Pool has no such method)."
+        assert conn.transaction.call_count >= 1, (
+            "Pipeline must open the transaction on the acquired connection."
+        )
+
+    @pytest.mark.asyncio
+    async def test_set_cleanup_policy_uses_connection_transaction(self):
+        """Mirrors the visibility-pipeline regression for cleanup_policies —
+        both pipeline methods are affected by the same bug class.
+        """
+        from governance.writes import GovernanceMutationPipeline
+
+        db_stub, conn = _make_pool_stub()
+        pool_stub = db_stub.get.return_value
+        pool_stub.transaction = MagicMock(
+            side_effect=AttributeError(
+                "'Pool' object has no attribute 'transaction'",
+            ),
+        )
+
+        member = MagicMock()
+        member.id = 1
+        member.guild_permissions.administrator = True
+        from governance.models import GovernanceContext
+
+        ctx = GovernanceContext(guild_id=779, channel_id=1, member=member)
+
+        async def _noop(*_args, **_kwargs):
+            pass
+
+        with (
+            patch("governance.writes.db", db_stub),
+            patch("governance.writes.invalidate_guild_cache"),
+            patch("governance.writes._emit_governance_event", side_effect=_noop),
+        ):
+            await GovernanceMutationPipeline().set_cleanup_policy(
+                ctx, "guild", 779,
+                delete_invalid_commands=True,
+                delete_failed_commands=True,
+                delete_after_seconds=5,
+            )
+
+        assert pool_stub.transaction.call_count == 0
+        assert conn.transaction.call_count >= 1
+        assert conn.execute.await_count >= 2
 
 
 # ---------------------------------------------------------------------------
