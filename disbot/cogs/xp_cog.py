@@ -259,9 +259,11 @@ class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-ar
                 ephemeral=True,
             )
             return
-        await db.execute(
-            "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
-            (member.id, interaction.guild_id),
+        await xp_service.reset(
+            guild_id=interaction.guild_id,
+            user_id=member.id,
+            source="admin:modal_reset",
+            actor_id=interaction.user.id,
         )
         await interaction.response.send_message(
             f"✅ Reset XP for {member.mention}.",
@@ -409,9 +411,11 @@ class XpCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def resetxp(self, ctx: commands.Context, member: discord.Member):
         """Reset a user's XP to zero (admin only)."""
-        await db.execute(
-            "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
-            (member.id, ctx.guild.id),
+        await xp_service.reset(
+            guild_id=ctx.guild.id,
+            user_id=member.id,
+            source="admin:resetxp",
+            actor_id=ctx.author.id,
         )
         await ctx.send(f"✅ Reset XP for {member.mention}.")
 

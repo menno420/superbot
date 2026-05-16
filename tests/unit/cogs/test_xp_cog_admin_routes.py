@@ -16,12 +16,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 
-def _make_interaction(*, guild_id: int = 99999) -> MagicMock:
+def _make_interaction(
+    *,
+    guild_id: int = 99999,
+    user_id: int = 77777,
+) -> MagicMock:
     """Minimal discord.Interaction stub for modal callbacks."""
     interaction = MagicMock()
     interaction.guild_id = guild_id
     interaction.guild = MagicMock()
     interaction.guild.id = guild_id
+    interaction.user = MagicMock()
+    interaction.user.id = user_id
     interaction.response = MagicMock()
     interaction.response.send_message = AsyncMock()
     return interaction
@@ -34,10 +40,12 @@ def _make_member(member_id: int = 12345) -> MagicMock:
     return member
 
 
-def _make_ctx(*, guild_id: int = 99999) -> MagicMock:
+def _make_ctx(*, guild_id: int = 99999, author_id: int = 77777) -> MagicMock:
     ctx = MagicMock()
     ctx.guild = MagicMock()
     ctx.guild.id = guild_id
+    ctx.author = MagicMock()
+    ctx.author.id = author_id
     ctx.send = AsyncMock()
     return ctx
 
@@ -124,3 +132,79 @@ async def test_givexp_command_rejects_non_positive_amount():
 
     award.assert_not_awaited()
     ctx.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_reset_xp_modal_calls_xp_service_reset():
+    """_ResetXpModal.on_submit must route through xp_service.reset."""
+    from cogs.xp_cog import _ResetXpModal
+
+    modal = _ResetXpModal(hub=MagicMock())
+    modal.member_input = MagicMock()
+    modal.member_input.value = "<@12345>"
+    modal.confirm_input = MagicMock()
+    modal.confirm_input.value = "CONFIRM"
+
+    interaction = _make_interaction()
+    member = _make_member()
+
+    with (
+        patch("cogs.xp_cog._parse_member", return_value=member),
+        patch(
+            "cogs.xp_cog.xp_service.reset",
+            new_callable=AsyncMock,
+        ) as reset,
+    ):
+        await modal.on_submit(interaction)
+
+    reset.assert_awaited_once_with(
+        guild_id=interaction.guild_id,
+        user_id=member.id,
+        source="admin:modal_reset",
+        actor_id=interaction.user.id,
+    )
+
+
+@pytest.mark.asyncio
+async def test_reset_xp_modal_aborts_without_confirm():
+    """Without CONFIRM token the service must NOT be called."""
+    from cogs.xp_cog import _ResetXpModal
+
+    modal = _ResetXpModal(hub=MagicMock())
+    modal.member_input = MagicMock()
+    modal.member_input.value = "<@12345>"
+    modal.confirm_input = MagicMock()
+    modal.confirm_input.value = "no"
+
+    interaction = _make_interaction()
+
+    with patch(
+        "cogs.xp_cog.xp_service.reset",
+        new_callable=AsyncMock,
+    ) as reset:
+        await modal.on_submit(interaction)
+
+    reset.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_resetxp_command_calls_xp_service_reset():
+    """XpCog.resetxp must route through xp_service.reset."""
+    from cogs.xp_cog import XpCog
+
+    cog = XpCog(bot=MagicMock())
+    ctx = _make_ctx()
+    member = _make_member()
+
+    with patch(
+        "cogs.xp_cog.xp_service.reset",
+        new_callable=AsyncMock,
+    ) as reset:
+        await cog.resetxp.callback(cog, ctx, member)
+
+    reset.assert_awaited_once_with(
+        guild_id=ctx.guild.id,
+        user_id=member.id,
+        source="admin:resetxp",
+        actor_id=ctx.author.id,
+    )

@@ -142,7 +142,7 @@ from utils.db.sessions import (
     touch_session,
 )
 from utils.db.settings import get_setting, set_setting
-from utils.db.xp import add_xp, get_xp, level_progress, xp_for_level
+from utils.db.xp import add_xp, delete_xp, get_xp, level_progress, xp_for_level
 
 __all__ = [
     # pool
@@ -154,6 +154,7 @@ __all__ = [
     "init",
     # xp
     "add_xp",
+    "delete_xp",
     "get_xp",
     "level_progress",
     "xp_for_level",

@@ -8,12 +8,13 @@ import pytest
 
 from core.events_catalogue import KNOWN_EVENTS
 from services import xp_service
-from services.xp_service import EVT_LEVEL_UP, EVT_XP_AWARDED
+from services.xp_service import EVT_LEVEL_UP, EVT_XP_AWARDED, EVT_XP_RESET
 
 
 def test_events_are_catalogued():
     assert EVT_XP_AWARDED in KNOWN_EVENTS
     assert EVT_LEVEL_UP in KNOWN_EVENTS
+    assert EVT_XP_RESET in KNOWN_EVENTS
 
 
 @pytest.mark.asyncio
@@ -30,7 +31,10 @@ async def test_award_emits_xp_awarded_without_level_up():
         ) as emit,
     ):
         result = await xp_service.award(
-            guild_id=1, user_id=2, amount=15, source="message",
+            guild_id=1,
+            user_id=2,
+            amount=15,
+            source="message",
         )
         assert result.new_xp == 150
         assert result.new_level == 2
@@ -62,7 +66,10 @@ async def test_award_emits_level_up_on_boundary():
         ) as emit,
     ):
         result = await xp_service.award(
-            guild_id=1, user_id=2, amount=50, source="work:carpenter",
+            guild_id=1,
+            user_id=2,
+            amount=50,
+            source="work:carpenter",
         )
         assert result.leveled_up is True
         # Both events fire, in order (xp.awarded then xp.level_up).
@@ -81,3 +88,44 @@ async def test_non_positive_amount_rejected():
         await xp_service.award(guild_id=1, user_id=2, amount=0, source="x")
     with pytest.raises(ValueError, match="positive"):
         await xp_service.award(guild_id=1, user_id=2, amount=-5, source="x")
+
+
+@pytest.mark.asyncio
+async def test_reset_deletes_row_and_emits_event():
+    with (
+        patch(
+            "services.xp_service.db.delete_xp",
+            new_callable=AsyncMock,
+        ) as delete_xp,
+        patch(
+            "services.xp_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        await xp_service.reset(
+            guild_id=42,
+            user_id=7,
+            source="admin:resetxp",
+            actor_id=99,
+        )
+
+    delete_xp.assert_awaited_once_with(7, 42)
+    emit.assert_awaited_once_with(
+        EVT_XP_RESET,
+        guild_id=42,
+        user_id=7,
+        actor_id=99,
+        source="admin:resetxp",
+    )
+
+
+@pytest.mark.asyncio
+async def test_reset_actor_defaults_to_none():
+    """actor_id is optional — non-admin reset paths shouldn't need to lie."""
+    with (
+        patch("services.xp_service.db.delete_xp", new_callable=AsyncMock),
+        patch("services.xp_service.bus.emit", new_callable=AsyncMock) as emit,
+    ):
+        await xp_service.reset(guild_id=1, user_id=2, source="system:purge")
+
+    assert emit.await_args.kwargs["actor_id"] is None

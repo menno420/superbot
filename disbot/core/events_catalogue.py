@@ -55,6 +55,7 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # ── XP (services/xp_service.py) ──────────────────────────────────
         "xp.awarded",
         "xp.level_up",
+        "xp.reset",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
         # "mining.harvested",

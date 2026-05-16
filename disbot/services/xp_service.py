@@ -35,6 +35,7 @@ logger = logging.getLogger("bot.xp_service")
 
 EVT_XP_AWARDED = "xp.awarded"
 EVT_LEVEL_UP = "xp.level_up"
+EVT_XP_RESET = "xp.reset"
 
 
 @dataclass(frozen=True)
@@ -103,5 +104,35 @@ async def award(
         new_level=new_level,
         leveled_up=leveled_up,
         delta=amount,
+        source=source,
+    )
+
+
+async def reset(
+    guild_id: int,
+    user_id: int,
+    *,
+    source: str,
+    actor_id: int | None = None,
+) -> None:
+    """Clear all XP for *user_id* in *guild_id* and emit ``EVT_XP_RESET``.
+
+    Args:
+        guild_id: discord guild.
+        user_id: target member whose XP row is removed.
+        source: short label for the reset ("admin:resetxp",
+            "admin:modal_reset", ...).  Surfaces in the event payload
+            so subscribers can attribute the action.
+        actor_id: optional ID of the admin who triggered the reset.
+
+    Emits ``EVT_XP_RESET`` after the row is deleted so panel-refresh,
+    audit, and level-role subscribers can react.
+    """
+    await db.delete_xp(user_id, guild_id)
+    await bus.emit(
+        EVT_XP_RESET,
+        guild_id=guild_id,
+        user_id=user_id,
+        actor_id=actor_id,
         source=source,
     )
