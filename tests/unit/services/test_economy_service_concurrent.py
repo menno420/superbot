@@ -29,7 +29,6 @@ import pytest
 from services import economy_service
 from services.economy_service import EVT_BALANCE_CHANGED
 
-
 _N = 20  # concurrent ops
 
 

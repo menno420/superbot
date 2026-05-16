@@ -9,21 +9,11 @@ from discord.ext import commands
 from core.runtime import tasks
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import economy_service
-from services.blackjack_engine import (
-    hand_str as _hand_str,
-)
-from services.blackjack_engine import (
-    hand_value as _hand_value,
-)
-from services.blackjack_engine import (
-    is_blackjack as _is_blackjack,
-)
-from services.blackjack_engine import (
-    new_deck as _new_deck,
-)
-from services.blackjack_engine import (
-    rank_value as _rank_value,
-)
+from services.blackjack_engine import hand_str as _hand_str
+from services.blackjack_engine import hand_value as _hand_value
+from services.blackjack_engine import is_blackjack as _is_blackjack
+from services.blackjack_engine import new_deck as _new_deck
+from services.blackjack_engine import rank_value as _rank_value
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT

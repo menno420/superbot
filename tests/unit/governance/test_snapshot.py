@@ -37,7 +37,6 @@ from utils.subsystem_registry import SUBSYSTEMS
 
 from .conftest import make_ctx, make_visibility_row
 
-
 # ---------------------------------------------------------------------------
 # Snapshot construction & JSON safety
 # ---------------------------------------------------------------------------

@@ -18,7 +18,6 @@ import pytest
 from services import xp_service
 from services.xp_service import EVT_LEVEL_UP, EVT_XP_AWARDED, EVT_XP_RESET
 
-
 _N = 20
 
 
