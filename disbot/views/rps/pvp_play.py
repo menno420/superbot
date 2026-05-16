@@ -8,11 +8,20 @@ is computed and payouts flow through :mod:`services.economy_service`.
 
 from __future__ import annotations
 
+import logging
+
 import discord
 
-from services import economy_service
+from services import economy_service, game_state_service
 from utils.ui_constants import GAME_COLOR, SUCCESS_COLOR
-from views.rps._helpers import _FREE_WIN
+from views.rps._helpers import (
+    RPS_PVP_PENDING_SUBSYSTEM,
+    RPS_PVP_PENDING_VERSION,
+    _FREE_WIN,
+    rps_pvp_canonical_user_id,
+)
+
+logger = logging.getLogger("bot.rps.pvp_play")
 
 
 class _RpsPvpPlayView(discord.ui.View):
@@ -68,6 +77,28 @@ class _RpsPvpPlayView(discord.ui.View):
 
     async def record_choice(self, user_id: int, move: str):
         self.choices[user_id] = move
+        # PR G1 — persist the partial-choice state so cog_load can find
+        # stranded matches after a crash.  Best-effort: failures here
+        # never block gameplay (in-memory dict above is authoritative).
+        try:
+            await game_state_service.save(
+                guild_id=self.guild_id,
+                user_id=rps_pvp_canonical_user_id(self.p1.id, self.p2.id),
+                channel_id=self.channel.id,
+                subsystem=RPS_PVP_PENDING_SUBSYSTEM,
+                state={
+                    "p1_id": self.p1.id,
+                    "p2_id": self.p2.id,
+                    "guild_id": self.guild_id,
+                    "channel_id": self.channel.id,
+                    "bet": self.bet,
+                    # JSON-safe: stringify int keys.
+                    "choices": {str(uid): m for uid, m in self.choices.items()},
+                },
+                version=RPS_PVP_PENDING_VERSION,
+            )
+        except Exception as exc:
+            logger.warning("rps_pvp_pending save (record_choice) failed: %s", exc)
         if len(self.choices) == 2:
             await self._resolve()
 
@@ -152,6 +183,17 @@ class _RpsPvpPlayView(discord.ui.View):
             color=SUCCESS_COLOR if winner_id else GAME_COLOR,
         )
         await self.channel.send(embed=embed)
+
+        # PR G1 — match resolved naturally; drop the persisted state.
+        try:
+            await game_state_service.clear(
+                guild_id=self.guild_id,
+                user_id=rps_pvp_canonical_user_id(self.p1.id, self.p2.id),
+                channel_id=self.channel.id,
+                subsystem=RPS_PVP_PENDING_SUBSYSTEM,
+            )
+        except Exception as exc:
+            logger.warning("rps_pvp_pending clear failed: %s", exc)
 
     async def on_timeout(self):
         # Anyone who didn't choose forfeits

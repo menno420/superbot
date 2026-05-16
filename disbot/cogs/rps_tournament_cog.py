@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import tasks
-from services import economy_service
+from services import economy_service, game_state_service
 from utils import db as global_db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -85,6 +85,86 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
     async def cog_load(self) -> None:
         tasks.spawn("rps:clear_stale_flag", self._clear_stale_tournament_flag())
         tasks.spawn("rps:cleanup_orphaned", self._cleanup_orphaned_channels())
+        # PR G1 — drop any rps_pvp_pending game_state rows left over
+        # from a previous process.  Live views cannot be re-attached, so
+        # the only safe action is to clear; the GC sweep would handle
+        # this after 24h but acting at cog_load is faster.  No coins
+        # are refunded — RPS PvP does not pre-debit.
+        tasks.spawn("rps:recover_pvp_pending", self._recover_rps_pvp_pending())
+
+    async def _recover_rps_pvp_pending(self) -> None:
+        try:
+            from views.rps._helpers import (
+                RPS_PVP_PENDING_SUBSYSTEM,
+                RPS_PVP_PENDING_VERSION,
+            )
+
+            rows = await game_state_service.list_active_for_subsystem(
+                RPS_PVP_PENDING_SUBSYSTEM,
+            )
+        except Exception as exc:
+            logger.warning("rps pvp_pending recovery skipped: %s", exc)
+            return
+        if not rows:
+            return
+        cleared = 0
+        for row in rows:
+            try:
+                # Drop both up-to-date and version-mismatched payloads.
+                # The view cannot be resumed either way.
+                version = row.get("version")
+                if version != RPS_PVP_PENDING_VERSION:
+                    logger.info(
+                        "rps_pvp_pending recovery: dropping version-mismatch "
+                        "row id=%s (saved=%s, current=%s)",
+                        row["id"],
+                        version,
+                        RPS_PVP_PENDING_VERSION,
+                    )
+                await game_state_service.clear_by_id(row["id"])
+                cleared += 1
+            except Exception as exc:
+                logger.warning(
+                    "rps_pvp_pending recovery: clear failed for id=%s: %s",
+                    row.get("id"),
+                    exc,
+                )
+        if cleared:
+            logger.info(
+                "rps_pvp_pending recovery: cleared %d stranded match(es)",
+                cleared,
+            )
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild) -> None:
+        """PR G1 — wipe rps_pvp_pending rows for a departed guild.
+
+        guild_lifecycle.teardown handles platform state; per-cog state
+        like game_state rows is owned by the cog and cleaned here so
+        the platform layer stays subsystem-agnostic.
+        """
+        try:
+            from views.rps._helpers import RPS_PVP_PENDING_SUBSYSTEM
+
+            rows = await game_state_service.list_active_for_subsystem(
+                RPS_PVP_PENDING_SUBSYSTEM,
+                guild_id=guild.id,
+            )
+            for row in rows:
+                try:
+                    await game_state_service.clear_by_id(row["id"])
+                except Exception as exc:
+                    logger.warning(
+                        "rps_pvp_pending on_guild_remove: clear id=%s failed: %s",
+                        row.get("id"),
+                        exc,
+                    )
+        except Exception as exc:
+            logger.warning(
+                "rps_pvp_pending on_guild_remove failed for guild=%d: %s",
+                guild.id,
+                exc,
+            )
 
     async def _clear_stale_tournament_flag(self) -> None:
         await self.bot.wait_until_ready()
