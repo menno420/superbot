@@ -501,6 +501,131 @@ class DiagnosticCog(commands.Cog):
         except Exception as exc:
             await ctx.send(f"❌ Failed: {exc}", delete_after=10)
 
+    # ────────────────────────────────────────────────────────────────
+    # !platform — runtime introspection (R1 from the hardening plan)
+    # Surfaces anchor restoration state, identity-contract findings,
+    # and basic runtime statistics so operators can investigate without
+    # SSH access.
+    # ────────────────────────────────────────────────────────────────
+
+    @commands.group(name="platform", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def platform_grp(self, ctx):
+        """Runtime introspection group. Usage: !platform <status|anchors|identity>."""
+        await ctx.send(
+            "Usage: `!platform status` · `!platform anchors` · `!platform identity`",
+            delete_after=15,
+        )
+
+    @platform_grp.command(name="status")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_status(self, ctx):
+        """High-level platform status: uptime, cogs, governance, scheduler."""
+        from core.runtime import tasks as runtime_tasks
+
+        uptime_obj = getattr(self.bot, "uptime", None)
+        uptime_s = (
+            str(datetime.datetime.now(tz=datetime.timezone.utc) - uptime_obj)
+            if uptime_obj
+            else "n/a"
+        )
+        embed = discord.Embed(
+            title="🛠 Platform status",
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(name="Uptime", value=uptime_s, inline=True)
+        embed.add_field(name="Guilds", value=str(len(self.bot.guilds)), inline=True)
+        embed.add_field(name="Cogs loaded", value=str(len(self.bot.cogs)), inline=True)
+        embed.add_field(
+            name="Managed tasks",
+            value=str(runtime_tasks.count()),
+            inline=True,
+        )
+        try:
+            from services.governance_service import _FAILED_SUBSYSTEMS
+
+            failed = ", ".join(sorted(_FAILED_SUBSYSTEMS)) or "none"
+        except Exception:
+            failed = "?"
+        embed.add_field(name="Failed subsystems", value=failed, inline=False)
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="anchors")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_anchors(self, ctx):
+        """Show last restoration outcome and active anchor counts per subsystem."""
+        from core.runtime import message_anchor_manager
+
+        stats = message_anchor_manager.last_restore_stats()
+        embed = discord.Embed(
+            title="📌 Panel anchors",
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(
+            name="Last restoration",
+            value=(
+                f"seen: **{stats['anchors_seen']}**  ·  "
+                f"restored: **{stats['restored']}**  ·  "
+                f"view_missing: **{stats['view_missing']}**  ·  "
+                f"stale: **{stats['stale']}**"
+            ),
+            inline=False,
+        )
+        try:
+            rows = await db.fetchall(
+                "SELECT subsystem, COUNT(*) AS n FROM panel_anchors "
+                "WHERE NOT is_stale GROUP BY subsystem ORDER BY n DESC",
+                (),
+            )
+            if rows:
+                lines = [f"`{r['subsystem']}` — {r['n']}" for r in rows]
+                embed.add_field(
+                    name="Active anchors by subsystem",
+                    value="\n".join(lines)[:1024],
+                    inline=False,
+                )
+            else:
+                embed.add_field(
+                    name="Active anchors by subsystem",
+                    value="none",
+                    inline=False,
+                )
+        except Exception as exc:
+            embed.add_field(
+                name="Active anchors by subsystem",
+                value=f"DB query failed: {exc}",
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="identity")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_identity(self, ctx):
+        """Run the identity-contract validator and show findings."""
+        from utils.subsystem_registry import validate_identity_contract
+
+        findings = await validate_identity_contract(self.bot)
+        total = sum(len(v) for v in findings.values())
+        color = discord.Color.green() if total == 0 else discord.Color.orange()
+        embed = discord.Embed(
+            title="🪪 Identity contract",
+            description=(
+                "All four identity surfaces agree."
+                if total == 0
+                else f"{total} finding(s) — see fields."
+            ),
+            color=color,
+        )
+        for bucket, items in findings.items():
+            if not items:
+                continue
+            embed.add_field(
+                name=f"{bucket} ({len(items)})",
+                value="\n".join(items)[:1024],
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(DiagnosticCog(bot))

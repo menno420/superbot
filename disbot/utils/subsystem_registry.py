@@ -501,7 +501,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "admin",
         "tags": ["diagnostics", "health", "latency", "debug"],
-        "entry_points": ["diagnosticmenu", "diagnostics", "ping"],
+        "entry_points": ["diagnosticmenu", "diagnostics", "ping", "platform"],
         "default_channels": ["staff", "bot-spam"],
         "related_subsystems": ["admin"],
         "dependencies": [],

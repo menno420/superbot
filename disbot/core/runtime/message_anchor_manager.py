@@ -36,6 +36,15 @@ logger = logging.getLogger("bot.runtime.anchors")
 # for the (rare) case where an admin really wants a fresh restore.
 _RESTORED_ONCE: bool = False
 
+# Last restoration summary, exposed for admin diagnostics.
+# Cleared by reset_restoration_state.
+_LAST_RESTORE_STATS: dict[str, int] = {
+    "anchors_seen": 0,
+    "restored": 0,
+    "view_missing": 0,
+    "stale": 0,
+}
+
 
 def reset_restoration_state() -> None:
     """Clear the once-only guard so the next restore_anchors() runs again.
@@ -45,6 +54,17 @@ def reset_restoration_state() -> None:
     """
     global _RESTORED_ONCE
     _RESTORED_ONCE = False
+    _LAST_RESTORE_STATS.update(
+        anchors_seen=0,
+        restored=0,
+        view_missing=0,
+        stale=0,
+    )
+
+
+def last_restore_stats() -> dict[str, int]:
+    """Return a snapshot of the most recent ``restore_anchors`` outcome."""
+    return dict(_LAST_RESTORE_STATS)
 
 
 async def get(user_id: int, channel_id: int, subsystem: str) -> dict | None:
@@ -153,6 +173,12 @@ async def restore_anchors(bot: commands.Bot) -> None:
                 result="restore_failed",
             ).inc()
 
+    _LAST_RESTORE_STATS.update(
+        anchors_seen=len(anchors),
+        restored=restored,
+        view_missing=view_missing,
+        stale=stale,
+    )
     logger.info(
         "Anchor recovery complete — %d restored, %d view-missing, %d marked stale",
         restored,
