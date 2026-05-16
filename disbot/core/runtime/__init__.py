@@ -13,7 +13,6 @@ Public aliases:
     nav        — navigation_stack module
     surfaces   — ephemeral_surface_manager module
     scheduler  — live_update_scheduler module
-    plugins    — plugin_contract module
     tasks      — managed background-task helper (see CRIT-1 fix)
     interaction — safe_defer / safe_followup / safe_edit (see CRIT-2 fix)
 
@@ -37,7 +36,6 @@ from core.runtime import navigation_stack as nav  # noqa: F401 — re-exported
 from core.runtime import panel_manager as panels  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
 from core.runtime import tasks  # noqa: F401 — re-exported
-from core.runtime import plugin_contract as plugins  # noqa: F401 — re-exported
 from core.runtime import session_gc as gc  # noqa: F401 — re-exported
 from core.runtime import session_manager as sessions  # noqa: F401 — re-exported
 from core.runtime import state_store as store  # noqa: F401 — re-exported
