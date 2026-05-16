@@ -207,7 +207,7 @@ class EconomyPanelView(PersistentView):
 
         uid, gid = interaction.user.id, interaction.guild_id
         grouped = await _build_combined_inventory(uid, gid)
-        view = UnifiedInventoryView(interaction.user, None, interaction.user, grouped)
+        view = UnifiedInventoryView(interaction.user, interaction.user, grouped)
         await interaction.response.send_message(embed=view.build_hub_embed(), view=view)
         view.message = await interaction.original_response()
 

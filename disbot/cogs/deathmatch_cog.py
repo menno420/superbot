@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import BucketType, cooldown
 
 from utils import db
+from utils.ui_constants import GAME_COLOR
 
 
 class _Duel:
@@ -229,7 +230,38 @@ class Deathmatch(commands.Cog):
         self.bot = bot
         self.active_duels: dict[tuple, _Duel] = {}
 
-    @commands.command(name="dm_challenge", aliases=["deathmatch", "challenge"])
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns a deathmatch overview).
+
+        Deathmatch starts a 1v1 duel from the entry command — there's no
+        hub panel. The returned overview embed describes the flow; the
+        help-cog appends the "↩ Back to Help" control automatically.
+        """
+        embed = discord.Embed(
+            title="⚔️ Deathmatch",
+            description=(
+                "Challenge another player to a 1v1 duel.  Attack and defend "
+                "via buttons on the duel message until one combatant falls."
+            ),
+            color=GAME_COLOR,
+        )
+        embed.add_field(
+            name="Challenge",
+            value="`!deathmatch @user`  (alias of `!dm_challenge @user`)",
+            inline=False,
+        )
+        embed.add_field(
+            name="Stats",
+            value="`!leaderboard deathmatch` — top duelists",
+            inline=False,
+        )
+        embed.set_footer(text="30-second cooldown between challenges.")
+        return embed, discord.ui.View(timeout=300)
+
+    @commands.command(name="dm_challenge", aliases=["deathmatch", "challenge", "dm"])
     @cooldown(1, 30, BucketType.user)
     async def challenge(self, ctx: commands.Context, opponent: discord.Member):
         """Challenge another user to a deathmatch duel."""

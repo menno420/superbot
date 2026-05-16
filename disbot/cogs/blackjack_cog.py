@@ -1176,6 +1176,43 @@ class BlackjackCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns a blackjack overview).
+
+        The blackjack subsystem has no hub panel — the entry command starts
+        a game with an optional bet/opponent — so we return an informational
+        embed with no buttons. The help-cog appends the "↩ Back to Help"
+        control automatically.
+        """
+        embed = discord.Embed(
+            title="🃏 Blackjack",
+            description=(
+                "Classic 21 — play solo against the bot or challenge another "
+                "player. Tournament mode runs scheduled brackets."
+            ),
+            color=GAME_COLOR,
+        )
+        embed.add_field(
+            name="Solo vs bot",
+            value="`!blackjack <bet>` or `!bj <bet>`",
+            inline=False,
+        )
+        embed.add_field(
+            name="PvP challenge",
+            value="`!blackjack @user <bet>`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Tournament",
+            value="`!bjtournament` — open registration",
+            inline=False,
+        )
+        embed.set_footer(text="Bets are in 🪙 coins. Bet 0 for a free game.")
+        return embed, discord.ui.View(timeout=300)
+
     async def cog_load(self):
         tasks.spawn("blackjack:cleanup_orphaned", self._cleanup_orphaned_tournaments())
         # PR G2/G3 — drop blackjack solo + PvP game_state rows left

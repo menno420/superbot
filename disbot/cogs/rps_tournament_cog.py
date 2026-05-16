@@ -76,6 +76,42 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.entry_fee = 0
         self.paid_players: set[int] = set()  # players who paid the entry fee
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns an RPS overview).
+
+        RPS has no hub panel — the entry commands either start a quick
+        match (``!rps``) or open tournament registration (``!rpsregister``).
+        The returned overview embed describes both flows; the help-cog
+        appends the "↩ Back to Help" control automatically.
+        """
+        embed = discord.Embed(
+            title="✂️ Rock-Paper-Scissors",
+            description=(
+                "Quick matches vs the bot or another player, plus scheduled "
+                "tournaments with optional entry fees."
+            ),
+            color=GAME_COLOR,
+        )
+        embed.add_field(
+            name="Quick match",
+            value="`!rps` solo vs bot · `!rps @user` PvP · `!rps @user <bet>`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Tournament",
+            value=(
+                "`!rpsregister` — open registration\n"
+                "`!rpsstart` — begin bracket\n"
+                "`!rpshelp` — full tournament help"
+            ),
+            inline=False,
+        )
+        embed.set_footer(text="Default mode: classic · best of 3.")
+        return embed, discord.ui.View(timeout=300)
+
     def create_move_aliases(self):
         """Creates a dictionary of move aliases for all game modes."""
         return {

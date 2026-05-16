@@ -36,9 +36,11 @@ _COGS_DIR = _DISBOT / "cogs"
 def _scan_cog_classes() -> dict[str, dict]:
     """AST-scan ``disbot/cogs/*.py`` for ``commands.Cog`` subclasses.
 
-    Returns a mapping ``"<module>:<class>" -> {commands, methods, async_methods}``
-    so callers can ask: does this cog declare a command name ending in
-    ``menu``, and if so does it also declare an async ``build_help_menu_view``?
+    Returns a mapping ``"<module>:<class>" -> info`` where ``info`` contains:
+      * ``commands`` — set of command names (from ``name=`` kwarg or function name)
+      * ``aliases`` — set of alias strings from ``aliases=[...]`` kwargs
+      * ``methods`` — set of all method names on the class
+      * ``async_methods`` — subset of ``methods`` that are ``async def``
     """
     result: dict[str, dict] = {}
     for py in _COGS_DIR.glob("*.py"):
@@ -53,6 +55,7 @@ def _scan_cog_classes() -> dict[str, dict]:
                 continue
 
             commands_set: set[str] = set()
+            aliases_set: set[str] = set()
             methods_set: set[str] = set()
             async_methods: set[str] = set()
             for child in node.body:
@@ -74,6 +77,12 @@ def _scan_cog_classes() -> dict[str, dict]:
                     for kw in dec.keywords:
                         if kw.arg == "name" and isinstance(kw.value, ast.Constant):
                             cmd_name = kw.value.value
+                        elif kw.arg == "aliases" and isinstance(kw.value, ast.List):
+                            for elt in kw.value.elts:
+                                if isinstance(elt, ast.Constant) and isinstance(
+                                    elt.value, str
+                                ):
+                                    aliases_set.add(elt.value)
                     if cmd_name is None:
                         cmd_name = child.name
                     commands_set.add(cmd_name)
@@ -81,46 +90,72 @@ def _scan_cog_classes() -> dict[str, dict]:
             module_name = "cogs." + py.stem
             result[f"{module_name}:{node.name}"] = {
                 "commands": commands_set,
+                "aliases": aliases_set,
                 "methods": methods_set,
                 "async_methods": async_methods,
             }
     return result
 
 
-def test_every_panel_cog_has_build_help_menu_view():
-    """Every cog with a ``*menu`` command must expose ``build_help_menu_view``.
+def test_every_visible_subsystem_cog_has_build_help_menu_view():
+    """Every cog reachable from the help dropdown must expose ``build_help_menu_view``.
 
-    Regression guard for silent UX drift: if a new panel cog ships without
-    the direct-navigation hook, the help dropdown silently falls back to
-    the inline command list instead of opening the panel. Without this
-    test that omission would only surface as a runtime UX inconsistency.
+    Walks ``SUBSYSTEMS`` (skipping ``visibility_mode='internal'`` and the
+    help cog itself), resolves each subsystem to its owning cog by
+    intersecting the registered ``entry_points`` with the cog's command
+    names **and aliases**, and asserts the cog declares an async
+    ``build_help_menu_view`` method.
 
-    Heuristic: any ``@commands.command(name='*menu')`` (or method named
-    ``*menu`` with no explicit name) is a panel entry point. The owning
-    cog class must define ``async def build_help_menu_view`` so the
-    help-menu select can dispatch into the panel directly.
+    Regression guard: closes the silent UX drift where a new subsystem
+    ships without the direct-navigation hook and the help dropdown
+    silently falls back to the inline command list. Catches the case
+    even for game cogs that have no ``*menu`` command (blackjack, rps,
+    deathmatch), which the previous ``*menu``-only heuristic missed.
     """
+    from utils.subsystem_registry import SUBSYSTEMS
+
     classes = _scan_cog_classes()
 
     missing_hook: list[str] = []
     not_async: list[str] = []
-    for key, info in classes.items():
-        menu_cmds = {c for c in info["commands"] if c.endswith("menu")}
-        if not menu_cmds:
-            continue
-        if "build_help_menu_view" not in info["methods"]:
-            missing_hook.append(f"{key} (declares: {sorted(menu_cmds)})")
-            continue
-        if "build_help_menu_view" not in info["async_methods"]:
-            not_async.append(key)
+    unresolved: list[str] = []
 
+    for sub_name, meta in SUBSYSTEMS.items():
+        if meta.get("visibility_mode") == "internal":
+            continue
+        if sub_name == "help":  # help can't direct-navigate to itself
+            continue
+        entry_points = set(meta.get("entry_points", ()))
+        if not entry_points:
+            continue
+
+        # Find the cog whose commands (or aliases) intersect entry_points.
+        owning = [
+            key
+            for key, info in classes.items()
+            if (info["commands"] | info["aliases"]) & entry_points
+        ]
+        if not owning:
+            unresolved.append(f"{sub_name} (entry_points={sorted(entry_points)})")
+            continue
+
+        for key in owning:
+            info = classes[key]
+            if "build_help_menu_view" not in info["methods"]:
+                missing_hook.append(f"{sub_name} → {key}")
+            elif "build_help_menu_view" not in info["async_methods"]:
+                not_async.append(f"{sub_name} → {key}")
+
+    assert not unresolved, (
+        "Subsystems whose entry_points match no cog (likely registry "
+        "drift — entry_points reference a command that doesn't exist):\n  "
+        + "\n  ".join(unresolved)
+    )
     assert not missing_hook, (
-        "These cogs declare a *menu command but do not define "
-        "build_help_menu_view — the help dropdown will fall back to the "
-        "inline command list instead of opening the panel directly. Add "
-        "an async build_help_menu_view(self, interaction) method that "
-        "returns (embed, view), mirroring the *menu command body:\n  "
-        + "\n  ".join(missing_hook)
+        "Cogs reachable from the help dropdown must define an async "
+        "build_help_menu_view(self, interaction) so the dropdown navigates "
+        "directly to the panel instead of falling back to the inline "
+        "command list:\n  " + "\n  ".join(missing_hook)
     )
     assert not not_async, (
         "build_help_menu_view must be an async method (help_cog awaits "

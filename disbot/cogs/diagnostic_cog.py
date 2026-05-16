@@ -10,7 +10,7 @@ import discord
 import psutil
 from discord.ext import commands
 
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils import db
 from views.base import BaseView
 
@@ -192,6 +192,14 @@ class DiagnosticCog(commands.Cog):
         view = _DiagnosticsHubView(ctx, self)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the diagnostics hub)."""
+        view = _DiagnosticsHubView(help_ctx_shim(interaction), self)
+        return view.build_embed(), view
 
     # ------------------------------------------------------------------
     # Command overview

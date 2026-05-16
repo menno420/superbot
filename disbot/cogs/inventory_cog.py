@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import logging
 
 import discord
@@ -171,13 +170,11 @@ class _CategoryView(BaseView):
     def __init__(
         self,
         author: discord.Member | discord.User,
-        ctx: commands.Context,
         category: str,
         items: list[tuple[str, int, dict]],
         hub: UnifiedInventoryView,
     ) -> None:
         super().__init__(author, timeout=180)
-        self._ctx = ctx
         self._category = category
         self._items = items
         self._hub = hub
@@ -273,12 +270,10 @@ class UnifiedInventoryView(BaseView):
     def __init__(
         self,
         author: discord.Member | discord.User,
-        ctx: commands.Context,
         target: discord.Member | discord.User,
         grouped: dict[str, list[tuple[str, int, dict]]],
     ) -> None:
         super().__init__(author, timeout=180)
-        self.ctx = ctx
         self.target = target
         self._grouped = grouped
         self._add_category_buttons()
@@ -297,8 +292,23 @@ class UnifiedInventoryView(BaseView):
                 style=discord.ButtonStyle.blurple,
                 row=0,
             )
-            btn.callback = functools.partial(self._open_category, category=cat)  # type: ignore[method-assign]
+            btn.callback = self._make_open_callback(cat)  # type: ignore[method-assign]
             self.add_item(btn)
+
+    def _make_open_callback(self, category: str):
+        # Closure instead of functools.partial — discord.py inspects the
+        # callback signature, and a partial with a kwonly arg can cause
+        # the dispatcher to surface "An error occurred" on click.
+        async def _callback(interaction: discord.Interaction) -> None:
+            items = self._grouped.get(category, [])
+            view = _CategoryView(self._author, category, items, hub=self)
+            view.message = self.message
+            await interaction.response.edit_message(
+                embed=view.build_embed(),
+                view=view,
+            )
+
+        return _callback
 
     def build_hub_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -339,7 +349,7 @@ class UnifiedInventoryView(BaseView):
         category: str,
     ) -> None:
         items = self._grouped.get(category, [])
-        view = _CategoryView(self.ctx.author, self.ctx, category, items, hub=self)
+        view = _CategoryView(self._author, category, items, hub=self)
         view.message = self.message
         await interaction.response.edit_message(embed=view.build_embed(), view=view)
 
@@ -360,9 +370,19 @@ class InventoryCog(commands.Cog):
         """Show your (or another user's) unified inventory hub."""
         target = member or ctx.author
         grouped = await _build_combined_inventory(target.id, ctx.guild.id)
-        view = UnifiedInventoryView(ctx.author, ctx, target, grouped)
+        view = UnifiedInventoryView(ctx.author, target, grouped)
         msg = await ctx.send(embed=view.build_hub_embed(), view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the inventory hub for the user)."""
+        target = interaction.user
+        grouped = await _build_combined_inventory(target.id, interaction.guild_id)
+        view = UnifiedInventoryView(target, target, grouped)
+        return view.build_hub_embed(), view
 
 
 async def setup(bot: commands.Bot) -> None:
