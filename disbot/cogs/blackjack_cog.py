@@ -171,6 +171,115 @@ async def _clear_solo_game(game: _Game) -> None:
 
 
 # ---------------------------------------------------------------------------
+# PR G3 — blackjack PvP persistence (game_state adoption).
+#
+# Bets are NOT pre-debited for PvP either; settlement happens in
+# ``_resolve_pvp`` via economy_service.credit/debit.  A single row per
+# match (canonical user_id = ``min(p1, p2)``) captures both players'
+# hands and the shared ``_PvPState`` results dict.  cog_load reads
+# stranded rows and clears them — live views cannot be re-attached.
+#
+# Per-player save points fan through ``hit_btn`` / ``double_btn`` like
+# the solo path, but ``_finish`` is NOT a clear in PvP — the OTHER
+# player may still be playing.  Match-level clear lives in
+# ``_resolve_pvp`` and the timeout/forfeit code path.
+# ---------------------------------------------------------------------------
+
+BLACKJACK_PVP_SUBSYSTEM = "blackjack_pvp"
+BLACKJACK_PVP_VERSION = 1
+
+
+def _pvp_canonical_user_id(p1_id: int, p2_id: int) -> int:
+    """Single canonical user id used as the natural-key surrogate for
+    a PvP match.  Matches the convention from PR G1 (RPS PvP) so the
+    JSONB convention "smaller id wins the slot" is consistent across
+    paired-state subsystems.
+    """
+    return min(p1_id, p2_id)
+
+
+def _serialize_pvp_hand(game: _Game | None) -> dict | None:
+    """Compact JSON-safe snapshot of one player's hand, or None if the
+    player has already been popped from ``_active`` (i.e. they
+    finished and the other player is still playing).
+    """
+    if game is None:
+        return None
+    return {
+        "bet": game.bet,
+        "doubled": game.doubled,
+        "deck": list(game.deck),
+        "player": list(game.player),
+        "dealer": list(game.dealer),
+    }
+
+
+async def _save_pvp_match(state: _PvPState) -> None:
+    """Best-effort persist of a PvP match's full state.
+
+    The saved row captures both hands (or None for a player who has
+    already finished) and the ``results`` dict the resolution code
+    reads to compute the winner.  Failures are logged but never
+    block gameplay — the in-memory ``_pvp`` and ``_active`` dicts are
+    authoritative while the bot is alive.
+    """
+    if state.channel_id is None:
+        return
+    p1_game = _active.get((state.p1, state.guild_id))
+    p2_game = _active.get((state.p2, state.guild_id))
+    try:
+        await game_state_service.save(
+            guild_id=state.guild_id,
+            user_id=_pvp_canonical_user_id(state.p1, state.p2),
+            channel_id=state.channel_id,
+            subsystem=BLACKJACK_PVP_SUBSYSTEM,
+            state={
+                "p1_id": state.p1,
+                "p2_id": state.p2,
+                "bet": state.bet,
+                # JSON-safe int keys.
+                "results": {str(uid): v for uid, v in state.results.items()},
+                "p1_game": _serialize_pvp_hand(p1_game),
+                "p2_game": _serialize_pvp_hand(p2_game),
+            },
+            version=BLACKJACK_PVP_VERSION,
+        )
+    except Exception as exc:
+        logger.warning("blackjack_pvp save failed: %s", exc)
+
+
+async def _clear_pvp_match(state: _PvPState) -> None:
+    """Best-effort game_state delete for a finished PvP match."""
+    if state.channel_id is None:
+        return
+    try:
+        await game_state_service.clear(
+            guild_id=state.guild_id,
+            user_id=_pvp_canonical_user_id(state.p1, state.p2),
+            channel_id=state.channel_id,
+            subsystem=BLACKJACK_PVP_SUBSYSTEM,
+        )
+    except Exception as exc:
+        logger.warning("blackjack_pvp clear failed: %s", exc)
+
+
+async def _save_game_state(game: _Game) -> None:
+    """Dispatch a save to the right subsystem helper based on game type.
+
+    Solo, PvP, and tournament games run through the same
+    ``BlackjackView`` so the call sites in ``hit_btn`` / ``double_btn``
+    don't know which subsystem to write.  This dispatcher keeps the
+    view code agnostic.
+    """
+    if game.pvp_state is not None:
+        await _save_pvp_match(game.pvp_state)
+    elif _is_solo_game(game):
+        await _save_solo_game(game)
+    # Tournament games (game.tournament_chips is not None) are
+    # handled by PR G5's blackjack_tournament subsystem.
+
+
+# ---------------------------------------------------------------------------
 # PvP state
 # ---------------------------------------------------------------------------
 
@@ -366,9 +475,10 @@ class BlackjackView(discord.ui.View):
                 -1,
             )
             return
-        # PR G2 — persist post-hit state so a crash leaves the hand
-        # recoverable (clear-on-cog_load) rather than entirely lost.
-        await _save_solo_game(self.game)
+        # PR G2/G3 — persist post-hit state.  Solo writes to
+        # blackjack_solo; PvP writes the whole match to blackjack_pvp.
+        # ``cog_load`` will clear either kind on next restart.
+        await _save_game_state(self.game)
         self.double_btn.disabled = True
         await interaction.response.edit_message(embed=_game_embed(self.game), view=self)
 
@@ -403,10 +513,11 @@ class BlackjackView(discord.ui.View):
                 -1,
             )
             return
-        # PR G2 — persist post-double state.  ``_resolve`` will finish
-        # synchronously and clear, but if the bot crashes mid-resolve
-        # the saved state survives and ``cog_load`` will discard it.
-        await _save_solo_game(self.game)
+        # PR G2/G3 — persist post-double state.  ``_resolve`` will
+        # finish synchronously and clear, but if the bot crashes
+        # mid-resolve the saved state survives and ``cog_load`` will
+        # discard it.
+        await _save_game_state(self.game)
         await self._resolve(interaction)
 
     async def _resolve(self, interaction: discord.Interaction):
@@ -564,6 +675,10 @@ async def _start_pvp(
             view.message = msg
             state.messages[uid] = msg
 
+    # PR G3 — initial PvP match save once both views are live (or
+    # both players hit natural blackjack and we're about to resolve).
+    await _save_pvp_match(state)
+
     # If both got instant blackjack
     if len(state.results) == 2:
         await _resolve_pvp(state, channel)  # type: ignore[arg-type]
@@ -572,6 +687,11 @@ async def _start_pvp(
 async def _resolve_pvp(state: _PvPState, channel: discord.TextChannel):
     key = frozenset({state.p1, state.p2})
     _pvp.pop(key, None)
+    # PR G3 — match is fully resolved; drop the persisted row.
+    # Settlement-side credit/debit runs below regardless of the clear
+    # result, so a clear failure is non-fatal (the 24h game_state GC
+    # will sweep eventually).
+    await _clear_pvp_match(state)
 
     v1 = state.results.get(state.p1, -1)
     v2 = state.results.get(state.p2, -1)
@@ -936,11 +1056,13 @@ class BlackjackCog(commands.Cog):
 
     async def cog_load(self):
         tasks.spawn("blackjack:cleanup_orphaned", self._cleanup_orphaned_tournaments())
-        # PR G2 — drop blackjack_solo game_state rows left over from a
-        # previous process.  Live views cannot be re-attached.  No
-        # coins are refunded — solo blackjack does not pre-debit; the
-        # user simply keeps their balance and starts a new hand.
+        # PR G2/G3 — drop blackjack solo + PvP game_state rows left
+        # over from a previous process.  Live views cannot be
+        # re-attached.  No coins are refunded — both modes settle at
+        # resolve and never pre-debit, so the user simply keeps their
+        # balance and starts a new game.
         tasks.spawn("blackjack:recover_solo", self._recover_blackjack_solo())
+        tasks.spawn("blackjack:recover_pvp", self._recover_blackjack_pvp())
 
     def cog_unload(self):
         """Cancel cleanup + tournament-timer tasks so a reload doesn't leak them."""
@@ -982,29 +1104,68 @@ class BlackjackCog(commands.Cog):
                 cleared,
             )
 
-    @commands.Cog.listener()
-    async def on_guild_remove(self, guild) -> None:
-        """PR G2 — wipe blackjack_solo rows for a departed guild."""
+    async def _recover_blackjack_pvp(self) -> None:
         try:
             rows = await game_state_service.list_active_for_subsystem(
-                BLACKJACK_SOLO_SUBSYSTEM,
-                guild_id=guild.id,
+                BLACKJACK_PVP_SUBSYSTEM,
             )
-            for row in rows:
-                try:
-                    await game_state_service.clear_by_id(row["id"])
-                except Exception as exc:
-                    logger.warning(
-                        "blackjack_solo on_guild_remove: clear id=%s failed: %s",
-                        row.get("id"),
-                        exc,
-                    )
         except Exception as exc:
-            logger.warning(
-                "blackjack_solo on_guild_remove failed for guild=%d: %s",
-                guild.id,
-                exc,
+            logger.warning("blackjack_pvp recovery skipped: %s", exc)
+            return
+        if not rows:
+            return
+        cleared = 0
+        for row in rows:
+            try:
+                version = row.get("version")
+                if version != BLACKJACK_PVP_VERSION:
+                    logger.info(
+                        "blackjack_pvp recovery: dropping version-mismatch "
+                        "row id=%s (saved=%s, current=%s)",
+                        row["id"],
+                        version,
+                        BLACKJACK_PVP_VERSION,
+                    )
+                await game_state_service.clear_by_id(row["id"])
+                cleared += 1
+            except Exception as exc:
+                logger.warning(
+                    "blackjack_pvp recovery: clear failed for id=%s: %s",
+                    row.get("id"),
+                    exc,
+                )
+        if cleared:
+            logger.info(
+                "blackjack_pvp recovery: cleared %d stranded match(es)",
+                cleared,
             )
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild) -> None:
+        """PR G2/G3 — wipe blackjack solo + PvP rows for a departed guild."""
+        for subsystem in (BLACKJACK_SOLO_SUBSYSTEM, BLACKJACK_PVP_SUBSYSTEM):
+            try:
+                rows = await game_state_service.list_active_for_subsystem(
+                    subsystem,
+                    guild_id=guild.id,
+                )
+                for row in rows:
+                    try:
+                        await game_state_service.clear_by_id(row["id"])
+                    except Exception as exc:
+                        logger.warning(
+                            "%s on_guild_remove: clear id=%s failed: %s",
+                            subsystem,
+                            row.get("id"),
+                            exc,
+                        )
+            except Exception as exc:
+                logger.warning(
+                    "%s on_guild_remove failed for guild=%d: %s",
+                    subsystem,
+                    guild.id,
+                    exc,
+                )
 
     async def _cleanup_orphaned_tournaments(self):
         """On startup, find leftover BJ Tournament categories and notify players."""
@@ -1131,7 +1292,7 @@ class BlackjackCog(commands.Cog):
         # PR G2 — initial save once the view is live.  If the bot
         # crashes between deal and any further action, ``cog_load``
         # will see this row and clear it.
-        await _save_solo_game(game)
+        await _save_game_state(game)
 
     @commands.command(name="bjtournament", aliases=["bjtourn"])
     @commands.has_permissions(administrator=True)

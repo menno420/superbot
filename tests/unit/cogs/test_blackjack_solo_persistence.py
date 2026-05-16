@@ -242,24 +242,41 @@ async def test_recover_blackjack_solo_list_failure_is_logged_not_raised():
 
 
 @pytest.mark.asyncio
-async def test_on_guild_remove_wipes_rows_for_guild():
+async def test_on_guild_remove_wipes_solo_rows_for_guild():
+    """G2 + G3: on_guild_remove iterates every persistence-bearing
+    subsystem (blackjack_solo, blackjack_pvp).  This test focuses on
+    the solo subsystem's contribution; the cross-subsystem behaviour
+    is exercised in the PvP test pack.
+    """
     from cogs.blackjack_cog import BlackjackCog
 
     cog = BlackjackCog.__new__(BlackjackCog)
     guild = MagicMock()
     guild.id = 999
-    rows = [_solo_row(1, guild_id=999), _solo_row(2, guild_id=999)]
+
+    seen: dict[str, list] = {}
+
+    async def fake_list(subsystem, *, guild_id):
+        assert guild_id == 999  # scoped to the departing guild
+        if subsystem == "blackjack_solo":
+            rows = [_solo_row(1, guild_id=999), _solo_row(2, guild_id=999)]
+        else:
+            rows = []
+        seen[subsystem] = rows
+        return rows
+
     with (
         patch(
             "services.game_state_service.list_active_for_subsystem",
-            new_callable=AsyncMock,
-            return_value=rows,
-        ) as mock_list,
+            side_effect=fake_list,
+        ),
         patch(
             "services.game_state_service.clear_by_id",
             new_callable=AsyncMock,
         ) as mock_clear,
     ):
         await cog.on_guild_remove(guild)
-    assert mock_list.await_args.kwargs.get("guild_id") == 999
-    assert mock_clear.await_count == 2
+    assert "blackjack_solo" in seen
+    # Solo rows cleared (PvP returned empty).
+    cleared_ids = {c.args[0] for c in mock_clear.await_args_list}
+    assert {1, 2} <= cleared_ids
