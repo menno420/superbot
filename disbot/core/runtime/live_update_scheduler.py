@@ -41,8 +41,10 @@ logger = logging.getLogger("bot.runtime.scheduler")
 # Minimum seconds between edits to the same Discord channel.
 _MIN_EDIT_INTERVAL: float = 1.0
 
-# channel_id → monotonic timestamp of last edit
-_last_edit: dict[int, float] = {}
+# (guild_id, channel_id) → monotonic timestamp of last edit.
+# Keyed by (guild_id, channel_id) so guild_lifecycle.teardown() can drop entries
+# deterministically for a departed guild without touching other guilds' state.
+_last_edit: dict[tuple[int, int], float] = {}
 
 # subsystem → [(event_name, refresh_fn), ...]
 _REGISTRATIONS: dict[str, list[tuple[str, Callable]]] = {}
@@ -144,7 +146,7 @@ async def _refresh_panel(
 ) -> None:
     """Fetch a new embed/view and edit the panel message, respecting rate limits."""
     now = time.monotonic()
-    wait = _MIN_EDIT_INTERVAL - (now - _last_edit.get(channel_id, 0.0))
+    wait = _MIN_EDIT_INTERVAL - (now - _last_edit.get((guild_id, channel_id), 0.0))
     if wait > 0:
         await asyncio.sleep(wait)
 
@@ -167,7 +169,7 @@ async def _refresh_panel(
     try:
         message = await channel.fetch_message(message_id)
         await message.edit(embed=embed, view=view)
-        _last_edit[channel_id] = time.monotonic()
+        _last_edit[(guild_id, channel_id)] = time.monotonic()
         _metrics.panel_refresh_total.labels(subsystem=subsystem).inc()
         logger.debug(
             "Panel refreshed | user=%d | channel=%d | message=%d",
@@ -190,3 +192,17 @@ def setup(bot: commands.Bot) -> None:
         sum(len(v) for v in _REGISTRATIONS.values()),
         len(_SUBSCRIBED_EVENTS),
     )
+
+
+def forget_guild(guild_id: int) -> int:
+    """Drop _last_edit throttle entries owned by a departed guild.
+
+    Cleanup is deterministic and always occurs regardless of dict size — there
+    is no size-gated bypass.  The (guild_id, channel_id) keying makes this O(n)
+    over _last_edit but bounded by the number of channels the guild ever
+    refreshed.  Returns the number of entries removed.
+    """
+    stale = [k for k in _last_edit if k[0] == guild_id]
+    for k in stale:
+        _last_edit.pop(k, None)
+    return len(stale)

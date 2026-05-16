@@ -31,3 +31,12 @@ class CapabilityNamespaceError(RegistryValidationError):
 
 class GovernanceUpgradeError(GovernanceError):
     """Governance schema version upgrade failed."""
+
+
+class UnauthorizedGovernanceWriteError(GovernanceError):
+    """Caller lacks the authority tier required to mutate governance state.
+
+    Governance writes are an infrastructure boundary: even if the cog layer
+    has already validated the user's Discord permissions, the governance
+    pipeline re-validates to prevent authority escalation from coding mistakes.
+    """

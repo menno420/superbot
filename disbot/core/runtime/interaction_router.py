@@ -95,6 +95,38 @@ async def dispatch(interaction: discord.Interaction) -> None:
         interaction.guild_id,
     )
 
+    # Governance gate (Phase 1.3 — centralized enforcement).
+    # Check subsystem visibility BEFORE resolving a session or calling the handler.
+    # This ensures that disabling a subsystem blocks interactions (button presses,
+    # modal submissions) just as it blocks command invocations.
+    if interaction.guild_id:
+        try:
+            from governance import GovernanceContext, get_visible_subsystems
+
+            gov_ctx = GovernanceContext.from_interaction(interaction)
+            visible = await get_visible_subsystems(gov_ctx)
+            if prefix not in visible:
+                logger.debug(
+                    "INTERACTION DENIED | req=%s | subsystem=%s | user=%s | "
+                    "reason=subsystem_disabled",
+                    request_id,
+                    prefix,
+                    getattr(interaction.user, "id", None),
+                )
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        "❌ This feature is currently disabled here.",
+                        ephemeral=True,
+                    )
+                return
+        except Exception as exc:
+            logger.warning(
+                "Governance gate failed for req=%s | prefix=%s: %s — allowing (fail-open fallback)",
+                request_id,
+                prefix,
+                exc,
+            )
+
     # Resolve the session for this user+channel+subsystem (subsystem = prefix).
     session: session_manager.Session | None = None
     if interaction.guild_id and interaction.channel_id:

@@ -63,11 +63,15 @@ from governance.templates import (  # noqa: F401
     save_template,
 )
 from governance.writes import (  # noqa: F401
+    GovernanceMutationPipeline,
     check_governance_version,
     set_cleanup_policy_for_scope,
     set_subsystem_visibility,
 )
-from services.governance_exceptions import GovernanceError  # noqa: F401
+from services.governance_exceptions import (  # noqa: F401
+    GovernanceError,
+    UnauthorizedGovernanceWriteError,
+)
 from utils.subsystem_registry import (
     CAPABILITY_TO_SUBSYSTEM,
     SUBSYSTEMS,
@@ -276,6 +280,8 @@ __all__ = [
     # health
     "run_governance_healthcheck",
     # writes
+    "GovernanceMutationPipeline",
+    "UnauthorizedGovernanceWriteError",
     "check_governance_version",
     "set_cleanup_policy_for_scope",
     "set_subsystem_visibility",

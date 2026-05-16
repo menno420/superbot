@@ -6,10 +6,14 @@ Templates store a named set of visibility overrides that can be:
   - Stored in the DB for reuse via save_template()
 
 Public surface:
-    export_template(guild_id) → GovernanceTemplate
-    apply_template(guild_id, template) → int (overrides applied)
-    save_template(template, name, description) → int (template_id)
+    export_template(guild_id, name="", description="") → GovernanceTemplate
+    apply_template(ctx, template) → int (overrides applied via pipeline)
+    save_template(template, created_by_guild_id=None) → int (template_id)
     load_template(template_id) → GovernanceTemplate | None
+
+apply_template() routes every override through GovernanceMutationPipeline so
+authority validation, transactional audit writes, and event emission happen
+per entry — see INV-003.
 """
 
 from __future__ import annotations
@@ -18,6 +22,8 @@ import json
 import logging
 from dataclasses import dataclass, field
 
+from governance.models import GovernanceContext
+from governance.writes import GovernanceMutationPipeline
 from utils import db
 
 logger = logging.getLogger("bot.governance.templates")
@@ -103,12 +109,26 @@ async def export_template(
     return template
 
 
-async def apply_template(guild_id: int, template: GovernanceTemplate) -> int:
-    """Apply a template's overrides to a guild. Returns number of records written."""
+async def apply_template(ctx: GovernanceContext, template: GovernanceTemplate) -> int:
+    """Apply a template's overrides to a guild via GovernanceMutationPipeline.
+
+    INV-003: every mutation routes through the pipeline.  This guarantees
+    per-override authority validation (SEC-001), transactional DB+audit writes,
+    deterministic cache invalidation, and EVT_VISIBILITY_CHANGED /
+    EVT_CLEANUP_CHANGED / EVT_CACHE_INVALIDATED event emission for each entry.
+    A template apply with N entries produces N audit rows, one per mutation.
+
+    Returns the number of records successfully written.  Individual entries
+    that fail validation (unknown scope, unknown subsystem, insufficient
+    authority) raise the relevant GovernanceError without rolling back earlier
+    successful writes — callers wanting all-or-nothing semantics should wrap
+    this call in their own transaction boundary.
+    """
+    pipeline = GovernanceMutationPipeline()
     count = 0
     for override in template.visibility_overrides:
-        await db.set_subsystem_visibility(
-            guild_id,
+        await pipeline.set_visibility(
+            ctx,
             override["scope_type"],
             override["scope_id"],
             override["subsystem"],
@@ -117,8 +137,8 @@ async def apply_template(guild_id: int, template: GovernanceTemplate) -> int:
         count += 1
 
     for policy in template.cleanup_overrides:
-        await db.set_cleanup_policy(
-            guild_id,
+        await pipeline.set_cleanup_policy(
+            ctx,
             policy["scope_type"],
             policy["scope_id"],
             delete_invalid_commands=policy.get("delete_invalid_commands", True),
@@ -127,13 +147,10 @@ async def apply_template(guild_id: int, template: GovernanceTemplate) -> int:
         )
         count += 1
 
-    from governance.cache import invalidate_guild_cache
-
-    invalidate_guild_cache(guild_id)
     logger.info(
-        "Applied governance template %r to guild=%d: %d overrides",
+        "Applied governance template %r to guild=%d: %d overrides via pipeline",
         template.name,
-        guild_id,
+        ctx.guild_id,
         count,
     )
     return count

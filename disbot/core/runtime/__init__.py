@@ -41,29 +41,87 @@ from core.runtime import ui_permissions as perms  # noqa: F401 — re-exported
 
 logger = logging.getLogger("bot.runtime")
 
+# Guard: setup() must be idempotent.  A second call (e.g. hot-reload or test
+# re-entry) must not register duplicate EventBus handlers — inner functions are
+# closures and have distinct object identities on every call, so bus.on() would
+# append them as separate handlers, causing double-execution.
+_SETUP_DONE: bool = False
+
 
 async def setup() -> None:
     """Wire EventBus subscriptions for the runtime layer.
 
     Must be called once during bot startup, after db.init() has run.
-    Idempotent — safe to call more than once (handlers accumulate but are
-    scoped to this module's functions, not lambdas, so duplication is benign).
+    Subsequent calls are no-ops (idempotency guard prevents double registration).
     """
+    global _SETUP_DONE
+    if _SETUP_DONE:
+        logger.debug("runtime.setup() called again — skipping (already initialised).")
+        return
+    _SETUP_DONE = True
+
     from core.events import bus
     from services.governance_service import (
         EVT_CACHE_INVALIDATED,
+        EVT_CLEANUP_CHANGED,
         EVT_VISIBILITY_CHANGED,
     )
 
     async def _on_visibility_changed(
-        guild_id: int, subsystem: str, **_: object
+        guild_id: int,
+        subsystem: str,
+        scope_type: str = "guild",
+        scope_id: int | None = None,
+        **_: object,
     ) -> None:
-        await sessions.invalidate_subsystem_sessions(guild_id, subsystem)
+        """Scope-aware session invalidation (Phase 2.3).
+
+        For channel-scoped changes we only invalidate sessions in the affected
+        channel.  For guild-scoped (or unknown scope) we fall back to full
+        guild-subsystem invalidation to be safe.
+        """
+        channel_id: int | None = None
+        if scope_type == "channel" and scope_id is not None:
+            channel_id = scope_id
+        # thread-scoped: the thread_id IS the channel_id in Discord's model
+        elif scope_type == "thread" and scope_id is not None:
+            channel_id = scope_id
+
+        await sessions.invalidate_subsystem_sessions(
+            guild_id, subsystem, channel_id=channel_id
+        )
 
     async def _on_cache_invalidated(guild_id: int, **_: object) -> None:
         await store.invalidate_guild_state(guild_id)
 
+    async def _on_cleanup_changed(
+        guild_id: int,
+        scope_type: str = "guild",
+        scope_id: int | None = None,
+        **_: object,
+    ) -> None:
+        """Subscription hook for EVT_CLEANUP_CHANGED (DEBT-003).
+
+        Cleanup policy is currently resolved uncached (governance/cleanup.py
+        queries the DB on every call).  This handler exists so any future
+        cleanup-policy cache MUST register its invalidation here rather than
+        introducing a parallel invalidation path.
+
+        The GovernanceMutationPipeline already calls invalidate_guild_cache()
+        and emits EVT_CACHE_INVALIDATED inside set_cleanup_policy, so the
+        in-process visibility cache is already coherent — this hook covers
+        only future cleanup-specific caching.
+        """
+        logger.debug(
+            "EVT_CLEANUP_CHANGED received | guild=%d scope=%s/%s — "
+            "no cleanup cache present, hook reserved for future use",
+            guild_id,
+            scope_type,
+            scope_id,
+        )
+
     bus.on(EVT_VISIBILITY_CHANGED, _on_visibility_changed)
     bus.on(EVT_CACHE_INVALIDATED, _on_cache_invalidated)
+    bus.on(EVT_CLEANUP_CHANGED, _on_cleanup_changed)
 
     logger.info("Runtime layer initialised — EventBus subscriptions active.")

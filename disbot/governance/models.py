@@ -1,6 +1,28 @@
 """Governance dataclasses, enums, and scope constants.
 
 Layer: bottom — no imports from other governance submodules.
+
+Phase 3.2 — Visibility / Execution / Exposure separation
+─────────────────────────────────────────────────────────
+The current implementation combines three logically distinct concepts.  Future
+platform evolution should separate them explicitly:
+
+  Visibility  — Should the subsystem appear in help menus and navigation UIs?
+                Resolved by resolve_visibility() via scope chain.
+
+  Execution   — May the member invoke the subsystem's commands and interactions?
+                Currently derived from visibility, but independently overridable
+                via capability_execution_overrides (resolve_execution()).
+
+  Exposure    — Should the subsystem be discoverable at all (e.g. in public
+                listings, diagnostics, or AI reasoning)?
+                Currently conflated with visibility_mode == "internal".
+
+Architectural direction: these three are intentionally unified in the current
+implementation for simplicity.  As subsystem count and permission complexity
+grow, they should be split into distinct resolution paths with independent DB
+override tables.  The GovernanceContext and resolution interfaces are already
+designed to support this split without breaking changes to callers.
 """
 
 from __future__ import annotations

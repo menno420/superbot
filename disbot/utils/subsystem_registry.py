@@ -408,7 +408,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "moderation",
         "tags": ["proof", "events", "access"],
-        "entry_points": ["prize"],
+        "entry_points": ["prizemenu", "prizestatus", "timedprize"],
         "default_channels": ["staff", "proof"],
         "related_subsystems": ["moderation"],
         "dependencies": [],

@@ -79,7 +79,6 @@ def _remove_pid() -> None:
         pass
 
 
-check_existing_instance()
 atexit.register(_remove_pid)
 
 # ---------------------------------------------------------------------------
@@ -99,6 +98,10 @@ ALLOWED_CHANNELS = config.ALLOWED_CHANNELS
 
 # Set by SIGTERM handler — channel guard rejects new commands during drain.
 _shutting_down = False
+
+# Application-owned background tasks.  Only these are cancelled on shutdown —
+# discord.py-internal tasks are left alone to avoid library-level errors.
+_APP_TASKS: list[asyncio.Task] = []
 
 
 def _begin_shutdown(*_) -> None:
@@ -131,9 +134,9 @@ async def on_ready() -> None:
 
 @bot.event
 async def on_guild_remove(guild: discord.Guild) -> None:
-    from services import governance_service
+    from guild_lifecycle import teardown
 
-    governance_service.forget_guild(guild.id)
+    await teardown(guild.id)
 
 
 @bot.event
@@ -195,12 +198,37 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
     if reporter:
         await reporter.on_command_error(ctx, error)
 
-    in_allowed = ctx.channel.id in ALLOWED_CHANNELS
-    is_force = ctx.command is not None and ctx.command.name == "force"
-    if not in_allowed and not is_force:
+    if isinstance(error, commands.CheckFailure):
+        # Governance check failures produce their own user-facing message.
         return
 
-    if isinstance(error, commands.CheckFailure):
+    in_allowed = ctx.channel.id in ALLOWED_CHANNELS
+    is_force = ctx.command is not None and ctx.command.name == "force"
+
+    # Log ALL non-check errors regardless of channel so bugs are never invisible.
+    if not isinstance(
+        error,
+        (
+            commands.MissingPermissions,
+            commands.BotMissingPermissions,
+            commands.CommandNotFound,
+            commands.MissingRequiredArgument,
+            commands.BadArgument,
+            commands.CommandOnCooldown,
+        ),
+    ):
+        logger.error(
+            "CMD ❌ | %s | %s | %s | %s: %s",
+            ctx.command,
+            ctx.author,
+            ctx.guild,
+            type(error).__name__,
+            error,
+            exc_info=True,
+        )
+
+    # Only send user-facing replies in allowed channels.
+    if not in_allowed and not is_force:
         return
 
     if isinstance(error, commands.MissingPermissions):
@@ -238,15 +266,6 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
             delete_after=8,
         )
     else:
-        logger.error(
-            "CMD ❌ | %s | %s | %s | %s: %s",
-            ctx.command,
-            ctx.author,
-            ctx.guild,
-            type(error).__name__,
-            error,
-            exc_info=True,
-        )
         await ctx.send(
             "⚠️ An unexpected error occurred. Please try again.", delete_after=10
         )
@@ -264,6 +283,61 @@ async def _channel_guard(ctx: commands.Context) -> bool:
     return ctx.guild is not None and (
         ctx.channel.id in ALLOWED_CHANNELS
         or (ctx.command is not None and ctx.command.name == "force")
+    )
+
+
+# ---------------------------------------------------------------------------
+# Governance enforcement guard (Phase 1.3 — ARCH-001 fix)
+#
+# Runs AFTER _channel_guard passes, BEFORE the cog handler is invoked.
+# Every command that reaches this hook has already passed the channel whitelist
+# check.  We resolve the subsystem for the command and gate on visibility.
+#
+# This converts governance from advisory (help-menu-only) to infrastructure:
+# disabling a subsystem now blocks its commands, not just hides them.
+# ---------------------------------------------------------------------------
+
+
+@bot.before_invoke
+async def _governance_guard(ctx: commands.Context) -> None:
+    """Enforce subsystem visibility before every command invocation.
+
+    Raises commands.CheckFailure (caught by on_command_error) when the
+    command's owning subsystem is disabled for the invoking member.
+    The !force admin override and unknown commands are exempted.
+    """
+    if ctx.command is None:
+        return
+    # !force is an explicit admin channel-restriction bypass — leave it alone.
+    if ctx.command.name == "force":
+        return
+    # DM contexts have no guild governance.
+    if ctx.guild is None:
+        return
+
+    from governance import GovernanceContext, resolve_command_policy
+
+    gov_ctx = GovernanceContext.from_ctx(ctx)
+    policy = await resolve_command_policy(gov_ctx, ctx.command.qualified_name)
+    if policy.allowed:
+        return
+
+    # Send user-facing feedback before raising so the message arrives.
+    if policy.feedback:
+        try:
+            await ctx.send(
+                policy.feedback, delete_after=policy.cleanup.delete_after_seconds or 10
+            )
+        except Exception:
+            pass
+    if policy.cleanup.delete_message and ctx.message:
+        try:
+            await ctx.message.delete(delay=policy.cleanup.delete_after_seconds or 5)
+        except Exception:
+            pass
+
+    raise commands.CheckFailure(
+        f"Subsystem disabled for command {ctx.command.qualified_name!r}"
     )
 
 
@@ -331,6 +405,9 @@ async def _load_cogs() -> None:
 
 
 async def main() -> None:
+    # PID guard moved here from module level so test imports don't trigger it.
+    check_existing_instance()
+
     from services.governance_exceptions import GovernanceError
     from utils.subsystem_registry import validate_registry
 
@@ -347,27 +424,28 @@ async def main() -> None:
     await runtime.setup()
     if reporter:
         await reporter.start()
-    health_task: asyncio.Task | None = None
-    gc_task: asyncio.Task | None = None
     try:
         async with bot:
             from core.runtime import session_gc
             from healthserver import start_health_server
 
-            health_task = asyncio.create_task(start_health_server(bot))
-            gc_task = session_gc.start()
+            # Track app-owned tasks so shutdown only cancels OUR tasks,
+            # not discord.py-internal ones (OPS-001 fix).
+            _APP_TASKS.append(
+                asyncio.create_task(start_health_server(bot), name="health_server")
+            )
+            _APP_TASKS.append(session_gc.start())
             await _load_cogs()
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
-        if health_task and not health_task.done():
-            health_task.cancel()
-        if gc_task and not gc_task.done():
-            gc_task.cancel()
-        # Graceful drain: allow up to 5 s for in-flight coroutines to finish.
-        if _shutting_down:
-            pending = {t for t in asyncio.all_tasks() if not t.done()}
-            pending.discard(asyncio.current_task())
+        # Cancel only application-owned tasks — never asyncio.all_tasks().
+        for task in _APP_TASKS:
+            if not task.done():
+                task.cancel()
+        # Graceful drain: give in-flight app coroutines up to 5 s to finish.
+        if _shutting_down and _APP_TASKS:
+            pending = {t for t in _APP_TASKS if not t.done()}
             if pending:
                 _, still_pending = await asyncio.wait(pending, timeout=5.0)
                 for t in still_pending:
