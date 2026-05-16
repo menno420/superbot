@@ -9,6 +9,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import panel_manager
+from core.runtime.interaction_helpers import safe_defer, safe_edit
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
@@ -439,6 +440,8 @@ class MiningHubView(PersistentView):
         row=0,
     )
     async def harvest_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
         cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id)
@@ -451,7 +454,7 @@ class MiningHubView(PersistentView):
             color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🗺️ Explore",
@@ -460,6 +463,8 @@ class MiningHubView(PersistentView):
         row=0,
     )
     async def explore_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
         cog: MiningCog = interaction.client.cogs.get("MiningCog")  # type: ignore[attr-defined]
         user_id = str(interaction.user.id)
         outcomes = [
@@ -478,7 +483,7 @@ class MiningHubView(PersistentView):
             color=SUCCESS_COLOR if amount >= 0 else ERROR_COLOR,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="📦 Inventory",
@@ -491,6 +496,8 @@ class MiningHubView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ):
+        if not await safe_defer(interaction):
+            return
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id)
         if not inventory:
@@ -505,7 +512,7 @@ class MiningHubView(PersistentView):
             color=MINING_COLOR,
         )
         embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="📊 Stats",
@@ -514,6 +521,8 @@ class MiningHubView(PersistentView):
         row=1,
     )
     async def stats_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id)
         total_items = sum(inventory.values())
@@ -525,7 +534,7 @@ class MiningHubView(PersistentView):
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
         embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🔨 Build",

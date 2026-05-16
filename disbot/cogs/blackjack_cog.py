@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import tasks
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -226,6 +227,10 @@ class BlackjackView(discord.ui.View):
         coin_delta: int,
         hand_value: int,
     ):
+        # Idempotent defer — protects the chain hit_btn/stand_btn/double_btn →
+        # _resolve → _finish, where balance writes precede the message edit.
+        if not await safe_defer(interaction):
+            return
         key = (self.game.user_id, self.game.guild_id)
         _active.pop(key, None)
         for item in self.children:
@@ -249,7 +254,7 @@ class BlackjackView(discord.ui.View):
         else:
             embed.add_field(name=result, value="​", inline=False)
 
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
         self.stop()
 
         if self.on_finish:
@@ -310,9 +315,12 @@ class BlackjackView(discord.ui.View):
         emoji="✌️",
     )
     async def double_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
         bal = await db.get_coins(self.game.user_id, self.game.guild_id)
         if bal < self.game.bet * 2:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"❌ Need {self.game.bet * 2} 🪙 to double (you have {bal}).",
                 ephemeral=True,
             )

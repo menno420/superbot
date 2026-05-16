@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import panel_manager
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
@@ -566,6 +567,11 @@ class EconomyPanelView(PersistentView):
         row=0,
     )
     async def daily_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        # Defer first — DB reads + writes below would otherwise risk
+        # exceeding the 3-second interaction window.
+        if not await safe_defer(interaction):
+            return
+
         uid, gid = interaction.user.id, interaction.guild_id
         now = int(time.time())
         row = await db.get_economy(uid, gid)
@@ -574,7 +580,8 @@ class EconomyPanelView(PersistentView):
 
         on_cd, secs = check_cooldown(last, _DAILY_COOLDOWN)
         if on_cd:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"⏰ Already claimed today! Come back in **{format_remaining(secs)}**.",
                 ephemeral=True,
             )
@@ -608,7 +615,7 @@ class EconomyPanelView(PersistentView):
         embed.add_field(name="Balance", value=f"**{new_bal}** 🪙", inline=True)
         embed.add_field(name="Streak", value=f"🔥 **{streak}** days", inline=True)
         embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
 
         log_embed = discord.Embed(
             title="🎁 Daily Claimed",
@@ -627,12 +634,16 @@ class EconomyPanelView(PersistentView):
         row=0,
     )
     async def work_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+
         uid, gid = interaction.user.id, interaction.guild_id
         row = await db.get_economy(uid, gid)
 
         on_cd, secs = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
         if on_cd:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"⏰ Still tired! Rest for **{format_remaining(secs)}** more.",
                 ephemeral=True,
             )
@@ -640,7 +651,8 @@ class EconomyPanelView(PersistentView):
 
         available = await _available_jobs(uid, gid)
         if not available:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "❌ No jobs available. Earn XP or buy items from 🛒 Shop.",
                 ephemeral=True,
             )
@@ -660,7 +672,7 @@ class EconomyPanelView(PersistentView):
         embed.set_footer(text="Pick a job from the dropdown, or click ↩ Back.")
 
         work_view = _WorkSubView(uid, gid, available)
-        await interaction.response.edit_message(embed=embed, view=work_view)
+        await safe_edit(interaction, embed=embed, view=work_view)
 
     @discord.ui.button(
         label="🛒 Shop",
@@ -680,6 +692,8 @@ class EconomyPanelView(PersistentView):
         row=1,
     )
     async def balance_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
         uid, gid = interaction.user.id, interaction.guild_id
         coins = await db.get_coins(uid, gid)
         xp_row = await db.get_xp(uid, gid)
@@ -691,7 +705,7 @@ class EconomyPanelView(PersistentView):
         embed.add_field(name="🪙 Coins", value=f"**{coins:,}**", inline=True)
         embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
         embed.set_footer(text="Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🎒 Inventory",
@@ -719,6 +733,10 @@ class EconomyPanelView(PersistentView):
         row=1,
     )
     async def jobs_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        # Multiple DB reads (get_xp, get_inventory, get_job_times per job)
+        # easily exceed 3 s — defer immediately.
+        if not await safe_defer(interaction):
+            return
         uid, gid = interaction.user.id, interaction.guild_id
         xp_row = await db.get_xp(uid, gid)
         level = xp_row["level"]
@@ -756,7 +774,7 @@ class EconomyPanelView(PersistentView):
             )
 
         embed.set_footer(text=f"Your level: {level}  •  Click ↩ Overview to return.")
-        await interaction.response.edit_message(embed=embed, view=self)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="↩ Overview",
