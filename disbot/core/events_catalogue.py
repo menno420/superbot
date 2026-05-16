@@ -56,6 +56,8 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "xp.awarded",
         "xp.level_up",
         "xp.reset",
+        # ── Moderation (services/moderation_service.py) ──────────────────
+        "moderation.action_taken",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
         # "mining.harvested",
