@@ -245,24 +245,38 @@ async def test_cog_load_list_failure_is_logged_not_raised():
 
 @pytest.mark.asyncio
 async def test_on_guild_remove_wipes_pending_rows_for_guild():
+    """After G1 + G6, ``on_guild_remove`` covers BOTH the pvp_pending
+    (clear-only) and rps_tournament (refund + clear) subsystems.  This
+    test focuses on the pvp_pending leg; the tournament-refund
+    behaviour is exercised in the tournament test pack.
+    """
     from cogs.rps_tournament_cog import RPSTournamentCog
 
     cog = RPSTournamentCog.__new__(RPSTournamentCog)
     guild = MagicMock()
     guild.id = 999
-    rows = [_row(1, guild_id=999), _row(2, guild_id=999)]
+
+    async def fake_list(subsystem, *, guild_id):
+        assert guild_id == 999
+        if subsystem == "rps_pvp_pending":
+            return [_row(1, guild_id=999), _row(2, guild_id=999)]
+        # rps_tournament: empty in this test.
+        return []
+
     with (
         patch(
             "services.game_state_service.list_active_for_subsystem",
-            new_callable=AsyncMock,
-            return_value=rows,
-        ) as mock_list,
+            side_effect=fake_list,
+        ),
         patch(
             "services.game_state_service.clear_by_id",
             new_callable=AsyncMock,
         ) as mock_clear,
+        patch(
+            "services.economy_service.refund",
+            new_callable=AsyncMock,
+        ),
     ):
         await cog.on_guild_remove(guild)
-    # The list call is scoped to the departing guild.
-    assert mock_list.await_args.kwargs.get("guild_id") == 999
-    assert mock_clear.await_count == 2
+    cleared_ids = {c.args[0] for c in mock_clear.await_args_list}
+    assert {1, 2} <= cleared_ids

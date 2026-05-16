@@ -31,6 +31,16 @@ from views.rps import (  # noqa: F401 — re-exported for back-compat
 
 logger = logging.getLogger("bot")
 
+# PR G6 — RPS tournament persistence (entry-fee refund on restart).
+# Mirrors PR G5's per-player row design: one row per registered
+# participant.  channel_id=0 sentinel because the tournament is
+# guild-wide, not tied to one channel; the natural game_state UNIQUE
+# constraint on (guild_id, user_id, channel_id, subsystem) already
+# enforces "one entry per user per guild", which is exactly what the
+# cog's ``tournament_active`` flag also enforces.
+RPS_TOURNAMENT_SUBSYSTEM = "rps_tournament"
+RPS_TOURNAMENT_VERSION = 1
+
 
 class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # type: ignore[call-arg]
     """Cog for managing Rock-Paper-Scissors tournaments with multiple game modes."""
@@ -91,6 +101,11 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         # this after 24h but acting at cog_load is faster.  No coins
         # are refunded — RPS PvP does not pre-debit.
         tasks.spawn("rps:recover_pvp_pending", self._recover_rps_pvp_pending())
+        # PR G6 — refund stranded tournament entries.  Same shape as
+        # blackjack tournament: entry fees were debited at registration
+        # and never paid back if the bot crashed before the final
+        # payout in ``check_tournament_progress``.
+        tasks.spawn("rps:recover_tournament", self._recover_rps_tournament())
 
     async def _recover_rps_pvp_pending(self) -> None:
         try:
@@ -135,14 +150,85 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                 cleared,
             )
 
+    async def _recover_rps_tournament(self) -> None:
+        """Refund every stranded RPS tournament entry then clear the row.
+
+        Same shape as ``BlackjackCog._recover_blackjack_tournament``:
+        entry fees were debited at registration, never paid back if the
+        bot crashed before ``check_tournament_progress`` settled the
+        pot.  Refund failures are logged WARN but the row is still
+        cleared to avoid an infinite retry loop.
+        """
+        try:
+            rows = await game_state_service.list_active_for_subsystem(
+                RPS_TOURNAMENT_SUBSYSTEM,
+            )
+        except Exception as exc:
+            logger.warning("rps_tournament recovery skipped: %s", exc)
+            return
+        if not rows:
+            return
+        cleared = 0
+        refunded = 0
+        for row in rows:
+            try:
+                version = row.get("version")
+                if version != RPS_TOURNAMENT_VERSION:
+                    logger.info(
+                        "rps_tournament recovery: dropping version-"
+                        "mismatch row id=%s (saved=%s, current=%s)",
+                        row["id"],
+                        version,
+                        RPS_TOURNAMENT_VERSION,
+                    )
+                    await game_state_service.clear_by_id(row["id"])
+                    cleared += 1
+                    continue
+                state = row.get("state") or {}
+                bet = state.get("bet")
+                if isinstance(bet, int) and bet > 0:
+                    try:
+                        await economy_service.refund(
+                            guild_id=row["guild_id"],
+                            user_id=row["user_id"],
+                            amount=bet,
+                            reason="rps_tournament:restart_refund",
+                        )
+                        refunded += 1
+                    except Exception as exc:
+                        logger.warning(
+                            "rps_tournament refund failed for user=%d "
+                            "guild=%d: %s",
+                            row.get("user_id"),
+                            row.get("guild_id"),
+                            exc,
+                        )
+                await game_state_service.clear_by_id(row["id"])
+                cleared += 1
+            except Exception as exc:
+                logger.warning(
+                    "rps_tournament recovery: row id=%s failed: %s",
+                    row.get("id"),
+                    exc,
+                )
+        if cleared or refunded:
+            logger.info(
+                "rps_tournament recovery: cleared %d row(s), "
+                "issued %d refund(s)",
+                cleared,
+                refunded,
+            )
+
     @commands.Cog.listener()
     async def on_guild_remove(self, guild) -> None:
-        """PR G1 — wipe rps_pvp_pending rows for a departed guild.
+        """PR G1/G6 — wipe rps subsystem rows for a departed guild.
 
-        guild_lifecycle.teardown handles platform state; per-cog state
-        like game_state rows is owned by the cog and cleaned here so
-        the platform layer stays subsystem-agnostic.
+        rps_pvp_pending rows clear without refund (no pre-debit).
+        rps_tournament rows trigger refunds — guild removal mid-
+        tournament is equivalent to a crash from the player's
+        perspective.
         """
+        # rps_pvp_pending — clear, no refund.
         try:
             from views.rps._helpers import RPS_PVP_PENDING_SUBSYSTEM
 
@@ -162,6 +248,46 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         except Exception as exc:
             logger.warning(
                 "rps_pvp_pending on_guild_remove failed for guild=%d: %s",
+                guild.id,
+                exc,
+            )
+
+        # rps_tournament — refund + clear.
+        try:
+            rows = await game_state_service.list_active_for_subsystem(
+                RPS_TOURNAMENT_SUBSYSTEM,
+                guild_id=guild.id,
+            )
+            for row in rows:
+                state = row.get("state") or {}
+                bet = state.get("bet")
+                if isinstance(bet, int) and bet > 0:
+                    try:
+                        await economy_service.refund(
+                            guild_id=row["guild_id"],
+                            user_id=row["user_id"],
+                            amount=bet,
+                            reason="rps_tournament:guild_remove_refund",
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "rps_tournament on_guild_remove refund "
+                            "failed for user=%d: %s",
+                            row.get("user_id"),
+                            exc,
+                        )
+                try:
+                    await game_state_service.clear_by_id(row["id"])
+                except Exception as exc:
+                    logger.warning(
+                        "rps_tournament on_guild_remove: clear id=%s "
+                        "failed: %s",
+                        row.get("id"),
+                        exc,
+                    )
+        except Exception as exc:
+            logger.warning(
+                "rps_tournament on_guild_remove failed for guild=%d: %s",
                 guild.id,
                 exc,
             )
@@ -318,6 +444,26 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.players.append(user)
         self.scores[user] = 0
         await self.add_player_to_db(user, guild_id)
+        # PR G6 — persist the paid-entry state so a crash before the
+        # final payout in ``check_tournament_progress`` can refund this
+        # player on cog_load.  ``bet=entry_fee`` matches the G0 GC
+        # convention so the 24 h sweep is a secondary safety net.
+        try:
+            await game_state_service.save(
+                guild_id=guild_id,
+                user_id=user.id,
+                channel_id=0,  # sentinel — tournament is guild-wide, not channel-local
+                subsystem=RPS_TOURNAMENT_SUBSYSTEM,
+                state={"bet": self.entry_fee},
+                version=RPS_TOURNAMENT_VERSION,
+            )
+        except Exception as exc:
+            logger.warning(
+                "rps_tournament save failed (user=%d guild=%d): %s",
+                user.id,
+                guild_id,
+                exc,
+            )
         return True
 
     @commands.command(name="rpsstart", aliases=["rpsbegin"])
@@ -868,6 +1014,30 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             self.matches.clear()
             self.current_round.clear()
             self.match_channels.clear()
+            # PR G6 — natural completion: drop the persisted entry-fee
+            # rows WITHOUT refunding (the pot above already settled).
+            try:
+                rows = await game_state_service.list_active_for_subsystem(
+                    RPS_TOURNAMENT_SUBSYSTEM,
+                    guild_id=guild.id,
+                )
+                for row in rows:
+                    try:
+                        await game_state_service.clear_by_id(row["id"])
+                    except Exception as exc:
+                        logger.warning(
+                            "rps_tournament natural-completion clear "
+                            "failed for id=%s: %s",
+                            row.get("id"),
+                            exc,
+                        )
+            except Exception as exc:
+                logger.warning(
+                    "rps_tournament natural-completion sweep failed for "
+                    "guild=%d: %s — entries will be cleared by the 24h GC",
+                    guild.id,
+                    exc,
+                )
             # Clean up any remaining match channels
             await self.delete_all_match_channels(guild)
         else:
