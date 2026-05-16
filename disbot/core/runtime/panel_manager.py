@@ -1,15 +1,14 @@
 """Persistent panel lifecycle management.
 
 A panel is a Discord message with an interactive view that is anchored to a
-specific (user, channel, subsystem) triple in the database.  The runtime
-platform enforces one panel per triple at a time:
+specific (user, channel, subsystem) triple in the database.  The anchor table
+enforces one panel per triple at a time.
 
-  - If an anchor exists and the message is still accessible: edit in-place.
-  - If the anchor's message was deleted: create a new message, overwrite anchor.
-  - If no anchor exists: send new message, store anchor.
-
-This eliminates the "stale message pile-up" problem where every command run
-sends a new message that orphans previous panels.
+Re-invocation behavior — every panel command sends a FRESH message at the
+bottom of the channel.  If a prior anchored message exists for the same
+(user, channel, subsystem), it is deleted first so the channel doesn't
+accumulate orphaned panels.  This matches the user-facing expectation that
+running a command produces a new visible result.
 
 Public surface:
     get_or_render_panel(ctx, subsystem, embed, view) → discord.Message
@@ -33,10 +32,9 @@ async def get_or_render_panel(
     embed: discord.Embed,
     view: discord.ui.View,
 ) -> discord.Message:
-    """Send or update the persistent panel for this user in this channel.
+    """Send a fresh panel message, deleting the prior anchored one if any.
 
-    Returns the Discord Message that contains the panel (either the existing
-    anchored message after editing, or the newly sent one).
+    Returns the newly-sent Discord Message.
     """
     user_id = ctx.author.id
     guild_id = ctx.guild.id
@@ -46,30 +44,30 @@ async def get_or_render_panel(
 
     if anchor and not anchor["is_stale"]:
         try:
-            msg = await ctx.channel.fetch_message(anchor["message_id"])
-            await msg.edit(embed=embed, view=view)
+            old_msg = await ctx.channel.fetch_message(anchor["message_id"])
+            await old_msg.delete()
             logger.debug(
-                "Panel updated in-place | subsystem=%s | user=%d | msg=%d",
+                "Prior panel deleted | subsystem=%s | user=%d | msg=%d",
                 subsystem,
                 user_id,
-                msg.id,
+                anchor["message_id"],
             )
-            return msg
         except discord.NotFound:
             logger.debug(
-                "Panel anchor stale (msg deleted) | subsystem=%s | user=%d",
+                "Prior panel already gone | subsystem=%s | user=%d | msg=%d",
                 subsystem,
                 user_id,
+                anchor["message_id"],
             )
-            await message_anchor_manager.mark_stale(str(anchor["anchor_id"]))
         except (discord.Forbidden, discord.HTTPException) as exc:
             logger.warning(
-                "Cannot edit panel message | subsystem=%s | user=%d: %s",
+                "Could not delete prior panel | subsystem=%s user=%d msg=%d: %s",
                 subsystem,
                 user_id,
+                anchor["message_id"],
                 exc,
             )
-            await message_anchor_manager.mark_stale(str(anchor["anchor_id"]))
+        await message_anchor_manager.mark_stale(str(anchor["anchor_id"]))
 
     msg = await ctx.send(embed=embed, view=view)
     await message_anchor_manager.upsert(

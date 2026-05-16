@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import tasks
+from core.runtime.interaction_helpers import help_ctx_shim
 from utils.helpers import _parse_member
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.base import BaseView
@@ -108,6 +109,14 @@ class ProofChannelCog(commands.Cog):
         view = _PrizeManagerView(ctx, self)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the prize channel panel)."""
+        view = _PrizeManagerView(help_ctx_shim(interaction), self)
+        return view.build_embed(), view
 
     @commands.command(name="timedprize")
     @commands.has_permissions(manage_channels=True)

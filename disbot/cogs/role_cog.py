@@ -338,6 +338,13 @@ class RoleCog(commands.Cog):
         msg = await panel_manager.get_or_render_panel(ctx, "role", embed, view)
         view.message = msg
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the role management hub)."""
+        return _build_role_hub_embed(), RoleHubPanelView()
+
     @commands.command(name="rolesettings")
     @commands.has_permissions(administrator=True)
     async def rolesettings(self, ctx: commands.Context) -> None:

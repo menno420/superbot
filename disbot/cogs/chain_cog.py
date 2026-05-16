@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions, has_permissions
 
+from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
 from views.base import BaseView
 
@@ -196,6 +197,15 @@ class ChainCog(commands.Cog):
         embed = await view.build_embed()
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the chain management panel)."""
+        view = _ChainMenuView(help_ctx_shim(interaction), self)
+        embed = await view.build_embed()
+        return embed, view
 
     @chain.command(name="list")  # type: ignore[arg-type]
     async def list_chains(self, ctx):

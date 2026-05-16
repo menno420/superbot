@@ -19,6 +19,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import help_ctx_shim
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import INFO_COLOR, WARNING_COLOR
 
@@ -137,6 +138,14 @@ class ChannelCog(commands.Cog):
         view = _ChannelManagerView(ctx)
         msg = await ctx.send(embed=view.build_embed(), view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the channel manager panel)."""
+        view = _ChannelManagerView(help_ctx_shim(interaction))
+        return view.build_embed(), view
 
     @commands.command(
         name="set",

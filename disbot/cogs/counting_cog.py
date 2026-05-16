@@ -26,6 +26,7 @@ from discord.ext import commands
 from cogs.counting import game_logic, parsing
 from cogs.counting._constants import word_to_num as _word_to_num  # noqa: F401
 from core.runtime import tasks
+from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
 
 # Re-export the hub view so legacy ``from cogs.counting_cog import
@@ -92,6 +93,15 @@ class CountingCog(commands.Cog):
         embed = await view.build_embed()
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the counting hub panel)."""
+        view = _CountingHubView(help_ctx_shim(interaction), self)
+        embed = await view.build_embed()
+        return embed, view
 
     @commands.command(name="start_match", aliases=["sm"])
     @staff_or_owner()

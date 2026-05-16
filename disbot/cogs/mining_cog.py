@@ -164,7 +164,12 @@ class MiningCog(commands.Cog):
             await self.cog.update_inventory(user_id, self.guild_id, found, amount)
 
             new_content = f"{interaction.user.mention} mined {amount}x **{found}** by going {direction}!"
-            await interaction.message.edit(content=new_content, embed=None, view=None)
+            await interaction.followup.edit_message(
+                message_id=interaction.message.id,
+                content=new_content,
+                embed=None,
+                view=None,
+            )
             self.stop()
 
     #
@@ -176,6 +181,14 @@ class MiningCog(commands.Cog):
         """Open the mining hub panel."""
         view = MiningHubView()
         await panel_manager.get_or_render_panel(ctx, "mining", view.build_embed(), view)
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the mining hub panel)."""
+        view = MiningHubView()
+        return view.build_embed(), view
 
     @commands.command()
     async def mine(self, ctx):

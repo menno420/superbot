@@ -33,11 +33,33 @@ the platform-hardening plan.  Adoption across cogs lands in F5.
 from __future__ import annotations
 
 import logging
+from types import SimpleNamespace
 from typing import Any
 
 import discord
 
 logger = logging.getLogger("bot.runtime.interaction")
+
+
+def help_ctx_shim(interaction: discord.Interaction) -> SimpleNamespace:
+    """Build a ctx-like object from an interaction for help-menu view dispatch.
+
+    Cog hub views (e.g. _AdminPanelView, _XpHubView, _ChannelManagerView)
+    were written to take a commands.Context.  When the help dropdown opens
+    them directly we only have a discord.Interaction.  The four attributes
+    those views read from ctx are ``author``, ``guild``, ``channel``, and
+    ``bot`` — this shim exposes them.
+
+    Views that need ``ctx.invoke``, ``ctx.send``, ``ctx.prefix``, or
+    ``ctx.message`` cannot use this shim and must take their dependencies
+    directly instead.
+    """
+    return SimpleNamespace(
+        author=interaction.user,
+        guild=interaction.guild,
+        channel=interaction.channel,
+        bot=interaction.client,
+    )
 
 
 async def safe_defer(
