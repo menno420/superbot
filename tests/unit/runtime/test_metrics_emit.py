@@ -74,6 +74,14 @@ class TestInteractionRouterMetrics:
 
 
 class TestAnchorRestoreMetrics:
+    @pytest.fixture(autouse=True)
+    def _reset_restore_guard(self):
+        # R6 added a once-only guard on restore_anchors; tests in this
+        # class invoke it multiple times so we reset around each.
+        message_anchor_manager.reset_restoration_state()
+        yield
+        message_anchor_manager.reset_restoration_state()
+
     @pytest.mark.asyncio
     async def test_view_missing_increments(self):
         anchors = [

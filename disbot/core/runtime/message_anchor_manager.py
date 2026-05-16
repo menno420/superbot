@@ -27,6 +27,25 @@ from utils import db
 
 logger = logging.getLogger("bot.runtime.anchors")
 
+# on_ready fires on every Discord gateway reconnect, not just at process
+# start.  Without this guard restore_anchors() would call bot.add_view()
+# again for every anchor each reconnect, leaving duplicate view instances
+# bound to the same message — discord.py would then dispatch the
+# callback once per registered instance.  Guard makes restore a no-op
+# on second-and-subsequent calls; reset() is available for tests and
+# for the (rare) case where an admin really wants a fresh restore.
+_RESTORED_ONCE: bool = False
+
+
+def reset_restoration_state() -> None:
+    """Clear the once-only guard so the next restore_anchors() runs again.
+
+    Intended for tests and for an explicit admin command that wants to
+    force a fresh restoration pass.  Normal runtime never needs this.
+    """
+    global _RESTORED_ONCE
+    _RESTORED_ONCE = False
+
 
 async def get(user_id: int, channel_id: int, subsystem: str) -> dict | None:
     """Return the active anchor for (user, channel, subsystem), or None."""
@@ -74,7 +93,18 @@ async def restore_anchors(bot: commands.Bot) -> None:
     Fetches every non-stale anchor from DB and calls bot.add_view() with a
     fresh view instance so button interactions survive a bot restart.
     Messages that no longer exist are marked stale.
+
+    Idempotent: subsequent calls (e.g. when on_ready re-fires after a
+    Discord gateway reconnect) are no-ops.  Use ``reset_restoration_state()``
+    to force a re-run if needed.
     """
+    global _RESTORED_ONCE
+    if _RESTORED_ONCE:
+        logger.debug(
+            "restore_anchors() called again — skipping (already restored).",
+        )
+        return
+    _RESTORED_ONCE = True
     from core.runtime.persistent_views import get_view_class
 
     anchors = await db.get_all_active_panel_anchors()
