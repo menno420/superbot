@@ -86,19 +86,24 @@ class _ChannelSelect(discord.ui.Select):
             options=options,
             row=0,
         )
-        self._parent = parent_view
+        # ``_parent`` is reserved by discord.py 2.7+ for the Item-to-Item parent
+        # chain (LayoutView / Container / ActionRow); shadowing it makes
+        # ``Item._run_checks`` call our View instead of an Item and raise
+        # ``AttributeError: 'View' object has no attribute '_run_checks'`` on
+        # every button click.  Store the view ref under a non-clashing name.
+        self._parent_view = parent_view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.selected_channel_id = int(self.values[0])  # type: ignore[attr-defined]
+        self._parent_view.selected_channel_id = int(self.values[0])  # type: ignore[attr-defined]
         # Resolve the display name from the options list
         chosen_opt = next((o for o in self.options if o.value == self.values[0]), None)
-        self._parent.selected_channel_name = (  # type: ignore[attr-defined]
+        self._parent_view.selected_channel_name = (  # type: ignore[attr-defined]
             chosen_opt.label if chosen_opt else self.values[0]
         )
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
-                view=self._parent,  # type: ignore[attr-defined, arg-type]
+                embed=self._parent_view.build_embed(),  # type: ignore[attr-defined]
+                view=self._parent_view,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             await safe_defer(interaction)
