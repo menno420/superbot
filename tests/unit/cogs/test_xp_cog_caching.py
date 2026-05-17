@@ -174,13 +174,20 @@ async def test_invalidate_xp_threshold_roles_forces_reload_on_next_read():
 # ---------------------------------------------------------------------------
 
 
-def test_xp_cog_imports_invalidate_xp_config():
-    """xp_cog must import the XP-config invalidator for its 3 admin modals."""
-    import cogs.xp_cog as xp_cog
+def test_xp_modals_import_invalidate_xp_config():
+    """views.xp.modals must import the XP-config invalidator for its 3 admin modals.
 
-    assert hasattr(xp_cog, "invalidate_xp_config"), (
-        "xp_cog.py is missing `from utils.guild_config_accessors import "
-        "invalidate_xp_config` — the 3 admin XP-setting modals will go stale."
+    After the S4.2-followup extraction, the 3 config modals
+    (_XpRangeModal, _XpCooldownModal, _XpChannelModal) own the
+    mutation paths that write XP_MIN / XP_MAX / XP_COOLDOWN /
+    XP_ANNOUNCE_CHANNEL — they must invalidate the F-1 cache.
+    """
+    import views.xp.modals as xp_modals
+
+    assert hasattr(xp_modals, "invalidate_xp_config"), (
+        "views/xp/modals.py is missing `from utils.guild_config_accessors "
+        "import invalidate_xp_config` — the 3 admin XP-setting modals will "
+        "go stale."
     )
 
 

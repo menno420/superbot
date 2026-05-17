@@ -62,7 +62,7 @@ def _xp_award_result(new_xp: int = 150, new_level: int = 2) -> MagicMock:
 @pytest.mark.asyncio
 async def test_give_xp_modal_calls_xp_service_award():
     """_GiveXpModal.on_submit must route through xp_service.award."""
-    from cogs.xp_cog import _GiveXpModal
+    from views.xp.modals import _GiveXpModal
 
     modal = _GiveXpModal(hub=MagicMock())
     modal.member_input = MagicMock()
@@ -74,9 +74,9 @@ async def test_give_xp_modal_calls_xp_service_award():
     member = _make_member()
 
     with (
-        patch("cogs.xp_cog._parse_member", return_value=member),
+        patch("views.xp.modals._parse_member", return_value=member),
         patch(
-            "cogs.xp_cog.xp_service.award",
+            "views.xp.modals.xp_service.award",
             new_callable=AsyncMock,
             return_value=_xp_award_result(),
         ) as award,
@@ -137,7 +137,7 @@ async def test_givexp_command_rejects_non_positive_amount():
 @pytest.mark.asyncio
 async def test_reset_xp_modal_calls_xp_service_reset():
     """_ResetXpModal.on_submit must route through xp_service.reset."""
-    from cogs.xp_cog import _ResetXpModal
+    from views.xp.modals import _ResetXpModal
 
     modal = _ResetXpModal(hub=MagicMock())
     modal.member_input = MagicMock()
@@ -149,9 +149,9 @@ async def test_reset_xp_modal_calls_xp_service_reset():
     member = _make_member()
 
     with (
-        patch("cogs.xp_cog._parse_member", return_value=member),
+        patch("views.xp.modals._parse_member", return_value=member),
         patch(
-            "cogs.xp_cog.xp_service.reset",
+            "views.xp.modals.xp_service.reset",
             new_callable=AsyncMock,
         ) as reset,
     ):
@@ -168,7 +168,7 @@ async def test_reset_xp_modal_calls_xp_service_reset():
 @pytest.mark.asyncio
 async def test_reset_xp_modal_aborts_without_confirm():
     """Without CONFIRM token the service must NOT be called."""
-    from cogs.xp_cog import _ResetXpModal
+    from views.xp.modals import _ResetXpModal
 
     modal = _ResetXpModal(hub=MagicMock())
     modal.member_input = MagicMock()
@@ -179,7 +179,7 @@ async def test_reset_xp_modal_aborts_without_confirm():
     interaction = _make_interaction()
 
     with patch(
-        "cogs.xp_cog.xp_service.reset",
+        "views.xp.modals.xp_service.reset",
         new_callable=AsyncMock,
     ) as reset:
         await modal.on_submit(interaction)
