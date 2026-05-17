@@ -7,6 +7,12 @@ import random
 import discord
 from discord.ext import commands
 
+from cogs.rps_tournament.rules import (
+    GAME_MODES,
+    MOVE_ALIASES,
+    determine_winner,
+    normalize_move,
+)
 from core.runtime import tasks
 from core.runtime.component_registry import stats_block
 from services import economy_service, game_state_service
@@ -60,13 +66,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.current_round = []
         self.match_channels = {}
         self.game_mode = "classic"
-        self.move_aliases = self.create_move_aliases()
-        self.game_modes = {
-            "classic": ["rock", "paper", "scissors"],
-            "lizard_spock": ["rock", "paper", "scissors", "lizard", "spock"],
-            "chess": ["pawn", "knight", "queen"],
-            "elemental": ["fire", "water", "grass"],
-        }
+        # Pure rules tables live in cogs/rps_tournament/rules.py (S4.4).
+        # Held as attributes so any historical introspection still works.
+        self.move_aliases = MOVE_ALIASES
+        self.game_modes = GAME_MODES
         self.results = {}
         self.inactivity_limit = 300  # 5 minutes inactivity limit
         self.reminder_task = None
@@ -114,22 +117,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             footer="Default mode: classic · best of 3.",
         )
         return embed, discord.ui.View(timeout=300)
-
-    def create_move_aliases(self):
-        """Creates a dictionary of move aliases for all game modes."""
-        return {
-            "rock": ["rock", "stone", "pebble", "boulder", "🪨", "🤜", "✊"],
-            "paper": ["paper", "sheet", "page", "📄", "📰", "✋"],
-            "scissors": ["scissors", "shears", "✂️", "✌️"],
-            "lizard": ["lizard", "🦎"],
-            "spock": ["spock", "🖖"],
-            "pawn": ["pawn", "♟️"],
-            "knight": ["knight", "horse", "♞"],
-            "queen": ["queen", "♛"],
-            "fire": ["fire", "flame", "🔥"],
-            "water": ["water", "💧", "🌊"],
-            "grass": ["grass", "leaf", "🌿", "🍃"],
-        }
 
     async def cog_load(self) -> None:
         tasks.spawn("rps:clear_stale_flag", self._clear_stale_tournament_flag())
@@ -799,7 +786,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             return
 
         move = message.content.lower().strip()
-        move = await self.normalize_move(move, match["mode"])
+        move = normalize_move(move, match["mode"])
         if move is None:
             await channel.send(f"{player.mention}, invalid move. Please try again.")
             return
@@ -828,7 +815,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             return
 
         move = message.content.lower().strip()
-        move = await self.normalize_move(move, match["mode"])
+        move = normalize_move(move, match["mode"])
         if move is None:
             await message.channel.send(
                 f"{player.mention}, invalid move. Please try again.",
@@ -838,7 +825,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         bot_move = random.choice(self.game_modes[match["mode"]])
         await message.channel.send(f"Bot played: {bot_move.capitalize()}.")
 
-        winner = await self.determine_winner(move, bot_move, match["mode"])
+        winner = determine_winner(move, bot_move, match["mode"])
         if winner == 0:
             await message.channel.send("It's a tie!")
             self.update_player_stats(player, "tie")
@@ -868,41 +855,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             return  # Prevent further execution
         await message.channel.send("Please enter your next move.")
 
-    async def normalize_move(self, input_move, mode=None):
-        """Converts input to a valid move."""
-        if not mode:
-            mode = self.game_mode
-        for move, aliases in self.move_aliases.items():
-            if input_move in aliases:
-                if move in self.game_modes[mode]:
-                    return move
-        return None
-
-    async def determine_winner(self, move1, move2, mode=None):
-        """Determines the winner based on the game mode."""
-        if not mode:
-            mode = self.game_mode
-        if move1 == move2:
-            return 0  # Tie
-
-        # Define win conditions for each game mode
-        win_conditions = {
-            "classic": {"rock": ["scissors"], "paper": ["rock"], "scissors": ["paper"]},
-            "lizard_spock": {
-                "rock": ["scissors", "lizard"],
-                "paper": ["rock", "spock"],
-                "scissors": ["paper", "lizard"],
-                "lizard": ["spock", "paper"],
-                "spock": ["scissors", "rock"],
-            },
-            "chess": {"pawn": ["knight"], "knight": ["queen"], "queen": ["pawn"]},
-            "elemental": {"fire": ["grass"], "water": ["fire"], "grass": ["water"]},
-        }
-
-        if move2 in win_conditions[mode][move1]:
-            return 1  # Player 1 wins
-        return 2  # Player 2 wins
-
     async def resolve_match(self, player1, player2, channel):
         """Determines the match outcome and advances the tournament."""
         match1 = self.matches[player1]
@@ -910,7 +862,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         move1 = match1["move"]
         move2 = match2["move"]
 
-        winner = await self.determine_winner(move1, move2, match1["mode"])
+        winner = determine_winner(move1, move2, match1["mode"])
         if winner == 0:
             await channel.send("It's a tie! Please both select your moves again.")
             match1["move"] = None
