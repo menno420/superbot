@@ -190,6 +190,11 @@ async def dispatch(interaction: discord.Interaction) -> None:
                 ephemeral=True,
             )
     finally:
-        metrics.interaction_handler_seconds.labels(prefix=prefix).observe(
-            time.monotonic() - handler_started_at,
-        )
+        elapsed = time.monotonic() - handler_started_at
+        metrics.interaction_handler_seconds.labels(prefix=prefix).observe(elapsed)
+        # Phase S3.2: record into the slow-path ring buffer if over
+        # threshold.  Imported lazily to avoid pulling slow_path_log
+        # at module load (kept the router's import surface compact).
+        from core.runtime import slow_path_log
+
+        slow_path_log.maybe_record("interaction", prefix, elapsed * 1000)

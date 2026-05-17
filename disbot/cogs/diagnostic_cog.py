@@ -537,7 +537,7 @@ class DiagnosticCog(commands.Cog):
         """
         await ctx.send(
             "Usage: `!platform <status|anchors|identity|"
-            "runtime|caches|locks|tasks|views|sessions>`",
+            "runtime|caches|locks|tasks|views|sessions|slow>`",
             delete_after=20,
         )
 
@@ -812,6 +812,41 @@ class DiagnosticCog(commands.Cog):
                 value=", ".join(f"`{s}`" for s in subsystems)[:1024],
                 inline=False,
             )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="slow")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_slow(self, ctx, limit: int = 10):
+        """Show the most recent slow-path entries (S3.2 ring buffer)."""
+        from core.runtime import slow_path_log
+
+        entries = slow_path_log.snapshot()
+        limit = max(1, min(limit, 25))  # Discord field-count guard
+        recent = entries[-limit:]
+        embed = discord.Embed(
+            title="🐢 Slow path log",
+            description=(
+                f"**{len(entries)}** entries  ·  threshold: "
+                f"`{slow_path_log.threshold_ms():.0f}ms`  ·  "
+                f"capacity: `{slow_path_log.capacity()}`"
+            ),
+            color=discord.Color.blurple(),
+        )
+        if not recent:
+            embed.add_field(
+                name="No slow paths recorded",
+                value=f"All observations under {slow_path_log.threshold_ms():.0f}ms.",
+                inline=False,
+            )
+        else:
+            embed.set_footer(text=f"Showing the {len(recent)} most recent.")
+            for entry in reversed(recent):  # most recent first
+                age_s = max(0.0, datetime.datetime.now().timestamp() - entry.timestamp)
+                embed.add_field(
+                    name=f"{entry.kind}: {entry.name}",
+                    value=f"**{entry.duration_ms:.0f}ms**  ·  {age_s:.0f}s ago",
+                    inline=False,
+                )
         await ctx.send(embed=embed)
 
     @platform_grp.command(name="sessions")  # type: ignore[arg-type]

@@ -91,6 +91,7 @@ def get() -> asyncpg.Pool:
 import re
 import time
 
+from core.runtime import slow_path_log as _slow
 from services import metrics as _metrics
 
 # Low-cardinality query label.  Matches the first table name after the
@@ -118,9 +119,10 @@ async def fetchone(query: str, params: tuple = ()) -> dict | None:
         row = await get().fetchrow(query, *params)
         return dict(row) if row else None
     finally:
-        _metrics.db_query_seconds.labels(query_name=_query_label(query)).observe(
-            time.monotonic() - start,
-        )
+        elapsed = time.monotonic() - start
+        label = _query_label(query)
+        _metrics.db_query_seconds.labels(query_name=label).observe(elapsed)
+        _slow.maybe_record("db_query", label, elapsed * 1000)
 
 
 async def fetchall(query: str, params: tuple = ()) -> list[dict]:
@@ -129,9 +131,10 @@ async def fetchall(query: str, params: tuple = ()) -> list[dict]:
         rows = await get().fetch(query, *params)
         return [dict(r) for r in rows]
     finally:
-        _metrics.db_query_seconds.labels(query_name=_query_label(query)).observe(
-            time.monotonic() - start,
-        )
+        elapsed = time.monotonic() - start
+        label = _query_label(query)
+        _metrics.db_query_seconds.labels(query_name=label).observe(elapsed)
+        _slow.maybe_record("db_query", label, elapsed * 1000)
 
 
 async def execute(query: str, params: tuple = ()) -> None:
@@ -139,6 +142,7 @@ async def execute(query: str, params: tuple = ()) -> None:
     try:
         await get().execute(query, *params)
     finally:
-        _metrics.db_query_seconds.labels(query_name=_query_label(query)).observe(
-            time.monotonic() - start,
-        )
+        elapsed = time.monotonic() - start
+        label = _query_label(query)
+        _metrics.db_query_seconds.labels(query_name=label).observe(elapsed)
+        _slow.maybe_record("db_query", label, elapsed * 1000)

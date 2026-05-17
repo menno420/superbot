@@ -288,3 +288,58 @@ async def test_platform_sessions_db_failure_surfaces_to_user():
     msg = ctx.send.call_args.args[0]
     assert "DB query failed" in msg
     assert "connection refused" in msg
+
+
+# ---------------------------------------------------------------------------
+# !platform slow — Phase S3.2 / O-3
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_platform_slow_shows_empty_state_when_no_entries():
+    from core.runtime import slow_path_log
+
+    slow_path_log._reset_for_tests()
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    await cog.platform_slow.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    assert "No slow paths recorded" in (embed.fields[0].name if embed.fields else "")
+
+
+@pytest.mark.asyncio
+async def test_platform_slow_shows_recent_entries_most_recent_first():
+    from core.runtime import slow_path_log
+
+    slow_path_log._reset_for_tests()
+    slow_path_log.configure(threshold_ms=10.0)
+    for i in range(3):
+        slow_path_log.maybe_record("db_query", f"q{i}", 100.0 + i)
+
+    cog = _make_cog()
+    ctx = _make_ctx()
+    await cog.platform_slow.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    # Most recent first: q2, q1, q0
+    field_names = [f.name for f in embed.fields]
+    assert field_names == ["db_query: q2", "db_query: q1", "db_query: q0"]
+
+
+@pytest.mark.asyncio
+async def test_platform_slow_limit_argument_caps_field_count():
+    from core.runtime import slow_path_log
+
+    slow_path_log._reset_for_tests()
+    slow_path_log.configure(threshold_ms=10.0)
+    for i in range(10):
+        slow_path_log.maybe_record("db_query", f"q{i}", 100.0)
+
+    cog = _make_cog()
+    ctx = _make_ctx()
+    await cog.platform_slow.callback(cog, ctx, 3)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    assert len(embed.fields) == 3  # capped at limit=3

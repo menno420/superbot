@@ -256,10 +256,15 @@ async def on_command_completion(ctx: commands.Context) -> None:
     # to a zero-duration observation to keep the metric well-defined.
     started_at = getattr(ctx, "_cmd_start", None)
     if started_at is not None:
+        elapsed = time.monotonic() - started_at
         _metrics.command_latency_seconds.labels(
             cog=cog_name,
             command=cmd_name,
-        ).observe(time.monotonic() - started_at)
+        ).observe(elapsed)
+        # Phase S3.2: record into the slow-path ring buffer if over threshold.
+        from core.runtime import slow_path_log
+
+        slow_path_log.maybe_record("command", f"{cog_name}.{cmd_name}", elapsed * 1000)
     logger.info(
         "CMD ✅ %s/%s",
         cog_name,
