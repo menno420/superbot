@@ -5,9 +5,10 @@ Parsing, game-mode math, and the admin hub view live in:
     cogs/counting/parsing.py     — message → integer
     cogs/counting/game_logic.py  — calculate_expected_count, is_prime
     cogs/counting/_constants.py  — number-word sets + operator tables
+    cogs/counting/handler.py     — V/M/A compute_decision + apply_decision (S2.1)
     views/counting/hub_panel.py  — _CountingHubView
 
-This file hosts only commands, the on_message listener, the cog
+This file hosts only commands, the on_message listener glue, the cog
 lifecycle, and the staff/owner permission helpers.  Tests that reach
 in for ``_word_to_num`` or ``_CountingHubView`` continue to resolve
 via the back-compat re-exports at the bottom of this module.
@@ -23,9 +24,9 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from cogs.counting import game_logic, parsing
+from cogs.counting import game_logic, handler, parsing
 from cogs.counting._constants import word_to_num as _word_to_num  # noqa: F401
-from core.runtime import tasks
+from core.runtime import scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
 from views.base import send_panel
@@ -35,6 +36,11 @@ from views.base import send_panel
 from views.counting import _CountingHubView  # noqa: F401
 
 logger = logging.getLogger("bot.cogs.counting")
+
+
+def _scope_id_for_channel(channel_id: str) -> str:
+    """Canonical scope_locks scope id for a counting channel."""
+    return f"counting:channel:{channel_id}"
 
 
 class CountingCog(commands.Cog):
@@ -47,8 +53,25 @@ class CountingCog(commands.Cog):
         self.count_data: dict = {}
 
     async def cog_load(self):
-        """Schedule DB state load for after the bot is connected."""
+        """Schedule DB state load + register scope_locks teardown hook (S2.1)."""
         tasks.spawn("counting:load_when_ready", self._load_when_ready())
+        scope_locks.register_guild_teardown_hook(self._drop_scope_locks_for_guild)
+
+    def _drop_scope_locks_for_guild(self, guild_id: int) -> int:
+        """guild_lifecycle teardown hook — drop counting scope_locks for the guild.
+
+        Phase S2.1 / F-2: scope_locks does not know which scope_ids belong
+        to which guild; each cog registers its own translation hook.
+        We iterate the per-guild channel set in ``self.count_data`` to
+        derive the scope_ids and call ``scope_locks.forget`` for each.
+        """
+        guild_str = str(guild_id)
+        channel_dict = self.count_data.get(guild_str, {}).get("channels", {})
+        dropped = 0
+        for channel_id in list(channel_dict.keys()):
+            scope_locks.forget(_scope_id_for_channel(channel_id))
+            dropped += 1
+        return dropped
 
     async def _load_when_ready(self):
         await self.bot.wait_until_ready()
@@ -560,10 +583,27 @@ class CountingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        """Validate counts in active channels."""
+        """Validate counts in active channels — V/M/A coordinator (S2.1).
+
+        H-2 fix: the previous implementation held a cog-wide ``self.lock``
+        across every Discord I/O call, serialising counting across every
+        channel + every guild + every mode through one critical section.
+
+        After S2.1 this is the thin V/M/A coordinator:
+
+          1. Quick existence check (no lock — CPython dict reads atomic).
+          2. compute_decision under per-channel ``scope_locks`` — pure
+             validation + in-place state mutation + spawn save.
+          3. apply_decision OUTSIDE the lock — all Discord I/O happens
+             with no lock held, so a slow API roundtrip on channel A
+             cannot stall channel B.
+
+        The compute/apply split lives in ``cogs/counting/handler.py``.
+        Admin commands still use ``self.lock`` for now (rare paths;
+        race window is benign per the docstring on _drop_scope_locks_for_guild).
+        """
         if message.author.bot:
             return
-
         if not isinstance(message.channel, discord.TextChannel):
             return
 
@@ -571,136 +611,32 @@ class CountingCog(commands.Cog):
         channel_id = str(message.channel.id)
         user_id = str(message.author.id)
 
-        async with self.lock:
-            if guild_id not in self.count_data:
-                return
-            if "channels" not in self.count_data[guild_id]:
-                return
-            if channel_id not in self.count_data[guild_id]["channels"]:
-                return
+        # Existence check — no lock needed.  If an admin removes the
+        # channel mid-flight the mutation is harmless: channel_data is
+        # mutated in place but the next save_guild serialises whatever
+        # the parent dict holds at that moment.
+        channel_data = (
+            self.count_data.get(guild_id, {}).get("channels", {}).get(channel_id)
+        )
+        if channel_data is None:
+            return
 
-            channel_data = self.count_data[guild_id]["channels"][channel_id]
-            mode = channel_data.get("mode", "normal")
-            taking_turns = channel_data.get("taking_turns", False)
-            current_count = channel_data.get("current_count", 0)
-            last_user = channel_data.get("last_user", None)
-            multiple = channel_data.get("multiple", None)
-            reset_on_wrong_count = channel_data.get("reset_on_wrong_count", False)
-
-            parsed_count = parsing.parse_message(message.content)
-            if parsed_count is None:
-                try:
-                    await message.delete()
-                except discord.Forbidden:
-                    pass
-                await message.channel.send(
-                    f"{message.author.mention}, please send a valid number or mathematical expression.",
-                    delete_after=5,
-                )
-                return
-
-            expected_count = game_logic.calculate_expected_count(
-                channel_data,
-                current_count,
-                mode,
+        # ---- VALIDATE + MUTATE under per-channel scope_lock ----
+        scope_id = _scope_id_for_channel(channel_id)
+        async with scope_locks.lock_for(scope_id):
+            decision = handler.compute_decision(
+                message=message,
+                channel_data=channel_data,
+                user_id=user_id,
             )
-
-            if parsed_count != expected_count:
-                try:
-                    await message.delete()
-                except discord.Forbidden:
-                    pass
-
-                if reset_on_wrong_count:
-                    if mode in [
-                        "normal",
-                        "random",
-                        "skip",
-                        "multiples",
-                        "prime",
-                        "fibonacci",
-                        "squares",
-                        "cubes",
-                        "factorials",
-                        "custom",
-                    ]:
-                        channel_data["current_count"] = 0
-                    else:  # reverse mode
-                        channel_data["current_count"] = 1000
-                    channel_data["sequence_index"] = 0
-                    channel_data["last_user"] = None
-                    channel_data["leaderboard"] = {}
-                    channel_data["last_count_time"] = datetime.now(
-                        tz=timezone.utc,
-                    ).timestamp()
-                    tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
-
-                    await message.channel.send(
-                        f"{message.author.mention}, incorrect count! The count has been reset.",
-                        delete_after=5,
-                    )
-                else:
-                    await message.channel.send(
-                        f"{message.author.mention}, incorrect count! The next number should be {expected_count}.",
-                        delete_after=5,
-                    )
-                return
-
-            if taking_turns and user_id == last_user:
-                try:
-                    await message.delete()
-                except discord.Forbidden:
-                    pass
-                await message.channel.send(
-                    f"{message.author.mention}, you cannot count twice in a row!",
-                    delete_after=5,
+            if decision.state_mutated:
+                tasks.spawn(
+                    f"counting:save:{guild_id}",
+                    self._save_guild(guild_id),
                 )
-                return
 
-            # Additional mode-specific validations
-            if mode == "multiples" and multiple:
-                if parsed_count % multiple != 0:
-                    try:
-                        await message.delete()
-                    except discord.Forbidden:
-                        pass
-                    await message.channel.send(
-                        f"{message.author.mention}, please count in multiples of {multiple}.",
-                        delete_after=5,
-                    )
-                    return
-
-            if mode == "prime":
-                if not game_logic.is_prime(parsed_count):
-                    try:
-                        await message.delete()
-                    except discord.Forbidden:
-                        pass
-                    await message.channel.send(
-                        f"{message.author.mention}, please count prime numbers only.",
-                        delete_after=5,
-                    )
-                    return
-
-            channel_data["current_count"] = parsed_count
-            channel_data["last_user"] = user_id
-            channel_data["last_count_time"] = datetime.now(tz=timezone.utc).timestamp()
-            if mode == "random":
-                rand_range = channel_data.get("random_range", [1, 3])
-                channel_data["next_expected"] = parsed_count + random.randint(
-                    *rand_range,
-                )
-            if mode in ["fibonacci", "squares", "cubes", "factorials", "custom"]:
-                channel_data["sequence_index"] += 1
-            leaderboard = channel_data.get("leaderboard", {})
-            leaderboard[user_id] = leaderboard.get(user_id, 0) + 1
-            channel_data["leaderboard"] = leaderboard
-            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
-
-        try:
-            await message.add_reaction("✅")
-        except discord.Forbidden:
-            pass
+        # ---- APPLY OUTSIDE the lock (Discord I/O) ----
+        await handler.apply_decision(decision, message)
 
     # --------------------------------------------
     # Cog Unload
