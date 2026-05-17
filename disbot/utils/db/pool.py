@@ -20,9 +20,13 @@ from __future__ import annotations
 
 import logging
 import os
+import re
+import time
 
 import asyncpg
 
+from core.runtime import slow_path_log as _slow
+from services import metrics as _metrics
 from utils.db.codec import init_connection
 
 logger = logging.getLogger("bot.db.pool")
@@ -86,13 +90,8 @@ def get() -> asyncpg.Pool:
 # Phase S3.1 / O-2: each primitive observes ``db_query_seconds`` so the
 # !platform metrics surface + Prometheus can highlight slow queries by
 # (op, table) without retrofitting timing into every CRUD module.
+# Phase S3.2: also records slow paths via core.runtime.slow_path_log.
 # ---------------------------------------------------------------------------
-
-import re
-import time
-
-from core.runtime import slow_path_log as _slow
-from services import metrics as _metrics
 
 # Low-cardinality query label.  Matches the first table name after the
 # operation keyword in SELECT/INSERT/UPDATE/DELETE statements; falls back

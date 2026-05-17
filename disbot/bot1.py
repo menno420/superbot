@@ -188,9 +188,7 @@ def _identity_contract_strict() -> bool:
     if disabled in ("1", "true", "yes", "on"):
         return False
     legacy = os.getenv("IDENTITY_CONTRACT_STRICT", "").strip().lower()
-    if legacy in ("0", "false", "no", "off"):
-        return False
-    return True
+    return legacy not in ("0", "false", "no", "off")
 
 
 signal.signal(signal.SIGTERM, _begin_shutdown)

@@ -900,7 +900,7 @@ def _fmt_snapshot_value(value: object) -> str:
                 lines.append(f"**{k}**: {v_str or '*(none)*'}")
             elif isinstance(v, dict):
                 lines.append(
-                    f"**{k}**: " + ", ".join(f"{kk}={vv}" for kk, vv in v.items())
+                    f"**{k}**: " + ", ".join(f"{kk}={vv}" for kk, vv in v.items()),
                 )
             else:
                 lines.append(f"**{k}**: {v}")

@@ -25,15 +25,18 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from cogs.counting import game_logic, handler, parsing
+from cogs.counting import handler
 from core.runtime import scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
 from views.base import send_panel
 
-# Re-export the hub view so legacy ``from cogs.counting_cog import
-# _CountingHubView`` imports keep resolving.
-from views.counting import _CountingHubView  # noqa: F401
+# _CountingHubView is instantiated below by the !countingmenu command
+# and the help-menu hook.  It also stays importable from this module
+# (``from cogs.counting_cog import _CountingHubView``) without an
+# explicit __all__ entry — the import name is preserved as a side
+# effect, which is fine.
+from views.counting import _CountingHubView
 
 logger = logging.getLogger("bot.cogs.counting")
 
