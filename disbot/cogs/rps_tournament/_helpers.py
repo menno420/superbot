@@ -24,7 +24,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from core.runtime import tasks
+from core.runtime import resources, tasks
 from utils import db as global_db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
@@ -138,9 +138,13 @@ async def schedule_channel_deletion(channel) -> None:
 
 async def delete_all_match_channels(guild) -> None:
     """Delete all RPS tournament match channels and the parent category."""
-    category = discord.utils.get(guild.categories, name="RPS Tournaments")
+    category = resources.resolve_channel(
+        guild,
+        name="RPS Tournaments",
+        kind="category",
+    )
     if category:
-        await cleanup_category(category)
+        await cleanup_category(category)  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
@@ -170,7 +174,7 @@ async def cleanup_orphaned_channels(bot: commands.Bot) -> None:
     await bot.wait_until_ready()
     for guild in bot.guilds:
         for cat_name in ("RPS Tournaments", "RPS Bot Matches"):
-            cat = discord.utils.get(guild.categories, name=cat_name)
+            cat = resources.resolve_channel(guild, name=cat_name, kind="category")
             if not cat or not cat.channels:
                 continue
             for ch in cat.channels:

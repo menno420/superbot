@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
@@ -175,7 +176,7 @@ class _DeleteRoleSelect(discord.ui.Select):
         super().__init__(placeholder="Choose a role to delete…", options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        role = interaction.guild.get_role(int(self.values[0]))
+        role = resources.resolve_role(interaction.guild, role_id=self.values[0])
         if not role:
             await interaction.response.send_message(
                 "❌ Role no longer exists.",
