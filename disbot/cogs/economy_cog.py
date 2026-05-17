@@ -19,7 +19,6 @@ import time
 import discord
 from discord.ext import commands
 
-from cogs.economy._helpers import SHOP_ITEMS  # noqa: F401 — back-compat re-export
 from cogs.economy._helpers import (
     _DAILY_COOLDOWN,
     _DAILY_TIERS,
@@ -42,17 +41,11 @@ from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR
 
 # Views — importing this module triggers the @register decorator on
 # EconomyPanelView, which adds it to persistent_views._REGISTRY so
-# restoration on bot restart can re-attach the view.
-from views.economy import (  # noqa: F401 — back-compat re-exports
-    EconomyPanelView,
-    _JobSelect,
-    _ShopPanelSelect,
-    _ShopSelect,
-    _ShopSubView,
-    _ShopView,
-    _WorkSubView,
-    _WorkView,
-)
+# restoration on bot restart can re-attach the view.  Only the names
+# this cog actually uses are imported here as of S5.2 — the unused
+# back-compat re-exports of _JobSelect / _ShopPanelSelect / _ShopSelect
+# / _ShopSubView / _WorkSubView have been dropped (no consumers).
+from views.economy import EconomyPanelView, _ShopView, _WorkView
 
 logger = logging.getLogger("bot")
 

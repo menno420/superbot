@@ -9,9 +9,10 @@ Parsing, game-mode math, and the admin hub view live in:
     views/counting/hub_panel.py  — _CountingHubView
 
 This file hosts only commands, the on_message listener glue, the cog
-lifecycle, and the staff/owner permission helpers.  Tests that reach
-in for ``_word_to_num`` or ``_CountingHubView`` continue to resolve
-via the back-compat re-exports at the bottom of this module.
+lifecycle, and the staff/owner permission helpers.  The pre-S4.1
+back-compat re-export of ``_word_to_num`` was dropped in S5.2 (no
+consumers); ``_CountingHubView`` is still imported here because the
+listener-glue commands instantiate it directly.
 """
 
 from __future__ import annotations
@@ -25,7 +26,6 @@ import discord
 from discord.ext import commands
 
 from cogs.counting import game_logic, handler, parsing
-from cogs.counting._constants import word_to_num as _word_to_num  # noqa: F401
 from core.runtime import scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
