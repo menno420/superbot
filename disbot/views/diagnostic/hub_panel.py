@@ -1,120 +1,127 @@
-"""Diagnostics hub view (S4.4.5 extraction).
+"""Diagnostics hub view (S4.4.5 + stabilization).
 
 ``_DiagnosticsHubView`` is the ephemeral admin dashboard opened by
-``!diagnostics`` (and reachable via the help-menu direct-navigation
-hook).  Each button delegates back to the owning ``DiagnosticCog``
-text command via ``ctx.invoke`` — this avoids re-implementing each
-diagnostic flow inside the view.
+``!diagnostics`` and (via ``build_help_menu_view``) by the help-menu
+"Diagnostics" selection.
 
-The cog reference is held on the view instance (constructor argument)
-so the button callbacks have access without a global lookup.
+Canonical panel pattern: each button uses ``safe_defer`` then
+``safe_edit(interaction, embed=..., view=self)`` to update THIS panel
+in place — exactly like ``views/economy/main_panel.EconomyPanelView``
+and ``views/moderation/main_panel.ModPanelView``.  The hub never
+delegates to text commands and never sends new messages from button
+callbacks.
+
+Pre-stabilization (S4.4.5 initial extraction) this view delegated to
+``self.ctx.invoke(self.cog.<command>)`` which (a) broke under
+``help_ctx_shim`` (no ``.invoke``) and (b) produced new messages
+instead of editing the panel.  Both issues are resolved by computing
+the embed directly via the shared helpers in ``cogs.diagnostic._helpers``.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import discord
-from discord.ext import commands
 
-from core.runtime.interaction_helpers import safe_defer
+from cogs.diagnostic._helpers import (
+    build_bot_status_embed,
+    build_check_database_embed,
+    build_command_list_pages,
+    build_hub_overview_embed,
+    build_latency_embed,
+    build_query_logs_embed,
+    build_system_info_embed,
+    build_test_notification_embed,
+    build_validate_json_embed,
+)
+from core.runtime.interaction_helpers import safe_defer, safe_edit
 from views.base import HubView
-
-if TYPE_CHECKING:
-    from cogs.diagnostic_cog import DiagnosticCog
+from views.diagnostic.paginator import _PaginatorView
 
 
 class _DiagnosticsHubView(HubView):
-    """Interactive hub for all diagnostic tools."""
+    """Interactive hub for all diagnostic tools.
 
-    def __init__(self, ctx: commands.Context, cog: DiagnosticCog):
-        super().__init__(ctx.author)
-        self.ctx = ctx
-        self.cog = cog
+    Constructor takes only the invoking ``author`` — the view reads
+    ``bot`` from ``interaction.client`` inside each callback, matching
+    the canonical panel pattern.  No ``ctx`` or ``cog`` reference is
+    held; the help-menu invocation path (which passes a
+    ``help_ctx_shim`` SimpleNamespace) is therefore safe.
+    """
+
+    def __init__(self, author: discord.Member | discord.User) -> None:
+        super().__init__(author)
 
     def build_embed(self) -> discord.Embed:
-        embed = discord.Embed(
-            title="🔧 Diagnostics Hub",
-            description=(
-                "Select a diagnostic tool below.\n"
-                "All tools require Administrator permission."
-            ),
-            color=discord.Color.blue(),
-        )
-        embed.add_field(
-            name="🤖 Bot Status",
-            value="Health & performance metrics",
-            inline=True,
-        )
-        embed.add_field(name="📡 Latency", value="WebSocket ping", inline=True)
-        embed.add_field(
-            name="💻 System Info",
-            value="OS, disk & Python version",
-            inline=True,
-        )
-        embed.add_field(
-            name="🗄️ Check Database",
-            value="Verify all DB tables exist",
-            inline=True,
-        )
-        embed.add_field(
-            name="📄 Validate JSON",
-            value="Check data file integrity",
-            inline=True,
-        )
-        embed.add_field(
-            name="📋 Command List",
-            value="Paginated command overview",
-            inline=True,
-        )
-        embed.add_field(
-            name="🔍 Recent Errors",
-            value="Last 10 error log entries",
-            inline=True,
-        )
-        embed.add_field(
-            name="🔔 Test Notify",
-            value="Fire a test webhook ping",
-            inline=True,
-        )
-        embed.set_footer(text="Diagnostics Hub  •  Admin only")
-        return embed
+        return build_hub_overview_embed()
+
+    # ------------------------------------------------------------------
+    # Row 0 — primary tools
+    # ------------------------------------------------------------------
 
     @discord.ui.button(label="🤖 Bot Status", style=discord.ButtonStyle.blurple, row=0)
     async def btn_status(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.diagnostic_bot_status)
+        embed = build_bot_status_embed(interaction.client)  # type: ignore[arg-type]
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(label="📡 Latency", style=discord.ButtonStyle.blurple, row=0)
     async def btn_latency(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.latency)
+        embed = build_latency_embed(interaction.client)  # type: ignore[arg-type]
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(label="💻 System Info", style=discord.ButtonStyle.blurple, row=0)
     async def btn_sysinfo(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.system_info)
+        embed = build_system_info_embed()
+        await safe_edit(interaction, embed=embed, view=self)
+
+    # ------------------------------------------------------------------
+    # Row 1 — data integrity
+    # ------------------------------------------------------------------
 
     @discord.ui.button(label="🗄️ Database", style=discord.ButtonStyle.grey, row=1)
     async def btn_db(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.check_database)
+        embed = await build_check_database_embed()
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(label="📄 JSON Files", style=discord.ButtonStyle.grey, row=1)
     async def btn_json(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.validate_json_files)
+        embed = build_validate_json_embed()
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(label="📋 Commands", style=discord.ButtonStyle.grey, row=1)
     async def btn_cmds(self, interaction: discord.Interaction, _: discord.ui.Button):
+        """Swap the view to a paginator — different control set than the hub.
+
+        The paginator carries a "↩ Back" button so the user can return
+        to this hub view in place (canonical sub-panel return pattern).
+        """
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.list_commands_detailed)
+        pages = build_command_list_pages(interaction.client)  # type: ignore[arg-type]
+        if not pages:
+            # Edge case: no cogs with commands.  Stay in hub, just show a notice.
+            empty = discord.Embed(
+                title="Command List",
+                description="No cogs with commands found.",
+                color=discord.Color.blue(),
+            )
+            await safe_edit(interaction, embed=empty, view=self)
+            return
+        paginator = _PaginatorView(pages, self._author, parent_view=self)
+        await safe_edit(interaction, embed=pages[0], view=paginator)
+
+    # ------------------------------------------------------------------
+    # Row 2 — alerts
+    # ------------------------------------------------------------------
 
     @discord.ui.button(
         label="🔍 Recent Errors",
@@ -124,7 +131,8 @@ class _DiagnosticsHubView(HubView):
     async def btn_errors(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.recent_errors)
+        embed = await build_query_logs_embed(event_type="ERROR", limit=10)
+        await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🔔 Test Notify",
@@ -134,4 +142,5 @@ class _DiagnosticsHubView(HubView):
     async def btn_notify(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.test_notification)
+        embed = await build_test_notification_embed(interaction.client)  # type: ignore[arg-type]
+        await safe_edit(interaction, embed=embed, view=self)
