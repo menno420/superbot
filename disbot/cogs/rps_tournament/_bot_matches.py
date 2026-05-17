@@ -139,8 +139,16 @@ async def handle_bot_match_move(message: discord.Message) -> None:
     the player's match record, normalises the move, plays the bot,
     updates wins/losses, and ends the match when either side hits the
     required win count.
+
+    Bot matches only run in guild text channels (the channel id is
+    in ``_bot_match_channels``, populated by ``create_bot_match_channel``
+    which always creates a guild channel).  The isinstance narrow is
+    defensive — a DM cannot have its channel id in the set, so this
+    is also a static-type narrow for mypy.
     """
     player = message.author
+    if not isinstance(player, discord.Member):
+        return
     match = _bot_matches.get(player)
     if not match:
         return

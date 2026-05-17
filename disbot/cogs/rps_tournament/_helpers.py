@@ -174,6 +174,10 @@ async def cleanup_orphaned_channels(bot: commands.Bot) -> None:
             if not cat or not cat.channels:
                 continue
             for ch in cat.channels:
+                # Match channels are TextChannel; voice/stage/forum slots
+                # can't receive a "match interrupted" notice.
+                if not isinstance(ch, discord.TextChannel):
+                    continue
                 try:
                     await ch.send(
                         "⚠️ The bot restarted and this match was interrupted. "
