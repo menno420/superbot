@@ -9,6 +9,7 @@ import sys
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
 from views.base import HubView, send_panel
@@ -210,7 +211,7 @@ class AdminCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for guild in self.bot.guilds:
-            channel = discord.utils.get(guild.text_channels, name="bot_spam")
+            channel = resources.resolve_channel(guild, name="bot_spam")
             if channel and channel.permissions_for(guild.me).send_messages:
                 try:
                     await channel.send(

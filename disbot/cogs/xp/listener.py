@@ -25,6 +25,7 @@ import time
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from services import xp_service
 from utils import db
 from utils.cooldowns import check_cooldown
@@ -85,7 +86,10 @@ async def announce_level_up(
     """Post the level-up embed + log embed + apply XP threshold roles."""
     announce_ch: discord.TextChannel | None = None
     if announce_channel:
-        announce_ch = message.guild.get_channel(int(announce_channel))  # type: ignore[assignment]
+        announce_ch = resources.resolve_channel(  # type: ignore[assignment]
+            message.guild,
+            channel_id=announce_channel,
+        )
     announce_ch = announce_ch or message.channel  # type: ignore[assignment]
 
     embed = discord.Embed(
@@ -124,8 +128,8 @@ async def _apply_xp_threshold_roles(
         xp_roles = await get_xp_threshold_roles(message.guild.id)
         for role_cfg in xp_roles:
             if role_cfg["level_required"] <= new_level:
-                discord_role = discord.utils.get(
-                    message.guild.roles,
+                discord_role = resources.resolve_role(
+                    message.guild,
                     name=role_cfg["role_name"],
                 )
                 if (

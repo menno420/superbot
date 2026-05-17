@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from utils import db
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
@@ -22,7 +23,7 @@ class ReactionRolesPanel(BaseView):
         if rows:
             lines = []
             for r in rows:
-                role = self.ctx.guild.get_role(r["role_id"])
+                role = resources.resolve_role(self.ctx.guild, role_id=r["role_id"])
                 role_str = role.mention if role else f"*(deleted role {r['role_id']})*"
                 lines.append(f"Message `{r['message_id']}` · {r['emoji']} → {role_str}")
             embed.description = "\n".join(lines)

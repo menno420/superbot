@@ -27,6 +27,7 @@ from cogs.blackjack._state import (
     _tournaments,
     _TournPlayerState,
 )
+from core.runtime import resources
 from services import economy_service, game_state_service
 from services.blackjack_engine import hand_value as _hand_value
 from services.blackjack_engine import is_blackjack as _is_blackjack
@@ -208,7 +209,7 @@ async def _start_tourn_round(
         channel_id=channel.id,
     )
     _active[(ps.user_id, ps.guild_id)] = game
-    member = channel.guild.get_member(ps.user_id)
+    member = resources.resolve_member(channel.guild, ps.user_id)
     mention = member.mention if member else f"<@{ps.user_id}>"
 
     embed = _game_embed(
@@ -233,8 +234,7 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
     medals = ["🥇", "🥈", "🥉"]
     for i, (uid, chips) in enumerate(ranking):
         icon = medals[i] if i < 3 else f"#{i+1}"
-        member = guild.get_member(uid) if guild else None
-        name = member.display_name if member else f"<@{uid}>"
+        name = resources.member_display(guild, uid) if guild else f"<@{uid}>"
         lines.append(f"{icon} **{name}** — {chips} chips")
 
     winner_id = ranking[0][0] if ranking else None

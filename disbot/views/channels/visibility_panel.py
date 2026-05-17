@@ -16,6 +16,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.subsystem_registry import all_subsystems_sorted
@@ -46,7 +47,11 @@ class _ChannelSelectForVisibility(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         channel_id = int(self.values[0])
-        channel = interaction.guild.get_channel(channel_id)
+        channel = resources.resolve_channel(
+            interaction.guild,
+            channel_id=channel_id,
+            kind="any",
+        )
         if not channel:
             await interaction.response.send_message(
                 "Channel not found.",

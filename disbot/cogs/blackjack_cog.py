@@ -64,7 +64,7 @@ from cogs.blackjack._state import (  # noqa: F401 — re-exported
     _tournaments,
     _TournPlayerState,
 )
-from core.runtime import tasks
+from core.runtime import resources, tasks
 from core.runtime.component_registry import stats_block
 from services import economy_service, game_state_service
 from services.blackjack_engine import is_blackjack as _is_blackjack
@@ -367,7 +367,11 @@ class BlackjackCog(commands.Cog):
             flag = await db.get_setting(guild.id, ACTIVE_TOURNAMENT, "")
             if flag == "blackjack":
                 await db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
-            cat = discord.utils.get(guild.categories, name="BJ Tournament")
+            cat = resources.resolve_channel(
+                guild,
+                name="BJ Tournament",
+                kind="category",
+            )
             if not cat or not cat.channels:
                 continue
             for ch in cat.channels:
@@ -399,8 +403,10 @@ class BlackjackCog(commands.Cog):
             return
         uid = payload.user_id
         guild = self.bot.get_guild(payload.guild_id)
-        if guild and guild.get_member(uid) and guild.get_member(uid).bot:
-            return
+        if guild:
+            member = resources.resolve_member(guild, uid)
+            if member and member.bot:
+                return
         ok, _ = await tourn.try_join(uid)
         if ok:
             await _update_tourn_embed(tourn)
@@ -602,7 +608,7 @@ async def _launch_tournament(
 
     # Create private channels via shared utility
     for uid in tourn.players:
-        member = guild.get_member(uid)
+        member = resources.resolve_member(guild, uid)
         if not member:
             tourn.results[uid] = 0
             continue

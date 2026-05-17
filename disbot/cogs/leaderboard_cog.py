@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
 from utils import db
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
@@ -48,8 +49,7 @@ async def _build_embed(
         )
         lines = []
         for i, row in enumerate(rows):
-            m = guild.get_member(row["user_id"])
-            name = m.display_name if m else f"<@{row['user_id']}>"
+            name = resources.member_display(guild, row["user_id"])
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — Level {row['level']} ({row['xp']} XP)")
         embed.description = "\n".join(lines) or "No data yet!"
@@ -61,8 +61,7 @@ async def _build_embed(
         )
         lines = []
         for i, row in enumerate(rows):
-            m = guild.get_member(row["user_id"])
-            name = m.display_name if m else f"<@{row['user_id']}>"
+            name = resources.member_display(guild, row["user_id"])
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {row['coins']} 🪙")
         embed.description = "\n".join(lines) or "No data yet!"
@@ -71,8 +70,7 @@ async def _build_embed(
         rows = await db.get_all_mining_totals(guild.id)
         lines = []
         for i, (user_id, total) in enumerate(rows):
-            m = guild.get_member(int(user_id)) if user_id.isdigit() else None
-            name = m.display_name if m else f"<@{user_id}>"
+            name = resources.member_display(guild, user_id)
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {total} items")
         embed.description = "\n".join(lines) or "No data yet!"
@@ -81,8 +79,7 @@ async def _build_embed(
         rows = await db.get_deathmatch_leaderboard()
         lines = []
         for i, row in enumerate(rows):
-            m = guild.get_member(row["user_id"])
-            name = m.display_name if m else f"<@{row['user_id']}>"
+            name = resources.member_display(guild, row["user_id"])
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {row['wins']}W / {row['losses']}L")
         embed.description = "\n".join(lines) or "No data yet!"
@@ -107,8 +104,7 @@ async def _build_embed(
         sorted_totals = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:10]
         lines = []
         for i, (uid, cnt) in enumerate(sorted_totals):
-            m = guild.get_member(int(uid)) if uid.isdigit() else None
-            name = m.display_name if m else f"<@{uid}>"
+            name = resources.member_display(guild, uid)
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {cnt} counts")
         embed.description = "\n".join(lines) or "No counting data yet!"

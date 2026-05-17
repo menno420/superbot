@@ -37,6 +37,7 @@ from core.runtime import guild_config  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
 from core.runtime import scope_locks  # noqa: F401 — re-exported
 from core.runtime import tasks  # noqa: F401 — re-exported
+from core.runtime import guild_resources as resources  # noqa: F401 — re-exported
 from core.runtime import interaction_helpers as interaction  # noqa: F401 — re-exported
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported
 from core.runtime import live_update_scheduler as scheduler  # noqa: F401 — re-exported

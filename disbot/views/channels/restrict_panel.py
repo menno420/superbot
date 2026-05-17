@@ -13,6 +13,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR
 from views.base import BaseView
@@ -97,7 +98,11 @@ class _RestrictSubView(BaseView):
             )
             return
 
-        channel = interaction.guild.get_channel(self.selected_channel_id)
+        channel = resources.resolve_channel(
+            interaction.guild,
+            channel_id=self.selected_channel_id,
+            kind="any",
+        )
         if channel is None:
             await interaction.response.send_message(
                 f"Channel `{self.selected_channel_name}` not found.",

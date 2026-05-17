@@ -19,6 +19,7 @@ from __future__ import annotations
 import discord
 from discord import Member
 
+from core.runtime import resources
 from core.runtime.component_registry import stats_block
 from utils.ui_constants import MOD_COLOR
 
@@ -51,7 +52,7 @@ def _can_act_on_interaction(
     """Return an error string if the actor cannot moderate *member*, else None."""
     if member == interaction.guild.owner:
         return "❌ You cannot perform this action on the server owner."
-    actor = interaction.guild.get_member(interaction.user.id)
+    actor = resources.resolve_member(interaction.guild, interaction.user.id)
     if actor and member.top_role >= actor.top_role:
         return (
             "❌ You cannot perform this action on someone with an equal or higher role."
