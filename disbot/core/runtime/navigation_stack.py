@@ -129,3 +129,23 @@ async def _get_stack(session_id: str) -> list:
     if not isinstance(value, list):
         return []
     return value
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics registration — Phase S1.3
+# ---------------------------------------------------------------------------
+
+from services import diagnostics_service as _diag  # noqa: E402
+
+
+def _diagnostics_snapshot() -> dict[str, int]:
+    """Snapshot of nav-stack in-process state for ``!platform locks``.
+
+    Only surfaces the per-session lock dict size — stack contents
+    themselves live in ``state_store`` (DB-backed) and are queried by
+    ``!platform sessions`` directly.
+    """
+    return {"active_locks": len(_locks)}
+
+
+_diag.register("navigation_stack", _diagnostics_snapshot)

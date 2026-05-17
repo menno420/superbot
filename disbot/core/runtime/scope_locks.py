@@ -262,3 +262,22 @@ def _reset_for_tests() -> None:
     """Wipe module state.  Tests call this in their setup/teardown fixture."""
     _LOCKS.clear()
     _GUILD_TEARDOWN_HOOKS.clear()
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics registration — Phase S1.3
+# ---------------------------------------------------------------------------
+
+from services import diagnostics_service as _diag  # noqa: E402
+
+
+def _diagnostics_snapshot() -> dict[str, object]:
+    s = stats()
+    return {
+        "total": s.total,
+        "held": s.held_count,
+        "by_prefix": s.by_prefix,
+    }
+
+
+_diag.register("scope_locks", _diagnostics_snapshot)

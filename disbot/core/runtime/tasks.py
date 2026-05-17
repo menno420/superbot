@@ -120,3 +120,22 @@ def cancel_by_prefix(prefix: str) -> int:
             t.cancel()
             cancelled += 1
     return cancelled
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics registration — Phase S1.3
+# ---------------------------------------------------------------------------
+
+from services import diagnostics_service as _diag  # noqa: E402
+
+
+def _diagnostics_snapshot() -> dict[str, object]:
+    """Snapshot of managed-task state for ``!platform tasks``."""
+    running = active()
+    return {
+        "active_count": len(running),
+        "names": sorted(t.get_name() for t in running),
+    }
+
+
+_diag.register("tasks", _diagnostics_snapshot)

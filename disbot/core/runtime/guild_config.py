@@ -245,3 +245,21 @@ def _reset_for_tests() -> None:
     """Wipe module state.  Tests call this in their setup/teardown fixture."""
     _CACHE.clear()
     _VERSION.clear()
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics registration — Phase S1.3
+# ---------------------------------------------------------------------------
+
+# Self-register a sync snapshot provider with the diagnostics registry so
+# `!platform caches` (S2.5) can read the current cache size and tracked
+# guild count without depending on the primitive's internal types.
+from services import diagnostics_service as _diag  # noqa: E402
+
+
+def _diagnostics_snapshot() -> dict[str, int]:
+    s = stats()
+    return {"size": s.size, "versions_tracked": s.versions_tracked}
+
+
+_diag.register("guild_config", _diagnostics_snapshot)

@@ -83,3 +83,21 @@ class PersistentView(discord.ui.View):
         from views.base import handle_view_error
 
         await handle_view_error(self, interaction, error, item)
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics registration — Phase S1.3
+# ---------------------------------------------------------------------------
+
+from services import diagnostics_service as _diag  # noqa: E402
+
+
+def _diagnostics_snapshot() -> dict[str, object]:
+    """Snapshot of registered persistent-view classes for ``!platform views``."""
+    return {
+        "registered_count": len(_REGISTRY),
+        "subsystems": sorted(_REGISTRY.keys()),
+    }
+
+
+_diag.register("persistent_views", _diagnostics_snapshot)
