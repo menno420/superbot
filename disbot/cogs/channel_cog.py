@@ -19,6 +19,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import INFO_COLOR, WARNING_COLOR
@@ -74,20 +75,20 @@ class ChannelCog(commands.Cog):
         if query.startswith("<#") and query.endswith(">"):
             query = query[2:-1]
         if query.isdigit():
-            ch = guild.get_channel(int(query))
+            ch = resources.resolve_channel(guild, channel_id=query)
             if ch:
                 return ch
-        return discord.utils.get(guild.channels, name=query)
+        return resources.resolve_channel(guild, name=query, kind="any")
 
     def _resolve_category(self, guild: discord.Guild, query: str):
         """Find a category by name, mention, or numeric ID."""
         if query.startswith("<#") and query.endswith(">"):
             query = query[2:-1]
         if query.isdigit():
-            ch = guild.get_channel(int(query))
+            ch = resources.resolve_channel(guild, channel_id=query)
             if isinstance(ch, discord.CategoryChannel):
                 return ch
-        return discord.utils.get(guild.categories, name=query)
+        return resources.resolve_channel(guild, name=query, kind="category")
 
     def get_category_or_channel(self, guild, query):
         return self._resolve_category(guild, query) or self._resolve_channel(
