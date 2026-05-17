@@ -56,6 +56,7 @@ from cogs.rps_tournament._persistence import (  # noqa: F401 — re-exported for
     save_tournament_entry,
 )
 from cogs.rps_tournament._quickplay import run_quickrps_command
+from cogs.rps_tournament._stage import RPS_STAGE_NAME, RpsTournamentStage
 from cogs.rps_tournament.rules import (
     GAME_MODES,
     MOVE_ALIASES,
@@ -158,6 +159,8 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
     # ------------------------------------------------------------------
 
     async def cog_load(self) -> None:
+        from core.runtime import message_pipeline
+
         tasks.spawn("rps:clear_stale_flag", clear_stale_tournament_flag(self.bot))
         tasks.spawn("rps:cleanup_orphaned", cleanup_orphaned_channels(self.bot))
         # PR G1 — drop any rps_pvp_pending game_state rows left over
@@ -168,13 +171,17 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         # and never paid back if the bot crashed before the final
         # payout in ``check_tournament_progress``.
         tasks.spawn("rps:recover_tournament", self._recover_rps_tournament())
+        message_pipeline.register(RpsTournamentStage(self))
 
     def cog_unload(self):
         """Cancel reminder + all spawned RPS tasks; clear bot-match state."""
+        from core.runtime import message_pipeline
+
         if self.reminder_task and not self.reminder_task.done():
             self.reminder_task.cancel()
         tasks.cancel_by_prefix("rps:")
         _reset_bot_match_state()
+        message_pipeline.unregister(RPS_STAGE_NAME)
 
     async def _recover_rps_pvp_pending(self) -> None:
         """Delegator — see ``cogs.rps_tournament._persistence``."""
@@ -539,12 +546,8 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                 f"{user.display_name} has registered for the tournament.",
             )
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        """Listens for moves in match channels."""
-        if message.author.bot:
-            return
-
+    async def _process_tournament_message(self, message):
+        """Capture player moves in tournament match channels.  See _stage.py."""
         channel = message.channel
 
         # Check for player vs bot matches
