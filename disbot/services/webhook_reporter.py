@@ -131,6 +131,57 @@ class WebhookReporter:
         )
         await self._send(embed, username="Bot Loader")
 
+    async def on_health_startup_failed(self, error: BaseException) -> None:
+        """Health-server bind step raised — bot startup is being aborted.
+
+        Phase S2.4 / O-2b: the bot used to silently keep running with
+        an unbound health endpoint, leaving orchestration probes wedged.
+        This alert fires from bot1.main before SystemExit(1) so the
+        operator sees the cause before the container restarts.
+        """
+        tb = "".join(
+            traceback.format_exception(type(error), error, error.__traceback__),
+        )
+        if len(tb) > 1800:
+            tb = tb[-1800:]
+        embed = discord.Embed(
+            title="🛑 Health Server Bind Failed",
+            description=(
+                f"**Aborting startup.**  The health server could not "
+                f"bind its listener — orchestration probes would have "
+                f"wedged silently.\n```py\n{tb}\n```"
+            ),
+            color=discord.Color.dark_red(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        await self._send(embed, username="Bot Health")
+
+    async def on_app_task_died(self, name: str, error: BaseException) -> None:
+        """A supervised application task raised after startup.
+
+        Phase S2.4 / C-2: every task spawned via bot1._supervised_task
+        registers a done-callback that posts here on unhandled
+        exception, so silent task deaths are visible in the operator
+        feed.  Cancellation never triggers this alert.
+        """
+        tb = "".join(
+            traceback.format_exception(type(error), error, error.__traceback__),
+        )
+        if len(tb) > 1800:
+            tb = tb[-1800:]
+        embed = discord.Embed(
+            title="💀 App Task Died",
+            description=(
+                f"**Task:** `{name}`\n"
+                f"The task exited with an unhandled exception.  The bot "
+                f"continues running but this background work is no "
+                f"longer happening.\n```py\n{tb}\n```"
+            ),
+            color=discord.Color.dark_red(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        await self._send(embed, username="Bot Supervisor")
+
     async def on_command(self, ctx) -> None:
         embed = discord.Embed(
             title="📥 Command Invoked",

@@ -114,6 +114,51 @@ def _begin_shutdown(*_) -> None:
     _remove_pid()
 
 
+# ---------------------------------------------------------------------------
+# Supervised app-task helper — Phase S2.4 / C-2
+# Every entry-point-layer asyncio.create_task call should go through this
+# helper so unhandled exceptions are loud (critical log + webhook alert)
+# instead of escaping the event loop silently.
+# ---------------------------------------------------------------------------
+
+
+def _supervised_task(coro, *, name: str) -> asyncio.Task:
+    """Spawn an app-owned background task with a death-detecting callback."""
+    task = asyncio.create_task(coro, name=name)
+    task.add_done_callback(_on_app_task_done)
+    return task
+
+
+def _on_app_task_done(task: asyncio.Task) -> None:
+    """Done-callback: surface unhandled task exceptions instead of swallowing.
+
+    Cancellations are normal during shutdown and ignored.  Real
+    exceptions get a critical log + a webhook alert via the supervisor
+    channel.  The webhook is scheduled in a new task because
+    done_callback runs in the loop but cannot be ``await``-ed in.
+    """
+    if task.cancelled():
+        return
+    exc = task.exception()
+    if exc is None:
+        return
+    logger.critical(
+        "App task %r died: %s",
+        task.get_name(),
+        exc,
+        exc_info=exc,
+    )
+    if reporter is not None:
+        try:
+            asyncio.create_task(
+                reporter.on_app_task_died(task.get_name(), exc),
+                name=f"_on_app_task_died:{task.get_name()}",
+            )
+        except RuntimeError:
+            # No running loop (e.g., during shutdown) — log only.
+            logger.debug("Could not schedule app-task webhook (no loop).")
+
+
 def _identity_contract_strict() -> bool:
     """Return True if ``IDENTITY_CONTRACT_STRICT`` is set to a truthy value.
 
@@ -462,10 +507,51 @@ async def main() -> None:
             from healthserver import start_health_server
 
             # Track app-owned tasks so shutdown only cancels OUR tasks,
-            # not discord.py-internal ones (OPS-001 fix).
-            _APP_TASKS.append(
-                asyncio.create_task(start_health_server(bot), name="health_server"),
+            # not discord.py-internal ones (OPS-001 fix).  Health server
+            # is supervised + gated on bind-ready (Phase S2.4 / O-2b):
+            # if the bind fails, the bot aborts startup instead of
+            # silently running with a wedged orchestration probe.
+            health_ready = asyncio.Event()
+            health_task = _supervised_task(
+                start_health_server(bot, ready_event=health_ready),
+                name="health_server",
             )
+            _APP_TASKS.append(health_task)
+
+            # Wait for either the bind to succeed (ready_event set) or
+            # the supervised task to die.  5 s is generous — bind is a
+            # local syscall that completes in < 100 ms in the healthy
+            # case.  Whichever signal fires first wins.
+            done, _pending = await asyncio.wait(
+                {
+                    asyncio.create_task(health_ready.wait()),
+                    health_task,
+                },
+                timeout=5.0,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if health_task in done and health_task.exception() is not None:
+                bind_err = health_task.exception()
+                logger.critical(
+                    "Health server bind failed — aborting startup: %s",
+                    bind_err,
+                    exc_info=bind_err,
+                )
+                if reporter:
+                    try:
+                        await reporter.on_health_startup_failed(bind_err)
+                    except Exception as report_err:
+                        logger.debug(
+                            "Health webhook post skipped: %s",
+                            report_err,
+                        )
+                raise SystemExit(1)
+            if not health_ready.is_set():
+                logger.warning(
+                    "Health server did not signal bind-ready within 5s; "
+                    "continuing — probe traffic may be slow at first.",
+                )
+
             _APP_TASKS.append(session_gc.start())
             await _load_cogs()
 
