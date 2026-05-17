@@ -193,3 +193,132 @@ async def test_discord_forbidden_propagates_unmodified():
 
     log_mod.assert_not_awaited()
     emit.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# auto_delete (§3.2 hook)
+# ---------------------------------------------------------------------------
+
+
+def _make_message(message_id: int = 555, guild_id: int = 99999, author_id: int = 42):
+    msg = MagicMock()
+    msg.id = message_id
+    msg.guild = MagicMock()
+    msg.guild.id = guild_id
+    msg.guild.name = "test-guild"
+    msg.author = MagicMock()
+    msg.author.id = author_id
+    msg.delete = AsyncMock()
+    return msg
+
+
+@pytest.mark.asyncio
+async def test_auto_delete_happy_path_logs_and_emits():
+    msg = _make_message()
+
+    with (
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch(
+            "services.moderation_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        ok = await moderation_service.auto_delete(
+            msg,
+            reason="prohibited word match",
+            rule="cleanup.prohibited_words",
+        )
+
+    assert ok is True
+    msg.delete.assert_awaited_once()
+    log_mod.assert_awaited_once_with(
+        99999,
+        "auto_delete:cleanup.prohibited_words",
+        42,
+        0,
+        "prohibited word match",
+    )
+    emit.assert_awaited_once()
+    kwargs = emit.call_args.kwargs
+    assert kwargs["guild_id"] == 99999
+    assert kwargs["target_id"] == 42
+    assert kwargs["action"] == "auto_delete:cleanup.prohibited_words"
+
+
+@pytest.mark.asyncio
+async def test_auto_delete_already_gone_still_logs():
+    """NotFound shouldn't prevent the audit row — the rule still triggered."""
+    import discord
+
+    msg = _make_message()
+    msg.delete.side_effect = discord.NotFound(MagicMock(), "gone")
+
+    with (
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch(
+            "services.moderation_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        ok = await moderation_service.auto_delete(
+            msg,
+            reason="x",
+            rule="r",
+        )
+
+    assert ok is True
+    log_mod.assert_awaited_once()
+    emit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_auto_delete_forbidden_returns_false_and_skips_audit():
+    import discord
+
+    msg = _make_message()
+    msg.delete.side_effect = discord.Forbidden(MagicMock(), "no perms")
+
+    with (
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch(
+            "services.moderation_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        ok = await moderation_service.auto_delete(msg, reason="x", rule="r")
+
+    assert ok is False
+    log_mod.assert_not_awaited()
+    emit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_auto_delete_no_guild_returns_false():
+    msg = _make_message()
+    msg.guild = None
+
+    with (
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch(
+            "services.moderation_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        ok = await moderation_service.auto_delete(msg, reason="x", rule="r")
+
+    assert ok is False
+    msg.delete.assert_not_awaited()
+    log_mod.assert_not_awaited()
+    emit.assert_not_awaited()

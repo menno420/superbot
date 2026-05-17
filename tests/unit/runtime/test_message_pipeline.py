@@ -231,9 +231,10 @@ class TestModerationRouting:
         with patch.object(
             message_pipeline,
             "_route_moderation_action",
+            new_callable=AsyncMock,
         ) as hook:
             await message_pipeline.dispatch(MagicMock(), _make_message())
-        hook.assert_called_once()
+        hook.assert_awaited_once()
         # First arg is the message, second is the descriptor.
         assert hook.call_args.args[1] is desc
 
@@ -245,9 +246,48 @@ class TestModerationRouting:
         with patch.object(
             message_pipeline,
             "_route_moderation_action",
+            new_callable=AsyncMock,
         ) as hook:
             await message_pipeline.dispatch(MagicMock(), _make_message())
-        hook.assert_not_called()
+        hook.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_route_dispatches_auto_delete_to_moderation_service(self):
+        """The actual hook (not mocked) routes auto_delete:* to moderation_service."""
+        message = _make_message()
+        desc = ModerationActionDescriptor(
+            action="auto_delete:cleanup.prohibited_words",
+            target_id=42,
+            reason="rule X",
+            rule="cleanup.prohibited_words",
+        )
+
+        with patch(
+            "services.moderation_service.auto_delete",
+            new_callable=AsyncMock,
+        ) as auto_delete:
+            await message_pipeline._route_moderation_action(message, desc)
+        auto_delete.assert_awaited_once_with(
+            message,
+            reason="rule X",
+            rule="cleanup.prohibited_words",
+        )
+
+    @pytest.mark.asyncio
+    async def test_route_logs_warning_for_unknown_action(self, caplog):
+        """Unknown descriptor action types log a warning instead of dispatching."""
+        message = _make_message()
+        desc = ModerationActionDescriptor(
+            action="unknown_kind",
+            target_id=42,
+            reason="x",
+        )
+        with patch(
+            "services.moderation_service.auto_delete",
+            new_callable=AsyncMock,
+        ) as auto_delete:
+            await message_pipeline._route_moderation_action(message, desc)
+        auto_delete.assert_not_awaited()
 
 
 # ---------------------------------------------------------------------------

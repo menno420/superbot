@@ -60,11 +60,16 @@ Moderation routing
 ------------------
 
 When a stage returns ``StageResult(moderation_action=...)`` the
-orchestrator calls :func:`_route_moderation_action`.  This is a
-plumbing hook — no current consumer.  When the first auto-mod
-stage migrates (CleanupCog / ChainCog / CountingCog), this function
-will route to ``moderation_service.auto_delete`` (or equivalent) to
-record the action in ``mod_logs`` + emit ``EVT_MOD_ACTION``.
+orchestrator awaits :func:`_route_moderation_action`, which routes
+the descriptor to ``moderation_service.auto_delete``.  The stage may
+already have deleted the message itself — ``auto_delete`` catches
+the resulting ``NotFound`` and still records the rule trigger so the
+audit row exists either way.
+
+If a stage prefers the imperative form (call ``moderation_service``
+directly inside ``process``), that also works — see CleanupStage for
+an example.  Both paths land in the same ``mod_logs`` row + emit the
+same ``EVT_MOD_ACTION``.
 
 Public surface
 --------------
@@ -246,27 +251,41 @@ async def dispatch(bot: commands.Bot, message: discord.Message) -> None:
             continue
 
         if result.moderation_action is not None:
-            _route_moderation_action(message, result.moderation_action)
+            await _route_moderation_action(message, result.moderation_action)
 
         if result.short_circuit:
             return
 
 
-def _route_moderation_action(
+async def _route_moderation_action(
     message: discord.Message,
     action: ModerationActionDescriptor,
 ) -> None:
     """Route an auto-mod descriptor to ``moderation_service``.
 
-    Plumbing only in this PR.  Future auto-mod migrations will
-    extend ``moderation_service`` with an ``auto_delete`` function
-    and this hook will call it, so the audit + EVT_MOD_ACTION emit
-    happens through one path regardless of which stage detected the
-    rule violation.
+    The originating stage typically already deleted the message;
+    ``moderation_service.auto_delete`` catches the resulting
+    ``NotFound`` and still records the rule trigger so the audit
+    row exists either way.
+
+    Currently only ``"auto_delete:..."`` actions are recognised.
+    Future descriptor types (e.g. ``"auto_timeout:..."``) extend
+    this dispatch with the matching ``moderation_service`` call.
     """
+    from services import moderation_service
+
+    if action.action.startswith("auto_delete"):
+        await moderation_service.auto_delete(
+            message,
+            reason=action.reason,
+            rule=action.rule or action.action,
+        )
+        return
+
     logger.warning(
-        "ModerationActionDescriptor returned but routing not yet implemented: "
-        "action=%s target=%d reason=%r message=%d",
+        "ModerationActionDescriptor with unrecognised action=%r reached "
+        "_route_moderation_action — extend the dispatch when adding new "
+        "descriptor types.  target=%d reason=%r message=%d",
         action.action,
         action.target_id,
         action.reason,
