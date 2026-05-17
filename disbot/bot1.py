@@ -161,25 +161,36 @@ def _on_app_task_done(task: asyncio.Task) -> None:
 
 
 def _identity_contract_strict() -> bool:
-    """Return True if ``IDENTITY_CONTRACT_STRICT`` is set to a truthy value.
+    """Return True if STRICT identity-contract enforcement is active.
 
-    Accepts ``1`` / ``true`` / ``yes`` / ``on`` (case-insensitive).
-    Any other value, or the env var being unset, returns False.
+    Phase S5.1: STRICT is now the **default**.  When True and the
+    startup validator reports any fatal-tier identity-contract
+    finding, the orchestrator emits the webhook alert and raises
+    ``SystemExit(1)`` so the bot refuses to start on drift.  When
+    False (explicit opt-out), findings are advisory: they surface in
+    logs, the ``identity_contract_findings_total`` metric, and
+    ``!platform identity``, but startup continues.
 
-    When True and the startup validator reports any fatal-tier
-    identity-contract finding, the orchestrator emits the webhook
-    alert and raises ``SystemExit(1)`` so the bot refuses to start on
-    drift.  When False (the default), findings are advisory: they
-    surface in logs, the ``identity_contract_findings_total`` metric,
-    and ``!platform identity``, but startup continues.
+    Two opt-out paths:
 
-    Operator recommendation: opt in on production
-    (``IDENTITY_CONTRACT_STRICT=true``) once a clean ``!platform
-    identity`` run has confirmed zero findings under the current cog
-    load.  See ``docs/runtime_contracts.md`` §12.
+      1. ``STRICT_DISABLED=1/true/yes/on`` — the canonical escape
+         hatch introduced in S5.1.  Use this in an emergency when a
+         fatal-tier finding is blocking a deploy and you need to ship
+         a fix without first un-jamming the abort.  Remove ASAP.
+      2. ``IDENTITY_CONTRACT_STRICT=false/0/no/off`` — the legacy
+         pre-S5.1 opt-out, honored for operators who explicitly set
+         their env config to advisory mode.  An unset or truthy value
+         here falls through to the new default.
+
+    See ``docs/runtime_contracts.md`` §12 for the runbook.
     """
-    raw = os.getenv("IDENTITY_CONTRACT_STRICT", "").strip().lower()
-    return raw in ("1", "true", "yes", "on")
+    disabled = os.getenv("STRICT_DISABLED", "").strip().lower()
+    if disabled in ("1", "true", "yes", "on"):
+        return False
+    legacy = os.getenv("IDENTITY_CONTRACT_STRICT", "").strip().lower()
+    if legacy in ("0", "false", "no", "off"):
+        return False
+    return True
 
 
 signal.signal(signal.SIGTERM, _begin_shutdown)

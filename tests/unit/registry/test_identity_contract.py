@@ -218,8 +218,8 @@ class TestSummarizeFindings:
     def test_summary_groups_by_tier(self):
         findings = {
             "entry_point_missing_command": ["a", "b"],  # fatal
-            "router_prefix_unknown": ["x"],             # auto_healable
-            "view_subsystem_unknown": ["y"],            # auto_healable
+            "router_prefix_unknown": ["x"],  # auto_healable
+            "view_subsystem_unknown": ["y"],  # auto_healable
             "db_anchor_subsystem_unknown": ["z", "w"],  # auto_healable
         }
         summary = summarize_findings(findings)
@@ -434,27 +434,23 @@ class TestApplySelfHeal:
 
 
 class TestStrictMode:
-    """PR I1b — IDENTITY_CONTRACT_STRICT env var gates fatal abort."""
+    """PR I1b + S5.1 — IDENTITY_CONTRACT_STRICT/STRICT_DISABLED env vars.
+
+    The truthy-IDENTITY_CONTRACT_STRICT case is kept here for symmetry
+    with the I1b origin.  The full post-S5.1 truth table (default-on,
+    STRICT_DISABLED escape hatch, legacy-false opt-out, precedence
+    rules) lives in
+    ``tests/unit/registry/test_identity_strict_default.py``.
+    """
 
     def test_strict_flag_helper_truthy_values(self, monkeypatch):
         from bot1 import _identity_contract_strict
 
+        # Clear the S5.1 escape hatch so it doesn't override.
+        monkeypatch.delenv("STRICT_DISABLED", raising=False)
         for value in ("1", "true", "TRUE", "yes", "Yes", "on", "ON"):
             monkeypatch.setenv("IDENTITY_CONTRACT_STRICT", value)
             assert _identity_contract_strict() is True, value
-
-    def test_strict_flag_helper_falsy_values(self, monkeypatch):
-        from bot1 import _identity_contract_strict
-
-        for value in ("", "0", "false", "FALSE", "no", "off", "anything-else"):
-            monkeypatch.setenv("IDENTITY_CONTRACT_STRICT", value)
-            assert _identity_contract_strict() is False, value
-
-    def test_strict_flag_helper_unset_defaults_to_false(self, monkeypatch):
-        from bot1 import _identity_contract_strict
-
-        monkeypatch.delenv("IDENTITY_CONTRACT_STRICT", raising=False)
-        assert _identity_contract_strict() is False
 
 
 class TestMetricEmission:
