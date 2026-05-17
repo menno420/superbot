@@ -235,15 +235,20 @@ async def test_on_message_routes_through_xp_service():
     xp_cfg = XpConfig(xp_min=15, xp_max=25, cooldown=60, announce_channel="")
 
     with (
-        patch("cogs.xp_cog.db.get_xp", new_callable=AsyncMock, return_value=db_row),
+        # S4.2: listener body moved to cogs.xp.listener — patch there.
         patch(
-            "cogs.xp_cog.get_xp_config",
+            "cogs.xp.listener.db.get_xp",
+            new_callable=AsyncMock,
+            return_value=db_row,
+        ),
+        patch(
+            "cogs.xp.listener.get_xp_config",
             new_callable=AsyncMock,
             return_value=xp_cfg,
         ),
-        patch("cogs.xp_cog.check_cooldown", return_value=(False, 0)),
+        patch("cogs.xp.listener.check_cooldown", return_value=(False, 0)),
         patch(
-            "cogs.xp_cog.xp_service.award",
+            "cogs.xp.listener.xp_service.award",
             new_callable=AsyncMock,
             return_value=award_result,
         ) as award,

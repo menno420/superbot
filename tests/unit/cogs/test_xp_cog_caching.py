@@ -64,12 +64,14 @@ async def test_on_message_calls_db_get_setting_at_most_once_per_guild_over_a_win
     db_row = {"last_xp": 0, "messages": 1}
 
     with (
-        patch("cogs.xp_cog.db.get_xp", new_callable=AsyncMock, return_value=db_row),
+        patch(
+            "cogs.xp.listener.db.get_xp", new_callable=AsyncMock, return_value=db_row
+        ),
         patch(
             "utils.guild_config_accessors.db.get_setting",
             new_callable=AsyncMock,
         ) as get_setting,
-        patch("cogs.xp_cog.check_cooldown", return_value=(True, 0)),
+        patch("cogs.xp.listener.check_cooldown", return_value=(True, 0)),
     ):
         _xp_settings_replies(get_setting)
         for _ in range(5):
@@ -89,12 +91,14 @@ async def test_on_message_caches_per_guild_independently():
     db_row = {"last_xp": 0, "messages": 1}
 
     with (
-        patch("cogs.xp_cog.db.get_xp", new_callable=AsyncMock, return_value=db_row),
+        patch(
+            "cogs.xp.listener.db.get_xp", new_callable=AsyncMock, return_value=db_row
+        ),
         patch(
             "utils.guild_config_accessors.db.get_setting",
             new_callable=AsyncMock,
         ) as get_setting,
-        patch("cogs.xp_cog.check_cooldown", return_value=(True, 0)),
+        patch("cogs.xp.listener.check_cooldown", return_value=(True, 0)),
     ):
         _xp_settings_replies(get_setting)
         await cog.on_message(_make_message(guild_id=1))
@@ -113,10 +117,7 @@ async def test_on_message_caches_per_guild_independently():
 @pytest.mark.asyncio
 async def test_invalidate_xp_config_forces_reload_on_next_read():
     """After invalidation, the next get_xp_config call re-runs the loader."""
-    from utils.guild_config_accessors import (
-        get_xp_config,
-        invalidate_xp_config,
-    )
+    from utils.guild_config_accessors import get_xp_config, invalidate_xp_config
 
     with patch(
         "utils.guild_config_accessors.db.get_setting",

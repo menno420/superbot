@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import logging
-import random
-import time
 
 import discord
 from discord.ext import commands
@@ -11,15 +9,10 @@ from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edi
 from services import xp_service
 from utils import db
 from utils import embeds as em
-from utils.cooldowns import check_cooldown
-from utils.guild_config_accessors import (
-    get_xp_config,
-    get_xp_threshold_roles,
-    invalidate_xp_config,
-)
-from utils.helpers import _parse_member, post_log_embed
+from utils.guild_config_accessors import get_xp_config, invalidate_xp_config
+from utils.helpers import _parse_member
 from utils.settings_keys import XP_ANNOUNCE_CHANNEL, XP_COOLDOWN, XP_MAX, XP_MIN
-from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
+from utils.ui_constants import UTILITY_COLOR
 from views.base import HubView, send_panel
 
 logger = logging.getLogger("bot")
@@ -304,98 +297,10 @@ class XpCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author.bot or not message.guild:
-            return
+        # S4.2: handler body lives in cogs/xp/listener.py per F-3 convention.
+        from cogs.xp.listener import handle_message
 
-        user_id = message.author.id
-        guild_id = message.guild.id
-        now = int(time.time())
-
-        # F-1 cached config — hits the cache on the common cooldown-skipped path.
-        cfg = await get_xp_config(guild_id)
-
-        row = await db.get_xp(user_id, guild_id)
-        on_cd, _ = check_cooldown(row["last_xp"], cfg.cooldown)
-        if on_cd:
-            return
-
-        amount = random.randint(cfg.xp_min, cfg.xp_max)
-        result = await xp_service.award(
-            guild_id=guild_id,
-            user_id=user_id,
-            amount=amount,
-            source="chat",
-            now=now,
-        )
-        new_xp, new_level, leveled_up = (
-            result.new_xp,
-            result.new_level,
-            result.leveled_up,
-        )
-
-        if leveled_up:
-            announce_ch: discord.TextChannel | None = None
-            if cfg.announce_channel:
-                announce_ch = message.guild.get_channel(int(cfg.announce_channel))  # type: ignore[assignment]
-            announce_ch = announce_ch or message.channel  # type: ignore[assignment]
-
-            embed = discord.Embed(
-                title="🎉 Level Up!",
-                description=f"{message.author.mention} reached **Level {new_level}**!",
-                color=ECONOMY_COLOR,
-            )
-            try:
-                await announce_ch.send(embed=embed)
-            except discord.Forbidden:
-                pass
-
-            log_embed = discord.Embed(
-                title="🏆 Level Up",
-                description=(
-                    f"{message.author.mention} reached **Level {new_level}**! "
-                    f"(Total XP: {new_xp})"
-                ),
-                color=ECONOMY_COLOR,
-            )
-            await post_log_embed(self.bot, guild_id, log_embed)
-
-            # XP threshold role assignment — cached list from F-1.
-            try:
-                xp_roles = await get_xp_threshold_roles(guild_id)
-                for role_cfg in xp_roles:
-                    if role_cfg["level_required"] <= new_level:
-                        discord_role = discord.utils.get(
-                            message.guild.roles,
-                            name=role_cfg["role_name"],
-                        )
-                        if discord_role and discord_role not in message.author.roles:  # type: ignore[union-attr]
-                            try:
-                                await message.author.add_roles(  # type: ignore[union-attr]
-                                    discord_role,
-                                    reason=f"XP level-up: reached level {new_level}",
-                                )
-                                logger.info(
-                                    "XP role assigned: %s → %s (level %d)",
-                                    message.author.display_name,
-                                    discord_role.name,
-                                    new_level,
-                                )
-                            except (
-                                discord.Forbidden,
-                                discord.HTTPException,
-                            ) as role_err:
-                                logger.warning(
-                                    "Could not assign XP role %s to %s: %s",
-                                    discord_role.name,
-                                    message.author.display_name,
-                                    role_err,
-                                )
-            except Exception:
-                logger.error(
-                    "XP role assignment check failed for guild %d",
-                    guild_id,
-                    exc_info=True,
-                )
+        await handle_message(self.bot, message)
 
     # ------------------------------------------------------------------ commands
 
