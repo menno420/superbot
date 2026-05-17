@@ -13,6 +13,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
@@ -165,7 +166,11 @@ class _DeleteConfirmView(BaseView):
         row=0,
     )
     async def confirm_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        channel = interaction.guild.get_channel(self.channel_id)
+        channel = resources.resolve_channel(
+            interaction.guild,
+            channel_id=self.channel_id,
+            kind="any",
+        )
         if channel is None:
             result_embed = discord.Embed(
                 title="❌ Channel Not Found",
