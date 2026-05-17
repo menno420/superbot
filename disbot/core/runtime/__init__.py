@@ -17,6 +17,9 @@ Public aliases:
     interaction  — safe_defer / safe_followup / safe_edit (see CRIT-2 fix)
     guild_config — F-1 cached-config primitive (Phase S1.1) — use the
                    typed accessors in utils.guild_config_accessors
+    scope_locks  — F-2 per-scope asyncio.Lock primitive (Phase S1.2) —
+                   pair with the V/M/A pattern in §"Realtime / event-
+                   driven systems"
 
 EventBus subscriptions are established in setup(), called once from bot1.py
 after the DB is initialised.
@@ -32,6 +35,7 @@ from core.runtime import (  # noqa: F401 — re-exported
 )
 from core.runtime import guild_config  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
+from core.runtime import scope_locks  # noqa: F401 — re-exported
 from core.runtime import tasks  # noqa: F401 — re-exported
 from core.runtime import interaction_helpers as interaction  # noqa: F401 — re-exported
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported

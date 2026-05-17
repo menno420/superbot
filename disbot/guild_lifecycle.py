@@ -32,7 +32,8 @@ async def teardown(guild_id: int) -> None:
       5. Governance capability cache — clear per-guild execution overrides.
       6. Governance visibility cache — bump version, clear role-override flag.
       7. Guild-config cache      — drop cached guild config entries (F-1).
-      8. Governance feedback cooldown — documented, no per-guild cleanup needed.
+      8. Scope locks             — invoke registered per-cog teardown hooks (F-2).
+      9. Governance feedback cooldown — documented, no per-guild cleanup needed.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -57,7 +58,10 @@ async def teardown(guild_id: int) -> None:
     # 7. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
     _teardown_guild_config(guild_id)
 
-    # 8. Governance feedback cooldown dict in governance/__init__.
+    # 8. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
+    _teardown_scope_locks(guild_id)
+
+    # 9. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
@@ -178,6 +182,35 @@ def _teardown_guild_config(guild_id: int) -> None:
         _gc_forget(guild_id)
     except Exception as exc:
         logger.warning("guild_lifecycle: guild_config teardown failed: %s", exc)
+
+
+def _teardown_scope_locks(guild_id: int) -> None:
+    """Invoke registered F-2 scope_locks per-guild teardown hooks.
+
+    Unlike caches keyed by ``guild_id``, ``scope_locks`` keys are
+    caller-defined strings (``counting:channel:{cid}``,
+    ``tournament:{tid}``, …) — the primitive cannot know which scopes
+    belong to a given guild.  Each cog that uses ``scope_locks``
+    registers a hook via ``scope_locks.register_guild_teardown_hook``
+    at ``cog_load`` time; this teardown step fans out to all of them.
+
+    In Phase S1.2 (this PR) no cogs register hooks yet — counting
+    registers its hook in S2.1.  The teardown step is in place so
+    ``session_gc.sweep_idle`` is the only fallback for *missed*
+    forget calls, not the only cleanup path for guild_remove.
+    """
+    try:
+        from core.runtime.scope_locks import teardown_guild
+
+        removed = teardown_guild(guild_id)
+        if removed:
+            logger.debug(
+                "guild_lifecycle: dropped %d scope_lock(s) for guild=%d",
+                removed,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning("guild_lifecycle: scope_locks teardown failed: %s", exc)
 
 
 def _teardown_feedback_cooldown(guild_id: int) -> None:

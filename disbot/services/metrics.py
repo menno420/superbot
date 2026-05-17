@@ -183,3 +183,25 @@ guild_config_cache_size = Gauge(
     "guild_config_cache_size",
     "Current number of entries in the guild-config cache.",
 )
+
+# ---------------------------------------------------------------------------
+# F-2 scope_locks (core/runtime/scope_locks.py) — Phase S1.2
+# ---------------------------------------------------------------------------
+
+scope_locks_total = Gauge(
+    "scope_locks_total",
+    "Current number of tracked scope locks across all subsystem prefixes.",
+)
+
+scope_locks_wait_seconds = Histogram(
+    "scope_locks_wait_seconds",
+    "Time spent waiting to acquire a scope lock, labelled by subsystem prefix.",
+    ["prefix"],
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
+)
+
+scope_locks_idle_swept_total = Counter(
+    "scope_locks_idle_swept_total",
+    "Scope locks reclaimed by session_gc's idle sweep — non-zero indicates "
+    "cogs are missing explicit forget() calls on edge teardown paths.",
+)
