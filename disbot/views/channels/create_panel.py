@@ -233,14 +233,15 @@ class _NameSelect(discord.ui.Select):
             options=options,
             row=0,
         )
-        self._parent = view
+        # See _ChannelSelect for the _parent collision rationale.
+        self._parent_view = view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.chosen_name = self.values[0]  # type: ignore[attr-defined]
+        self._parent_view.chosen_name = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
-                view=self._parent,  # type: ignore[attr-defined, arg-type]
+                embed=self._parent_view.build_embed(),  # type: ignore[attr-defined]
+                view=self._parent_view,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             await safe_defer(interaction)
@@ -257,14 +258,15 @@ class _CategorySelect(discord.ui.Select):
             options=options,
             row=1,
         )
-        self._parent = view
+        # See _ChannelSelect for the _parent collision rationale.
+        self._parent_view = view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.chosen_cat = self.values[0]  # type: ignore[attr-defined]
+        self._parent_view.chosen_cat = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
-                view=self._parent,  # type: ignore[attr-defined, arg-type]
+                embed=self._parent_view.build_embed(),  # type: ignore[attr-defined]
+                view=self._parent_view,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             await safe_defer(interaction)

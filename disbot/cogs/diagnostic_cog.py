@@ -62,7 +62,14 @@ class _PaginatorView(BaseView):
 
 
 class _DiagnosticsHubView(HubView):
-    """Interactive hub for all diagnostic tools."""
+    """Interactive hub for all diagnostic tools.
+
+    Buttons edit the panel embed in place (matching the General/Utility hub
+    pattern) instead of spawning new messages.  An "↩ Overview" control
+    returns to the hub embed.  The paginated Commands tool and the
+    ephemeral-only flows route through ``followup.send`` so they don't try
+    to cram a multi-page paginator into the single panel embed.
+    """
 
     def __init__(self, ctx: commands.Context, cog: DiagnosticCog):
         super().__init__(ctx.author)
@@ -117,41 +124,59 @@ class _DiagnosticsHubView(HubView):
         embed.set_footer(text="Diagnostics Hub  •  Admin only")
         return embed
 
+    @staticmethod
+    def _with_overview_footer(embed: discord.Embed) -> discord.Embed:
+        embed.set_footer(text="Click ↩ Overview to return to the hub.")
+        return embed
+
     @discord.ui.button(label="🤖 Bot Status", style=discord.ButtonStyle.blurple, row=0)
     async def btn_status(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        await self.ctx.invoke(self.cog.diagnostic_bot_status)
+        embed = self._with_overview_footer(self.cog.build_status_embed())
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="📡 Latency", style=discord.ButtonStyle.blurple, row=0)
     async def btn_latency(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        await self.ctx.invoke(self.cog.latency)
+        embed = self._with_overview_footer(self.cog.build_latency_embed())
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="💻 System Info", style=discord.ButtonStyle.blurple, row=0)
     async def btn_sysinfo(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        await self.ctx.invoke(self.cog.system_info)
+        embed = self._with_overview_footer(self.cog.build_system_info_embed())
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="🗄️ Database", style=discord.ButtonStyle.grey, row=1)
     async def btn_db(self, interaction: discord.Interaction, _: discord.ui.Button):
+        # DB roundtrip can blow the 3-second window — defer first.
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.check_database)
+        embed = self._with_overview_footer(await self.cog.build_database_embed())
+        await interaction.edit_original_response(embed=embed, view=self)
 
     @discord.ui.button(label="📄 JSON Files", style=discord.ButtonStyle.grey, row=1)
     async def btn_json(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        await self.ctx.invoke(self.cog.validate_json_files)
+        embed = self._with_overview_footer(self.cog.build_json_validation_embed())
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="📋 Commands", style=discord.ButtonStyle.grey, row=1)
     async def btn_cmds(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
+        # Paginator owns its own message — send as ephemeral followup so the
+        # hub panel stays put.
+        if not await safe_defer(interaction, ephemeral=True):
             return
-        await self.ctx.invoke(self.cog.list_commands_detailed)
+        pages = self.cog.build_command_list_pages()
+        if not pages:
+            await interaction.followup.send(
+                "No cogs with commands found.",
+                ephemeral=True,
+            )
+            return
+        paginator = _PaginatorView(pages, interaction.user)
+        msg = await interaction.followup.send(
+            embed=pages[0],
+            view=paginator,
+            ephemeral=True,
+        )
+        paginator.message = msg
 
     @discord.ui.button(
         label="🔍 Recent Errors",
@@ -161,7 +186,10 @@ class _DiagnosticsHubView(HubView):
     async def btn_errors(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.recent_errors)
+        embed = self._with_overview_footer(
+            await self.cog.build_recent_errors_embed(limit=10),
+        )
+        await interaction.edit_original_response(embed=embed, view=self)
 
     @discord.ui.button(
         label="🔔 Test Notify",
@@ -171,7 +199,14 @@ class _DiagnosticsHubView(HubView):
     async def btn_notify(self, interaction: discord.Interaction, _: discord.ui.Button):
         if not await safe_defer(interaction):
             return
-        await self.ctx.invoke(self.cog.test_notification)
+        embed = self._with_overview_footer(await self.cog.send_test_notification())
+        await interaction.edit_original_response(embed=embed, view=self)
+
+    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.success, row=3)
+    async def btn_overview(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ):
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
 
 class DiagnosticCog(commands.Cog):
@@ -192,29 +227,161 @@ class DiagnosticCog(commands.Cog):
         view = _DiagnosticsHubView(ctx, self)
         await send_panel(ctx, embed=view.build_embed(), view=view)
 
-    async def build_help_menu_view(
-        self,
-        interaction: discord.Interaction,
-    ) -> tuple[discord.Embed, discord.ui.View]:
-        """Help-menu direct-navigation hook (returns the diagnostics hub)."""
-        view = _DiagnosticsHubView(help_ctx_shim(interaction), self)
-        return view.build_embed(), view
-
     # ------------------------------------------------------------------
-    # Command overview
+    # Embed builders — used by both the !diagnostics commands and the
+    # _DiagnosticsHubView buttons.  Each returns a fresh discord.Embed so
+    # callers can attach their own footer (the panel buttons append a
+    # "Click ↩ Overview" hint).
     # ------------------------------------------------------------------
 
-    @commands.command(name="list_commands_detailed", aliases=["listcmds"])
-    @commands.has_permissions(administrator=True)
-    async def list_commands_detailed(self, ctx):
-        """List all registered commands with details, paginated by cog."""
+    def build_status_embed(self) -> discord.Embed:
+        uptime_delta = datetime.datetime.now(tz=datetime.timezone.utc) - getattr(
+            self.bot,
+            "uptime",
+            datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        uptime_str = str(uptime_delta).split(".")[0]
+        cpu_usage = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+
+        embed = discord.Embed(title="Bot Status", color=discord.Color.green())
+        embed.add_field(name="Guilds", value=str(len(self.bot.guilds)), inline=True)
+        embed.add_field(
+            name="Members",
+            value=str(sum(g.member_count for g in self.bot.guilds)),
+            inline=True,
+        )
+        embed.add_field(name="Commands", value=str(len(self.bot.commands)), inline=True)
+        embed.add_field(
+            name="Latency",
+            value=f"{self.bot.latency*1000:.1f} ms",
+            inline=True,
+        )
+        embed.add_field(name="CPU", value=f"{cpu_usage}%", inline=True)
+        embed.add_field(name="RAM", value=f"{memory.percent}%", inline=True)
+        embed.add_field(name="Uptime", value=uptime_str, inline=True)
+        return embed
+
+    def build_latency_embed(self) -> discord.Embed:
+        ms = self.bot.latency * 1000
+        embed = discord.Embed(title="Bot Latency", color=discord.Color.blue())
+        embed.add_field(name="Latency", value=f"{ms:.2f} ms", inline=True)
+        return embed
+
+    def build_system_info_embed(self) -> discord.Embed:
+        total, used, free = shutil.disk_usage(
+            DATA_DIR if os.path.isdir(DATA_DIR) else "/",
+        )
+        embed = discord.Embed(title="System Information", color=discord.Color.teal())
+        embed.add_field(name="Python", value=platform.python_version(), inline=True)
+        embed.add_field(
+            name="OS",
+            value=f"{platform.system()} {platform.release()}",
+            inline=True,
+        )
+        embed.add_field(
+            name="Disk",
+            value=(
+                f"Total: {total/2**30:.1f} GB  "
+                f"Used: {used/2**30:.1f} GB  "
+                f"Free: {free/2**30:.1f} GB"
+            ),
+            inline=False,
+        )
+        return embed
+
+    async def build_database_embed(self) -> discord.Embed:
+        expected = {
+            "economy",
+            "job_progress",
+            "inventory",
+            "xp",
+            "warnings",
+            "mod_logs",
+            "role_thresholds",
+            "guild_settings",
+            "logs",
+            "reaction_roles",
+            "rps_players",
+            "mining_inventory",
+            "prohibited_words",
+            "deathmatch_stats",
+            "chain_channels",
+            "counting_state",
+        }
+        embed = discord.Embed(
+            title="Database Schema Check",
+            color=discord.Color.purple(),
+        )
+        try:
+            rows = await db.fetchall(
+                "SELECT tablename FROM pg_tables WHERE schemaname='public'",
+                (),
+            )
+            existing = {r["tablename"] for r in rows}
+        except Exception as exc:
+            embed.description = f"❌ Could not query database: {exc}"
+            return embed
+
+        missing = expected - existing
+        extra = existing - expected
+        embed.add_field(
+            name="Missing Tables",
+            value=", ".join(sorted(missing)) or "None",
+            inline=False,
+        )
+        embed.add_field(
+            name="Unexpected Tables",
+            value=", ".join(sorted(extra)) or "None",
+            inline=False,
+        )
+        if not missing:
+            embed.description = "✅ All expected tables are present."
+        return embed
+
+    def build_json_validation_embed(self) -> discord.Embed:
+        import json
+
+        embed = discord.Embed(
+            title="JSON Files Validation",
+            color=discord.Color.orange(),
+        )
+        if not os.path.isdir(JSON_DIR):
+            embed.description = f"JSON directory not found: `{JSON_DIR}`"
+            return embed
+
+        any_issues = False
+        for filename in sorted(os.listdir(JSON_DIR)):
+            if not filename.endswith(".json"):
+                continue
+            path = os.path.join(JSON_DIR, filename)
+            try:
+                with open(path, encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, (list, dict)):
+                    embed.add_field(name=filename, value="✅ Valid", inline=True)
+                else:
+                    embed.add_field(
+                        name=filename,
+                        value="⚠️ Expected list or dict",
+                        inline=True,
+                    )
+                    any_issues = True
+            except Exception as exc:
+                embed.add_field(name=filename, value=f"❌ {exc}", inline=True)
+                any_issues = True
+
+        if not any_issues:
+            embed.description = "All JSON files are valid."
+        return embed
+
+    def build_command_list_pages(self) -> list[discord.Embed]:
         pages: list[discord.Embed] = []
         cogs_with_cmds = [
             (name, cog.get_commands())
             for name, cog in self.bot.cogs.items()
             if cog.get_commands()
         ]
-
         COGS_PER_PAGE = 4
         for i in range(0, max(len(cogs_with_cmds), 1), COGS_PER_PAGE):
             chunk = cogs_with_cmds[i : i + COGS_PER_PAGE]
@@ -244,11 +411,81 @@ class DiagnosticCog(commands.Cog):
                     inline=False,
                 )
             pages.append(embed)
+        return pages
 
+    async def build_recent_errors_embed(self, *, limit: int = 10) -> discord.Embed:
+        limit = max(1, min(limit, 25))
+        embed = discord.Embed(title="Recent Errors", color=discord.Color.dark_red())
+        try:
+            rows = await db.fetchall(
+                "SELECT timestamp, level, message FROM logs "
+                "WHERE level=$1 ORDER BY timestamp DESC LIMIT $2",
+                ("ERROR", limit),
+            )
+        except Exception as exc:
+            embed.description = f"❌ Could not query logs: {exc}"
+            return embed
+        if not rows:
+            embed.description = "No recent errors logged."
+            return embed
+        for row in rows:
+            ts = str(row.get("timestamp", "?"))[:19]
+            embed.add_field(
+                name=f"[{ts}] {row['level']}",
+                value=str(row["message"])[:256],
+                inline=False,
+            )
+        return embed
+
+    async def send_test_notification(self) -> discord.Embed:
+        """Fire the test webhook and return a status embed."""
+        reporter = getattr(self.bot, "_reporter", None)
+        if not reporter:
+            return discord.Embed(
+                title="🧪 Test Notification",
+                description="❌ No webhook reporter is configured.",
+                color=discord.Color.red(),
+            )
+        try:
+            payload = discord.Embed(
+                title="🧪 Test Notification",
+                description="This is a test error notification from DiagnosticCog.",
+                color=discord.Color.orange(),
+                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+            )
+            await reporter._send(payload, username="Diagnostic")
+            return discord.Embed(
+                title="🧪 Test Notification",
+                description="✅ Test notification sent.",
+                color=discord.Color.green(),
+            )
+        except Exception as exc:
+            return discord.Embed(
+                title="🧪 Test Notification",
+                description=f"❌ Failed: {exc}",
+                color=discord.Color.red(),
+            )
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the diagnostics hub)."""
+        view = _DiagnosticsHubView(help_ctx_shim(interaction), self)
+        return view.build_embed(), view
+
+    # ------------------------------------------------------------------
+    # Command overview
+    # ------------------------------------------------------------------
+
+    @commands.command(name="list_commands_detailed", aliases=["listcmds"])
+    @commands.has_permissions(administrator=True)
+    async def list_commands_detailed(self, ctx):
+        """List all registered commands with details, paginated by cog."""
+        pages = self.build_command_list_pages()
         if not pages:
             await ctx.send("No cogs with commands found.", delete_after=10)
             return
-
         view = _PaginatorView(pages, ctx.author)
         view.message = await ctx.send(embed=pages[0], view=view)
 
@@ -291,94 +528,13 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def validate_json_files(self, ctx):
         """Validate the structure of all JSON files in the data directory."""
-        import json
-
-        embed = discord.Embed(
-            title="JSON Files Validation",
-            color=discord.Color.orange(),
-        )
-        if not os.path.isdir(JSON_DIR):
-            embed.description = f"JSON directory not found: `{JSON_DIR}`"
-            await ctx.send(embed=embed)
-            return
-
-        any_issues = False
-        for filename in sorted(os.listdir(JSON_DIR)):
-            if not filename.endswith(".json"):
-                continue
-            path = os.path.join(JSON_DIR, filename)
-            try:
-                with open(path, encoding="utf-8") as f:
-                    data = json.load(f)
-                if isinstance(data, (list, dict)):
-                    embed.add_field(name=filename, value="✅ Valid", inline=True)
-                else:
-                    embed.add_field(
-                        name=filename,
-                        value="⚠️ Expected list or dict",
-                        inline=True,
-                    )
-                    any_issues = True
-            except Exception as exc:
-                embed.add_field(name=filename, value=f"❌ {exc}", inline=True)
-                any_issues = True
-
-        if not any_issues:
-            embed.description = "All JSON files are valid."
-        await ctx.send(embed=embed)
+        await ctx.send(embed=self.build_json_validation_embed())
 
     @commands.command(name="check_database", aliases=["checkdb"])
     @commands.has_permissions(administrator=True)
     async def check_database(self, ctx):
         """Verify that all expected PostgreSQL tables exist."""
-        expected = {
-            "economy",
-            "job_progress",
-            "inventory",
-            "xp",
-            "warnings",
-            "mod_logs",
-            "role_thresholds",
-            "guild_settings",
-            "logs",
-            "reaction_roles",
-            "rps_players",
-            "mining_inventory",
-            "prohibited_words",
-            "deathmatch_stats",
-            "chain_channels",
-            "counting_state",
-        }
-        try:
-            rows = await db.fetchall(
-                "SELECT tablename FROM pg_tables WHERE schemaname='public'",
-                (),
-            )
-            existing = {r["tablename"] for r in rows}
-        except Exception as exc:
-            await ctx.send(f"❌ Could not query database: {exc}", delete_after=15)
-            return
-
-        missing = expected - existing
-        extra = existing - expected
-
-        embed = discord.Embed(
-            title="Database Schema Check",
-            color=discord.Color.purple(),
-        )
-        embed.add_field(
-            name="Missing Tables",
-            value=", ".join(sorted(missing)) or "None",
-            inline=False,
-        )
-        embed.add_field(
-            name="Unexpected Tables",
-            value=", ".join(sorted(extra)) or "None",
-            inline=False,
-        )
-        if not missing:
-            embed.description = "✅ All expected tables are present."
-        await ctx.send(embed=embed)
+        await ctx.send(embed=await self.build_database_embed())
 
     # ------------------------------------------------------------------
     # Health & performance
@@ -388,67 +544,19 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def diagnostic_bot_status(self, ctx):
         """Display bot health and performance metrics."""
-        uptime_delta = datetime.datetime.now(tz=datetime.timezone.utc) - getattr(
-            self.bot,
-            "uptime",
-            datetime.datetime.now(tz=datetime.timezone.utc),
-        )
-        uptime_str = str(uptime_delta).split(".")[0]
-
-        cpu_usage = psutil.cpu_percent(interval=1)
-        memory = psutil.virtual_memory()
-
-        embed = discord.Embed(title="Bot Status", color=discord.Color.green())
-        embed.add_field(name="Guilds", value=str(len(self.bot.guilds)), inline=True)
-        embed.add_field(
-            name="Members",
-            value=str(sum(g.member_count for g in self.bot.guilds)),
-            inline=True,
-        )
-        embed.add_field(name="Commands", value=str(len(self.bot.commands)), inline=True)
-        embed.add_field(
-            name="Latency",
-            value=f"{self.bot.latency*1000:.1f} ms",
-            inline=True,
-        )
-        embed.add_field(name="CPU", value=f"{cpu_usage}%", inline=True)
-        embed.add_field(name="RAM", value=f"{memory.percent}%", inline=True)
-        embed.add_field(name="Uptime", value=uptime_str, inline=True)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=self.build_status_embed())
 
     @commands.command(name="latency", aliases=["ping"])
     @commands.has_permissions(administrator=True)
     async def latency(self, ctx):
         """Report the bot's WebSocket latency."""
-        ms = self.bot.latency * 1000
-        embed = discord.Embed(title="Bot Latency", color=discord.Color.blue())
-        embed.add_field(name="Latency", value=f"{ms:.2f} ms", inline=True)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=self.build_latency_embed())
 
     @commands.command(name="system_info", aliases=["sysinfo"])
     @commands.has_permissions(administrator=True)
     async def system_info(self, ctx):
         """Display system-level stats."""
-        total, used, free = shutil.disk_usage(
-            DATA_DIR if os.path.isdir(DATA_DIR) else "/",
-        )
-        embed = discord.Embed(title="System Information", color=discord.Color.teal())
-        embed.add_field(name="Python", value=platform.python_version(), inline=True)
-        embed.add_field(
-            name="OS",
-            value=f"{platform.system()} {platform.release()}",
-            inline=True,
-        )
-        embed.add_field(
-            name="Disk",
-            value=(
-                f"Total: {total/2**30:.1f} GB  "
-                f"Used: {used/2**30:.1f} GB  "
-                f"Free: {free/2**30:.1f} GB"
-            ),
-            inline=False,
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=self.build_system_info_embed())
 
     # ------------------------------------------------------------------
     # Log queries (PostgreSQL logs table)
@@ -494,27 +602,13 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def recent_errors(self, ctx, limit: int = 10):
         """Retrieve the most recent ERROR-level log entries."""
-        await ctx.invoke(self.query_logs, event_type="ERROR", limit=limit)
+        await ctx.send(embed=await self.build_recent_errors_embed(limit=limit))
 
     @commands.command(name="test_notification", aliases=["testnotify"])
     @commands.has_permissions(administrator=True)
     async def test_notification(self, ctx):
         """Send a test notification via the webhook reporter."""
-        reporter = getattr(self.bot, "_reporter", None)
-        if not reporter:
-            await ctx.send("❌ No webhook reporter is configured.", delete_after=10)
-            return
-        try:
-            embed = discord.Embed(
-                title="🧪 Test Notification",
-                description="This is a test error notification from DiagnosticCog.",
-                color=discord.Color.orange(),
-                timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
-            )
-            await reporter._send(embed, username="Diagnostic")
-            await ctx.send("✅ Test notification sent.", delete_after=10)
-        except Exception as exc:
-            await ctx.send(f"❌ Failed: {exc}", delete_after=10)
+        await ctx.send(embed=await self.send_test_notification())
 
     # ────────────────────────────────────────────────────────────────
     # !platform — runtime introspection (R1 from the hardening plan)
