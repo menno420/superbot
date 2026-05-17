@@ -26,9 +26,6 @@ import discord
 from discord.ext import commands
 
 from utils import db
-from utils.settings_keys import (  # noqa: F401 — kept for potential future use
-    WARN_THRESHOLD,
-)
 
 # ---------------------------------------------------------------------------
 # Data directories (mirror the cog's pre-stabilization layout exactly)

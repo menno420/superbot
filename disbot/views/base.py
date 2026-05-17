@@ -7,6 +7,18 @@ from discord.ext import commands
 
 logger = logging.getLogger("bot.views")
 
+# Canonical interaction lifecycle doctrine:
+#
+# - General interactive panels should inherit BaseView.
+# - Ephemeral hub/navigation panels should inherit HubView.
+# - Persistent cross-restart views should inherit PersistentView
+#   (defined in core/runtime/persistent_views.py).
+# - Game-state views may extend discord.ui.View directly when
+#   specialized timeout cleanup, state coupling, or gameplay
+#   lifecycle ownership is required.
+#
+# Divergence from these patterns should be intentional and documented.
+
 
 async def send_panel(
     ctx: commands.Context,
