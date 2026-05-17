@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands
 
 from utils.ui_constants import GENERAL_COLOR, SUCCESS_COLOR
-from views.base import BaseView
+from views.base import BaseView, send_panel
 
 logger = logging.getLogger("bot")
 
@@ -78,6 +78,7 @@ class General(commands.Cog):
         self._quotes: list[str] = content.get("quotes", [])
         self._trivia: list[str] = content.get("trivia", [])
 
+    @commands.cooldown(rate=3, per=10, type=commands.BucketType.user)
     @commands.command(
         name="generalmenu",
         aliases=["gmenu"],
@@ -91,8 +92,7 @@ class General(commands.Cog):
         menu uses it to map "general" → this cog).
         """
         view = _GeneralPanelView(ctx.author, self)
-        msg = await ctx.send(embed=_overview_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=_overview_embed(), view=view)
 
     async def build_help_menu_view(
         self,
@@ -165,8 +165,7 @@ class General(commands.Cog):
             color=GENERAL_COLOR,
         )
         embed.set_footer(text="Click 'Reveal Answer' when ready.")
-        msg = await ctx.send(embed=embed, view=view)
-        view.message = msg
+        await send_panel(ctx, embed=embed, view=view)
 
     @commands.command(name="motivate", help="Sends a motivational message.")
     async def motivate(self, ctx):

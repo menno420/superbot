@@ -22,6 +22,7 @@ from discord.ext import commands
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import INFO_COLOR, WARNING_COLOR
+from views.base import send_panel
 
 # Re-exports for test backward-compat and any external consumers that
 # imported these names directly from cogs.channel_cog.
@@ -128,6 +129,7 @@ class ChannelCog(commands.Cog):
     # Commands
     # -------------------
 
+    @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(
         name="channelmenu",
         help="Open the interactive channel management panel.",
@@ -136,8 +138,7 @@ class ChannelCog(commands.Cog):
     async def channel_menu(self, ctx):
         """Open the interactive channel management panel."""
         view = _ChannelManagerView(ctx)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_embed(), view=view)
 
     async def build_help_menu_view(
         self,

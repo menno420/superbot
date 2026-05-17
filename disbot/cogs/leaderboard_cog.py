@@ -190,6 +190,23 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
 
         view.message = await ctx.send(embed=embed, view=view)
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the leaderboard hub)."""
+        view = LeaderboardView(
+            interaction.guild,  # type: ignore[arg-type]
+            interaction.channel,  # type: ignore[arg-type]
+            interaction.user,  # type: ignore[arg-type]
+        )
+        embed = discord.Embed(
+            title="📊 Leaderboards",
+            description="Select a category below to view the leaderboard.",
+            color=UTILITY_COLOR,
+        )
+        return embed, view
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(LeaderboardCog(bot))

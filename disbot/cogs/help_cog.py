@@ -37,14 +37,22 @@ _TIER_GROUPS = [
 
 
 def _cog_for_subsystem(bot: commands.Bot, subsystem_name: str) -> commands.Cog | None:
-    """Find the cog that corresponds to a subsystem by checking entry_points."""
+    """Find the cog that corresponds to a subsystem by checking entry_points.
+
+    Matches against both ``cmd.name`` and ``cmd.aliases`` so registry entries
+    that reference an alias (e.g. ``"deathmatch"`` for ``dm_challenge``) still
+    resolve to the owning cog.
+    """
     meta = SUBSYSTEMS.get(subsystem_name)
     if not meta:
         return None
+    entry_points = set(meta.get("entry_points", []))
     for cog in bot.cogs.values():
-        cog_cmds = {cmd.name for cmd in cog.get_commands()}
-        entry_points = set(meta.get("entry_points", []))
-        if cog_cmds & entry_points:
+        cog_names: set[str] = set()
+        for cmd in cog.get_commands():
+            cog_names.add(cmd.name)
+            cog_names.update(cmd.aliases)
+        if cog_names & entry_points:
             return cog
     return None
 
@@ -144,6 +152,11 @@ def _attach_back_to_help_button(
     will invalidate the underlying session state through the normal pipeline.
     """
     if len(view.children) >= 25:
+        logger.warning(
+            "Back-to-help button skipped — %s already has 25 children. "
+            "User cannot return to the help menu from this panel.",
+            type(view).__name__,
+        )
         return
 
     back_btn = discord.ui.Button(  # type: ignore[var-annotated]

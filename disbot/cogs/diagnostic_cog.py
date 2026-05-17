@@ -10,9 +10,9 @@ import discord
 import psutil
 from discord.ext import commands
 
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
 from utils import db
-from views.base import BaseView
+from views.base import BaseView, HubView, send_panel
 
 logger = logging.getLogger("bot")
 
@@ -61,11 +61,11 @@ class _PaginatorView(BaseView):
         await interaction.response.edit_message(embed=self.pages[self.index], view=self)
 
 
-class _DiagnosticsHubView(BaseView):
+class _DiagnosticsHubView(HubView):
     """Interactive hub for all diagnostic tools."""
 
     def __init__(self, ctx: commands.Context, cog: DiagnosticCog):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 
@@ -190,8 +190,15 @@ class DiagnosticCog(commands.Cog):
     async def diagnostics_hub(self, ctx):
         """Open the interactive diagnostics hub panel."""
         view = _DiagnosticsHubView(ctx, self)
-        msg = await ctx.send(embed=view.build_embed(), view=view)
-        view.message = msg
+        await send_panel(ctx, embed=view.build_embed(), view=view)
+
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook (returns the diagnostics hub)."""
+        view = _DiagnosticsHubView(help_ctx_shim(interaction), self)
+        return view.build_embed(), view
 
     # ------------------------------------------------------------------
     # Command overview

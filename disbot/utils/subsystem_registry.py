@@ -125,7 +125,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "economy",
         "tags": ["inventory", "items", "crafting"],
-        "entry_points": ["inventorymenu", "inventory", "craft"],
+        "entry_points": ["inventory"],
         "default_channels": ["economy", "bot-commands"],
         "related_subsystems": ["economy", "mining"],
         "dependencies": ["economy"],
@@ -149,7 +149,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "economy",
         "tags": ["mining", "resources", "minigame"],
-        "entry_points": ["miningmenu", "mine"],
+        "entry_points": ["minemenu", "mine"],
         "default_channels": ["mining", "bot-commands"],
         "related_subsystems": ["economy", "inventory"],
         "dependencies": ["economy"],
@@ -172,7 +172,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "progression",
         "tags": ["xp", "levels", "progression", "leaderboard"],
-        "entry_points": ["xpmenu", "rank", "level"],
+        "entry_points": ["xpmenu", "rank"],
         "default_channels": ["bot-commands", "general"],
         "related_subsystems": ["role", "leaderboard"],
         "dependencies": [],
@@ -316,7 +316,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "games",
         "tags": ["games", "rps", "tournament"],
-        "entry_points": ["rpsmenu", "rps"],
+        "entry_points": ["rps"],
         "default_channels": ["games", "tournament"],
         "related_subsystems": [],
         "dependencies": [],
@@ -339,7 +339,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "games",
         "tags": ["games", "counting", "community"],
-        "entry_points": ["countingmenu", "counting"],
+        "entry_points": ["countingmenu"],
         "default_channels": ["counting", "games"],
         "related_subsystems": [],
         "dependencies": [],
@@ -501,7 +501,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "admin",
         "tags": ["diagnostics", "health", "latency", "debug"],
-        "entry_points": ["diagnosticmenu", "diagnostics", "ping", "platform"],
+        "entry_points": ["diagnostics", "ping", "platform"],
         "default_channels": ["staff", "bot-spam"],
         "related_subsystems": ["admin"],
         "dependencies": [],
@@ -897,8 +897,13 @@ async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
         "db_anchor_subsystem_unknown": [],
     }
 
-    # Surface 2: bot commands.
-    loaded_commands: set[str] = {cmd.name for cmd in getattr(bot, "commands", ())}
+    # Surface 2: bot commands — include aliases so registry entries
+    # that reference an alias (e.g. "bj" for blackjack, "deathmatch" for
+    # dm_challenge) match without triggering a false drift finding.
+    loaded_commands: set[str] = set()
+    for cmd in getattr(bot, "commands", ()):
+        loaded_commands.add(cmd.name)
+        loaded_commands.update(cmd.aliases)
 
     # Surface 1 vs Surface 2.
     for sub_name, meta in SUBSYSTEMS.items():

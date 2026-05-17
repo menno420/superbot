@@ -9,9 +9,9 @@ from discord.ext.commands import MissingPermissions, has_permissions
 
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
-from views.base import BaseView
+from views.base import HubView, send_panel
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("bot.cogs.chain")
 
 
 class ChainCog(commands.Cog):
@@ -189,14 +189,14 @@ class ChainCog(commands.Cog):
             await ctx.send(f"❌ An error occurred: {str(error)}")
             logger.error(f"Error in remove_limit command: {error}")
 
+    @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.command(name="chainmenu")
     @has_permissions(administrator=True)
     async def chain_menu(self, ctx):
         """Open the interactive chain management panel."""
         view = _ChainMenuView(ctx, self)
         embed = await view.build_embed()
-        msg = await ctx.send(embed=embed, view=view)
-        view.message = msg
+        await send_panel(ctx, embed=embed, view=view)
 
     async def build_help_menu_view(
         self,
@@ -446,11 +446,11 @@ class _SetLimitModal(discord.ui.Modal, title="Set Word Limit"):  # type: ignore[
             )
 
 
-class _ChainMenuView(BaseView):
+class _ChainMenuView(HubView):
     """Interactive chain channel management panel."""
 
     def __init__(self, ctx: commands.Context, cog: ChainCog):
-        super().__init__(ctx.author, timeout=180)
+        super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
 

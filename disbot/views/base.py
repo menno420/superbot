@@ -3,8 +3,67 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord.ext import commands
 
 logger = logging.getLogger("bot.views")
+
+
+async def send_panel(
+    ctx: commands.Context,
+    *,
+    embed: discord.Embed,
+    view: BaseView,
+) -> discord.Message:
+    """Send ``embed`` + ``view`` in ``ctx.channel`` and bind the message to view.
+
+    Centralises the ``msg = await ctx.send(...); view.message = msg`` pattern
+    so panel commands stay one line.  Binding ``view.message`` is what lets
+    :meth:`BaseView.on_timeout` edit the message to disable the buttons when
+    the view expires.
+
+    Returns the sent message so callers that still need the reference can
+    use it directly.
+    """
+    msg = await ctx.send(embed=embed, view=view)
+    view.message = msg
+    return msg
+
+
+async def handle_view_error(
+    view: discord.ui.View,
+    interaction: discord.Interaction,
+    error: Exception,
+    item: discord.ui.Item,  # type: ignore[type-arg]
+) -> None:
+    """Standard view-error handler: rich-context log + generic ephemeral.
+
+    Used by :meth:`BaseView.on_error`, :meth:`PersistentView.on_error`, and
+    the blackjack view subclasses (which extend ``discord.ui.View`` directly).
+    Channel-management views in ``views/channels/`` keep their own
+    ``on_error`` because they intentionally surface ``type(error).__name__``
+    to admins for diagnosability.
+    """
+    logger.error(
+        "View error | view=%s item_type=%s custom_id=%r label=%r "
+        "user=%s guild=%s channel=%s message=%s",
+        type(view).__name__,
+        type(item).__name__,
+        getattr(item, "custom_id", None),
+        getattr(item, "label", None),
+        getattr(interaction.user, "id", None),
+        interaction.guild_id,
+        interaction.channel_id,
+        interaction.message.id if interaction.message else None,
+        exc_info=error,
+    )
+    if not interaction.response.is_done():
+        try:
+            await interaction.response.send_message(
+                "An error occurred. Please try again.",
+                ephemeral=True,
+            )
+        except Exception:
+            pass
 
 
 class BaseView(discord.ui.View):
@@ -59,24 +118,27 @@ class BaseView(discord.ui.View):
         error: Exception,
         item: discord.ui.Item,  # type: ignore[type-arg]
     ) -> None:
-        logger.error(
-            "View error | view=%s item_type=%s custom_id=%r label=%r "
-            "user=%s guild=%s channel=%s message=%s",
-            type(self).__name__,
-            type(item).__name__,
-            getattr(item, "custom_id", None),
-            getattr(item, "label", None),
-            getattr(interaction.user, "id", None),
-            interaction.guild_id,
-            interaction.channel_id,
-            interaction.message.id if interaction.message else None,
-            exc_info=error,
-        )
-        if not interaction.response.is_done():
-            try:
-                await interaction.response.send_message(
-                    "An error occurred. Please try again.",
-                    ephemeral=True,
-                )
-            except Exception:
-                pass
+        await handle_view_error(self, interaction, error, item)
+
+
+class HubView(BaseView):
+    """Interactive panel hub with the standard 180-second timeout.
+
+    Centralises the ``timeout=180`` default that every hub view duplicated.
+    Subclasses pass only ``author`` (or ``author, public=True`` for shared
+    panels) — the timeout no longer needs to be repeated per cog.
+
+    Use this for any view that anchors a panel command (e.g. ``!adminmenu``,
+    ``!channelmenu``).  For one-off views with different timeouts (e.g. a
+    20-second confirmation prompt) keep extending :class:`BaseView` directly.
+    """
+
+    DEFAULT_TIMEOUT = 180
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        public: bool = False,
+    ) -> None:
+        super().__init__(author, public=public, timeout=self.DEFAULT_TIMEOUT)
