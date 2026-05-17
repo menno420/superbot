@@ -107,7 +107,7 @@ class BlackjackView(discord.ui.View):
         _active.pop((self.game.user_id, self.game.guild_id), None)
         await _clear_solo_game(self.game)  # PR G2 — abandoned
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         try:
             await self.message.edit(content="Game timed out.", view=self)
         except Exception:

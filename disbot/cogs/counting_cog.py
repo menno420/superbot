@@ -49,7 +49,7 @@ def _scope_id_for_channel(channel_id: str) -> str:
 class CountingCog(commands.Cog):
     """A cog for managing various counting games with multiple modes."""
 
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
         self.logger = logger
         self.lock = asyncio.Lock()

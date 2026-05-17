@@ -70,7 +70,7 @@ def _overview_embed() -> discord.Embed:
 
 
 class General(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
         content = _load_content()
         self._facts: list[str] = content.get("facts", [])

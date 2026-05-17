@@ -227,7 +227,7 @@ class _ChallengeView(discord.ui.View):
 
 
 class Deathmatch(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
         self.active_duels: dict[tuple, _Duel] = {}
 
