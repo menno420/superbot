@@ -48,7 +48,7 @@ async def test_save_solo_game_writes_state():
 
     game = _Game(user_id=222, guild_id=111, bet=50, channel_id=333)
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
     ) as mock_save:
         await _save_solo_game(game)
@@ -77,7 +77,7 @@ async def test_save_solo_game_skips_pvp_games():
     game = _Game(user_id=222, guild_id=111, bet=50, channel_id=333)
     game.pvp_peer_id = 999  # mark as PvP
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
     ) as mock_save:
         await _save_solo_game(game)
@@ -99,7 +99,7 @@ async def test_save_solo_game_skips_tournament_games():
         channel_id=333,
     )
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
     ) as mock_save:
         await _save_solo_game(game)
@@ -116,7 +116,7 @@ async def test_save_solo_game_skips_when_channel_id_missing():
 
     game = _Game(user_id=222, guild_id=111, bet=50, channel_id=None)
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
     ) as mock_save:
         await _save_solo_game(game)
@@ -132,7 +132,7 @@ async def test_save_failure_does_not_raise():
 
     game = _Game(user_id=222, guild_id=111, bet=50, channel_id=333)
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
         side_effect=RuntimeError("DB down"),
     ):
@@ -146,7 +146,7 @@ async def test_clear_solo_game_deletes_state():
 
     game = _Game(user_id=222, guild_id=111, bet=50, channel_id=333)
     with patch(
-        "cogs.blackjack_cog.game_state_service.clear",
+        "cogs.blackjack._persistence.game_state_service.clear",
         new_callable=AsyncMock,
     ) as mock_clear:
         await _clear_solo_game(game)
@@ -172,7 +172,7 @@ async def test_clear_solo_game_skips_pvp_and_tournament():
         channel_id=333,
     )
     with patch(
-        "cogs.blackjack_cog.game_state_service.clear",
+        "cogs.blackjack._persistence.game_state_service.clear",
         new_callable=AsyncMock,
     ) as mock_clear:
         await _clear_solo_game(pvp_game)

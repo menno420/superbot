@@ -68,7 +68,7 @@ async def test_save_pvp_match_writes_both_hands():
 
     try:
         with patch(
-            "cogs.blackjack_cog.game_state_service.save",
+            "cogs.blackjack._persistence.game_state_service.save",
             new_callable=AsyncMock,
         ) as mock_save:
             await _save_pvp_match(state)
@@ -110,7 +110,7 @@ async def test_save_pvp_match_handles_finished_player():
 
     try:
         with patch(
-            "cogs.blackjack_cog.game_state_service.save",
+            "cogs.blackjack._persistence.game_state_service.save",
             new_callable=AsyncMock,
         ) as mock_save:
             await _save_pvp_match(state)
@@ -129,7 +129,7 @@ async def test_save_pvp_match_failure_is_logged_not_raised():
 
     state = _PvPState(p1=100, p2=200, guild_id=111, bet=50, channel_id=333)
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
         side_effect=RuntimeError("DB down"),
     ):
@@ -142,7 +142,7 @@ async def test_clear_pvp_match_uses_canonical_user_id():
 
     state = _PvPState(p1=100, p2=200, guild_id=111, bet=50, channel_id=333)
     with patch(
-        "cogs.blackjack_cog.game_state_service.clear",
+        "cogs.blackjack._persistence.game_state_service.clear",
         new_callable=AsyncMock,
     ) as mock_clear:
         await _clear_pvp_match(state)
@@ -170,11 +170,11 @@ async def test_save_game_state_dispatches_pvp_vs_solo():
 
     with (
         patch(
-            "cogs.blackjack_cog._save_solo_game",
+            "cogs.blackjack._persistence._save_solo_game",
             new_callable=AsyncMock,
         ) as mock_solo,
         patch(
-            "cogs.blackjack_cog._save_pvp_match",
+            "cogs.blackjack._persistence._save_pvp_match",
             new_callable=AsyncMock,
         ) as mock_pvp,
     ):
