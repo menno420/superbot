@@ -27,7 +27,6 @@ import pytest
 from cogs.counting import handler
 from cogs.counting.handler import CountingDecision, compute_decision
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

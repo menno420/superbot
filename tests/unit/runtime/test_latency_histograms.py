@@ -17,7 +17,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # db_query_seconds — pool primitive instrumentation
 # ---------------------------------------------------------------------------
