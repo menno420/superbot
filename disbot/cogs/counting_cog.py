@@ -26,7 +26,7 @@ import discord
 from discord.ext import commands
 
 from cogs.counting import handler
-from core.runtime import scope_locks, tasks
+from core.runtime import resources, scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
 from views.base import send_panel
@@ -202,7 +202,7 @@ class CountingCog(commands.Cog):
         async with self.lock:
             timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M%S")
             channel_name = f"{mode}-counting-{timestamp}"
-            existing_channel = discord.utils.get(guild.text_channels, name=channel_name)
+            existing_channel = resources.resolve_channel(guild, name=channel_name)
             if existing_channel:
                 await ctx.send(
                     f"A channel named '{channel_name}' already exists.",

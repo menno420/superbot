@@ -15,6 +15,7 @@ import time as _time
 
 import discord
 
+from core.runtime import resources
 from governance.cache import (  # noqa: F401
     GovernanceCacheBackend,
     forget_guild,
@@ -226,7 +227,7 @@ def _find_redirect_channel(
     if guild is None:
         return None
     for ch_name in subsystem_meta.get("default_channels", []):
-        ch = discord.utils.get(guild.text_channels, name=ch_name)
+        ch = resources.resolve_channel(guild, name=ch_name)
         if ch:
             return ch.mention
     return None

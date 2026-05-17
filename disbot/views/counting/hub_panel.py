@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from core.runtime import tasks
+from core.runtime import resources, tasks
 from views.base import HubView
 
 
@@ -59,7 +59,7 @@ class _CountingHubView(HubView):
             )
             active_mentions = []
             for cid in active_ids:
-                ch = self.ctx.guild.get_channel(int(cid))
+                ch = resources.resolve_channel(self.ctx.guild, channel_id=cid)
                 if ch:
                     active_mentions.append(ch.mention)
             embed.description = (

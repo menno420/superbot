@@ -6,7 +6,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from core.runtime import tasks
+from core.runtime import resources, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils.helpers import _parse_member
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
@@ -27,7 +27,7 @@ class ProofChannelCog(commands.Cog):
         self._timed_tasks.clear()
 
     def get_proof_channel(self, guild: discord.Guild) -> discord.TextChannel | None:
-        return discord.utils.get(guild.text_channels, name="proof")
+        return resources.resolve_channel(guild, name="proof")  # type: ignore[return-value]
 
     async def _lock_for_winner(
         self,

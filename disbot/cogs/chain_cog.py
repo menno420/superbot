@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions, has_permissions
 
+from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
 from views.base import HubView, send_panel
@@ -322,10 +323,16 @@ def _resolve_channel(
     if not raw:
         return interaction.channel  # type: ignore[return-value]
     stripped = raw.strip("<#>")
-    try:
-        return interaction.guild.get_channel(int(stripped))  # type: ignore[return-value]
-    except ValueError:
-        return discord.utils.get(interaction.guild.text_channels, name=raw)
+    if stripped.isdigit():
+        return resources.resolve_channel(  # type: ignore[return-value]
+            interaction.guild,
+            channel_id=stripped,
+        )
+    return resources.resolve_channel(  # type: ignore[return-value]
+        interaction.guild,
+        name=raw,
+        kind="text",
+    )
 
 
 class _CreateChainModal(discord.ui.Modal, title="Create Chain"):  # type: ignore[call-arg]
