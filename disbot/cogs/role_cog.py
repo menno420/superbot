@@ -10,6 +10,7 @@ from core.runtime import panel_manager
 from core.runtime.component_registry import stats_block
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
+from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.helpers import normalize_name
 from utils.ui_constants import ROLE_COLOR
 from views.roles._helpers import _ensure_defaults, _find_role_normalized, _parse_color
@@ -449,6 +450,9 @@ class RoleCog(commands.Cog):
             role_name,
         )
         await db.remove_role_threshold(ctx.guild.id, match)
+        # Same caveat as views/roles/time_roles_panel: the DELETE wipes XP
+        # columns alongside the time-based ones, so the F-1 cache must drop.
+        invalidate_xp_threshold_roles(ctx.guild.id)
         await ctx.send(f"✅ Removed **{match}** from the auto-assignment system.")
 
     @commands.command(name="debugroles", hidden=True)

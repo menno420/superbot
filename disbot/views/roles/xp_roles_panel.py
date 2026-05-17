@@ -7,6 +7,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer
 from utils import db
+from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ECONOMY_COLOR
 from views.base import BaseView
 from views.roles._helpers import _find_role_normalized
@@ -151,6 +152,7 @@ class XpThresholdModal(
             )
             return
 
+        invalidate_xp_threshold_roles(interaction.guild.id)
         if not await safe_defer(interaction):
             return
         await self.parent._refresh()
@@ -180,6 +182,7 @@ class _XpRemoveSelect(discord.ui.Select):
             None,
             False,
         )
+        invalidate_xp_threshold_roles(interaction.guild.id)
         await interaction.response.send_message(
             f"✅ Removed XP threshold for **{self.values[0]}**.",
             ephemeral=True,

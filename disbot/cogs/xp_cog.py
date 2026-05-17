@@ -12,6 +12,11 @@ from services import xp_service
 from utils import db
 from utils import embeds as em
 from utils.cooldowns import check_cooldown
+from utils.guild_config_accessors import (
+    get_xp_config,
+    get_xp_threshold_roles,
+    invalidate_xp_config,
+)
 from utils.helpers import _parse_member, post_log_embed
 from utils.settings_keys import XP_ANNOUNCE_CHANNEL, XP_COOLDOWN, XP_MAX, XP_MIN
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
@@ -51,11 +56,14 @@ _STAT_TYPES: set[str] = {"xp", "coins", "both"}
 
 
 async def _guild_xp_settings(guild_id: int) -> tuple[int, int, int]:
-    """Return (xp_min, xp_max, cooldown_seconds) for this guild."""
-    mn = int(await db.get_setting(guild_id, XP_MIN, str(_XP_MIN)))
-    mx = int(await db.get_setting(guild_id, XP_MAX, str(_XP_MAX)))
-    cd = int(await db.get_setting(guild_id, XP_COOLDOWN, str(_COOLDOWN)))
-    return mn, mx, cd
+    """Return (xp_min, xp_max, cooldown_seconds) for this guild.
+
+    Thin shim around ``guild_config_accessors.get_xp_config`` retained
+    for the few callers that want the tuple shape directly.  Cache-aware
+    — uses the same F-1 cache as the on_message hot path.
+    """
+    cfg = await get_xp_config(guild_id)
+    return cfg.xp_min, cfg.xp_max, cfg.cooldown
 
 
 def _progress_bar(current: int, needed: int, width: int = 10) -> str:
@@ -303,14 +311,15 @@ class XpCog(commands.Cog):
         guild_id = message.guild.id
         now = int(time.time())
 
-        row = await db.get_xp(user_id, guild_id)
-        xp_min, xp_max, cooldown = await _guild_xp_settings(guild_id)
+        # F-1 cached config — hits the cache on the common cooldown-skipped path.
+        cfg = await get_xp_config(guild_id)
 
-        on_cd, _ = check_cooldown(row["last_xp"], cooldown)
+        row = await db.get_xp(user_id, guild_id)
+        on_cd, _ = check_cooldown(row["last_xp"], cfg.cooldown)
         if on_cd:
             return
 
-        amount = random.randint(xp_min, xp_max)
+        amount = random.randint(cfg.xp_min, cfg.xp_max)
         result = await xp_service.award(
             guild_id=guild_id,
             user_id=user_id,
@@ -325,10 +334,9 @@ class XpCog(commands.Cog):
         )
 
         if leveled_up:
-            channel_id = await db.get_setting(guild_id, XP_ANNOUNCE_CHANNEL, "")
             announce_ch: discord.TextChannel | None = None
-            if channel_id:
-                announce_ch = message.guild.get_channel(int(channel_id))  # type: ignore[assignment]
+            if cfg.announce_channel:
+                announce_ch = message.guild.get_channel(int(cfg.announce_channel))  # type: ignore[assignment]
             announce_ch = announce_ch or message.channel  # type: ignore[assignment]
 
             embed = discord.Embed(
@@ -351,9 +359,9 @@ class XpCog(commands.Cog):
             )
             await post_log_embed(self.bot, guild_id, log_embed)
 
-            # XP threshold role assignment
+            # XP threshold role assignment — cached list from F-1.
             try:
-                xp_roles = await db.get_xp_threshold_roles(guild_id)
+                xp_roles = await get_xp_threshold_roles(guild_id)
                 for role_cfg in xp_roles:
                     if role_cfg["level_required"] <= new_level:
                         discord_role = discord.utils.get(
@@ -619,6 +627,7 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[cal
         gid = self.view.ctx.guild.id
         await db.set_setting(gid, XP_MIN, str(mn))
         await db.set_setting(gid, XP_MAX, str(mx))
+        invalidate_xp_config(gid)
         if not await safe_defer(interaction):
             return
         await self.view._refresh(interaction)
@@ -646,7 +655,9 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: igno
                 ephemeral=True,
             )
             return
-        await db.set_setting(self.view.ctx.guild.id, XP_COOLDOWN, str(val))
+        gid = self.view.ctx.guild.id
+        await db.set_setting(gid, XP_COOLDOWN, str(val))
+        invalidate_xp_config(gid)
         if not await safe_defer(interaction):
             return
         await self.view._refresh(interaction)
@@ -671,7 +682,9 @@ class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"): 
                 ephemeral=True,
             )
             return
-        await db.set_setting(self.view.ctx.guild.id, XP_ANNOUNCE_CHANNEL, val)
+        gid = self.view.ctx.guild.id
+        await db.set_setting(gid, XP_ANNOUNCE_CHANNEL, val)
+        invalidate_xp_config(gid)
         if not await safe_defer(interaction):
             return
         await self.view._refresh(interaction)

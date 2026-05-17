@@ -214,6 +214,7 @@ async def test_resetxp_command_calls_xp_service_reset():
 async def test_on_message_routes_through_xp_service():
     """The on_message hot path must call xp_service.award (PR-4)."""
     from cogs.xp_cog import XpCog
+    from utils.guild_config_accessors import XpConfig
 
     cog = XpCog(bot=MagicMock())
 
@@ -229,12 +230,16 @@ async def test_on_message_routes_through_xp_service():
     award_result = _xp_award_result(new_xp=100, new_level=1)
     award_result.leveled_up = False
 
+    # After S2.2 the listener pulls settings via the F-1 typed accessor
+    # rather than the bare _guild_xp_settings shim.
+    xp_cfg = XpConfig(xp_min=15, xp_max=25, cooldown=60, announce_channel="")
+
     with (
         patch("cogs.xp_cog.db.get_xp", new_callable=AsyncMock, return_value=db_row),
         patch(
-            "cogs.xp_cog._guild_xp_settings",
+            "cogs.xp_cog.get_xp_config",
             new_callable=AsyncMock,
-            return_value=(15, 25, 60),
+            return_value=xp_cfg,
         ),
         patch("cogs.xp_cog.check_cooldown", return_value=(False, 0)),
         patch(
