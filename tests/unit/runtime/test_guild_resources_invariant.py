@@ -19,14 +19,6 @@ Allow-list rationale:
                               Migrating it would introduce an
                               upward dep on core/runtime that the
                               creation primitive doesn't need.
-  rps_tournament/_bot_matches.py
-                              Uses ``guild.get_member_named`` — a
-                              name-based lookup distinct from the
-                              id-based ``get_member``.  No equivalent
-                              in the resolver yet (resolve_member
-                              takes an id, not a username).  A
-                              future ``resolve_member_by_name`` could
-                              absorb it.
 """
 
 from __future__ import annotations
@@ -40,7 +32,6 @@ SCAN_ROOT = REPO_ROOT / "disbot"
 ALLOW_LIST = {
     "disbot/core/runtime/guild_resources.py",
     "disbot/utils/channels.py",
-    "disbot/cogs/rps_tournament/_bot_matches.py",
 }
 
 # Each pattern is (compiled-regex, human-readable label).  The regex
@@ -49,6 +40,10 @@ PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (
         re.compile(r"\bguild\.get_member\("),
         "guild.get_member — use resources.resolve_member",
+    ),
+    (
+        re.compile(r"\bguild\.get_member_named\("),
+        "guild.get_member_named — use resources.resolve_member_by_name",
     ),
     (
         re.compile(r"\bguild\.get_role\("),

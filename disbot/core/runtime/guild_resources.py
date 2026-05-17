@@ -37,6 +37,7 @@ Public surface:
     resolve_role(guild, *, role_id=None, name=None) → Role | None
     resolve_member(guild, member_id)          → Member | None
     resolve_members(guild, member_ids)        → dict[int, Member]
+    resolve_member_by_name(guild, name)       → Member | None
     member_display(guild, member_id)          → str
     resolve_settings_channel(guild, setting_key)
                                               → GuildChannel | None
@@ -232,6 +233,24 @@ def resolve_members(
         if m is not None:
             out[mid_int] = m
     return out
+
+
+def resolve_member_by_name(
+    guild: discord.Guild,
+    name: str,
+) -> discord.Member | None:
+    """Cache-only member lookup by username, nick, or display name.
+
+    Wraps ``guild.get_member_named`` (which matches against
+    ``Member.name``, the user's nickname, and ``Member.global_name``).
+    Distinct from :func:`resolve_member`, which takes an id; use this
+    when the caller has a free-form string from user input.
+
+    Returns ``None`` on empty input or no match.
+    """
+    if not name:
+        return None
+    return guild.get_member_named(name)
 
 
 def member_display(

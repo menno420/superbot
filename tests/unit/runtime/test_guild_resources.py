@@ -269,6 +269,25 @@ class TestResolveMember:
         assert guild_resources.resolve_member(guild, None) is None  # type: ignore[arg-type]
 
 
+class TestResolveMemberByName:
+    def test_found(self):
+        m = _make_member(42, "Alice")
+        guild = _make_guild()
+        guild.get_member_named = lambda name: m if name == "Alice" else None
+        assert guild_resources.resolve_member_by_name(guild, "Alice") is m
+
+    def test_missing(self):
+        guild = _make_guild()
+        guild.get_member_named = lambda name: None
+        assert guild_resources.resolve_member_by_name(guild, "Bob") is None
+
+    def test_empty_string_short_circuits(self):
+        guild = _make_guild()
+        guild.get_member_named = MagicMock()
+        assert guild_resources.resolve_member_by_name(guild, "") is None
+        guild.get_member_named.assert_not_called()
+
+
 class TestResolveMembers:
     def test_partial_batch(self):
         m1 = _make_member(1, "Alice")
