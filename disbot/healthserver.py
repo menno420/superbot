@@ -11,13 +11,22 @@ same event loop. It adds no threads and has negligible overhead.
 
 Usage (from bot1.py main()):
     from healthserver import start_health_server
-    health_task = asyncio.create_task(start_health_server(bot))
-    ...
-    health_task.cancel()
+    bind_ready = asyncio.Event()
+    health_task = supervised_task(
+        start_health_server(bot, ready_event=bind_ready),
+        name="health_server",
+    )
+    # main() waits on bind_ready before bot.start() so a bind failure
+    # fails the process fast rather than running an undiscoverable bot
+    # behind a wedged orchestration probe (Phase S2.4 / O-2b).
+
+If the bind step (runner.setup / site.start) raises, the exception now
+propagates with cleanup, instead of escaping the task silently.
 """
 
 from __future__ import annotations
 
+import asyncio
 import datetime
 import json
 import logging
@@ -80,8 +89,26 @@ async def _metrics_handler(request: web.Request) -> web.Response:
     return web.Response(body=generate_latest(), content_type=CONTENT_TYPE_LATEST)
 
 
-async def start_health_server(bot: commands.Bot) -> None:
-    """Start the aiohttp health server and block until cancelled."""
+async def start_health_server(
+    bot: commands.Bot,
+    *,
+    ready_event: asyncio.Event | None = None,
+) -> None:
+    """Start the aiohttp health server and block until cancelled.
+
+    Args:
+        bot: the discord bot, attached to the aiohttp app so handlers
+            can introspect uptime / readiness.
+        ready_event: optional ``asyncio.Event`` set after the TCP bind
+            succeeds.  ``bot1.main`` waits on this event before
+            ``bot.start()`` so a bind failure surfaces immediately
+            instead of running a healthless bot behind a wedged probe.
+
+    Bind failures (port-in-use, permission-denied) propagate out of
+    this coroutine after cleanup runs.  ``ready_event`` is **not** set
+    in that case, so callers waiting on it must also observe the task
+    exception (or use ``asyncio.wait`` with both signals).
+    """
     app = web.Application()
     app["bot"] = bot
     app.router.add_get("/health", _health_handler)
@@ -89,15 +116,14 @@ async def start_health_server(bot: commands.Bot) -> None:
     app.router.add_get("/metrics", _metrics_handler)
 
     runner = web.AppRunner(app, access_log=None)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", _HEALTH_PORT)
-    await site.start()
-    logger.info("Health server listening on 0.0.0.0:%d", _HEALTH_PORT)
-
     try:
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", _HEALTH_PORT)
+        await site.start()
+        logger.info("Health server listening on 0.0.0.0:%d", _HEALTH_PORT)
+        if ready_event is not None:
+            ready_event.set()
         # Keep running until the task is cancelled (bot shutdown).
-        import asyncio
-
         await asyncio.get_running_loop().create_future()
     finally:
         await runner.cleanup()

@@ -13,6 +13,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.channels._helpers import _build_channel_options, _ChannelSelect
@@ -202,11 +203,14 @@ class _DeleteConfirmView(BaseView):
         from views.channels.main_panel import _ChannelManagerView
 
         manager = _ChannelManagerView(self.ctx)
-        manager.message = self.manager_message
-        try:
-            await self.manager_message.edit(embed=manager.build_embed(), view=manager)
-        except Exception:
-            pass
+        restored = await restore_parent_or_send_fresh(
+            parent_message=self.manager_message,
+            channel=interaction.channel,
+            embed=manager.build_embed(),
+            view=manager,
+        )
+        if restored is not None:
+            manager.message = restored
 
     @discord.ui.button(
         label="Cancel",

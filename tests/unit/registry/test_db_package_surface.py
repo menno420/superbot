@@ -134,15 +134,6 @@ def test_public_symbol_reachable_via_direct_import(name: str) -> None:
     assert hasattr(mod, name), f"from utils.db import {name} broken"
 
 
-def test_legacy_decode_shim_still_reachable():
-    """The pre-S1 private alias _maybe_decode_legacy stays reachable
-    until S6 retires it.  Some tests imported it directly.
-    """
-    from utils import db
-
-    assert hasattr(db, "_maybe_decode_legacy")
-
-
 def test_submodule_namespaces_exist():
     """Submodules are reachable as utils.db.<subpkg> for tests that
     want to monkeypatch a specific bucket without affecting others.

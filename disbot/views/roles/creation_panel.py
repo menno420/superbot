@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from utils import db
+from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from views.base import BaseView
 from views.roles._helpers import _parse_color
 
@@ -170,6 +171,8 @@ class RoleAutomationModal(
                 ephemeral=True,
             )
             return
+
+        invalidate_xp_threshold_roles(interaction.guild.id)
 
         for item in self._parent_view.children:
             item.disabled = True

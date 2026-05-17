@@ -7,6 +7,7 @@ import logging
 import logging.handlers
 import os
 import signal
+import time
 import uuid
 
 import discord
@@ -114,26 +115,80 @@ def _begin_shutdown(*_) -> None:
     _remove_pid()
 
 
-def _identity_contract_strict() -> bool:
-    """Return True if ``IDENTITY_CONTRACT_STRICT`` is set to a truthy value.
+# ---------------------------------------------------------------------------
+# Supervised app-task helper — Phase S2.4 / C-2
+# Every entry-point-layer asyncio.create_task call should go through this
+# helper so unhandled exceptions are loud (critical log + webhook alert)
+# instead of escaping the event loop silently.
+# ---------------------------------------------------------------------------
 
-    Accepts ``1`` / ``true`` / ``yes`` / ``on`` (case-insensitive).
-    Any other value, or the env var being unset, returns False.
 
-    When True and the startup validator reports any fatal-tier
-    identity-contract finding, the orchestrator emits the webhook
-    alert and raises ``SystemExit(1)`` so the bot refuses to start on
-    drift.  When False (the default), findings are advisory: they
-    surface in logs, the ``identity_contract_findings_total`` metric,
-    and ``!platform identity``, but startup continues.
+def _supervised_task(coro, *, name: str) -> asyncio.Task:
+    """Spawn an app-owned background task with a death-detecting callback."""
+    task = asyncio.create_task(coro, name=name)
+    task.add_done_callback(_on_app_task_done)
+    return task
 
-    Operator recommendation: opt in on production
-    (``IDENTITY_CONTRACT_STRICT=true``) once a clean ``!platform
-    identity`` run has confirmed zero findings under the current cog
-    load.  See ``docs/runtime_contracts.md`` §12.
+
+def _on_app_task_done(task: asyncio.Task) -> None:
+    """Done-callback: surface unhandled task exceptions instead of swallowing.
+
+    Cancellations are normal during shutdown and ignored.  Real
+    exceptions get a critical log + a webhook alert via the supervisor
+    channel.  The webhook is scheduled in a new task because
+    done_callback runs in the loop but cannot be ``await``-ed in.
     """
-    raw = os.getenv("IDENTITY_CONTRACT_STRICT", "").strip().lower()
-    return raw in ("1", "true", "yes", "on")
+    if task.cancelled():
+        return
+    exc = task.exception()
+    if exc is None:
+        return
+    logger.critical(
+        "App task %r died: %s",
+        task.get_name(),
+        exc,
+        exc_info=exc,
+    )
+    if reporter is not None:
+        try:
+            asyncio.create_task(
+                reporter.on_app_task_died(task.get_name(), exc),
+                name=f"_on_app_task_died:{task.get_name()}",
+            )
+        except RuntimeError:
+            # No running loop (e.g., during shutdown) — log only.
+            logger.debug("Could not schedule app-task webhook (no loop).")
+
+
+def _identity_contract_strict() -> bool:
+    """Return True if STRICT identity-contract enforcement is active.
+
+    Phase S5.1: STRICT is now the **default**.  When True and the
+    startup validator reports any fatal-tier identity-contract
+    finding, the orchestrator emits the webhook alert and raises
+    ``SystemExit(1)`` so the bot refuses to start on drift.  When
+    False (explicit opt-out), findings are advisory: they surface in
+    logs, the ``identity_contract_findings_total`` metric, and
+    ``!platform identity``, but startup continues.
+
+    Two opt-out paths:
+
+      1. ``STRICT_DISABLED=1/true/yes/on`` — the canonical escape
+         hatch introduced in S5.1.  Use this in an emergency when a
+         fatal-tier finding is blocking a deploy and you need to ship
+         a fix without first un-jamming the abort.  Remove ASAP.
+      2. ``IDENTITY_CONTRACT_STRICT=false/0/no/off`` — the legacy
+         pre-S5.1 opt-out, honored for operators who explicitly set
+         their env config to advisory mode.  An unset or truthy value
+         here falls through to the new default.
+
+    See ``docs/runtime_contracts.md`` §12 for the runbook.
+    """
+    disabled = os.getenv("STRICT_DISABLED", "").strip().lower()
+    if disabled in ("1", "true", "yes", "on"):
+        return False
+    legacy = os.getenv("IDENTITY_CONTRACT_STRICT", "").strip().lower()
+    return legacy not in ("0", "false", "no", "off")
 
 
 signal.signal(signal.SIGTERM, _begin_shutdown)
@@ -175,6 +230,9 @@ async def on_interaction(interaction: discord.Interaction) -> None:
 @bot.event
 async def on_command(ctx: commands.Context) -> None:
     ctx._request_id = str(uuid.uuid4())  # type: ignore[attr-defined]
+    # Phase S3.1: stamp start time so on_command_completion can observe
+    # end-to-end command latency.
+    ctx._cmd_start = time.monotonic()  # type: ignore[attr-defined]
     cog_name = type(ctx.cog).__name__ if ctx.cog else "unknown"
     logger.info(
         "CMD %s/%s",
@@ -202,6 +260,20 @@ async def on_command_completion(ctx: commands.Context) -> None:
         command=cmd_name,
         result="success",
     ).inc()
+    # Phase S3.1: observe end-to-end command latency.  If on_command did
+    # not run (e.g. bot.event was not invoked in test fixtures), fall back
+    # to a zero-duration observation to keep the metric well-defined.
+    started_at = getattr(ctx, "_cmd_start", None)
+    if started_at is not None:
+        elapsed = time.monotonic() - started_at
+        _metrics.command_latency_seconds.labels(
+            cog=cog_name,
+            command=cmd_name,
+        ).observe(elapsed)
+        # Phase S3.2: record into the slow-path ring buffer if over threshold.
+        from core.runtime import slow_path_log
+
+        slow_path_log.maybe_record("command", f"{cog_name}.{cmd_name}", elapsed * 1000)
     logger.info(
         "CMD ✅ %s/%s",
         cog_name,
@@ -436,6 +508,37 @@ async def _load_cogs() -> None:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Process memory sampler — Phase S3.3 / O-4
+# ---------------------------------------------------------------------------
+
+PROCESS_MEMORY_SAMPLE_INTERVAL: int = 60  # seconds between RSS samples
+
+
+async def _sample_process_memory() -> None:
+    """Update the ``process_memory_rss_bytes`` gauge every interval.
+
+    Runs forever until cancelled at shutdown.  Wrapped in ``_supervised_task``
+    by main(), so a psutil failure surfaces as a CRITICAL log + webhook
+    alert rather than vanishing silently.
+    """
+    import psutil
+
+    from services import metrics as _metrics
+
+    process = psutil.Process()
+    while True:
+        try:
+            rss = process.memory_info().rss
+            _metrics.process_memory_rss_bytes.set(rss)
+        except Exception as exc:
+            # Don't let one psutil hiccup take the supervised task down —
+            # log + keep sampling.  Persistent failure means RSS metric
+            # goes stale (visible in Grafana) before the next escalation.
+            logger.warning("process_memory_rss sampler skipped tick: %s", exc)
+        await asyncio.sleep(PROCESS_MEMORY_SAMPLE_INTERVAL)
+
+
 async def main() -> None:
     # PID guard moved here from module level so test imports don't trigger it.
     check_existing_instance()
@@ -462,11 +565,64 @@ async def main() -> None:
             from healthserver import start_health_server
 
             # Track app-owned tasks so shutdown only cancels OUR tasks,
-            # not discord.py-internal ones (OPS-001 fix).
-            _APP_TASKS.append(
-                asyncio.create_task(start_health_server(bot), name="health_server"),
+            # not discord.py-internal ones (OPS-001 fix).  Health server
+            # is supervised + gated on bind-ready (Phase S2.4 / O-2b):
+            # if the bind fails, the bot aborts startup instead of
+            # silently running with a wedged orchestration probe.
+            health_ready = asyncio.Event()
+            health_task = _supervised_task(
+                start_health_server(bot, ready_event=health_ready),
+                name="health_server",
             )
+            _APP_TASKS.append(health_task)
+
+            # Wait for either the bind to succeed (ready_event set) or
+            # the supervised task to die.  5 s is generous — bind is a
+            # local syscall that completes in < 100 ms in the healthy
+            # case.  Whichever signal fires first wins.
+            done, _pending = await asyncio.wait(
+                {
+                    asyncio.create_task(health_ready.wait()),
+                    health_task,
+                },
+                timeout=5.0,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if health_task in done and health_task.exception() is not None:
+                bind_err = health_task.exception()
+                logger.critical(
+                    "Health server bind failed — aborting startup: %s",
+                    bind_err,
+                    exc_info=bind_err,
+                )
+                if reporter:
+                    try:
+                        await reporter.on_health_startup_failed(bind_err)
+                    except Exception as report_err:
+                        logger.debug(
+                            "Health webhook post skipped: %s",
+                            report_err,
+                        )
+                raise SystemExit(1)
+            if not health_ready.is_set():
+                logger.warning(
+                    "Health server did not signal bind-ready within 5s; "
+                    "continuing — probe traffic may be slow at first.",
+                )
+
             _APP_TASKS.append(session_gc.start())
+
+            # Phase S3.3 / O-4: sample process RSS every 60s so slow
+            # memory leaks surface in Prometheus before they OOM the
+            # container.  Supervised so a psutil failure logs critical
+            # + webhook-alerts rather than escaping silently.
+            _APP_TASKS.append(
+                _supervised_task(
+                    _sample_process_memory(),
+                    name="process_memory_sampler",
+                ),
+            )
+
             await _load_cogs()
 
             # Cross-check subsystem identity surfaces (C1 / INV-B):

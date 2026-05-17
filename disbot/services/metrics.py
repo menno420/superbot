@@ -154,3 +154,96 @@ identity_contract_findings_total = Counter(
     ["kind"],  # entry_point_missing_command | router_prefix_unknown |
     # view_subsystem_unknown | db_anchor_subsystem_unknown
 )
+
+# ---------------------------------------------------------------------------
+# F-1 guild_config cache (core/runtime/guild_config.py) — Phase S1.1
+# ---------------------------------------------------------------------------
+
+guild_config_cache_hits = Counter(
+    "guild_config_cache_hits_total",
+    "Guild-config cache hits, labelled by the typed-accessor key.",
+    ["key"],
+)
+
+guild_config_cache_misses = Counter(
+    "guild_config_cache_misses_total",
+    "Guild-config cache misses (loader invoked), labelled by key.",
+    ["key"],
+)
+
+guild_config_cache_invalidations = Counter(
+    "guild_config_cache_invalidations_total",
+    "Explicit guild-config invalidations from admin write paths or "
+    "guild_lifecycle teardown.  ``scope='guild'`` covers full-guild "
+    "version bumps; ``scope='key'`` covers single-key deletes.",
+    ["scope"],
+)
+
+guild_config_cache_size = Gauge(
+    "guild_config_cache_size",
+    "Current number of entries in the guild-config cache.",
+)
+
+# ---------------------------------------------------------------------------
+# F-2 scope_locks (core/runtime/scope_locks.py) — Phase S1.2
+# ---------------------------------------------------------------------------
+
+scope_locks_total = Gauge(
+    "scope_locks_total",
+    "Current number of tracked scope locks across all subsystem prefixes.",
+)
+
+scope_locks_wait_seconds = Histogram(
+    "scope_locks_wait_seconds",
+    "Time spent waiting to acquire a scope lock, labelled by subsystem prefix.",
+    ["prefix"],
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
+)
+
+scope_locks_idle_swept_total = Counter(
+    "scope_locks_idle_swept_total",
+    "Scope locks reclaimed by session_gc's idle sweep — non-zero indicates "
+    "cogs are missing explicit forget() calls on edge teardown paths.",
+)
+
+# ---------------------------------------------------------------------------
+# Latency histograms — Phase S3.1 / O-2
+# Three slot-bucketed histograms for the three hot-path timing surfaces:
+# commands, DB queries, and interaction handlers.  Buckets span 1 ms → 10 s
+# so they accommodate both fast cache hits and slow DB / Discord roundtrips.
+# ---------------------------------------------------------------------------
+
+command_latency_seconds = Histogram(
+    "command_latency_seconds",
+    "End-to-end command handler time (on_command → on_command_completion).",
+    ["cog", "command"],
+    buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0),
+)
+
+db_query_seconds = Histogram(
+    "db_query_seconds",
+    "Per-query database time, labelled by a low-cardinality query_name "
+    "of the form `<op>:<table>` (e.g. `select:xp`, `insert:guild_settings`).",
+    ["query_name"],
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0),
+)
+
+interaction_handler_seconds = Histogram(
+    "interaction_handler_seconds",
+    "Interaction callback total time, labelled by the custom_id prefix "
+    "(== subsystem identity per INV-B).",
+    ["prefix"],
+    buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
+)
+
+# ---------------------------------------------------------------------------
+# Process memory RSS — Phase S3.3 / O-4
+# Sampled every PROCESS_MEMORY_SAMPLE_INTERVAL seconds by a supervised
+# background task in bot1.main.  Catches slow memory leaks that would
+# escape every other alert path until OOM.
+# ---------------------------------------------------------------------------
+
+process_memory_rss_bytes = Gauge(
+    "process_memory_rss_bytes",
+    "Resident set size of the bot process in bytes, sampled periodically.",
+)

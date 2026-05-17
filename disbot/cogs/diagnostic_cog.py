@@ -526,11 +526,19 @@ class DiagnosticCog(commands.Cog):
     @commands.group(name="platform", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def platform_grp(self, ctx):
-        """Runtime introspection group. Usage: !platform <status|anchors|identity>."""
+        """Runtime introspection group.
+
+        Existing (R1):
+            !platform status      · !platform anchors · !platform identity
+
+        Added in Phase S2.5 / O-1, backed by ``services.diagnostics_service``:
+            !platform runtime     · !platform caches  · !platform locks [prefix]
+            !platform tasks       · !platform views   · !platform sessions [subsystem]
+        """
         await ctx.send(
-            "Usage: `!platform status` · `!platform anchors` · "
-            "`!platform identity [--fix]`",
-            delete_after=15,
+            "Usage: `!platform <status|anchors|identity|"
+            "runtime|caches|locks|tasks|views|sessions|slow>`",
+            delete_after=20,
         )
 
     @platform_grp.command(name="status")  # type: ignore[arg-type]
@@ -683,6 +691,221 @@ class DiagnosticCog(commands.Cog):
                 inline=False,
             )
         await ctx.send(embed=embed)
+
+    # ────────────────────────────────────────────────────────────────
+    # !platform — Phase S2.5 / O-1: diagnostics_service-backed commands
+    # ────────────────────────────────────────────────────────────────
+
+    @platform_grp.command(name="runtime")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_runtime(self, ctx):
+        """High-level runtime snapshot: every registered diagnostic provider."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot_all()
+        embed = discord.Embed(
+            title="🛰 Runtime snapshot",
+            description=f"{len(snap)} provider(s) registered.",
+            color=discord.Color.blurple(),
+        )
+        for name in sorted(snap):
+            embed.add_field(
+                name=name,
+                value=_fmt_snapshot_value(snap[name]),
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="caches")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_caches(self, ctx):
+        """Cache state: F-1 guild_config + governance.cache."""
+        from services import diagnostics_service
+
+        embed = discord.Embed(
+            title="🧠 Cache snapshot",
+            color=discord.Color.blurple(),
+        )
+        for name in ("guild_config", "governance_cache"):
+            try:
+                snap = diagnostics_service.snapshot(name)
+            except KeyError:
+                snap = {"_error": "provider not registered"}
+            embed.add_field(
+                name=name,
+                value=_fmt_snapshot_value(snap),
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="locks")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_locks(self, ctx, prefix: str = ""):
+        """scope_locks snapshot; pass a prefix to filter (e.g. `counting`)."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot("scope_locks")
+        by_prefix = dict(snap.get("by_prefix", {}))
+        if prefix:
+            by_prefix = {k: v for k, v in by_prefix.items() if k == prefix}
+        embed = discord.Embed(
+            title="🔒 Scope locks",
+            description=(
+                f"total: **{snap.get('total', 0)}**  ·  "
+                f"held: **{snap.get('held', 0)}**"
+                + (f"  ·  filter: `{prefix}`" if prefix else "")
+            ),
+            color=discord.Color.blurple(),
+        )
+        if by_prefix:
+            lines = [f"`{k}` — {v}" for k, v in sorted(by_prefix.items())]
+            embed.add_field(
+                name="By prefix",
+                value="\n".join(lines)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(
+                name="By prefix",
+                value="*(no locks matching filter)*" if prefix else "*(none)*",
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="tasks")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_tasks(self, ctx):
+        """Managed background-task snapshot (core.runtime.tasks)."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot("tasks")
+        names = list(snap.get("names", []))
+        embed = discord.Embed(
+            title="🔁 Managed tasks",
+            description=f"{snap.get('active_count', 0)} active",
+            color=discord.Color.blurple(),
+        )
+        if names:
+            embed.add_field(
+                name="Names",
+                value="\n".join(f"`{n}`" for n in names)[:1024],
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="views")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_views(self, ctx):
+        """Registered PersistentView classes (by subsystem)."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot("persistent_views")
+        subsystems = list(snap.get("subsystems", []))
+        embed = discord.Embed(
+            title="🖼 Persistent views",
+            description=f"{snap.get('registered_count', 0)} registered",
+            color=discord.Color.blurple(),
+        )
+        if subsystems:
+            embed.add_field(
+                name="Subsystems",
+                value=", ".join(f"`{s}`" for s in subsystems)[:1024],
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="slow")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_slow(self, ctx, limit: int = 10):
+        """Show the most recent slow-path entries (S3.2 ring buffer)."""
+        from core.runtime import slow_path_log
+
+        entries = slow_path_log.snapshot()
+        limit = max(1, min(limit, 25))  # Discord field-count guard
+        recent = entries[-limit:]
+        embed = discord.Embed(
+            title="🐢 Slow path log",
+            description=(
+                f"**{len(entries)}** entries  ·  threshold: "
+                f"`{slow_path_log.threshold_ms():.0f}ms`  ·  "
+                f"capacity: `{slow_path_log.capacity()}`"
+            ),
+            color=discord.Color.blurple(),
+        )
+        if not recent:
+            embed.add_field(
+                name="No slow paths recorded",
+                value=f"All observations under {slow_path_log.threshold_ms():.0f}ms.",
+                inline=False,
+            )
+        else:
+            embed.set_footer(text=f"Showing the {len(recent)} most recent.")
+            for entry in reversed(recent):  # most recent first
+                age_s = max(0.0, datetime.datetime.now().timestamp() - entry.timestamp)
+                embed.add_field(
+                    name=f"{entry.kind}: {entry.name}",
+                    value=f"**{entry.duration_ms:.0f}ms**  ·  {age_s:.0f}s ago",
+                    inline=False,
+                )
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="sessions")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_sessions(self, ctx, subsystem: str = ""):
+        """Active session counts (DB-backed); optionally filtered by subsystem."""
+        try:
+            if subsystem:
+                rows = await db.fetchall(
+                    "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
+                    "WHERE subsystem=$1 GROUP BY subsystem",
+                    (subsystem,),
+                )
+            else:
+                rows = await db.fetchall(
+                    "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
+                    "GROUP BY subsystem ORDER BY n DESC",
+                    (),
+                )
+        except Exception as exc:
+            await ctx.send(f"❌ DB query failed: {exc}", delete_after=15)
+            return
+        embed = discord.Embed(
+            title="🎫 Active sessions",
+            description=(f"filter: `{subsystem}`" if subsystem else "all subsystems"),
+            color=discord.Color.blurple(),
+        )
+        if rows:
+            lines = [f"`{r['subsystem']}` — {r['n']}" for r in rows]
+            embed.add_field(
+                name="By subsystem",
+                value="\n".join(lines)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+        await ctx.send(embed=embed)
+
+
+def _fmt_snapshot_value(value: object) -> str:
+    """Format a diagnostics provider's snapshot for embed display."""
+    if isinstance(value, dict):
+        if not value:
+            return "*(empty)*"
+        lines = []
+        for k, v in value.items():
+            if isinstance(v, (list, tuple)):
+                v_str = ", ".join(map(str, v[:8]))
+                if len(v) > 8:
+                    v_str += f", … (+{len(v) - 8} more)"
+                lines.append(f"**{k}**: {v_str or '*(none)*'}")
+            elif isinstance(v, dict):
+                lines.append(
+                    f"**{k}**: " + ", ".join(f"{kk}={vv}" for kk, vv in v.items()),
+                )
+            else:
+                lines.append(f"**{k}**: {v}")
+        return "\n".join(lines)[:1024]
+    return str(value)[:1024]
 
 
 async def setup(bot):

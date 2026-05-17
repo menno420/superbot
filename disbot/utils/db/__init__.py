@@ -49,10 +49,6 @@ from utils.db.anchors import (
     mark_panel_anchor_stale,
     upsert_panel_anchor,
 )
-
-# Legacy decode shim — exposed under its old private name for tests
-# and the (rare) imports that referenced it directly.
-from utils.db.codec import maybe_decode_legacy as _maybe_decode_legacy  # noqa: F401
 from utils.db.economy import (
     add_coins,
     claim_daily_if_ready,

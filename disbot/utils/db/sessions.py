@@ -240,11 +240,3 @@ async def count_active_sessions() -> int:
     """Return the current number of runtime sessions in the DB."""
     row = await pool.get().fetchrow("SELECT COUNT(*) AS n FROM runtime_sessions")
     return int(row["n"]) if row else 0
-
-
-# ---------------------------------------------------------------------------
-# Back-compat private alias — older code imported `db._maybe_decode_legacy`
-# directly. Re-export so the symbol stays reachable until S6 retires it.
-# ---------------------------------------------------------------------------
-
-_maybe_decode_legacy = maybe_decode_legacy

@@ -25,7 +25,7 @@ import asyncio
 import logging
 import time
 
-from core.runtime import navigation_stack
+from core.runtime import navigation_stack, scope_locks
 from services import economy_service, game_state_service
 from services import metrics as _metrics
 from utils import db
@@ -50,6 +50,10 @@ async def _run_gc_loop() -> None:
                 navigation_stack.forget(sid)
             anchors_removed = await db.delete_stale_panel_anchors()
             game_state_removed, game_state_refunded = await _sweep_stale_game_state()
+            # F-2 / S1.2: safety-net reclamation of scope_locks that
+            # cogs missed forget()-ing on edge teardown paths.  Held
+            # locks are never reclaimed.
+            scope_locks_swept = scope_locks.sweep_idle()
             active_count = await db.count_active_sessions()
             _metrics.session_active_count.set(active_count)
             if (
@@ -57,14 +61,17 @@ async def _run_gc_loop() -> None:
                 or anchors_removed
                 or game_state_removed
                 or game_state_refunded
+                or scope_locks_swept
             ):
                 logger.info(
                     "GC sweep complete — %d session(s), %d anchor(s), "
-                    "%d game_state row(s) removed (%d refund(s))",
+                    "%d game_state row(s) removed (%d refund(s)), "
+                    "%d scope_lock(s) idle-swept",
                     len(expired_ids),
                     anchors_removed,
                     game_state_removed,
                     game_state_refunded,
+                    scope_locks_swept,
                 )
         except asyncio.CancelledError:
             raise

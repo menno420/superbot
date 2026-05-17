@@ -351,16 +351,17 @@ future work in Phase T).
 
 ---
 
-## 12. Identity contract — STRICT mode promotion
+## 12. Identity contract — STRICT mode (default-on as of S5.1)
 
 `utils.subsystem_registry.validate_identity_contract` runs at every
 startup and surfaces drift between the five identity surfaces (see §1).
-Two enforcement modes coexist:
+Two enforcement modes coexist; **STRICT is the default as of Phase S5.1**
+(previously opt-in via `IDENTITY_CONTRACT_STRICT=true`).
 
 | Mode | Trigger | Behaviour on fatal-tier finding |
 |---|---|---|
-| **Advisory** (default) | `IDENTITY_CONTRACT_STRICT` unset or falsy | Logs the structured summary at WARNING, increments `identity_contract_findings_total{kind}`, posts a Discord webhook embed via `WebhookReporter.on_identity_findings`, startup continues. |
-| **STRICT** | `IDENTITY_CONTRACT_STRICT=true` (or `1`/`yes`/`on`) | Everything Advisory does, plus `SystemExit(1)` after the webhook fires.  Bot refuses to start on drift. |
+| **STRICT** (default) | both opt-out env vars unset | Logs the structured summary at WARNING, increments `identity_contract_findings_total{kind}`, posts a Discord webhook embed via `WebhookReporter.on_identity_findings`, AND raises `SystemExit(1)`.  Bot refuses to start on drift. |
+| **Advisory** (opt-out) | `STRICT_DISABLED=1` (or `true`/`yes`/`on`) — canonical S5.1 escape hatch; OR `IDENTITY_CONTRACT_STRICT=false` — legacy pre-S5.1 opt-out, still honored | Everything STRICT does *except* the SystemExit.  Bot starts anyway; drift is visible in logs / metrics / `!platform identity`. |
 
 ### Tier classification
 
@@ -377,7 +378,12 @@ Source of truth: `IDENTITY_FINDING_TIER` in
 test_tier_map_covers_every_finding_bucket` fails CI if a new bucket
 is added without a classification.
 
-### Production-promotion runbook
+### Pre-S5.1 promotion runbook (historical)
+
+Before S5.1 the promotion was an explicit `IDENTITY_CONTRACT_STRICT=true`
+opt-in.  S5.1 flipped the default — every new deploy is STRICT unless
+opted out.  The old runbook is preserved here for reference and for
+operators rolling forward from a stale env config:
 
 1. **Verify clean state.** SSH or `!platform identity`; expected
    output: ``All four identity surfaces agree.`` (the all-green
@@ -389,14 +395,15 @@ is added without a classification.
    not touch them.
 3. **Re-verify clean state.** Re-run `!platform identity`; expected
    output: clean.
-4. **Set the env var.** On the host, export
-   `IDENTITY_CONTRACT_STRICT=true` (or set it in the platform's
-   environment configuration — Render dashboard, Railway env, etc.).
+4. **(S5.1+: no longer needed)** Previously: export
+   `IDENTITY_CONTRACT_STRICT=true`.  Now STRICT is the default — no
+   env var needed.  Operators who still set this var will see no
+   behaviour change (it's redundant under the new default).
 5. **Roll the deploy.** Startup will refuse the launch if any
    fatal-tier finding reappears; the webhook embed names the
    offending surface so operators can roll back or fix forward.
 
-### Failure modes once STRICT is on
+### Failure modes under STRICT
 
 - **Cog fails to load** → `entry_point_missing_command` → STRICT
   aborts startup.  Recovery: revert the deploy or fix the cog and
@@ -406,8 +413,17 @@ is added without a classification.
   NOT abort (this is `auto_healable`-tier, not `fatal`).  Run
   `!platform identity --fix` from any admin channel.
 
-### Backing out
+### Emergency escape hatch (S5.1)
 
-Setting `IDENTITY_CONTRACT_STRICT=false` (or unset) and redeploying
-restores Advisory mode.  No data migration required — the env var is
-the only switch.
+If a fatal-tier finding is blocking a deploy AND you cannot fix
+forward in the window required by your SLA:
+
+1. Set `STRICT_DISABLED=1` in the host environment.
+2. Redeploy.  Startup completes in Advisory mode; the bot is back up.
+3. **Drop the env var as soon as the underlying drift is fixed** —
+   leaving Advisory mode latent re-opens the silent-drift window
+   STRICT was promoted to close.
+
+The legacy `IDENTITY_CONTRACT_STRICT=false` opt-out also still works
+for operators rolling forward from a pre-S5.1 env config.  Both
+opt-outs produce identical Advisory-mode behaviour.

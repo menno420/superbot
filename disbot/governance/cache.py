@@ -126,3 +126,23 @@ def register_failed_subsystems(subsystems: set[str]) -> None:
     responses — preventing "command not found" confusion after partial boot.
     """
     _FAILED_SUBSYSTEMS.update(subsystems)
+
+
+# ---------------------------------------------------------------------------
+# Diagnostics registration — Phase S1.3
+# ---------------------------------------------------------------------------
+
+from services import diagnostics_service as _diag  # noqa: E402
+
+
+def _diagnostics_snapshot() -> dict[str, object]:
+    """Snapshot of governance cache state for ``!platform caches``."""
+    return {
+        "size": len(_CACHE),
+        "guilds_versioned": len(_CACHE_VERSION),
+        "guilds_with_role_overrides": sum(_guild_has_role_overrides.values()),
+        "failed_subsystems": sorted(_FAILED_SUBSYSTEMS),
+    }
+
+
+_diag.register("governance_cache", _diagnostics_snapshot)

@@ -80,9 +80,11 @@ def test_persistent_view_button_handlers_check_guild_id():
 
 
 def test_build_modal_guards_dm():
-    from cogs import mining_cog
+    # S4.1 — _BuildModal was extracted from cogs.mining_cog to
+    # views.mining.main_panel as part of the cog decomposition.
+    from views.mining import main_panel
 
-    src = inspect.getsource(mining_cog._BuildModal)
+    src = inspect.getsource(main_panel._BuildModal)
     assert "interaction.guild_id is None" in src, (
         "_BuildModal.on_submit must guard against DM invocations — "
         "the modal can fire after a button click in any context."

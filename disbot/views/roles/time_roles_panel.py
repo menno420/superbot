@@ -5,6 +5,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer
 from utils import db
+from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.roles._helpers import _DEFAULT_THRESHOLDS, _find_role_normalized
@@ -164,6 +165,10 @@ class _TimeRemoveSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         await db.remove_role_threshold(interaction.guild.id, self.values[0])
+        # remove_role_threshold deletes the whole row including any
+        # level_required/xp_auto_assign columns, so the cached XP-role
+        # list must drop too even though this panel is "time roles".
+        invalidate_xp_threshold_roles(interaction.guild.id)
         await interaction.response.send_message(
             f"✅ Removed **{self.values[0]}** from auto-assignment.",
             ephemeral=True,

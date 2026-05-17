@@ -15,6 +15,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer
+from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import SUCCESS_COLOR
 from views.base import BaseView
@@ -174,9 +175,15 @@ class _CreateSubView(BaseView):
             ),
             color=SUCCESS_COLOR,
         )
-        try:
-            await self.manager_message.edit(embed=embed, view=self)
-        except Exception:
+        # Result embed lives on the same parent message; recovery utility
+        # falls back to sending a fresh message if the parent is gone.
+        success_anchor = await restore_parent_or_send_fresh(
+            parent_message=self.manager_message,
+            channel=interaction.channel,
+            embed=embed,
+            view=self,
+        )
+        if success_anchor is None:
             await interaction.followup.send(
                 f"✅ Channel {ch.mention} created!"
                 + (f" in **{self.chosen_cat}**" if self.chosen_cat else ""),
@@ -190,11 +197,17 @@ class _CreateSubView(BaseView):
         from views.channels.main_panel import _ChannelManagerView
 
         manager = _ChannelManagerView(self.ctx)
-        manager.message = self.manager_message
-        try:
-            await self.manager_message.edit(embed=manager.build_embed(), view=manager)
-        except Exception:
-            pass
+        # Track whichever message currently hosts our success embed —
+        # could be the original parent or the fresh fallback.
+        restore_target = success_anchor or self.manager_message
+        restored = await restore_parent_or_send_fresh(
+            parent_message=restore_target,
+            channel=interaction.channel,
+            embed=manager.build_embed(),
+            view=manager,
+        )
+        if restored is not None:
+            manager.message = restored
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, emoji="❌", row=2)
     async def cancel_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
@@ -287,7 +300,11 @@ class _CustomNameModal(discord.ui.Modal, title="Custom Channel Name"):  # type: 
         if not await safe_defer(interaction):
             return
         if self._view.manager_message:
-            await self._view.manager_message.edit(
+            # Use the recovery helper so a deleted parent doesn't leave
+            # the user with an updated chosen_name they can't see.
+            await restore_parent_or_send_fresh(
+                parent_message=self._view.manager_message,
+                channel=interaction.channel,
                 embed=self._view.build_embed(),
                 view=self._view,
             )

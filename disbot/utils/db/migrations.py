@@ -32,11 +32,13 @@ _MIGRATION_ADVISORY_LOCK = 0x73757065_72626F74
 
 
 async def ensure_migrations_table() -> None:
-    await pool.get().execute("""CREATE TABLE IF NOT EXISTS schema_migrations (
+    await pool.get().execute(
+        """CREATE TABLE IF NOT EXISTS schema_migrations (
             version     INTEGER PRIMARY KEY,
             applied_at  BIGINT  NOT NULL,
             description TEXT    NOT NULL
-        )""")
+        )""",
+    )
 
 
 async def run_migrations() -> None:
