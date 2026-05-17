@@ -211,12 +211,18 @@ async def test_resetxp_command_calls_xp_service_reset():
 
 
 @pytest.mark.asyncio
-async def test_on_message_routes_through_xp_service():
-    """The on_message hot path must call xp_service.award (PR-4)."""
-    from cogs.xp_cog import XpCog
+async def test_handle_message_routes_through_xp_service():
+    """The XP listener hot path must call xp_service.award (PR-4).
+
+    Post-§3.2 the cog's on_message no longer exists — the platform-level
+    message_pipeline orchestrator invokes XpStage.process, which calls
+    handle_message.  This test exercises handle_message directly, which
+    is what the stage wraps.
+    """
+    from cogs.xp.listener import handle_message
     from utils.guild_config_accessors import XpConfig
 
-    cog = XpCog(bot=MagicMock())
+    bot = MagicMock()
 
     message = MagicMock()
     message.author = MagicMock()
@@ -253,7 +259,7 @@ async def test_on_message_routes_through_xp_service():
             return_value=award_result,
         ) as award,
     ):
-        await cog.on_message(message)
+        await handle_message(bot, message)
 
     award.assert_awaited_once()
     call = award.await_args

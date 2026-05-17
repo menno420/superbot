@@ -236,6 +236,15 @@ interaction_handler_seconds = Histogram(
     buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
 )
 
+message_pipeline_stage_seconds = Histogram(
+    "message_pipeline_stage_seconds",
+    "Per-stage process() time inside the core/runtime/message_pipeline "
+    "orchestrator (§3.2).  One observation per (stage, message) pair "
+    "regardless of stage outcome.",
+    ["stage"],
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0),
+)
+
 # ---------------------------------------------------------------------------
 # Process memory RSS — Phase S3.3 / O-4
 # Sampled every PROCESS_MEMORY_SAMPLE_INTERVAL seconds by a supervised

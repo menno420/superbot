@@ -555,8 +555,10 @@ async def main() -> None:
 
     await db.init()
     from core import runtime
+    from core.runtime import message_pipeline
 
     await runtime.setup()
+    message_pipeline.setup(bot)
     if reporter:
         await reporter.start()
     try:
