@@ -25,6 +25,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+from typing import cast
 
 import discord
 from discord.ext import commands
@@ -68,24 +69,9 @@ from services import (  # noqa: F401 — game_state_service kept for back-compat
     game_state_service,
 )
 from utils import db as global_db
-from utils.channels import (  # noqa: F401 — re-exported for back-compat
-    create_private_channel,
-)
 from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.ui_constants import GAME_COLOR, INFO_COLOR
-
-# Re-exports of view classes that historically lived in this file (D4).
-from views.rps import (  # noqa: F401 — re-exported for back-compat
-    _FREE_WIN,
-    _RPS_EMOJI,
-    _RPS_WINS,
-    _rps_pvp_pending,
-    _RpsMovePickerView,
-    _RpsPvpChallengeView,
-    _RpsPvpPlayView,
-    _RpsRegistrationView,
-    _RpsView,
-)
+from views.rps import _RpsRegistrationView
 
 logger = logging.getLogger("bot")
 
@@ -93,7 +79,7 @@ logger = logging.getLogger("bot")
 class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # type: ignore[call-arg]
     """Cog for managing Rock-Paper-Scissors tournaments with multiple game modes."""
 
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
         self.tournament_active = False
         self.registration_active = False
@@ -101,17 +87,16 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.registration_emoji = "✅"
         self.registration_timer = 600  # 10 minutes in seconds
         self.reminder_interval = 300  # 5 minutes in seconds
-        self.players = []
-        self.scores = {}
-        self.matches = {}
-        self.current_round = []
-        self.match_channels = {}
+        self.players: list[discord.Member] = []
+        self.scores: dict[discord.Member, int] = {}
+        self.matches: dict[discord.Member, dict] = {}
+        self.current_round: list[discord.Member] = []
+        self.match_channels: dict[int, list[discord.Member]] = {}
         self.game_mode = "classic"
         # Pure rules tables live in cogs/rps_tournament/rules.py (S4.4).
         # Held as attributes so any historical introspection still works.
         self.move_aliases = MOVE_ALIASES
         self.game_modes = GAME_MODES
-        self.results = {}
         self.inactivity_limit = 300  # 5 minutes inactivity limit
         self.reminder_task = None
         self.registration_role = None  # Role to mention in reminders
@@ -120,7 +105,12 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         # unload to preserve the pre-extraction "reload wipes state"
         # semantics.
         _reset_bot_match_state()
-        self.settings = {"default_mode": "classic", "default_best_of": 3}
+        # settings is mixed (str default_mode, int default_best_of) — the
+        # union annotation + two casts at the read sites narrow for mypy.
+        self.settings: dict[str, str | int] = {
+            "default_mode": "classic",
+            "default_best_of": 3,
+        }
         self.entry_fee = 0
         self.paid_players: set[int] = set()  # players who paid the entry fee
 
@@ -240,15 +230,16 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         embed.add_field(name="Entry Fee", value=fee_str, inline=True)
         embed.add_field(
             name="Game Mode",
-            value=self.settings["default_mode"].capitalize(),
+            value=cast(str, self.settings["default_mode"]).capitalize(),
             inline=True,
         )
         if role:
             embed.add_field(name="Attention", value=f"{role.mention}", inline=False)
 
         reg_view = _RpsRegistrationView(self)
-        self.registration_message = await ctx.send(embed=embed, view=reg_view)
-        await self.registration_message.add_reaction(self.registration_emoji)
+        reg_msg = await ctx.send(embed=embed, view=reg_view)
+        self.registration_message = reg_msg
+        await reg_msg.add_reaction(self.registration_emoji)
 
         # Start the registration timer
         self.reminder_task = tasks.spawn(
@@ -289,6 +280,10 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         if self.reminder_task and not self.reminder_task.done():
             self.reminder_task.cancel()
             self.reminder_task = None
+
+        if self.registration_message is None:
+            # rps_register always sets this — defensive narrow for mypy.
+            return
 
         await ctx.send("Registration period has ended. Collecting participants...")
 
@@ -377,7 +372,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             return
 
         if best_of is None:
-            best_of = self.settings["default_best_of"]
+            best_of = cast(int, self.settings["default_best_of"])
         if best_of % 2 == 0 or best_of < 1:
             await ctx.send(
                 "Please provide an odd positive integer for the number of rounds.",
@@ -527,7 +522,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         if user.bot:
             return
 
-        if not self.registration_active:
+        if not self.registration_active or self.registration_message is None:
             return
 
         if reaction.message.id != self.registration_message.id:

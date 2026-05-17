@@ -16,7 +16,7 @@ logger = logging.getLogger("bot.cogs.proof_channel")
 
 
 class ProofChannelCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
         # track timed prize tasks so they can be cancelled if needed
         self._timed_tasks: dict[int, asyncio.Task] = {}

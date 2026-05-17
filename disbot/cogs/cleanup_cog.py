@@ -30,7 +30,7 @@ def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
 
 
 class Cleanup(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
         self.logger = logging.getLogger(__name__)
 
