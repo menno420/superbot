@@ -13,6 +13,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 from views.channels._helpers import _ChannelSelect
@@ -139,11 +140,14 @@ class _RestrictSubView(BaseView):
         from views.channels.main_panel import _ChannelManagerView
 
         manager = _ChannelManagerView(self.ctx)
-        manager.message = self.manager_message
-        try:
-            await self.manager_message.edit(embed=manager.build_embed(), view=manager)
-        except Exception:
-            pass
+        restored = await restore_parent_or_send_fresh(
+            parent_message=self.manager_message,
+            channel=interaction.channel,
+            embed=manager.build_embed(),
+            view=manager,
+        )
+        if restored is not None:
+            manager.message = restored
 
     @discord.ui.button(label="Lock", style=discord.ButtonStyle.red, emoji="🔒", row=1)
     async def lock_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
