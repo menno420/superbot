@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands, tasks
 
-from core.runtime import panel_manager
+from core.runtime import panel_manager, resources
 from core.runtime.component_registry import stats_block
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
@@ -481,7 +481,7 @@ class RoleCog(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
             return
-        member = guild.get_member(payload.user_id)
+        member = resources.resolve_member(guild, payload.user_id)
         if not member or member.bot:
             return
         role_id = await db.get_reaction_role(
@@ -490,7 +490,7 @@ class RoleCog(commands.Cog):
             str(payload.emoji),
         )
         if role_id:
-            role = guild.get_role(role_id)
+            role = resources.resolve_role(guild, role_id=role_id)
             if role:
                 try:
                     await member.add_roles(role, reason="Reaction role")
@@ -505,7 +505,7 @@ class RoleCog(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
             return
-        member = guild.get_member(payload.user_id)
+        member = resources.resolve_member(guild, payload.user_id)
         if not member or member.bot:
             return
         role_id = await db.get_reaction_role(
@@ -514,7 +514,7 @@ class RoleCog(commands.Cog):
             str(payload.emoji),
         )
         if role_id:
-            role = guild.get_role(role_id)
+            role = resources.resolve_role(guild, role_id=role_id)
             if role:
                 try:
                     await member.remove_roles(role, reason="Reaction role removed")
@@ -578,7 +578,7 @@ class RoleCog(commands.Cog):
             return
         lines = []
         for r in rows:
-            role = ctx.guild.get_role(r["role_id"])
+            role = resources.resolve_role(ctx.guild, role_id=r["role_id"])
             role_str = role.mention if role else f"<deleted role {r['role_id']}>"
             lines.append(f"Message `{r['message_id']}` · {r['emoji']} → {role_str}")
         embed = discord.Embed(
