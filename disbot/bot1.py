@@ -499,6 +499,37 @@ async def _load_cogs() -> None:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Process memory sampler — Phase S3.3 / O-4
+# ---------------------------------------------------------------------------
+
+PROCESS_MEMORY_SAMPLE_INTERVAL: int = 60  # seconds between RSS samples
+
+
+async def _sample_process_memory() -> None:
+    """Update the ``process_memory_rss_bytes`` gauge every interval.
+
+    Runs forever until cancelled at shutdown.  Wrapped in ``_supervised_task``
+    by main(), so a psutil failure surfaces as a CRITICAL log + webhook
+    alert rather than vanishing silently.
+    """
+    import psutil
+
+    from services import metrics as _metrics
+
+    process = psutil.Process()
+    while True:
+        try:
+            rss = process.memory_info().rss
+            _metrics.process_memory_rss_bytes.set(rss)
+        except Exception as exc:
+            # Don't let one psutil hiccup take the supervised task down —
+            # log + keep sampling.  Persistent failure means RSS metric
+            # goes stale (visible in Grafana) before the next escalation.
+            logger.warning("process_memory_rss sampler skipped tick: %s", exc)
+        await asyncio.sleep(PROCESS_MEMORY_SAMPLE_INTERVAL)
+
+
 async def main() -> None:
     # PID guard moved here from module level so test imports don't trigger it.
     check_existing_instance()
@@ -571,6 +602,18 @@ async def main() -> None:
                 )
 
             _APP_TASKS.append(session_gc.start())
+
+            # Phase S3.3 / O-4: sample process RSS every 60s so slow
+            # memory leaks surface in Prometheus before they OOM the
+            # container.  Supervised so a psutil failure logs critical
+            # + webhook-alerts rather than escaping silently.
+            _APP_TASKS.append(
+                _supervised_task(
+                    _sample_process_memory(),
+                    name="process_memory_sampler",
+                ),
+            )
+
             await _load_cogs()
 
             # Cross-check subsystem identity surfaces (C1 / INV-B):

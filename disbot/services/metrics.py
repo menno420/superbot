@@ -235,3 +235,15 @@ interaction_handler_seconds = Histogram(
     ["prefix"],
     buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
 )
+
+# ---------------------------------------------------------------------------
+# Process memory RSS — Phase S3.3 / O-4
+# Sampled every PROCESS_MEMORY_SAMPLE_INTERVAL seconds by a supervised
+# background task in bot1.main.  Catches slow memory leaks that would
+# escape every other alert path until OOM.
+# ---------------------------------------------------------------------------
+
+process_memory_rss_bytes = Gauge(
+    "process_memory_rss_bytes",
+    "Resident set size of the bot process in bytes, sampled periodically.",
+)
