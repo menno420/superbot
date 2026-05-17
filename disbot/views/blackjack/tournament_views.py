@@ -129,7 +129,7 @@ class _TournBlackjackView(discord.ui.View):
         self.ps.chips = max(0, self.ps.chips - TOURN_BET_PER_ROUND)
         self.ps.rounds_left -= 1
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         try:
             await self.message.edit(content="⏰ Timed out — hand forfeited.", view=self)
         except Exception:

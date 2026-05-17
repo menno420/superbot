@@ -45,7 +45,7 @@ class _ShopView(discord.ui.View):
 
     async def on_timeout(self):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         try:
             if self.message:
                 await self.message.edit(view=self)
@@ -149,7 +149,7 @@ class _ShopSubView(discord.ui.View):
 
     async def on_timeout(self):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         if self.message:
             try:
                 await self.message.edit(view=self)

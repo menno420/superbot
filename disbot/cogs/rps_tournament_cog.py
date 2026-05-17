@@ -99,7 +99,8 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.game_modes = GAME_MODES
         self.inactivity_limit = 300  # 5 minutes inactivity limit
         self.reminder_task = None
-        self.registration_role = None  # Role to mention in reminders
+        # Role to mention in reminders.
+        self.registration_role: discord.Role | None = None
         # Bot-match state lives at module level in
         # ``cogs/rps_tournament/_bot_matches.py``; reset on cog init/
         # unload to preserve the pre-extraction "reload wipes state"

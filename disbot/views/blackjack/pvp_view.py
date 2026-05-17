@@ -73,7 +73,7 @@ class _ChallengeView(discord.ui.View):
 
     async def on_timeout(self):
         for item in self.children:
-            item.disabled = True
+            item.disabled = True  # type: ignore[attr-defined]
         try:
             await self.message.edit(content="⏰ Challenge timed out.", view=self)
         except Exception:
