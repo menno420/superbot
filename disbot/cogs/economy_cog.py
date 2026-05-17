@@ -31,7 +31,7 @@ from cogs.economy._helpers import (
     _pick_daily,
     _shop_embed,
 )
-from core.runtime import panel_manager
+from core.runtime import panel_manager, resources
 from services import economy_service
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
@@ -86,22 +86,20 @@ class EconomyCog(commands.Cog):
 
     async def _ensure_log_channel(self, guild: discord.Guild) -> None:
         """Create #economy-log for *guild* if it doesn't already exist."""
-        cid = await db.get_setting(guild.id, ECONOMY_LOG_CHANNEL, "")
-        if cid:
-            ch = guild.get_channel(int(cid))
-            if ch:
-                return
+        if await resources.resolve_settings_channel(guild, ECONOMY_LOG_CHANNEL):
+            return
 
-        existing = discord.utils.get(guild.text_channels, name="economy-log")
+        existing = resources.resolve_channel(guild, name="economy-log")
         if existing:
             await db.set_setting(guild.id, ECONOMY_LOG_CHANNEL, str(existing.id))
             return
 
         try:
-            cat = discord.utils.get(guild.categories, name="Bot") or discord.utils.get(
-                guild.categories,
-                name="General",
-            )
+            cat = resources.resolve_channel(
+                guild,
+                name="Bot",
+                kind="category",
+            ) or resources.resolve_channel(guild, name="General", kind="category")
             overwrites = {
                 guild.default_role: discord.PermissionOverwrite(
                     read_messages=True,
