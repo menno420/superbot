@@ -55,11 +55,17 @@ def _xp_settings_replies(get_setting: AsyncMock, *, min_=15, max_=25, cd=60, ann
 
 
 @pytest.mark.asyncio
-async def test_on_message_calls_db_get_setting_at_most_once_per_guild_over_a_window():
-    """Five rapid messages from the same guild → one cache fill, then hits."""
-    from cogs.xp_cog import XpCog
+async def test_handle_message_calls_db_get_setting_at_most_once_per_guild_over_a_window():
+    """Five rapid messages from the same guild → one cache fill, then hits.
 
-    cog = XpCog(bot=MagicMock())
+    Post-§3.2 the XP hot path is reached via the message_pipeline XpStage,
+    which is a thin wrapper over handle_message.  We exercise
+    handle_message directly here since the caching is a property of the
+    listener body, not the cog/stage wrapper.
+    """
+    from cogs.xp.listener import handle_message
+
+    bot = MagicMock()
     message = _make_message()
     db_row = {"last_xp": 0, "messages": 1}
 
@@ -75,7 +81,7 @@ async def test_on_message_calls_db_get_setting_at_most_once_per_guild_over_a_win
     ):
         _xp_settings_replies(get_setting)
         for _ in range(5):
-            await cog.on_message(message)
+            await handle_message(bot, message)
 
     # Cache fill reads each of 4 keys exactly once on the first message;
     # subsequent 4 messages all hit the cache → no further DB reads.
@@ -83,11 +89,11 @@ async def test_on_message_calls_db_get_setting_at_most_once_per_guild_over_a_win
 
 
 @pytest.mark.asyncio
-async def test_on_message_caches_per_guild_independently():
+async def test_handle_message_caches_per_guild_independently():
     """Two guilds → 8 DB reads (4 per guild), not 4 (no cross-guild collision)."""
-    from cogs.xp_cog import XpCog
+    from cogs.xp.listener import handle_message
 
-    cog = XpCog(bot=MagicMock())
+    bot = MagicMock()
     db_row = {"last_xp": 0, "messages": 1}
 
     with (
@@ -101,10 +107,10 @@ async def test_on_message_caches_per_guild_independently():
         patch("cogs.xp.listener.check_cooldown", return_value=(True, 0)),
     ):
         _xp_settings_replies(get_setting)
-        await cog.on_message(_make_message(guild_id=1))
-        await cog.on_message(_make_message(guild_id=2))
-        await cog.on_message(_make_message(guild_id=1))  # cached
-        await cog.on_message(_make_message(guild_id=2))  # cached
+        await handle_message(bot, _make_message(guild_id=1))
+        await handle_message(bot, _make_message(guild_id=2))
+        await handle_message(bot, _make_message(guild_id=1))  # cached
+        await handle_message(bot, _make_message(guild_id=2))  # cached
 
     assert get_setting.await_count == 8  # 4 per guild × 2 guilds
 

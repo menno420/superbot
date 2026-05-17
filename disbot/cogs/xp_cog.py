@@ -21,6 +21,18 @@ class XpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_load(self) -> None:
+        from cogs.xp.stage import XpStage
+        from core.runtime import message_pipeline
+
+        message_pipeline.register(XpStage())
+
+    async def cog_unload(self) -> None:
+        from cogs.xp.stage import XP_STAGE_NAME
+        from core.runtime import message_pipeline
+
+        message_pipeline.unregister(XP_STAGE_NAME)
+
     @commands.command(name="xpmenu")
     async def xp_menu(self, ctx: commands.Context):
         """Open the XP panel showing your rank and quick admin actions."""
@@ -36,15 +48,6 @@ class XpCog(commands.Cog):
         view = _XpHubView(help_ctx_shim(interaction))
         embed = await view.build_embed()
         return embed, view
-
-    # ------------------------------------------------------------------ events
-
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        # S4.2: handler body lives in cogs/xp/listener.py per F-3 convention.
-        from cogs.xp.listener import handle_message
-
-        await handle_message(self.bot, message)
 
     # ------------------------------------------------------------------ commands
 

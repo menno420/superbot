@@ -13,6 +13,8 @@ Public aliases:
     nav          — navigation_stack module
     surfaces     — ephemeral_surface_manager module
     scheduler    — live_update_scheduler module
+    pipeline     — message_pipeline module (§3.2 — single platform
+                   on_message orchestrator)
     tasks        — managed background-task helper (see CRIT-1 fix)
     interaction  — safe_defer / safe_followup / safe_edit (see CRIT-2 fix)
     guild_config — F-1 cached-config primitive (Phase S1.1) — use the
@@ -42,6 +44,7 @@ from core.runtime import interaction_helpers as interaction  # noqa: F401 — re
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported
 from core.runtime import live_update_scheduler as scheduler  # noqa: F401 — re-exported
 from core.runtime import message_anchor_manager as anchors  # noqa: F401 — re-exported
+from core.runtime import message_pipeline as pipeline  # noqa: F401 — re-exported
 from core.runtime import navigation_stack as nav  # noqa: F401 — re-exported
 from core.runtime import panel_manager as panels  # noqa: F401 — re-exported
 from core.runtime import session_gc as gc  # noqa: F401 — re-exported
