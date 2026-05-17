@@ -31,7 +31,8 @@ async def teardown(guild_id: int) -> None:
       4. Panel anchors          — delete all panel_anchors rows for the guild.
       5. Governance capability cache — clear per-guild execution overrides.
       6. Governance visibility cache — bump version, clear role-override flag.
-      7. Governance feedback cooldown — documented, no per-guild cleanup needed.
+      7. Guild-config cache      — drop cached guild config entries (F-1).
+      8. Governance feedback cooldown — documented, no per-guild cleanup needed.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -53,7 +54,10 @@ async def teardown(guild_id: int) -> None:
     # 6. Governance visibility cache — version bump + role flag removal.
     _teardown_visibility_cache(guild_id)
 
-    # 7. Governance feedback cooldown dict in governance/__init__.
+    # 7. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
+    _teardown_guild_config(guild_id)
+
+    # 8. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
@@ -159,6 +163,21 @@ def _teardown_visibility_cache(guild_id: int) -> None:
         forget_guild(guild_id)
     except Exception as exc:
         logger.warning("guild_lifecycle: visibility cache teardown failed: %s", exc)
+
+
+def _teardown_guild_config(guild_id: int) -> None:
+    """Clear F-1 guild-config cache entries for the departed guild.
+
+    Symmetric to ``_teardown_visibility_cache`` above — same lifetime,
+    same teardown discipline.  The primitive lives in
+    ``core/runtime/guild_config.py`` (Phase S1.1).
+    """
+    try:
+        from core.runtime.guild_config import forget_guild as _gc_forget
+
+        _gc_forget(guild_id)
+    except Exception as exc:
+        logger.warning("guild_lifecycle: guild_config teardown failed: %s", exc)
 
 
 def _teardown_feedback_cooldown(guild_id: int) -> None:

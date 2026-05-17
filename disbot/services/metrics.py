@@ -154,3 +154,32 @@ identity_contract_findings_total = Counter(
     ["kind"],  # entry_point_missing_command | router_prefix_unknown |
     # view_subsystem_unknown | db_anchor_subsystem_unknown
 )
+
+# ---------------------------------------------------------------------------
+# F-1 guild_config cache (core/runtime/guild_config.py) — Phase S1.1
+# ---------------------------------------------------------------------------
+
+guild_config_cache_hits = Counter(
+    "guild_config_cache_hits_total",
+    "Guild-config cache hits, labelled by the typed-accessor key.",
+    ["key"],
+)
+
+guild_config_cache_misses = Counter(
+    "guild_config_cache_misses_total",
+    "Guild-config cache misses (loader invoked), labelled by key.",
+    ["key"],
+)
+
+guild_config_cache_invalidations = Counter(
+    "guild_config_cache_invalidations_total",
+    "Explicit guild-config invalidations from admin write paths or "
+    "guild_lifecycle teardown.  ``scope='guild'`` covers full-guild "
+    "version bumps; ``scope='key'`` covers single-key deletes.",
+    ["scope"],
+)
+
+guild_config_cache_size = Gauge(
+    "guild_config_cache_size",
+    "Current number of entries in the guild-config cache.",
+)
