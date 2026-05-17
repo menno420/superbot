@@ -16,13 +16,13 @@ from core.runtime.interaction_helpers import safe_edit
 from utils import db
 from utils.settings_keys import XP_ANNOUNCE_CHANNEL
 from utils.ui_constants import UTILITY_COLOR
+from views.base import BaseView
 
 
-class XpConfigView(discord.ui.View):
+class XpConfigView(BaseView):
     def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=300)
+        super().__init__(ctx.author, timeout=300)
         self.ctx = ctx
-        self.message: discord.Message | None = None
 
     async def build_embed(self) -> discord.Embed:
         gid = self.ctx.guild.id
@@ -36,17 +36,6 @@ class XpConfigView(discord.ui.View):
         embed.add_field(name="Level-up channel", value=channel_str, inline=True)
         embed.set_footer(text="Click a button below to change a setting.")
         return embed
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message(
-                "This panel isn't for you.",
-                ephemeral=True,
-            )
-            return False
-        return True
-
-    _run_checks = interaction_check
 
     async def _refresh(self, interaction: discord.Interaction):  # type: ignore[override]
         await safe_edit(interaction, embed=await self.build_embed(), view=self)
@@ -80,11 +69,3 @@ class XpConfigView(discord.ui.View):
         from views.xp.modals import _XpChannelModal
 
         await interaction.response.send_modal(_XpChannelModal(self))
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        try:
-            await self.message.edit(view=self)
-        except Exception:
-            pass
