@@ -45,7 +45,7 @@ async def test_save_tournament_entry_writes_bet_and_rounds():
     )
 
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
     ) as mock_save:
         await _save_tournament_entry(
@@ -71,7 +71,7 @@ async def test_save_tournament_entry_failure_is_logged_not_raised():
     from cogs.blackjack_cog import _save_tournament_entry
 
     with patch(
-        "cogs.blackjack_cog.game_state_service.save",
+        "cogs.blackjack._persistence.game_state_service.save",
         new_callable=AsyncMock,
         side_effect=RuntimeError("DB down"),
     ):
@@ -92,7 +92,7 @@ async def test_clear_tournament_entry_uses_natural_key():
     )
 
     with patch(
-        "cogs.blackjack_cog.game_state_service.clear",
+        "cogs.blackjack._persistence.game_state_service.clear",
         new_callable=AsyncMock,
     ) as mock_clear:
         await _clear_tournament_entry(
