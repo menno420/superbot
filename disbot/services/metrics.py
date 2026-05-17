@@ -205,3 +205,33 @@ scope_locks_idle_swept_total = Counter(
     "Scope locks reclaimed by session_gc's idle sweep — non-zero indicates "
     "cogs are missing explicit forget() calls on edge teardown paths.",
 )
+
+# ---------------------------------------------------------------------------
+# Latency histograms — Phase S3.1 / O-2
+# Three slot-bucketed histograms for the three hot-path timing surfaces:
+# commands, DB queries, and interaction handlers.  Buckets span 1 ms → 10 s
+# so they accommodate both fast cache hits and slow DB / Discord roundtrips.
+# ---------------------------------------------------------------------------
+
+command_latency_seconds = Histogram(
+    "command_latency_seconds",
+    "End-to-end command handler time (on_command → on_command_completion).",
+    ["cog", "command"],
+    buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0),
+)
+
+db_query_seconds = Histogram(
+    "db_query_seconds",
+    "Per-query database time, labelled by a low-cardinality query_name "
+    "of the form `<op>:<table>` (e.g. `select:xp`, `insert:guild_settings`).",
+    ["query_name"],
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0),
+)
+
+interaction_handler_seconds = Histogram(
+    "interaction_handler_seconds",
+    "Interaction callback total time, labelled by the custom_id prefix "
+    "(== subsystem identity per INV-B).",
+    ["prefix"],
+    buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
+)

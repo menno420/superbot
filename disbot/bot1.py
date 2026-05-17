@@ -7,6 +7,7 @@ import logging
 import logging.handlers
 import os
 import signal
+import time
 import uuid
 
 import discord
@@ -220,6 +221,9 @@ async def on_interaction(interaction: discord.Interaction) -> None:
 @bot.event
 async def on_command(ctx: commands.Context) -> None:
     ctx._request_id = str(uuid.uuid4())  # type: ignore[attr-defined]
+    # Phase S3.1: stamp start time so on_command_completion can observe
+    # end-to-end command latency.
+    ctx._cmd_start = time.monotonic()  # type: ignore[attr-defined]
     cog_name = type(ctx.cog).__name__ if ctx.cog else "unknown"
     logger.info(
         "CMD %s/%s",
@@ -247,6 +251,15 @@ async def on_command_completion(ctx: commands.Context) -> None:
         command=cmd_name,
         result="success",
     ).inc()
+    # Phase S3.1: observe end-to-end command latency.  If on_command did
+    # not run (e.g. bot.event was not invoked in test fixtures), fall back
+    # to a zero-duration observation to keep the metric well-defined.
+    started_at = getattr(ctx, "_cmd_start", None)
+    if started_at is not None:
+        _metrics.command_latency_seconds.labels(
+            cog=cog_name,
+            command=cmd_name,
+        ).observe(time.monotonic() - started_at)
     logger.info(
         "CMD ✅ %s/%s",
         cog_name,

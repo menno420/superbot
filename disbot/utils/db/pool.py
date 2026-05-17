@@ -82,18 +82,63 @@ def get() -> asyncpg.Pool:
 # Generic CRUD primitives — preserved verbatim from the pre-split db.py.
 # Submodules call these via `from utils.db import pool` + ``pool.fetchone(...)``
 # so test monkeypatches on ``utils.db.pool.X`` propagate to every caller.
+#
+# Phase S3.1 / O-2: each primitive observes ``db_query_seconds`` so the
+# !platform metrics surface + Prometheus can highlight slow queries by
+# (op, table) without retrofitting timing into every CRUD module.
 # ---------------------------------------------------------------------------
+
+import re
+import time
+
+from services import metrics as _metrics
+
+# Low-cardinality query label.  Matches the first table name after the
+# operation keyword in SELECT/INSERT/UPDATE/DELETE statements; falls back
+# to "unknown" so a malformed query produces a single label, not a unique
+# one per call (which would explode Prometheus cardinality).
+_TABLE_RE = re.compile(
+    r"\b(?:FROM|INTO|UPDATE|DELETE\s+FROM)\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+    re.IGNORECASE,
+)
+
+
+def _query_label(query: str) -> str:
+    """Extract a `<op>:<table>` label from a SQL query for histogram observation."""
+    stripped = query.lstrip()
+    op = stripped.split(None, 1)[0].lower() if stripped else "unknown"
+    match = _TABLE_RE.search(query)
+    table = match.group(1).lower() if match else "unknown"
+    return f"{op}:{table}"
 
 
 async def fetchone(query: str, params: tuple = ()) -> dict | None:
-    row = await get().fetchrow(query, *params)
-    return dict(row) if row else None
+    start = time.monotonic()
+    try:
+        row = await get().fetchrow(query, *params)
+        return dict(row) if row else None
+    finally:
+        _metrics.db_query_seconds.labels(query_name=_query_label(query)).observe(
+            time.monotonic() - start,
+        )
 
 
 async def fetchall(query: str, params: tuple = ()) -> list[dict]:
-    rows = await get().fetch(query, *params)
-    return [dict(r) for r in rows]
+    start = time.monotonic()
+    try:
+        rows = await get().fetch(query, *params)
+        return [dict(r) for r in rows]
+    finally:
+        _metrics.db_query_seconds.labels(query_name=_query_label(query)).observe(
+            time.monotonic() - start,
+        )
 
 
 async def execute(query: str, params: tuple = ()) -> None:
-    await get().execute(query, *params)
+    start = time.monotonic()
+    try:
+        await get().execute(query, *params)
+    finally:
+        _metrics.db_query_seconds.labels(query_name=_query_label(query)).observe(
+            time.monotonic() - start,
+        )
