@@ -44,17 +44,21 @@ def test_rps_tournament_subsystem_constants_exist():
 
 
 def test_try_register_player_wires_through_save():
-    """Source-level check that ``try_register_player`` calls
-    ``game_state_service.save`` with the documented payload shape.
-    Direct invocation requires a fully-initialised cog + economy
-    service patching that exceeds unit-test scope; source-grep here
-    matches the same pattern PR G1 used for the pvp_challenge wiring.
+    """Source-level check that the rps_tournament persistence helper
+    calls ``game_state_service.save`` with the documented payload shape.
+
+    Pre-S4.6: the literal strings (``game_state_service.save``,
+    ``RPS_TOURNAMENT_SUBSYSTEM``, ``RPS_TOURNAMENT_VERSION``, ``"bet":``)
+    lived inside ``RPSTournamentCog.try_register_player``.  S4.6 moved
+    the save call into ``cogs.rps_tournament._persistence.save_tournament_entry``
+    so the invariant moves with it — same intent, same literal-string
+    check, new location.
     """
     import inspect
 
-    from cogs import rps_tournament_cog
+    from cogs.rps_tournament._persistence import save_tournament_entry
 
-    src = inspect.getsource(rps_tournament_cog.RPSTournamentCog.try_register_player)
+    src = inspect.getsource(save_tournament_entry)
     assert "game_state_service.save" in src
     assert "RPS_TOURNAMENT_SUBSYSTEM" in src
     assert "RPS_TOURNAMENT_VERSION" in src

@@ -1,3 +1,25 @@
+"""RPS tournament cog — commands + tournament flow (S4.6).
+
+Persistence, recovery, channel helpers, stat helpers, lifecycle tasks,
+and bot-match handling have been extracted to ``cogs/rps_tournament/``
+submodules.  This file is now the cog itself — commands, the
+tournament registration / round flow that holds per-instance state
+(``self.players`` / ``self.scores`` / ``self.matches`` /
+``self.match_channels`` / ``self.current_round``), and listeners.
+
+Symbols re-exported for back-compat with existing tests:
+
+  RPS_TOURNAMENT_SUBSYSTEM, RPS_TOURNAMENT_VERSION
+        — moved to cogs.rps_tournament._persistence (the
+          ``inspect.getsource(save_tournament_entry)`` invariant has
+          a stable home there).
+
+The ``inspect.getsource(RPSTournamentCog.try_register_player)`` test
+was migrated to inspect ``save_tournament_entry`` — see
+``tests/unit/cogs/test_rps_tournament_persistence.py`` for the
+updated assertion.
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -7,6 +29,32 @@ import random
 import discord
 from discord.ext import commands
 
+from cogs.rps_tournament._bot_matches import (
+    channel_is_bot_match,
+    handle_bot_match_move,
+)
+from cogs.rps_tournament._bot_matches import reset_state as _reset_bot_match_state
+from cogs.rps_tournament._bot_matches import (
+    run_rps_bot_command,
+)
+from cogs.rps_tournament._helpers import (
+    add_player_to_db,
+    cleanup_orphaned_channels,
+    clear_stale_tournament_flag,
+    create_match_channel,
+    delete_all_match_channels,
+    schedule_channel_deletion,
+    update_player_stats,
+)
+from cogs.rps_tournament._persistence import (  # noqa: F401 — re-exported for back-compat with tests
+    RPS_TOURNAMENT_SUBSYSTEM,
+    RPS_TOURNAMENT_VERSION,
+    on_guild_remove_rps,
+    recover_rps_pvp_pending,
+    recover_rps_tournament,
+    save_tournament_entry,
+)
+from cogs.rps_tournament._quickplay import run_quickrps_command
 from cogs.rps_tournament.rules import (
     GAME_MODES,
     MOVE_ALIASES,
@@ -15,15 +63,18 @@ from cogs.rps_tournament.rules import (
 )
 from core.runtime import tasks
 from core.runtime.component_registry import stats_block
-from services import economy_service, game_state_service
+from services import (  # noqa: F401 — game_state_service kept for back-compat patch sites
+    economy_service,
+    game_state_service,
+)
 from utils import db as global_db
-from utils.channels import cleanup_category, create_private_channel
+from utils.channels import (  # noqa: F401 — re-exported for back-compat
+    create_private_channel,
+)
 from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.ui_constants import GAME_COLOR, INFO_COLOR
 
-# Views + shared constants moved to views/rps/ during D4 — re-exported
-# below for backward compatibility with any external import of these
-# private names.
+# Re-exports of view classes that historically lived in this file (D4).
 from views.rps import (  # noqa: F401 — re-exported for back-compat
     _FREE_WIN,
     _RPS_EMOJI,
@@ -37,16 +88,6 @@ from views.rps import (  # noqa: F401 — re-exported for back-compat
 )
 
 logger = logging.getLogger("bot")
-
-# PR G6 — RPS tournament persistence (entry-fee refund on restart).
-# Mirrors PR G5's per-player row design: one row per registered
-# participant.  channel_id=0 sentinel because the tournament is
-# guild-wide, not tied to one channel; the natural game_state UNIQUE
-# constraint on (guild_id, user_id, channel_id, subsystem) already
-# enforces "one entry per user per guild", which is exactly what the
-# cog's ``tournament_active`` flag also enforces.
-RPS_TOURNAMENT_SUBSYSTEM = "rps_tournament"
-RPS_TOURNAMENT_VERSION = 1
 
 
 class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # type: ignore[call-arg]
@@ -74,8 +115,11 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.inactivity_limit = 300  # 5 minutes inactivity limit
         self.reminder_task = None
         self.registration_role = None  # Role to mention in reminders
-        self.bot_matches = {}
-        self.bot_match_channels = set()
+        # Bot-match state lives at module level in
+        # ``cogs/rps_tournament/_bot_matches.py``; reset on cog init/
+        # unload to preserve the pre-extraction "reload wipes state"
+        # semantics.
+        _reset_bot_match_state()
         self.settings = {"default_mode": "classic", "default_best_of": 3}
         self.entry_fee = 0
         self.paid_players: set[int] = set()  # players who paid the entry fee
@@ -118,14 +162,15 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         )
         return embed, discord.ui.View(timeout=300)
 
+    # ------------------------------------------------------------------
+    # Lifecycle + recovery (delegators preserve test invariants)
+    # ------------------------------------------------------------------
+
     async def cog_load(self) -> None:
-        tasks.spawn("rps:clear_stale_flag", self._clear_stale_tournament_flag())
-        tasks.spawn("rps:cleanup_orphaned", self._cleanup_orphaned_channels())
+        tasks.spawn("rps:clear_stale_flag", clear_stale_tournament_flag(self.bot))
+        tasks.spawn("rps:cleanup_orphaned", cleanup_orphaned_channels(self.bot))
         # PR G1 — drop any rps_pvp_pending game_state rows left over
-        # from a previous process.  Live views cannot be re-attached, so
-        # the only safe action is to clear; the GC sweep would handle
-        # this after 24h but acting at cog_load is faster.  No coins
-        # are refunded — RPS PvP does not pre-debit.
+        # from a previous process.
         tasks.spawn("rps:recover_pvp_pending", self._recover_rps_pvp_pending())
         # PR G6 — refund stranded tournament entries.  Same shape as
         # blackjack tournament: entry fees were debited at registration
@@ -133,194 +178,29 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         # payout in ``check_tournament_progress``.
         tasks.spawn("rps:recover_tournament", self._recover_rps_tournament())
 
-    async def _recover_rps_pvp_pending(self) -> None:
-        try:
-            from views.rps._helpers import (
-                RPS_PVP_PENDING_SUBSYSTEM,
-                RPS_PVP_PENDING_VERSION,
-            )
+    def cog_unload(self):
+        """Cancel reminder + all spawned RPS tasks; clear bot-match state."""
+        if self.reminder_task and not self.reminder_task.done():
+            self.reminder_task.cancel()
+        tasks.cancel_by_prefix("rps:")
+        _reset_bot_match_state()
 
-            rows = await game_state_service.list_active_for_subsystem(
-                RPS_PVP_PENDING_SUBSYSTEM,
-            )
-        except Exception as exc:
-            logger.warning("rps pvp_pending recovery skipped: %s", exc)
-            return
-        if not rows:
-            return
-        cleared = 0
-        for row in rows:
-            try:
-                # Drop both up-to-date and version-mismatched payloads.
-                # The view cannot be resumed either way.
-                version = row.get("version")
-                if version != RPS_PVP_PENDING_VERSION:
-                    logger.info(
-                        "rps_pvp_pending recovery: dropping version-mismatch "
-                        "row id=%s (saved=%s, current=%s)",
-                        row["id"],
-                        version,
-                        RPS_PVP_PENDING_VERSION,
-                    )
-                await game_state_service.clear_by_id(row["id"])
-                cleared += 1
-            except Exception as exc:
-                logger.warning(
-                    "rps_pvp_pending recovery: clear failed for id=%s: %s",
-                    row.get("id"),
-                    exc,
-                )
-        if cleared:
-            logger.info(
-                "rps_pvp_pending recovery: cleared %d stranded match(es)",
-                cleared,
-            )
+    async def _recover_rps_pvp_pending(self) -> None:
+        """Delegator — see ``cogs.rps_tournament._persistence``."""
+        await recover_rps_pvp_pending()
 
     async def _recover_rps_tournament(self) -> None:
-        """Refund every stranded RPS tournament entry then clear the row.
-
-        Same shape as ``BlackjackCog._recover_blackjack_tournament``:
-        entry fees were debited at registration, never paid back if the
-        bot crashed before ``check_tournament_progress`` settled the
-        pot.  Refund failures are logged WARN but the row is still
-        cleared to avoid an infinite retry loop.
-        """
-        try:
-            rows = await game_state_service.list_active_for_subsystem(
-                RPS_TOURNAMENT_SUBSYSTEM,
-            )
-        except Exception as exc:
-            logger.warning("rps_tournament recovery skipped: %s", exc)
-            return
-        if not rows:
-            return
-        cleared = 0
-        refunded = 0
-        for row in rows:
-            try:
-                version = row.get("version")
-                if version != RPS_TOURNAMENT_VERSION:
-                    logger.info(
-                        "rps_tournament recovery: dropping version-"
-                        "mismatch row id=%s (saved=%s, current=%s)",
-                        row["id"],
-                        version,
-                        RPS_TOURNAMENT_VERSION,
-                    )
-                    await game_state_service.clear_by_id(row["id"])
-                    cleared += 1
-                    continue
-                state = row.get("state") or {}
-                bet = state.get("bet")
-                if isinstance(bet, int) and bet > 0:
-                    try:
-                        await economy_service.refund(
-                            guild_id=row["guild_id"],
-                            user_id=row["user_id"],
-                            amount=bet,
-                            reason="rps_tournament:restart_refund",
-                        )
-                        refunded += 1
-                    except Exception as exc:
-                        logger.warning(
-                            "rps_tournament refund failed for user=%d guild=%d: %s",
-                            row.get("user_id"),
-                            row.get("guild_id"),
-                            exc,
-                        )
-                await game_state_service.clear_by_id(row["id"])
-                cleared += 1
-            except Exception as exc:
-                logger.warning(
-                    "rps_tournament recovery: row id=%s failed: %s",
-                    row.get("id"),
-                    exc,
-                )
-        if cleared or refunded:
-            logger.info(
-                "rps_tournament recovery: cleared %d row(s), issued %d refund(s)",
-                cleared,
-                refunded,
-            )
+        """Delegator — see ``cogs.rps_tournament._persistence``."""
+        await recover_rps_tournament()
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild) -> None:
-        """PR G1/G6 — wipe rps subsystem rows for a departed guild.
+        """Wipe rps subsystem rows for a departed guild (delegator)."""
+        await on_guild_remove_rps(guild.id)
 
-        rps_pvp_pending rows clear without refund (no pre-debit).
-        rps_tournament rows trigger refunds — guild removal mid-
-        tournament is equivalent to a crash from the player's
-        perspective.
-        """
-        # rps_pvp_pending — clear, no refund.
-        try:
-            from views.rps._helpers import RPS_PVP_PENDING_SUBSYSTEM
-
-            rows = await game_state_service.list_active_for_subsystem(
-                RPS_PVP_PENDING_SUBSYSTEM,
-                guild_id=guild.id,
-            )
-            for row in rows:
-                try:
-                    await game_state_service.clear_by_id(row["id"])
-                except Exception as exc:
-                    logger.warning(
-                        "rps_pvp_pending on_guild_remove: clear id=%s failed: %s",
-                        row.get("id"),
-                        exc,
-                    )
-        except Exception as exc:
-            logger.warning(
-                "rps_pvp_pending on_guild_remove failed for guild=%d: %s",
-                guild.id,
-                exc,
-            )
-
-        # rps_tournament — refund + clear.
-        try:
-            rows = await game_state_service.list_active_for_subsystem(
-                RPS_TOURNAMENT_SUBSYSTEM,
-                guild_id=guild.id,
-            )
-            for row in rows:
-                state = row.get("state") or {}
-                bet = state.get("bet")
-                if isinstance(bet, int) and bet > 0:
-                    try:
-                        await economy_service.refund(
-                            guild_id=row["guild_id"],
-                            user_id=row["user_id"],
-                            amount=bet,
-                            reason="rps_tournament:guild_remove_refund",
-                        )
-                    except Exception as exc:
-                        logger.warning(
-                            "rps_tournament on_guild_remove refund "
-                            "failed for user=%d: %s",
-                            row.get("user_id"),
-                            exc,
-                        )
-                try:
-                    await game_state_service.clear_by_id(row["id"])
-                except Exception as exc:
-                    logger.warning(
-                        "rps_tournament on_guild_remove: clear id=%s failed: %s",
-                        row.get("id"),
-                        exc,
-                    )
-        except Exception as exc:
-            logger.warning(
-                "rps_tournament on_guild_remove failed for guild=%d: %s",
-                guild.id,
-                exc,
-            )
-
-    async def _clear_stale_tournament_flag(self) -> None:
-        await self.bot.wait_until_ready()
-        for guild in self.bot.guilds:
-            flag = await global_db.get_setting(guild.id, ACTIVE_TOURNAMENT, "")
-            if flag == "rps":
-                await global_db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
+    # ------------------------------------------------------------------
+    # Tournament registration
+    # ------------------------------------------------------------------
 
     @commands.command(name="rpsregister", aliases=["rpsreg"])
     async def rps_register(self, ctx, role: discord.Role = None, entry_fee: int = 0):
@@ -436,20 +316,13 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         if len(self.players) < 2:
             await global_db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
 
-    async def add_player_to_db(self, user, guild_id: int) -> None:
-        """Ensures the player exists in the async RPS stats table.
-
-        PR R1: ``guild_id`` is now required.  rps_players' PK is
-        (user_id, guild_id) since migration 005; defaulting to 0 made
-        every guild's stats collide at the same row.
-        """
-        try:
-            await global_db.rps_ensure_player(user.id, guild_id, user.display_name)
-        except Exception as e:
-            logger.exception("Error adding RPS player to database: %s", e)
-
     async def try_register_player(self, user, guild_id: int) -> bool:
-        """Check entry fee, deduct if needed, register player. Returns success."""
+        """Check entry fee, deduct if needed, register player. Returns success.
+
+        The persistence call lives in
+        ``cogs.rps_tournament._persistence.save_tournament_entry`` — the
+        ``inspect.getsource`` test invariant moved with it.
+        """
         if user.id in self.paid_players or user in self.players:
             return False  # already registered
         if self.entry_fee > 0:
@@ -466,28 +339,20 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             self.paid_players.add(user.id)
         self.players.append(user)
         self.scores[user] = 0
-        await self.add_player_to_db(user, guild_id)
+        await add_player_to_db(user, guild_id)
         # PR G6 — persist the paid-entry state so a crash before the
         # final payout in ``check_tournament_progress`` can refund this
-        # player on cog_load.  ``bet=entry_fee`` matches the G0 GC
-        # convention so the 24 h sweep is a secondary safety net.
-        try:
-            await game_state_service.save(
-                guild_id=guild_id,
-                user_id=user.id,
-                channel_id=0,  # sentinel — tournament is guild-wide, not channel-local
-                subsystem=RPS_TOURNAMENT_SUBSYSTEM,
-                state={"bet": self.entry_fee},
-                version=RPS_TOURNAMENT_VERSION,
-            )
-        except Exception as exc:
-            logger.warning(
-                "rps_tournament save failed (user=%d guild=%d): %s",
-                user.id,
-                guild_id,
-                exc,
-            )
+        # player on cog_load.
+        await save_tournament_entry(
+            guild_id=guild_id,
+            user_id=user.id,
+            entry_fee=self.entry_fee,
+        )
         return True
+
+    # ------------------------------------------------------------------
+    # Tournament start + bracket scheduling
+    # ------------------------------------------------------------------
 
     @commands.command(name="rpsstart", aliases=["rpsbegin"])
     @commands.has_permissions(administrator=True)
@@ -534,79 +399,15 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
 
     @commands.command(name="rpsbot")
     async def rps_bot(self, ctx, mode=None, best_of: int = None, *members_or_roles):
-        """Starts matches against the bot."""
-        if mode is None:
-            mode = self.settings["default_mode"]
-        if mode not in self.game_modes:
-            await ctx.send(
-                f"Invalid game mode. Available modes: {', '.join(self.game_modes.keys())}",
-            )
-            return
-
-        if best_of is None:
-            best_of = self.settings["default_best_of"]
-        if best_of % 2 == 0 or best_of < 1:
-            await ctx.send(
-                "Please provide an odd positive integer for the number of rounds.",
-            )
-            return
-
-        players = []
-        if members_or_roles:
-            for item in members_or_roles:
-                member = None
-                if isinstance(item, discord.Member):
-                    member = item
-                elif isinstance(item, str):
-                    # Try to get member by ID or mention
-                    member = ctx.guild.get_member_named(item)
-                elif isinstance(item, discord.Role):
-                    players.extend(item.members)
-                    continue
-                if member:
-                    players.append(member)
-        else:
-            players.append(ctx.author)
-
-        for player in players:
-            match_channel = await self.create_bot_match_channel(ctx.guild, player, ctx)
-            if match_channel is None:
-                await ctx.send(
-                    f"Failed to create match channel for {player.display_name}.",
-                )
-                continue
-
-            self.bot_matches[player] = {
-                "channel": match_channel.id,
-                "wins": 0,
-                "bot_wins": 0,
-                "best_of": best_of,
-                "mode": mode,
-            }
-            self.bot_match_channels.add(match_channel.id)
-
-            await match_channel.send(
-                f"{player.mention} vs **Bot**\n"
-                f"Game mode: {mode.capitalize()}, Best of {best_of}\n"
-                "Please enter your move.",
-            )
-
-    async def create_bot_match_channel(self, guild, player, ctx):
-        """Creates a private channel for a match against the bot."""
-        try:
-            return await create_private_channel(
-                guild,
-                f"rps-{player.display_name}-vs-bot",
-                [player],
-                "RPS Bot Matches",
-            )
-        except discord.Forbidden:
-            await ctx.send("I do not have permission to create channels.")
-            return None
-        except Exception as e:
-            logger.exception(f"Error creating bot match channel: {e}")
-            await ctx.send(f"An error occurred while creating the match channel: {e}")
-            return None
+        """Starts matches against the bot.  Delegator — see _bot_matches."""
+        await run_rps_bot_command(
+            ctx,
+            self.settings["default_mode"],
+            self.settings["default_best_of"],
+            mode,
+            best_of,
+            members_or_roles,
+        )
 
     @commands.command(name="rpsmatchup")
     @commands.has_permissions(administrator=True)
@@ -620,8 +421,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             await ctx.send("Both players must be registered in the tournament.")
             return
 
-        # Create a match between the two players
-        match_channel = await self.create_match_channel(
+        match_channel = await create_match_channel(
             ctx.guild,
             player1,
             player2,
@@ -674,7 +474,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         while len(round_players) >= 2:
             player1 = round_players.pop()
             player2 = round_players.pop()
-            match_channel = await self.create_match_channel(
+            match_channel = await create_match_channel(
                 ctx.guild,
                 player1,
                 player2,
@@ -717,22 +517,9 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                 f"{player.display_name} advances to the next round by default.",
             )
 
-    async def create_match_channel(self, guild, player1, player2, ctx):
-        """Creates a private channel for the match."""
-        try:
-            return await create_private_channel(
-                guild,
-                f"rps-{player1.display_name}-vs-{player2.display_name}",
-                [player1, player2],
-                "RPS Tournaments",
-            )
-        except discord.Forbidden:
-            await ctx.send("I do not have permission to create channels.")
-            return None
-        except Exception as e:
-            logger.exception(f"Error creating match channel: {e}")
-            await ctx.send(f"An error occurred while creating the match channel: {e}")
-            return None
+    # ------------------------------------------------------------------
+    # Listeners
+    # ------------------------------------------------------------------
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -765,8 +552,8 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         channel = message.channel
 
         # Check for player vs bot matches
-        if channel.id in self.bot_match_channels:
-            await self.handle_bot_match_move(message)
+        if channel_is_bot_match(channel.id):
+            await handle_bot_match_move(message)
             return
 
         # Check for player vs player matches
@@ -800,61 +587,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             # Both players have made their moves
             await self.resolve_match(player, opponent, channel)
 
-    async def handle_bot_match_move(self, message):
-        """Handles moves in player vs bot matches."""
-        player = message.author
-        match = self.bot_matches.get(player)
-        if not match:
-            return
-
-        # Check if the match is already over
-        required_wins = (match["best_of"] // 2) + 1
-        if match["wins"] >= required_wins or match["bot_wins"] >= required_wins:
-            # Match is over; inform the player and return
-            await message.channel.send("The match is already over.")
-            return
-
-        move = message.content.lower().strip()
-        move = normalize_move(move, match["mode"])
-        if move is None:
-            await message.channel.send(
-                f"{player.mention}, invalid move. Please try again.",
-            )
-            return
-
-        bot_move = random.choice(self.game_modes[match["mode"]])
-        await message.channel.send(f"Bot played: {bot_move.capitalize()}.")
-
-        winner = determine_winner(move, bot_move, match["mode"])
-        if winner == 0:
-            await message.channel.send("It's a tie!")
-            self.update_player_stats(player, "tie")
-        elif winner == 1:
-            match["wins"] += 1
-            await message.channel.send(f"{player.mention} wins this round!")
-            self.update_player_stats(player, "win")
-        else:
-            match["bot_wins"] += 1
-            await message.channel.send("Bot wins this round!")
-            self.update_player_stats(player, "loss")
-
-        # Check if someone has won the match
-        if match["wins"] >= required_wins:
-            await message.channel.send(
-                f"{player.mention} wins the match against the bot!",
-            )
-            await self.schedule_channel_deletion(message.channel)
-            del self.bot_matches[player]
-            self.bot_match_channels.discard(message.channel.id)
-            return  # Prevent further execution
-        if match["bot_wins"] >= required_wins:
-            await message.channel.send("Bot wins the match!")
-            await self.schedule_channel_deletion(message.channel)
-            del self.bot_matches[player]
-            self.bot_match_channels.discard(message.channel.id)
-            return  # Prevent further execution
-        await message.channel.send("Please enter your next move.")
-
     async def resolve_match(self, player1, player2, channel):
         """Determines the match outcome and advances the tournament."""
         match1 = self.matches[player1]
@@ -867,21 +599,21 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             await channel.send("It's a tie! Please both select your moves again.")
             match1["move"] = None
             match2["move"] = None
-            self.update_player_stats(player1, "tie")
-            self.update_player_stats(player2, "tie")
+            update_player_stats(player1, "tie")
+            update_player_stats(player2, "tie")
             return
         if winner == 1:
             match1["wins"] += 1
             match2["opponent_wins"] += 1
             winning_player = player1
-            self.update_player_stats(player1, "win")
-            self.update_player_stats(player2, "loss")
+            update_player_stats(player1, "win")
+            update_player_stats(player2, "loss")
         else:
             match2["wins"] += 1
             match1["opponent_wins"] += 1
             winning_player = player2
-            self.update_player_stats(player2, "win")
-            self.update_player_stats(player1, "loss")
+            update_player_stats(player2, "win")
+            update_player_stats(player1, "loss")
 
         await channel.send(
             f"{winning_player.mention} wins this round!\n"
@@ -897,7 +629,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             await channel.send(
                 f"{player1.mention} wins the match and advances to the next round!",
             )
-            await self.schedule_channel_deletion(channel)
+            await schedule_channel_deletion(channel)
             del self.matches[player1]
             del self.matches[player2]
             self.match_channels.pop(channel.id, None)
@@ -910,7 +642,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             await channel.send(
                 f"{player2.mention} wins the match and advances to the next round!",
             )
-            await self.schedule_channel_deletion(channel)
+            await schedule_channel_deletion(channel)
             del self.matches[player1]
             del self.matches[player2]
             self.match_channels.pop(channel.id, None)
@@ -922,53 +654,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             match1["move"] = None
             match2["move"] = None
             await channel.send("Next round! Please enter your move.")
-
-    def update_player_stats(self, player, result: str) -> None:
-        """Schedule an async stats update without blocking the event loop.
-
-        PR R1: derives ``guild_id`` from ``player.guild`` and passes it
-        through so ``rps_update_stat`` writes to the correct guild row.
-        Players passed in here always come from a guild context (bot
-        matches and tournament matches both originate in guild channels)
-        so ``player.guild`` is non-None.
-        """
-        guild = getattr(player, "guild", None)
-        if guild is None:
-            logger.warning(
-                "update_player_stats: player=%s has no guild context; "
-                "skipping stat update",
-                player.id,
-            )
-            return
-        tasks.spawn(
-            f"rps:stat:{player.id}",
-            self._async_update_stat(player.id, guild.id, result),
-        )
-
-    async def _async_update_stat(
-        self,
-        user_id: int,
-        guild_id: int,
-        result: str,
-    ) -> None:
-        try:
-            await global_db.rps_update_stat(user_id, guild_id, result)
-        except Exception as e:
-            logger.exception("Error updating RPS player stats: %s", e)
-
-    async def schedule_channel_deletion(self, channel):
-        """Schedules the deletion of a match channel after a delay."""
-        await asyncio.sleep(300)  # Wait for 5 minutes
-        try:
-            await channel.delete()
-        except discord.Forbidden:
-            logger.warning(
-                f"Failed to delete channel {channel.name}: insufficient permissions.",
-            )
-        except Exception as e:
-            logger.exception(
-                f"An error occurred while deleting channel {channel.name}: {e}",
-            )
 
     async def check_tournament_progress(self, guild, last_channel):
         """Checks if the tournament is over or starts a new round."""
@@ -1027,15 +712,13 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
                     exc,
                 )
             # Clean up any remaining match channels
-            await self.delete_all_match_channels(guild)
+            await delete_all_match_channels(guild)
         else:
             await self.start_round(last_channel, self.settings["default_best_of"])
 
-    async def delete_all_match_channels(self, guild):
-        """Deletes all RPS tournament match channels and their category."""
-        category = discord.utils.get(guild.categories, name="RPS Tournaments")
-        if category:
-            await cleanup_category(category)
+    # ------------------------------------------------------------------
+    # Error handlers + help/settings + quickplay
+    # ------------------------------------------------------------------
 
     @rps_register.error
     async def rps_register_error(self, ctx, error):
@@ -1096,31 +779,6 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self.settings[setting] = value
         await ctx.send(f"Setting `{setting}` updated to `{value}`.")
 
-    async def _cleanup_orphaned_channels(self):
-        """On startup, clean up any leftover RPS tournament/bot-match channels."""
-        await self.bot.wait_until_ready()
-        for guild in self.bot.guilds:
-            for cat_name in ("RPS Tournaments", "RPS Bot Matches"):
-                cat = discord.utils.get(guild.categories, name=cat_name)
-                if not cat or not cat.channels:
-                    continue
-                for ch in cat.channels:
-                    try:
-                        await ch.send(
-                            "⚠️ The bot restarted and this match was interrupted. "
-                            "This channel will be deleted in 5 minutes.",
-                        )
-                    except Exception:
-                        pass
-                await asyncio.sleep(300)
-                await cleanup_category(cat)
-
-    def cog_unload(self):
-        """Cancel reminder + all spawned RPS tasks so a reload doesn't leak them."""
-        if self.reminder_task and not self.reminder_task.done():
-            self.reminder_task.cancel()
-        tasks.cancel_by_prefix("rps:")
-
     # ------------------------------------------------------------------
     # Quick-play RPS with coins (button-based, single-player vs bot)
     # ------------------------------------------------------------------
@@ -1133,49 +791,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         bet: int = 0,
     ):
         """Quick RPS.  !rps [bet]  or  !rps @player [bet]"""
-        if bet < 0:
-            await ctx.send("Bet must be 0 or a positive number.", delete_after=5)
-            return
-
-        # PvP challenge
-        if target and target != ctx.author:
-            if target.bot:
-                await ctx.send("You can't challenge a bot to PvP.", delete_after=5)
-                return
-            if bet > 0:
-                bal = await global_db.get_coins(ctx.author.id, ctx.guild.id)
-                if bet > bal:
-                    await ctx.send(f"❌ You only have **{bal}** 🪙.", delete_after=8)
-                    return
-            bet_str = f"**{bet}** 🪙" if bet else "free play"
-            view = _RpsPvpChallengeView(ctx.author, target, ctx.guild.id, bet)  # type: ignore[arg-type]
-            embed = discord.Embed(
-                title="✂️ RPS Challenge!",
-                description=(
-                    f"{ctx.author.mention} challenges {target.mention} to Rock-Paper-Scissors "
-                    f"({bet_str}).\n{target.mention}, do you accept?"
-                ),
-                color=GAME_COLOR,
-            )
-            msg = await ctx.send(embed=embed, view=view)
-            view.message = msg
-            return
-
-        # vs bot
-        if bet > 0:
-            bal = await global_db.get_coins(ctx.author.id, ctx.guild.id)
-            if bet > bal:
-                await ctx.send(f"❌ You only have **{bal}** 🪙.", delete_after=10)
-                return
-        view = _RpsView(ctx.author, ctx.guild.id, bet)  # type: ignore[assignment, arg-type]
-        bet_str = f"**{bet}** 🪙" if bet else f"Free play (win = +{_FREE_WIN} 🪙)"
-        embed = discord.Embed(
-            title="✂️ Rock · Paper · Scissors",
-            description=f"Bet: {bet_str}\nChoose your move!",
-            color=GAME_COLOR,
-        )
-        msg = await ctx.send(embed=embed, view=view)
-        view.message = msg
+        await run_quickrps_command(ctx, target, bet)
 
 
 async def setup(bot):
