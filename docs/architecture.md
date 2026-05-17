@@ -134,6 +134,74 @@ string.  **Do not rename a subsystem in place.**
 
 ---
 
+## State classification
+
+Every piece of mutable state in SuperBot belongs to exactly one of
+four classes.  The class answers, in one place: where it lives, what
+it survives, how it is invalidated, and what its eventual
+substitution boundary is.
+
+| Class | Lives in | Survives restart? | Survives process | Substitution boundary |
+|---|---|---|---|---|
+| **Authoritative persistent** | PostgreSQL | yes | yes | none — this IS the endpoint |
+| **Process-local runtime** | module / instance dicts | no (rebuilt from DB) | no | Redis (per ADR-001 deferral) |
+| **Cached config (derived)** | process-local with version stamp + TTL | no (lazy rehydrate) | no | Redis with TTL |
+| **Ephemeral session** | `runtime_sessions` + `runtime_session_state` (TTL 2 h) | within TTL | within TTL | Redis with TTL |
+
+### Authoritative persistent
+
+Lives only in PostgreSQL.  Mutated only via `services/*` (audited;
+see INV-F / INV-G).  Read by anyone within the layer rules above.
+Examples: `economy_balances`, `xp_user`, `panel_anchors`,
+`runtime_sessions`, `game_state` last-checkpoint rows.
+
+### Process-local runtime
+
+In-process dicts / sets / instances.  MUST be rebuildable from
+authoritative state — a cold start of the bot recreates them lazily.
+MUST register a `forget_guild` hook with `guild_lifecycle.teardown`
+if scoped to a guild, and a cleanup hook with `session_gc` if scoped
+to a session.  Examples: `governance.cache._CACHE_VERSION`,
+`navigation_stack._locks`, `interaction_router._handlers`,
+`persistent_views._REGISTRY`, `tasks._TASKS`.
+
+### Cached config (derived)
+
+A specialisation of process-local runtime that caches mostly-static
+authoritative state.  Reads use version-stamped lookups (see
+`governance.cache` for the reference shape).  Writes to the underlying
+authoritative state MUST trigger explicit invalidation.  TTL is the
+safety net, not the primary invalidation mechanism.  Hot-path guild
+configuration flows through the `core/runtime/guild_config` primitive
+— no ad-hoc per-cog caches.
+
+### Ephemeral session
+
+Lives in `runtime_sessions` + `runtime_session_state` (TTL = 2 h by
+default; see `session_gc.SESSION_TTL`).  Reads/writes through
+`core/runtime/session_manager` and `core/runtime/state_store`.
+Cleaned by `session_gc._run_gc_loop`.  Examples: navigation_stack
+screen contents, view-specific session payloads.
+
+### Why this classification matters
+
+Every new feature decision becomes mechanical:
+
+- "I need a fast lookup of guild X's setting Y" → it is **cached
+  config**; use `guild_config`.
+- "I need a transient registry of who is currently in the matchmaking
+  queue" → it is **process-local runtime**; document the `forget_guild`
+  hook.
+- "I need to persist a user's bet across restarts" → it is
+  **authoritative persistent**; write through `services/economy_service`.
+- "I need to remember which screen the user was on" → it is
+  **ephemeral session**; use `core/runtime/state_store`.
+
+Without this taxonomy the decision tree is re-derived in every
+PR review.
+
+---
+
 ## Single-process assumption
 
 Every in-process registry below is documented as **process-local**.
@@ -178,7 +246,72 @@ SuperBot runs as one shard, one process.
 The `role_cog` + `views/roles/*` directory is the reference pattern
 for **splitting supporting UI** out of a cog when the cog grows past
 ~400 LOC.  See "PersistentView placement" below for the persistent-
-panel entry-point convention.
+panel entry-point convention; see "Subsystem decomposition" below for
+the full splitting checklist.
+
+---
+
+## Subsystem decomposition
+
+When `cogs/<name>_cog.py` passes ~400 LOC it MUST be decomposed
+according to the convention below.  New subsystems use the convention
+from day one.  This codifies what "Where to add a new subsystem"
+above sketches and what `role_cog` + `views/roles/*` already
+demonstrates.
+
+### Allowed packages for a single subsystem
+
+```
+cogs/<name>_cog.py             # entry-point: commands, listeners, persistent panel
+cogs/<name>/                   # domain logic (pure, testable without Discord)
+    __init__.py
+    state_machine.py | rules.py | parsing.py | handler.py | ...
+views/<name>/                  # UI: ephemeral hubs, modals, selectors, child panels
+    __init__.py
+    main_panel.py              # ephemeral !<name> entry point
+    *_panel.py | *_view.py | _helpers.py
+services/<name>_service.py     # cross-subsystem audited mutation — only when needed
+```
+
+### Hard ownership rules
+
+| From | May import | MUST NOT import |
+|---|---|---|
+| `cogs/<name>_cog.py` | `cogs/<name>/`, `views/<name>/`, `services/`, `utils/`, `utils/db/`, `core/runtime/` | other `cogs/<other>_cog.py` (use EventBus or a service) |
+| `cogs/<name>/` (domain) | `utils/`, `services/`, `core/runtime/` | `discord`, `views/`, other cogs |
+| `views/<name>/` | `cogs/<name>/` (read), `services/`, `utils/`, `discord` | other cogs, `utils/db/` (reads only via service) |
+| `services/<name>_*` | `utils/db/`, `core/events`, other `services/` | `cogs/`, `views/`, `discord` |
+
+These extend the cross-layer rules in "Ownership boundary" above;
+they do not relax any of them.
+
+### Splitting checklist
+
+When the cog grows past 400 LOC, ask in this order:
+
+1. Is there a state machine?  → extract to
+   `cogs/<name>/state_machine.py` (pure, no Discord).
+2. Are there reusable rules / scoring / parsing?  →
+   `cogs/<name>/<topic>.py` (pure).
+3. Is there an on-message or callback handler that mutates shared
+   state?  → extract to `cogs/<name>/handler.py` per the realtime
+   pattern in "Realtime / event-driven systems" below.
+4. Are there view classes > 100 LOC each?  →
+   `views/<name>/<topic>_panel.py`.
+5. Is there mutation that another subsystem might also need
+   (balances, XP, audit)?  → existing service or new
+   `services/<name>_service.py`.
+6. Anything left in the cog file?  Only: command decorators,
+   listener decorators, the `PersistentView` class (Pattern A),
+   `setup()` function, `cog_load` / `cog_unload`.
+
+### Reference implementations
+
+- `role_cog.py` + `views/roles/*` — the canonical reference cited
+  above in "Where to add a new subsystem".
+- `cogs/counting_cog.py` + `cogs/counting/` — partial decomposition
+  (`parsing`, `game_logic`, `_constants` extracted; the `on_message`
+  handler is the next step per the realtime concurrency rules below).
 
 ---
 
@@ -242,3 +375,79 @@ matches a `SUBSYSTEMS` key in `utils/subsystem_registry`), so
 for new subsystems unless the cog file is already very large; in
 that case Pattern B keeps the cog under the ~400 LOC guideline.  Do
 not mix patterns within a single subsystem.
+
+---
+
+## Realtime / event-driven systems
+
+Cogs whose `on_message` listener or button/select callback mutates
+shared in-process state MUST follow the **Validate / Mutate / Apply
+(V/M/A)** pattern.  This is the official concurrency pattern for
+hot-path handlers and applies equally to future systems
+(tournaments, matchmaking, reaction games, limited-quantity drops).
+
+### The Validate / Mutate / Apply pattern
+
+```python
+@dataclass(frozen=True)
+class Decision:
+    """All side-effects the handler must perform, computed under the lock."""
+    # Whatever fields the caller needs: replies, reactions, deletions,
+    # state-persistence flags, downstream events to emit, etc.
+    ...
+
+async def on_event(self, event):
+    decision = await self._compute(event)        # VALIDATE + MUTATE — under lock
+    await self._apply(decision, event)           # APPLY — outside lock
+
+async def _compute(self, event) -> Decision:
+    async with scope_locks.lock_for(event.scope_id):
+        state = await self._load_state(event)    # cheap (cached / in-memory)
+        if not self._is_valid(state, event):
+            return Decision.reject(...)
+        new_state = self._transition(state, event)
+        await self._persist_state(new_state)     # cheap DB write, still under lock
+        return Decision.accept(new_state, ...)
+
+async def _apply(self, decision: Decision, event) -> None:
+    # No state mutation here.  Just Discord I/O, event emission, log calls.
+    ...
+```
+
+### Why this pattern, not just "smaller locks"
+
+1. **Functional core, imperative shell.**  `_compute` is pure-ish
+   (state-in, decision-out) and is unit-testable without Discord
+   mocks.
+2. **Lock scope bounded by computation, not by I/O.**  Slow Discord
+   API calls cannot stall concurrent users in the same or other
+   scopes.
+3. **Race-free decisions.**  The decision and the state it was
+   computed from are atomic.  There is no window where `_apply` could
+   observe a state change the decision didn't see.
+4. **Composable.**  `Decision` types from independent subsystems
+   compose via the EventBus.
+5. **Reusable.**  Tournaments, matchmaking, reaction games all fit
+   this shape.
+
+### Rules
+
+- Discord I/O calls (`message.edit`, `message.delete`,
+  `message.channel.send`, `message.add_reaction`,
+  `interaction.response.*`, `interaction.followup.*`) MUST NOT
+  appear inside a `scope_locks.lock_for(...)` block.
+- The `Decision` dataclass MUST be `frozen=True`.
+- The scope ID is a caller-defined string with a subsystem prefix:
+  `f"counting:channel:{channel_id}"`, `f"tournament:{tournament_id}"`,
+  `f"matchmaking:{mode}:{guild_id}"`.  The prefix lets
+  `!platform locks <prefix>` filter.
+- When a scope ends (`end_match`, `tournament_complete`, channel
+  deleted), the cog MUST call `scope_locks.forget(scope_id)`.
+  `session_gc` provides an idle-eviction safety net but is not the
+  primary cleanup path.
+
+### Reference implementation
+
+`disbot/cogs/counting_cog.py` + `disbot/cogs/counting/handler.py`
+(post-Phase S2.1 — the existing pre-pattern listener is the
+counterexample documented in the stabilization plan).
