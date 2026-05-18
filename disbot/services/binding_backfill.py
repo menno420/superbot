@@ -589,9 +589,9 @@ class ApplyResult:
 
     @property
     def is_failure(self) -> bool:
-        return self.error is not None or self.write_status_counts.get(
-            WRITE_STATUS_FAILED,
-            0,
+        return (
+            self.error is not None
+            or self.write_status_counts.get(WRITE_STATUS_FAILED, 0) > 0
         )
 
     def to_summary_dict(self) -> dict[str, Any]:
