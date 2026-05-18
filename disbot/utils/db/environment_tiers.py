@@ -59,6 +59,53 @@ async def list_for_diagnostics() -> list[dict[str, Any]]:
     return [dict(r) for r in rows]
 
 
+async def upsert_with_audit(
+    *,
+    guild_id: int,
+    tier: str,
+    actor_id: int | None,
+    actor_type: str,
+    mutation_id: str,
+    prev_tier: str | None,
+) -> None:
+    """Atomic: upsert environment_tiers + write feature_flag_audit row.
+
+    The audit row uses ``flag_name='__environment_tier__'`` so the
+    single audit table covers all three Phase 2d event sources
+    (state, rollout, tier).  Caller is the RolloutMutationPipeline.
+    """
+    async with pool.get().acquire() as conn, conn.transaction():
+        await conn.execute(
+            """
+            INSERT INTO environment_tiers (guild_id, tier, set_by, set_at)
+            VALUES ($1, $2, $3, NOW())
+            ON CONFLICT (guild_id) DO UPDATE SET
+                tier = EXCLUDED.tier,
+                set_by = EXCLUDED.set_by,
+                set_at = NOW()
+            """,
+            guild_id,
+            tier,
+            actor_id,
+        )
+        await conn.execute(
+            """
+            INSERT INTO feature_flag_audit
+                (mutation_id, flag_name, scope, guild_id,
+                 prev_tier, new_tier,
+                 actor_id, actor_type, mutation_type)
+            VALUES ($1, '__environment_tier__', 'guild', $2, $3, $4,
+                    $5, $6, 'set_tier')
+            """,
+            mutation_id,
+            guild_id,
+            prev_tier,
+            tier,
+            actor_id,
+            actor_type,
+        )
+
+
 async def delete_for_guild(guild_id: int) -> int:
     """Delete the environment_tier row for ``guild_id``.
 
@@ -80,4 +127,5 @@ __all__ = [
     "delete_for_guild",
     "get_tier",
     "list_for_diagnostics",
+    "upsert_with_audit",
 ]
