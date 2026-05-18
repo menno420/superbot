@@ -175,11 +175,61 @@ def invalidate_xp_threshold_roles(guild_id: int) -> None:
     _xp_threshold_roles_accessor.invalidate(guild_id)
 
 
+# ---------------------------------------------------------------------------
+# SettingSpec scalar lane — consumed by services/settings_resolution (S3)
+# ---------------------------------------------------------------------------
+
+# The SettingSpec lane stores typed scalars (int / str / bool / float)
+# in the legacy KV table.  Each SettingSpec declares a canonical
+# ``settings_key`` (from ``utils.settings_keys``); the resolver hands
+# that string in here.  Sharing one ``"setting:"`` cache namespace
+# keeps the per-key TypedAccessor proliferation manageable while the
+# F-1 invariant test still sees a single accessor owner.
+#
+# Only the read accessor lands here today; the SettingsMutationPipeline
+# (S4, not in this PR) will own the matching invalidation entry point.
+
+_SETTING_CACHE_PREFIX = "setting:"
+
+
+async def get_setting_value(guild_id: int, settings_key: str) -> str:
+    """Return the legacy KV value for ``settings_key``, cached per guild.
+
+    Returns the raw string (or ``""`` when no row exists — matches the
+    semantics of :func:`utils.db.settings.get_setting`).  The cache key
+    is namespaced with ``"setting:"`` so it cannot collide with other
+    typed accessors' keys.
+    """
+
+    async def _loader() -> str:
+        return await db.get_setting(guild_id, settings_key)
+
+    return await guild_config.get(
+        guild_id,
+        _SETTING_CACHE_PREFIX + settings_key,
+        loader=_loader,
+    )
+
+
+def invalidate_setting_value(guild_id: int, settings_key: str) -> None:
+    """Drop the cached value for a single ``settings_key`` on ``guild_id``.
+
+    Called from the SettingsMutationPipeline (S4, not in this PR) and
+    from any admin write path that bypasses the pipeline.  Bulk
+    invalidation (``settings_key=None``) is intentionally NOT supported
+    so a single misconfigured caller cannot blow other typed accessors'
+    caches.
+    """
+    guild_config.invalidate(guild_id, _SETTING_CACHE_PREFIX + settings_key)
+
+
 __all__ = [
     "TypedAccessor",
     "XpConfig",
+    "get_setting_value",
     "get_xp_config",
     "get_xp_threshold_roles",
+    "invalidate_setting_value",
     "invalidate_xp_config",
     "invalidate_xp_threshold_roles",
 ]
