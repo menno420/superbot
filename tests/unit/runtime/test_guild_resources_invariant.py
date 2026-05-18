@@ -12,7 +12,14 @@ pattern lands, fix it by calling the matching helper in
 
 Allow-list rationale:
 
-  guild_resources.py          The resolver IS the canonical site.
+  guild_resources.py          The legacy resolver — still canonical for
+                              the sync/lazy I/O surface until Phase 2b
+                              migrates callers off it.
+  core/resources/discovery.py Phase 2a's typed resolver.  Owns the
+                              same raw lookups as guild_resources.py,
+                              wrapped in :class:`GuildResource`
+                              snapshots + cache-aware validation.
+                              Every new caller goes through here.
   utils/channels.py           Channel-creation helper; uses
                               ``discord.utils.get`` internally to
                               check existence before create.
@@ -31,6 +38,7 @@ SCAN_ROOT = REPO_ROOT / "disbot"
 
 ALLOW_LIST = {
     "disbot/core/runtime/guild_resources.py",
+    "disbot/core/resources/discovery.py",
     "disbot/utils/channels.py",
 }
 

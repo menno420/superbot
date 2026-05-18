@@ -67,6 +67,14 @@ from core.runtime import (  # noqa: F401 — re-exported
 )
 from core.runtime import ui_permissions as perms  # noqa: F401 — re-exported
 
+# Phase 2a — Unified resource runtime.  Imported LAST so the legacy
+# ``core.runtime.resources`` alias above (which utils.helpers imports
+# transitively via core.resources.discovery) is already bound by the
+# time the new package finishes loading.  The new package self-registers
+# its diagnostics provider on import.  ``isort: skip`` keeps the import
+# at the bottom; reordering breaks the circular-import workaround.
+from core import resources as platform_resources  # noqa: F401, E402  # isort: skip
+
 logger = logging.getLogger("bot.runtime")
 
 # Guard: setup() must be idempotent.  A second call (e.g. hot-reload or test
