@@ -262,6 +262,26 @@ SETTINGS_MUTATION_PRIMARY = FeatureFlag(
     removal_target="S5+ stable",
 )
 
+# S4.5 flag — kill-switch infrastructure for future ResourceProvisioning
+# UI (S7+ logging-create flow, S10 per-subsystem setup packs) consumers
+# of :class:`services.resource_provisioning.ResourceProvisioningPipeline`.
+# The pipeline itself does NOT consult this flag — it provisions
+# whenever explicitly invoked.  Mirrors the SETTINGS_MUTATION_PRIMARY
+# pattern.
+RESOURCE_PROVISIONING_PRIMARY = FeatureFlag(
+    name="resource_provisioning.primary",
+    description=(
+        "services.resource_provisioning.ResourceProvisioningPipeline is the "
+        "primary creator/binder of Discord resources (channels/roles/"
+        "categories); future S7+/S10 UI consumers gate their routing on "
+        "this flag.  The pipeline itself does not consult the flag — its "
+        "existence alone changes no behaviour."
+    ),
+    default_value=False,
+    owner="platform",
+    removal_target="S10+ stable",
+)
+
 
 def _register_builtins() -> None:
     """Register Phase 1d platform-level flags at import time."""
@@ -270,6 +290,7 @@ def _register_builtins() -> None:
     register(PARTICIPATION_ENABLED)
     register(FEATURE_FLAG_PRIMARY)
     register(SETTINGS_MUTATION_PRIMARY)
+    register(RESOURCE_PROVISIONING_PRIMARY)
 
 
 _register_builtins()
@@ -693,6 +714,7 @@ __all__ = [
     "FEATURE_FLAG_PRIMARY",
     "FeatureFlag",
     "PARTICIPATION_ENABLED",
+    "RESOURCE_PROVISIONING_PRIMARY",
     "RESOURCES_UNIFIED",
     "RolloutPolicy",
     "SETTINGS_MUTATION_PRIMARY",

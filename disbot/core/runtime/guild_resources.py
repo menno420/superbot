@@ -187,6 +187,103 @@ def resolve_role(
     return discord.utils.get(guild.roles, name=name)
 
 
+async def ensure_role(
+    guild: discord.Guild,
+    name: str,
+    *,
+    permissions: discord.Permissions | None = None,
+    hoist: bool = False,
+    mentionable: bool = False,
+    reason: str | None = None,
+) -> discord.Role:
+    """Return a role matching ``name``, creating it if absent.
+
+    The match is performed via :func:`resolve_role` with the exact
+    ``name`` filter.  If a match is found it is returned unchanged
+    (permissions / hoist / mentionable are NOT reconciled — callers
+    managing role-template policies should call ``role.edit`` themselves).
+
+    On miss, the role is created via ``guild.create_role``.  The helper
+    is intentionally policy-free: it has no feature-flag check, no
+    capability validation, no audit emission.  Provisioning policy is
+    owned by
+    :class:`services.resource_provisioning.ResourceProvisioningPipeline`;
+    direct callers outside the pipeline are constrained by the
+    ``tests/unit/invariants/test_no_silent_auto_create.py`` allowlist.
+
+    Mirrors the shape of :func:`ensure_channel`.
+    """
+    existing = resolve_role(guild, name=name)
+    if existing is not None:
+        return existing
+    return await guild.create_role(
+        name=name,
+        permissions=permissions or discord.Permissions.none(),
+        hoist=hoist,
+        mentionable=mentionable,
+        reason=reason,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Categories
+# ---------------------------------------------------------------------------
+
+
+def resolve_category(
+    guild: discord.Guild,
+    *,
+    category_id: int | str | None = None,
+    name: str | None = None,
+) -> discord.CategoryChannel | None:
+    """Resolve a category by ID (preferred) or exact name.
+
+    Mirrors :func:`resolve_role` — ``category_id`` wins on hit; name
+    match is exact (case-sensitive).
+    """
+    if category_id is not None:
+        try:
+            cid_int = int(category_id)
+        except (TypeError, ValueError):
+            cid_int = None
+        if cid_int is not None:
+            ch = guild.get_channel(cid_int)
+            if isinstance(ch, discord.CategoryChannel):
+                return ch
+    if name is None:
+        return None
+    for cat in guild.categories:
+        if cat.name == name:
+            return cat
+    return None
+
+
+async def ensure_category(
+    guild: discord.Guild,
+    name: str,
+    *,
+    overwrites: dict | None = None,
+    reason: str | None = None,
+) -> discord.CategoryChannel:
+    """Return a category matching ``name``, creating it if absent.
+
+    The match is performed via :func:`resolve_category` with the exact
+    ``name`` filter.  On miss, the category is created via
+    ``guild.create_category``.  Like :func:`ensure_channel` and
+    :func:`ensure_role`, the helper is policy-free: provisioning
+    policy belongs to
+    :class:`services.resource_provisioning.ResourceProvisioningPipeline`.
+    """
+    existing = resolve_category(guild, name=name)
+    if existing is not None:
+        return existing
+    return await guild.create_category(
+        name,
+        overwrites=overwrites or {},
+        reason=reason,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Members
 # ---------------------------------------------------------------------------
