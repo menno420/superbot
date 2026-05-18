@@ -36,11 +36,13 @@ async def teardown(guild_id: int) -> None:
                                    rows (Phase 2d PR-2); global rows preserved.
       8. Environment tier        — delete environment_tiers row (Phase 2d PR-2).
       9. Feature flag evaluator cache — drop cached decisions for the guild.
-      10. Governance capability cache — clear per-guild execution overrides.
-      11. Governance visibility cache — bump version, clear role-override flag.
-      12. Guild-config cache    — drop cached guild config entries (F-1).
-      13. Scope locks           — invoke registered per-cog teardown hooks (F-2).
-      14. Governance feedback cooldown — documented, no per-guild cleanup needed.
+      10. Platform migration checkpoints — drop per-guild checkpoint rows
+                                   (Phase 2 PR-5); global rows preserved.
+      11. Governance capability cache — clear per-guild execution overrides.
+      12. Governance visibility cache — bump version, clear role-override flag.
+      13. Guild-config cache    — drop cached guild config entries (F-1).
+      14. Scope locks           — invoke registered per-cog teardown hooks (F-2).
+      15. Governance feedback cooldown — documented, no per-guild cleanup needed.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -71,19 +73,22 @@ async def teardown(guild_id: int) -> None:
     # 9. Feature flag evaluator cache — drop stale cached decisions.
     _teardown_feature_flag_cache(guild_id)
 
-    # 10. Governance capability overrides — clear execution-layer in-process dict.
+    # 10. Platform migration checkpoints — per-guild rows only (Phase 2 PR-5).
+    await _teardown_platform_migration_checkpoints(guild_id)
+
+    # 11. Governance capability overrides — clear execution-layer in-process dict.
     _teardown_capability_overrides(guild_id)
 
-    # 11. Governance visibility cache — version bump + role flag removal.
+    # 12. Governance visibility cache — version bump + role flag removal.
     _teardown_visibility_cache(guild_id)
 
-    # 12. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
+    # 13. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
     _teardown_guild_config(guild_id)
 
-    # 13. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
+    # 14. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
     _teardown_scope_locks(guild_id)
 
-    # 14. Governance feedback cooldown dict in governance/__init__.
+    # 15. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
@@ -280,6 +285,33 @@ def _teardown_feature_flag_cache(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: feature_flag cache teardown failed: %s",
+            exc,
+        )
+
+
+async def _teardown_platform_migration_checkpoints(guild_id: int) -> None:
+    """Delete per-guild ``platform_migration_checkpoints`` rows.
+
+    Phase 2 PR-5.  Global rows (``guild_id IS NULL``) are preserved so
+    cross-guild migration metadata survives an individual guild leave.
+    A re-invited guild starts with no checkpoint history; running the
+    binding-backfill dry-run again will write a fresh row.
+    """
+    try:
+        from utils.db.platform_migration_checkpoints import (
+            delete_for_guild as _checkpoint_delete,
+        )
+
+        count = await _checkpoint_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d migration checkpoint row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: platform migration checkpoint teardown failed: %s",
             exc,
         )
 

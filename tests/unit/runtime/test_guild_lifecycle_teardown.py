@@ -22,6 +22,13 @@ PR-2 added three more (Phase 2d feature-flag substrate):
 * **Step 9** — :func:`core.runtime.feature_flags.clear_cache` purges
   cached evaluator decisions for the guild.
 
+PR-5 adds:
+
+* **Step 10** —
+  :func:`utils.db.platform_migration_checkpoints.delete_for_guild`
+  drops per-guild migration checkpoint rows; global rows are
+  preserved.
+
 These tests pin the contract:
 
 * Every new primitive is awaited (or called, for the sync one) during
@@ -100,6 +107,12 @@ def _teardown_patches():
         ),
         patch(
             "core.runtime.feature_flags.clear_cache",
+            return_value=0,
+        ),
+        # PR-5 default: migration checkpoint delete primitive.
+        patch(
+            "utils.db.platform_migration_checkpoints.delete_for_guild",
+            new_callable=AsyncMock,
             return_value=0,
         ),
     ):
@@ -325,3 +338,42 @@ async def test_teardown_clears_feature_flag_cache(_teardown_patches):
     ) as mock_clear:
         await guild_lifecycle.teardown(99)
         mock_clear.assert_called_once_with(guild_id=99)
+
+
+# ---------------------------------------------------------------------------
+# Step 10 — platform migration checkpoints (per-guild rows only)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_migration_checkpoints(_teardown_patches):
+    """Per-guild checkpoint delete primitive is awaited from teardown."""
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.platform_migration_checkpoints.delete_for_guild",
+        new_callable=AsyncMock,
+        return_value=1,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_migration_checkpoint_failure_is_isolated(_teardown_patches):
+    """If the checkpoint delete raises, downstream steps still run."""
+    import guild_lifecycle
+
+    with (
+        patch(
+            "utils.db.platform_migration_checkpoints.delete_for_guild",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("DB blip"),
+        ),
+        patch(
+            "governance.execution.forget_guild_capabilities",
+        ) as mock_caps,
+    ):
+        await guild_lifecycle.teardown(99)
+        # downstream step still invoked despite checkpoint delete failure
+        mock_caps.assert_called_once_with(99)
