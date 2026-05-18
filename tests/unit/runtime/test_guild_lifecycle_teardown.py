@@ -115,6 +115,16 @@ def _teardown_patches():
             new_callable=AsyncMock,
             return_value=0,
         ),
+        # PR-8 defaults: participation table + cache.
+        patch(
+            "utils.db.user_participation.delete_for_guild",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "core.runtime.user_config.forget_guild",
+            return_value=0,
+        ),
     ):
         yield
 
@@ -377,3 +387,55 @@ async def test_teardown_migration_checkpoint_failure_is_isolated(_teardown_patch
         await guild_lifecycle.teardown(99)
         # downstream step still invoked despite checkpoint delete failure
         mock_caps.assert_called_once_with(99)
+
+
+# ---------------------------------------------------------------------------
+# Steps 11 + 12 — per-user participation rows + cache (Phase 2c PR-8)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_user_participation_rows(_teardown_patches):
+    """The four-table participation delete primitive is awaited."""
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.user_participation.delete_for_guild",
+        new_callable=AsyncMock,
+        return_value=5,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_clears_user_config_cache(_teardown_patches):
+    """user_config.forget_guild is called scoped to the guild."""
+    import guild_lifecycle
+
+    with patch(
+        "core.runtime.user_config.forget_guild",
+        return_value=0,
+    ) as mock_forget:
+        await guild_lifecycle.teardown(99)
+        mock_forget.assert_called_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_participation_failure_is_isolated(_teardown_patches):
+    """If participation delete raises, the user_config cache step still runs."""
+    import guild_lifecycle
+
+    with (
+        patch(
+            "utils.db.user_participation.delete_for_guild",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("DB blip"),
+        ),
+        patch(
+            "core.runtime.user_config.forget_guild",
+            return_value=0,
+        ) as mock_forget,
+    ):
+        await guild_lifecycle.teardown(99)
+        mock_forget.assert_called_once_with(99)

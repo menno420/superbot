@@ -36,17 +36,47 @@ def _make_message(*, guild_id: int = 99, user_id: int = 1) -> MagicMock:
 
 
 def _xp_settings_replies(get_setting: AsyncMock, *, min_=15, max_=25, cd=60, ann=""):
-    """Side-effect that mimics db.get_setting reading the 4 XP keys."""
+    """Side-effect that mimics db.get_setting reading the 3 scalar XP keys.
+
+    Phase 2 PR-7: the announce_channel field flows through the
+    arbitration helper, not direct db.get_setting from the loader.
+    Tests patch ``core.runtime.config_arbitration.get_xp_announce_channel``
+    separately via :func:`_patch_announce_channel`.
+    """
 
     async def reply(guild_id, key, default=""):  # noqa: ARG001 — signature parity
         return {
             "xp_min": str(min_),
             "xp_max": str(max_),
             "xp_cooldown": str(cd),
-            "xp_announce_channel": ann,
         }.get(key, default)
 
     get_setting.side_effect = reply
+
+
+def _patch_announce_channel(value: str = ""):
+    """Patch the per-subsystem accessor used by ``_xp_config_loader``.
+
+    Returns a ``ConfigReadResult`` so the loader's downstream code path
+    (``ann_result.value or ""``) keeps working.
+    """
+    from core.runtime.config_arbitration import ConfigReadResult
+
+    # Patch the source of the accessor.  ``_xp_config_loader`` does
+    # ``from core.runtime.config_arbitration import get_xp_announce_channel``
+    # inside the function body each time it runs, so patching the
+    # source module's attribute is what intercepts the call.
+    return patch(
+        "core.runtime.config_arbitration.get_xp_announce_channel",
+        new_callable=AsyncMock,
+        return_value=ConfigReadResult(
+            value=value or None,
+            source="legacy" if value else "missing",
+            binding_status="n/a",
+            flag_state="off",
+            diagnostics=[],
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -77,15 +107,21 @@ async def test_handle_message_calls_db_get_setting_at_most_once_per_guild_over_a
             "utils.guild_config_accessors.db.get_setting",
             new_callable=AsyncMock,
         ) as get_setting,
+        _patch_announce_channel() as announce_accessor,
         patch("cogs.xp.listener.check_cooldown", return_value=(True, 0)),
     ):
         _xp_settings_replies(get_setting)
         for _ in range(5):
             await handle_message(bot, message)
 
-    # Cache fill reads each of 4 keys exactly once on the first message;
-    # subsequent 4 messages all hit the cache → no further DB reads.
-    assert get_setting.await_count == 4
+    # Cache fill reads each of 3 scalar XP keys exactly once on the
+    # first message; subsequent 4 messages all hit the cache → no
+    # further DB reads.  The announce_channel field flows through
+    # the arbitration accessor (PR-7) — its call count is the same
+    # 1-per-window because the per-guild XpConfig cache covers the
+    # whole tuple.
+    assert get_setting.await_count == 3
+    assert announce_accessor.await_count == 1
 
 
 @pytest.mark.asyncio
@@ -104,6 +140,7 @@ async def test_handle_message_caches_per_guild_independently():
             "utils.guild_config_accessors.db.get_setting",
             new_callable=AsyncMock,
         ) as get_setting,
+        _patch_announce_channel() as announce_accessor,
         patch("cogs.xp.listener.check_cooldown", return_value=(True, 0)),
     ):
         _xp_settings_replies(get_setting)
@@ -112,7 +149,11 @@ async def test_handle_message_caches_per_guild_independently():
         await handle_message(bot, _make_message(guild_id=1))  # cached
         await handle_message(bot, _make_message(guild_id=2))  # cached
 
-    assert get_setting.await_count == 8  # 4 per guild × 2 guilds
+    # 3 scalar keys per guild × 2 guilds = 6 db.get_setting calls.
+    # Announce accessor called once per guild (also cached at the
+    # XpConfig level).
+    assert get_setting.await_count == 6
+    assert announce_accessor.await_count == 2
 
 
 # ---------------------------------------------------------------------------
@@ -125,15 +166,20 @@ async def test_invalidate_xp_config_forces_reload_on_next_read():
     """After invalidation, the next get_xp_config call re-runs the loader."""
     from utils.guild_config_accessors import get_xp_config, invalidate_xp_config
 
-    with patch(
-        "utils.guild_config_accessors.db.get_setting",
-        new_callable=AsyncMock,
-    ) as get_setting:
+    with (
+        patch(
+            "utils.guild_config_accessors.db.get_setting",
+            new_callable=AsyncMock,
+        ) as get_setting,
+        _patch_announce_channel(),
+    ):
         _xp_settings_replies(get_setting, min_=10)
         first = await get_xp_config(42)
         assert first.xp_min == 10
         await get_xp_config(42)  # cached
-        assert get_setting.await_count == 4
+        # 3 scalar keys (min/max/cooldown) — announce_channel flows
+        # through the arbitration accessor patched above.
+        assert get_setting.await_count == 3
 
         # Simulate an admin write: new value in DB + explicit invalidation.
         _xp_settings_replies(get_setting, min_=99)
@@ -141,7 +187,7 @@ async def test_invalidate_xp_config_forces_reload_on_next_read():
 
         second = await get_xp_config(42)
         assert second.xp_min == 99
-        assert get_setting.await_count == 8  # 4 more reads on the reload
+        assert get_setting.await_count == 6  # 3 more reads on the reload
 
 
 @pytest.mark.asyncio

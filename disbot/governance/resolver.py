@@ -25,7 +25,7 @@ from governance.models import (
     SubsystemState,
     VisibilityResult,
 )
-from utils import db, settings_keys
+from utils import db
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.visibility_rules import get_member_visibility_tier, get_subsystems_for_tier
 
@@ -147,20 +147,29 @@ async def _resolve_member_tier(ctx: GovernanceContext) -> str:
         ctx.member.guild.owner_id if ctx.member.guild else 0,
     )
 
-    # Trusted tier: if the guild has a TRUSTED_TIER_ROLE_ID setting and the
-    # member has that role, promote them to "trusted" (but only if they're
-    # currently "user" — higher tiers like staff/mod/admin take precedence).
+    # Trusted tier: if the guild has a trusted_role binding (or legacy
+    # TRUSTED_TIER_ROLE_ID setting) AND the member has that role,
+    # promote them to "trusted" (but only if they're currently "user"
+    # — higher tiers like staff/mod/admin take precedence).
+    #
+    # Read flows through the Phase 2 arbitration helper so the canary
+    # flip of ``bindings.primary`` is a single change in
+    # :mod:`core.runtime.config_arbitration`.  This function MUST NOT
+    # branch on ``is_enabled("bindings.primary", ...)`` directly —
+    # that is forbidden by the invariant test in PR-7.
     if tier == "user":
         try:
-            trusted_role_id = await db.get_setting(
-                ctx.guild_id,
-                settings_keys.TRUSTED_TIER_ROLE_ID,
-                default="",
-            )
+            # Local import — keep core.runtime out of governance/__init__'s
+            # module-load cycle (PR #74 protection).  resolver.py is a
+            # sibling of __init__.py but follows the same discipline.
+            from core.runtime.config_arbitration import get_trusted_tier_role
+
+            trusted_role_result = await get_trusted_tier_role(ctx.guild_id)
+            trusted_role_id = trusted_role_result.value
             if (
-                trusted_role_id
+                trusted_role_id is not None
                 and ctx.role_ids
-                and int(trusted_role_id) in ctx.role_ids
+                and trusted_role_id in ctx.role_ids
             ):
                 tier = "trusted"
         except Exception:

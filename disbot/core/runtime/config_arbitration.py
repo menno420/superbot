@@ -326,6 +326,141 @@ async def _read_legacy(settings_db, guild_id: int, legacy_key: str) -> Any | Non
 
 
 # ---------------------------------------------------------------------------
+# Type-coercion helpers for per-subsystem accessors
+# ---------------------------------------------------------------------------
+#
+# ``read_config`` returns ``int|None`` from the binding path and
+# ``str|None`` from the legacy path.  The per-subsystem accessors
+# below normalize to a single shape (matching what existing callers
+# expect) so cog read-sites don't have to branch on
+# ``isinstance(result.value, int)``.
+
+
+def _coerce_to_int(result: ConfigReadResult) -> ConfigReadResult:
+    """Return a new ``ConfigReadResult`` with ``value`` normalized to ``int|None``.
+
+    A legacy string that doesn't parse as an int is converted to
+    ``None`` and recorded in ``diagnostics`` — the caller treats it
+    as "missing" rather than crashing on the type mismatch.
+    """
+    value = result.value
+    if value is None:
+        return result
+    if isinstance(value, int):
+        return result
+    if isinstance(value, str):
+        try:
+            return ConfigReadResult(
+                value=int(value),
+                source=result.source,
+                binding_status=result.binding_status,
+                flag_state=result.flag_state,
+                diagnostics=result.diagnostics,
+            )
+        except ValueError:
+            return ConfigReadResult(
+                value=None,
+                source="missing",
+                binding_status=result.binding_status,
+                flag_state=result.flag_state,
+                diagnostics=[
+                    *result.diagnostics,
+                    f"legacy value {value!r} could not be parsed as int",
+                ],
+            )
+    # Unknown type — coerce to None.
+    return ConfigReadResult(
+        value=None,
+        source="missing",
+        binding_status=result.binding_status,
+        flag_state=result.flag_state,
+        diagnostics=[
+            *result.diagnostics,
+            f"unexpected value type {type(value).__name__}",
+        ],
+    )
+
+
+def _coerce_to_str(result: ConfigReadResult) -> ConfigReadResult:
+    """Return a new ``ConfigReadResult`` with ``value`` normalized to ``str|None``.
+
+    A legacy empty string is already filtered to ``None`` by
+    :func:`_read_legacy`, so this helper only needs to stringify
+    ints from the binding path.
+    """
+    value = result.value
+    if value is None or isinstance(value, str):
+        return result
+    return ConfigReadResult(
+        value=str(value),
+        source=result.source,
+        binding_status=result.binding_status,
+        flag_state=result.flag_state,
+        diagnostics=result.diagnostics,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Per-subsystem convenience accessors (PR-7).
+#
+# These are the ONLY legitimate read sites for migrated keys in cog/
+# service/governance code.  Direct calls to
+# ``is_enabled("bindings.primary", ...)`` outside this module are
+# forbidden by ``tests/unit/invariants/test_no_direct_bindings_primary_branch.py``.
+
+
+async def get_xp_announce_channel(guild_id: int) -> ConfigReadResult:
+    """Resolve the XP announce channel via the arbitration ladder.
+
+    Return shape: ``ConfigReadResult.value`` is ``str|None`` (matches
+    the existing ``XpConfig.announce_channel`` shape).  A binding-side
+    snowflake int is stringified; an unparseable legacy value is
+    returned as the raw string.
+    """
+    result = await read_config(
+        guild_id=guild_id,
+        subsystem="xp",
+        binding_name="announce_channel",
+        legacy_key="xp_announce_channel",
+        binding_kind="channel",
+    )
+    return _coerce_to_str(result)
+
+
+async def get_economy_log_channel(guild_id: int) -> ConfigReadResult:
+    """Resolve the economy log channel; value normalized to ``int|None``.
+
+    Consumers (``utils.helpers.post_log_embed``) then do
+    ``guild.get_channel(value)``.  An unparseable legacy value becomes
+    ``None`` with a diagnostic explaining the parse failure.
+    """
+    result = await read_config(
+        guild_id=guild_id,
+        subsystem="economy",
+        binding_name="log_channel",
+        legacy_key="economy_log_channel",
+        binding_kind="channel",
+    )
+    return _coerce_to_int(result)
+
+
+async def get_trusted_tier_role(guild_id: int) -> ConfigReadResult:
+    """Resolve the governance trusted-tier role; value normalized to ``int|None``.
+
+    Consumers (``governance.resolver._resolve_member_tier``) check
+    membership of this role id against ``ctx.role_ids``.
+    """
+    result = await read_config(
+        guild_id=guild_id,
+        subsystem="governance",
+        binding_name="trusted_role",
+        legacy_key="trusted_tier_role_id",
+        binding_kind="role",
+    )
+    return _coerce_to_int(result)
+
+
+# ---------------------------------------------------------------------------
 # Diagnostics provider registration (registers at import time)
 # ---------------------------------------------------------------------------
 
@@ -349,5 +484,8 @@ _register_diagnostics()
 __all__ = [
     "ConfigReadResult",
     "counters_snapshot",
+    "get_economy_log_channel",
+    "get_trusted_tier_role",
+    "get_xp_announce_channel",
     "read_config",
 ]
