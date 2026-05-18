@@ -225,13 +225,22 @@ def test_sequence_mode_advances_index_on_success():
 
 
 @pytest.mark.asyncio
-async def test_apply_decision_delete_calls_message_delete():
+async def test_apply_decision_delete_calls_auto_delete():
+    """Post-§3.2 the delete path routes through moderation_service.auto_delete
+    so the removal is recorded in mod_logs + emits EVT_MOD_ACTION."""
+    from unittest.mock import patch as _patch
+
     msg = _make_message()
     decision = CountingDecision(accepted=False, delete_message=True)
 
-    await handler.apply_decision(decision, msg)
+    with _patch(
+        "cogs.counting.handler.moderation_service.auto_delete",
+        new_callable=AsyncMock,
+    ) as auto_delete:
+        await handler.apply_decision(decision, msg)
 
-    msg.delete.assert_awaited_once()
+    auto_delete.assert_awaited_once()
+    assert auto_delete.call_args.kwargs["rule"] == "counting.invalid"
     msg.channel.send.assert_not_awaited()
     msg.add_reaction.assert_not_awaited()
 
@@ -318,7 +327,7 @@ async def test_on_message_releases_scope_lock_before_discord_io():
         "cogs.counting_cog.handler.apply_decision",
         side_effect=_spy_apply,
     ):
-        await cog.on_message(msg)
+        await cog._process_counting_message(msg)
 
     assert locked_at_apply["value"] is False, (
         "apply_decision was invoked while the scope_lock was still held — "
@@ -341,7 +350,7 @@ async def test_on_message_skips_when_channel_not_in_state():
     msg.channel.id = 999
     msg.channel.send = AsyncMock()
 
-    await cog.on_message(msg)
+    await cog._process_counting_message(msg)
 
     msg.delete.assert_not_awaited()
     msg.channel.send.assert_not_awaited()
@@ -349,8 +358,15 @@ async def test_on_message_skips_when_channel_not_in_state():
 
 
 @pytest.mark.asyncio
-async def test_on_message_skips_bot_authors():
+async def test_dispatch_skips_bot_authors_before_counting_stage():
+    """Bot messages never reach CountingStage — the pipeline pre-filter
+    drops them before any stage runs.  Post-§3.2 the counting hot path
+    no longer re-checks ``message.author.bot``; the pre-filter is the
+    single source of truth (covered by test_message_pipeline.py).
+    """
+    from cogs.counting._stage import CountingStage
     from cogs.counting_cog import CountingCog
+    from core.runtime import message_pipeline
 
     cog = CountingCog(bot=MagicMock())
     cog.count_data = {
@@ -364,9 +380,14 @@ async def test_on_message_skips_bot_authors():
     msg.channel = MagicMock(spec=discord.TextChannel)
     msg.channel.id = 1
 
-    await cog.on_message(msg)
+    message_pipeline.clear()
+    message_pipeline.register(CountingStage(cog))
+    try:
+        await message_pipeline.dispatch(MagicMock(), msg)
+    finally:
+        message_pipeline.clear()
 
-    # State unchanged.
+    # State unchanged — the pre-filter dropped the bot message.
     assert cog.count_data["1"]["channels"]["1"]["current_count"] == 0
 
 
@@ -410,8 +431,8 @@ async def test_two_channels_can_process_concurrently():
         return msg
 
     await asyncio.gather(
-        cog.on_message(make_msg(1, "A")),
-        cog.on_message(make_msg(2, "B")),
+        cog._process_counting_message(make_msg(1, "A")),
+        cog._process_counting_message(make_msg(2, "B")),
     )
 
     # Both succeeded (their scope_locks did not contend).

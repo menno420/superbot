@@ -26,6 +26,7 @@ import discord
 from discord.ext import commands
 
 from cogs.counting import handler
+from cogs.counting._stage import COUNTING_STAGE_NAME, CountingStage
 from core.runtime import resources, scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
@@ -56,9 +57,14 @@ class CountingCog(commands.Cog):
         self.count_data: dict = {}
 
     async def cog_load(self):
-        """Schedule DB state load + register scope_locks teardown hook (S2.1)."""
+        """Schedule DB state load, register scope_locks teardown hook (S2.1),
+        and register the message-pipeline CountingStage (§3.2).
+        """
+        from core.runtime import message_pipeline
+
         tasks.spawn("counting:load_when_ready", self._load_when_ready())
         scope_locks.register_guild_teardown_hook(self._drop_scope_locks_for_guild)
+        message_pipeline.register(CountingStage(self))
 
     def _drop_scope_locks_for_guild(self, guild_id: int) -> int:
         """guild_lifecycle teardown hook — drop counting scope_locks for the guild.
@@ -584,31 +590,17 @@ class CountingCog(commands.Cog):
     # Event Listeners
     # --------------------------------------------
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        """Validate counts in active channels — V/M/A coordinator (S2.1).
+    async def _process_counting_message(self, message) -> bool:
+        """Validate counts in active channels — V/M/A coordinator (§3.2).
 
-        H-2 fix: the previous implementation held a cog-wide ``self.lock``
-        across every Discord I/O call, serialising counting across every
-        channel + every guild + every mode through one critical section.
+        Called by :class:`CountingStage` from the message pipeline.
+        Returns ``True`` if the message was deleted (caller short-circuits
+        the pipeline), ``False`` otherwise.
 
-        After S2.1 this is the thin V/M/A coordinator:
-
-          1. Quick existence check (no lock — CPython dict reads atomic).
-          2. compute_decision under per-channel ``scope_locks`` — pure
-             validation + in-place state mutation + spawn save.
-          3. apply_decision OUTSIDE the lock — all Discord I/O happens
-             with no lock held, so a slow API roundtrip on channel A
-             cannot stall channel B.
-
-        The compute/apply split lives in ``cogs/counting/handler.py``.
-        Admin commands still use ``self.lock`` for now (rare paths;
-        race window is benign per the docstring on _drop_scope_locks_for_guild).
+        The pipeline pre-filters bot authors so we don't re-check.
         """
-        if message.author.bot:
-            return
         if not isinstance(message.channel, discord.TextChannel):
-            return
+            return False
 
         guild_id = str(message.guild.id)
         channel_id = str(message.channel.id)
@@ -622,7 +614,7 @@ class CountingCog(commands.Cog):
             self.count_data.get(guild_id, {}).get("channels", {}).get(channel_id)
         )
         if channel_data is None:
-            return
+            return False
 
         # ---- VALIDATE + MUTATE under per-channel scope_lock ----
         scope_id = _scope_id_for_channel(channel_id)
@@ -640,14 +632,18 @@ class CountingCog(commands.Cog):
 
         # ---- APPLY OUTSIDE the lock (Discord I/O) ----
         await handler.apply_decision(decision, message)
+        return decision.delete_message
 
     # --------------------------------------------
     # Cog Unload
     # --------------------------------------------
 
     def cog_unload(self):
-        """Cancel in-flight save / load tasks so a reload doesn't leak them."""
+        """Cancel in-flight save / load tasks; unregister the pipeline stage."""
+        from core.runtime import message_pipeline
+
         tasks.cancel_by_prefix("counting:")
+        message_pipeline.unregister(COUNTING_STAGE_NAME)
 
 
 async def setup(bot):
