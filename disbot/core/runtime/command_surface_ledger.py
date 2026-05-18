@@ -108,12 +108,25 @@ class CommandSurfaceLedger:
         return tuple(e for e in self.entries if e.subsystem == subsystem)
 
     def find(self, name: str) -> CommandSurfaceEntry | None:
+        """Return the entry whose primary ``name`` matches, or the first
+        entry that declares ``name`` as an alias.  Primary names take
+        precedence over aliases so a command's canonical entry always
+        wins when both forms collide (the collision itself is reported
+        as a ``duplicate_alias_names`` finding).
+        """
         for entry in self.entries:
             if entry.name == name:
+                return entry
+        for entry in self.entries:
+            if name in entry.aliases:
                 return entry
         return None
 
     def subsystem_for_command(self, name: str) -> str | None:
+        """Return the owning subsystem for *name*; alias-aware via
+        :meth:`find`.  Returns ``None`` when neither a primary name
+        nor an alias matches.
+        """
         entry = self.find(name)
         return entry.subsystem if entry is not None else None
 
@@ -178,7 +191,11 @@ def _walk_commands(bot: object) -> list[CommandSurfaceEntry]:
         parent = getattr(cmd, "parent", None)
         parent_name = parent.qualified_name if parent is not None else None
         aliases = tuple(getattr(cmd, "aliases", ()) or ())
-        is_declared = _is_declared_entry_point(cmd.name, subsystem)
+        is_declared = _is_declared_entry_point(
+            cmd.name,
+            cmd.qualified_name,
+            subsystem,
+        )
         entries.append(
             CommandSurfaceEntry(
                 name=cmd.qualified_name,
@@ -206,7 +223,17 @@ def _visibility_for(subsystem: str | None) -> str | None:
     return str(tier) if tier is not None else None
 
 
-def _is_declared_entry_point(name: str, subsystem: str | None) -> bool:
+def _is_declared_entry_point(
+    bare_name: str,
+    qualified_name: str,
+    subsystem: str | None,
+) -> bool:
+    """A subsystem's ``entry_points`` list may use either bare command
+    names (``"daily"``) or qualified group-subcommand pairs
+    (``"platform consistency"``).  Match either form so subcommands
+    are correctly flagged as declared without forcing SUBSYSTEMS to
+    pick one convention.
+    """
     if subsystem is None:
         return False
     from utils.subsystem_registry import SUBSYSTEMS
@@ -215,7 +242,7 @@ def _is_declared_entry_point(name: str, subsystem: str | None) -> bool:
     if meta is None:
         return False
     declared = meta.get("entry_points") or ()
-    return name in declared
+    return bare_name in declared or qualified_name in declared
 
 
 def _walk_router_prefixes() -> list[RouterPrefixEntry]:

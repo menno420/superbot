@@ -143,6 +143,50 @@ def test_build_ledger_is_declared_false_for_undeclared_command():
     assert ledger.entries[0].is_declared is False
 
 
+def test_build_ledger_is_declared_matches_qualified_subcommand_name():
+    """When SUBSYSTEMS.entry_points declares a qualified group
+    subcommand like ``"economy stats"``, the ledger must flag the
+    matching subcommand as declared even though the bare name
+    (``"stats"``) does not appear in entry_points."""
+    parent = MagicMock()
+    parent.qualified_name = "economy"
+    sub = _make_cmd("stats", cog_name="EconomyCog", parent=parent)
+    bot = _make_bot(sub)
+    with patch(
+        "utils.subsystem_registry.SUBSYSTEMS",
+        {
+            "economy": {
+                "entry_points": ["economy stats"],
+                "visibility_tier": "user",
+            },
+        },
+    ):
+        ledger = build_ledger(bot)
+    assert ledger.entries[0].name == "economy stats"
+    assert ledger.entries[0].is_declared is True
+
+
+def test_build_ledger_is_declared_matches_bare_subcommand_name():
+    """Conversely, if SUBSYSTEMS lists a bare name like ``"stats"``
+    (the legacy convention), a subcommand whose qualified name is
+    ``"economy stats"`` is still flagged as declared."""
+    parent = MagicMock()
+    parent.qualified_name = "economy"
+    sub = _make_cmd("stats", cog_name="EconomyCog", parent=parent)
+    bot = _make_bot(sub)
+    with patch(
+        "utils.subsystem_registry.SUBSYSTEMS",
+        {
+            "economy": {
+                "entry_points": ["stats"],
+                "visibility_tier": "user",
+            },
+        },
+    ):
+        ledger = build_ledger(bot)
+    assert ledger.entries[0].is_declared is True
+
+
 def test_build_ledger_handles_bot_without_walk_commands():
     bot = MagicMock(spec=[])  # no walk_commands attribute
     ledger = build_ledger(bot)
@@ -258,11 +302,45 @@ def test_ledger_find_returns_entry_by_name():
     assert ledger.find("nonexistent") is None
 
 
+def test_ledger_find_returns_entry_by_alias():
+    """find() must resolve a command via its declared aliases so
+    callers (PanelRegistry, future help/wizard) don't have to walk
+    .aliases themselves."""
+    bot = _make_bot(_make_cmd("daily", cog_name="EconomyCog", aliases=("d",)))
+    ledger = build_ledger(bot)
+    found = ledger.find("d")
+    assert found is not None
+    assert found.name == "daily"
+
+
+def test_ledger_find_primary_name_wins_over_alias_collision():
+    """When a name is both a primary command and an alias of another,
+    the primary entry wins."""
+    primary = _make_cmd("d", cog_name="EconomyCog")
+    aliased = _make_cmd("daily", cog_name="EconomyCog", aliases=("d",))
+    bot = _make_bot(primary, aliased)
+    ledger = build_ledger(bot)
+    found = ledger.find("d")
+    assert found is not None
+    assert found.name == "d"  # the primary entry wins, not the aliased one
+
+
 def test_ledger_subsystem_for_command_returns_owner():
     bot = _make_bot(_make_cmd("daily", cog_name="EconomyCog"))
     ledger = build_ledger(bot)
     assert ledger.subsystem_for_command("daily") == "economy"
     assert ledger.subsystem_for_command("nonexistent") is None
+
+
+def test_ledger_subsystem_for_command_is_alias_aware():
+    """subsystem_for_command must resolve via aliases too — otherwise
+    PanelRegistry / help would mis-attribute alias invocations."""
+    bot = _make_bot(
+        _make_cmd("daily", cog_name="EconomyCog", aliases=("d", "claim")),
+    )
+    ledger = build_ledger(bot)
+    assert ledger.subsystem_for_command("d") == "economy"
+    assert ledger.subsystem_for_command("claim") == "economy"
 
 
 # ---------------------------------------------------------------------------
