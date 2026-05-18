@@ -1,6 +1,6 @@
 """Phase 2 — guild_lifecycle.teardown wires Phase 2 cleanup primitives.
 
-Two new steps were added to ``guild_lifecycle.teardown`` in this PR:
+PR-1 added two steps to ``guild_lifecycle.teardown``:
 
 * **Step 5** — :func:`utils.db.bindings.delete_active_bindings_for_guild`
   purges ``subsystem_bindings`` rows and **preserves**
@@ -9,13 +9,27 @@ Two new steps were added to ``guild_lifecycle.teardown`` in this PR:
   reserved for explicit forensic cleanup and is **never** called from
   teardown.
 * **Step 6** — :func:`utils.db.resource_cache.delete_for_guild` drops
-  cached resource validation rows (the primitive shipped in PR #72; the
-  wiring landed here).
+  cached resource validation rows (the primitive shipped in PR #72;
+  the wiring landed here).
 
-These tests pin the contract for both:
+PR-2 added three more (Phase 2d feature-flag substrate):
 
-* Both new primitives are awaited during teardown.
-* The audit-purge primitive is **not** awaited (retention guarantee).
+* **Step 7** — :func:`utils.db.feature_flag_state.delete_for_guild`
+  drops the per-guild override rows; global rows are preserved.
+* **Step 8** — :func:`utils.db.environment_tiers.delete_for_guild`
+  removes the environment-tier row so the guild re-defaults to
+  PRODUCTION on re-invite.
+* **Step 9** — :func:`core.runtime.feature_flags.clear_cache` purges
+  cached evaluator decisions for the guild.
+
+These tests pin the contract:
+
+* Every new primitive is awaited (or called, for the sync one) during
+  teardown.
+* The binding audit-purge primitive is **never** awaited (retention
+  guarantee).
+* Global feature-flag overrides are preserved — the primitive scopes
+  to guild rows only.
 * Per-step failure does not abort the rest of the teardown sequence
   (matches the existing try/except discipline in
   ``disbot/guild_lifecycle.py``).
@@ -69,6 +83,23 @@ def _teardown_patches():
         ),
         patch(
             "core.runtime.scope_locks.teardown_guild",
+            return_value=0,
+        ),
+        # Phase 2d defaults — patched here so individual tests can
+        # override via additional with patch(...) blocks when they need
+        # to assert against the new feature-flag/environment-tier steps.
+        patch(
+            "utils.db.feature_flag_state.delete_for_guild",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "utils.db.environment_tiers.delete_for_guild",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "core.runtime.feature_flags.clear_cache",
             return_value=0,
         ),
     ):
@@ -218,3 +249,79 @@ async def test_teardown_is_idempotent(_teardown_patches):
         await guild_lifecycle.teardown(99)
         assert mock_bindings_delete.await_count == 2
         assert mock_resource_delete.await_count == 2
+
+
+# ---------------------------------------------------------------------------
+# Step 7 — feature_flag_state per-guild overrides deleted; globals preserved
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_feature_flag_guild_overrides(_teardown_patches):
+    """The feature_flag guild-override primitive is awaited from teardown."""
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.feature_flag_state.delete_for_guild",
+        new_callable=AsyncMock,
+        return_value=2,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_feature_flag_step_failure_is_isolated(_teardown_patches):
+    """If the feature-flag delete raises, downstream steps still run."""
+    import guild_lifecycle
+
+    with (
+        patch(
+            "utils.db.feature_flag_state.delete_for_guild",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("DB blip"),
+        ),
+        patch(
+            "utils.db.environment_tiers.delete_for_guild",
+            new_callable=AsyncMock,
+            return_value=0,
+        ) as mock_et,
+    ):
+        await guild_lifecycle.teardown(99)
+        mock_et.assert_awaited_once_with(99)
+
+
+# ---------------------------------------------------------------------------
+# Step 8 — environment_tier row deleted
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_deletes_environment_tier(_teardown_patches):
+    import guild_lifecycle
+
+    with patch(
+        "utils.db.environment_tiers.delete_for_guild",
+        new_callable=AsyncMock,
+        return_value=1,
+    ) as mock_delete:
+        await guild_lifecycle.teardown(99)
+        mock_delete.assert_awaited_once_with(99)
+
+
+# ---------------------------------------------------------------------------
+# Step 9 — feature_flag cache cleared per guild
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_clears_feature_flag_cache(_teardown_patches):
+    """Cache clear is called scoped to the guild (guild_id kwarg)."""
+    import guild_lifecycle
+
+    with patch(
+        "core.runtime.feature_flags.clear_cache",
+        return_value=0,
+    ) as mock_clear:
+        await guild_lifecycle.teardown(99)
+        mock_clear.assert_called_once_with(guild_id=99)
