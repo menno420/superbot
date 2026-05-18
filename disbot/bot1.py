@@ -715,6 +715,19 @@ async def main() -> None:
             except Exception as exc:
                 logger.warning("Identity-contract validation skipped: %s", exc)
 
+            # Phase 2 PR-12 — Command Surface Ledger.  Walks the live
+            # command surface (cogs + router prefixes) once and caches
+            # the immutable snapshot for diagnostics / future
+            # PanelRegistry consumers.  Failure is non-fatal: the bot
+            # boots without the ledger and `!platform consistency`
+            # reports the section as not-built.
+            try:
+                from core.runtime import command_surface_ledger
+
+                command_surface_ledger.build_ledger(bot)
+            except Exception as exc:
+                logger.warning("Command-surface ledger build skipped: %s", exc)
+
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
