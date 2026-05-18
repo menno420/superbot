@@ -364,9 +364,58 @@ def build_settings_registry_embed() -> discord.Embed:
     return embed
 
 
+def build_customization_embed() -> discord.Embed:
+    """Build the embed for ``!platform customization`` (S2)."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("customization_catalogue")
+    if snap.get("status") == "not_built":
+        return discord.Embed(
+            title="🧭 Customization catalogue",
+            description=(
+                "*(not built — call customization_catalogue.build_catalogue(bot))*"
+            ),
+            color=discord.Color.greyple(),
+        )
+    embed = discord.Embed(
+        title="🧭 Customization catalogue",
+        description=(
+            f"v{snap['version']}  ·  {snap['subsystem_count']} subsystems  ·  "
+            f"{snap['panel_count']} panels  ·  "
+            f"schemas={snap['subsystems_with_schema']}  ·  "
+            f"help_hooks={snap['subsystems_with_help_hook']}  ·  "
+            f"findings={snap['findings_total']}"
+        ),
+        color=discord.Color.blurple(),
+    )
+    panels_by_source = snap.get("panels_by_source") or {}
+    if panels_by_source:
+        lines = [
+            f"`{src}` — {count}" for src, count in sorted(panels_by_source.items())
+        ]
+        embed.add_field(
+            name="Panels by detection source",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    findings = snap.get("findings") or {}
+    if findings and snap.get("findings_total"):
+        finding_lines = [
+            f"`{key}`: {count}" for key, count in sorted(findings.items()) if count
+        ]
+        if finding_lines:
+            embed.add_field(
+                name="Findings",
+                value="\n".join(finding_lines)[:1024],
+                inline=False,
+            )
+    return embed
+
+
 __all__ = [
     "build_bindings_embed",
     "build_consistency_embed",
+    "build_customization_embed",
     "build_resources_embed",
     "build_schemas_embed",
     "build_settings_registry_embed",
