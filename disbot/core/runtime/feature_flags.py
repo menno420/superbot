@@ -415,12 +415,25 @@ async def _resolve_from_db(
             flag=flag,
             guild_tier=guild_tier,
         )
-        if value or _normalize_state(global_row["state"]) in ("on", "off"):
-            # A hard 'on' / matching tier wins.  A hard 'off' / unmatched
-            # tier means "no override fires" — fall through to the
-            # declared rollout policy.  We only short-circuit on 'on' so
-            # rollout can still grant access to additional guilds.
+        normalized = _normalize_state(global_row["state"])
+        # Resolution rules for global overrides (intentional):
+        #   * 'on'  → hard enable, short-circuit True.
+        #   * 'off' → hard disable, short-circuit False.  This makes
+        #             rollback safe: setting the global row to 'off'
+        #             immediately disables the flag for every guild
+        #             that does not carry a per-guild override.
+        #   * tier name (canary/beta/production/owner) + matching guild
+        #             tier → True via tier match.
+        #   * tier name + non-matching guild tier → the global row is
+        #             non-binding for this guild; fall through to the
+        #             declared rollout policy.  The staged rollout may
+        #             still grant access via staged_guilds or rollout
+        #             percentage.
+        if normalized in ("on", "off"):
             return _Decision(value, _SOURCE_DB_GLOBAL)
+        if value:
+            return _Decision(True, _SOURCE_DB_GLOBAL)
+        # Non-matching tier name: do not short-circuit; rollout may grant.
 
     # Declared rollout policy.
     if flag.rollout_policy is not None and guild_id is not None:
