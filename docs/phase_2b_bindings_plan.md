@@ -1,5 +1,44 @@
-# Phase 2b — Guild Bindings (next-PR plan)
+# Phase 2b — Guild Bindings (HISTORICAL)
 
+> **Status:** ⛔ **HISTORICAL — shipped in PR #73** (plus PR #74
+> circular-import hotfix). This document was the pre-implementation
+> plan for Phase 2b; it is preserved unchanged below for historical
+> context, but is no longer the source of truth.
+>
+> **What actually shipped vs. the plan below:**
+> - ✅ `subsystem_bindings` + `binding_audit_log` (migration 022)
+> - ✅ `BindingMutationPipeline` (7-step contract, not the 6-step
+>   variant sketched below — the 7th step is the explicit "return
+>   result with `mutation_id`" handoff that the pipeline contract
+>   standardized on)
+> - ✅ `BindingValue` typed read model
+> - ✅ `validate_binding_target` (structural-vs-permission split
+>   landed in PR #72 hardening)
+> - ✅ `EVT_BINDING_CHANGED` catalogued; zero consumers today
+> - ✅ `!platform bindings` diagnostics surface
+> - 🟡 **Backfill DEFERRED.** The legacy-fallback / dual-write /
+>   `bindings.primary` flip strategy described below is correct in
+>   spirit but is reordered: the feature-flag evaluator (Phase 2d /
+>   PR-2/3 of the consistency plan) and central read-source
+>   arbitration (PR-4) must land *before* backfill writes (PR-5/6) and
+>   the canary flip (PR-7). Per-cog branching on `bindings.primary`
+>   described below is **forbidden** — all flag-gated reads route
+>   through `core/runtime/config_arbitration.read_config`.
+> - 🟡 **XP threshold roles EXCLUDED from binding migration** — the
+>   1:N (level → role) shape does not fit the 1:1
+>   `subsystem_bindings(guild_id, subsystem, binding_name)` schema. A
+>   dedicated `xp_threshold_roles(guild_id, level, role_id)` table is
+>   the right shape when admin UX motivates it.
+>
+> **Forward pointer:** the operational truth map is
+> `docs/platform-consistency-ledger.md`; the active implementation
+> plan is in the session-attached Phase 2 plan file. Do not extend
+> this document — extend the ledger and the active plan instead.
+>
+> ---
+>
+> ## Original plan text follows (do not edit)
+>
 > **Status:** plan, not implementation.  Phase 2a hardening (PR #72)
 > lands first; this document describes what the *next* PR should
 > contain, in scope.  It is intentionally narrow — bindings only.  The
