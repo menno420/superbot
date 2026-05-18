@@ -60,6 +60,14 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "moderation.action_taken",
         # ── Bindings (services/binding_mutation.py, Phase 2b) ─────────────
         "bindings.changed",
+        # ── Settings (services/settings_mutation.py, S4) ──────────────────
+        # Advisory. Cache invalidation is inline (the pipeline calls
+        # utils.guild_config_accessors.invalidate_setting_value synchronously
+        # w.r.t. the mutation result), NOT event-driven — this event is
+        # for downstream consumers (audit dashboards, future
+        # platform_consistency collector) and never for cache consistency.
+        # Subscriber failure logged + swallowed.
+        "settings.changed",
         # ── Feature flags (services/rollout_mutation.py, Phase 2d PR-3) ───
         # Advisory events emitted after the DB commit + audit row land.
         # Subscriber failure is logged with mutation_id and never raised
