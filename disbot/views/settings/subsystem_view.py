@@ -237,13 +237,172 @@ class _BackToHubButton(discord.ui.Button):
         )
 
 
+# ---------------------------------------------------------------------------
+# S6 edit + reset selects.  Dispatch to the widget appropriate for the
+# SettingSpec.value_type / allowed_values shape.  See the per-widget
+# modules under :mod:`views.settings.edit_*` for the mutation paths.
+# ---------------------------------------------------------------------------
+
+
+def _editable_specs(subsystem: str) -> list:
+    """Return SettingSpec instances we can edit (subset that has a settings_key)."""
+    from core.runtime.subsystem_schema import get_schema
+
+    schema = get_schema(subsystem)
+    if schema is None:
+        return []
+    return [spec for spec in schema.settings if spec.settings_key]
+
+
+class _EditSettingSelect(discord.ui.Select):
+    """Select listing every editable SettingSpec for the subsystem.
+
+    Picking a setting dispatches to the appropriate edit widget:
+    bool toggles directly; int/float/str-without-allowed_values pop
+    a modal; str-with-allowed_values shows an enum select view.
+    """
+
+    def __init__(self, subsystem: str, specs: list) -> None:
+        self.subsystem = subsystem
+        # Cap to Discord's 25-option limit; surface what we can.
+        options: list[discord.SelectOption] = []
+        for spec in specs[:25]:
+            options.append(
+                discord.SelectOption(
+                    label=spec.name[:100],
+                    value=spec.name,
+                    description=f"type={spec.value_type.__name__}"[:100],
+                ),
+            )
+        super().__init__(
+            placeholder="Edit a setting…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        name = self.values[0]
+        from core.runtime.subsystem_schema import get_schema
+        from services.settings_resolution import resolve_setting
+
+        schema = get_schema(self.subsystem)
+        spec = None
+        if schema is not None:
+            for s in schema.settings:
+                if s.name == name:
+                    spec = s
+                    break
+        if spec is None:
+            await interaction.response.send_message(
+                f"❌ Unknown setting `{self.subsystem}.{name}`.",
+                ephemeral=True,
+            )
+            return
+
+        guild_id = interaction.guild_id
+        current = spec.default
+        if guild_id is not None:
+            resolution = await resolve_setting(guild_id, self.subsystem, name)
+            if resolution is not None:
+                current = resolution.value
+
+        parent_msg = interaction.message
+
+        # Dispatch by value_type and allowed_values shape.
+        if spec.value_type is bool:
+            from views.settings.edit_boolean import toggle_setting
+
+            await toggle_setting(interaction, self.subsystem, name, parent_msg)
+            return
+        if spec.value_type is str and spec.allowed_values:
+            from views.settings.edit_enum import EnumSettingSelectView
+
+            view = EnumSettingSelectView(
+                self.subsystem,
+                name,
+                spec.allowed_values,
+                current,
+                parent_msg,
+            )
+            await interaction.response.send_message(
+                f"Pick a new value for `{self.subsystem}.{name}`:",
+                view=view,
+                ephemeral=True,
+            )
+            return
+        if spec.value_type is int or spec.value_type is float:
+            from views.settings.edit_number import NumberSettingModal
+
+            modal = NumberSettingModal(
+                self.subsystem,
+                name,
+                spec.value_type,
+                current,
+                spec.default,
+                parent_msg,
+            )
+            await interaction.response.send_modal(modal)
+            return
+        # Free-form string.
+        from views.settings.edit_text import TextSettingModal
+
+        modal = TextSettingModal(
+            self.subsystem,
+            name,
+            current,
+            spec.default,
+            parent_msg,
+        )
+        await interaction.response.send_modal(modal)
+
+
+class _ResetSettingSelect(discord.ui.Select):
+    """Select listing every resettable SettingSpec for the subsystem."""
+
+    def __init__(self, subsystem: str, specs: list) -> None:
+        self.subsystem = subsystem
+        options: list[discord.SelectOption] = []
+        for spec in specs[:25]:
+            options.append(
+                discord.SelectOption(
+                    label=f"Reset {spec.name}"[:100],
+                    value=spec.name,
+                    description=f"default={spec.default!r}"[:100],
+                ),
+            )
+        super().__init__(
+            placeholder="Reset a setting to its default…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from views.settings.reset_button import reset_setting
+
+        name = self.values[0]
+        await reset_setting(
+            interaction,
+            self.subsystem,
+            name,
+            interaction.message,
+        )
+
+
 class SubsystemSettingsView(HubView):
-    """Per-subsystem read-only drill-down panel."""
+    """Per-subsystem panel: read-only embed + S6 edit/reset selects."""
 
     def __init__(self, author: Any, subsystem: str) -> None:
         super().__init__(author)
         self.subsystem = subsystem
         self.add_item(_BackToHubButton())
+        specs = _editable_specs(subsystem)
+        if specs:
+            self.add_item(_EditSettingSelect(subsystem, specs))
+            self.add_item(_ResetSettingSelect(subsystem, specs))
 
 
 __all__ = ["SubsystemSettingsView", "build_subsystem_embed"]
