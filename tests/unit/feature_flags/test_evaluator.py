@@ -186,6 +186,105 @@ async def test_global_override_used_when_no_guild_row(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_global_override_off_is_hard_disable(monkeypatch):
+    """state='off' on the global row hard-disables the flag for every guild.
+
+    This is the rollback contract: flipping the global row to 'off'
+    must immediately turn the flag off without falling through to the
+    rollout policy.  Without this guarantee, an in-flight canary
+    rollout could keep granting access after rollback.
+    """
+    monkeypatch.setenv("SUPERBOT_FF_FEATURE_FLAG_PRIMARY", "on")
+
+    rollout_flag = FeatureFlag(
+        name="test.rollout_active",
+        description="flag with rollout policy that would grant access",
+        default_value=False,
+        rollout_policy=RolloutPolicy(
+            staged_guilds=(42,),
+            percentage_rollout=100,
+            tier_gate=EnvironmentTier.PRODUCTION,
+        ),
+    )
+    feature_flags.register(rollout_flag)
+
+    with (
+        patch(
+            "utils.db.feature_flag_state.get_guild_override",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "utils.db.feature_flag_state.get_global_override",
+            new_callable=AsyncMock,
+            return_value={"state": "off", "rollout_percent": None},
+        ),
+        patch(
+            "utils.db.environment_tiers.get_tier",
+            new_callable=AsyncMock,
+            return_value="production",
+        ),
+    ):
+        decision = await feature_flags.resolve_with_provenance(
+            "test.rollout_active",
+            guild_id=42,
+        )
+    # Global 'off' must win even when staged_guilds + 100% rollout
+    # would otherwise grant access.
+    assert decision.value is False
+    assert decision.source == "db_global"
+
+
+@pytest.mark.asyncio
+async def test_global_tier_state_falls_through_to_rollout_when_unmatched(monkeypatch):
+    """A tier-named global state that doesn't match the guild's tier falls through.
+
+    Example: global state='canary', guild tier='production'.  The
+    global row is non-binding for this guild — the declared rollout
+    policy may still grant access via staged_guilds.
+    """
+    monkeypatch.setenv("SUPERBOT_FF_FEATURE_FLAG_PRIMARY", "on")
+
+    staged_flag = FeatureFlag(
+        name="test.tier_fallthrough",
+        description="tier-named global state, staged_guilds rollout",
+        default_value=False,
+        rollout_policy=RolloutPolicy(
+            staged_guilds=(42,),
+            percentage_rollout=0,
+            tier_gate=EnvironmentTier.PRODUCTION,
+        ),
+    )
+    feature_flags.register(staged_flag)
+
+    with (
+        patch(
+            "utils.db.feature_flag_state.get_guild_override",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "utils.db.feature_flag_state.get_global_override",
+            new_callable=AsyncMock,
+            return_value={"state": "canary", "rollout_percent": None},
+        ),
+        patch(
+            "utils.db.environment_tiers.get_tier",
+            new_callable=AsyncMock,
+            return_value="production",
+        ),
+    ):
+        decision = await feature_flags.resolve_with_provenance(
+            "test.tier_fallthrough",
+            guild_id=42,
+        )
+    # Guild is 'production' < 'canary'; the global row does not bind.
+    # The rollout policy still grants because guild 42 is staged.
+    assert decision.value is True
+    assert decision.source == "tier"
+
+
+@pytest.mark.asyncio
 async def test_rollout_policy_grants_via_tier_for_staged_guild(monkeypatch):
     """An explicit staged_guild + matching tier returns True via tier."""
     monkeypatch.setenv("SUPERBOT_FF_FEATURE_FLAG_PRIMARY", "on")
