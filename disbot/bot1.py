@@ -747,6 +747,21 @@ async def main() -> None:
             except Exception as exc:
                 logger.warning("Customization catalogue build skipped: %s", exc)
 
+            # S2.5 — Resource provisioning catalogue. Frozen, read-only
+            # cross-link of every ResourceRequirement with its
+            # BindingSpec. Pure schema walk — no bot reference needed.
+            # Failure is non-fatal: the bot boots without the catalogue
+            # and `!platform provisioning` reports it as not-built.
+            try:
+                from services import resource_provisioning_catalogue
+
+                resource_provisioning_catalogue.build_provisioning_catalogue()
+            except Exception as exc:
+                logger.warning(
+                    "Resource provisioning catalogue build skipped: %s",
+                    exc,
+                )
+
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:

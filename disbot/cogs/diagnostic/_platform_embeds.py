@@ -412,10 +412,82 @@ def build_customization_embed() -> discord.Embed:
     return embed
 
 
+def build_provisioning_embed() -> discord.Embed:
+    """Build the embed for ``!platform provisioning`` (S2.5)."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("resource_provisioning_catalogue")
+    if snap.get("status") == "not_built":
+        return discord.Embed(
+            title="🧰 Resource provisioning catalogue",
+            description=(
+                "*(not built — call resource_provisioning_catalogue."
+                "build_provisioning_catalogue())*"
+            ),
+            color=discord.Color.greyple(),
+        )
+    embed = discord.Embed(
+        title="🧰 Resource provisioning catalogue",
+        description=(
+            f"v{snap['version']}  ·  {snap['option_count']} option(s)  ·  "
+            f"{snap['subsystem_count']} subsystem(s)  ·  "
+            f"findings={snap['findings_total']}"
+        ),
+        color=discord.Color.blurple(),
+    )
+    by_priority = snap.get("by_priority") or {}
+    if by_priority:
+        priority_order = {"required": 0, "recommended": 1, "optional": 2}
+        lines = [
+            f"`{p}` — {count}"
+            for p, count in sorted(
+                by_priority.items(),
+                key=lambda kv: priority_order.get(kv[0], 99),
+            )
+        ]
+        embed.add_field(
+            name="By priority",
+            value="\n".join(lines)[:1024],
+            inline=True,
+        )
+    by_kind = snap.get("by_kind") or {}
+    if by_kind:
+        lines = [f"`{k}` — {count}" for k, count in sorted(by_kind.items())]
+        embed.add_field(
+            name="By kind",
+            value="\n".join(lines)[:1024],
+            inline=True,
+        )
+    by_subsystem = snap.get("by_subsystem") or {}
+    if by_subsystem:
+        lines = [
+            f"`{name}` — {count} option(s)"
+            for name, count in sorted(by_subsystem.items())
+        ]
+        embed.add_field(
+            name="By subsystem",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    findings = snap.get("findings") or {}
+    if findings and snap.get("findings_total"):
+        finding_lines = [
+            f"`{key}`: {count}" for key, count in sorted(findings.items()) if count
+        ]
+        if finding_lines:
+            embed.add_field(
+                name="Findings",
+                value="\n".join(finding_lines)[:1024],
+                inline=False,
+            )
+    return embed
+
+
 __all__ = [
     "build_bindings_embed",
     "build_consistency_embed",
     "build_customization_embed",
+    "build_provisioning_embed",
     "build_resources_embed",
     "build_schemas_embed",
     "build_settings_registry_embed",
