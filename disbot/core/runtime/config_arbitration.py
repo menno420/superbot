@@ -17,6 +17,42 @@ Why one central helper:
   debugging, and the ``!platform consistency`` view that PR-10 will
   unify.
 
+Return value typing — read carefully:
+
+* The **binding** path returns ``BindingValue.target_id``
+  (``int | None``).  Binding rows store typed snowflakes for
+  channel/role/etc.
+* The **legacy** and **fallback** paths return the raw legacy string
+  (``str``) from ``guild_settings``.  This is intentional — the
+  legacy KV table stores everything as strings.
+* PR-7's per-subsystem wrappers (e.g. ``get_xp_announce_channel``)
+  will coerce ``str`` → ``int`` (or whatever the binding kind
+  requires) so callers receive a uniform type.  Callers of
+  :func:`read_config` directly MUST handle both shapes (or wait for
+  the per-subsystem wrappers in PR-7).
+
+Source semantics (used by ``!platform consistency``):
+
+* ``source='legacy'`` — value came from legacy KV.  Flag was OFF.
+* ``source='binding'`` — value came from a bound subsystem_bindings
+  row.  Flag was ON and the binding was BOUND.
+* ``source='fallback'`` — flag ON but binding not BOUND; legacy
+  fallback supplied a non-empty value.
+* ``source='missing'`` — neither side produced a value.  Returned
+  whenever the resolved value is ``None``, regardless of flag state;
+  ``flag_state`` and ``binding_status`` carry the distinguishing
+  context.  This makes "how many of my guilds have neither legacy
+  nor binding configured?" a single counter query.
+
+Binding-kind verification (PR-4 enhancement):
+
+* When ``binding_kind`` is provided, ``read_config`` verifies that the
+  resolved binding's kind matches.  A mismatch (schema drift) is
+  treated as if the binding were INVALID — the result short-circuits
+  to fallback / missing and ``diagnostics`` records the drift.  This
+  surfaces wrong-kind bindings early instead of silently returning
+  the wrong shape of value.
+
 Hard rules:
 
 * **No cog branches directly on ``is_enabled("bindings.primary", ...)``.**
@@ -144,20 +180,22 @@ async def read_config(
     Resolution:
 
     1. Consult ``is_enabled("bindings.primary", guild_id)``:
-       - If **OFF** → read legacy directly, source=``"legacy"``.
+       - If **OFF** → read legacy.  Return ``source='legacy'`` if a
+         value is present; ``source='missing'`` if not.
        - If **ON**  → fall through to step 2.
     2. Read the binding via :func:`core.runtime.bindings.get_binding`.
-       - If ``status == BOUND`` and a target is present → return the
-         binding's ``target_id``, source=``"binding"``.
-       - Else → fall through to step 3 (fallback).
-    3. Read legacy as a fallback; return it with source=``"fallback"``
-       and the binding's actual status in ``binding_status``.
-    4. If neither legacy nor binding produced a value → source=``"missing"``.
+       - If ``status == BOUND`` and a target is present AND (when
+         ``binding_kind`` was supplied) the binding's declared kind
+         matches → return ``target_id`` with ``source='binding'``.
+       - If kinds mismatch → treat as INVALID; record a diagnostic
+         and fall through to fallback.
+       - Else → fall through to step 3.
+    3. Read legacy as a fallback.  ``source='fallback'`` if legacy
+       supplies a value, ``source='missing'`` if not.
 
     Failure handling:
 
-    * If ``is_enabled`` raises, treat as flag OFF (safest default —
-      reads continue from legacy).  Logged once per call.
+    * If ``is_enabled`` raises, treat as flag OFF.  Logged.
     * If the binding read raises, log and fall through to legacy.
     * Legacy read failures propagate (the legacy DB layer is allowed
       to surface its own errors — arbitration only catches binding /
@@ -188,9 +226,14 @@ async def read_config(
 
     if not primary_on:
         legacy_value = await _read_legacy(settings_db, guild_id, legacy_key)
+        # source='missing' when the resolved value is None, regardless of
+        # which side we consulted — this makes the !platform consistency
+        # "how many guilds have nothing configured?" query a single
+        # counter read.
+        source: Source = "missing" if legacy_value is None else "legacy"
         result = ConfigReadResult(
             value=legacy_value,
-            source="legacy",
+            source=source,
             binding_status="n/a",
             flag_state="off",
             diagnostics=diagnostics,
@@ -199,12 +242,31 @@ async def read_config(
         return result
 
     # Step 2: binding read.
-    binding_value = None
     binding_status: BindingStatus = "n/a"
     try:
         bv = await bindings_runtime.get_binding(guild_id, subsystem, binding_name)
         binding_status = bv.status.value  # type: ignore[assignment]
-        if bv.is_bound and bv.target_id is not None:
+        # Verify kind matches if the caller declared an expected kind.
+        # Schema drift here is rare but high-impact (a "channel" caller
+        # would otherwise get a role snowflake) so we surface it
+        # explicitly rather than silently returning the wrong shape.
+        kind_mismatch = False
+        if binding_kind is not None and bv.kind.value != binding_kind:
+            kind_mismatch = True
+            diagnostics.append(
+                f"binding kind drift: expected={binding_kind} "
+                f"actual={bv.kind.value}",
+            )
+            logger.warning(
+                "config_arbitration: binding kind drift for "
+                "guild=%d subsystem=%r binding=%r — expected=%s actual=%s",
+                guild_id,
+                subsystem,
+                binding_name,
+                binding_kind,
+                bv.kind.value,
+            )
+        if bv.is_bound and bv.target_id is not None and not kind_mismatch:
             result = ConfigReadResult(
                 value=bv.target_id,
                 source="binding",
@@ -214,8 +276,8 @@ async def read_config(
             )
             _bump_counters(result)
             return result
-        binding_value = bv.target_id
-        diagnostics.append(f"binding not bound (status={binding_status})")
+        if not kind_mismatch:
+            diagnostics.append(f"binding not bound (status={binding_status})")
     except Exception as exc:  # noqa: BLE001 — arbitration must not raise
         logger.warning(
             "config_arbitration: get_binding raised for "
@@ -226,7 +288,6 @@ async def read_config(
             exc,
         )
         diagnostics.append(f"get_binding raised: {type(exc).__name__}")
-    del binding_value  # currently unused, reserved for future provenance
 
     # Step 3: fallback to legacy.
     legacy_value = await _read_legacy(settings_db, guild_id, legacy_key)
@@ -251,10 +312,13 @@ async def read_config(
 
 
 async def _read_legacy(settings_db, guild_id: int, legacy_key: str) -> Any | None:
-    """Best-effort legacy read; returns ``None`` for missing/empty."""
-    # binding_kind is reserved for the future case where legacy keys
-    # encode parsing rules (channel IDs vs comma-separated lists);
-    # current callers all want a simple string-or-None.
+    """Best-effort legacy read; returns ``None`` for missing/empty.
+
+    The legacy KV table stores everything as strings; this function
+    returns the raw string (or ``None`` for an empty/missing row).
+    PR-7's per-subsystem wrappers will coerce ``str`` → typed values
+    so callers do not have to know the storage format.
+    """
     raw = await settings_db.get_setting(guild_id, legacy_key, default="")
     if not raw:
         return None
