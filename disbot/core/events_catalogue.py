@@ -68,6 +68,14 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # platform_consistency collector) and never for cache consistency.
         # Subscriber failure logged + swallowed.
         "settings.changed",
+        # ── Resource provisioning (services/resource_provisioning.py, S4.5)
+        # Advisory.  Emitted after the pipeline writes the binding via
+        # BindingMutationPipeline.  The companion "bindings.changed"
+        # event continues to fire from BindingMutationPipeline (the
+        # pipeline composes, not replaces).  Nothing in this event
+        # drives cache consistency; subscriber failure is logged and
+        # swallowed.
+        "resource.provisioned",
         # ── Feature flags (services/rollout_mutation.py, Phase 2d PR-3) ───
         # Advisory events emitted after the DB commit + audit row land.
         # Subscriber failure is logged with mutation_id and never raised
