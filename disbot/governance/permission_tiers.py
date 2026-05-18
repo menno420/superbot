@@ -173,7 +173,8 @@ def tier_index(tier: PermissionTier | str) -> int:
 
 
 def tier_at_or_above(
-    holder: PermissionTier | str, required: PermissionTier | str
+    holder: PermissionTier | str,
+    required: PermissionTier | str,
 ) -> bool:
     """Return True iff ``holder`` ranks at or above ``required``."""
     return tier_index(holder) >= tier_index(required)

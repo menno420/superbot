@@ -662,8 +662,7 @@ class DiagnosticCog(commands.Cog):
         by_name = snap.get("by_name", {})
         if by_name:
             lines = [
-                f"`{name}` default={info['default_value']} "
-                f"owner=`{info['owner']}`"
+                f"`{name}` default={info['default_value']} owner=`{info['owner']}`"
                 for name, info in sorted(by_name.items())
             ]
             embed.add_field(
