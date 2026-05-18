@@ -29,7 +29,7 @@ types as an optional ``resource_requirements`` list field.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 
@@ -155,8 +155,3 @@ __all__ = [
     "ResourceRequirement",
     "snapshot_resource_requirements",
 ]
-
-
-# Suppress unused-warning for the dataclass kept for type stability.
-_ = field
-_ = _ResourceRequirementSnapshot

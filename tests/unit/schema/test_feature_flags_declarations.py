@@ -14,13 +14,15 @@ from core.runtime.feature_flags import (
     EnvironmentTier,
     FeatureFlag,
     RolloutPolicy,
+)
+from core.runtime.feature_flags import _register_builtins as _register_builtins
+from core.runtime.feature_flags import _reset_for_tests as _reset_flags
+from core.runtime.feature_flags import (
     all_flags,
     declared_names,
     get,
     register,
 )
-from core.runtime.feature_flags import _reset_for_tests as _reset_flags
-from core.runtime.feature_flags import _register_builtins as _register_builtins
 
 
 @pytest.fixture

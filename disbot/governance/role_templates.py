@@ -21,7 +21,7 @@ on top of these declarations.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 from governance.permission_tiers import PermissionTier
@@ -259,7 +259,3 @@ __all__ = [
     "register_collection",
     "register_template",
 ]
-
-
-# Suppress unused-warning for the dataclass field util kept for stability.
-_ = field

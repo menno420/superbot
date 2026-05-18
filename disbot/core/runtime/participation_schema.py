@@ -48,7 +48,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
@@ -342,7 +342,3 @@ __all__ = [
     "register",
     "registered_subsystems",
 ]
-
-
-# Suppress unused-warning for dataclass field utility kept for stability.
-_ = field

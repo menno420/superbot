@@ -20,12 +20,14 @@ from core.runtime.subsystem_schema import (
     BindingSpec,
     SettingSpec,
     SubsystemSchema,
+)
+from core.runtime.subsystem_schema import _reset_for_tests as _reset_schemas
+from core.runtime.subsystem_schema import (
     all_schemas,
     get_schema,
     register,
     registered_subsystems,
 )
-from core.runtime.subsystem_schema import _reset_for_tests as _reset_schemas
 
 
 @pytest.fixture
