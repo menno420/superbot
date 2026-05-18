@@ -241,6 +241,14 @@ def _root_action(action: str) -> str:
     return action.split(":", 1)[0]
 
 
+# Defensive caps so a malformed event payload cannot push the embed
+# past Discord's 25-field / 6000-char limits.  Target / Actor / Guild
+# / Reason already use 4 slots; capping extras at 6 keeps comfortable
+# headroom for future fields without re-tuning.
+_MAX_EXTRA_FIELDS = 6
+_EXTRA_VALUE_CAP = 500
+
+
 def format_log_embed(
     *,
     action: str,
@@ -252,9 +260,13 @@ def format_log_embed(
 ) -> discord.Embed:
     """Render a moderation/cleanup payload as a Discord embed.
 
-    Unknown actions render with the generic dark-grey style + a
-    ``• action: <name>`` field so subscribers never blank-render a new
-    moderation action type the service hasn't seen.
+    Unknown actions render with the generic dark-grey style so
+    subscribers never blank-render a new moderation action type the
+    service hasn't seen.  ``extras`` is capped at
+    :data:`_MAX_EXTRA_FIELDS` slots and each value is truncated to
+    :data:`_EXTRA_VALUE_CAP` chars; if more keys are supplied, a
+    single ``"... truncated"`` field reports the count so the embed
+    stays under Discord's 25-field / 6000-char limits.
     """
     root = _root_action(action)
     color = _ACTION_COLOR.get(root, discord.Color.dark_grey())
@@ -272,8 +284,20 @@ def format_log_embed(
     if reason:
         embed.add_field(name="Reason", value=reason[:1000], inline=False)
     if extras:
-        for k, v in extras.items():
-            embed.add_field(name=k, value=str(v)[:500], inline=False)
+        items = list(extras.items())
+        for k, v in items[:_MAX_EXTRA_FIELDS]:
+            embed.add_field(
+                name=str(k)[:256],
+                value=str(v)[:_EXTRA_VALUE_CAP],
+                inline=False,
+            )
+        if len(items) > _MAX_EXTRA_FIELDS:
+            dropped = len(items) - _MAX_EXTRA_FIELDS
+            embed.add_field(
+                name="… truncated",
+                value=f"{dropped} extra field(s) omitted to stay under embed limits.",
+                inline=False,
+            )
     return embed
 
 

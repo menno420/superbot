@@ -197,6 +197,51 @@ def test_format_log_embed_reason_truncated_at_1000_chars():
     assert len(reason_field.value) <= 1000
 
 
+def test_format_log_embed_caps_extras_at_max_fields():
+    """A malformed event payload must not push the embed past Discord's
+    25-field cap; extras beyond _MAX_EXTRA_FIELDS are replaced with a
+    single '... truncated' summary field."""
+    big_extras = {f"k{i}": f"v{i}" for i in range(20)}
+    embed = format_log_embed(
+        action="warn",
+        guild_id=1,
+        target_id=2,
+        actor_id=3,
+        reason="r",
+        extras=big_extras,
+    )
+    truncated_fields = [f for f in embed.fields if f.name == "… truncated"]
+    assert len(truncated_fields) == 1
+    # 4 base fields (Target/Actor/Guild/Reason) + 6 capped extras + 1 truncation note.
+    assert len(embed.fields) == 11
+    assert "14" in truncated_fields[0].value  # 20 - 6 = 14 dropped
+
+
+def test_format_log_embed_no_truncation_field_when_under_cap():
+    embed = format_log_embed(
+        action="warn",
+        guild_id=1,
+        target_id=2,
+        actor_id=3,
+        reason="r",
+        extras={"until": "2026-12-31T00:00:00+00:00"},
+    )
+    assert all(f.name != "… truncated" for f in embed.fields)
+
+
+def test_format_log_embed_extra_value_truncated_at_cap():
+    embed = format_log_embed(
+        action="warn",
+        guild_id=1,
+        target_id=2,
+        actor_id=3,
+        reason="r",
+        extras={"context": "z" * 5000},
+    )
+    ctx_field = next(f for f in embed.fields if f.name == "context")
+    assert len(ctx_field.value) <= 500
+
+
 # ---------------------------------------------------------------------------
 # resolve_log_channel
 # ---------------------------------------------------------------------------
