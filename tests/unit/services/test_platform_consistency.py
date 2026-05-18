@@ -11,7 +11,6 @@ import pytest
 
 from services import platform_consistency as pc
 
-
 # ---------------------------------------------------------------------------
 # Status promotion logic
 # ---------------------------------------------------------------------------

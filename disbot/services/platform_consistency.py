@@ -49,6 +49,7 @@ import datetime
 import logging
 import os
 import re
+from collections.abc import Awaitable
 from dataclasses import dataclass
 from enum import Enum
 
@@ -146,7 +147,7 @@ async def collect_report(
     callsite (the DiagnosticCog passes ``ctx.guild``; tests can pass
     ``None`` to exercise the SKIPPED paths).
     """
-    collectors: tuple[tuple[str, object], ...] = (
+    collectors: tuple[tuple[str, Awaitable[SectionResult]], ...] = (
         ("Identity contract", _collect_identity_contract(bot)),
         ("Feature flags", _collect_feature_flags()),
         ("Rollout / audit", _collect_rollout_audit()),
