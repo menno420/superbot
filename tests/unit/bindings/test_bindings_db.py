@@ -111,29 +111,60 @@ async def test_count_by_subsystem(_mock_pool):
 
 
 @pytest.mark.asyncio
-async def test_delete_for_guild_parses_combined_count():
-    """delete_for_guild returns the parsed sum of both DELETE results."""
-    conn_mock = MagicMock()
-    conn_mock.execute = AsyncMock()
-    # First execute (audit table) returns DELETE 7; second (bindings) DELETE 3
-    conn_mock.execute.side_effect = ["DELETE 7", "DELETE 3"]
-    conn_mock.transaction = MagicMock()
+async def test_delete_active_bindings_for_guild_targets_active_table(_mock_pool):
+    """delete_active_bindings_for_guild deletes ONLY from subsystem_bindings.
 
-    transaction_cm = MagicMock()
-    transaction_cm.__aenter__ = AsyncMock(return_value=None)
-    transaction_cm.__aexit__ = AsyncMock(return_value=False)
-    conn_mock.transaction.return_value = transaction_cm
+    Phase 2 retention policy: audit rows MUST survive guild teardown so
+    the historical trail is preserved.  This test guards against a
+    regression that would re-introduce audit deletion via this primitive.
+    """
+    _mock_pool.execute.return_value = "DELETE 3"
+    deleted = await bindings_db.delete_active_bindings_for_guild(42)
+    sql, *args = _mock_pool.execute.await_args.args
+    assert "DELETE FROM subsystem_bindings" in sql
+    assert "binding_audit_log" not in sql
+    assert args == [42]
+    assert deleted == 3
 
-    acquire_cm = MagicMock()
-    acquire_cm.__aenter__ = AsyncMock(return_value=conn_mock)
-    acquire_cm.__aexit__ = AsyncMock(return_value=False)
 
-    pool_mock = MagicMock()
-    pool_mock.acquire = MagicMock(return_value=acquire_cm)
-    with patch.object(bindings_db, "pool") as pool_module:
-        pool_module.get = MagicMock(return_value=pool_mock)
-        deleted = await bindings_db.delete_for_guild(42)
-    assert deleted == 10
+@pytest.mark.asyncio
+async def test_delete_active_bindings_for_guild_handles_zero_rows(_mock_pool):
+    _mock_pool.execute.return_value = "DELETE 0"
+    assert await bindings_db.delete_active_bindings_for_guild(42) == 0
+
+
+@pytest.mark.asyncio
+async def test_delete_active_bindings_for_guild_handles_unexpected_status(_mock_pool):
+    _mock_pool.execute.return_value = "unexpected"
+    assert await bindings_db.delete_active_bindings_for_guild(42) == 0
+
+
+@pytest.mark.asyncio
+async def test_purge_binding_audit_for_guild_targets_audit_table(_mock_pool):
+    """purge_binding_audit_for_guild deletes ONLY from binding_audit_log.
+
+    This is the forensic/GDPR primitive — explicitly NOT wired into
+    guild_lifecycle.teardown.  Kept separate so the active-row delete in
+    teardown can't accidentally cascade to audit data.
+    """
+    _mock_pool.execute.return_value = "DELETE 7"
+    deleted = await bindings_db.purge_binding_audit_for_guild(42)
+    sql, *args = _mock_pool.execute.await_args.args
+    assert "DELETE FROM binding_audit_log" in sql
+    assert "subsystem_bindings" not in sql
+    assert args == [42]
+    assert deleted == 7
+
+
+@pytest.mark.asyncio
+async def test_legacy_delete_for_guild_removed():
+    """The combined delete_for_guild primitive is intentionally gone.
+
+    Splitting active-row delete from audit purge is a binding retention
+    guarantee; restoring a combined primitive would re-open the silent
+    audit-deletion path.
+    """
+    assert not hasattr(bindings_db, "delete_for_guild")
 
 
 @pytest.mark.asyncio
