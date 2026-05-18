@@ -8,10 +8,11 @@ and/or ``utils.db.*``) and returns a single :class:`discord.Embed`
 ready to send.  The cog methods become thin wrappers that delegate
 here.
 
-Phase 2a + 2b builders covered:
+Phase 2a + 2b + 2.10 builders covered:
 
-* :func:`build_resources_embed` — ``!platform resources``
-* :func:`build_bindings_embed`  — ``!platform bindings``
+* :func:`build_resources_embed`     — ``!platform resources``
+* :func:`build_bindings_embed`      — ``!platform bindings``
+* :func:`build_consistency_embed`   — ``!platform consistency``
 
 Earlier-phase platform commands stay inline in the cog for now.  When
 the next batch of platform commands lands and pushes the cog back
@@ -21,6 +22,12 @@ toward the ceiling, those should migrate here too.
 from __future__ import annotations
 
 import discord
+
+from services.platform_consistency import (
+    ConsistencyReport,
+    SectionResult,
+    SectionStatus,
+)
 
 
 async def build_resources_embed(guild: discord.Guild | None) -> discord.Embed:
@@ -126,4 +133,161 @@ async def build_bindings_embed(guild: discord.Guild | None) -> discord.Embed:
     return embed
 
 
-__all__ = ["build_bindings_embed", "build_resources_embed"]
+# ---------------------------------------------------------------------------
+# Consistency embed — Phase 2 PR-10
+# ---------------------------------------------------------------------------
+
+_STATUS_COLOR: dict[SectionStatus, discord.Color] = {
+    SectionStatus.CLEAN: discord.Color.green(),
+    SectionStatus.WARNING: discord.Color.gold(),
+    SectionStatus.FATAL: discord.Color.red(),
+    SectionStatus.SKIPPED: discord.Color.light_grey(),
+}
+
+_STATUS_ICON: dict[SectionStatus, str] = {
+    SectionStatus.CLEAN: "🟢",
+    SectionStatus.WARNING: "🟡",
+    SectionStatus.FATAL: "🔴",
+    SectionStatus.SKIPPED: "⚪",
+}
+
+# Informational marker prefixed to the Setup readiness field value so
+# operators do not read its WARNING as a runtime degradation.
+_INFORMATIONAL_PREFIX = "ℹ️ Roadmap/informational — not a runtime health failure.\n"
+
+# Soft cap for total embed size; leaves headroom under Discord's 6000.
+_EMBED_SOFT_CAP = 5800
+# Per-field value cap; leaves headroom under Discord's 1024.
+_FIELD_VALUE_CAP = 1000
+# Hard cap on field count (Discord's limit is 25; reserve one for
+# truncation notes).
+_FIELD_HARD_CAP = 24
+
+
+def _format_field_value(section: SectionResult) -> str:
+    lines: list[str] = []
+    if section.informational:
+        lines.append(_INFORMATIONAL_PREFIX.rstrip())
+    lines.append(section.summary)
+    for bullet in section.details[:3]:
+        lines.append(f"• {bullet}")
+    for action in section.suggested_actions[:2]:
+        lines.append(f"→ {action}")
+    value = "\n".join(lines)
+    if len(value) > _FIELD_VALUE_CAP:
+        value = value[: _FIELD_VALUE_CAP - 1] + "…"
+    return value
+
+
+def _estimated_embed_size(embed: discord.Embed) -> int:
+    size = len(embed.title or "") + len(embed.description or "")
+    if embed.footer and embed.footer.text:
+        size += len(embed.footer.text)
+    for field in embed.fields:
+        size += len(field.name or "") + len(field.value or "")
+    return size
+
+
+def build_consistency_embed(report: ConsistencyReport) -> discord.Embed:
+    """Render a ConsistencyReport as a single Discord embed.
+
+    Bounds the rendered size to Discord's limits: per-field value
+    capped at ~1000 chars with a truncation marker; total embed size
+    bounded by collapsing the longest field, then dropping trailing
+    SKIPPED/CLEAN fields and appending a `_truncated` note.  Hard cap
+    of 24 fields.
+    """
+    overall = report.overall_status
+    counts = {s: 0 for s in SectionStatus}
+    informational_warnings = 0
+    runtime_warnings = 0
+    for section in report.sections:
+        counts[section.status] = counts.get(section.status, 0) + 1
+        if section.status == SectionStatus.WARNING:
+            if section.informational:
+                informational_warnings += 1
+            else:
+                runtime_warnings += 1
+
+    generated = report.generated_at.strftime("%Y-%m-%d %H:%M:%SZ")
+    embed = discord.Embed(
+        title=f"🛡 Platform consistency · {overall.value.upper()}",
+        description=(
+            f"{counts[SectionStatus.CLEAN]} clean · "
+            f"{counts[SectionStatus.WARNING]} warning · "
+            f"{counts[SectionStatus.FATAL]} fatal · "
+            f"{counts[SectionStatus.SKIPPED]} skipped · "
+            f"generated {generated}"
+        ),
+        color=_STATUS_COLOR.get(overall, discord.Color.light_grey()),
+    )
+
+    sections_for_embed = list(report.sections[:_FIELD_HARD_CAP])
+    for section in sections_for_embed:
+        icon = _STATUS_ICON.get(section.status, "•")
+        embed.add_field(
+            name=f"{icon} {section.name}",
+            value=_format_field_value(section),
+            inline=False,
+        )
+
+    # Bounded-size guard: collapse longest field value to summary line
+    # if the embed exceeds the soft cap.
+    while _estimated_embed_size(embed) > _EMBED_SOFT_CAP and embed.fields:
+        longest_idx = max(
+            range(len(embed.fields)),
+            key=lambda i: len(embed.fields[i].value or ""),
+        )
+        section = sections_for_embed[longest_idx]
+        collapsed = section.summary
+        if section.informational:
+            collapsed = _INFORMATIONAL_PREFIX.rstrip() + "\n" + collapsed
+        if len(collapsed) > _FIELD_VALUE_CAP:
+            collapsed = collapsed[: _FIELD_VALUE_CAP - 1] + "…"
+        if collapsed == embed.fields[longest_idx].value:
+            break
+        embed.set_field_at(
+            longest_idx,
+            name=embed.fields[longest_idx].name,
+            value=collapsed,
+            inline=False,
+        )
+
+    # Still over? Drop trailing SKIPPED/CLEAN runtime fields one by one.
+    dropped = 0
+    while _estimated_embed_size(embed) > _EMBED_SOFT_CAP and embed.fields:
+        idx_to_drop: int | None = None
+        for i in range(len(embed.fields) - 1, -1, -1):
+            section = sections_for_embed[i]
+            if not section.informational and section.status in (
+                SectionStatus.CLEAN,
+                SectionStatus.SKIPPED,
+            ):
+                idx_to_drop = i
+                break
+        if idx_to_drop is None:
+            break
+        embed.remove_field(idx_to_drop)
+        sections_for_embed.pop(idx_to_drop)
+        dropped += 1
+    if dropped:
+        embed.add_field(
+            name="… truncated",
+            value=f"{dropped} section(s) omitted to stay under embed limits.",
+            inline=False,
+        )
+
+    embed.set_footer(
+        text=(
+            f"{runtime_warnings} runtime warning · "
+            f"{informational_warnings} informational"
+        ),
+    )
+    return embed
+
+
+__all__ = [
+    "build_bindings_embed",
+    "build_consistency_embed",
+    "build_resources_embed",
+]

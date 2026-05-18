@@ -54,6 +54,10 @@ _HELPERS_PATH = _REPO_ROOT / "disbot" / "utils" / "helpers.py"
 _CYCLE_SENSITIVE_FILES: tuple[Path, ...] = (
     _REPO_ROOT / "disbot" / "utils" / "helpers.py",
     _REPO_ROOT / "disbot" / "governance" / "__init__.py",
+    # Phase 2 PR-10 — services.platform_consistency must keep its
+    # cross-package imports function-local; module-scope imports of
+    # core.runtime would re-introduce the partial-load cycle.
+    _REPO_ROOT / "disbot" / "services" / "platform_consistency.py",
 )
 
 
