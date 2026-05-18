@@ -30,6 +30,7 @@ from typing import Any
 import discord
 
 from cogs.counting import game_logic, parsing
+from services import moderation_service
 
 logger = logging.getLogger("bot.counting.handler")
 
@@ -192,12 +193,18 @@ async def apply_decision(
     Each Discord call is independently guarded with try/except so a
     single ``Forbidden`` (e.g. missing manage_messages perm) does not
     skip the remaining steps.
+
+    Deletions route through ``moderation_service.auto_delete`` so the
+    ``mod_logs`` audit table and ``EVT_MOD_ACTION`` event bus see
+    every counting-rule removal — closing the §2.2 gap (CountingCog
+    deletes were previously invisible to moderation audit).
     """
     if decision.delete_message:
-        try:
-            await message.delete()
-        except discord.Forbidden:
-            pass
+        await moderation_service.auto_delete(
+            message,
+            reason=decision.reply or "Invalid count",
+            rule="counting.invalid",
+        )
     if decision.reply:
         try:
             await message.channel.send(decision.reply, delete_after=5)
