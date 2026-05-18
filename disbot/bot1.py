@@ -728,6 +728,13 @@ async def main() -> None:
             except Exception as exc:
                 logger.warning("Command-surface ledger build skipped: %s", exc)
 
+            try:
+                from core.runtime import settings_registry
+
+                settings_registry.build_registry()
+            except Exception as exc:
+                logger.warning("Settings registry build skipped: %s", exc)
+
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
