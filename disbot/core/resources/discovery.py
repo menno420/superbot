@@ -80,7 +80,14 @@ def channel_to_snapshot(channel: discord.abc.GuildChannel) -> ChannelResource:
 
 
 def role_to_snapshot(role: discord.Role) -> RoleResource:
-    """Build a :class:`RoleResource` snapshot of ``role``."""
+    """Build a :class:`RoleResource` snapshot of ``role``.
+
+    Phase 2a hardening split ``is_managed`` from ``is_assignable`` —
+    the former is the intrinsic Discord ``role.managed`` flag, the
+    latter is the contextual "bot can assign" check that also factors
+    in hierarchy + permissions.  See :class:`RoleResource` for why the
+    two are tracked separately.
+    """
     return RoleResource(
         id=role.id,
         name=role.name,
@@ -90,7 +97,8 @@ def role_to_snapshot(role: discord.Role) -> RoleResource:
         permissions_bitfield=role.permissions.value,
         mentionable=role.mentionable,
         hoist=role.hoist,
-        is_managed=role.is_assignable() is False or role.managed,
+        is_managed=role.managed,
+        is_assignable=role.is_assignable(),
     )
 
 
@@ -221,17 +229,26 @@ def resolve_resource(
 # ---------------------------------------------------------------------------
 
 
-def _compute_status(
+def _compute_structural_status(
     guild: discord.Guild,
     kind: ResourceKind,
     resource_id: int,
 ) -> ResourceStatus:
-    """Pure status computation; no DB writes.
+    """Structural-only status computation; no DB writes.
 
-    Returns :class:`ResourceStatus.BOUND` if the resource exists and is
-    the right type, :class:`ResourceStatus.MISSING` if it does not
-    exist, :class:`ResourceStatus.INVALID` if it exists but with the
-    wrong type (e.g. caller asked for CHANNEL, ID points at a category).
+    Phase 2a scope:
+
+    * ``BOUND`` — resource exists in the guild **and** matches the
+      expected :class:`ResourceKind`.  Does *not* assert the bot has
+      sufficient permissions to operate on the resource.
+    * ``MISSING`` — guild's discord.py cache has no entry for the id.
+    * ``INVALID`` — entry exists but is the wrong shape (channel id
+      points at a category, thread is archived/locked, etc.).
+
+    Phase 4.5 adds the sibling permission-aware path
+    (:func:`validate_resource_permissions`).  Treat ``BOUND`` from this
+    function as "structurally valid", **not** "ready for every
+    capability the bot might attempt".
     """
     if kind is ResourceKind.CHANNEL:
         candidate = guild.get_channel(resource_id)
@@ -272,13 +289,19 @@ async def validate_resource(
     *,
     persist: bool = True,
 ) -> ResourceStatus:
-    """Compute the live status for a resource and (optionally) persist it.
+    """Compute the live **structural** status for a resource and persist it.
+
+    Returns the result of :func:`_compute_structural_status` — Phase 2a
+    scope is "does the resource exist with the right shape?".  A
+    ``BOUND`` result does NOT assert the bot has sufficient permissions
+    to operate on the resource; that is Phase 4.5 work, surfaced via
+    :func:`validate_resource_permissions`.
 
     ``persist=False`` is for read-only diagnostics that should not write
     the cache (e.g. dry-run completeness checks).  Default is to upsert
     the row so subsequent ``get_status`` calls see the fresh value.
     """
-    status = _compute_status(guild, kind, resource_id)
+    status = _compute_structural_status(guild, kind, resource_id)
     if persist:
         try:
             await resource_cache.upsert_status(
@@ -318,7 +341,7 @@ async def validate_resources(
     results: dict[tuple[ResourceKind, int], ResourceStatus] = {}
     rows_to_write: list[tuple[int, str, int, str]] = []
     for kind, resource_id in materialised:
-        status = _compute_status(guild, kind, resource_id)
+        status = _compute_structural_status(guild, kind, resource_id)
         results[(kind, resource_id)] = status
         rows_to_write.append((guild.id, kind.value, resource_id, status.value))
     try:
@@ -353,6 +376,51 @@ def find_role_by_name(guild: discord.Guild, name: str) -> discord.Role | None:
     )
 
 
+# ---------------------------------------------------------------------------
+# Phase 4.5 permission-aware validation hook
+# ---------------------------------------------------------------------------
+
+
+async def validate_resource_permissions(
+    guild: discord.Guild,
+    kind: ResourceKind,
+    resource_id: int,
+    capability: str,
+) -> ResourceStatus:
+    """Phase 4.5 hook — permission-aware resource validation.
+
+    Companion to :func:`validate_resource`.  Where ``validate_resource``
+    answers "does this resource exist with the right shape?", this
+    function answers "can the bot exercise *capability* against this
+    resource?" — e.g. can it post in the channel, edit the role,
+    archive the thread.
+
+    Phase 2a ships the signature only; the implementation lands in
+    Phase 4.5 alongside the governance access-control runtime.  Until
+    then this raises :exc:`NotImplementedError` so callers cannot
+    silently treat a missing implementation as ``BOUND``.
+
+    The Phase 4.5 implementation will:
+
+    * Resolve the live discord object via the same paths
+      :func:`_compute_structural_status` uses.
+    * Cross-reference :data:`governance.permission_tiers.PermissionTier`
+      and the relevant bitfield checks for the resource kind.
+    * Return :class:`ResourceStatus.BOUND` only when both structural
+      AND permission preconditions hold.
+    * Cache the permission-aware result alongside the structural
+      result (separate column or sibling table TBD in Phase 4.5).
+    """
+    del guild, kind, resource_id, capability
+    msg = (
+        "validate_resource_permissions is not yet implemented — Phase "
+        "4.5 of the platform roadmap fills in permission-aware "
+        "resource validation.  Use validate_resource() for structural "
+        "checks until then."
+    )
+    raise NotImplementedError(msg)
+
+
 __all__ = [
     "category_to_snapshot",
     "channel_to_snapshot",
@@ -366,5 +434,6 @@ __all__ = [
     "role_to_snapshot",
     "thread_to_snapshot",
     "validate_resource",
+    "validate_resource_permissions",
     "validate_resources",
 ]
