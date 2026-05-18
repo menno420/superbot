@@ -24,11 +24,19 @@ from enum import Enum
 class ResourceStatus(Enum):
     """Validation state for a guild resource.
 
+    Phase 2a ships **structural** validation only — Phase 4.5 adds the
+    permission-aware companion path (see
+    :func:`core.resources.discovery.validate_resource_permissions`).
+    The terms below reflect that scope:
+
     Members:
 
     BOUND:
-        The resource exists in the guild and the bot can interact with
-        it as expected.  This is the steady state.
+        The resource exists in the guild and matches the expected
+        :class:`ResourceKind`.  This is a *structural* "found and the
+        right shape" claim; it does **not** assert the bot has
+        sufficient permissions to operate on the resource.  Phase 4.5
+        adds the permission-readiness check.
     UNRESOLVED:
         The resource has not been validated yet (e.g. recently bound,
         cache miss after restart).  The next probe will transition to
@@ -38,10 +46,11 @@ class ResourceStatus(Enum):
         existed, or out of cache).  Phase 7.5's repair flow may offer
         to recreate it from the subsystem's resource requirement.
     INVALID:
-        The resource exists but the bot cannot operate on it
-        (permission gap, wrong type, archived thread, etc.).  Phase 4c
-        diagnostics surface the specific reason; this enum value just
-        says "exists, unusable".
+        The resource exists but is the wrong type for the caller's
+        request (channel ID points at a category; thread is archived or
+        locked).  ``INVALID`` is *structural unusability*; permission
+        gaps are a separate concern Phase 4.5 will surface through a
+        sibling status path.  Phase 4c diagnostics consume both.
     """
 
     BOUND = "bound"

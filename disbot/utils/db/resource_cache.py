@@ -160,6 +160,30 @@ async def delete_status(guild_id: int, kind: str, resource_id: int) -> None:
     )
 
 
+async def delete_for_guild(guild_id: int) -> int:
+    """Remove every cached row for ``guild_id``.
+
+    Returns the number of rows deleted (best-effort — parsed from the
+    ``"DELETE N"`` status string asyncpg returns; falls back to ``0``
+    if the format ever changes).
+
+    Phase 2a hardening introduced this primitive so the wiring change
+    that adds it to :mod:`disbot.guild_lifecycle`'s teardown sequence is
+    a one-line addition rather than a refactor.  The wiring itself
+    lands as a follow-up (the lifecycle module's nine-step cleanup
+    sequence has its own ordering rules + tests; mixing them with
+    Phase 2a expanded the review surface unnecessarily).
+    """
+    result = await pool.get().execute(
+        "DELETE FROM resource_validation_cache WHERE guild_id = $1",
+        guild_id,
+    )
+    try:
+        return int(result.split()[-1])
+    except (ValueError, IndexError):
+        return 0
+
+
 async def count_by_status(
     guild_id: int,
     *,
@@ -196,6 +220,7 @@ async def count_by_status(
 
 __all__ = [
     "count_by_status",
+    "delete_for_guild",
     "delete_status",
     "get_status",
     "get_statuses_for_guild",

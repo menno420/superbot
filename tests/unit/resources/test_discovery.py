@@ -57,7 +57,22 @@ def _mk_category(category_id: int, name: str, *, channels=()):
     return cat
 
 
-def _mk_role(role_id: int, name: str, *, is_default=False, managed=False):
+def _mk_role(
+    role_id: int,
+    name: str,
+    *,
+    is_default=False,
+    managed=False,
+    is_assignable=None,
+):
+    """Mock a :class:`discord.Role` for snapshot tests.
+
+    Phase 2a hardening split ``is_managed`` (intrinsic) from
+    ``is_assignable`` (contextual).  Callers can supply either
+    independently; default behavior is "managed roles aren't assignable;
+    non-managed roles are" which matches the historical conflated
+    semantics for existing tests.
+    """
     role = MagicMock(spec=discord.Role)
     role.id = role_id
     role.name = name
@@ -68,7 +83,10 @@ def _mk_role(role_id: int, name: str, *, is_default=False, managed=False):
     role.hoist = False
     role.managed = managed
     role.is_default = MagicMock(return_value=is_default)
-    role.is_assignable = MagicMock(return_value=not managed)
+    effective_assignable = (
+        is_assignable if is_assignable is not None else not managed
+    )
+    role.is_assignable = MagicMock(return_value=effective_assignable)
     return role
 
 
@@ -133,6 +151,30 @@ def test_role_to_snapshot():
     assert snap.id == 42
     assert snap.name == "Moderator"
     assert snap.kind is ResourceKind.ROLE
+
+
+def test_role_to_snapshot_managed_and_assignable_split():
+    """Phase 2a hardening: snapshot factory must populate both fields
+    from their respective discord.py attributes, not conflate them."""
+    integration = _mk_role(1, "Bot", managed=True, is_assignable=False)
+    hierarchy_blocked = _mk_role(2, "Above", managed=False, is_assignable=False)
+    normal = _mk_role(3, "Member", managed=False, is_assignable=True)
+
+    snap_integration = discovery.role_to_snapshot(integration)
+    snap_blocked = discovery.role_to_snapshot(hierarchy_blocked)
+    snap_normal = discovery.role_to_snapshot(normal)
+
+    assert snap_integration.is_managed is True
+    assert snap_integration.is_assignable is False
+
+    # Hierarchy-blocked: NOT managed (Discord doesn't mark it so) but
+    # NOT assignable by the bot.  The conflated semantics from before
+    # P2a hardening incorrectly reported is_managed=True for this case.
+    assert snap_blocked.is_managed is False
+    assert snap_blocked.is_assignable is False
+
+    assert snap_normal.is_managed is False
+    assert snap_normal.is_assignable is True
 
 
 def test_category_to_snapshot():
@@ -370,6 +412,24 @@ async def test_validate_resource_cache_failure_swallowed():
             42,
         )
     assert status is ResourceStatus.BOUND
+
+
+@pytest.mark.asyncio
+async def test_validate_resource_permissions_is_phase_4_5_stub():
+    """Phase 2a ships the signature; Phase 4.5 fills in the implementation.
+
+    The hook MUST raise NotImplementedError rather than silently return
+    BOUND — Phase 2b's bindings could otherwise treat a missing
+    implementation as a green light to skip permission gating.
+    """
+    guild = _mk_guild()
+    with pytest.raises(NotImplementedError, match="Phase 4.5"):
+        await discovery.validate_resource_permissions(
+            guild,
+            ResourceKind.CHANNEL,
+            42,
+            "moderation.warn.apply",
+        )
 
 
 # ---------------------------------------------------------------------------

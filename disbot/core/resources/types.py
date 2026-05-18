@@ -108,6 +108,24 @@ class RoleResource(GuildResource):
     :class:`discord.Permissions` object exposes via ``.value``; consumers
     that need named permission flags should reconstruct the Permissions
     object on demand rather than serializing them here.
+
+    Phase 2a hardening split ``is_managed`` into two distinct fields:
+
+    * ``is_managed`` — *intrinsic* property of the role.  ``True`` only
+      for integration-managed roles (bot roles, Nitro booster roles,
+      Twitch subscriber roles) where Discord forbids assignment by any
+      member.  Mirrors :attr:`discord.Role.managed`.
+    * ``is_assignable`` — *contextual* property answering "can the
+      currently-running bot assign this role?".  ``False`` when the bot
+      is below the role in the hierarchy, lacks ``manage_roles``, or
+      the role is integration-managed.  Mirrors
+      :meth:`discord.Role.is_assignable`.
+
+    Keeping the two separate matters for Phase 4.5's role-mapping flow:
+    a non-managed role the bot cannot assign (hierarchy issue) is
+    operator-repairable; an integration-managed role is not.  Conflating
+    them as a single ``is_managed`` would force the wizard to treat both
+    as un-fixable.
     """
 
     color: int = 0
@@ -115,7 +133,8 @@ class RoleResource(GuildResource):
     permissions_bitfield: int = 0
     mentionable: bool = False
     hoist: bool = False
-    is_managed: bool = False  # True for bot-managed / integration roles
+    is_managed: bool = False  # Discord-managed integration role
+    is_assignable: bool = True  # Bot can assign this role (hierarchy + perms)
     kind: ResourceKind = ResourceKind.ROLE
 
 

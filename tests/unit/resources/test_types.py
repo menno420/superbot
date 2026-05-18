@@ -79,6 +79,39 @@ def test_role_resource_carries_role_fields():
     assert snap.permissions_bitfield == 8
     assert snap.mentionable is True
     assert snap.kind is ResourceKind.ROLE
+    # Phase 2a hardening: managed vs assignable are independent.
+    assert snap.is_managed is False  # default
+    assert snap.is_assignable is True  # default
+
+
+def test_role_resource_managed_and_assignable_are_independent():
+    """An integration-managed role is managed but not assignable; a
+    hierarchy-blocked role is assignable=False yet managed=False.  The
+    two fields encode different facts and must vary independently."""
+    integration = RoleResource(
+        id=1,
+        name="Bot",
+        kind=ResourceKind.ROLE,
+        is_managed=True,
+        is_assignable=False,
+    )
+    hierarchy_blocked = RoleResource(
+        id=2,
+        name="Above the bot",
+        kind=ResourceKind.ROLE,
+        is_managed=False,
+        is_assignable=False,
+    )
+    normal = RoleResource(
+        id=3,
+        name="Member",
+        kind=ResourceKind.ROLE,
+        is_managed=False,
+        is_assignable=True,
+    )
+    assert integration.is_managed and not integration.is_assignable
+    assert not hierarchy_blocked.is_managed and not hierarchy_blocked.is_assignable
+    assert not normal.is_managed and normal.is_assignable
 
 
 def test_category_resource_carries_category_fields():
