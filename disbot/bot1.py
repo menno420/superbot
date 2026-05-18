@@ -735,6 +735,18 @@ async def main() -> None:
             except Exception as exc:
                 logger.warning("Settings registry build skipped: %s", exc)
 
+            # S2 — Customization catalogue. Composes the command surface
+            # ledger, settings registry, subsystem schemas, and live cog
+            # help-hook signals into a frozen, read-only inventory.
+            # Failure is non-fatal: the bot boots without the catalogue
+            # and `!platform customization` reports it as not-built.
+            try:
+                from services import customization_catalogue
+
+                customization_catalogue.build_catalogue(bot)
+            except Exception as exc:
+                logger.warning("Customization catalogue build skipped: %s", exc)
+
             # S2.5 — Resource provisioning catalogue. Frozen, read-only
             # cross-link of every ResourceRequirement with its
             # BindingSpec. Pure schema walk — no bot reference needed.

@@ -568,6 +568,14 @@ class DiagnosticCog(commands.Cog):
 
         await ctx.send(embed=build_settings_registry_embed())
 
+    @platform_grp.command(name="customization")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_customization(self, ctx):
+        """Customization catalogue across subsystems (S2)."""
+        from cogs.diagnostic._platform_embeds import build_customization_embed
+
+        await ctx.send(embed=build_customization_embed())
+
     @platform_grp.command(name="provisioning")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_provisioning(self, ctx):
