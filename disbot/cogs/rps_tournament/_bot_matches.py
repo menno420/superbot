@@ -25,6 +25,7 @@ from cogs.rps_tournament._helpers import (
     update_player_stats,
 )
 from cogs.rps_tournament.rules import GAME_MODES, determine_winner, normalize_move
+from core.runtime import resources
 
 logger = logging.getLogger("bot")
 
@@ -88,8 +89,8 @@ async def run_rps_bot_command(
             if isinstance(item, discord.Member):
                 member = item
             elif isinstance(item, str):
-                # Try to get member by ID or mention
-                member = ctx.guild.get_member_named(item)
+                # Try to get member by username/nickname/display-name
+                member = resources.resolve_member_by_name(ctx.guild, item)
             elif isinstance(item, discord.Role):
                 players.extend(item.members)
                 continue
