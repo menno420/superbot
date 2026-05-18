@@ -38,11 +38,18 @@ async def teardown(guild_id: int) -> None:
       9. Feature flag evaluator cache — drop cached decisions for the guild.
       10. Platform migration checkpoints — drop per-guild checkpoint rows
                                    (Phase 2 PR-5); global rows preserved.
-      11. Governance capability cache — clear per-guild execution overrides.
-      12. Governance visibility cache — bump version, clear role-override flag.
-      13. Guild-config cache    — drop cached guild config entries (F-1).
-      14. Scope locks           — invoke registered per-cog teardown hooks (F-2).
-      15. Governance feedback cooldown — documented, no per-guild cleanup needed.
+      11. Per-user participation tables — delete user_participation /
+                                   user_subscriptions / user_preferences /
+                                   user_visibility_overrides rows scoped to
+                                   this guild (Phase 2c PR-8).  Same user's
+                                   rows in OTHER guilds are preserved.
+      12. User-config cache      — drop cached per-(user, guild) bundles
+                                   (Phase 2c PR-8).
+      13. Governance capability cache — clear per-guild execution overrides.
+      14. Governance visibility cache — bump version, clear role-override flag.
+      15. Guild-config cache    — drop cached guild config entries (F-1).
+      16. Scope locks           — invoke registered per-cog teardown hooks (F-2).
+      17. Governance feedback cooldown — documented, no per-guild cleanup needed.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -76,19 +83,26 @@ async def teardown(guild_id: int) -> None:
     # 10. Platform migration checkpoints — per-guild rows only (Phase 2 PR-5).
     await _teardown_platform_migration_checkpoints(guild_id)
 
-    # 11. Governance capability overrides — clear execution-layer in-process dict.
+    # 11. Per-user participation tables — drop user_*/visibility rows scoped
+    #     to this guild only (Phase 2c PR-8).
+    await _teardown_user_participation(guild_id)
+
+    # 12. User-config cache — drop cached (user, guild) bundles for this guild.
+    _teardown_user_config_cache(guild_id)
+
+    # 13. Governance capability overrides — clear execution-layer in-process dict.
     _teardown_capability_overrides(guild_id)
 
-    # 12. Governance visibility cache — version bump + role flag removal.
+    # 14. Governance visibility cache — version bump + role flag removal.
     _teardown_visibility_cache(guild_id)
 
-    # 13. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
+    # 15. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
     _teardown_guild_config(guild_id)
 
-    # 14. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
+    # 16. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
     _teardown_scope_locks(guild_id)
 
-    # 15. Governance feedback cooldown dict in governance/__init__.
+    # 17. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
@@ -312,6 +326,56 @@ async def _teardown_platform_migration_checkpoints(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: platform migration checkpoint teardown failed: %s",
+            exc,
+        )
+
+
+async def _teardown_user_participation(guild_id: int) -> None:
+    """Delete per-user participation rows scoped to the departed guild.
+
+    Phase 2c PR-8.  Drops rows in user_participation, user_subscriptions,
+    user_preferences, and user_visibility_overrides whose ``guild_id``
+    matches.  The same user's rows in OTHER guilds are preserved.
+    """
+    try:
+        from utils.db.user_participation import (
+            delete_for_guild as _participation_delete,
+        )
+
+        count = await _participation_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d user participation row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: user participation teardown failed: %s",
+            exc,
+        )
+
+
+def _teardown_user_config_cache(guild_id: int) -> None:
+    """Drop cached per-(user, guild) participation bundles for ``guild_id``.
+
+    Phase 2c PR-8.  Symmetric to ``_teardown_feature_flag_cache`` —
+    keeps cache and DB consistent on guild leave.
+    """
+    try:
+        from core.runtime.user_config import forget_guild as _user_cache_forget
+
+        dropped = _user_cache_forget(guild_id)
+        if dropped:
+            logger.debug(
+                "guild_lifecycle: dropped %d user_config cache entry(s) "
+                "for guild=%d",
+                dropped,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: user_config cache teardown failed: %s",
             exc,
         )
 
