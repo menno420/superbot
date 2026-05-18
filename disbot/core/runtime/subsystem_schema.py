@@ -134,14 +134,6 @@ class SettingSpec:
         Short human-readable description rendered by the wizard.
     validator:
         Optional callable raising ``ValueError`` on invalid input.
-    allowed_values:
-        Optional tuple of accepted values.  When non-empty, the S6
-        edit-flow renders a :class:`discord.ui.Select` widget whose
-        options are these values, instead of a free-form text input.
-        Useful for enum-shaped scalar settings (e.g. cleanup
-        strictness ``"off"``/``"light"``/``"normal"``/``"strict"``).
-        Empty tuple (default) preserves backward compatibility — the
-        widget is a free-form modal text input.
     """
 
     name: str
@@ -151,7 +143,6 @@ class SettingSpec:
     capability_required: str = ""
     hint: str = ""
     validator: Callable[[Any], None] | None = None
-    allowed_values: tuple[Any, ...] = ()
 
 
 @dataclass(frozen=True)

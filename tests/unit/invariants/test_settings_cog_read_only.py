@@ -1,27 +1,19 @@
-"""S5/S6 invariant — Settings Manager UI mutation surface is allowlisted.
+"""S5 invariant — Settings Manager cog + views are strictly read-only.
 
-S5 (PR #100) shipped the Settings Manager hub + subsystem
-drill-down + four diagnostic sub-panels in strictly read-only
-form.  S6 (this PR) extends the subsystem view with scalar
-edit/reset flows that route writes through
-:class:`services.settings_mutation.SettingsMutationPipeline`.
+The S5 directive is explicit: the cog and its views must not edit,
+reset, mutate, create, or otherwise change platform state.  S6
+introduces the first write surface (scalar edit/reset flows) and
+will explicitly add the mutation imports the AST scan below
+forbids.
 
-This test now scans every file under:
+This test fails CI if any file under:
 
   * ``disbot/cogs/settings*``
   * ``disbot/views/settings/**``
 
-and fails CI if any file imports a mutation pipeline OR calls a
-known mutation/create method **unless that file is on the S6
-allowlist** (:data:`_ALLOWED_EDIT_FILES`).  The allowlist is the
-five edit-flow widget modules plus the reset module — every other
-file in the Settings UI surface stays read-only.
-
-When S7 lands and adds binding-edit flows, this allowlist
-expands; access-policy edits arrive in S9 and similarly extend
-the allowlist.  Every new allowlist entry MUST justify why the
-bypass is correct (typically: "the file IS the mutation surface
-for a typed scalar/binding/policy").
+imports any mutation pipeline or directly invokes a mutation
+method.  When S6 lands, this invariant tightens to allow the
+expected mutation imports inside an allowlist of edit-flow files.
 """
 
 from __future__ import annotations
@@ -93,24 +85,6 @@ def _settings_ui_paths() -> list[Path]:
     return out
 
 
-# Files allowed to import a mutation pipeline / call a mutation
-# method.  S6 lifted the invariant to permit the five edit-flow
-# widgets + the reset module; nothing else in the Settings UI
-# surface may write.  Adding entries here weakens the invariant —
-# pair each new entry with a comment naming the milestone that
-# introduced the bypass and the mutation surface it owns.
-_ALLOWED_EDIT_FILES: frozenset[Path] = frozenset(
-    {
-        # S6 — scalar edit / reset flows.
-        _DISBOT / "views" / "settings" / "edit_boolean.py",
-        _DISBOT / "views" / "settings" / "edit_number.py",
-        _DISBOT / "views" / "settings" / "edit_text.py",
-        _DISBOT / "views" / "settings" / "edit_enum.py",
-        _DISBOT / "views" / "settings" / "reset_button.py",
-    },
-)
-
-
 def _module_imports_offenders(tree: ast.AST) -> list[str]:
     offenders: list[str] = []
     for node in ast.walk(tree):
@@ -140,68 +114,43 @@ def _attribute_call_offenders(tree: ast.AST) -> list[str]:
     return offenders
 
 
-def test_settings_ui_has_no_mutation_imports_outside_allowlist():
+def test_settings_ui_has_no_mutation_imports():
     """No file under the Settings Manager UI surface may import a
-    mutation pipeline UNLESS it is on :data:`_ALLOWED_EDIT_FILES`.
+    mutation pipeline.
     """
     paths = _settings_ui_paths()
     assert paths, "settings UI paths empty — sanity check failed"
     violations: list[tuple[str, list[str]]] = []
     for path in paths:
-        if path in _ALLOWED_EDIT_FILES:
-            continue
         tree = ast.parse(path.read_text(), filename=str(path))
         offenders = _module_imports_offenders(tree)
         if offenders:
             violations.append((str(path.relative_to(_REPO_ROOT)), offenders))
     assert not violations, (
-        "S5/S6 invariant violation: Settings Manager UI file imports a "
-        "mutation pipeline but is not on the edit-flow allowlist.  Either "
-        "remove the import or extend `_ALLOWED_EDIT_FILES` with a "
-        "justification.\n\n" + "\n".join(f"  {p}: {imps}" for p, imps in violations)
+        "S5 invariant violation: Settings Manager UI surface imports a "
+        "mutation pipeline.  S5 is strictly read-only; S6 introduces the "
+        "first edit/reset flow.\n\n"
+        + "\n".join(f"  {p}: {imps}" for p, imps in violations)
     )
 
 
-def test_settings_ui_does_not_call_known_mutation_methods_outside_allowlist():
+def test_settings_ui_does_not_call_known_mutation_methods():
     """No file under the Settings Manager UI surface may *call* any
-    canonical mutation method UNLESS it is on the edit-flow
-    allowlist.  Defense-in-depth above the import scan.
+    of the canonical mutation methods (or any Discord-API create
+    method).  Defense-in-depth above the import scan.
     """
     paths = _settings_ui_paths()
     violations: list[tuple[str, list[str]]] = []
     for path in paths:
-        if path in _ALLOWED_EDIT_FILES:
-            continue
         tree = ast.parse(path.read_text(), filename=str(path))
         offenders = _attribute_call_offenders(tree)
         if offenders:
             violations.append((str(path.relative_to(_REPO_ROOT)), offenders))
     assert not violations, (
-        "S5/S6 invariant violation: Settings Manager UI file calls a "
-        "mutation or resource-creation method but is not on the edit-flow "
-        "allowlist.\n\n" + "\n".join(f"  {p}: {calls}" for p, calls in violations)
+        "S5 invariant violation: Settings Manager UI calls a mutation "
+        "or resource-creation method.  S5 is strictly read-only.\n\n"
+        + "\n".join(f"  {p}: {calls}" for p, calls in violations)
     )
-
-
-def test_allowlist_entries_exist():
-    """Every allowlist entry must still exist on disk."""
-    missing = [
-        str(p.relative_to(_REPO_ROOT)) for p in _ALLOWED_EDIT_FILES if not p.exists()
-    ]
-    assert not missing, "S6 allowlist references missing files:\n" + "\n".join(
-        f"  {p}" for p in missing
-    )
-
-
-def test_allowlist_only_contains_edit_flow_files():
-    """Sanity: the allowlist must only contain ``views/settings/edit_*`` and
-    ``views/settings/reset_*`` files.  Catches a future drive-by edit that
-    allowlists, say, the hub or audit view by mistake."""
-    for path in _ALLOWED_EDIT_FILES:
-        name = path.name
-        assert name.startswith("edit_") or name.startswith(
-            "reset_"
-        ), f"unexpected allowlist entry: {path.relative_to(_REPO_ROOT)}"
 
 
 def test_settings_ui_paths_contain_expected_files():
@@ -221,12 +170,6 @@ def test_settings_ui_paths_contain_expected_files():
         Path("disbot/views/settings/invalid_settings.py"),
         Path("disbot/views/settings/missing_bindings.py"),
         Path("disbot/views/settings/audit_view.py"),
-        # S6 edit flow:
-        Path("disbot/views/settings/edit_boolean.py"),
-        Path("disbot/views/settings/edit_number.py"),
-        Path("disbot/views/settings/edit_text.py"),
-        Path("disbot/views/settings/edit_enum.py"),
-        Path("disbot/views/settings/reset_button.py"),
     }
     missing = expected_relpaths - paths
     assert (
