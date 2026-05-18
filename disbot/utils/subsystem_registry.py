@@ -497,6 +497,30 @@ SUBSYSTEMS: dict[str, dict] = {
             "diagnostic.latency.check",
         ],
     },
+    "settings": {
+        "display_name": "Settings Manager",
+        "description": (
+            "Read-only browsing of platform settings, bindings, and audit "
+            "history (S5)"
+        ),
+        "emoji": "⚙️",
+        "color": ADMIN_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "admin",
+        "tags": ["settings", "configuration", "audit", "platform"],
+        "entry_points": ["settings"],
+        "default_channels": ["staff", "bot-admin"],
+        "related_subsystems": ["admin", "diagnostic"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 92,
+        "capabilities": [
+            "settings.manager.view",
+        ],
+    },
 }
 
 # ---------------------------------------------------------------------------
