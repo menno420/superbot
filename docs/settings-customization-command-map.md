@@ -867,6 +867,66 @@ Subsystems (21): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     (`!platform resources`).
 
 
+### settings
+
+1. **cog_module**: `disbot/cogs/settings_cog.py` (added in S5).
+2. **subsystem**: `settings`
+3. **current_commands**: `!settings` (group root that opens the Settings
+   Manager hub).
+4. **current_command_groups**: `!settings` (administrator-tier; entry
+   point declared in `SUBSYSTEMS["settings"].entry_points`).
+5. **current_command_panel_or_menu**: `!settings` IS the panel command;
+   no `*menu` alias.
+6. **help_menu_discoverable**: Yes via SUBSYSTEMS — registered in
+   `utils.subsystem_registry.SUBSYSTEMS` at admin tier with
+   `entry_points=["settings"]`.
+7. **dedicated_panel_command**: `!settings` (the cog's only command).
+8. **help_menu_direct_navigation_hook**: Yes — `SettingsCog.build_help_menu_view`
+   returns the same `(embed, view)` the `!settings` command produces, so
+   the help dropdown navigates straight into the hub.
+9. **existing_SettingSpec_declarations**: none. The cog itself does not
+   declare scalar settings; it is a read-only browser over the *other*
+   subsystems' schemas.  A future PR may add cog-local preferences
+   (e.g. `hub_page_size`) if needed.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capabilities `settings.manager.view`.  Runtime behaviour gated on
+    the `settings.manager_cog.enabled` feature flag (default OFF) —
+    when OFF, invocations return a clearly-worded disabled embed.
+14. **hardcoded_or_env_only_behavior**: none.  The S5 view module
+    composes S1 (`SettingsRegistry`), S2 (`CustomizationCatalogue`),
+    S3 (`SettingsResolution`), S4 (`settings_mutation_audit`), and
+    `core.runtime.bindings.get_binding` for read-only rendering.
+15. **missing_customization_commands**: none.  The hub already
+    surfaces every subsystem's settings/bindings/resources page.
+16. **missing_settings_pages**: edit / reset flows (S6); logging
+    create-or-select flow (S7); cleanup expansion (S8); access policy
+    manager (S9); per-subsystem setup packs (S10).
+17. **missing_menu_buttons_selects_modals**: scalar-edit modals (S6);
+    binding-select views (S7+); reset buttons (S6); setup-pack
+    confirmation modals (S10).
+18. **setting_class_per_value**: n/a — this subsystem is the
+    *management surface* for every other subsystem's settings, not a
+    settings consumer itself.
+19. **target_Settings_Manager_page**: `!settings` (this cog hosts the
+    hub).
+20. **target_mutation_path**: read-only in S5; consumes
+    `SettingsMutationPipeline` (S4) for S6+, `BindingMutationPipeline`
+    + `ResourceProvisioningPipeline` (S4.5) for S7+,
+    `GovernanceMutationPipeline` for S9.
+21. **target_help_or_menu_route**: Help direct-nav (already wired);
+    `!adminmenu` and `!platform` deep-links land in S11.
+22. **provisionable_resources**: none.  The Settings Manager UI runs
+    in any text channel; it does not require dedicated channels or
+    roles.
+23. **priority**: `P0` — gates discoverability for every other
+    subsystem's settings page.
+24. **recommended_PR_phase**: S5 (this cog) + S6 (edit/reset) + S7+
+    (per-subsystem write surfaces).
+
+
 ## Setting class summary
 
 Cross-cut by class, this is the work distribution implied by the per-cog

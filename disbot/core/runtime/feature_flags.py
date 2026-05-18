@@ -282,6 +282,27 @@ RESOURCE_PROVISIONING_PRIMARY = FeatureFlag(
     removal_target="S10+ stable",
 )
 
+# S5 flag — gates the user-facing Settings Manager cog (!settings).
+# The cog ALWAYS loads and registers in SUBSYSTEMS so help/admin/menu
+# discoverability stays stable; the flag gates the runtime *behaviour*
+# of the !settings command and the build_help_menu_view hook so
+# operators can disable the cog without breaking the registry.  When
+# the flag is OFF (default), invocations return an explanatory
+# embed describing how to enable it.
+SETTINGS_MANAGER_COG_ENABLED = FeatureFlag(
+    name="settings.manager_cog.enabled",
+    description=(
+        "Gates the runtime behaviour of the user-facing Settings Manager "
+        "cog (!settings) introduced in S5.  Default OFF — the cog still "
+        "loads and registers so help discoverability stays stable, but "
+        "invocations return a clearly-worded 'disabled' embed until the "
+        "flag is flipped."
+    ),
+    default_value=False,
+    owner="platform",
+    removal_target="S11 stable",
+)
+
 
 def _register_builtins() -> None:
     """Register Phase 1d platform-level flags at import time."""
@@ -291,6 +312,7 @@ def _register_builtins() -> None:
     register(FEATURE_FLAG_PRIMARY)
     register(SETTINGS_MUTATION_PRIMARY)
     register(RESOURCE_PROVISIONING_PRIMARY)
+    register(SETTINGS_MANAGER_COG_ENABLED)
 
 
 _register_builtins()
@@ -717,6 +739,7 @@ __all__ = [
     "RESOURCE_PROVISIONING_PRIMARY",
     "RESOURCES_UNIFIED",
     "RolloutPolicy",
+    "SETTINGS_MANAGER_COG_ENABLED",
     "SETTINGS_MUTATION_PRIMARY",
     "all_flags",
     "bootstrap_fallback_count",
