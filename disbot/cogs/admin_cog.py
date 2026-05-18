@@ -10,7 +10,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
-from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
+from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
 from views.base import HubView, send_panel
 
@@ -224,56 +224,7 @@ class AdminCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def logging_status(self, ctx):
         """Show this guild's server-logging configuration + counters."""
-        from services import server_logging
-
-        enabled = await server_logging.is_enabled(ctx.guild.id) if ctx.guild else False
-        auto_create = (
-            await server_logging.auto_create_enabled(ctx.guild.id)
-            if ctx.guild
-            else False
-        )
-        mod_channel = cleanup_channel = None
-        if ctx.guild:
-            mod_channel = await server_logging.resolve_log_channel(ctx.guild, "mod")
-            cleanup_channel = await server_logging.resolve_log_channel(
-                ctx.guild,
-                "cleanup",
-            )
-        counters = server_logging.counters_snapshot()["counters"]
-
-        embed = discord.Embed(
-            title="📝 Server logging — status",
-            color=SUCCESS_COLOR if enabled else INFO_COLOR,
-        )
-        embed.add_field(
-            name="Enabled",
-            value="✅ on" if enabled else "⚪ off",
-            inline=True,
-        )
-        embed.add_field(
-            name="Auto-create channels",
-            value="✅ on" if auto_create else "⚪ off",
-            inline=True,
-        )
-        embed.add_field(
-            name="Mod channel",
-            value=mod_channel.mention if mod_channel else "*(unset)*",
-            inline=False,
-        )
-        cleanup_value = (
-            cleanup_channel.mention if cleanup_channel else "*(falls back to mod)*"
-        )
-        embed.add_field(
-            name="Cleanup channel",
-            value=cleanup_value,
-            inline=False,
-        )
-        embed.add_field(
-            name="Counters (process-local)",
-            value="\n".join(f"`{k}` = {v}" for k, v in sorted(counters.items())),
-            inline=False,
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=await build_logging_status_embed(ctx.guild))
 
     @logging_grp.command(name="test")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
@@ -316,6 +267,110 @@ class AdminCog(commands.Cog):
 
 
 # ---------------------------------------------------------------------------
+# Shared admin helpers
+# ---------------------------------------------------------------------------
+
+
+async def build_logging_status_embed(guild: discord.Guild | None) -> discord.Embed:
+    """Build the server-logging status embed.
+
+    Extracted from ``logging_status`` so the admin panel and the typed
+    ``!logging status`` command both render the same embed without
+    duplicating the field-building logic.
+    """
+    from services import server_logging
+
+    enabled = await server_logging.is_enabled(guild.id) if guild else False
+    auto_create = await server_logging.auto_create_enabled(guild.id) if guild else False
+    mod_channel = cleanup_channel = None
+    if guild:
+        mod_channel = await server_logging.resolve_log_channel(guild, "mod")
+        cleanup_channel = await server_logging.resolve_log_channel(guild, "cleanup")
+    counters = server_logging.counters_snapshot()["counters"]
+
+    embed = discord.Embed(
+        title="📝 Server logging — status",
+        color=SUCCESS_COLOR if enabled else INFO_COLOR,
+    )
+    embed.add_field(
+        name="Enabled",
+        value="✅ on" if enabled else "⚪ off",
+        inline=True,
+    )
+    embed.add_field(
+        name="Auto-create channels",
+        value="✅ on" if auto_create else "⚪ off",
+        inline=True,
+    )
+    embed.add_field(
+        name="Mod channel",
+        value=mod_channel.mention if mod_channel else "*(unset)*",
+        inline=False,
+    )
+    cleanup_value = (
+        cleanup_channel.mention if cleanup_channel else "*(falls back to mod)*"
+    )
+    embed.add_field(
+        name="Cleanup channel",
+        value=cleanup_value,
+        inline=False,
+    )
+    embed.add_field(
+        name="Counters (process-local)",
+        value="\n".join(f"`{k}` = {v}" for k, v in sorted(counters.items())),
+        inline=False,
+    )
+    return embed
+
+
+def attach_back_to_admin_button(
+    view: discord.ui.View,
+    author: discord.Member | discord.User,
+) -> None:
+    """Append a "↩ Back to Admin" control to a sub-view opened from the panel.
+
+    Mirrors :func:`cogs.help_cog._attach_back_to_help_button`: the
+    cog's panel class is not mutated — only the live view instance
+    receives the extra button.  No-op if the view already has 25
+    components (Discord cap).  When the back button is clicked a
+    fresh ``_AdminPanelView`` is constructed so the embed reflects
+    current cog load state.
+    """
+    if len(view.children) >= 25:
+        logging.getLogger("bot.cogs.admin").warning(
+            "Back-to-admin button skipped — %s already has 25 children.",
+            type(view).__name__,
+        )
+        return
+
+    back_btn = discord.ui.Button(  # type: ignore[var-annotated]
+        label="↩ Back to Admin",
+        custom_id="admin:back",
+        style=discord.ButtonStyle.secondary,
+        row=4,
+    )
+
+    async def _back_callback(interaction: discord.Interaction) -> None:
+        cog = interaction.client.get_cog("AdminCog")  # type: ignore[attr-defined]
+        if cog is None:
+            await interaction.response.send_message(
+                "Admin cog unavailable.",
+                ephemeral=True,
+            )
+            return
+        ctx_shim = help_ctx_shim(interaction)
+        new_view = _AdminPanelView(ctx_shim, cog)  # type: ignore[arg-type]
+        new_view._author = author  # preserve invoker identity
+        await interaction.response.edit_message(
+            embed=new_view.build_embed(),
+            view=new_view,
+        )
+
+    back_btn.callback = _back_callback  # type: ignore[method-assign]
+    view.add_item(back_btn)
+
+
+# ---------------------------------------------------------------------------
 # Admin Panel View
 # ---------------------------------------------------------------------------
 
@@ -334,10 +389,11 @@ class _AdminPanelView(HubView):
             title="🛠️ Admin Control Panel",
             description=(
                 f"Loaded cogs: **{loaded_count}**\n\n"
-                "**📊 Server Stats** — member & channel statistics\n"
-                "**📋 Cog List** — all cogs with load status\n"
-                "**🔄 Reload All** — reload all loaded cogs (owner)\n"
-                "**📝 Log Level** — change the bot log level"
+                "**Tools**\n"
+                "📊 Server Stats · 📋 Cog List · 🔄 Reload All · 📝 Log Level\n\n"
+                "**Navigate**\n"
+                "🛠 Settings · 🛰 Platform · 🩺 Diagnostics · 📝 Logging · "
+                "🧹 Cleanup · 📚 Help"
             ),
             color=ADMIN_COLOR,
         )
@@ -422,13 +478,171 @@ class _AdminPanelView(HubView):
     ):
         await interaction.response.send_modal(_LogLevelModal(self))
 
-    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=1)
+    # ------------------------------------------------------------------
+    # Row 1 — navigation to subsystem hubs (no logic duplicated; each
+    # button delegates to the existing cog's panel/hook).
+    # ------------------------------------------------------------------
+
+    @discord.ui.button(label="🛠 Settings", style=discord.ButtonStyle.blurple, row=1)
+    async def settings_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await self._open_via_help_hook(interaction, cog_name="SettingsCog")
+
+    @discord.ui.button(label="🛰 Platform", style=discord.ButtonStyle.blurple, row=1)
+    async def platform_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        from views.diagnostic import _PlatformHubView, build_platform_hub_embed
+
+        sub_view = _PlatformHubView(interaction.user)
+        attach_back_to_admin_button(sub_view, interaction.user)
+        await safe_edit(
+            interaction,
+            embed=build_platform_hub_embed(),
+            view=sub_view,
+        )
+
+    @discord.ui.button(label="🩺 Diagnostics", style=discord.ButtonStyle.blurple, row=1)
+    async def diagnostics_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await self._open_via_help_hook(interaction, cog_name="DiagnosticCog")
+
+    @discord.ui.button(label="📝 Logging", style=discord.ButtonStyle.blurple, row=1)
+    async def logging_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        embed = await build_logging_status_embed(interaction.guild)
+        await safe_edit(interaction, embed=embed, view=self)
+
+    # ------------------------------------------------------------------
+    # Row 2 — cleanup + help shortcuts
+    # ------------------------------------------------------------------
+
+    @discord.ui.button(label="🧹 Cleanup", style=discord.ButtonStyle.blurple, row=2)
+    async def cleanup_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await self._open_via_help_hook(interaction, cog_name="Cleanup")
+
+    @discord.ui.button(label="📚 Help", style=discord.ButtonStyle.blurple, row=2)
+    async def help_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        try:
+            from cogs.help_cog import HelpPanelView, _build_page_embed
+            from services import governance_service
+            from services.governance_service import GovernanceContext
+            from utils.subsystem_registry import all_subsystems_sorted
+
+            gctx = GovernanceContext.from_interaction(interaction)
+            vis_result = await governance_service.resolve_visibility(gctx)
+            visible_list = [
+                name
+                for name, _meta in all_subsystems_sorted()
+                if name in vis_result.visible_subsystems
+            ]
+            new_view = HelpPanelView(visible_list, page=0)
+            embed = _build_page_embed(
+                interaction.client,  # type: ignore[arg-type]
+                visible_list,
+                0,
+                vis_result.member_tier,
+            )
+            await safe_edit(interaction, embed=embed, view=new_view)
+        except Exception as exc:  # noqa: BLE001 — navigation must not crash panel
+            logging.getLogger("bot.cogs.admin").warning(
+                "Admin → Help navigation failed: %s",
+                exc,
+                exc_info=True,
+            )
+            embed = discord.Embed(
+                title="Help unavailable",
+                description=f"Could not open Help: `{type(exc).__name__}`.",
+                color=discord.Color.orange(),
+            )
+            await safe_edit(interaction, embed=embed, view=self)
+
+    # ------------------------------------------------------------------
+    # Row 3 — overview anchor (rebuilds this panel in place)
+    # ------------------------------------------------------------------
+
+    @discord.ui.button(label="↩ Overview", style=discord.ButtonStyle.secondary, row=3)
     async def overview_btn(
         self,
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ):
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+    # ------------------------------------------------------------------
+    # Shared helper for the three "open another cog's panel" buttons.
+    # ------------------------------------------------------------------
+
+    async def _open_via_help_hook(
+        self,
+        interaction: discord.Interaction,
+        *,
+        cog_name: str,
+    ) -> None:
+        """Open ``cog.build_help_menu_view(interaction)`` and edit in place.
+
+        Mirrors the help cog's direct-navigation pattern: the target
+        cog owns the panel; this panel just routes to it.  Adds a
+        "↩ Back to Admin" button so the user can return.
+        """
+        if not await safe_defer(interaction):
+            return
+        cog = interaction.client.get_cog(cog_name)  # type: ignore[attr-defined]
+        build_panel = getattr(cog, "build_help_menu_view", None) if cog else None
+        if not callable(build_panel):
+            embed = discord.Embed(
+                title=f"{cog_name} unavailable",
+                description=(
+                    f"`{cog_name}` is not loaded or does not expose "
+                    "`build_help_menu_view`."
+                ),
+                color=discord.Color.orange(),
+            )
+            await safe_edit(interaction, embed=embed, view=self)
+            return
+        try:
+            sub_embed, sub_view = await build_panel(interaction)
+        except Exception as exc:  # noqa: BLE001 — navigation must not crash panel
+            logging.getLogger("bot.cogs.admin").warning(
+                "Admin → %s navigation failed: %s",
+                cog_name,
+                exc,
+                exc_info=True,
+            )
+            embed = discord.Embed(
+                title=f"{cog_name} unavailable",
+                description=f"Could not open `{cog_name}`: `{type(exc).__name__}`.",
+                color=discord.Color.orange(),
+            )
+            await safe_edit(interaction, embed=embed, view=self)
+            return
+        attach_back_to_admin_button(sub_view, interaction.user)
+        await safe_edit(interaction, embed=sub_embed, view=sub_view)
 
 
 class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[call-arg]
