@@ -556,34 +556,17 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def platform_schemas(self, ctx):
         """Registered SubsystemSchema instances (Phase 1a)."""
-        from services import diagnostics_service
+        from cogs.diagnostic._platform_embeds import build_schemas_embed
 
-        snap = diagnostics_service.snapshot("schemas")
-        embed = discord.Embed(
-            title="📐 Subsystem schemas",
-            description=(
-                f"{snap['registered']} registered  ·  "
-                f"bindings={snap['bindings_total']}  ·  "
-                f"settings={snap['settings_total']}  ·  "
-                f"resources={snap['resources_total']}"
-            ),
-            color=discord.Color.blurple(),
-        )
-        by_sub = snap.get("by_subsystem", {})
-        if by_sub:
-            lines = [
-                f"`{name}` — b={info['bindings']} s={info['settings']} "
-                f"r={info['resources']} v={info['version']}"
-                for name, info in sorted(by_sub.items())
-            ]
-            embed.add_field(
-                name="By subsystem",
-                value="\n".join(lines)[:1024],
-                inline=False,
-            )
-        else:
-            embed.add_field(name="By subsystem", value="*(none)*", inline=False)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_schemas_embed())
+
+    @platform_grp.command(name="settings-registry")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_settings_registry(self, ctx):
+        """Frozen catalogue of every declared SettingSpec (S1)."""
+        from cogs.diagnostic._platform_embeds import build_settings_registry_embed
+
+        await ctx.send(embed=build_settings_registry_embed())
 
     @platform_grp.command(name="participation-schemas")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)

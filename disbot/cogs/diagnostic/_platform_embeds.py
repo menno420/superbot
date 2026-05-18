@@ -286,8 +286,88 @@ def build_consistency_embed(report: ConsistencyReport) -> discord.Embed:
     return embed
 
 
+def build_schemas_embed() -> discord.Embed:
+    """Build the embed for ``!platform schemas`` (Phase 1a)."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("schemas")
+    embed = discord.Embed(
+        title="📐 Subsystem schemas",
+        description=(
+            f"{snap['registered']} registered  ·  "
+            f"bindings={snap['bindings_total']}  ·  "
+            f"settings={snap['settings_total']}  ·  "
+            f"resources={snap['resources_total']}"
+        ),
+        color=discord.Color.blurple(),
+    )
+    by_sub = snap.get("by_subsystem", {})
+    if by_sub:
+        lines = [
+            f"`{name}` — b={info['bindings']} s={info['settings']} "
+            f"r={info['resources']} v={info['version']}"
+            for name, info in sorted(by_sub.items())
+        ]
+        embed.add_field(
+            name="By subsystem",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+    return embed
+
+
+def build_settings_registry_embed() -> discord.Embed:
+    """Build the embed for ``!platform settings-registry`` (S1)."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("settings_registry")
+    if snap.get("status") == "not_built":
+        return discord.Embed(
+            title="🗂️ Settings registry",
+            description="*(not built — call settings_registry.build_registry())*",
+            color=discord.Color.greyple(),
+        )
+    embed = discord.Embed(
+        title="🗂️ Settings registry",
+        description=(
+            f"v{snap['version']}  ·  {snap['entry_count']} entries  ·  "
+            f"{snap['subsystems']} subsystems  ·  "
+            f"findings={snap['findings_total']}"
+        ),
+        color=discord.Color.blurple(),
+    )
+    by_sub = snap.get("by_subsystem", {})
+    if by_sub:
+        lines = [
+            f"`{name}` — {count} setting(s)" for name, count in sorted(by_sub.items())
+        ]
+        embed.add_field(
+            name="By subsystem",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+    findings = snap.get("findings", {})
+    if findings and snap["findings_total"]:
+        finding_lines = [
+            f"`{key}`: {count}" for key, count in sorted(findings.items()) if count
+        ]
+        if finding_lines:
+            embed.add_field(
+                name="Findings",
+                value="\n".join(finding_lines)[:1024],
+                inline=False,
+            )
+    return embed
+
+
 __all__ = [
     "build_bindings_embed",
     "build_consistency_embed",
     "build_resources_embed",
+    "build_schemas_embed",
+    "build_settings_registry_embed",
 ]
