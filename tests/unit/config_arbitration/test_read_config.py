@@ -92,6 +92,18 @@ async def test_flag_off_returns_legacy_value_binding_not_consulted():
 
 @pytest.mark.asyncio
 async def test_flag_off_legacy_missing_returns_none_with_missing_source():
+    """Flag OFF + legacy empty → source='missing' (PR-4 review correction).
+
+    The earlier behavior returned ``source='legacy'`` because legacy
+    was where the ``None`` came from.  The review pointed out that
+    this makes the ``!platform consistency`` "how many guilds have
+    nothing configured?" query painful — operators would have to
+    filter by ``(source=='legacy' AND value is None)`` instead of a
+    single counter.  ``source='missing'`` is now returned whenever
+    the resolved value is ``None``, regardless of which side produced
+    it; ``flag_state`` and ``binding_status`` carry the distinguishing
+    context.
+    """
     with (
         patch(
             "core.runtime.feature_flags.is_enabled",
@@ -111,11 +123,114 @@ async def test_flag_off_legacy_missing_returns_none_with_missing_source():
             legacy_key="xp_announce_channel",
         )
     assert result.value is None
-    # With flag OFF + legacy empty, source is legacy (we still consulted
-    # legacy and that's where the "none" came from).  source='missing'
-    # is reserved for the flag-ON path where neither side produced a
-    # value — semantically the distinction matters for diagnostics.
-    assert result.source == "legacy"
+    assert result.source == "missing"
+    assert result.flag_state == "off"
+    assert result.binding_status == "n/a"
+
+
+# ---------------------------------------------------------------------------
+# Binding-kind verification (PR-4 enhancement)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_binding_kind_match_returns_binding_source():
+    """Caller-declared kind matches the binding's declared kind → binding wins."""
+    with (
+        patch(
+            "core.runtime.feature_flags.is_enabled",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=_bv(target_id=999, status=ResourceStatus.BOUND),
+        ),
+        patch(
+            "utils.db.settings.get_setting",
+            new_callable=AsyncMock,
+        ) as mock_legacy,
+    ):
+        result = await read_config(
+            guild_id=1,
+            subsystem="xp",
+            binding_name="announce_channel",
+            legacy_key="xp_announce_channel",
+            binding_kind="channel",
+        )
+    assert result.value == 999
+    assert result.source == "binding"
+    assert result.binding_status == "bound"
+    mock_legacy.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_binding_kind_mismatch_falls_back_with_drift_diagnostic():
+    """Caller asked for 'role' but the binding declares 'channel' → fallback.
+
+    A kind drift means schema and runtime disagree (a future schema
+    change reshaped the binding); the safest behavior is to treat the
+    binding as INVALID and fall back to legacy.  The drift is recorded
+    in ``diagnostics`` so ``!platform consistency`` can surface it.
+    """
+    with (
+        patch(
+            "core.runtime.feature_flags.is_enabled",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=_bv(target_id=999, status=ResourceStatus.BOUND),
+        ),
+        patch(
+            "utils.db.settings.get_setting",
+            new_callable=AsyncMock,
+            return_value="legacy-value",
+        ),
+    ):
+        result = await read_config(
+            guild_id=1,
+            subsystem="xp",
+            binding_name="announce_channel",
+            legacy_key="xp_announce_channel",
+            binding_kind="role",
+        )
+    assert result.value == "legacy-value"
+    assert result.source == "fallback"
+    assert any("binding kind drift" in d for d in result.diagnostics)
+
+
+@pytest.mark.asyncio
+async def test_binding_kind_omitted_does_not_verify():
+    """When no expected kind is supplied, the binding wins as before."""
+    with (
+        patch(
+            "core.runtime.feature_flags.is_enabled",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=_bv(target_id=999, status=ResourceStatus.BOUND),
+        ),
+        patch(
+            "utils.db.settings.get_setting",
+            new_callable=AsyncMock,
+        ),
+    ):
+        result = await read_config(
+            guild_id=1,
+            subsystem="xp",
+            binding_name="announce_channel",
+            legacy_key="xp_announce_channel",
+            # binding_kind intentionally omitted
+        )
+    assert result.source == "binding"
+    assert not any("kind drift" in d for d in result.diagnostics)
 
 
 # ---------------------------------------------------------------------------
