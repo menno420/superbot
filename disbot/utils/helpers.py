@@ -5,7 +5,6 @@ import re
 import discord
 from discord.ext import commands
 
-from utils.settings_keys import ECONOMY_LOG_CHANNEL
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR
 
 # NOTE: ``from core.runtime import resources`` deliberately omitted at
@@ -71,18 +70,33 @@ async def post_log_embed(
     guild_id: int,
     embed: discord.Embed,
 ) -> None:
-    """Post an embed to the guild's configured economy_log_channel (if set)."""
-    from core.runtime import guild_resources
+    """Post an embed to the guild's configured economy_log_channel (if set).
+
+    Read flows through the Phase 2 arbitration helper so the canary
+    flip of ``bindings.primary`` is a single change in
+    :mod:`core.runtime.config_arbitration`.  This function MUST NOT
+    branch on ``is_enabled("bindings.primary", ...)`` directly —
+    that is forbidden by the invariant test in PR-7.
+    """
+    # Local imports preserve the PR #74 cycle-protection pattern:
+    # neither core.runtime.* nor core.resources.* lives at module
+    # scope in utils.helpers.
+    from core.runtime.config_arbitration import get_economy_log_channel
 
     guild = bot.get_guild(guild_id)
     if guild is None:
         return
-    ch = await guild_resources.resolve_settings_channel(guild, ECONOMY_LOG_CHANNEL)
-    if ch:
-        try:
-            await ch.send(embed=embed)  # type: ignore[union-attr]
-        except Exception:
-            pass
+    log_channel_result = await get_economy_log_channel(guild_id)
+    channel_id = log_channel_result.value
+    if channel_id is None:
+        return
+    ch = guild.get_channel(channel_id)
+    if ch is None:
+        return
+    try:
+        await ch.send(embed=embed)  # type: ignore[union-attr]
+    except Exception:
+        pass
 
 
 def normalize_name(name: str) -> str:
