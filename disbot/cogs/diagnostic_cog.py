@@ -670,31 +670,46 @@ class DiagnosticCog(commands.Cog):
     @platform_grp.command(name="flags")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_flags(self, ctx):
-        """Declared FeatureFlag entries (Phase 1d declarations only)."""
+        """Feature flags: declarations + Phase 2d evaluator state per flag."""
+        from core.runtime import feature_flags
         from services import diagnostics_service
 
         snap = diagnostics_service.snapshot("feature_flags")
+        guild_id = ctx.guild.id if ctx.guild else None
+        rows: list[str] = []
+        for name in sorted(snap.get("by_name", {})):
+            info = snap["by_name"][name]
+            try:
+                decision = await feature_flags.resolve_with_provenance(
+                    name,
+                    guild_id,
+                )
+                effective = "on" if decision.value else "off"
+                source = decision.source
+            except Exception as exc:  # noqa: BLE001 — diagnostics must not raise
+                effective = "?"
+                source = f"error:{type(exc).__name__}"
+            rows.append(
+                f"`{name}` default={info['default_value']} "
+                f"effective={effective} src={source} owner=`{info['owner']}`",
+            )
         embed = discord.Embed(
-            title="🚩 Feature flags (declared)",
+            title="🚩 Feature flags",
             description=(
                 f"{snap['declared_total']} declared  ·  "
-                "Phase 2d will add runtime evaluation"
+                f"cache={snap.get('cache_size', 0)}  ·  "
+                f"bootstrap_fallback={snap.get('bootstrap_fallback_count', 0)}"
             ),
             color=discord.Color.blurple(),
         )
-        by_name = snap.get("by_name", {})
-        if by_name:
-            lines = [
-                f"`{name}` default={info['default_value']} owner=`{info['owner']}`"
-                for name, info in sorted(by_name.items())
-            ]
+        if rows:
             embed.add_field(
-                name="Declared",
-                value="\n".join(lines)[:1024],
+                name="Flags",
+                value="\n".join(rows)[:1024],
                 inline=False,
             )
         else:
-            embed.add_field(name="Declared", value="*(none)*", inline=False)
+            embed.add_field(name="Flags", value="*(none)*", inline=False)
         await ctx.send(embed=embed)
 
 

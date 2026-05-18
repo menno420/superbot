@@ -32,11 +32,15 @@ async def teardown(guild_id: int) -> None:
       5. Subsystem bindings     — delete active subsystem_bindings rows (Phase 2);
                                    binding_audit_log rows are PRESERVED by design.
       6. Resource validation cache — drop resource_validation_cache rows (Phase 2).
-      7. Governance capability cache — clear per-guild execution overrides.
-      8. Governance visibility cache — bump version, clear role-override flag.
-      9. Guild-config cache     — drop cached guild config entries (F-1).
-      10. Scope locks            — invoke registered per-cog teardown hooks (F-2).
-      11. Governance feedback cooldown — documented, no per-guild cleanup needed.
+      7. Feature flag per-guild overrides — drop feature_flag_guild_overrides
+                                   rows (Phase 2d PR-2); global rows preserved.
+      8. Environment tier        — delete environment_tiers row (Phase 2d PR-2).
+      9. Feature flag evaluator cache — drop cached decisions for the guild.
+      10. Governance capability cache — clear per-guild execution overrides.
+      11. Governance visibility cache — bump version, clear role-override flag.
+      12. Guild-config cache    — drop cached guild config entries (F-1).
+      13. Scope locks           — invoke registered per-cog teardown hooks (F-2).
+      14. Governance feedback cooldown — documented, no per-guild cleanup needed.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -58,19 +62,28 @@ async def teardown(guild_id: int) -> None:
     # 6. Resource validation cache — drop cached resource status rows (Phase 2a).
     await _teardown_resource_cache(guild_id)
 
-    # 7. Governance capability overrides — clear execution-layer in-process dict.
+    # 7. Feature flag per-guild overrides — global rows preserved (Phase 2d).
+    await _teardown_feature_flag_guild_overrides(guild_id)
+
+    # 8. Environment tier row — guild defaults back to production on re-join.
+    await _teardown_environment_tier(guild_id)
+
+    # 9. Feature flag evaluator cache — drop stale cached decisions.
+    _teardown_feature_flag_cache(guild_id)
+
+    # 10. Governance capability overrides — clear execution-layer in-process dict.
     _teardown_capability_overrides(guild_id)
 
-    # 8. Governance visibility cache — version bump + role flag removal.
+    # 11. Governance visibility cache — version bump + role flag removal.
     _teardown_visibility_cache(guild_id)
 
-    # 9. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
+    # 12. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
     _teardown_guild_config(guild_id)
 
-    # 10. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
+    # 13. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
     _teardown_scope_locks(guild_id)
 
-    # 11. Governance feedback cooldown dict in governance/__init__.
+    # 14. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
@@ -202,6 +215,73 @@ async def _teardown_resource_cache(guild_id: int) -> None:
             )
     except Exception as exc:
         logger.warning("guild_lifecycle: resource cache teardown failed: %s", exc)
+
+
+async def _teardown_feature_flag_guild_overrides(guild_id: int) -> None:
+    """Delete every feature_flag_guild_overrides row for the departed guild.
+
+    Phase 2d, PR-2.  Global override rows survive (they're not scoped to
+    a single guild); only the per-guild rows are purged.  Operators can
+    re-seed canary/owner overrides after re-invitation.
+    """
+    try:
+        from utils.db.feature_flag_state import delete_for_guild as _ff_delete
+
+        count = await _ff_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d feature_flag guild override(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: feature_flag guild override teardown failed: %s",
+            exc,
+        )
+
+
+async def _teardown_environment_tier(guild_id: int) -> None:
+    """Drop the environment_tiers row so the guild re-defaults to PRODUCTION.
+
+    Phase 2d, PR-2.  When the bot is re-invited, the guild starts at the
+    most restrictive tier until an operator re-assigns it.
+    """
+    try:
+        from utils.db.environment_tiers import delete_for_guild as _et_delete
+
+        count = await _et_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted environment_tier row for guild=%d",
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning("guild_lifecycle: environment_tier teardown failed: %s", exc)
+
+
+def _teardown_feature_flag_cache(guild_id: int) -> None:
+    """Drop every evaluator cache entry scoped to ``guild_id``.
+
+    Phase 2d, PR-2.  Until PR-3 wires event-driven invalidation, the
+    explicit clear on guild-leave guarantees a re-invited guild does
+    not observe stale per-guild decisions.
+    """
+    try:
+        from core.runtime.feature_flags import clear_cache
+
+        removed = clear_cache(guild_id=guild_id)
+        if removed:
+            logger.debug(
+                "guild_lifecycle: cleared %d feature_flag cache entry(s) for guild=%d",
+                removed,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: feature_flag cache teardown failed: %s",
+            exc,
+        )
 
 
 def _teardown_capability_overrides(guild_id: int) -> None:
