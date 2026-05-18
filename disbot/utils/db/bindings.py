@@ -261,31 +261,47 @@ async def clear_with_audit(
 # ---------------------------------------------------------------------------
 
 
-async def delete_for_guild(guild_id: int) -> int:
-    """Remove every binding row + every audit row for ``guild_id``.
+def _parse_delete_count(result: str) -> int:
+    """Best-effort parse of asyncpg's ``"DELETE N"`` status string."""
+    try:
+        return int(result.split()[-1])
+    except (ValueError, IndexError):
+        return 0
 
-    Returns the combined deleted-row count (best-effort parse of
-    asyncpg's ``"DELETE N"`` status).  Phase 2b ships the primitive;
-    teardown wiring lands as a follow-up alongside the
-    :func:`utils.db.resource_cache.delete_for_guild` wiring.
+
+async def delete_active_bindings_for_guild(guild_id: int) -> int:
+    """Remove ``subsystem_bindings`` rows for ``guild_id``; preserve audit.
+
+    Phase 2 retention policy (see ``docs/platform-consistency-ledger.md``
+    §3) is to **preserve** ``binding_audit_log`` rows on guild leave so
+    the historical trail survives re-invitation.  This primitive is the
+    one ``guild_lifecycle.teardown`` calls; the audit purge is a
+    deliberately separate primitive (``purge_binding_audit_for_guild``)
+    that teardown never invokes.
+
+    Returns the number of active rows deleted.
     """
-    async with pool.get().acquire() as conn, conn.transaction():
-        r1 = await conn.execute(
-            "DELETE FROM binding_audit_log WHERE guild_id = $1",
-            guild_id,
-        )
-        r2 = await conn.execute(
-            "DELETE FROM subsystem_bindings WHERE guild_id = $1",
-            guild_id,
-        )
+    result = await pool.get().execute(
+        "DELETE FROM subsystem_bindings WHERE guild_id = $1",
+        guild_id,
+    )
+    return _parse_delete_count(result)
 
-    def _parse(result: str) -> int:
-        try:
-            return int(result.split()[-1])
-        except (ValueError, IndexError):
-            return 0
 
-    return _parse(r1) + _parse(r2)
+async def purge_binding_audit_for_guild(guild_id: int) -> int:
+    """Forensic primitive: delete ``binding_audit_log`` rows for a guild.
+
+    NOT called from ``guild_lifecycle.teardown`` — audit retention on
+    guild leave is by-design (see ``delete_active_bindings_for_guild``).
+    Reserved for explicit operator-driven cleanup (GDPR-style erasure,
+    test fixtures, manual archival).  Returns the number of audit rows
+    deleted.
+    """
+    result = await pool.get().execute(
+        "DELETE FROM binding_audit_log WHERE guild_id = $1",
+        guild_id,
+    )
+    return _parse_delete_count(result)
 
 
 async def get_audit_count(guild_id: int) -> int:
@@ -322,10 +338,11 @@ __all__ = [
     "clear_with_audit",
     "count_by_status",
     "count_by_subsystem",
-    "delete_for_guild",
+    "delete_active_bindings_for_guild",
     "get_audit_count",
     "get_one",
     "list_for_guild",
+    "purge_binding_audit_for_guild",
     "row_to_summary",
     "upsert_with_audit",
 ]

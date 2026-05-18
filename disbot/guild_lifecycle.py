@@ -29,11 +29,14 @@ async def teardown(guild_id: int) -> None:
       2. Runtime sessions       — delete DB sessions + cascade session_state rows.
       3. Session state store    — remaining orphan state rows for the guild.
       4. Panel anchors          — delete all panel_anchors rows for the guild.
-      5. Governance capability cache — clear per-guild execution overrides.
-      6. Governance visibility cache — bump version, clear role-override flag.
-      7. Guild-config cache      — drop cached guild config entries (F-1).
-      8. Scope locks             — invoke registered per-cog teardown hooks (F-2).
-      9. Governance feedback cooldown — documented, no per-guild cleanup needed.
+      5. Subsystem bindings     — delete active subsystem_bindings rows (Phase 2);
+                                   binding_audit_log rows are PRESERVED by design.
+      6. Resource validation cache — drop resource_validation_cache rows (Phase 2).
+      7. Governance capability cache — clear per-guild execution overrides.
+      8. Governance visibility cache — bump version, clear role-override flag.
+      9. Guild-config cache     — drop cached guild config entries (F-1).
+      10. Scope locks            — invoke registered per-cog teardown hooks (F-2).
+      11. Governance feedback cooldown — documented, no per-guild cleanup needed.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -49,19 +52,25 @@ async def teardown(guild_id: int) -> None:
     # 4. Panel anchors — delete all panel_anchors rows for the guild (GAP-001).
     await _teardown_panel_anchors(guild_id)
 
-    # 5. Governance capability overrides — clear execution-layer in-process dict.
+    # 5. Subsystem bindings active rows — audit log preserved (Phase 2 retention).
+    await _teardown_subsystem_bindings(guild_id)
+
+    # 6. Resource validation cache — drop cached resource status rows (Phase 2a).
+    await _teardown_resource_cache(guild_id)
+
+    # 7. Governance capability overrides — clear execution-layer in-process dict.
     _teardown_capability_overrides(guild_id)
 
-    # 6. Governance visibility cache — version bump + role flag removal.
+    # 8. Governance visibility cache — version bump + role flag removal.
     _teardown_visibility_cache(guild_id)
 
-    # 7. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
+    # 9. Guild-config cache — drop cached config entries for the guild (F-1 / S1.1).
     _teardown_guild_config(guild_id)
 
-    # 8. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
+    # 10. Scope locks — invoke registered per-cog teardown hooks (F-2 / S1.2).
     _teardown_scope_locks(guild_id)
 
-    # 9. Governance feedback cooldown dict in governance/__init__.
+    # 11. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
@@ -147,6 +156,52 @@ async def _teardown_panel_anchors(guild_id: int) -> None:
             )
     except Exception as exc:
         logger.warning("guild_lifecycle: panel anchor teardown failed: %s", exc)
+
+
+async def _teardown_subsystem_bindings(guild_id: int) -> None:
+    """Delete active subsystem_bindings rows for the departed guild.
+
+    Phase 2 retention policy: ``binding_audit_log`` is **preserved** on
+    guild leave so the historical trail survives re-invitation.  This
+    teardown step calls ``delete_active_bindings_for_guild`` — the
+    deliberately-split primitive that touches only the active table.
+    A separate ``purge_binding_audit_for_guild`` primitive exists for
+    explicit forensic cleanup but is NOT invoked here.
+    """
+    try:
+        from utils.db.bindings import delete_active_bindings_for_guild
+
+        count = await delete_active_bindings_for_guild(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d active binding(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning("guild_lifecycle: bindings teardown failed: %s", exc)
+
+
+async def _teardown_resource_cache(guild_id: int) -> None:
+    """Drop resource_validation_cache rows for the departed guild.
+
+    Phase 2a hardening shipped the ``delete_for_guild`` primitive; this
+    step wires it into the lifecycle.  Resource cache rows are pure
+    derived state (recomputable from Discord), so deletion is safe and
+    avoids unbounded growth across re-invitations.
+    """
+    try:
+        from utils.db.resource_cache import delete_for_guild as _resource_delete
+
+        count = await _resource_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d resource cache row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning("guild_lifecycle: resource cache teardown failed: %s", exc)
 
 
 def _teardown_capability_overrides(guild_id: int) -> None:
