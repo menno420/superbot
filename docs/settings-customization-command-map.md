@@ -1,0 +1,966 @@
+# Settings & Customization Command Map
+
+S0 milestone of the **Global Settings & Customization Manager** roadmap. Maps every loaded
+cog and every registered subsystem against a single 24-field template so reviewers,
+operators, and future setup-wizard work have one canonical reference.
+
+This is a docs-first milestone: no code, no migrations, no behaviour change.
+
+Sister docs:
+- [`docs/settings-customization-roadmap.md`](settings-customization-roadmap.md) — 15-milestone
+  roadmap and architecture summary.
+- [`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md) — the
+  Resource Provisioning Manager (RPM) lane, the 11-step contract, the strict
+  no-silent-auto-create rule, and the reserved `logging_routes` future model.
+
+
+## How to read this doc
+
+Each loaded cog has one section keyed by the canonical **subsystem** name from
+`disbot/utils/subsystem_registry.py:SUBSYSTEMS`. Within each section the same 24
+fields appear in the same order. Sections are populated as completely as can be
+verified by static inspection of source; fields that require a runtime walk of
+the command surface are marked **`(deferred to S2 ledger)`** — the ledger work in
+the next roadmap milestone (`CustomizationCatalogue`) replaces those stubs with
+authoritative content.
+
+Field labels are stable so the resilient doc tests in
+`tests/unit/docs/test_settings_customization_doc.py` can assert on them
+without depending on bot startup or runtime registry population.
+
+
+## Field template (24 fields)
+
+1. **cog_module** — file path on disk (e.g. `disbot/cogs/cleanup_cog.py`).
+2. **subsystem** — key from `utils.subsystem_registry.SUBSYSTEMS`.
+3. **current_commands** — every registered `@commands.command` /
+   `@app_commands.command` / `@commands.hybrid_command` discovered via static
+   grep of decorators (no bot startup). For groups, subcommands are listed
+   alongside the group name.
+4. **current_command_groups** — every `@commands.group` / `@app_commands.Group`.
+5. **current_command_panel_or_menu** — the `*menu` entrypoint or panel command
+   advertised in `entry_points` for this subsystem.
+6. **help_menu_discoverable** — does `!help` route to this subsystem (per
+   `HelpPanelView.SUBSYSTEM`-aware iteration in `disbot/cogs/help_cog.py`).
+7. **dedicated_panel_command** — explicit `@panel_command` decorator or
+   `extras={"panel": True}` (post-S2 metadata). `none` if absent.
+8. **help_menu_direct_navigation_hook** — does the cog implement
+   `build_help_menu_view(interaction)`.
+9. **existing_SettingSpec_declarations** — names of every `SettingSpec(...)`
+   literal found in the cog's schemas module (static AST scan).
+10. **existing_settings_keys** — constants exposed from
+    `disbot/utils/settings_keys/<subsystem>.py`.
+11. **existing_BindingSpec_entries** — names of every `BindingSpec(...)` literal.
+12. **existing_ResourceRequirement_entries** — names of every
+    `ResourceRequirement(...)` literal with its `binding_name` cross-link.
+13. **current_access_policy_behavior** — `visibility_tier` + capability list
+    declared in `SUBSYSTEMS[<name>]`.
+14. **hardcoded_or_env_only_behavior** — Python constants, env-var reads, JSON
+    file lookups that should become settings.
+15. **missing_customization_commands** — admin commands that should exist but
+    don't.
+16. **missing_settings_pages** — settings hub subpages absent today.
+17. **missing_menu_buttons_selects_modals** — specific UI primitives not yet
+    wired.
+18. **setting_class_per_value** — one of:
+    `scalar setting | binding | access policy | list setting |`
+    `channel-scoped policy | per-user preference | runtime diagnostic`.
+19. **target_Settings_Manager_page** — future page path (e.g.
+    `!settings subsystem cleanup`).
+20. **target_mutation_path** — one of
+    `SettingsMutationPipeline | BindingMutationPipeline |`
+    `ResourceProvisioningPipeline | GovernanceMutationPipeline |`
+    `ParticipationMutationPipeline`. May list multiple where the subsystem
+    spans pipelines.
+21. **target_help_or_menu_route** — how a user reaches the page (Help
+    direct-nav, Admin button, Platform subcommand, slash front door).
+22. **provisionable_resources** — table of
+    `(binding_name, kind, priority, suggested_name, suggested_category,`
+    `permission_template)` rows derived from items 11+12. `none` if the
+    subsystem owns no Discord resource pointers.
+23. **priority** — `P0` (first wave), `P1` (soon), `P2` (later).
+24. **recommended_PR_phase** — the `S<n>` milestone in which this row first
+    becomes actionable.
+
+
+## Loaded cogs and registered subsystems
+
+The 20 cogs loaded at startup come from `disbot/config.py:INITIAL_EXTENSIONS`.
+The 21 subsystems live in `disbot/utils/subsystem_registry.py:SUBSYSTEMS`. The
+extra subsystem with no corresponding cog file is `diagnostic` (its
+`!diagnostics` + `!platform` surface lives inside
+`disbot/cogs/diagnostic_cog.py`).
+
+Cogs (20): `admin_cog`, `blackjack_cog`, `chain_cog`, `channel_cog`,
+`cleanup_cog`, `counting_cog`, `deathmatch_cog`, `diagnostic_cog`,
+`economy_cog`, `general_cog`, `help_cog`, `inventory_cog`, `leaderboard_cog`,
+`mining_cog`, `moderation_cog`, `proof_channel_cog`, `role_cog`,
+`rps_tournament_cog`, `utility_cog`, `xp_cog`.
+
+Subsystems (21): `admin`, `moderation`, `economy`, `inventory`, `mining`,
+`xp`, `role`, `channel`, `cleanup`, `blackjack`, `deathmatch`,
+`rps_tournament`, `counting`, `chain`, `leaderboard`, `proof_channel`,
+`utility`, `general`, `help`, `diagnostic`.
+
+
+## Per-cog inventory
+
+
+### admin
+
+1. **cog_module**: `disbot/cogs/admin_cog.py`
+2. **subsystem**: `admin`
+3. **current_commands**: `!adminmenu`, `!serverstats`, `!cog`, `!loadall`,
+   `!unloadall`, `!restart`, `!loglevel`, `!logging status`, `!logging test`
+4. **current_command_groups**: `!logging` (group at `admin_cog.py:211`).
+5. **current_command_panel_or_menu**: `adminmenu` (panel command).
+6. **help_menu_discoverable**: Yes — `SUBSYSTEMS["admin"]` advertises
+   `adminmenu` entry point; surfaced via `HelpPanelView` iteration.
+7. **dedicated_panel_command**: `none` (no `@panel_command` / `extras["panel"]`
+   metadata yet).
+8. **help_menu_direct_navigation_hook**: `none` (no `build_help_menu_view`).
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none owned by admin in
+    `disbot/utils/settings_keys/`.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=owner`;
+    capabilities `admin.cog.load`, `admin.cog.unload`, `admin.cog.reload`,
+    `admin.server.stats`.
+14. **hardcoded_or_env_only_behavior**: `!logging` subgroup currently hosts
+    logging UI inside the admin cog rather than a dedicated `settings_cog`.
+15. **missing_customization_commands**: a top-level `!settings` cog (planned
+    in S5).
+16. **missing_settings_pages**: the Settings Manager root page itself
+    (planned in S5).
+17. **missing_menu_buttons_selects_modals**: settings hub view + per-subsystem
+    tabs (planned in S5-S10).
+18. **setting_class_per_value**: n/a (admin is the management surface, not a
+    settings consumer).
+19. **target_Settings_Manager_page**: `!settings platform` (root).
+20. **target_mutation_path**: n/a; admin commands proxy other pipelines.
+21. **target_help_or_menu_route**: existing Help direct-nav + Admin button.
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — parent for the new `!settings` cog.
+24. **recommended_PR_phase**: S5.
+
+
+### moderation
+
+1. **cog_module**: `disbot/cogs/moderation_cog.py` (+ `disbot/cogs/moderation/`
+   subpackage with `schemas.py`).
+2. **subsystem**: `moderation`
+3. **current_commands**: `!modmenu`, `!warn`, `!timeout`, `!kick`, `!ban`,
+   `!unban`, `!clearwarnings`, `!modlogs`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `modmenu`.
+6. **help_menu_discoverable**: Yes — `SUBSYSTEMS["moderation"]` lists `modmenu`
+   and per-command entry points.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: `warn_threshold`,
+   `warn_timeout_minutes`
+   (`disbot/cogs/moderation/schemas.py`).
+10. **existing_settings_keys**: `WARN_THRESHOLD`, `WARN_TIMEOUT_MINS`
+    (`disbot/utils/settings_keys/moderation.py`).
+11. **existing_BindingSpec_entries**: none (mod_log promotion planned in
+    later milestone).
+12. **existing_ResourceRequirement_entries**: `mod_log` with `binding_name=mod_log`,
+    priority `RECOMMENDED` (`disbot/cogs/moderation/schemas.py:57-71`).
+13. **current_access_policy_behavior**: `visibility_tier=moderator`;
+    capabilities `moderation.warn.apply`, `moderation.timeout.apply`,
+    `moderation.kick.apply`, `moderation.ban.apply`, `moderation.ban.remove`,
+    `moderation.log.view`, `moderation.settings.configure`.
+14. **hardcoded_or_env_only_behavior**: timeout presets, escalation rules,
+    DM-on-action behaviour are inline constants.
+15. **missing_customization_commands**: `!settings moderation`
+    edit/reset surface; `!moderation timeoutpresets`.
+16. **missing_settings_pages**: Settings Manager moderation page.
+17. **missing_menu_buttons_selects_modals**: threshold scalar editor,
+    timeout-presets list editor, mod-log channel BindingSelectView.
+18. **setting_class_per_value**: `warn_threshold` scalar, `warn_timeout_minutes`
+    scalar; `mod_log` binding (after S10 promotion).
+19. **target_Settings_Manager_page**: `!settings subsystem moderation`.
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars);
+    `BindingMutationPipeline` (mod_log); `ResourceProvisioningPipeline`
+    (create-mod-log channel flow).
+21. **target_help_or_menu_route**: Help direct-nav, Admin button, Settings tab.
+22. **provisionable_resources**:
+    `(mod_log, CHANNEL, RECOMMENDED, mod-logs, Staff, staff-only-text)`.
+23. **priority**: `P0` — first subsystem page after Settings shell + logging.
+24. **recommended_PR_phase**: S10 (first of the subsystem-page sub-PRs).
+
+
+### economy
+
+1. **cog_module**: `disbot/cogs/economy_cog.py` (+ `disbot/cogs/economy/`
+   subpackage with `_helpers.py`, `schemas.py`).
+2. **subsystem**: `economy`
+3. **current_commands**: `!economymenu`, `!daily`, `!work`, `!shop`,
+   `!balance`/`!bal`/`!wallet`, `!setlogchannel`, `!joblist`/`!jobs`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `economymenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none yet (daily/work cooldowns
+   pending promotion).
+10. **existing_settings_keys**: `ECONOMY_LOG_CHANNEL`
+    (`disbot/utils/settings_keys/economy.py`).
+11. **existing_BindingSpec_entries**: `log_channel`
+    (`disbot/cogs/economy/schemas.py`).
+12. **existing_ResourceRequirement_entries**: `log_channel` with `binding_name`
+    cross-link (`disbot/cogs/economy/schemas.py:42-57`).
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `economy.currency.view`, `economy.currency.earn`, `economy.shop.browse`,
+    `economy.shop.buy`, `economy.settings.configure`.
+14. **hardcoded_or_env_only_behavior**: `_DAILY_COOLDOWN`, `_WORK_COOLDOWN` in
+    `disbot/cogs/economy/_helpers.py`; tiered payout amounts, shop catalogue
+    seed data.
+15. **missing_customization_commands**: `!economy cooldowns set ...`, shop
+    catalogue editor.
+16. **missing_settings_pages**: Settings Manager economy page.
+17. **missing_menu_buttons_selects_modals**: cooldown scalar editors, log
+    channel BindingSelectView, shop list editor.
+18. **setting_class_per_value**: cooldowns → scalar; log_channel → binding;
+    shop catalogue → list.
+19. **target_Settings_Manager_page**: `!settings subsystem economy`.
+20. **target_mutation_path**: `SettingsMutationPipeline` (cooldowns);
+    `BindingMutationPipeline` (log_channel); `ResourceProvisioningPipeline`
+    (create-log-channel flow).
+21. **target_help_or_menu_route**: Help direct-nav, Settings tab.
+22. **provisionable_resources**:
+    `(log_channel, CHANNEL, RECOMMENDED, economy-log, Logs, staff-only-text)`.
+23. **priority**: `P1` — after moderation + xp.
+24. **recommended_PR_phase**: S10.
+
+
+### inventory
+
+1. **cog_module**: `disbot/cogs/inventory_cog.py`
+2. **subsystem**: `inventory`
+3. **current_commands**: `!inventory`/`!inv`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `inventory` entry point.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `inventory.item.view`, `inventory.item.use`, `inventory.craft.recipe`.
+14. **hardcoded_or_env_only_behavior**: item catalogue, crafting recipes
+    inline.
+15. **missing_customization_commands**: per-guild item catalogue overrides
+    (out of scope until v2).
+16. **missing_settings_pages**: Settings Manager inventory page is `P2`.
+17. **missing_menu_buttons_selects_modals**: page TBD by S2 ledger.
+18. **setting_class_per_value**: list (catalogue overrides — v2 only).
+19. **target_Settings_Manager_page**: `!settings subsystem inventory` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline` (catalogue toggles
+    once introduced).
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### mining
+
+1. **cog_module**: `disbot/cogs/mining_cog.py` (+ `disbot/cogs/mining/` package).
+2. **subsystem**: `mining`
+3. **current_commands**: `!mine`, `!minemenu`, `!mineinv`/`!mineinventory`,
+   `!minestats`, and several hidden helper commands (deferred to S2 ledger
+   for exact enumeration of hidden surface).
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `minemenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `mining.resource.mine`, `mining.resource.view`.
+14. **hardcoded_or_env_only_behavior**: `ORE_WEIGHTS`, explore outcome table,
+    cooldown constants inline.
+15. **missing_customization_commands**: `!mining ore weights set ...`,
+    cooldown setters.
+16. **missing_settings_pages**: Settings Manager mining page.
+17. **missing_menu_buttons_selects_modals**: ore-weights list editor,
+    cooldown scalar editor, optional `mining_channel` BindingSelectView.
+18. **setting_class_per_value**: cooldowns → scalar; ore weights → list;
+    optional mining_channel → binding.
+19. **target_Settings_Manager_page**: `!settings subsystem mining`.
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars + list);
+    `BindingMutationPipeline` + `ResourceProvisioningPipeline` (if
+    `mining_channel` binding is introduced).
+21. **target_help_or_menu_route**: Help direct-nav, Settings tab.
+22. **provisionable_resources**:
+    `(mining_channel, CHANNEL, OPTIONAL, mining-panel, Games, public-text)`
+    (proposed for S10 — not declared yet).
+23. **priority**: `P1`.
+24. **recommended_PR_phase**: S10.
+
+
+### xp
+
+1. **cog_module**: `disbot/cogs/xp_cog.py` (+ `disbot/cogs/xp/` package with
+   `schemas.py`).
+2. **subsystem**: `xp`
+3. **current_commands**: `!xpmenu`, `!rank`, `!givexp`, `!resetxp`,
+   `!xpconfig`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `xpmenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: `xp_min`, `xp_max`, `xp_cooldown`
+    (`disbot/cogs/xp/schemas.py`).
+10. **existing_settings_keys**: `XP_MIN`, `XP_MAX`, `XP_COOLDOWN`,
+    `XP_ANNOUNCE_CHANNEL` (`disbot/utils/settings_keys/xp.py`).
+11. **existing_BindingSpec_entries**: `announce_channel`
+    (`disbot/cogs/xp/schemas.py`).
+12. **existing_ResourceRequirement_entries**: `xp_resource_req_announce`
+    cross-linked to `announce_channel` (`disbot/cogs/xp/schemas.py:107-117`).
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `xp.rank.view`, `xp.leaderboard.view`, `xp.settings.configure`.
+14. **hardcoded_or_env_only_behavior**: level-up curve constants, default
+    role thresholds.
+15. **missing_customization_commands**: edit/reset surface for xp_min/max
+    /cooldown via `!settings xp`, level-curve editor (later).
+16. **missing_settings_pages**: Settings Manager xp page.
+17. **missing_menu_buttons_selects_modals**: scalar editors for min/max
+    /cooldown, announce_channel BindingSelectView.
+18. **setting_class_per_value**: xp_min/max/cooldown → scalar;
+    announce_channel → binding.
+19. **target_Settings_Manager_page**: `!settings subsystem xp`.
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars);
+    `BindingMutationPipeline` (announce_channel);
+    `ResourceProvisioningPipeline` (create-announce-channel flow).
+21. **target_help_or_menu_route**: Help direct-nav, Settings tab.
+22. **provisionable_resources**:
+    `(announce_channel, CHANNEL, OPTIONAL, xp-announcements, General,`
+    `public-text)`.
+23. **priority**: `P0` — second subsystem page after moderation.
+24. **recommended_PR_phase**: S10.
+
+
+### role
+
+1. **cog_module**: `disbot/cogs/role_cog.py`
+2. **subsystem**: `role`
+3. **current_commands**: `!roles`, `!rolesettings`, `!rolemenu`,
+   `!rolecreator`, `!assignroles`, `!createrole`, `!deleterole`, `!setrole`,
+   `!unsetrole`, `!debugroles`, `!refreshmembers`, `!reactroles`,
+   `!removereactrole`, `!listreactroles`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `rolemenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: `SKIP_ROLES`
+    (`disbot/utils/settings_keys/role.py`).
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capabilities `role.threshold.configure`, `role.assignment.manage`,
+    `role.reaction.manage`.
+14. **hardcoded_or_env_only_behavior**: time-based role thresholds, default
+    self-role list, reaction-role channels.
+15. **missing_customization_commands**: `!settings role thresholds set ...`,
+    self-role list editor, reaction-role manager UI.
+16. **missing_settings_pages**: Settings Manager role page.
+17. **missing_menu_buttons_selects_modals**: SKIP_ROLES list editor,
+    default-role RoleSelectView, role_menu_channel BindingSelectView.
+18. **setting_class_per_value**: SKIP_ROLES → list; thresholds → scalar /
+    list; default_role → binding; role_menu_channel → binding.
+19. **target_Settings_Manager_page**: `!settings subsystem role`.
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars / lists);
+    `BindingMutationPipeline` (role / channel bindings);
+    `ResourceProvisioningPipeline` (create role / channel flows).
+21. **target_help_or_menu_route**: Help direct-nav, Admin button, Settings tab.
+22. **provisionable_resources** (proposed for S10):
+    `(default_role, ROLE, OPTIONAL, Member, n/a, public-mention)`,
+    `(role_menu_channel, CHANNEL, OPTIONAL, role-menu, Public,`
+    `public-text-locked-write)`.
+23. **priority**: `P1`.
+24. **recommended_PR_phase**: S10.
+
+
+### channel
+
+1. **cog_module**: `disbot/cogs/channel_cog.py`
+2. **subsystem**: `channel`
+3. **current_commands**: `!channelmenu`, `!set`, `!evt`, `!create`,
+   `!bulkdelete`, `!del`, `!list`, `!clone`, `!move`, `!lock`, `!unlock`,
+   `!channelinfo`, `!rename`, and additional helpers in `channel_cog.py`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `channelmenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capabilities `channel.create.text`, `channel.create.voice`,
+    `channel.delete.any`, `channel.restrict.apply`,
+    `channel.visibility.configure`.
+14. **hardcoded_or_env_only_behavior**: channel-name conventions
+    (e.g. category seeds in `disbot/config.py:CLEANUP_WHITELIST_CHANNELS`
+    and similar).
+15. **missing_customization_commands**: per-guild channel name / category
+    convention editor.
+16. **missing_settings_pages**: Settings Manager channel page.
+17. **missing_menu_buttons_selects_modals**: name-convention list editor,
+    category-template selector.
+18. **setting_class_per_value**: convention lists → list;
+    creation-template → list.
+19. **target_Settings_Manager_page**: `!settings subsystem channel`.
+20. **target_mutation_path**: `SettingsMutationPipeline` (lists / scalars).
+    Channel resource creation itself is a `channel` subsystem responsibility
+    today; once promoted, it routes through `ResourceProvisioningPipeline`.
+21. **target_help_or_menu_route**: Help direct-nav, Admin button, Settings tab.
+22. **provisionable_resources**: none owned today; channel templates are
+    consumed by other subsystems' provisioning hints (see Logging /
+    Moderation / etc.).
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### cleanup
+
+1. **cog_module**: `disbot/cogs/cleanup_cog.py`
+2. **subsystem**: `cleanup`
+3. **current_commands**: `!cleanuphistory`, `!wordmenu`, `!word add`,
+   `!word remove`, `!word list`.
+4. **current_command_groups**: `!word` (group at `cleanup_cog.py:238`).
+5. **current_command_panel_or_menu**: `wordmenu`, `cleanuphistory`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none yet (governance owns
+    cleanup_policies; cleanup-level scalars are roadmap work in S8 v2/v3).
+10. **existing_settings_keys**: cleanup-related toggles live in
+    `disbot/config.py` (`CLEANUP_WHITELIST_CHANNELS`, ignored-channel
+    CSV in legacy KV) — to be migrated.
+11. **existing_BindingSpec_entries**: none. **Cleanup must not own a
+    duplicate `cleanup_log_channel` binding** — the logging subsystem owns
+    `cleanup_channel`; cleanup deep-links to it.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capabilities `cleanup.word.add`, `cleanup.word.remove`,
+    `cleanup.history.scan`, `cleanup.policy.configure`.
+14. **hardcoded_or_env_only_behavior**: `CLEANUP_WHITELIST_CHANNELS` in
+    `disbot/config.py:83`, ignored-channels CSV, prohibited-words seed list.
+15. **missing_customization_commands**: `!cleanup ignore add #channel`,
+    `!cleanup unignore #channel`, `!cleanup prohibited add <word>`,
+    list/clear variants.
+16. **missing_settings_pages**: Settings Manager cleanup page.
+17. **missing_menu_buttons_selects_modals**: ignored-channels list editor,
+    prohibited-words list editor, deep-link button to Logging's
+    cleanup_channel.
+18. **setting_class_per_value**: ignored_channels → list (transitional CSV
+    → typed channel-scoped policy in v2); prohibited_words → list (v3).
+19. **target_Settings_Manager_page**: `!settings subsystem cleanup`.
+20. **target_mutation_path**: `GovernanceMutationPipeline` (cleanup_policies);
+    `SettingsMutationPipeline` (transitional scalars).
+21. **target_help_or_menu_route**: Help direct-nav, Admin button,
+    Settings tab.
+22. **provisionable_resources**: none (cleanup deep-links to Logging's
+    `cleanup_channel`; it does not own a duplicate binding).
+23. **priority**: `P0` — biggest customization gap.
+24. **recommended_PR_phase**: S8.
+
+
+### blackjack
+
+1. **cog_module**: `disbot/cogs/blackjack_cog.py` (+ `disbot/cogs/blackjack/`
+   package).
+2. **subsystem**: `blackjack`
+3. **current_commands**: `!blackjack`/`!bj`, `!bjtournament`/`!bjtourn`,
+   `!bjstart`, `!bjstatus`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `blackjack` entry points.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `blackjack.game.play`.
+14. **hardcoded_or_env_only_behavior**: bet limits, deck rules.
+15. **missing_customization_commands**: bet-limit editor.
+16. **missing_settings_pages**: Settings Manager blackjack page (`P2`).
+17. **missing_menu_buttons_selects_modals**: bet-limit scalar editor.
+18. **setting_class_per_value**: bet limits → scalar.
+19. **target_Settings_Manager_page**: `!settings subsystem blackjack` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline`.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### deathmatch
+
+1. **cog_module**: `disbot/cogs/deathmatch_cog.py`
+2. **subsystem**: `deathmatch`
+3. **current_commands**: `!dm_challenge`/`!deathmatch`/`!challenge`/`!dm`,
+   `!dm_help`/`!deathmatch_help`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `deathmatch` / `dm` entry points.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `deathmatch.game.challenge`, `deathmatch.stat.view`.
+14. **hardcoded_or_env_only_behavior**: HP / damage tables inline.
+15. **missing_customization_commands**: balance tweak editor.
+16. **missing_settings_pages**: Settings Manager deathmatch page (`P2`).
+17. **missing_menu_buttons_selects_modals**: HP scalar editor.
+18. **setting_class_per_value**: HP / damage → scalar / list.
+19. **target_Settings_Manager_page**: `!settings subsystem deathmatch` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline`.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### rps_tournament
+
+1. **cog_module**: `disbot/cogs/rps_tournament_cog.py`
+   (+ `disbot/cogs/rps_tournament/` package).
+2. **subsystem**: `rps_tournament`
+3. **current_commands**: `!rps`, `!rpsregister`/`!rpsreg`,
+   `!rpsstart`/`!rpsbegin`, `!rpsbot`, `!rpsmatchup`, `!rpshelp`,
+   `!rpssettings`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `rps` / `rpssettings`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: `ACTIVE_TOURNAMENT`
+    (`disbot/utils/settings_keys/games.py`).
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `rps_tournament.game.join`, `rps_tournament.tournament.manage`.
+14. **hardcoded_or_env_only_behavior**: bracket size / scoring rules inline.
+15. **missing_customization_commands**: bracket-size editor,
+    `tournament_channel` selector.
+16. **missing_settings_pages**: Settings Manager rps page (`P2`).
+17. **missing_menu_buttons_selects_modals**: bracket scalar editor,
+    tournament_channel BindingSelectView.
+18. **setting_class_per_value**: bracket → scalar; tournament_channel →
+    binding.
+19. **target_Settings_Manager_page**: `!settings subsystem rps` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline`;
+    `BindingMutationPipeline` + `ResourceProvisioningPipeline` for
+    `tournament_channel` once introduced.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources** (proposed for S10):
+    `(tournament_channel, CHANNEL, OPTIONAL, rps-tournament, Games,`
+    `public-text)`.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### counting
+
+1. **cog_module**: `disbot/cogs/counting_cog.py` (+ `disbot/cogs/counting/`
+   package).
+2. **subsystem**: `counting`
+3. **current_commands**: `!countingmenu`/`!cm`, `!start_match`/`!sm`,
+   `!end_match`/`!em`, `!reset_count`/`!rc`, `!toggle_turns`/`!tt`,
+   `!count_info`/`!ci`, `!count_rules`/`!cr`, `!set_skip_numbers`/`!ssn`,
+   `!toggle_reset_on_wrong_count`/`!trwc`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `countingmenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `counting.game.play`, `counting.game.configure`.
+14. **hardcoded_or_env_only_behavior**: skip-number list, default channel
+    selection.
+15. **missing_customization_commands**: `counting_channel` selector,
+    rule-set editor.
+16. **missing_settings_pages**: Settings Manager counting page (`P2`).
+17. **missing_menu_buttons_selects_modals**: counting_channel
+    BindingSelectView, skip-numbers list editor.
+18. **setting_class_per_value**: skip_numbers → list; counting_channel →
+    binding.
+19. **target_Settings_Manager_page**: `!settings subsystem counting` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline` (lists);
+    `BindingMutationPipeline` + `ResourceProvisioningPipeline` for
+    counting_channel.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources** (proposed for S10):
+    `(counting_channel, CHANNEL, OPTIONAL, counting, Games, public-text)`.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### chain
+
+1. **cog_module**: `disbot/cogs/chain_cog.py`
+2. **subsystem**: `chain`
+3. **current_commands**: `!chain` (group with subcommands `create`, `delete`,
+   `setlimit`, `removelimit`, `list`), `!chainmenu`.
+4. **current_command_groups**: `!chain` (group at `chain_cog.py:66`).
+5. **current_command_panel_or_menu**: `chainmenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `chain.game.play`, `chain.game.configure`.
+14. **hardcoded_or_env_only_behavior**: chain-channel discovery, limit
+    defaults.
+15. **missing_customization_commands**: `chain_channel` selector.
+16. **missing_settings_pages**: Settings Manager chain page (`P2`).
+17. **missing_menu_buttons_selects_modals**: chain_channel BindingSelectView.
+18. **setting_class_per_value**: chain_channel → binding;
+    word-list overrides → list.
+19. **target_Settings_Manager_page**: `!settings subsystem chain` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline`;
+    `BindingMutationPipeline` + `ResourceProvisioningPipeline` for
+    chain_channel.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources** (proposed for S10):
+    `(chain_channel, CHANNEL, OPTIONAL, word-chain, Games, public-text)`.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### leaderboard
+
+1. **cog_module**: `disbot/cogs/leaderboard_cog.py`
+2. **subsystem**: `leaderboard`
+3. **current_commands**: `!leaderboard`/`!lb`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `leaderboard`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `leaderboard.xp.view`, `leaderboard.economy.view`.
+14. **hardcoded_or_env_only_behavior**: page size, default sort axis.
+15. **missing_customization_commands**: page-size / default-axis selector.
+16. **missing_settings_pages**: Settings Manager leaderboard page (`P2`).
+17. **missing_menu_buttons_selects_modals**: page-size scalar editor.
+18. **setting_class_per_value**: page_size → scalar.
+19. **target_Settings_Manager_page**: `!settings subsystem leaderboard` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline`.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### proof_channel
+
+1. **cog_module**: `disbot/cogs/proof_channel_cog.py`
+2. **subsystem**: `proof_channel`
+3. **current_commands**: `!+prize`, `!-prize`, `!prizestatus`, `!prizemenu`,
+   `!timedprize`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `prizemenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none yet (timed-prize default
+   duration pending promotion).
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none yet (`proof_channel` binding
+    pending promotion in S10 — currently resolved by hardcoded name
+    `"proof"` at `proof_channel_cog.py:30`).
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=staff`; capabilities
+    `proof_channel.access.grant`, `proof_channel.access.revoke`,
+    `proof_channel.access.timed`.
+14. **hardcoded_or_env_only_behavior**: hardcoded channel name `"proof"`,
+    default approval role, default timed-prize duration.
+15. **missing_customization_commands**: `!settings proof channel ...`,
+    approval-role selector, default-duration editor.
+16. **missing_settings_pages**: Settings Manager proof_channel page.
+17. **missing_menu_buttons_selects_modals**: proof_channel BindingSelectView,
+    approval_role RoleSelectView, default-duration scalar editor.
+18. **setting_class_per_value**: proof_channel → binding;
+    approval_role → binding; default_duration → scalar.
+19. **target_Settings_Manager_page**: `!settings subsystem proof`.
+20. **target_mutation_path**: `BindingMutationPipeline` (channel + role
+    bindings); `ResourceProvisioningPipeline` (create flows);
+    `SettingsMutationPipeline` (duration scalar).
+21. **target_help_or_menu_route**: Help direct-nav, Admin button, Settings tab.
+22. **provisionable_resources** (proposed for S10):
+    `(proof_channel, CHANNEL, REQUIRED, proof, Staff, staff-only-text)`,
+    `(approval_role, ROLE, REQUIRED, Proof Approver, n/a, public-mention)`.
+23. **priority**: `P0` — hardcoded name `"proof"` is a current footgun.
+24. **recommended_PR_phase**: S10.
+
+
+### utility
+
+1. **cog_module**: `disbot/cogs/utility_cog.py`
+2. **subsystem**: `utility`
+3. **current_commands**: `!utilitymenu`, `!clear`/`!purge`, `!info`,
+   `!serverinfo`, `!userinfo`, `!avatar`, `!remind`, `!invite`, `!poll`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `utilitymenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `utility.info.server`, `utility.info.user`, `utility.tool.ping`.
+14. **hardcoded_or_env_only_behavior**: reminder limits, poll constraints.
+15. **missing_customization_commands**: reminder-limit / poll-constraint
+    editor.
+16. **missing_settings_pages**: Settings Manager utility page (`P2`).
+17. **missing_menu_buttons_selects_modals**: scalar editors for limits.
+18. **setting_class_per_value**: reminder_limit → scalar; poll_options → list.
+19. **target_Settings_Manager_page**: `!settings subsystem utility` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline`.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### general
+
+1. **cog_module**: `disbot/cogs/general_cog.py`
+2. **subsystem**: `general`
+3. **current_commands**: `!generalmenu`, `!fact`, `!joke`, `!quote`,
+   `!trivia`, `!motivate`, `!eightball`, `!greet`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `generalmenu`.
+6. **help_menu_discoverable**: Yes.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `general.info.view`, `general.community.interact`.
+14. **hardcoded_or_env_only_behavior**: fact / joke / quote pools loaded from
+    JSON files.
+15. **missing_customization_commands**: per-guild pool overrides
+    (out of scope until v2).
+16. **missing_settings_pages**: Settings Manager general page (`P2`).
+17. **missing_menu_buttons_selects_modals**: pool toggle editor.
+18. **setting_class_per_value**: enabled_pools → list.
+19. **target_Settings_Manager_page**: `!settings subsystem general` (P2).
+20. **target_mutation_path**: `SettingsMutationPipeline`.
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: post-S11.
+
+
+### help
+
+1. **cog_module**: `disbot/cogs/help_cog.py`
+2. **subsystem**: `help`
+3. **current_commands**: `!help`/`!hilfe`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `help`; UI implemented as
+   `HelpPanelView` (`disbot/cogs/help_cog.py:248-327`).
+6. **help_menu_discoverable**: itself — surfaces SUBSYSTEMS through
+   `HelpPanelView` iteration.
+7. **dedicated_panel_command**: `none` formally; the `!help` command is the
+   panel.
+8. **help_menu_direct_navigation_hook**: `HelpPanelView` is the hook
+   provider — other cogs target it via their own implementations once added.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `help.menu.view`.
+14. **hardcoded_or_env_only_behavior**: page layout constants.
+15. **missing_customization_commands**: none — Help is itself the discovery
+    surface; S11 wires every cog into it.
+16. **missing_settings_pages**: none (Help is the menu, not a settings page).
+17. **missing_menu_buttons_selects_modals**: direct-nav buttons to Settings,
+    Platform, Admin (added in S11).
+18. **setting_class_per_value**: n/a.
+19. **target_Settings_Manager_page**: n/a; Help routes _into_ Settings, not
+    the reverse.
+20. **target_mutation_path**: n/a.
+21. **target_help_or_menu_route**: itself.
+22. **provisionable_resources**: none.
+23. **priority**: `P0` — the discoverability hub for S11.
+24. **recommended_PR_phase**: S11.
+
+
+### diagnostic
+
+1. **cog_module**: `disbot/cogs/diagnostic_cog.py`
+2. **subsystem**: `diagnostic`
+3. **current_commands**: `!diagnostics`/`!diag`, `!list_commands_detailed`,
+   `!find_command`, `!validate_json_files`, `!check_database`,
+   `!diagnostic_bot_status`, `!latency`/`!ping`, `!system_info`,
+   `!query_logs`, `!recent_errors`, `!test_notification`, `!platform` group
+   with subcommands (`status`, `anchors`, `identity`, `runtime`, `caches`,
+   `locks`, `tasks`, `views`, `slow`, `sessions`, `schemas`, `bindings`,
+   `resources`).
+4. **current_command_groups**: `!platform` (group at
+   `diagnostic_cog.py:179`).
+5. **current_command_panel_or_menu**: `!diagnostics` is the panel command;
+   no `*menu`.
+6. **help_menu_discoverable**: Yes via SUBSYSTEMS — but no
+   `build_help_menu_view` hook implemented yet.
+7. **dedicated_panel_command**: `none` formally; `!diagnostics` is the panel.
+8. **help_menu_direct_navigation_hook**: `none`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capabilities `diagnostic.health.view`, `diagnostic.latency.check`.
+14. **hardcoded_or_env_only_behavior**: probe thresholds inline.
+15. **missing_customization_commands**: `!platform customization`
+    (S2), `!platform resources` (S2.5).
+16. **missing_settings_pages**: none for diagnostic itself; diagnostic
+    _surfaces_ the catalogues.
+17. **missing_menu_buttons_selects_modals**: none (read-only diagnostic).
+18. **setting_class_per_value**: runtime diagnostic.
+19. **target_Settings_Manager_page**: n/a (read-only mirror in
+    `!platform`).
+20. **target_mutation_path**: none (read-only).
+21. **target_help_or_menu_route**: existing.
+22. **provisionable_resources**: none.
+23. **priority**: `P0` — hosts the registries that S2 / S2.5 surface.
+24. **recommended_PR_phase**: S2 (`!platform customization`) + S2.5
+    (`!platform resources`).
+
+
+## Setting class summary
+
+Cross-cut by class, this is the work distribution implied by the per-cog
+inventory above.
+
+- **scalar setting** — moderation (`warn_threshold`, `warn_timeout_minutes`),
+  xp (`xp_min`, `xp_max`, `xp_cooldown`), economy
+  (`_DAILY_COOLDOWN`/`_WORK_COOLDOWN` to be promoted), mining (ore weights,
+  cooldown — to be promoted), proof_channel (default duration — to be
+  promoted), logging (`logging.enabled`, `logging.auto_create_channels`).
+- **binding** — economy (`log_channel`), xp (`announce_channel`), moderation
+  (`mod_log` — to be promoted in S10), proof_channel (`proof_channel`,
+  `approval_role` — to be promoted), role (`default_role`,
+  `role_menu_channel` — to be promoted), logging (`mod_channel`,
+  `cleanup_channel`).
+- **access policy** — every subsystem declares a `visibility_tier` in
+  `SUBSYSTEMS` and capabilities; S9 lands the manager-cog editor.
+- **list setting** — role (`SKIP_ROLES`), cleanup (`ignored_channels` CSV
+  pending v2 typed promotion, `prohibited_words` pending v3),
+  counting (`skip_numbers`), mining (`ORE_WEIGHTS` weighted list).
+- **channel-scoped policy** — cleanup v2 typed policies; admin uses
+  `governance/cleanup_policies` table today.
+- **per-user preference** — none in v1 of this roadmap.
+- **runtime diagnostic** — diagnostic cog read-only views.
+
+
+## Setup-readiness blocker references
+
+The following blocker tags from `services.platform_consistency.SETUP_READINESS_BLOCKERS`
+gate the roadmap; the doc test asserts every one is referenced here.
+
+- `command_surface_ledger` — closed by PR #90; backs S2 catalogue lookups.
+- `panel_registry` — partial via panel detection in S2; full registry deferred.
+- `settings_registry` — opens with S1 read-only registry.
+- `settings_mutation_pipeline` — opens with S4 (canonical scalar writer).
+- `governance_trusted_role_schema` — used by S9 access-policy editor.
+- `role_service_extraction` — backs role bindings in S10.
+- `cleanup_policy_extraction` — backs S8 cleanup ownership.
+- `logging_settings_integration` — backs S7 (settings + binding +
+  resource_provisioning split).
+- `slash_panel_entrypoints` — backs S11 discoverability pass.
+- `setup_wizard_readiness_bridge` — backs S12 planning doc.
+- `setup_wizard` — long-term consumer; never owner of any pipeline.
+
+
+## Cross-cutting settings keys (not subsystem-owned)
+
+Some keys exposed by `disbot/utils/settings_keys/__init__.py:__all__` are not
+owned by any single cog and instead serve cross-cutting concerns. They are
+documented here so the inventory remains complete.
+
+- **Logging** keys (currently surfaced via the `admin` cog's `!logging`
+  subgroup; promoted to a dedicated `settings_cog` in S5 / S7):
+  - `LOGGING_ENABLED` — scalar setting (`SettingsMutationPipeline` after S4).
+  - `LOGGING_AUTO_CREATE_CHANNELS` — scalar setting; flips the implicit
+    confirmation rule for `ResourceProvisioningPipeline` channel creation
+    (see [`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md)).
+  - `LOGGING_MOD_CHANNEL` — legacy KV mirror of the `logging.mod_channel`
+    binding; long-term storage is the `subsystem_bindings` row written by
+    `BindingMutationPipeline` (called by `ResourceProvisioningPipeline`
+    step 8).
+  - `LOGGING_CLEANUP_CHANNEL` — legacy KV mirror of the
+    `logging.cleanup_channel` binding; same storage discipline.
+  - `DEFAULT_MOD_CHANNEL_NAME`, `DEFAULT_CLEANUP_CHANNEL_NAME` — string
+    defaults used by `ResourceProvisioningPipeline` when no
+    `ProvisioningHint.suggested_name` overrides apply.
+- **Governance** keys (owned by the `governance/` package, not a cog):
+  - `GOVERNANCE_VERSION` — version of the governance subscriptions /
+    visibility schema; bumped when shape changes.
+  - `TRUSTED_TIER_ROLE_ID` — role ID for the `TRUSTED` permission tier
+    (see `disbot/governance/permission_tiers.py`); editable through the
+    Access Policy Manager in S9.
+
+Each key above is intentionally referenced here so the S0 doc test
+(`test_existing_settings_keys_constants_referenced`) can verify the
+inventory stays in sync with `settings_keys.__all__` without depending on
+runtime imports.
+
+
+## Cross-references
+
+- `disbot/utils/subsystem_registry.py:SUBSYSTEMS` — 21 subsystem manifest.
+- `disbot/config.py:INITIAL_EXTENSIONS` — 20 cog loader list.
+- `disbot/core/runtime/subsystem_schema.py` — `register(...)` helper for
+  `SettingSpec` / `BindingSpec` / `ResourceRequirement`.
+- `disbot/core/runtime/resource_specs.py` — `ResourceKind`,
+  `ProvisioningPriority`, `ProvisioningHint`, `ResourceRequirement` data
+  classes.
+- `disbot/core/runtime/command_surface_ledger.py` — runtime ledger walked by
+  S2 / S2.5 catalogues.
+- `disbot/services/platform_consistency.py:SETUP_READINESS_BLOCKERS` — gates
+  the roadmap.
+- `disbot/services/governance_service.py` — runtime access-policy resolution.
+- `disbot/utils/settings_keys/` — per-subsystem `SettingKey` constants.
+- `disbot/cogs/xp/schemas.py`, `disbot/cogs/moderation/schemas.py`,
+  `disbot/cogs/economy/schemas.py` — the three schema modules registered
+  today; S5-S10 adds more.
