@@ -55,6 +55,7 @@ without touching DB or Discord.
 from __future__ import annotations
 
 import logging
+import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from enum import Enum
@@ -526,15 +527,396 @@ async def dry_run(guild: discord.Guild) -> DryRunSummary:
     return summary
 
 
+# ---------------------------------------------------------------------------
+# Apply phase — PR-6.  Writes CANDIDATE_VALID candidates from a fresh
+# dry-run through ``utils.db.bindings.upsert_with_audit`` with
+# ``actor_type='backfill'``.  Legacy reads remain authoritative.
+# ---------------------------------------------------------------------------
+
+
+class BindingBackfillError(Exception):
+    """Base class for binding-backfill write-phase failures."""
+
+
+class BackfillLockHeldError(BindingBackfillError):
+    """Raised when another session holds the advisory lock for this guild."""
+
+
+# Result statuses recorded per candidate during the write phase.
+WRITE_STATUS_WRITTEN = "written"
+WRITE_STATUS_SKIPPED_IDEMPOTENT = "skipped_idempotent"
+WRITE_STATUS_SKIPPED_NOT_CANDIDATE = "skipped_not_candidate"
+WRITE_STATUS_FAILED = "failed"
+
+
+@dataclass(frozen=True)
+class WriteResult:
+    """One candidate's write outcome.
+
+    ``mutation_id`` is non-empty for ``written`` rows (the UUID that
+    was passed to ``upsert_with_audit``).  For skipped/failed rows it
+    is empty so the operator can immediately tell which audit rows
+    are theirs.
+    """
+
+    legacy_key: str
+    subsystem: str
+    binding_name: str
+    target_id: int | None
+    write_status: str
+    classification: str
+    mutation_id: str
+    error: str | None
+
+    def to_summary_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class ApplyResult:
+    """Aggregate write-phase outcome for one guild."""
+
+    guild_id: int
+    started_at: datetime
+    completed_at: datetime
+    actor_id: int
+    summary_version: int
+    pre_counts: dict[str, int]
+    post_counts: dict[str, int]
+    writes: tuple[WriteResult, ...]
+    write_status_counts: dict[str, int]
+    error: str | None  # populated for status='failed' runs
+
+    @property
+    def is_failure(self) -> bool:
+        return self.error is not None or self.write_status_counts.get(
+            WRITE_STATUS_FAILED,
+            0,
+        )
+
+    def to_summary_dict(self) -> dict[str, Any]:
+        return {
+            "summary_version": self.summary_version,
+            "started_at": self.started_at.isoformat(),
+            "completed_at": self.completed_at.isoformat(),
+            "actor_id": self.actor_id,
+            "pre_counts": dict(self.pre_counts),
+            "post_counts": dict(self.post_counts),
+            "writes": [w.to_summary_dict() for w in self.writes],
+            "write_status_counts": dict(self.write_status_counts),
+            "error": self.error,
+        }
+
+
+def _advisory_lock_key(guild_id: int) -> int:
+    """Stable signed-int64 advisory-lock key for ``(MIGRATION_NAME, guild_id)``.
+
+    PostgreSQL's ``pg_try_advisory_lock(int8)`` takes one signed 64-bit
+    integer.  We derive a stable key from a sha256 of
+    ``"binding_backfill:<guild_id>"`` so concurrent runs across the
+    same (migration, guild) collide deterministically, while different
+    guilds never collide with each other.
+    """
+    import hashlib
+
+    digest = hashlib.sha256(
+        f"{MIGRATION_NAME}:{guild_id}".encode(),
+    ).digest()
+    return int.from_bytes(digest[:8], "big", signed=True)
+
+
+async def apply_backfill(
+    guild: discord.Guild,
+    *,
+    actor_id: int,
+    advisory_lock: bool = True,
+) -> ApplyResult:
+    """Write every ``CANDIDATE_VALID`` candidate for ``guild``.
+
+    Steps:
+
+    1. If ``advisory_lock`` is True, acquire a session-scoped
+       ``pg_try_advisory_lock`` keyed on ``(MIGRATION_NAME, guild_id)``.
+       Refuse to run if another session holds the lock.
+    2. Mark the per-guild checkpoint as ``in_progress``.
+    3. Run :func:`dry_run` (fresh classification — the operator's
+       previous dry-run may be stale).
+    4. For each ``CANDIDATE_VALID`` candidate:
+         - **Pre-check**: read the current binding row.  If the row
+           already matches the intended ``target_id`` AND is BOUND,
+           record ``skipped_idempotent`` and continue.  This makes
+           re-running ``apply_backfill`` truly idempotent — no extra
+           audit rows on a no-op re-run.
+         - Otherwise call ``utils.db.bindings.upsert_with_audit`` with
+           ``actor_type='backfill'`` and ``action='backfill'`` (the
+           DB primitive picks the action from actor_type).
+         - Record ``written`` with the new mutation_id.
+       Other classifications are recorded as
+       ``skipped_not_candidate``.
+    5. Re-run :func:`dry_run` to compute ``post_counts``.
+    6. Upsert the checkpoint with status ``complete`` (or ``failed``
+       if any write raised).  ``failed`` rows record their exception
+       in the per-write ``error`` field; the operator can re-run
+       after investigating.
+    7. Release the advisory lock.
+
+    Args:
+        guild: target guild.
+        actor_id: snowflake of the operator authorising the backfill.
+            REQUIRED — the schema enforces ``actor_id NOT NULL`` on
+            ``binding_audit_log``, so the operator's identity is
+            recorded against every audit row.
+        advisory_lock: set False only for tests that drive
+            ``pool.get()`` themselves.  Production callers leave the
+            default ``True``.
+
+    Raises:
+        BackfillLockHeldError: another session is mid-backfill for
+            this guild.  Wait and retry, or investigate the stalled
+            session.
+    """
+    # Local imports keep this module out of any module-load cycles.
+    from utils.db import bindings as bindings_db
+    from utils.db import platform_migration_checkpoints as checkpoint_db
+    from utils.db import pool
+
+    started_at = _now_utc()
+    error_message: str | None = None
+    writes: list[WriteResult] = []
+    lock_acquired = False
+    lock_conn = None
+
+    try:
+        # 1) Advisory lock.
+        if advisory_lock:
+            lock_key = _advisory_lock_key(guild.id)
+            lock_conn = await pool.get().acquire()
+            acquired = await lock_conn.fetchval(
+                "SELECT pg_try_advisory_lock($1)",
+                lock_key,
+            )
+            if not acquired:
+                await pool.get().release(lock_conn)
+                msg = (
+                    f"another session holds the binding_backfill advisory "
+                    f"lock for guild_id={guild.id}; wait and retry"
+                )
+                raise BackfillLockHeldError(msg)
+            lock_acquired = True
+
+        # 2) Mark in_progress so observers can see a backfill is live.
+        await checkpoint_db.upsert_checkpoint(
+            name=MIGRATION_NAME,
+            guild_id=guild.id,
+            status="in_progress",
+            version=SUMMARY_VERSION,
+            summary_json={"phase": "in_progress", "actor_id": actor_id},
+        )
+
+        # 3) Fresh dry-run.
+        pre = await dry_run(guild)
+        pre_counts = dict(pre.counts)
+
+        # 4) Write each CANDIDATE_VALID candidate.
+        for candidate in pre.candidates:
+            if candidate.classification != Classification.CANDIDATE_VALID.value:
+                writes.append(
+                    WriteResult(
+                        legacy_key=candidate.legacy_key,
+                        subsystem=candidate.subsystem,
+                        binding_name=candidate.binding_name,
+                        target_id=candidate.legacy_target_id,
+                        write_status=WRITE_STATUS_SKIPPED_NOT_CANDIDATE,
+                        classification=candidate.classification,
+                        mutation_id="",
+                        error=None,
+                    ),
+                )
+                continue
+
+            target_id = candidate.legacy_target_id
+            if target_id is None:
+                # Belt-and-braces: CANDIDATE_VALID implies a parseable
+                # legacy id, but defend against a future classifier
+                # change.
+                writes.append(
+                    WriteResult(
+                        legacy_key=candidate.legacy_key,
+                        subsystem=candidate.subsystem,
+                        binding_name=candidate.binding_name,
+                        target_id=None,
+                        write_status=WRITE_STATUS_FAILED,
+                        classification=candidate.classification,
+                        mutation_id="",
+                        error="legacy_target_id missing on CANDIDATE_VALID",
+                    ),
+                )
+                continue
+
+            # Pre-check idempotency.
+            current = await bindings_db.get_one(
+                guild.id,
+                candidate.subsystem,
+                candidate.binding_name,
+            )
+            if (
+                current is not None
+                and current.get("target_id") == target_id
+                and current.get("status") == ResourceStatus.BOUND.value
+            ):
+                writes.append(
+                    WriteResult(
+                        legacy_key=candidate.legacy_key,
+                        subsystem=candidate.subsystem,
+                        binding_name=candidate.binding_name,
+                        target_id=target_id,
+                        write_status=WRITE_STATUS_SKIPPED_IDEMPOTENT,
+                        classification=candidate.classification,
+                        mutation_id="",
+                        error=None,
+                    ),
+                )
+                continue
+
+            mutation_id = str(uuid.uuid4())
+            try:
+                await bindings_db.upsert_with_audit(
+                    guild_id=guild.id,
+                    subsystem=candidate.subsystem,
+                    binding_name=candidate.binding_name,
+                    kind=candidate.kind,
+                    target_id=target_id,
+                    status=ResourceStatus.BOUND.value,
+                    actor_id=actor_id,
+                    actor_type="backfill",
+                    mutation_id=mutation_id,
+                    old_target_id=(current.get("target_id") if current else None),
+                    old_status=(current.get("status") if current else None),
+                )
+            except Exception as exc:  # noqa: BLE001 — record per-candidate
+                logger.exception(
+                    "binding_backfill.apply_backfill: write failed "
+                    "for guild=%d subsystem=%r binding=%r",
+                    guild.id,
+                    candidate.subsystem,
+                    candidate.binding_name,
+                )
+                writes.append(
+                    WriteResult(
+                        legacy_key=candidate.legacy_key,
+                        subsystem=candidate.subsystem,
+                        binding_name=candidate.binding_name,
+                        target_id=target_id,
+                        write_status=WRITE_STATUS_FAILED,
+                        classification=candidate.classification,
+                        mutation_id="",
+                        error=f"{type(exc).__name__}: {exc}",
+                    ),
+                )
+                continue
+            writes.append(
+                WriteResult(
+                    legacy_key=candidate.legacy_key,
+                    subsystem=candidate.subsystem,
+                    binding_name=candidate.binding_name,
+                    target_id=target_id,
+                    write_status=WRITE_STATUS_WRITTEN,
+                    classification=candidate.classification,
+                    mutation_id=mutation_id,
+                    error=None,
+                ),
+            )
+
+        # 5) Re-classify post-write.
+        post = await dry_run(guild)
+        post_counts = dict(post.counts)
+
+    except BindingBackfillError:
+        raise
+    except Exception as exc:  # noqa: BLE001 — top-level safety net
+        logger.exception(
+            "binding_backfill.apply_backfill: unexpected failure for guild=%d",
+            guild.id,
+        )
+        error_message = f"{type(exc).__name__}: {exc}"
+        pre_counts = {}
+        post_counts = {}
+
+    completed_at = _now_utc()
+    write_status_counts: dict[str, int] = {}
+    for w in writes:
+        write_status_counts[w.write_status] = (
+            write_status_counts.get(w.write_status, 0) + 1
+        )
+
+    result = ApplyResult(
+        guild_id=guild.id,
+        started_at=started_at,
+        completed_at=completed_at,
+        actor_id=actor_id,
+        summary_version=SUMMARY_VERSION,
+        pre_counts=pre_counts,
+        post_counts=post_counts,
+        writes=tuple(writes),
+        write_status_counts=write_status_counts,
+        error=error_message,
+    )
+
+    # 6) Terminal checkpoint upsert.  Failed if any write raised OR
+    #    the top-level safety-net fired.
+    terminal_status = (
+        "failed"
+        if error_message or write_status_counts.get(WRITE_STATUS_FAILED, 0) > 0
+        else "complete"
+    )
+    try:
+        await checkpoint_db.upsert_checkpoint(
+            name=MIGRATION_NAME,
+            guild_id=guild.id,
+            status=terminal_status,
+            version=SUMMARY_VERSION,
+            summary_json=result.to_summary_dict(),
+            mark_completed=True,
+        )
+    except Exception:
+        logger.exception(
+            "binding_backfill.apply_backfill: terminal checkpoint "
+            "upsert failed for guild=%d (write phase already %s)",
+            guild.id,
+            terminal_status,
+        )
+
+    # 7) Release advisory lock.
+    if lock_acquired and lock_conn is not None:
+        try:
+            await lock_conn.execute(
+                "SELECT pg_advisory_unlock($1)",
+                _advisory_lock_key(guild.id),
+            )
+        finally:
+            await pool.get().release(lock_conn)
+
+    return result
+
+
 __all__ = [
     "MIGRATED_KEYS",
     "MIGRATION_NAME",
     "SUMMARY_VERSION",
     "WRITABLE_CLASSIFICATIONS",
+    "WRITE_STATUS_FAILED",
+    "WRITE_STATUS_SKIPPED_IDEMPOTENT",
+    "WRITE_STATUS_SKIPPED_NOT_CANDIDATE",
+    "WRITE_STATUS_WRITTEN",
+    "ApplyResult",
+    "BackfillLockHeldError",
+    "BindingBackfillError",
     "CandidateResult",
     "Classification",
     "DryRunSummary",
     "MigratedKey",
+    "WriteResult",
+    "apply_backfill",
     "classify_candidate",
     "dry_run",
 ]
