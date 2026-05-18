@@ -34,6 +34,21 @@ import logging
 # Phase 1 — Subsystem ownership protocols.  Importing here ensures the
 # self-registering schema + capability + feature-flag registries are
 # wired into the runtime before cogs load and start declaring schemas.
+#
+# Circular-import note (PR #73 → hotfix):
+# ``core.runtime.bindings`` (Phase 2b) transitively imports
+# ``utils.helpers`` via ``core.resources.discovery``.  ``utils.helpers``
+# used to carry a top-level ``from core.runtime import resources`` that
+# re-entered this package mid-load and crashed startup with::
+#
+#     ImportError: cannot import name 'resources' from partially
+#     initialized module 'core.runtime'
+#
+# The hotfix moved the runtime helper imports inside the functions in
+# ``utils.helpers`` that actually use them, breaking the cycle at the
+# helper layer.  Import order in this file is now safe regardless of
+# alphabetical sorting; the regression is pinned by
+# ``tests/unit/runtime/test_import_cycle_regression.py``.
 from core.runtime import guild_config  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
 from core.runtime import scope_locks  # noqa: F401 — re-exported

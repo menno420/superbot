@@ -5,19 +5,29 @@ import re
 import discord
 from discord.ext import commands
 
-from core.runtime import resources
 from utils.settings_keys import ECONOMY_LOG_CHANNEL
 from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR
+
+# NOTE: ``from core.runtime import resources`` deliberately omitted at
+# module scope.  ``core/runtime/__init__.py`` imports
+# ``core.runtime.bindings`` (Phase 2b), which imports
+# ``core.resources.discovery``, which imports this module for
+# :func:`normalize_name`.  A top-level dependency on ``core.runtime``
+# here re-enters that partially-initialised package and crashes startup
+# with ``ImportError: cannot import name 'resources'``.  Each consumer
+# of the resolver primitives imports them locally instead.
 
 
 def _parse_member(guild: discord.Guild, text: str) -> discord.Member | None:
     """Resolve a member from a mention, ID, or username/display-name string."""
+    from core.runtime import guild_resources
+
     text = text.strip()
     mention_match = re.match(r"<@!?(\d+)>", text)
     if mention_match:
-        return resources.resolve_member(guild, mention_match.group(1))
+        return guild_resources.resolve_member(guild, mention_match.group(1))
     if text.isdigit():
-        return resources.resolve_member(guild, text)
+        return guild_resources.resolve_member(guild, text)
     return discord.utils.find(
         lambda m: m.name == text or m.display_name == text,
         guild.members,
@@ -62,10 +72,12 @@ async def post_log_embed(
     embed: discord.Embed,
 ) -> None:
     """Post an embed to the guild's configured economy_log_channel (if set)."""
+    from core.runtime import guild_resources
+
     guild = bot.get_guild(guild_id)
     if guild is None:
         return
-    ch = await resources.resolve_settings_channel(guild, ECONOMY_LOG_CHANNEL)
+    ch = await guild_resources.resolve_settings_channel(guild, ECONOMY_LOG_CHANNEL)
     if ch:
         try:
             await ch.send(embed=embed)  # type: ignore[union-attr]

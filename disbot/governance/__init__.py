@@ -15,7 +15,14 @@ import time as _time
 
 import discord
 
-from core.runtime import resources
+# NOTE: ``from core.runtime import resources`` deliberately omitted at
+# module scope to avoid a circular import.  ``core/runtime/__init__.py``
+# imports Phase 2b's ``bindings`` submodule, which transitively pulls
+# in ``governance.permission_tiers`` via ``core.resources.role_service``;
+# re-entering this ``governance/__init__.py`` mid-load and reaching back
+# into ``core.runtime`` crashes with ``ImportError: cannot import name
+# 'resources'``.  The single consumer (``_find_redirect_channel`` below)
+# imports the alias locally instead.
 from governance.cache import (  # noqa: F401
     GovernanceCacheBackend,
     forget_guild,
@@ -224,10 +231,12 @@ def _find_redirect_channel(
     guild: discord.Guild | None,
     subsystem_meta: dict,
 ) -> str | None:
+    from core.runtime import guild_resources
+
     if guild is None:
         return None
     for ch_name in subsystem_meta.get("default_channels", []):
-        ch = resources.resolve_channel(guild, name=ch_name)
+        ch = guild_resources.resolve_channel(guild, name=ch_name)
         if ch:
             return ch.mention
     return None
