@@ -37,7 +37,6 @@ from services.customization_catalogue import (
     panel_command,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures — snapshot live module state around each test to stay isolated.
 # ---------------------------------------------------------------------------

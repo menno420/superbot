@@ -463,7 +463,7 @@ def build_catalogue(bot: object | None = None) -> CustomizationCatalogue:
     global _CACHED
     _CACHED = cat
     logger.info(
-        "customization_catalogue: built v%d — %d subsystems, %d panels, " "%d findings",
+        "customization_catalogue: built v%d — %d subsystems, %d panels, %d findings",
         cat.version,
         len(cat.entries),
         sum(len(e.panels) for e in cat.entries),
