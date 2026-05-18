@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import datetime
 import logging
 
 import discord
 from discord.ext import commands
 
 from cogs.diagnostic._helpers import (
-    _fmt_snapshot_value,
     build_bot_status_embed,
     build_check_database_embed,
     build_command_list_pages,
@@ -17,9 +15,36 @@ from cogs.diagnostic._helpers import (
     build_test_notification_embed,
     build_validate_json_embed,
 )
-from utils import db
+from cogs.diagnostic._platform_embeds import (
+    build_anchors_embed,
+    build_bindings_embed,
+    build_caches_embed,
+    build_consistency_embed,
+    build_customization_embed,
+    build_flags_embed,
+    build_identity_embed,
+    build_locks_embed,
+    build_migrations_embed,
+    build_participation_schemas_embed,
+    build_provisioning_embed,
+    build_resource_requirements_embed,
+    build_resources_embed,
+    build_runtime_embed,
+    build_schemas_embed,
+    build_sessions_embed,
+    build_settings_registry_embed,
+    build_slow_embed,
+    build_status_embed,
+    build_tasks_embed,
+    build_views_embed,
+)
 from views.base import send_panel
-from views.diagnostic import _DiagnosticsHubView, _PaginatorView
+from views.diagnostic import (
+    _DiagnosticsHubView,
+    _PaginatorView,
+    _PlatformHubView,
+    build_platform_hub_embed,
+)
 
 logger = logging.getLogger("bot")
 
@@ -181,109 +206,31 @@ class DiagnosticCog(commands.Cog):
     async def platform_grp(self, ctx):
         """Runtime introspection group.
 
-        Existing (R1):
-            !platform status      · !platform anchors · !platform identity
+        With no subcommand the interactive ``_PlatformHubView`` opens —
+        every existing typed ``!platform <subcommand>`` is preserved and
+        continues to work exactly as before.
 
-        Added in Phase S2.5 / O-1, backed by ``services.diagnostics_service``:
-            !platform runtime     · !platform caches  · !platform locks [prefix]
-            !platform tasks       · !platform views   · !platform sessions [subsystem]
-
-        Added in Phase 1 (subsystem ownership protocols):
-            !platform schemas              · !platform participation-schemas
-            !platform resource-requirements · !platform flags
-
-        Added in Phase 2a (unified resource runtime): !platform resources
-        Added in Phase 2b (subsystem bindings): !platform bindings
-        Added in Phase 2 PR-10: !platform consistency
+        Existing surfaces (read-only):
+            status · anchors · identity · runtime · caches ·
+            locks [prefix] · tasks · views · sessions [subsystem] ·
+            slow [limit] · schemas · settings-registry · customization ·
+            provisioning · participation-schemas · resource-requirements ·
+            resources · bindings · flags · migrations · consistency
         """
-        await ctx.send(
-            "Usage: `!platform <status|anchors|identity|"
-            "runtime|caches|locks|tasks|views|sessions|slow|"
-            "schemas|participation-schemas|resource-requirements|flags|"
-            "resources|bindings|migrations|consistency>`",
-            delete_after=20,
-        )
+        view = _PlatformHubView(ctx.author)
+        await send_panel(ctx, embed=build_platform_hub_embed(), view=view)
 
     @platform_grp.command(name="status")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_status(self, ctx):
         """High-level platform status: uptime, cogs, governance, scheduler."""
-        from core.runtime import tasks as runtime_tasks
-
-        uptime_obj = getattr(self.bot, "uptime", None)
-        uptime_s = (
-            str(datetime.datetime.now(tz=datetime.timezone.utc) - uptime_obj)
-            if uptime_obj
-            else "n/a"
-        )
-        embed = discord.Embed(
-            title="🛠 Platform status",
-            color=discord.Color.blurple(),
-        )
-        embed.add_field(name="Uptime", value=uptime_s, inline=True)
-        embed.add_field(name="Guilds", value=str(len(self.bot.guilds)), inline=True)
-        embed.add_field(name="Cogs loaded", value=str(len(self.bot.cogs)), inline=True)
-        embed.add_field(
-            name="Managed tasks",
-            value=str(runtime_tasks.count()),
-            inline=True,
-        )
-        try:
-            from services.governance_service import _FAILED_SUBSYSTEMS
-
-            failed = ", ".join(sorted(_FAILED_SUBSYSTEMS)) or "none"
-        except Exception:
-            failed = "?"
-        embed.add_field(name="Failed subsystems", value=failed, inline=False)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_status_embed(self.bot))
 
     @platform_grp.command(name="anchors")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_anchors(self, ctx):
         """Show last restoration outcome and active anchor counts per subsystem."""
-        from core.runtime import message_anchor_manager
-
-        stats = message_anchor_manager.last_restore_stats()
-        embed = discord.Embed(
-            title="📌 Panel anchors",
-            color=discord.Color.blurple(),
-        )
-        embed.add_field(
-            name="Last restoration",
-            value=(
-                f"seen: **{stats['anchors_seen']}**  ·  "
-                f"restored: **{stats['restored']}**  ·  "
-                f"view_missing: **{stats['view_missing']}**  ·  "
-                f"stale: **{stats['stale']}**"
-            ),
-            inline=False,
-        )
-        try:
-            rows = await db.fetchall(
-                "SELECT subsystem, COUNT(*) AS n FROM panel_anchors "
-                "WHERE NOT is_stale GROUP BY subsystem ORDER BY n DESC",
-                (),
-            )
-            if rows:
-                lines = [f"`{r['subsystem']}` — {r['n']}" for r in rows]
-                embed.add_field(
-                    name="Active anchors by subsystem",
-                    value="\n".join(lines)[:1024],
-                    inline=False,
-                )
-            else:
-                embed.add_field(
-                    name="Active anchors by subsystem",
-                    value="none",
-                    inline=False,
-                )
-        except Exception as exc:
-            embed.add_field(
-                name="Active anchors by subsystem",
-                value=f"DB query failed: {exc}",
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=await build_anchors_embed())
 
     @platform_grp.command(name="identity")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
@@ -296,64 +243,7 @@ class DiagnosticCog(commands.Cog):
                                         findings (fatal-tier are never
                                         auto-fixed; cog reload required).
         """
-        from utils.subsystem_registry import (
-            apply_self_heal,
-            summarize_findings,
-            validate_identity_contract,
-        )
-
-        findings = await validate_identity_contract(self.bot)
-        summary = summarize_findings(findings)
-        total = summary["total"]
-        fatal = summary["by_tier"]["fatal"]
-        auto = summary["by_tier"]["auto_healable"]
-
-        heal_requested = mode.strip() in ("--fix", "-f", "fix")
-        heal_counts: dict[str, int] | None = None
-        if heal_requested:
-            heal_counts = await apply_self_heal(findings)
-
-        if total == 0:
-            color = discord.Color.green()
-            desc = "All four identity surfaces agree."
-        elif fatal:
-            color = discord.Color.red()
-            desc = (
-                f"{total} finding(s) — **{fatal} fatal**, "
-                f"{auto} auto-healable.  Fatal findings require operator "
-                "review (likely a cog failed to load)."
-            )
-        else:
-            color = discord.Color.orange()
-            desc = f"{total} finding(s) — {auto} auto-healable."
-
-        embed = discord.Embed(
-            title="🪪 Identity contract",
-            description=desc,
-            color=color,
-        )
-        for bucket, items in findings.items():
-            if not items:
-                continue
-            embed.add_field(
-                name=f"{bucket} ({len(items)})",
-                value="\n".join(items)[:1024],
-                inline=False,
-            )
-        if heal_counts is not None:
-            embed.add_field(
-                name="Self-heal result",
-                value=(
-                    f"router prefixes unregistered: "
-                    f"`{heal_counts['router_prefixes_unregistered']}` · "
-                    f"views unregistered: `{heal_counts['views_unregistered']}` · "
-                    f"anchors marked stale: "
-                    f"`{heal_counts['anchors_marked_stale']}` · "
-                    f"fatal-tier skipped: `{heal_counts['skipped_fatal']}`"
-                ),
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=await build_identity_embed(self.bot, mode))
 
     # ────────────────────────────────────────────────────────────────
     # !platform — Phase S2.5 / O-1: diagnostics_service-backed commands
@@ -363,189 +253,46 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def platform_runtime(self, ctx):
         """High-level runtime snapshot: every registered diagnostic provider."""
-        from services import diagnostics_service
-
-        snap = diagnostics_service.snapshot_all()
-        embed = discord.Embed(
-            title="🛰 Runtime snapshot",
-            description=f"{len(snap)} provider(s) registered.",
-            color=discord.Color.blurple(),
-        )
-        for name in sorted(snap):
-            embed.add_field(
-                name=name,
-                value=_fmt_snapshot_value(snap[name]),
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_runtime_embed())
 
     @platform_grp.command(name="caches")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_caches(self, ctx):
         """Cache state: F-1 guild_config + governance.cache."""
-        from services import diagnostics_service
-
-        embed = discord.Embed(
-            title="🧠 Cache snapshot",
-            color=discord.Color.blurple(),
-        )
-        for name in ("guild_config", "governance_cache"):
-            try:
-                snap = diagnostics_service.snapshot(name)
-            except KeyError:
-                snap = {"_error": "provider not registered"}
-            embed.add_field(
-                name=name,
-                value=_fmt_snapshot_value(snap),
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_caches_embed())
 
     @platform_grp.command(name="locks")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_locks(self, ctx, prefix: str = ""):
         """scope_locks snapshot; pass a prefix to filter (e.g. `counting`)."""
-        from services import diagnostics_service
-
-        snap = diagnostics_service.snapshot("scope_locks")
-        by_prefix = dict(snap.get("by_prefix", {}))
-        if prefix:
-            by_prefix = {k: v for k, v in by_prefix.items() if k == prefix}
-        embed = discord.Embed(
-            title="🔒 Scope locks",
-            description=(
-                f"total: **{snap.get('total', 0)}**  ·  "
-                f"held: **{snap.get('held', 0)}**"
-                + (f"  ·  filter: `{prefix}`" if prefix else "")
-            ),
-            color=discord.Color.blurple(),
-        )
-        if by_prefix:
-            lines = [f"`{k}` — {v}" for k, v in sorted(by_prefix.items())]
-            embed.add_field(
-                name="By prefix",
-                value="\n".join(lines)[:1024],
-                inline=False,
-            )
-        else:
-            embed.add_field(
-                name="By prefix",
-                value="*(no locks matching filter)*" if prefix else "*(none)*",
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_locks_embed(prefix))
 
     @platform_grp.command(name="tasks")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_tasks(self, ctx):
         """Managed background-task snapshot (core.runtime.tasks)."""
-        from services import diagnostics_service
-
-        snap = diagnostics_service.snapshot("tasks")
-        names = list(snap.get("names", []))
-        embed = discord.Embed(
-            title="🔁 Managed tasks",
-            description=f"{snap.get('active_count', 0)} active",
-            color=discord.Color.blurple(),
-        )
-        if names:
-            embed.add_field(
-                name="Names",
-                value="\n".join(f"`{n}`" for n in names)[:1024],
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_tasks_embed())
 
     @platform_grp.command(name="views")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_views(self, ctx):
         """Registered PersistentView classes (by subsystem)."""
-        from services import diagnostics_service
-
-        snap = diagnostics_service.snapshot("persistent_views")
-        subsystems = list(snap.get("subsystems", []))
-        embed = discord.Embed(
-            title="🖼 Persistent views",
-            description=f"{snap.get('registered_count', 0)} registered",
-            color=discord.Color.blurple(),
-        )
-        if subsystems:
-            embed.add_field(
-                name="Subsystems",
-                value=", ".join(f"`{s}`" for s in subsystems)[:1024],
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_views_embed())
 
     @platform_grp.command(name="slow")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_slow(self, ctx, limit: int = 10):
         """Show the most recent slow-path entries (S3.2 ring buffer)."""
-        from core.runtime import slow_path_log
-
-        entries = slow_path_log.snapshot()
-        limit = max(1, min(limit, 25))  # Discord field-count guard
-        recent = entries[-limit:]
-        embed = discord.Embed(
-            title="🐢 Slow path log",
-            description=(
-                f"**{len(entries)}** entries  ·  threshold: "
-                f"`{slow_path_log.threshold_ms():.0f}ms`  ·  "
-                f"capacity: `{slow_path_log.capacity()}`"
-            ),
-            color=discord.Color.blurple(),
-        )
-        if not recent:
-            embed.add_field(
-                name="No slow paths recorded",
-                value=f"All observations under {slow_path_log.threshold_ms():.0f}ms.",
-                inline=False,
-            )
-        else:
-            embed.set_footer(text=f"Showing the {len(recent)} most recent.")
-            for entry in reversed(recent):  # most recent first
-                age_s = max(0.0, datetime.datetime.now().timestamp() - entry.timestamp)
-                embed.add_field(
-                    name=f"{entry.kind}: {entry.name}",
-                    value=f"**{entry.duration_ms:.0f}ms**  ·  {age_s:.0f}s ago",
-                    inline=False,
-                )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_slow_embed(limit))
 
     @platform_grp.command(name="sessions")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_sessions(self, ctx, subsystem: str = ""):
         """Active session counts (DB-backed); optionally filtered by subsystem."""
-        try:
-            if subsystem:
-                rows = await db.fetchall(
-                    "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
-                    "WHERE subsystem=$1 GROUP BY subsystem",
-                    (subsystem,),
-                )
-            else:
-                rows = await db.fetchall(
-                    "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
-                    "GROUP BY subsystem ORDER BY n DESC",
-                    (),
-                )
-        except Exception as exc:
-            await ctx.send(f"❌ DB query failed: {exc}", delete_after=15)
+        embed, error = await build_sessions_embed(subsystem)
+        if error is not None:
+            await ctx.send(error, delete_after=15)
             return
-        embed = discord.Embed(
-            title="🎫 Active sessions",
-            description=(f"filter: `{subsystem}`" if subsystem else "all subsystems"),
-            color=discord.Color.blurple(),
-        )
-        if rows:
-            lines = [f"`{r['subsystem']}` — {r['n']}" for r in rows]
-            embed.add_field(
-                name="By subsystem",
-                value="\n".join(lines)[:1024],
-                inline=False,
-            )
-        else:
-            embed.add_field(name="By subsystem", value="*(none)*", inline=False)
         await ctx.send(embed=embed)
 
     # ────────────────────────────────────────────────────────────────
@@ -556,234 +303,66 @@ class DiagnosticCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def platform_schemas(self, ctx):
         """Registered SubsystemSchema instances (Phase 1a)."""
-        from cogs.diagnostic._platform_embeds import build_schemas_embed
-
         await ctx.send(embed=build_schemas_embed())
 
     @platform_grp.command(name="settings-registry")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_settings_registry(self, ctx):
         """Frozen catalogue of every declared SettingSpec (S1)."""
-        from cogs.diagnostic._platform_embeds import build_settings_registry_embed
-
         await ctx.send(embed=build_settings_registry_embed())
 
     @platform_grp.command(name="customization")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_customization(self, ctx):
         """Customization catalogue across subsystems (S2)."""
-        from cogs.diagnostic._platform_embeds import build_customization_embed
-
         await ctx.send(embed=build_customization_embed())
 
     @platform_grp.command(name="provisioning")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_provisioning(self, ctx):
         """Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5)."""
-        from cogs.diagnostic._platform_embeds import build_provisioning_embed
-
         await ctx.send(embed=build_provisioning_embed())
 
     @platform_grp.command(name="participation-schemas")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_participation_schemas(self, ctx):
         """Registered ParticipationSchema instances (Phase 1b)."""
-        from services import diagnostics_service
-
-        snap = diagnostics_service.snapshot("participation_schemas")
-        embed = discord.Embed(
-            title="🧑‍🤝‍🧑 Participation schemas",
-            description=(
-                f"{snap['registered']} registered  ·  "
-                f"subs={snap['subscriptions_total']}  ·  "
-                f"vis={snap['visibility_intents_total']}  ·  "
-                f"notif={snap['notification_intents_total']}  ·  "
-                f"prefs={snap['preferences_total']}"
-            ),
-            color=discord.Color.blurple(),
-        )
-        by_sub = snap.get("by_subsystem", {})
-        if by_sub:
-            lines = [
-                f"`{name}` — s={info['subscriptions']} "
-                f"v={info['visibility_intents']} "
-                f"n={info['notification_intents']} "
-                f"p={info['preferences']} v{info['version']}"
-                for name, info in sorted(by_sub.items())
-            ]
-            embed.add_field(
-                name="By subsystem",
-                value="\n".join(lines)[:1024],
-                inline=False,
-            )
-        else:
-            embed.add_field(name="By subsystem", value="*(none)*", inline=False)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_participation_schemas_embed())
 
     @platform_grp.command(name="resource-requirements")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_resource_requirements(self, ctx):
         """Declared ResourceRequirement entries across subsystems (Phase 1c)."""
-        from services import diagnostics_service
-
-        snap = diagnostics_service.snapshot("resource_requirements")
-        embed = discord.Embed(
-            title="🧱 Resource requirements",
-            description=f"{len(snap)} requirement(s) declared",
-            color=discord.Color.blurple(),
-        )
-        if snap:
-            lines = [
-                f"`{r['subsystem']}` {r['kind']}/{r['intent']} "
-                f"({r['priority']})"
-                + (f" → `{r['suggested_name']}`" if r["suggested_name"] else "")
-                for r in snap
-            ]
-            embed.add_field(
-                name="Requirements",
-                value="\n".join(lines)[:1024],
-                inline=False,
-            )
-        else:
-            embed.add_field(name="Requirements", value="*(none)*", inline=False)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=build_resource_requirements_embed())
 
     @platform_grp.command(name="bindings")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_bindings(self, ctx):
         """Subsystem bindings (Phase 2b) — taxonomy + per-guild histograms."""
-        from cogs.diagnostic._platform_embeds import build_bindings_embed
-
         await ctx.send(embed=await build_bindings_embed(ctx.guild))
 
     @platform_grp.command(name="resources")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_resources(self, ctx):
         """Resource runtime (Phase 2a) — taxonomy + cached status histogram."""
-        from cogs.diagnostic._platform_embeds import build_resources_embed
-
         await ctx.send(embed=await build_resources_embed(ctx.guild))
 
     @platform_grp.command(name="flags")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_flags(self, ctx):
         """Feature flags: declarations + Phase 2d evaluator state per flag."""
-        from core.runtime import feature_flags
-        from services import diagnostics_service
-
-        snap = diagnostics_service.snapshot("feature_flags")
-        guild_id = ctx.guild.id if ctx.guild else None
-        rows: list[str] = []
-        for name in sorted(snap.get("by_name", {})):
-            info = snap["by_name"][name]
-            try:
-                decision = await feature_flags.resolve_with_provenance(
-                    name,
-                    guild_id,
-                )
-                effective = "on" if decision.value else "off"
-                source = decision.source
-            except Exception as exc:  # noqa: BLE001 — diagnostics must not raise
-                effective = "?"
-                source = f"error:{type(exc).__name__}"
-            rows.append(
-                f"`{name}` default={info['default_value']} "
-                f"effective={effective} src={source} owner=`{info['owner']}`",
-            )
-        embed = discord.Embed(
-            title="🚩 Feature flags",
-            description=(
-                f"{snap['declared_total']} declared  ·  "
-                f"cache={snap.get('cache_size', 0)}  ·  "
-                f"bootstrap_fallback={snap.get('bootstrap_fallback_count', 0)}"
-            ),
-            color=discord.Color.blurple(),
-        )
-        if rows:
-            embed.add_field(
-                name="Flags",
-                value="\n".join(rows)[:1024],
-                inline=False,
-            )
-        else:
-            embed.add_field(name="Flags", value="*(none)*", inline=False)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=await build_flags_embed(ctx.guild))
 
     @platform_grp.command(name="migrations")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_migrations(self, ctx):
-        """Platform migration checkpoints (Phase 2 PR-5) — status + summary.
-
-        Read-only.  Lists every checkpoint row in
-        ``platform_migration_checkpoints`` for this guild (and global
-        rows), grouped by migration name.  Dry-run / backfill /
-        reconciliation runs are invoked from a Python REPL on the bot
-        host; this command just surfaces their state.
-        """
-        from utils.db import platform_migration_checkpoints as checkpoint_db
-
-        # Counts (global view) + per-guild rows.
-        counts = await checkpoint_db.count_by_status()
-        guild_rows = (
-            await checkpoint_db.list_checkpoints(guild_id=ctx.guild.id)
-            if ctx.guild
-            else []
-        )
-        embed = discord.Embed(
-            title="🛠 Platform migrations",
-            description=(
-                "Generic logical-migration checkpoint table; first "
-                "consumer is the binding backfill (Phase 2 PR-5)."
-            ),
-            color=discord.Color.gold(),
-        )
-        if counts:
-            status_line = " · ".join(
-                f"{status}={n}" for status, n in sorted(counts.items())
-            )
-            embed.add_field(name="Global counts", value=status_line, inline=False)
-        else:
-            embed.add_field(
-                name="Global counts",
-                value="*(no rows)*",
-                inline=False,
-            )
-        if guild_rows:
-            rows: list[str] = []
-            for row in guild_rows[:20]:
-                summary = row.get("summary_json") or {}
-                inner_counts = (
-                    summary.get("counts") if isinstance(summary, dict) else None
-                )
-                count_str = (
-                    " ".join(
-                        f"{k}={v}" for k, v in sorted((inner_counts or {}).items())
-                    )
-                    if inner_counts
-                    else ""
-                )
-                rows.append(
-                    f"`{row['name']}` status={row['status']} v={row['version']} "
-                    f"{count_str}".strip(),
-                )
-            embed.add_field(
-                name=f"This guild ({len(guild_rows)} row{'s' if len(guild_rows) != 1 else ''})",
-                value="\n".join(rows)[:1024],
-                inline=False,
-            )
-        else:
-            embed.add_field(
-                name="This guild",
-                value="*(no checkpoints)*",
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+        """Platform migration checkpoints (Phase 2 PR-5) — status + summary."""
+        await ctx.send(embed=await build_migrations_embed(ctx.guild))
 
     @platform_grp.command(name="consistency")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_consistency(self, ctx):
         """Unified platform readiness diagnostic — read-only (Phase 2 PR-10)."""
-        from cogs.diagnostic._platform_embeds import build_consistency_embed
         from services.platform_consistency import collect_report
 
         report = await collect_report(bot=self.bot, guild=ctx.guild)

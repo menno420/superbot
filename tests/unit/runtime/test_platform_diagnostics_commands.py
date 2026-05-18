@@ -236,7 +236,7 @@ async def test_platform_sessions_renders_all_subsystems_when_no_filter():
         {"subsystem": "role", "n": 3},
     ]
     with patch(
-        "cogs.diagnostic_cog.db.fetchall",
+        "utils.db.fetchall",
         new_callable=AsyncMock,
         return_value=rows,
     ) as fetchall:
@@ -258,7 +258,7 @@ async def test_platform_sessions_filter_passes_to_sql_param():
     ctx = _make_ctx()
 
     with patch(
-        "cogs.diagnostic_cog.db.fetchall",
+        "utils.db.fetchall",
         new_callable=AsyncMock,
         return_value=[{"subsystem": "economy", "n": 7}],
     ) as fetchall:
@@ -278,7 +278,7 @@ async def test_platform_sessions_db_failure_surfaces_to_user():
     ctx = _make_ctx()
 
     with patch(
-        "cogs.diagnostic_cog.db.fetchall",
+        "utils.db.fetchall",
         new_callable=AsyncMock,
         side_effect=RuntimeError("connection refused"),
     ):

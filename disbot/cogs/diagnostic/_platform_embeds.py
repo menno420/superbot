@@ -3,23 +3,17 @@
 Extracted from ``cogs/diagnostic_cog.py`` to keep the cog under the
 800-LOC fail threshold enforced by
 ``tests/unit/invariants/test_cog_size.py``.  Each builder is a pure
-async function that fetches its data (via ``services.diagnostics_service``
-and/or ``utils.db.*``) and returns a single :class:`discord.Embed`
-ready to send.  The cog methods become thin wrappers that delegate
-here.
-
-Phase 2a + 2b + 2.10 builders covered:
-
-* :func:`build_resources_embed`     — ``!platform resources``
-* :func:`build_bindings_embed`      — ``!platform bindings``
-* :func:`build_consistency_embed`   — ``!platform consistency``
-
-Earlier-phase platform commands stay inline in the cog for now.  When
-the next batch of platform commands lands and pushes the cog back
-toward the ceiling, those should migrate here too.
+async (or sync) function that fetches its data (via
+``services.diagnostics_service`` and/or ``utils.db.*``) and returns
+a single :class:`discord.Embed` ready to send.  The cog methods
+become thin wrappers that delegate here, and the
+``_PlatformHubView`` panel reuses the same builders so its select
+callbacks produce the same embed as the typed command.
 """
 
 from __future__ import annotations
+
+import datetime
 
 import discord
 
@@ -483,12 +477,563 @@ def build_provisioning_embed() -> discord.Embed:
     return embed
 
 
+# ---------------------------------------------------------------------------
+# Runtime / status group
+# ---------------------------------------------------------------------------
+
+
+def build_status_embed(bot: discord.Client) -> discord.Embed:
+    """Build the embed for ``!platform status``."""
+    from core.runtime import tasks as runtime_tasks
+
+    uptime_obj = getattr(bot, "uptime", None)
+    uptime_s = (
+        str(datetime.datetime.now(tz=datetime.timezone.utc) - uptime_obj)
+        if uptime_obj
+        else "n/a"
+    )
+    embed = discord.Embed(
+        title="🛠 Platform status",
+        color=discord.Color.blurple(),
+    )
+    embed.add_field(name="Uptime", value=uptime_s, inline=True)
+    embed.add_field(name="Guilds", value=str(len(bot.guilds)), inline=True)
+    embed.add_field(name="Cogs loaded", value=str(len(bot.cogs)), inline=True)
+    embed.add_field(
+        name="Managed tasks",
+        value=str(runtime_tasks.count()),
+        inline=True,
+    )
+    try:
+        from services.governance_service import _FAILED_SUBSYSTEMS
+
+        failed = ", ".join(sorted(_FAILED_SUBSYSTEMS)) or "none"
+    except Exception:
+        failed = "?"
+    embed.add_field(name="Failed subsystems", value=failed, inline=False)
+    return embed
+
+
+def build_runtime_embed() -> discord.Embed:
+    """Build the embed for ``!platform runtime`` (snapshot_all roll-up)."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot_all()
+    embed = discord.Embed(
+        title="🛰 Runtime snapshot",
+        description=f"{len(snap)} provider(s) registered.",
+        color=discord.Color.blurple(),
+    )
+    for name in sorted(snap):
+        embed.add_field(
+            name=name,
+            value=_fmt_snapshot_value(snap[name]),
+            inline=False,
+        )
+    return embed
+
+
+def build_caches_embed() -> discord.Embed:
+    """Build the embed for ``!platform caches``."""
+    from services import diagnostics_service
+
+    embed = discord.Embed(
+        title="🧠 Cache snapshot",
+        color=discord.Color.blurple(),
+    )
+    for name in ("guild_config", "governance_cache"):
+        try:
+            snap = diagnostics_service.snapshot(name)
+        except KeyError:
+            snap = {"_error": "provider not registered"}
+        embed.add_field(
+            name=name,
+            value=_fmt_snapshot_value(snap),
+            inline=False,
+        )
+    return embed
+
+
+def build_locks_embed(prefix: str = "") -> discord.Embed:
+    """Build the embed for ``!platform locks [prefix]``."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("scope_locks")
+    by_prefix = dict(snap.get("by_prefix", {}))
+    if prefix:
+        by_prefix = {k: v for k, v in by_prefix.items() if k == prefix}
+    embed = discord.Embed(
+        title="🔒 Scope locks",
+        description=(
+            f"total: **{snap.get('total', 0)}**  ·  "
+            f"held: **{snap.get('held', 0)}**"
+            + (f"  ·  filter: `{prefix}`" if prefix else "")
+        ),
+        color=discord.Color.blurple(),
+    )
+    if by_prefix:
+        lines = [f"`{k}` — {v}" for k, v in sorted(by_prefix.items())]
+        embed.add_field(
+            name="By prefix",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="By prefix",
+            value="*(no locks matching filter)*" if prefix else "*(none)*",
+            inline=False,
+        )
+    return embed
+
+
+def build_tasks_embed() -> discord.Embed:
+    """Build the embed for ``!platform tasks``."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("tasks")
+    names = list(snap.get("names", []))
+    embed = discord.Embed(
+        title="🔁 Managed tasks",
+        description=f"{snap.get('active_count', 0)} active",
+        color=discord.Color.blurple(),
+    )
+    if names:
+        embed.add_field(
+            name="Names",
+            value="\n".join(f"`{n}`" for n in names)[:1024],
+            inline=False,
+        )
+    return embed
+
+
+def build_views_embed() -> discord.Embed:
+    """Build the embed for ``!platform views``."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("persistent_views")
+    subsystems = list(snap.get("subsystems", []))
+    embed = discord.Embed(
+        title="🖼 Persistent views",
+        description=f"{snap.get('registered_count', 0)} registered",
+        color=discord.Color.blurple(),
+    )
+    if subsystems:
+        embed.add_field(
+            name="Subsystems",
+            value=", ".join(f"`{s}`" for s in subsystems)[:1024],
+            inline=False,
+        )
+    return embed
+
+
+def build_slow_embed(limit: int = 10) -> discord.Embed:
+    """Build the embed for ``!platform slow [limit]`` (S3.2 ring buffer)."""
+    from core.runtime import slow_path_log
+
+    entries = slow_path_log.snapshot()
+    limit = max(1, min(limit, 25))
+    recent = entries[-limit:]
+    embed = discord.Embed(
+        title="🐢 Slow path log",
+        description=(
+            f"**{len(entries)}** entries  ·  threshold: "
+            f"`{slow_path_log.threshold_ms():.0f}ms`  ·  "
+            f"capacity: `{slow_path_log.capacity()}`"
+        ),
+        color=discord.Color.blurple(),
+    )
+    if not recent:
+        embed.add_field(
+            name="No slow paths recorded",
+            value=f"All observations under {slow_path_log.threshold_ms():.0f}ms.",
+            inline=False,
+        )
+    else:
+        embed.set_footer(text=f"Showing the {len(recent)} most recent.")
+        for entry in reversed(recent):
+            age_s = max(0.0, datetime.datetime.now().timestamp() - entry.timestamp)
+            embed.add_field(
+                name=f"{entry.kind}: {entry.name}",
+                value=f"**{entry.duration_ms:.0f}ms**  ·  {age_s:.0f}s ago",
+                inline=False,
+            )
+    return embed
+
+
+async def build_sessions_embed(
+    subsystem: str = "",
+) -> tuple[discord.Embed | None, str | None]:
+    """Build the embed for ``!platform sessions [subsystem]``.
+
+    Returns ``(embed, None)`` on success or ``(None, error_str)`` if the
+    DB query fails — callers preserve the existing error-surface
+    behavior of the typed command by checking the second element.
+    """
+    from utils import db
+
+    try:
+        if subsystem:
+            rows = await db.fetchall(
+                "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
+                "WHERE subsystem=$1 GROUP BY subsystem",
+                (subsystem,),
+            )
+        else:
+            rows = await db.fetchall(
+                "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
+                "GROUP BY subsystem ORDER BY n DESC",
+                (),
+            )
+    except Exception as exc:  # noqa: BLE001 — surface DB outage to operator
+        return None, f"❌ DB query failed: {exc}"
+    embed = discord.Embed(
+        title="🎫 Active sessions",
+        description=(f"filter: `{subsystem}`" if subsystem else "all subsystems"),
+        color=discord.Color.blurple(),
+    )
+    if rows:
+        lines = [f"`{r['subsystem']}` — {r['n']}" for r in rows]
+        embed.add_field(
+            name="By subsystem",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+    return embed, None
+
+
+# ---------------------------------------------------------------------------
+# Validation group
+# ---------------------------------------------------------------------------
+
+
+async def build_anchors_embed() -> discord.Embed:
+    """Build the embed for ``!platform anchors``."""
+    from core.runtime import message_anchor_manager
+    from utils import db
+
+    stats = message_anchor_manager.last_restore_stats()
+    embed = discord.Embed(
+        title="📌 Panel anchors",
+        color=discord.Color.blurple(),
+    )
+    embed.add_field(
+        name="Last restoration",
+        value=(
+            f"seen: **{stats['anchors_seen']}**  ·  "
+            f"restored: **{stats['restored']}**  ·  "
+            f"view_missing: **{stats['view_missing']}**  ·  "
+            f"stale: **{stats['stale']}**"
+        ),
+        inline=False,
+    )
+    try:
+        rows = await db.fetchall(
+            "SELECT subsystem, COUNT(*) AS n FROM panel_anchors "
+            "WHERE NOT is_stale GROUP BY subsystem ORDER BY n DESC",
+            (),
+        )
+        if rows:
+            lines = [f"`{r['subsystem']}` — {r['n']}" for r in rows]
+            embed.add_field(
+                name="Active anchors by subsystem",
+                value="\n".join(lines)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(
+                name="Active anchors by subsystem",
+                value="none",
+                inline=False,
+            )
+    except Exception as exc:  # noqa: BLE001 — DB outage shouldn't crash command
+        embed.add_field(
+            name="Active anchors by subsystem",
+            value=f"DB query failed: {exc}",
+            inline=False,
+        )
+    return embed
+
+
+async def build_identity_embed(
+    bot: discord.Client,
+    mode: str = "",
+) -> discord.Embed:
+    """Build the embed for ``!platform identity [--fix]``."""
+    from utils.subsystem_registry import (
+        apply_self_heal,
+        summarize_findings,
+        validate_identity_contract,
+    )
+
+    findings = await validate_identity_contract(bot)
+    summary = summarize_findings(findings)
+    total = summary["total"]
+    fatal = summary["by_tier"]["fatal"]
+    auto = summary["by_tier"]["auto_healable"]
+
+    heal_requested = mode.strip() in ("--fix", "-f", "fix")
+    heal_counts: dict[str, int] | None = None
+    if heal_requested:
+        heal_counts = await apply_self_heal(findings)
+
+    if total == 0:
+        color = discord.Color.green()
+        desc = "All four identity surfaces agree."
+    elif fatal:
+        color = discord.Color.red()
+        desc = (
+            f"{total} finding(s) — **{fatal} fatal**, "
+            f"{auto} auto-healable.  Fatal findings require operator "
+            "review (likely a cog failed to load)."
+        )
+    else:
+        color = discord.Color.orange()
+        desc = f"{total} finding(s) — {auto} auto-healable."
+
+    embed = discord.Embed(
+        title="🪪 Identity contract",
+        description=desc,
+        color=color,
+    )
+    for bucket, items in findings.items():
+        if not items:
+            continue
+        embed.add_field(
+            name=f"{bucket} ({len(items)})",
+            value="\n".join(items)[:1024],
+            inline=False,
+        )
+    if heal_counts is not None:
+        embed.add_field(
+            name="Self-heal result",
+            value=(
+                f"router prefixes unregistered: "
+                f"`{heal_counts['router_prefixes_unregistered']}` · "
+                f"views unregistered: `{heal_counts['views_unregistered']}` · "
+                f"anchors marked stale: "
+                f"`{heal_counts['anchors_marked_stale']}` · "
+                f"fatal-tier skipped: `{heal_counts['skipped_fatal']}`"
+            ),
+            inline=False,
+        )
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# Catalogues group — additional inline embeds
+# ---------------------------------------------------------------------------
+
+
+def build_participation_schemas_embed() -> discord.Embed:
+    """Build the embed for ``!platform participation-schemas`` (Phase 1b)."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("participation_schemas")
+    embed = discord.Embed(
+        title="🧑‍🤝‍🧑 Participation schemas",
+        description=(
+            f"{snap['registered']} registered  ·  "
+            f"subs={snap['subscriptions_total']}  ·  "
+            f"vis={snap['visibility_intents_total']}  ·  "
+            f"notif={snap['notification_intents_total']}  ·  "
+            f"prefs={snap['preferences_total']}"
+        ),
+        color=discord.Color.blurple(),
+    )
+    by_sub = snap.get("by_subsystem", {})
+    if by_sub:
+        lines = [
+            f"`{name}` — s={info['subscriptions']} "
+            f"v={info['visibility_intents']} "
+            f"n={info['notification_intents']} "
+            f"p={info['preferences']} v{info['version']}"
+            for name, info in sorted(by_sub.items())
+        ]
+        embed.add_field(
+            name="By subsystem",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+    return embed
+
+
+def build_resource_requirements_embed() -> discord.Embed:
+    """Build the embed for ``!platform resource-requirements`` (Phase 1c)."""
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("resource_requirements")
+    embed = discord.Embed(
+        title="🧱 Resource requirements",
+        description=f"{len(snap)} requirement(s) declared",
+        color=discord.Color.blurple(),
+    )
+    if snap:
+        lines = [
+            f"`{r['subsystem']}` {r['kind']}/{r['intent']} "
+            f"({r['priority']})"
+            + (f" → `{r['suggested_name']}`" if r["suggested_name"] else "")
+            for r in snap
+        ]
+        embed.add_field(
+            name="Requirements",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(name="Requirements", value="*(none)*", inline=False)
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# Resources / rollout group — additional inline embeds
+# ---------------------------------------------------------------------------
+
+
+async def build_flags_embed(guild: discord.Guild | None) -> discord.Embed:
+    """Build the embed for ``!platform flags``.
+
+    Resolves every declared flag with provenance for the supplied guild
+    (when ``guild`` is None, falls back to the global resolver context).
+    """
+    from core.runtime import feature_flags
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("feature_flags")
+    guild_id = guild.id if guild else None
+    rows: list[str] = []
+    for name in sorted(snap.get("by_name", {})):
+        info = snap["by_name"][name]
+        try:
+            decision = await feature_flags.resolve_with_provenance(
+                name,
+                guild_id,
+            )
+            effective = "on" if decision.value else "off"
+            source = decision.source
+        except Exception as exc:  # noqa: BLE001 — diagnostics must not raise
+            effective = "?"
+            source = f"error:{type(exc).__name__}"
+        rows.append(
+            f"`{name}` default={info['default_value']} "
+            f"effective={effective} src={source} owner=`{info['owner']}`",
+        )
+    embed = discord.Embed(
+        title="🚩 Feature flags",
+        description=(
+            f"{snap['declared_total']} declared  ·  "
+            f"cache={snap.get('cache_size', 0)}  ·  "
+            f"bootstrap_fallback={snap.get('bootstrap_fallback_count', 0)}"
+        ),
+        color=discord.Color.blurple(),
+    )
+    if rows:
+        embed.add_field(
+            name="Flags",
+            value="\n".join(rows)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(name="Flags", value="*(none)*", inline=False)
+    return embed
+
+
+async def build_migrations_embed(
+    guild: discord.Guild | None,
+) -> discord.Embed:
+    """Build the embed for ``!platform migrations`` (Phase 2 PR-5)."""
+    from utils.db import platform_migration_checkpoints as checkpoint_db
+
+    counts = await checkpoint_db.count_by_status()
+    guild_rows = (
+        await checkpoint_db.list_checkpoints(guild_id=guild.id) if guild else []
+    )
+    embed = discord.Embed(
+        title="🛠 Platform migrations",
+        description=(
+            "Generic logical-migration checkpoint table; first "
+            "consumer is the binding backfill (Phase 2 PR-5)."
+        ),
+        color=discord.Color.gold(),
+    )
+    if counts:
+        status_line = " · ".join(
+            f"{status}={n}" for status, n in sorted(counts.items())
+        )
+        embed.add_field(name="Global counts", value=status_line, inline=False)
+    else:
+        embed.add_field(
+            name="Global counts",
+            value="*(no rows)*",
+            inline=False,
+        )
+    if guild_rows:
+        rows: list[str] = []
+        for row in guild_rows[:20]:
+            summary = row.get("summary_json") or {}
+            inner_counts = summary.get("counts") if isinstance(summary, dict) else None
+            count_str = (
+                " ".join(f"{k}={v}" for k, v in sorted((inner_counts or {}).items()))
+                if inner_counts
+                else ""
+            )
+            rows.append(
+                f"`{row['name']}` status={row['status']} v={row['version']} "
+                f"{count_str}".strip(),
+            )
+        embed.add_field(
+            name=(
+                f"This guild ({len(guild_rows)} "
+                f"row{'s' if len(guild_rows) != 1 else ''})"
+            ),
+            value="\n".join(rows)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="This guild",
+            value="*(no checkpoints)*",
+            inline=False,
+        )
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# Snapshot value formatter (shared helper)
+# ---------------------------------------------------------------------------
+
+
+def _fmt_snapshot_value(value: object) -> str:
+    """Format a diagnostics-snapshot value for embed display."""
+    from cogs.diagnostic._helpers import _fmt_snapshot_value as _impl
+
+    return _impl(value)
+
+
 __all__ = [
+    "build_anchors_embed",
     "build_bindings_embed",
+    "build_caches_embed",
     "build_consistency_embed",
     "build_customization_embed",
+    "build_flags_embed",
+    "build_identity_embed",
+    "build_locks_embed",
+    "build_migrations_embed",
+    "build_participation_schemas_embed",
     "build_provisioning_embed",
+    "build_resource_requirements_embed",
     "build_resources_embed",
+    "build_runtime_embed",
     "build_schemas_embed",
+    "build_sessions_embed",
     "build_settings_registry_embed",
+    "build_slow_embed",
+    "build_status_embed",
+    "build_tasks_embed",
+    "build_views_embed",
 ]
