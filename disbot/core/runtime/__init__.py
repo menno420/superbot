@@ -52,6 +52,18 @@ from core.runtime import session_manager as sessions  # noqa: F401 — re-export
 from core.runtime import state_store as store  # noqa: F401 — re-exported
 from core.runtime import ui_permissions as perms  # noqa: F401 — re-exported
 
+# Phase 1 — Subsystem ownership protocols.  Importing here ensures the
+# self-registering schema + capability + feature-flag registries are
+# wired into the runtime before cogs load and start declaring schemas.
+from core.runtime import (  # noqa: F401 — re-exported
+    feature_flags,
+    participation_capabilities,
+    participation_schema,
+    resource_specs,
+    subsystem_capabilities,
+    subsystem_schema,
+)
+
 logger = logging.getLogger("bot.runtime")
 
 # Guard: setup() must be idempotent.  A second call (e.g. hot-reload or test

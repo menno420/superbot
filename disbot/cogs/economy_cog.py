@@ -54,6 +54,11 @@ class EconomyCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_load(self) -> None:
+        from cogs.economy.schemas import register_schemas
+
+        register_schemas()
+
     @commands.cooldown(rate=3, per=10, type=commands.BucketType.user)
     @commands.command(name="economymenu")
     async def economy_menu(self, ctx: commands.Context):

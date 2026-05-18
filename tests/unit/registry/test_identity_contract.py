@@ -67,6 +67,10 @@ async def test_clean_state_no_findings(_empty_registries):
         "router_prefix_unknown": [],
         "view_subsystem_unknown": [],
         "db_anchor_subsystem_unknown": [],
+        # Phase 1 schema findings — empty because no schemas registered yet.
+        "schema_subsystem_unknown": [],
+        "participation_schema_subsystem_unknown": [],
+        "schema_capability_unknown": [],
     }
 
 

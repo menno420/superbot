@@ -22,10 +22,12 @@ class XpCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
+        from cogs.xp.schemas import register_schemas
         from cogs.xp.stage import XpStage
         from core.runtime import message_pipeline
 
         message_pipeline.register(XpStage())
+        register_schemas()
 
     async def cog_unload(self) -> None:
         from cogs.xp.stage import XP_STAGE_NAME
