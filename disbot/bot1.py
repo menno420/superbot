@@ -559,6 +559,14 @@ async def main() -> None:
 
     await runtime.setup()
     message_pipeline.setup(bot)
+    # Phase 2 PR-11 — Server logging foundation.  Subscribes to
+    # ``moderation.action_taken`` and posts structured embeds to the
+    # configured per-guild log channel.  Default policy is OFF; the
+    # service is inert until an operator opts in via
+    # ``!logging enable`` / ``!logging set mod #channel``.
+    from services import server_logging
+
+    server_logging.setup(bot)
     if reporter:
         await reporter.start()
     try:

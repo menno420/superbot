@@ -206,6 +206,100 @@ class AdminCog(commands.Cog):
         await ctx.send(f"✅ Log level set to `{level.upper()}`.")
 
     # ------------------------------------------------------------------
+    # Server logging admin (Phase 2 PR-11)
+    # ------------------------------------------------------------------
+    @commands.group(name="logging", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def logging_grp(self, ctx):
+        """Server-logging admin commands.
+
+        Usage: `!logging status` · `!logging test`
+        """
+        await ctx.send(
+            "Usage: `!logging <status|test>` — see `docs/server-logging.md`.",
+            delete_after=20,
+        )
+
+    @logging_grp.command(name="status")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def logging_status(self, ctx):
+        """Show this guild's server-logging configuration + counters."""
+        from services import server_logging
+
+        enabled = await server_logging.is_enabled(ctx.guild.id) if ctx.guild else False
+        auto_create = (
+            await server_logging.auto_create_enabled(ctx.guild.id)
+            if ctx.guild
+            else False
+        )
+        mod_channel = cleanup_channel = None
+        if ctx.guild:
+            mod_channel = await server_logging.resolve_log_channel(ctx.guild, "mod")
+            cleanup_channel = await server_logging.resolve_log_channel(
+                ctx.guild,
+                "cleanup",
+            )
+        counters = server_logging.counters_snapshot()["counters"]
+
+        embed = discord.Embed(
+            title="📝 Server logging — status",
+            color=SUCCESS_COLOR if enabled else INFO_COLOR,
+        )
+        embed.add_field(
+            name="Enabled",
+            value="✅ on" if enabled else "⚪ off",
+            inline=True,
+        )
+        embed.add_field(
+            name="Auto-create channels",
+            value="✅ on" if auto_create else "⚪ off",
+            inline=True,
+        )
+        embed.add_field(
+            name="Mod channel",
+            value=mod_channel.mention if mod_channel else "*(unset)*",
+            inline=False,
+        )
+        cleanup_value = (
+            cleanup_channel.mention if cleanup_channel else "*(falls back to mod)*"
+        )
+        embed.add_field(
+            name="Cleanup channel",
+            value=cleanup_value,
+            inline=False,
+        )
+        embed.add_field(
+            name="Counters (process-local)",
+            value="\n".join(f"`{k}` = {v}" for k, v in sorted(counters.items())),
+            inline=False,
+        )
+        await ctx.send(embed=embed)
+
+    @logging_grp.command(name="test")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def logging_test(self, ctx):
+        """Send a synthetic warn embed to the configured log channel."""
+        from services import server_logging
+
+        if ctx.guild is None:
+            await ctx.send("This command requires a guild context.")
+            return
+        sent = await server_logging.log_event(
+            ctx.guild,
+            action="warn",
+            target_id=ctx.author.id,
+            actor_id=ctx.author.id,
+            reason="server_logging test event from !logging test",
+        )
+        if sent:
+            await ctx.send("✅ Test embed delivered to the configured log channel.")
+        else:
+            await ctx.send(
+                "ℹ️ No embed sent — see `!logging status` for the cause "
+                "(disabled / missing channel / send error counted).",
+            )
+
+    # ------------------------------------------------------------------
     # Startup message
     # ------------------------------------------------------------------
     @commands.Cog.listener()

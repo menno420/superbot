@@ -16,6 +16,14 @@ this ``__init__``.
 from utils.settings_keys.economy import ECONOMY_LOG_CHANNEL
 from utils.settings_keys.games import ACTIVE_TOURNAMENT
 from utils.settings_keys.governance import GOVERNANCE_VERSION, TRUSTED_TIER_ROLE_ID
+from utils.settings_keys.logging import (
+    DEFAULT_CLEANUP_CHANNEL_NAME,
+    DEFAULT_MOD_CHANNEL_NAME,
+    LOGGING_AUTO_CREATE_CHANNELS,
+    LOGGING_CLEANUP_CHANNEL,
+    LOGGING_ENABLED,
+    LOGGING_MOD_CHANNEL,
+)
 from utils.settings_keys.moderation import WARN_THRESHOLD, WARN_TIMEOUT_MINS
 from utils.settings_keys.role import SKIP_ROLES
 from utils.settings_keys.xp import (
@@ -27,8 +35,14 @@ from utils.settings_keys.xp import (
 
 __all__ = [
     "ACTIVE_TOURNAMENT",
+    "DEFAULT_CLEANUP_CHANNEL_NAME",
+    "DEFAULT_MOD_CHANNEL_NAME",
     "ECONOMY_LOG_CHANNEL",
     "GOVERNANCE_VERSION",
+    "LOGGING_AUTO_CREATE_CHANNELS",
+    "LOGGING_CLEANUP_CHANNEL",
+    "LOGGING_ENABLED",
+    "LOGGING_MOD_CHANNEL",
     "SKIP_ROLES",
     "TRUSTED_TIER_ROLE_ID",
     "WARN_THRESHOLD",
