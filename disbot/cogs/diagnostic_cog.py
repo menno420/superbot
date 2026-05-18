@@ -194,12 +194,15 @@ class DiagnosticCog(commands.Cog):
 
         Added in Phase 2a (unified resource runtime):
             !platform resources
+
+        Added in Phase 2b (subsystem bindings):
+            !platform bindings
         """
         await ctx.send(
             "Usage: `!platform <status|anchors|identity|"
             "runtime|caches|locks|tasks|views|sessions|slow|"
             "schemas|participation-schemas|resource-requirements|flags|"
-            "resources>`",
+            "resources|bindings>`",
             delete_after=20,
         )
 
@@ -648,60 +651,21 @@ class DiagnosticCog(commands.Cog):
             embed.add_field(name="Requirements", value="*(none)*", inline=False)
         await ctx.send(embed=embed)
 
+    @platform_grp.command(name="bindings")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_bindings(self, ctx):
+        """Subsystem bindings (Phase 2b) — taxonomy + per-guild histograms."""
+        from cogs.diagnostic._platform_embeds import build_bindings_embed
+
+        await ctx.send(embed=await build_bindings_embed(ctx.guild))
+
     @platform_grp.command(name="resources")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_resources(self, ctx):
-        """Resource runtime (Phase 2a) — taxonomy + cached status histogram.
+        """Resource runtime (Phase 2a) — taxonomy + cached status histogram."""
+        from cogs.diagnostic._platform_embeds import build_resources_embed
 
-        The package-level snapshot is augmented with a per-guild status
-        histogram from ``resource_validation_cache``.  Phase 4c
-        extends this with per-kind diagnostics + repair recommendations.
-        """
-        from services import diagnostics_service
-        from utils.db import resource_cache
-
-        snap = diagnostics_service.snapshot("resources")
-        embed = discord.Embed(
-            title="🧱 Resources",
-            description=(
-                f"package: `{snap['package']}`  ·  "
-                f"kinds: {', '.join(f'`{k}`' for k in snap['kinds'])}"
-            ),
-            color=discord.Color.blurple(),
-        )
-        embed.add_field(
-            name="Submodules",
-            value=", ".join(f"`{m}`" for m in snap["submodules"]),
-            inline=False,
-        )
-        if ctx.guild is not None:
-            try:
-                histogram = await resource_cache.count_by_status(ctx.guild.id)
-            except Exception as exc:
-                histogram = {"_error": str(exc)}
-            if histogram and "_error" not in histogram:
-                lines = [
-                    f"`{status}` — {count}"
-                    for status, count in sorted(histogram.items())
-                ]
-                embed.add_field(
-                    name=f"Cached status (guild {ctx.guild.id})",
-                    value="\n".join(lines) or "*(empty)*",
-                    inline=False,
-                )
-            elif "_error" in histogram:
-                embed.add_field(
-                    name="Cached status",
-                    value=f"❌ {histogram['_error']}",
-                    inline=False,
-                )
-            else:
-                embed.add_field(
-                    name=f"Cached status (guild {ctx.guild.id})",
-                    value="*(no cached rows)*",
-                    inline=False,
-                )
-        await ctx.send(embed=embed)
+        await ctx.send(embed=await build_resources_embed(ctx.guild))
 
     @platform_grp.command(name="flags")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)

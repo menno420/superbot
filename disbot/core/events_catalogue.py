@@ -58,6 +58,8 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "xp.reset",
         # ── Moderation (services/moderation_service.py) ──────────────────
         "moderation.action_taken",
+        # ── Bindings (services/binding_mutation.py, Phase 2b) ─────────────
+        "bindings.changed",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
         # "mining.harvested",

@@ -34,14 +34,17 @@ import logging
 # Phase 1 — Subsystem ownership protocols.  Importing here ensures the
 # self-registering schema + capability + feature-flag registries are
 # wired into the runtime before cogs load and start declaring schemas.
-from core.runtime import component_registry as components  # noqa: F401 — re-exported
-from core.runtime import (  # noqa: F401 — re-exported
-    ephemeral_surface_manager as surfaces,
-)
 from core.runtime import guild_config  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
 from core.runtime import scope_locks  # noqa: F401 — re-exported
 from core.runtime import tasks  # noqa: F401 — re-exported
+from core.runtime import (  # noqa: F401 — re-exported
+    bindings,
+)
+from core.runtime import component_registry as components  # noqa: F401 — re-exported
+from core.runtime import (  # noqa: F401 — re-exported
+    ephemeral_surface_manager as surfaces,
+)
 from core.runtime import (  # noqa: F401 — re-exported
     feature_flags,
 )
