@@ -68,6 +68,16 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "feature_flags.changed",
         "rollout.advanced",
         "environment_tier.changed",
+        # ── Participation (services/participation_mutation.py, Phase 2c PR-9) ─
+        # Advisory.  Cache invalidation is inline (synchronous w.r.t. the
+        # mutation result), NOT event-driven — these events are for
+        # downstream consumers (audit dashboards, future notification
+        # router) and never for cache consistency.  Subscriber failure
+        # logged + swallowed.
+        "participation.changed",
+        "subscription.changed",
+        "user_preference.changed",
+        "user_visibility.changed",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
         # "mining.harvested",

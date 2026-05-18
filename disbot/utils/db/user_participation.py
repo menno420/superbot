@@ -298,14 +298,261 @@ async def delete_for_guild(guild_id: int) -> int:
     return sum(_parse_delete_count(r) for r in (r1, r2, r3, r4))
 
 
+# ---------------------------------------------------------------------------
+# Atomic write + audit primitives (Phase 2c PR-9)
+#
+# Every mutation is one transaction: target row UPSERT + audit row INSERT.
+# Called only by services.participation_mutation.ParticipationMutationPipeline;
+# direct invocation from cog/service code is forbidden by the
+# pipeline-write-authority invariant.
+# ---------------------------------------------------------------------------
+
+
+async def upsert_participation_with_audit(
+    *,
+    user_id: int,
+    guild_id: int,
+    subsystem: str,
+    state: str,
+    actor_id: int | None,
+    actor_type: str,
+    mutation_id: str,
+    prev_state: str | None,
+) -> None:
+    """Atomic: upsert ``user_participation`` row + write audit row."""
+    async with pool.get().acquire() as conn, conn.transaction():
+        await conn.execute(
+            """
+            INSERT INTO user_participation
+                (user_id, guild_id, subsystem, state, set_at, set_by)
+            VALUES ($1, $2, $3, $4, NOW(), $5)
+            ON CONFLICT (user_id, guild_id, subsystem) DO UPDATE SET
+                state = EXCLUDED.state,
+                set_at = NOW(),
+                set_by = EXCLUDED.set_by
+            """,
+            user_id,
+            guild_id,
+            subsystem,
+            state,
+            actor_id,
+        )
+        await conn.execute(
+            """
+            INSERT INTO user_participation_audit
+                (mutation_id, user_id, guild_id, mutation_type,
+                 subsystem, prev_state, new_state,
+                 actor_id, actor_type)
+            VALUES ($1, $2, $3, 'set_participation', $4, $5, $6, $7, $8)
+            """,
+            mutation_id,
+            user_id,
+            guild_id,
+            subsystem,
+            prev_state,
+            state,
+            actor_id,
+            actor_type,
+        )
+
+
+async def upsert_subscription_with_audit(
+    *,
+    user_id: int,
+    guild_id: int,
+    subsystem: str,
+    topic: str,
+    enabled: bool,
+    actor_id: int | None,
+    actor_type: str,
+    mutation_id: str,
+    prev_enabled: bool | None,
+) -> None:
+    """Atomic: upsert ``user_subscriptions`` row + write audit row."""
+    async with pool.get().acquire() as conn, conn.transaction():
+        await conn.execute(
+            """
+            INSERT INTO user_subscriptions
+                (user_id, guild_id, subsystem, topic, enabled, set_at, set_by)
+            VALUES ($1, $2, $3, $4, $5, NOW(), $6)
+            ON CONFLICT (user_id, guild_id, subsystem, topic) DO UPDATE SET
+                enabled = EXCLUDED.enabled,
+                set_at = NOW(),
+                set_by = EXCLUDED.set_by
+            """,
+            user_id,
+            guild_id,
+            subsystem,
+            topic,
+            enabled,
+            actor_id,
+        )
+        await conn.execute(
+            """
+            INSERT INTO user_participation_audit
+                (mutation_id, user_id, guild_id, mutation_type,
+                 subsystem, topic, prev_enabled, new_enabled,
+                 actor_id, actor_type)
+            VALUES ($1, $2, $3, 'set_subscription', $4, $5, $6, $7, $8, $9)
+            """,
+            mutation_id,
+            user_id,
+            guild_id,
+            subsystem,
+            topic,
+            prev_enabled,
+            enabled,
+            actor_id,
+            actor_type,
+        )
+
+
+async def upsert_preference_with_audit(
+    *,
+    user_id: int,
+    guild_id: int,
+    key: str,
+    value: Any,
+    actor_id: int | None,
+    actor_type: str,
+    mutation_id: str,
+    prev_value: Any,
+) -> None:
+    """Atomic: upsert ``user_preferences`` row + write audit row.
+
+    Both ``value`` and ``prev_value`` are JSON-encoded for the JSONB
+    columns.  ``None`` for ``prev_value`` is treated as SQL NULL.
+    """
+    serialised_new = json.dumps(value, default=str)
+    serialised_prev = (
+        None if prev_value is None else json.dumps(prev_value, default=str)
+    )
+    async with pool.get().acquire() as conn, conn.transaction():
+        await conn.execute(
+            """
+            INSERT INTO user_preferences
+                (user_id, guild_id, key, value, set_at, set_by)
+            VALUES ($1, $2, $3, $4, NOW(), $5)
+            ON CONFLICT (user_id, guild_id, key) DO UPDATE SET
+                value = EXCLUDED.value,
+                set_at = NOW(),
+                set_by = EXCLUDED.set_by
+            """,
+            user_id,
+            guild_id,
+            key,
+            serialised_new,
+            actor_id,
+        )
+        await conn.execute(
+            """
+            INSERT INTO user_participation_audit
+                (mutation_id, user_id, guild_id, mutation_type,
+                 key, prev_value, new_value,
+                 actor_id, actor_type)
+            VALUES ($1, $2, $3, 'set_preference', $4, $5, $6, $7, $8)
+            """,
+            mutation_id,
+            user_id,
+            guild_id,
+            key,
+            serialised_prev,
+            serialised_new,
+            actor_id,
+            actor_type,
+        )
+
+
+async def upsert_visibility_with_audit(
+    *,
+    user_id: int,
+    guild_id: int,
+    subsystem: str,
+    visibility: str,
+    actor_id: int | None,
+    actor_type: str,
+    mutation_id: str,
+    prev_visibility: str | None,
+) -> None:
+    """Atomic: upsert ``user_visibility_overrides`` row + write audit row."""
+    async with pool.get().acquire() as conn, conn.transaction():
+        await conn.execute(
+            """
+            INSERT INTO user_visibility_overrides
+                (user_id, guild_id, subsystem, visibility, set_at, set_by)
+            VALUES ($1, $2, $3, $4, NOW(), $5)
+            ON CONFLICT (user_id, guild_id, subsystem) DO UPDATE SET
+                visibility = EXCLUDED.visibility,
+                set_at = NOW(),
+                set_by = EXCLUDED.set_by
+            """,
+            user_id,
+            guild_id,
+            subsystem,
+            visibility,
+            actor_id,
+        )
+        await conn.execute(
+            """
+            INSERT INTO user_participation_audit
+                (mutation_id, user_id, guild_id, mutation_type,
+                 subsystem, prev_visibility, new_visibility,
+                 actor_id, actor_type)
+            VALUES ($1, $2, $3, 'set_visibility', $4, $5, $6, $7, $8)
+            """,
+            mutation_id,
+            user_id,
+            guild_id,
+            subsystem,
+            prev_visibility,
+            visibility,
+            actor_id,
+            actor_type,
+        )
+
+
+async def get_audit_count(
+    *,
+    user_id: int | None = None,
+    guild_id: int | None = None,
+    mutation_type: str | None = None,
+) -> int:
+    """Return audit-row count, optionally filtered.
+
+    Used by tests + future diagnostics to assert audit rows landed.
+    """
+    clauses: list[str] = []
+    args: list[Any] = []
+    if user_id is not None:
+        args.append(user_id)
+        clauses.append(f"user_id = ${len(args)}")
+    if guild_id is not None:
+        args.append(guild_id)
+        clauses.append(f"guild_id = ${len(args)}")
+    if mutation_type is not None:
+        args.append(mutation_type)
+        clauses.append(f"mutation_type = ${len(args)}")
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    row = await pool.get().fetchrow(
+        f"SELECT COUNT(*)::int AS n FROM user_participation_audit {where}",
+        *args,
+    )
+    return int(row["n"]) if row else 0
+
+
 __all__ = [
     "PARTICIPATION_STATES",
     "VISIBILITY_STATES",
     "count_rows",
     "delete_for_guild",
+    "get_audit_count",
     "get_participation",
     "get_preference",
     "get_subscription",
     "get_visibility",
     "list_for_user",
+    "upsert_participation_with_audit",
+    "upsert_preference_with_audit",
+    "upsert_subscription_with_audit",
+    "upsert_visibility_with_audit",
 ]
