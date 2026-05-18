@@ -38,7 +38,7 @@ from typing import Generic, TypeVar
 
 from core.runtime import guild_config
 from utils import db
-from utils.settings_keys import XP_ANNOUNCE_CHANNEL, XP_COOLDOWN, XP_MAX, XP_MIN
+from utils.settings_keys import XP_COOLDOWN, XP_MAX, XP_MIN
 
 T = TypeVar("T")
 
@@ -111,12 +111,19 @@ class XpConfig:
 
 def _xp_config_loader(guild_id: int) -> Callable[[], Awaitable[XpConfig]]:
     async def _load() -> XpConfig:
+        # XP min/max/cooldown remain on the legacy path — they are
+        # scalar settings, not bindings, and Phase 2 does not migrate
+        # them.  Only the announce-channel field flows through the
+        # bindings arbitration helper (PR-7).
+        from core.runtime.config_arbitration import get_xp_announce_channel
+
         mn = int(await db.get_setting(guild_id, XP_MIN, str(_XP_DEFAULT_MIN)))
         mx = int(await db.get_setting(guild_id, XP_MAX, str(_XP_DEFAULT_MAX)))
         cd = int(
             await db.get_setting(guild_id, XP_COOLDOWN, str(_XP_DEFAULT_COOLDOWN)),
         )
-        ann = await db.get_setting(guild_id, XP_ANNOUNCE_CHANNEL, "")
+        ann_result = await get_xp_announce_channel(guild_id)
+        ann = ann_result.value or ""
         return XpConfig(xp_min=mn, xp_max=mx, cooldown=cd, announce_channel=ann)
 
     return _load
