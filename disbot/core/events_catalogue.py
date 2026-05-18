@@ -60,6 +60,14 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "moderation.action_taken",
         # ── Bindings (services/binding_mutation.py, Phase 2b) ─────────────
         "bindings.changed",
+        # ── Feature flags (services/rollout_mutation.py, Phase 2d PR-3) ───
+        # Advisory events emitted after the DB commit + audit row land.
+        # Subscriber failure is logged with mutation_id and never raised
+        # — DB state is authoritative.  Payload contract is documented in
+        # docs/platform-consistency-ledger.md §4.
+        "feature_flags.changed",
+        "rollout.advanced",
+        "environment_tier.changed",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
         # "mining.harvested",

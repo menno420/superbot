@@ -1,42 +1,52 @@
-"""Phase 1d — Feature flag, environment tier, and rollout policy declarations.
+"""Feature flag declarations + runtime evaluator (Phase 1d + Phase 2d PR-2).
 
-This module declares the *types* — :class:`FeatureFlag`,
-:class:`EnvironmentTier`, :class:`RolloutPolicy` — that Phase 2d's
-storage + :class:`RolloutMutationPipeline` will consume.  Phase 1d
-intentionally stops at declarations so subsystems can declare flags
-during ``cog_load`` ahead of the runtime landing in Phase 2d.
+This module owns:
 
-Why declarations land before runtime:
+* The **declaration** types — :class:`FeatureFlag`,
+  :class:`EnvironmentTier`, :class:`RolloutPolicy` (Phase 1d).  These
+  let subsystems register flags during ``cog_load``.
+* The **runtime evaluator** — :func:`is_enabled` (Phase 2d, PR-2).
+  Resolves a flag's effective value for a given guild by consulting,
+  in order: emergency env override → ``feature_flag.primary`` gate →
+  per-guild DB override → global DB override → environment-tier policy
+  → deterministic rollout hash → declared default.
 
-* Phase 1d's :func:`utils.subsystem_registry.validate_registry`
-  extension can validate that every flag referenced by a schema has a
-  declaration here.
-* Phase 2d's RolloutMutationPipeline ships behind ``FEATURE_FLAG_PRIMARY``
-  itself — but by then every subsystem that wants a flag has already
-  declared one, so the migration is mechanical.
+The mutation pipeline (:class:`services.rollout_mutation.RolloutMutationPipeline`)
+and the event-driven cache invalidation ship in PR-3.  Until then the
+evaluator's cache uses TTL as the only invalidation primitive; callers
+may also invoke :func:`clear_cache` explicitly.
+
+Bootstrap policy (intentional ordering):
+
+1. ``SUPERBOT_FF_<FLAG>=on|off`` env override wins for ANY flag.
+   This is the permanent platform-owner escape hatch.
+2. ``feature_flag.primary`` is the meta-flag.  When OFF, the evaluator
+   returns each flag's declared default and the DB is never consulted.
+   ``feature_flag.primary`` itself is resolved by env + declaration ONLY
+   — its value is never read from the DB.  This protects the bootstrap
+   path while the runtime is being proven on a deployment.
+3. When ``feature_flag.primary`` is ON, the DB-backed resolution runs.
+4. Any DB error during resolution falls back to the declared default
+   and emits the ``feature_flag.bootstrap_fallback`` metric — never
+   raises.
 
 Public surface:
 
-* :class:`EnvironmentTier` — typed taxonomy of deployment environments.
-* :class:`RolloutPolicy` — staged rollout description.
-* :class:`FeatureFlag` — a typed declaration of a gated behavior.
+* :class:`EnvironmentTier`, :class:`RolloutPolicy`, :class:`FeatureFlag`
 * ``FeatureFlagRegistry`` operations: ``register``, ``get``,
-  ``all_flags``.
-
-Phase 2d adds:
-
-* ``is_enabled(name, guild_id) -> bool`` runtime evaluator.
-* ``feature_flag_state`` table + ``RolloutMutationPipeline``.
-* Migration of existing env-var gates to declared flags.
-
-Until Phase 2d lands, declared flags are *introspection only* — they
-appear in ``!platform flags`` but cannot be mutated and their value is
-``default`` everywhere.
+  ``all_flags``
+* :func:`is_enabled` (Phase 2d evaluator)
+* :func:`clear_cache` (manual invalidation; PR-3 adds event-driven)
+* :func:`resolve_with_provenance` (used by diagnostics; returns the
+  decision and the source it came from)
 """
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import os
+import time
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -172,8 +182,15 @@ def declared_names() -> list[str]:
 
 
 def _reset_for_tests() -> None:
-    """Wipe the registry.  Tests call this in their setup/teardown fixture."""
+    """Wipe the registry + cache + metrics.
+
+    Tests call this in their setup/teardown fixture so per-test state
+    cannot leak via the module-level dicts / counters.
+    """
     _REGISTRY.clear()
+    _CACHE.clear()
+    global _BOOTSTRAP_FALLBACK_COUNT
+    _BOOTSTRAP_FALLBACK_COUNT = 0
 
 
 # ---------------------------------------------------------------------------
@@ -240,6 +257,365 @@ _register_builtins()
 
 
 # ---------------------------------------------------------------------------
+# Phase 2d evaluator — is_enabled + cache + bootstrap policy
+# ---------------------------------------------------------------------------
+
+# Sources that can deliver a resolved value, surfaced via diagnostics so
+# operators see exactly why the evaluator returned what it did.
+_SOURCE_ENV = "env"
+_SOURCE_BOOTSTRAP_FALLBACK = "bootstrap_fallback"  # DB unreachable or off
+_SOURCE_DB_GUILD = "db_guild"
+_SOURCE_DB_GLOBAL = "db_global"
+_SOURCE_TIER = "tier"
+_SOURCE_ROLLOUT = "rollout"
+_SOURCE_DEFAULT = "default"
+
+# Cache TTL.  PR-3 adds event-driven invalidation; until then TTL is
+# the only invalidation primitive aside from explicit clear_cache.
+# Five minutes balances "operator DB change reflected without restart"
+# against hot-path read pressure (every interaction hits is_enabled).
+_CACHE_TTL_SECS = 300.0
+
+# Cache value: (resolved_bool, source_string, expires_at_monotonic).
+_CACHE: dict[tuple[str, int | None], tuple[bool, str, float]] = {}
+
+# Metric counter for fallback rate.  Hooked into services.metrics in a
+# follow-up PR; until then this is the in-process visible counter that
+# tests can assert on.
+_BOOTSTRAP_FALLBACK_COUNT = 0
+
+
+def _env_override_key(flag_name: str) -> str:
+    """Translate a dotted flag name into a SUPERBOT_FF_<NAME> env var."""
+    return "SUPERBOT_FF_" + flag_name.replace(".", "_").upper()
+
+
+def _env_override(flag_name: str) -> bool | None:
+    """Return ``True`` / ``False`` for an env override, else ``None``.
+
+    Accepts the same truthy/falsy literals as the rest of the codebase
+    (``true``, ``yes``, ``on``, ``1`` vs. ``false``, ``no``, ``off``,
+    ``0``).  Unknown values are ignored (treated as "no override").
+    """
+    raw = os.environ.get(_env_override_key(flag_name))
+    if raw is None:
+        return None
+    lower = raw.strip().lower()
+    if lower in ("true", "yes", "on", "1"):
+        return True
+    if lower in ("false", "no", "off", "0"):
+        return False
+    logger.warning(
+        "feature_flags: env %s=%r is not a recognized boolean — ignoring",
+        _env_override_key(flag_name),
+        raw,
+    )
+    return None
+
+
+def _rollout_bucket(flag_name: str, guild_id: int) -> int:
+    """Deterministic 0..99 bucket for ``(flag, guild)``.
+
+    Stdlib-only (``hashlib.sha256``); no new dependency.  Stable across
+    Python versions and processes — the same pair always lands in the
+    same bucket.
+    """
+    digest = hashlib.sha256(f"{flag_name}:{guild_id}".encode()).digest()
+    return int.from_bytes(digest[:8], "big") % 100
+
+
+def _normalize_state(state: str) -> str:
+    """Lowercase + strip; protects against operator typos in DB rows."""
+    return state.strip().lower() if state else ""
+
+
+def _state_to_decision(
+    state: str,
+    *,
+    flag: FeatureFlag,
+    guild_tier: str | None,
+) -> bool:
+    """Turn a stored ``state`` string into a boolean.
+
+    ``on``/``off`` are hard overrides.  Tier names
+    (``owner``/``canary``/``beta``/``production``) mean "enabled if the
+    guild's environment_tier is at or above this level".  Unknown
+    strings fall back to the declared default and log a WARNING.
+    """
+    normalized = _normalize_state(state)
+    if normalized == "on":
+        return True
+    if normalized == "off":
+        return False
+    if normalized in ("owner", "canary", "beta", "production"):
+        return _tier_meets(guild_tier, normalized)
+    logger.warning(
+        "feature_flags: unknown stored state %r for %r — using default",
+        state,
+        flag.name,
+    )
+    return flag.default_value
+
+
+# Tier ordering — lower index = more restricted exposure.  A guild
+# whose tier is "owner_guild_only" sees flags gated at "owner" or
+# below; a "canary" guild sees "canary" + "beta" + "production"; etc.
+_TIER_ORDER = {
+    "owner_guild_only": 0,
+    "development": 0,
+    "owner": 0,
+    "canary": 1,
+    "beta": 2,
+    "production": 3,
+}
+
+
+def _tier_meets(guild_tier: str | None, required: str) -> bool:
+    """``True`` when ``guild_tier`` is at-or-above ``required``."""
+    guild_level = _TIER_ORDER.get((guild_tier or "production").lower(), 3)
+    required_level = _TIER_ORDER.get(required.lower(), 3)
+    return guild_level <= required_level
+
+
+@dataclass(frozen=True)
+class _Decision:
+    """Internal: the evaluator's result + the source it came from."""
+
+    value: bool
+    source: str
+
+
+async def _resolve_from_db(
+    flag: FeatureFlag,
+    guild_id: int | None,
+) -> _Decision:
+    """DB-backed resolution.  Caller has already passed bootstrap gates."""
+    # Local imports to keep cycle-sensitive cycles unaffected.
+    from utils.db import environment_tiers as et_db
+    from utils.db import feature_flag_state as ff_db
+
+    # Per-guild override beats everything else in the DB layer.
+    if guild_id is not None:
+        guild_row = await ff_db.get_guild_override(flag.name, guild_id)
+        if guild_row is not None:
+            guild_tier = await et_db.get_tier(guild_id)
+            value = _state_to_decision(
+                guild_row["state"],
+                flag=flag,
+                guild_tier=guild_tier,
+            )
+            return _Decision(value, _SOURCE_DB_GUILD)
+
+    # Global override.
+    global_row = await ff_db.get_global_override(flag.name)
+    if global_row is not None:
+        guild_tier = await et_db.get_tier(guild_id) if guild_id is not None else None
+        value = _state_to_decision(
+            global_row["state"],
+            flag=flag,
+            guild_tier=guild_tier,
+        )
+        normalized = _normalize_state(global_row["state"])
+        # Resolution rules for global overrides (intentional):
+        #   * 'on'  → hard enable, short-circuit True.
+        #   * 'off' → hard disable, short-circuit False.  This makes
+        #             rollback safe: setting the global row to 'off'
+        #             immediately disables the flag for every guild
+        #             that does not carry a per-guild override.
+        #   * tier name (canary/beta/production/owner) + matching guild
+        #             tier → True via tier match.
+        #   * tier name + non-matching guild tier → the global row is
+        #             non-binding for this guild; fall through to the
+        #             declared rollout policy.  The staged rollout may
+        #             still grant access via staged_guilds or rollout
+        #             percentage.
+        if normalized in ("on", "off"):
+            return _Decision(value, _SOURCE_DB_GLOBAL)
+        if value:
+            return _Decision(True, _SOURCE_DB_GLOBAL)
+        # Non-matching tier name: do not short-circuit; rollout may grant.
+
+    # Declared rollout policy.
+    if flag.rollout_policy is not None and guild_id is not None:
+        policy = flag.rollout_policy
+        guild_tier = await et_db.get_tier(guild_id)
+        if guild_id in policy.staged_guilds:
+            if _tier_meets(guild_tier, policy.tier_gate.value):
+                return _Decision(True, _SOURCE_TIER)
+        if policy.tier_gate is not None and _tier_meets(
+            guild_tier,
+            policy.tier_gate.value,
+        ):
+            # Environment-tier override map.
+            tier_enum = EnvironmentTier((guild_tier or "production").lower())
+            if tier_enum in flag.environment_overrides:
+                return _Decision(
+                    flag.environment_overrides[tier_enum],
+                    _SOURCE_TIER,
+                )
+            if policy.percentage_rollout > 0:
+                bucket = _rollout_bucket(flag.name, guild_id)
+                if bucket < policy.percentage_rollout:
+                    return _Decision(True, _SOURCE_ROLLOUT)
+
+    return _Decision(flag.default_value, _SOURCE_DEFAULT)
+
+
+def _cache_get(flag_name: str, guild_id: int | None) -> _Decision | None:
+    """Return a cached decision if still fresh, else ``None``."""
+    entry = _CACHE.get((flag_name, guild_id))
+    if entry is None:
+        return None
+    value, source, expires_at = entry
+    if expires_at < time.monotonic():
+        _CACHE.pop((flag_name, guild_id), None)
+        return None
+    return _Decision(value, source)
+
+
+def _cache_put(flag_name: str, guild_id: int | None, decision: _Decision) -> None:
+    """Store a decision with TTL."""
+    _CACHE[(flag_name, guild_id)] = (
+        decision.value,
+        decision.source,
+        time.monotonic() + _CACHE_TTL_SECS,
+    )
+
+
+def clear_cache(
+    flag_name: str | None = None,
+    guild_id: int | None = None,
+) -> int:
+    """Evict cached evaluator decisions.
+
+    Until PR-3's event-driven invalidation lands, callers that mutate
+    state directly (DB scripts, tests, the future RolloutMutationPipeline
+    in its early form) call this to make the next ``is_enabled`` re-read.
+
+    Filtering rules:
+
+    * No arguments → drop every entry.
+    * ``flag_name`` only → drop every guild's entry for that flag (and
+      the global ``guild_id=None`` entry).
+    * ``flag_name`` + ``guild_id`` → drop the single matching entry.
+    * ``guild_id`` only → drop every flag's entry for that guild.
+
+    Returns the number of entries removed.
+    """
+    if flag_name is None and guild_id is None:
+        n = len(_CACHE)
+        _CACHE.clear()
+        return n
+    to_drop = []
+    for key in _CACHE:
+        key_flag, key_guild = key
+        if flag_name is not None and key_flag != flag_name:
+            continue
+        if guild_id is not None and key_guild != guild_id:
+            continue
+        to_drop.append(key)
+    for key in to_drop:
+        _CACHE.pop(key, None)
+    return len(to_drop)
+
+
+def _record_bootstrap_fallback() -> None:
+    """Increment the in-process bootstrap fallback counter.
+
+    A real Prometheus metric is wired in a follow-up PR; until then
+    this counter is the test-observable signal.
+    """
+    global _BOOTSTRAP_FALLBACK_COUNT
+    _BOOTSTRAP_FALLBACK_COUNT += 1
+
+
+def bootstrap_fallback_count() -> int:
+    """Return how many times the DB-unreachable fallback has fired."""
+    return _BOOTSTRAP_FALLBACK_COUNT
+
+
+def _reset_metrics_for_tests() -> None:
+    """Test helper — reset the bootstrap fallback counter."""
+    global _BOOTSTRAP_FALLBACK_COUNT
+    _BOOTSTRAP_FALLBACK_COUNT = 0
+
+
+async def resolve_with_provenance(
+    flag_name: str,
+    guild_id: int | None = None,
+) -> _Decision:
+    """Resolve a flag and return both the value and the source.
+
+    Used by diagnostics so ``!platform flags`` can render the source
+    column.  Internal — tests are welcome to call it but production
+    callers should prefer :func:`is_enabled`.
+
+    Resolution order (see module docstring for rationale):
+
+    1. ``SUPERBOT_FF_<FLAG>`` env override (always wins).
+    2. ``feature_flag.primary`` gate — if OFF, return declared default
+       and bypass DB entirely.  Evaluating ``feature_flag.primary``
+       itself bypasses the DB step too.
+    3. Cache lookup.
+    4. DB resolution (per-guild → global → tier → rollout → default).
+    5. DB error → declared default + bootstrap-fallback metric.
+    """
+    # Step 1: env override
+    env = _env_override(flag_name)
+    if env is not None:
+        return _Decision(env, _SOURCE_ENV)
+
+    flag = _REGISTRY.get(flag_name)
+    if flag is None:
+        logger.warning(
+            "feature_flags: is_enabled called for undeclared flag %r",
+            flag_name,
+        )
+        return _Decision(False, _SOURCE_DEFAULT)
+
+    # Step 2: feature_flag.primary gate.
+    if flag_name == FEATURE_FLAG_PRIMARY.name:
+        # Meta-flag: env-or-default only, never DB.
+        return _Decision(flag.default_value, _SOURCE_DEFAULT)
+    primary = await resolve_with_provenance(FEATURE_FLAG_PRIMARY.name, guild_id)
+    if not primary.value:
+        return _Decision(flag.default_value, _SOURCE_DEFAULT)
+
+    # Step 3: cache
+    cached = _cache_get(flag_name, guild_id)
+    if cached is not None:
+        return cached
+
+    # Step 4 / 5: DB resolution with fallback
+    try:
+        decision = await _resolve_from_db(flag, guild_id)
+    except Exception as exc:
+        logger.warning(
+            "feature_flags: DB unreachable for %r (guild=%r) — using default: %s",
+            flag_name,
+            guild_id,
+            exc,
+        )
+        _record_bootstrap_fallback()
+        decision = _Decision(flag.default_value, _SOURCE_BOOTSTRAP_FALLBACK)
+
+    _cache_put(flag_name, guild_id, decision)
+    return decision
+
+
+async def is_enabled(flag_name: str, guild_id: int | None = None) -> bool:
+    """Phase 2d evaluator entry point.
+
+    Returns the effective boolean for ``flag_name`` in ``guild_id``'s
+    context.  Resolution order, cache semantics, and the bootstrap
+    fallback policy are documented on :func:`resolve_with_provenance`
+    and at the top of this module.
+    """
+    decision = await resolve_with_provenance(flag_name, guild_id)
+    return decision.value
+
+
+# ---------------------------------------------------------------------------
 # Diagnostics provider — registers at import time
 # ---------------------------------------------------------------------------
 
@@ -247,14 +623,18 @@ _register_builtins()
 def _feature_flags_snapshot() -> dict[str, Any]:
     """Snapshot provider for ``!platform flags``.
 
-    Phase 1d returns declarations only.  Phase 2d will extend the
-    snapshot with current stored values, environment-tier resolution,
-    and rollout-decision counts.
+    Phase 2d (PR-2) extends the snapshot with cache size, fallback
+    counter, and per-flag declared values.  Effective per-flag values
+    require an async call so the diagnostics view falls back to
+    declared defaults here; ``cogs/diagnostic_cog.py::flags`` does the
+    per-flag async resolution and renders the source column.
     """
     flags = all_flags()
     return {
         "declared_total": len(flags),
         "by_owner": _flags_by_owner(flags),
+        "cache_size": len(_CACHE),
+        "bootstrap_fallback_count": _BOOTSTRAP_FALLBACK_COUNT,
         "by_name": {
             name: {
                 "description": flag.description,
@@ -297,7 +677,11 @@ __all__ = [
     "RESOURCES_UNIFIED",
     "RolloutPolicy",
     "all_flags",
+    "bootstrap_fallback_count",
+    "clear_cache",
     "declared_names",
     "get",
+    "is_enabled",
     "register",
+    "resolve_with_provenance",
 ]
