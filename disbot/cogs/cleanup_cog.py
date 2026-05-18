@@ -9,11 +9,18 @@ from discord.ext import commands
 
 import config as _config
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer
-from services import governance_service
+from core.runtime.message_pipeline import (
+    MessagePipelineContext,
+    StageResult,
+)
+from services import governance_service, moderation_service
 from services.governance_service import GovernanceContext
 from utils import db
 from utils.ui_constants import ADMIN_COLOR
 from views.base import HubView, send_panel
+
+CLEANUP_STAGE_NAME = "cleanup"
+CLEANUP_STAGE_ORDER = 10  # moderation tier per plan §3.2
 
 
 def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
@@ -27,6 +34,31 @@ def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
             )
             return rest.lower() if rest else None
     return None
+
+
+class CleanupStage:
+    """Message-pipeline stage wrapping the existing remove_unwanted_message logic.
+
+    Auto-mod tier (order=10).  Short-circuits the pipeline when a deletion
+    happens so downstream stages (XP reward, RPS input) skip a message
+    that's already been removed.
+
+    The stage holds a reference to the cog because the auto-mod rules
+    depend on per-cog state (compiled command pattern, whitelisted
+    channels, per-guild prohibited-word caches).
+    """
+
+    name = CLEANUP_STAGE_NAME
+    order = CLEANUP_STAGE_ORDER
+
+    def __init__(self, cog: Cleanup):
+        self.cog = cog
+
+    async def process(self, ctx: MessagePipelineContext) -> StageResult:
+        deleted = await self.cog.remove_unwanted_message(ctx.message)
+        if deleted:
+            return StageResult(deleted=True, short_circuit=True)
+        return StageResult()
 
 
 class Cleanup(commands.Cog):
@@ -46,6 +78,16 @@ class Cleanup(commands.Cog):
 
         self.whitelisted_channels = _config.CLEANUP_WHITELIST_CHANNELS
 
+    async def cog_load(self) -> None:
+        from core.runtime import message_pipeline
+
+        message_pipeline.register(CleanupStage(self))
+
+    async def cog_unload(self) -> None:
+        from core.runtime import message_pipeline
+
+        message_pipeline.unregister(CLEANUP_STAGE_NAME)
+
     async def _load_guild(self, guild_id: int) -> None:
         words = await db.get_prohibited_words(guild_id)
         self._word_cache[guild_id] = words
@@ -59,7 +101,13 @@ class Cleanup(commands.Cog):
         return self._pattern_cache[guild_id]
 
     async def remove_unwanted_message(self, message):
-        """Delete message if it is a command in a governed channel or contains prohibited content."""
+        """Delete message if it is a command in a governed channel or contains prohibited content.
+
+        Deletions route through :func:`moderation_service.auto_delete` so the
+        ``mod_logs`` audit table and ``EVT_MOD_ACTION`` event bus see every
+        auto-mod removal — closing the gap §2.2 of the plan called out
+        (CleanupCog deletes were previously invisible to moderation audit).
+        """
         if message.author.bot:
             return False
 
@@ -76,50 +124,50 @@ class Cleanup(commands.Cog):
                     command_name,
                 )
                 if not policy.allowed:
-                    try:
-                        if policy.cleanup.delete_message:
-                            await message.delete()
-                            self.logger.info(
-                                "Deleted blocked command from %s: %s",
-                                message.author,
-                                message.content,
-                            )
-                        if policy.feedback:
+                    if policy.cleanup.delete_message:
+                        await moderation_service.auto_delete(
+                            message,
+                            reason=f"Blocked command: {command_name}",
+                            rule="cleanup.command_policy",
+                        )
+                    if policy.feedback:
+                        try:
                             warn = await message.channel.send(policy.feedback)
-                            await warn.delete(delay=policy.cleanup.delete_after_seconds)
-                    except discord.DiscordException as e:
-                        self.logger.error("Cleanup error: %s", e)
+                            await warn.delete(
+                                delay=policy.cleanup.delete_after_seconds,
+                            )
+                        except discord.DiscordException as e:
+                            self.logger.error("Cleanup feedback error: %s", e)
                     return True
                 return False
             # DM or unknown guild — fall back to whitelist behavior
             if message.channel.id not in self.whitelisted_channels:
-                try:
-                    await message.delete()
-                    self.logger.info(
-                        "Deleted command message from %s in non-whitelisted channel: %s",
-                        message.author,
-                        message.content,
-                    )
-                except discord.DiscordException as e:
-                    self.logger.error("Failed to delete command message: %s", e)
+                await moderation_service.auto_delete(
+                    message,
+                    reason="Command-style message in non-whitelisted channel",
+                    rule="cleanup.whitelist",
+                )
                 return True
             return False
 
         guild_id = message.guild.id if message.guild else 0
         for pattern in await self._get_patterns(guild_id):
             if pattern.search(message.content):
+                await moderation_service.auto_delete(
+                    message,
+                    reason="Prohibited word match",
+                    rule="cleanup.prohibited_words",
+                )
                 try:
-                    await message.delete()
                     warning_msg = await message.channel.send(
-                        f"A message from {message.author.mention} was deleted because it contained prohibited content.",
-                    )
-                    self.logger.info(
-                        f"Deleted message from {message.author}: {message.content}",
+                        f"A message from {message.author.mention} was deleted "
+                        "because it contained prohibited content.",
                     )
                     await warning_msg.delete(delay=10)
                 except discord.DiscordException as e:
                     self.logger.error(
-                        f"Failed to delete message from {message.author}: {e}",
+                        "Failed to post prohibited-word warning: %s",
+                        e,
                     )
                 return True
 
@@ -129,10 +177,6 @@ class Cleanup(commands.Cog):
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         self._word_cache.pop(guild.id, None)
         self._pattern_cache.pop(guild.id, None)
-
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        await self.remove_unwanted_message(message)
 
     @commands.command(name="cleanuphistory")
     @commands.has_permissions(manage_messages=True)
