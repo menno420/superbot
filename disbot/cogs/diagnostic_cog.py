@@ -192,17 +192,15 @@ class DiagnosticCog(commands.Cog):
             !platform schemas              · !platform participation-schemas
             !platform resource-requirements · !platform flags
 
-        Added in Phase 2a (unified resource runtime):
-            !platform resources
-
-        Added in Phase 2b (subsystem bindings):
-            !platform bindings
+        Added in Phase 2a (unified resource runtime): !platform resources
+        Added in Phase 2b (subsystem bindings): !platform bindings
+        Added in Phase 2 PR-10: !platform consistency
         """
         await ctx.send(
             "Usage: `!platform <status|anchors|identity|"
             "runtime|caches|locks|tasks|views|sessions|slow|"
             "schemas|participation-schemas|resource-requirements|flags|"
-            "resources|bindings>`",
+            "resources|bindings|migrations|consistency>`",
             delete_after=20,
         )
 
@@ -781,6 +779,16 @@ class DiagnosticCog(commands.Cog):
                 inline=False,
             )
         await ctx.send(embed=embed)
+
+    @platform_grp.command(name="consistency")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_consistency(self, ctx):
+        """Unified platform readiness diagnostic — read-only (Phase 2 PR-10)."""
+        from cogs.diagnostic._platform_embeds import build_consistency_embed
+        from services.platform_consistency import collect_report
+
+        report = await collect_report(bot=self.bot, guild=ctx.guild)
+        await ctx.send(embed=build_consistency_embed(report))
 
 
 async def setup(bot):

@@ -34,14 +34,16 @@ help the next contributor avoid:
 | #83 | `bindings.primary` canary support via arbitration accessors |
 | #84 | Participation storage + cache foundation (migration 027) |
 | #85 | Integration: land #82 + #83 + #84 onto `main` |
+| #86 | Phase 2.9: participation mutation pipeline + XP opt-out proof (migration 028) — merged 2026-05-18 |
+| #87 | Phase 2 completion-readiness punch list — merged 2026-05-18 |
 
-Migration ladder on `main` after PR #85: `022` → `027`.
+Migration ladder on `main` after PR #86: `022` → `028`.
 
 ## Open right now
 
 | PR | Title | State |
 |---|---|---|
-| **#86** | **Phase 2.9: participation mutation pipeline + XP opt-out proof** | open, ready for review.  Migration 028 (participation audit).  `participation.enabled` stays default OFF. |
+| **PR-10** | **Phase 2 PR-10: Unified Consistency & Readiness Diagnostics** | in progress — adds `!platform consistency` backed by `services/platform_consistency.py`.  No migration, no behavior changes, no flag flips. |
 
 ---
 
@@ -94,20 +96,40 @@ Scope discipline for PR-10:
 
 ### Setup-readiness blockers (informational)
 
-For the wizard / setup phase to start, these must be in place:
+For the wizard / setup phase to start, these must be in place.  The
+list below is mirrored verbatim in
+`services.platform_consistency.SETUP_READINESS_BLOCKERS` and
+surfaced by `!platform consistency` as an informational section.
+The doc test
+`tests/unit/docs/test_phase_2_readiness_doc.py` enforces that every
+constant entry appears here in humanised form, so adding a new
+blocker requires updating both this doc and the constant.
 
-* Diagnostics consistency surface (PR-10).
-* A documented "command surface ledger" — the catalogue of slash /
-  prefix entrypoints that the wizard / panels would link from.
-* A panel registry — version-stamped persistent-view registration.
-* A settings registry — typed setting metadata for the wizard's
+* **command surface ledger** — the catalogue of slash / prefix
+  entrypoints that the wizard / panels would link from.
+* **panel registry** — version-stamped persistent-view registration.
+* **settings registry** — typed setting metadata for the wizard's
   preview/commit flow.
-* `governance` `SubsystemSchema` declaration for `trusted_role` so the
-  binding backfill can complete for that key (currently
-  `BLOCKED_NO_SCHEMA`).
+* **settings mutation pipeline** — mirrors binding / rollout /
+  participation mutation services.
+* **governance trusted role schema** — `governance` `SubsystemSchema`
+  declaration for `trusted_role` so the binding backfill can
+  complete for that key (currently `BLOCKED_NO_SCHEMA`).
+* **role service extraction** — pull role-management primitives out of
+  the cog layer into a service.
+* **cleanup policy extraction** — pull cleanup policy out of
+  moderation_service / cog layer into a dedicated service.
+* **logging settings integration** — once PR-11's server-logging
+  foundation lands, surface its toggles through the settings
+  registry.
+* **slash panel entrypoints** — `/setup`, `/settings` etc. wired into
+  the panel registry.
+* **setup wizard readiness bridge** — gating signal published by the
+  consistency surface that the wizard can consume.
+* **setup wizard** — end-user-facing onboarding flow.
 
-None of these are in scope for the current Phase 2 plan.  They are
-listed here so PR-10 reviewers can sequence work afterwards.
+None of these are in scope for PR-10 itself; PR-10 only **reports**
+them as informational tracking.
 
 ---
 
@@ -145,7 +167,7 @@ the consistency ledger exists to prevent:
 | `025_feature_flag_audit.sql` | #78 | on main |
 | `026_platform_migration_checkpoints.sql` | #81 | on main |
 | `027_user_participation.sql` | #84 | on main |
-| `028_user_participation_audit.sql` | #86 | **open** |
+| `028_user_participation_audit.sql` | #86 | on main |
 | 029 | next free number | — |
 
 ---
