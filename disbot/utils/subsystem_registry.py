@@ -55,7 +55,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 90,
         "capabilities": [
             "admin.cog.load",
@@ -80,7 +79,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 80,
         "capabilities": [
             "moderation.warn.apply",
@@ -107,7 +105,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": True,
         "ui_priority": 10,
         "capabilities": [
             "economy.currency.view",
@@ -132,7 +129,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 15,
         "capabilities": [
             "inventory.item.view",
@@ -156,7 +152,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 20,
         "capabilities": [
             "mining.resource.mine",
@@ -179,7 +174,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": True,
         "ui_priority": 25,
         "capabilities": [
             "xp.rank.view",
@@ -203,7 +197,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 70,
         "capabilities": [
             "role.threshold.configure",
@@ -227,7 +220,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 75,
         "capabilities": [
             "channel.create.text",
@@ -253,7 +245,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 72,
         "capabilities": [
             "cleanup.word.add",
@@ -278,7 +269,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": ["economy"],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 30,
         "capabilities": [
             "blackjack.game.play",
@@ -300,7 +290,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 32,
         "capabilities": [
             "deathmatch.game.challenge",
@@ -323,7 +312,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 34,
         "capabilities": [
             "rps_tournament.game.join",
@@ -346,7 +334,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 36,
         "capabilities": [
             "counting.game.play",
@@ -369,7 +356,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 38,
         "capabilities": [
             "chain.game.play",
@@ -392,7 +378,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 40,
         "capabilities": [
             "leaderboard.xp.view",
@@ -415,7 +400,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 65,
         "capabilities": [
             "proof_channel.access.grant",
@@ -439,7 +423,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": True,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 5,
         "capabilities": [
             "utility.info.server",
@@ -463,7 +446,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 3,
         "capabilities": [
             "general.info.view",
@@ -486,7 +468,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": True,
         "has_cleanup_rules": False,
-        "has_onboarding": True,
         "ui_priority": 1,
         "capabilities": [
             "help.menu.view",
@@ -508,7 +489,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 95,
         "capabilities": [
             "diagnostic.health.view",

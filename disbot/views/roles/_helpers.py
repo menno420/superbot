@@ -1,8 +1,27 @@
+"""Shared helpers for the role-management panel views.
+
+Hosts the time-based threshold defaults, the color-picker presets, the
+``_ensure_defaults`` seeding routine, and the ``_parse_color`` helper.
+
+The generic ``_find_role_normalized`` lookup now lives in
+``views.selectors._resource_helpers`` so it can be consumed by code that
+does not belong to the role-management subsystem (Phase 0 of the
+platform roadmap). This module re-exports it for back-compat.
+"""
+
 from __future__ import annotations
 
 import discord
 
-from utils.helpers import normalize_name
+from views.selectors._resource_helpers import _find_role_normalized
+
+__all__ = [
+    "_COLOR_OPTIONS",
+    "_DEFAULT_THRESHOLDS",
+    "_ensure_defaults",
+    "_find_role_normalized",
+    "_parse_color",
+]
 
 _DEFAULT_THRESHOLDS: list[tuple[str, int]] = [
     ("Neu", 0),
@@ -40,9 +59,3 @@ def _parse_color(value: str) -> discord.Color:
     """Parse '#ff0000' or 'ff0000' into a discord.Color."""
     value = value.strip().lstrip("#")
     return discord.Color(int(value, 16))
-
-
-def _find_role_normalized(guild: discord.Guild, name: str) -> discord.Role | None:
-    """Case-insensitive, space-insensitive role lookup."""
-    key = normalize_name(name)
-    return discord.utils.find(lambda r: normalize_name(r.name) == key, guild.roles)
