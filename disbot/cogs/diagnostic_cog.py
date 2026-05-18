@@ -568,6 +568,14 @@ class DiagnosticCog(commands.Cog):
 
         await ctx.send(embed=build_settings_registry_embed())
 
+    @platform_grp.command(name="provisioning")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_provisioning(self, ctx):
+        """Cross-linked ResourceRequirement × BindingSpec catalogue (S2.5)."""
+        from cogs.diagnostic._platform_embeds import build_provisioning_embed
+
+        await ctx.send(embed=build_provisioning_embed())
+
     @platform_grp.command(name="participation-schemas")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_participation_schemas(self, ctx):
