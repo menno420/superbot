@@ -25,6 +25,11 @@ class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_load(self) -> None:
+        from cogs.moderation.schemas import register_schemas
+
+        register_schemas()
+
     def _can_act_on(self, ctx, member: Member) -> str | None:
         if member == ctx.guild.owner:
             return "❌ You cannot perform this action on the server owner."

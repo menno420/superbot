@@ -31,6 +31,9 @@ from __future__ import annotations
 
 import logging
 
+# Phase 1 — Subsystem ownership protocols.  Importing here ensures the
+# self-registering schema + capability + feature-flag registries are
+# wired into the runtime before cogs load and start declaring schemas.
 from core.runtime import component_registry as components  # noqa: F401 — re-exported
 from core.runtime import (  # noqa: F401 — re-exported
     ephemeral_surface_manager as surfaces,
@@ -39,6 +42,9 @@ from core.runtime import guild_config  # noqa: F401 — re-exported
 from core.runtime import persistent_views  # noqa: F401 — re-exported
 from core.runtime import scope_locks  # noqa: F401 — re-exported
 from core.runtime import tasks  # noqa: F401 — re-exported
+from core.runtime import (  # noqa: F401 — re-exported
+    feature_flags,
+)
 from core.runtime import guild_resources as resources  # noqa: F401 — re-exported
 from core.runtime import interaction_helpers as interaction  # noqa: F401 — re-exported
 from core.runtime import interaction_router as router  # noqa: F401 — re-exported
@@ -47,9 +53,18 @@ from core.runtime import message_anchor_manager as anchors  # noqa: F401 — re-
 from core.runtime import message_pipeline as pipeline  # noqa: F401 — re-exported
 from core.runtime import navigation_stack as nav  # noqa: F401 — re-exported
 from core.runtime import panel_manager as panels  # noqa: F401 — re-exported
+from core.runtime import (  # noqa: F401 — re-exported
+    participation_capabilities,
+    participation_schema,
+    resource_specs,
+)
 from core.runtime import session_gc as gc  # noqa: F401 — re-exported
 from core.runtime import session_manager as sessions  # noqa: F401 — re-exported
 from core.runtime import state_store as store  # noqa: F401 — re-exported
+from core.runtime import (  # noqa: F401 — re-exported
+    subsystem_capabilities,
+    subsystem_schema,
+)
 from core.runtime import ui_permissions as perms  # noqa: F401 — re-exported
 
 logger = logging.getLogger("bot.runtime")

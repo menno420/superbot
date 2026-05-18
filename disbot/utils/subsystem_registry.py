@@ -55,7 +55,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 90,
         "capabilities": [
             "admin.cog.load",
@@ -80,7 +79,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 80,
         "capabilities": [
             "moderation.warn.apply",
@@ -89,6 +87,7 @@ SUBSYSTEMS: dict[str, dict] = {
             "moderation.ban.apply",
             "moderation.ban.remove",
             "moderation.log.view",
+            "moderation.settings.configure",
         ],
     },
     "economy": {
@@ -107,13 +106,13 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": True,
         "ui_priority": 10,
         "capabilities": [
             "economy.currency.view",
             "economy.currency.earn",
             "economy.shop.browse",
             "economy.shop.buy",
+            "economy.settings.configure",
         ],
     },
     "inventory": {
@@ -132,7 +131,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 15,
         "capabilities": [
             "inventory.item.view",
@@ -156,7 +154,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 20,
         "capabilities": [
             "mining.resource.mine",
@@ -179,7 +176,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": True,
         "ui_priority": 25,
         "capabilities": [
             "xp.rank.view",
@@ -203,7 +199,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 70,
         "capabilities": [
             "role.threshold.configure",
@@ -227,7 +222,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 75,
         "capabilities": [
             "channel.create.text",
@@ -253,7 +247,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 72,
         "capabilities": [
             "cleanup.word.add",
@@ -278,7 +271,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": ["economy"],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 30,
         "capabilities": [
             "blackjack.game.play",
@@ -300,7 +292,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 32,
         "capabilities": [
             "deathmatch.game.challenge",
@@ -323,7 +314,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 34,
         "capabilities": [
             "rps_tournament.game.join",
@@ -346,7 +336,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 36,
         "capabilities": [
             "counting.game.play",
@@ -369,7 +358,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 38,
         "capabilities": [
             "chain.game.play",
@@ -392,7 +380,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 40,
         "capabilities": [
             "leaderboard.xp.view",
@@ -415,7 +402,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 65,
         "capabilities": [
             "proof_channel.access.grant",
@@ -439,7 +425,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": True,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 5,
         "capabilities": [
             "utility.info.server",
@@ -463,7 +448,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "has_onboarding": False,
         "ui_priority": 3,
         "capabilities": [
             "general.info.view",
@@ -486,7 +470,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": True,
         "has_cleanup_rules": False,
-        "has_onboarding": True,
         "ui_priority": 1,
         "capabilities": [
             "help.menu.view",
@@ -508,7 +491,6 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": True,
-        "has_onboarding": False,
         "ui_priority": 95,
         "capabilities": [
             "diagnostic.health.view",
@@ -818,6 +800,14 @@ IDENTITY_FINDING_TIER: dict[str, str] = {
     "router_prefix_unknown": "auto_healable",
     "view_subsystem_unknown": "auto_healable",
     "db_anchor_subsystem_unknown": "auto_healable",
+    # Phase 1 schema findings — warn_only initially.  Phase 6 promotes
+    # ``schema_subsystem_unknown`` to ``auto_healable`` once orphan
+    # schemas are reliably detectable + safely unregisterable.  The
+    # capability-drift kind stays warn_only — fixing it requires
+    # editing SUBSYSTEMS, not the schema registry.
+    "schema_subsystem_unknown": "warn_only",
+    "participation_schema_subsystem_unknown": "warn_only",
+    "schema_capability_unknown": "warn_only",
 }
 
 
@@ -895,6 +885,9 @@ async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
         "router_prefix_unknown": [],
         "view_subsystem_unknown": [],
         "db_anchor_subsystem_unknown": [],
+        "schema_subsystem_unknown": [],
+        "participation_schema_subsystem_unknown": [],
+        "schema_capability_unknown": [],
     }
 
     # Surface 2: bot commands — include aliases so registry entries
@@ -971,6 +964,71 @@ async def validate_identity_contract(bot: object) -> dict[str, list[str]]:
         # DB unavailable at startup, or table not migrated yet — not fatal.
         logger.debug(
             "Identity-contract: skipping panel_anchors check (%s)",
+            exc,
+        )
+
+    # Phase 1 schema cross-checks (warn_only).  Promoted to enforced in Phase 6.
+    try:
+        from core.runtime.subsystem_schema import all_schemas as _all_config_schemas
+
+        all_caps: set[str] = set()
+        for meta in SUBSYSTEMS.values():
+            all_caps.update(meta.get("capabilities", ()))
+
+        for sub_name, schema in _all_config_schemas().items():
+            if sub_name not in SUBSYSTEMS:
+                findings["schema_subsystem_unknown"].append(sub_name)
+                logger.warning(
+                    "Identity-contract: SubsystemSchema for %r has no "
+                    "matching SUBSYSTEMS entry.",
+                    sub_name,
+                )
+                continue
+            for binding in schema.bindings:
+                cap = binding.capability_required
+                if cap and cap not in all_caps:
+                    msg = f"{sub_name}/{binding.name}: capability={cap!r}"
+                    findings["schema_capability_unknown"].append(msg)
+                    logger.warning(
+                        "Identity-contract: SubsystemSchema %r binding %r "
+                        "requires capability %r which is not declared in "
+                        "any subsystem's capabilities list.",
+                        sub_name,
+                        binding.name,
+                        cap,
+                    )
+            for setting in schema.settings:
+                cap = setting.capability_required
+                if cap and cap not in all_caps:
+                    msg = f"{sub_name}/{setting.name}: capability={cap!r}"
+                    findings["schema_capability_unknown"].append(msg)
+                    logger.warning(
+                        "Identity-contract: SubsystemSchema %r setting %r "
+                        "requires capability %r which is not declared in "
+                        "any subsystem's capabilities list.",
+                        sub_name,
+                        setting.name,
+                        cap,
+                    )
+    except Exception as exc:
+        logger.debug("Identity-contract: skipping schema check (%s)", exc)
+
+    try:
+        from core.runtime.participation_schema import (
+            all_schemas as _all_participation_schemas,
+        )
+
+        for sub_name in _all_participation_schemas():
+            if sub_name not in SUBSYSTEMS:
+                findings["participation_schema_subsystem_unknown"].append(sub_name)
+                logger.warning(
+                    "Identity-contract: ParticipationSchema for %r has "
+                    "no matching SUBSYSTEMS entry.",
+                    sub_name,
+                )
+    except Exception as exc:
+        logger.debug(
+            "Identity-contract: skipping participation schema check (%s)",
             exc,
         )
 

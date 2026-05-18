@@ -187,10 +187,15 @@ class DiagnosticCog(commands.Cog):
         Added in Phase S2.5 / O-1, backed by ``services.diagnostics_service``:
             !platform runtime     · !platform caches  · !platform locks [prefix]
             !platform tasks       · !platform views   · !platform sessions [subsystem]
+
+        Added in Phase 1 (subsystem ownership protocols):
+            !platform schemas              · !platform participation-schemas
+            !platform resource-requirements · !platform flags
         """
         await ctx.send(
             "Usage: `!platform <status|anchors|identity|"
-            "runtime|caches|locks|tasks|views|sessions|slow>`",
+            "runtime|caches|locks|tasks|views|sessions|slow|"
+            "schemas|participation-schemas|resource-requirements|flags>`",
             delete_after=20,
         )
 
@@ -536,6 +541,137 @@ class DiagnosticCog(commands.Cog):
             )
         else:
             embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+        await ctx.send(embed=embed)
+
+    # ────────────────────────────────────────────────────────────────
+    # !platform — Phase 1: schema / participation / resource registries
+    # ────────────────────────────────────────────────────────────────
+
+    @platform_grp.command(name="schemas")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_schemas(self, ctx):
+        """Registered SubsystemSchema instances (Phase 1a)."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot("schemas")
+        embed = discord.Embed(
+            title="📐 Subsystem schemas",
+            description=(
+                f"{snap['registered']} registered  ·  "
+                f"bindings={snap['bindings_total']}  ·  "
+                f"settings={snap['settings_total']}  ·  "
+                f"resources={snap['resources_total']}"
+            ),
+            color=discord.Color.blurple(),
+        )
+        by_sub = snap.get("by_subsystem", {})
+        if by_sub:
+            lines = [
+                f"`{name}` — b={info['bindings']} s={info['settings']} "
+                f"r={info['resources']} v={info['version']}"
+                for name, info in sorted(by_sub.items())
+            ]
+            embed.add_field(
+                name="By subsystem",
+                value="\n".join(lines)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="participation-schemas")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_participation_schemas(self, ctx):
+        """Registered ParticipationSchema instances (Phase 1b)."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot("participation_schemas")
+        embed = discord.Embed(
+            title="🧑‍🤝‍🧑 Participation schemas",
+            description=(
+                f"{snap['registered']} registered  ·  "
+                f"subs={snap['subscriptions_total']}  ·  "
+                f"vis={snap['visibility_intents_total']}  ·  "
+                f"notif={snap['notification_intents_total']}  ·  "
+                f"prefs={snap['preferences_total']}"
+            ),
+            color=discord.Color.blurple(),
+        )
+        by_sub = snap.get("by_subsystem", {})
+        if by_sub:
+            lines = [
+                f"`{name}` — s={info['subscriptions']} "
+                f"v={info['visibility_intents']} "
+                f"n={info['notification_intents']} "
+                f"p={info['preferences']} v{info['version']}"
+                for name, info in sorted(by_sub.items())
+            ]
+            embed.add_field(
+                name="By subsystem",
+                value="\n".join(lines)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(name="By subsystem", value="*(none)*", inline=False)
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="resource-requirements")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_resource_requirements(self, ctx):
+        """Declared ResourceRequirement entries across subsystems (Phase 1c)."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot("resource_requirements")
+        embed = discord.Embed(
+            title="🧱 Resource requirements",
+            description=f"{len(snap)} requirement(s) declared",
+            color=discord.Color.blurple(),
+        )
+        if snap:
+            lines = [
+                f"`{r['subsystem']}` {r['kind']}/{r['intent']} "
+                f"({r['priority']})"
+                + (f" → `{r['suggested_name']}`" if r["suggested_name"] else "")
+                for r in snap
+            ]
+            embed.add_field(
+                name="Requirements",
+                value="\n".join(lines)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(name="Requirements", value="*(none)*", inline=False)
+        await ctx.send(embed=embed)
+
+    @platform_grp.command(name="flags")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_flags(self, ctx):
+        """Declared FeatureFlag entries (Phase 1d declarations only)."""
+        from services import diagnostics_service
+
+        snap = diagnostics_service.snapshot("feature_flags")
+        embed = discord.Embed(
+            title="🚩 Feature flags (declared)",
+            description=(
+                f"{snap['declared_total']} declared  ·  "
+                "Phase 2d will add runtime evaluation"
+            ),
+            color=discord.Color.blurple(),
+        )
+        by_name = snap.get("by_name", {})
+        if by_name:
+            lines = [
+                f"`{name}` default={info['default_value']} owner=`{info['owner']}`"
+                for name, info in sorted(by_name.items())
+            ]
+            embed.add_field(
+                name="Declared",
+                value="\n".join(lines)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(name="Declared", value="*(none)*", inline=False)
         await ctx.send(embed=embed)
 
 
