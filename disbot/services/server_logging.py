@@ -401,8 +401,11 @@ async def _on_moderation_action(
 # Captured at setup(bot); used by the bus subscriber to resolve guilds
 # from guild_id payloads.  Module-level so subscribers don't have to
 # rely on a global registry.  Tests can call _reset_for_tests() or
-# pass a fake bot via setup() directly.
-_BOT: object | None = None
+# pass a fake bot via setup() directly.  Typed as ``Any`` (not
+# ``commands.Bot``) to avoid importing discord.ext.commands at module
+# load and to let tests pass MagicMock without satisfying the full
+# Bot interface.
+_BOT: Any = None
 _SUBSCRIBED = False
 
 
