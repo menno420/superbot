@@ -9,10 +9,42 @@ from discord.ext.commands import MissingPermissions, has_permissions
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
+from core.runtime.message_pipeline import (
+    MessagePipelineContext,
+    StageResult,
+)
+from services import moderation_service
 from utils import db
 from views.base import HubView, send_panel
 
+CHAIN_STAGE_NAME = "chain"
+CHAIN_STAGE_ORDER = 10  # moderation tier per plan §3.2
+
 logger = logging.getLogger("bot.cogs.chain")
+
+
+class ChainStage:
+    """Message-pipeline stage enforcing chain rules + word limits.
+
+    Auto-mod tier (order=10).  Short-circuits the pipeline when a
+    message is deleted so xp / game_input stages skip a removed
+    message.
+
+    Holds a cog reference because the rule check requires the bot's
+    command-context lookup (so command messages aren't auto-deleted).
+    """
+
+    name = CHAIN_STAGE_NAME
+    order = CHAIN_STAGE_ORDER
+
+    def __init__(self, cog: ChainCog):
+        self.cog = cog
+
+    async def process(self, ctx: MessagePipelineContext) -> StageResult:
+        deleted = await self.cog._process_chain_message(ctx.message)
+        if deleted:
+            return StageResult(deleted=True, short_circuit=True)
+        return StageResult()
 
 
 class ChainCog(commands.Cog):
@@ -20,6 +52,16 @@ class ChainCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    async def cog_load(self) -> None:
+        from core.runtime import message_pipeline
+
+        message_pipeline.register(ChainStage(self))
+
+    def cog_unload(self) -> None:
+        from core.runtime import message_pipeline
+
+        message_pipeline.unregister(CHAIN_STAGE_NAME)
 
     @commands.group(name="chain", invoke_without_command=True)
     async def chain(self, ctx):
@@ -249,65 +291,76 @@ class ChainCog(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        """Listener to enforce chain rules and word limits in specified channels."""
-        # Ignore messages from bots
-        if message.author.bot:
-            return
+    async def _process_chain_message(self, message) -> bool:
+        """Enforce chain rules and word limits.  Returns True iff deleted.
 
-        # Check if the message is invoking a command
+        Called by :class:`ChainStage` from the message pipeline.
+        The pipeline pre-filters bot authors so we don't re-check.
+
+        Command messages (resolved via ``bot.get_context``) are passed
+        through unchanged — chain rules apply only to plain content.
+        """
         ctx = await self.bot.get_context(message)
         if ctx.valid:
-            return  # Don't process command messages
+            return False  # Don't process command messages
 
         channel_data = await db.get_chain_channel(message.channel.id)
         if not channel_data:
-            return  # No chain or limit set for this channel
+            return False  # No chain or limit set for this channel
 
         allowed_word = channel_data.get("word")
         word_limit = channel_data.get("word_limit")
 
-        # Initialize a flag to determine if message should be deleted
         delete_message = False
-
-        # Check for allowed word
-        if allowed_word:
-            if message.content.strip().lower() != allowed_word.lower():
-                delete_message = True
-
-        # Check for word limit
-        if word_limit:
-            word_count = len(message.content.strip().split())
-            if word_count > word_limit:
-                delete_message = True
+        if allowed_word and message.content.strip().lower() != allowed_word.lower():
+            delete_message = True
+        if word_limit and len(message.content.strip().split()) > word_limit:
+            delete_message = True
 
         if not delete_message:
             await db.increment_chain_count(message.channel.id)
-            return  # Message is allowed
+            return False  # Message is allowed
 
-        # Delete the message and optionally warn the user
+        # Compose the human-readable warning + audit reason.
+        warning_message = f"{message.author.mention}, your message was deleted."
+        if allowed_word and word_limit:
+            warning_message += (
+                f" Only the word `{allowed_word}` is allowed, and messages must "
+                f"be at most {word_limit} words."
+            )
+        elif allowed_word:
+            warning_message += (
+                f" Only the word `{allowed_word}` is allowed in this channel."
+            )
+        elif word_limit:
+            warning_message += f" Messages must be at most {word_limit} words."
+
+        # Route through moderation_service so the removal lands in
+        # mod_logs + emits EVT_MOD_ACTION (§2.2 gap closed).
+        ok = await moderation_service.auto_delete(
+            message,
+            reason=warning_message,
+            rule="chain.violation",
+        )
+        if not ok:
+            return False
+
         try:
-            await message.delete()
-            warning_message = f"{message.author.mention}, your message was deleted."
-            if allowed_word and word_limit:
-                warning_message += f" Only the word `{allowed_word}` is allowed, and messages must be at most {word_limit} words."
-            elif allowed_word:
-                warning_message += (
-                    f" Only the word `{allowed_word}` is allowed in this channel."
-                )
-            elif word_limit:
-                warning_message += f" Messages must be at most {word_limit} words."
             warning = await message.channel.send(warning_message)
-            # Delete the warning after 5 seconds
             await asyncio.sleep(5)
             await warning.delete()
         except discord.Forbidden:
             logger.warning(
-                f"Missing permissions to delete messages in {message.channel}.",
+                "Missing permissions to post chain warning in %s.",
+                message.channel,
             )
-        except discord.HTTPException as e:
-            logger.error(f"Failed to delete message in {message.channel}: {e}")
+        except discord.HTTPException as exc:
+            logger.error(
+                "Failed to post chain warning in %s: %s",
+                message.channel,
+                exc,
+            )
+        return True
 
     @commands.Cog.listener()
     async def on_ready(self):
