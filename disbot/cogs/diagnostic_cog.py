@@ -712,6 +712,76 @@ class DiagnosticCog(commands.Cog):
             embed.add_field(name="Flags", value="*(none)*", inline=False)
         await ctx.send(embed=embed)
 
+    @platform_grp.command(name="migrations")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_migrations(self, ctx):
+        """Platform migration checkpoints (Phase 2 PR-5) — status + summary.
+
+        Read-only.  Lists every checkpoint row in
+        ``platform_migration_checkpoints`` for this guild (and global
+        rows), grouped by migration name.  Dry-run / backfill /
+        reconciliation runs are invoked from a Python REPL on the bot
+        host; this command just surfaces their state.
+        """
+        from utils.db import platform_migration_checkpoints as checkpoint_db
+
+        # Counts (global view) + per-guild rows.
+        counts = await checkpoint_db.count_by_status()
+        guild_rows = (
+            await checkpoint_db.list_checkpoints(guild_id=ctx.guild.id)
+            if ctx.guild
+            else []
+        )
+        embed = discord.Embed(
+            title="🛠 Platform migrations",
+            description=(
+                "Generic logical-migration checkpoint table; first "
+                "consumer is the binding backfill (Phase 2 PR-5)."
+            ),
+            color=discord.Color.gold(),
+        )
+        if counts:
+            status_line = " · ".join(
+                f"{status}={n}" for status, n in sorted(counts.items())
+            )
+            embed.add_field(name="Global counts", value=status_line, inline=False)
+        else:
+            embed.add_field(
+                name="Global counts",
+                value="*(no rows)*",
+                inline=False,
+            )
+        if guild_rows:
+            rows: list[str] = []
+            for row in guild_rows[:20]:
+                summary = row.get("summary_json") or {}
+                inner_counts = (
+                    summary.get("counts") if isinstance(summary, dict) else None
+                )
+                count_str = (
+                    " ".join(
+                        f"{k}={v}" for k, v in sorted((inner_counts or {}).items())
+                    )
+                    if inner_counts
+                    else ""
+                )
+                rows.append(
+                    f"`{row['name']}` status={row['status']} v={row['version']} "
+                    f"{count_str}".strip(),
+                )
+            embed.add_field(
+                name=f"This guild ({len(guild_rows)} row{'s' if len(guild_rows) != 1 else ''})",
+                value="\n".join(rows)[:1024],
+                inline=False,
+            )
+        else:
+            embed.add_field(
+                name="This guild",
+                value="*(no checkpoints)*",
+                inline=False,
+            )
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(DiagnosticCog(bot))

@@ -1,0 +1,317 @@
+"""Phase 2 PR-5 — services.binding_backfill.dry_run end-to-end behaviour.
+
+Verifies the dry-run wrapper:
+
+* iterates every entry in :data:`MIGRATED_KEYS`,
+* reads legacy via ``utils.db.settings.get_setting``,
+* reads binding via ``core.runtime.bindings.get_binding``,
+* validates the legacy target via
+  ``core.runtime.bindings.validate_binding_target``,
+* writes a single ``platform_migration_checkpoints`` row with the
+  structured summary,
+* never writes to ``subsystem_bindings``.
+
+Discord ``Guild`` is mocked because the dry-run only reads guild.id;
+the actual validation calls are mocked so we can drive each
+classification deterministically.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from core.resources.status import ResourceStatus
+from core.runtime.bindings import BindingValue
+from core.runtime.subsystem_schema import BindingKind
+from services import binding_backfill
+from services.binding_backfill import Classification, dry_run
+
+
+def _bv(*, target_id, status, last_updated_at=None):
+    """Construct a BindingValue with the shape ``get_binding`` returns."""
+    return BindingValue(
+        guild_id=42,
+        subsystem="xp",
+        binding_name="announce_channel",
+        kind=BindingKind.CHANNEL,
+        target_id=target_id,
+        status=status,
+        last_validated_at=last_updated_at,
+        last_updated_at=last_updated_at,
+        version=1 if last_updated_at is not None else 0,
+    )
+
+
+@pytest.fixture
+def _mock_guild():
+    guild = MagicMock()
+    guild.id = 42
+    return guild
+
+
+@pytest.fixture
+def _patched_dry_run(_mock_guild):
+    """Patch the three DB/Discord touchpoints + the checkpoint writer."""
+    with (
+        patch(
+            "utils.db.settings.get_setting",
+            new_callable=AsyncMock,
+        ) as mock_legacy,
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+        ) as mock_binding,
+        patch(
+            "core.runtime.bindings.validate_binding_target",
+            new_callable=AsyncMock,
+        ) as mock_validate,
+        patch(
+            "utils.db.platform_migration_checkpoints.upsert_checkpoint",
+            new_callable=AsyncMock,
+        ) as mock_checkpoint,
+        patch.object(
+            binding_backfill,
+            "_schema_declares",
+            return_value=True,
+        ),
+    ):
+        yield {
+            "legacy": mock_legacy,
+            "binding": mock_binding,
+            "validate": mock_validate,
+            "checkpoint": mock_checkpoint,
+            "guild": _mock_guild,
+        }
+
+
+@pytest.mark.asyncio
+async def test_dry_run_iterates_every_migrated_key(_patched_dry_run):
+    """All three :data:`MIGRATED_KEYS` are classified — never short-circuit."""
+    p = _patched_dry_run
+    p["legacy"].return_value = ""  # all legacy values empty
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=None,
+        status=ResourceStatus.UNRESOLVED,
+    )
+
+    summary = await dry_run(p["guild"])
+
+    # Three migrated keys today
+    assert len(summary.candidates) == 3
+    assert {c.subsystem for c in summary.candidates} == {"xp", "economy", "governance"}
+    # All classified BOTH_ABSENT because legacy is empty + no binding row
+    assert all(
+        c.classification == Classification.BOTH_ABSENT.value for c in summary.candidates
+    )
+    assert summary.counts == {Classification.BOTH_ABSENT.value: 3}
+
+
+@pytest.mark.asyncio
+async def test_dry_run_records_checkpoint(_patched_dry_run):
+    """One ``upsert_checkpoint`` call with status='dry_run_complete'."""
+    p = _patched_dry_run
+    p["legacy"].return_value = ""
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=None,
+        status=ResourceStatus.UNRESOLVED,
+    )
+
+    await dry_run(p["guild"])
+
+    p["checkpoint"].assert_awaited_once()
+    call = p["checkpoint"].await_args
+    assert call.kwargs["name"] == "binding_backfill"
+    assert call.kwargs["guild_id"] == 42
+    assert call.kwargs["status"] == "dry_run_complete"
+    assert call.kwargs["mark_completed"] is True
+    # summary_json carries counts + candidates
+    summary = call.kwargs["summary_json"]
+    assert summary["counts"] == {Classification.BOTH_ABSENT.value: 3}
+    assert len(summary["candidates"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_dry_run_legacy_only_candidate_valid(_patched_dry_run):
+    """A legacy-only XP announce channel with a valid target → CANDIDATE_VALID."""
+    p = _patched_dry_run
+
+    async def legacy_lookup(guild_id, key, default=""):
+        if key == "xp_announce_channel":
+            return "999"
+        return ""
+
+    p["legacy"].side_effect = legacy_lookup
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=None,
+        status=ResourceStatus.UNRESOLVED,
+    )
+    p["validate"].return_value = ResourceStatus.BOUND
+
+    summary = await dry_run(p["guild"])
+    xp = next(c for c in summary.candidates if c.subsystem == "xp")
+    assert xp.classification == Classification.CANDIDATE_VALID.value
+    assert xp.legacy_target_id == 999
+    assert xp.binding_target_id is None
+
+
+@pytest.mark.asyncio
+async def test_dry_run_legacy_with_missing_target(_patched_dry_run):
+    """Legacy points at a deleted channel → CANDIDATE_INVALID_TARGET_MISSING."""
+    p = _patched_dry_run
+
+    async def legacy_lookup(guild_id, key, default=""):
+        if key == "xp_announce_channel":
+            return "999"
+        return ""
+
+    p["legacy"].side_effect = legacy_lookup
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=None,
+        status=ResourceStatus.UNRESOLVED,
+    )
+    p["validate"].return_value = ResourceStatus.MISSING
+
+    summary = await dry_run(p["guild"])
+    xp = next(c for c in summary.candidates if c.subsystem == "xp")
+    assert xp.classification == Classification.CANDIDATE_INVALID_TARGET_MISSING.value
+
+
+@pytest.mark.asyncio
+async def test_dry_run_both_present_match(_patched_dry_run):
+    """Legacy + binding agree → MATCH."""
+    p = _patched_dry_run
+    now = datetime.now()
+
+    async def legacy_lookup(guild_id, key, default=""):
+        if key == "xp_announce_channel":
+            return "999"
+        return ""
+
+    p["legacy"].side_effect = legacy_lookup
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=999 if sub == "xp" else None,
+        status=ResourceStatus.BOUND if sub == "xp" else ResourceStatus.UNRESOLVED,
+        last_updated_at=now if sub == "xp" else None,
+    )
+    p["validate"].return_value = ResourceStatus.BOUND
+
+    summary = await dry_run(p["guild"])
+    xp = next(c for c in summary.candidates if c.subsystem == "xp")
+    assert xp.classification == Classification.MATCH.value
+
+
+@pytest.mark.asyncio
+async def test_dry_run_both_present_disagree(_patched_dry_run):
+    p = _patched_dry_run
+    now = datetime.now()
+
+    async def legacy_lookup(guild_id, key, default=""):
+        if key == "xp_announce_channel":
+            return "999"
+        return ""
+
+    p["legacy"].side_effect = legacy_lookup
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=111 if sub == "xp" else None,
+        status=ResourceStatus.BOUND if sub == "xp" else ResourceStatus.UNRESOLVED,
+        last_updated_at=now if sub == "xp" else None,
+    )
+    p["validate"].return_value = ResourceStatus.BOUND
+
+    summary = await dry_run(p["guild"])
+    xp = next(c for c in summary.candidates if c.subsystem == "xp")
+    assert xp.classification == Classification.DISAGREE.value
+
+
+@pytest.mark.asyncio
+async def test_dry_run_blocked_when_schema_undeclared(_mock_guild):
+    """A subsystem with no SubsystemSchema registered → BLOCKED_NO_SCHEMA."""
+    with (
+        patch(
+            "utils.db.settings.get_setting",
+            new_callable=AsyncMock,
+            return_value="999",
+        ),
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            side_effect=lambda gid, sub, name: _bv(
+                target_id=None,
+                status=ResourceStatus.UNRESOLVED,
+            ),
+        ),
+        patch(
+            "core.runtime.bindings.validate_binding_target",
+            new_callable=AsyncMock,
+            return_value=ResourceStatus.BOUND,
+        ),
+        patch(
+            "utils.db.platform_migration_checkpoints.upsert_checkpoint",
+            new_callable=AsyncMock,
+        ),
+        # No patch on _schema_declares — use the real registry.  Governance
+        # has no schema registered so its candidate must be blocked.  XP and
+        # Economy schemas are registered at module import (cog_load) but in
+        # the test environment they may not be — the assertion below
+        # tolerates both outcomes by asserting "governance is at least
+        # blocked".
+    ):
+        summary = await dry_run(_mock_guild)
+    governance_results = [c for c in summary.candidates if c.subsystem == "governance"]
+    assert len(governance_results) == 1
+    assert (
+        governance_results[0].classification == Classification.BLOCKED_NO_SCHEMA.value
+    )
+
+
+@pytest.mark.asyncio
+async def test_dry_run_does_not_write_to_subsystem_bindings(_patched_dry_run):
+    """Dry-run is read-only against ``subsystem_bindings``.
+
+    Pin the contract by patching the two mutation primitives — they
+    must never be awaited during a dry-run.
+    """
+    p = _patched_dry_run
+    p["legacy"].return_value = "999"
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=None,
+        status=ResourceStatus.UNRESOLVED,
+    )
+    p["validate"].return_value = ResourceStatus.BOUND
+
+    with (
+        patch(
+            "utils.db.bindings.upsert_with_audit",
+            new_callable=AsyncMock,
+        ) as mock_upsert,
+        patch(
+            "utils.db.bindings.clear_with_audit",
+            new_callable=AsyncMock,
+        ) as mock_clear,
+    ):
+        await dry_run(p["guild"])
+    mock_upsert.assert_not_awaited()
+    mock_clear.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_dry_run_idempotent_upsert_uses_same_key(_patched_dry_run):
+    """Re-running dry-run for the same guild upserts the same checkpoint row."""
+    p = _patched_dry_run
+    p["legacy"].return_value = ""
+    p["binding"].side_effect = lambda gid, sub, name: _bv(
+        target_id=None,
+        status=ResourceStatus.UNRESOLVED,
+    )
+
+    await dry_run(p["guild"])
+    await dry_run(p["guild"])
+
+    assert p["checkpoint"].await_count == 2
+    # Both calls used the same (name, guild_id)
+    for call in p["checkpoint"].await_args_list:
+        assert call.kwargs["name"] == "binding_backfill"
+        assert call.kwargs["guild_id"] == 42
