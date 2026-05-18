@@ -33,6 +33,22 @@
 --     (guild_id, at) for per-guild history.  ``mutation_id`` indexed
 --     for cross-pipeline correlation.
 --
+-- Per-``mutation_type`` shape (defense-in-depth via CHECK constraints).
+-- These complement the pipeline-level validation; even a future caller
+-- that bypasses :class:`RolloutMutationPipeline` cannot insert a
+-- mis-shaped audit row.
+--
+--   * ``set_state`` rows: ``new_state`` must be non-null; ``flag_name``
+--     must NOT be the environment-tier sentinel; tier columns must be
+--     NULL.
+--   * ``set_rollout_percent`` rows: ``new_rollout_percent`` must be
+--     non-null; ``scope`` must be ``'global'``; ``flag_name`` must NOT
+--     be the sentinel; tier columns must be NULL.
+--   * ``set_tier`` rows: ``flag_name`` must be the sentinel literal
+--     ``'__environment_tier__'``; ``scope`` must be ``'guild'``;
+--     ``guild_id`` must be non-null; ``new_tier`` must be non-null;
+--     state and rollout columns must be NULL.
+--
 -- Forward-only and idempotent.
 
 CREATE TABLE IF NOT EXISTS feature_flag_audit (
@@ -55,7 +71,47 @@ CREATE TABLE IF NOT EXISTS feature_flag_audit (
     CHECK (mutation_type IN
         ('set_state', 'set_rollout_percent', 'set_tier')),
     CHECK (actor_type IN
-        ('platform_owner', 'system', 'backfill'))
+        ('platform_owner', 'system', 'backfill')),
+    -- set_state rows must carry a non-null new_state, must NOT use the
+    -- environment-tier sentinel flag_name, and must leave tier columns
+    -- unset.
+    CHECK (
+        mutation_type <> 'set_state' OR (
+            new_state IS NOT NULL
+            AND flag_name <> '__environment_tier__'
+            AND prev_tier IS NULL
+            AND new_tier IS NULL
+        )
+    ),
+    -- set_rollout_percent rows are global-scoped, carry a non-null
+    -- new_rollout_percent, must not use the sentinel, and leave tier
+    -- columns unset.
+    CHECK (
+        mutation_type <> 'set_rollout_percent' OR (
+            scope = 'global'
+            AND guild_id IS NULL
+            AND new_rollout_percent IS NOT NULL
+            AND flag_name <> '__environment_tier__'
+            AND prev_tier IS NULL
+            AND new_tier IS NULL
+        )
+    ),
+    -- set_tier rows use the sentinel flag_name, are guild-scoped with
+    -- non-null guild_id and new_tier, and leave state + rollout
+    -- columns unset.  This is the explicit contract that lets the
+    -- single audit table host all three event sources.
+    CHECK (
+        mutation_type <> 'set_tier' OR (
+            flag_name = '__environment_tier__'
+            AND scope = 'guild'
+            AND guild_id IS NOT NULL
+            AND new_tier IS NOT NULL
+            AND prev_state IS NULL
+            AND new_state IS NULL
+            AND prev_rollout_percent IS NULL
+            AND new_rollout_percent IS NULL
+        )
+    )
 );
 
 CREATE INDEX IF NOT EXISTS idx_feature_flag_audit_flag_at
