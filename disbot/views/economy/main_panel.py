@@ -4,6 +4,13 @@ PersistentView with SUBSYSTEM="economy"; six action buttons that
 route through ``services.economy_service`` for every balance
 mutation.  Sub-views (work, shop) are spawned via local imports
 inside the button callbacks to keep the import graph acyclic.
+
+Also exports :func:`attach_back_to_economy_button`, mirroring the
+sibling helpers
+:func:`disbot.cogs.help_cog._attach_back_to_help_button`,
+:func:`disbot.cogs.admin_cog.attach_back_to_admin_button`,
+:func:`disbot.views.settings.subsystem_view.attach_back_to_settings_button`,
+and :func:`disbot.views.games.hub.attach_back_to_games_button`.
 """
 
 from __future__ import annotations
@@ -29,6 +36,7 @@ from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
 from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR
+from views.navigation import attach_back_button
 
 
 @register
@@ -205,11 +213,15 @@ class EconomyPanelView(PersistentView):
     ):
         from cogs.inventory_cog import UnifiedInventoryView, _build_combined_inventory
 
+        if not await safe_defer(interaction):
+            return
+
         uid, gid = interaction.user.id, interaction.guild_id
         grouped = await _build_combined_inventory(uid, gid)
         view = UnifiedInventoryView(interaction.user, interaction.user, grouped)
-        await interaction.response.send_message(embed=view.build_hub_embed(), view=view)
-        view.message = await interaction.original_response()
+        attach_back_to_economy_button(view, interaction.user)
+        await safe_edit(interaction, embed=view.build_hub_embed(), view=view)
+        view.message = interaction.message
 
     @discord.ui.button(
         label="📋 Jobs",
@@ -274,3 +286,38 @@ class EconomyPanelView(PersistentView):
     ):
         embed = await _build_economy_embed(interaction.user, interaction.guild_id)
         await interaction.response.edit_message(embed=embed, view=self)
+
+
+def attach_back_to_economy_button(
+    view: discord.ui.View,
+    author: discord.Member | discord.User,
+) -> bool:
+    """Append a "↩ Back to Economy" control to a child view opened from the hub.
+
+    Thin wrapper around :func:`views.navigation.attach_back_button`. The
+    parent-builder closure rebuilds a fresh :class:`EconomyPanelView` on
+    click so the persistent hub reflects current state, not a snapshot.
+
+    Returns ``False`` (no-op) if the view is already at Discord's 25-component
+    cap — ``attach_back_button`` logs a WARNING in that case so operators can
+    see why a panel lost its back nav.
+    """
+
+    async def _build_economy_parent(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        embed = await _build_economy_embed(author, interaction.guild_id)
+        return embed, EconomyPanelView()
+
+    return attach_back_button(
+        view,
+        label="↩ Back to Economy",
+        custom_id="economy:back",
+        parent_builder=_build_economy_parent,
+        row=4,
+        style=discord.ButtonStyle.secondary,
+        error_message="Could not reload the Economy hub. Please try again.",
+    )
+
+
+__all__ = ["EconomyPanelView", "attach_back_to_economy_button"]
