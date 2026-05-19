@@ -225,10 +225,15 @@ class AdminCog(commands.Cog):
     async def logging_grp(self, ctx):
         """Server-logging admin commands.
 
-        Usage: `!logging status` · `!logging test` · `!logging set <mod|cleanup>`
+        Usage:
+            !logging status
+            !logging test
+            !logging set <mod|cleanup>     pick an existing channel
+            !logging create <mod|cleanup>  create + bind a new channel
         """
         await ctx.send(
-            "Usage: `!logging <status|test|set>` — see `docs/server-logging.md`.",
+            "Usage: `!logging <status|test|set|create>` — see "
+            "`docs/server-logging.md`.",
             delete_after=20,
         )
 
@@ -276,6 +281,43 @@ class AdminCog(commands.Cog):
             ),
             view=view,
         )
+
+    @logging_grp.command(name="create")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def logging_create(self, ctx, kind: str = ""):
+        """Open the preview + confirm view for creating a new log channel.
+
+        Usage:
+            !logging create mod      preview creation of the mod-log channel
+            !logging create cleanup  preview creation of the cleanup-log channel
+
+        Routes through :class:`ResourceProvisioningPipeline.provision`
+        which composes :class:`BindingMutationPipeline.set_binding`
+        atomically.  An audit row is recorded.  No channel is
+        created until the operator clicks Confirm Create.
+        """
+        from cogs.logging.provision_view import (
+            LogChannelProvisionView,
+            build_preview_embed,
+        )
+
+        kind = kind.strip().lower()
+        if kind not in ("mod", "cleanup"):
+            await ctx.send(
+                "Usage: `!logging create <mod|cleanup>` — opens a "
+                "preview + Confirm view for the requested channel.",
+                delete_after=20,
+            )
+            return
+        if ctx.guild is None:
+            await ctx.send(
+                "`!logging create` requires a guild context.",
+                delete_after=15,
+            )
+            return
+        preview_embed, allowed = await build_preview_embed(ctx.guild, kind)
+        view = LogChannelProvisionView(ctx.author, kind, confirm_enabled=allowed)
+        await ctx.send(embed=preview_embed, view=view)
 
     @logging_grp.command(name="test")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
