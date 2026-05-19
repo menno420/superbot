@@ -4,6 +4,7 @@ import logging
 import math
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from cogs.help.route import HUB_PANEL_BUILDERS as _HUB_PANEL_BUILDERS
@@ -661,6 +662,82 @@ class HelpCog(commands.Cog):
             ctx.channel.id,
             "help",
             msg.id,
+        )
+
+    @app_commands.command(
+        name="help",
+        description="Show available commands (optionally narrow to one category).",
+    )
+    @app_commands.describe(name="Optional category, hub, or command name")
+    async def help_slash(
+        self,
+        interaction: discord.Interaction,
+        name: str | None = None,
+    ) -> None:
+        """Slash front door for Help — resolves identically to ``!help``.
+
+        Same governance resolution + ``HelpRoute`` resolver + opener
+        as the prefix command; differences are purely entry-point:
+
+        * Responses are ephemeral (slash help is personal — each user
+          gets their own panel without polluting the channel).
+        * No message-anchor bookkeeping (Discord owns the ephemeral
+          lifecycle; there is no anchor to clean up).
+        * For hub/subsystem/advanced routes, the Back-to-Help button is
+          attached so the user can return to the category index without
+          rerunning ``/help``.
+
+        PR #9 — first slash command in the bot. Proves the
+        ``HelpRoute`` reuse pattern; follow-ups can land
+        ``/games``, ``/economy``, etc.
+        """
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
+        visible_set = vis_result.visible_subsystems
+        member_tier = vis_result.member_tier
+
+        if name:
+            opener = HelpOpener.from_interaction(interaction)
+            route = _resolve_route(name, bot=self.bot)
+
+            if route.kind == "unknown":
+                await interaction.response.send_message(
+                    f"No command or category named `{name}` found.",
+                    ephemeral=True,
+                )
+                return
+
+            embed, sub_view = await _open_route(
+                route,
+                opener,
+                visible_subsystems=visible_set,
+                member_tier=member_tier,
+                prefix="!",
+            )
+
+            if sub_view is None:
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+
+            # Mirror the prefix path: any hub/subsystem/advanced surface
+            # gets a Back-to-Help button so the user can return to the
+            # category index in place.
+            _attach_back_to_help_button(sub_view)
+            await interaction.response.send_message(
+                embed=embed,
+                view=sub_view,
+                ephemeral=True,
+            )
+            return
+
+        # Default: top-level category index. Reuse
+        # ``resolve_help_panel_state`` so the slash path and every
+        # navigation Back-to-Help button land on the same builder.
+        embed, view = await resolve_help_panel_state(interaction)
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
         )
 
 
