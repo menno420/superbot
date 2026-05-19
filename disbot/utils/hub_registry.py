@@ -137,6 +137,35 @@ HUBS: tuple[HubEntry, ...] = (
         minimum_tier="moderator",
     ),
     HubEntry(
+        key="community",
+        display_name="Community",
+        emoji="🌱",
+        purpose="Progression, roles, and community activities.",
+        entry_command="!community",
+        # S9: XP and Role are primary children but stay top-level for
+        # now (parent_hub metadata not flipped yet). The Community hub
+        # view in views/community/hub.py has explicit cross-link
+        # buttons to xp/role/counting/chain/leaderboard — no Help
+        # auto-discovery, no metadata changes to those subsystems.
+        primary_children=(),
+        cross_link_children=(),
+        minimum_tier="user",
+    ),
+    HubEntry(
+        key="utility",
+        display_name="Utility",
+        emoji="🧰",
+        purpose="Info, tools, and discovery commands.",
+        entry_command="!utilitymenu",
+        # S10 v1: routes to the existing utility hub panel. General
+        # and Help remain top-level for now; a follow-up promotes
+        # general to parent_hub of "utility" once the hub view adds
+        # explicit child navigation.
+        primary_children=(),
+        cross_link_children=(),
+        minimum_tier="user",
+    ),
+    HubEntry(
         key="admin",
         display_name="Admin / Operations",
         emoji="⚙️",
