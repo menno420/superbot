@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim
@@ -46,6 +47,29 @@ class GamesCog(commands.Cog):
         """Help-menu direct-navigation hook — returns the Games hub panel."""
         ctx_shim = help_ctx_shim(interaction)
         return await build_games_hub_panel(ctx_shim.author, interaction=interaction)
+
+    @app_commands.command(
+        name="games",
+        description="Open the Games hub (competitive + activities).",
+    )
+    async def games_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the Games hub — ephemeral, governance-filtered.
+
+        PR E1 — user-tier slash front door. Reuses
+        :func:`views.games.hub.build_games_hub_panel` so visibility
+        filtering and the click-time recheck from PR D apply
+        identically to the slash entry. The response is ephemeral —
+        slash hubs are personal panels per the ``/help`` convention.
+        """
+        embed, view = await build_games_hub_panel(
+            interaction.user,
+            interaction=interaction,
+        )
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
 
 
 async def setup(bot: commands.Bot) -> None:

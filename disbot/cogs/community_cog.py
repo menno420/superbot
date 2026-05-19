@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim
@@ -50,6 +51,27 @@ class CommunityCog(commands.Cog):
         """Help-menu direct-navigation hook — returns the Community hub panel."""
         ctx_shim = help_ctx_shim(interaction)
         return await build_community_hub_panel(ctx_shim.author, interaction=interaction)
+
+    @app_commands.command(
+        name="community",
+        description="Open the Community hub (XP, Roles, and community games).",
+    )
+    async def community_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the Community hub — ephemeral.
+
+        PR E1 — user-tier slash. Reuses
+        :func:`views.community.hub.build_community_hub_panel` so
+        governance filtering applies identically to the slash entry.
+        """
+        embed, view = await build_community_hub_panel(
+            interaction.user,
+            interaction=interaction,
+        )
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
 
 
 async def setup(bot: commands.Bot) -> None:

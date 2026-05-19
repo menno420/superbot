@@ -17,6 +17,7 @@ import logging
 import time
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from cogs.economy._helpers import (
@@ -32,6 +33,7 @@ from cogs.economy._helpers import (
     _shop_embed,
 )
 from core.runtime import panel_manager, resources
+from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import economy_service
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
@@ -75,6 +77,23 @@ class EconomyCog(commands.Cog):
         view = EconomyPanelView()
         embed = await _build_economy_embed(interaction.user, interaction.guild_id)
         return embed, view
+
+    @app_commands.command(
+        name="economy",
+        description="Open the Economy hub (daily, work, shop, balance).",
+    )
+    async def economy_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the Economy hub — ephemeral.
+
+        PR E1 — user-tier slash. Reuses
+        :meth:`build_help_menu_view` so the slash entry uses the same
+        panel + embed builder as the help-routed entry. Response is
+        ephemeral (per the ``/help`` convention).
+        """
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed, view = await self.build_help_menu_view(interaction)
+        await safe_followup(interaction, embed=embed, view=view, ephemeral=True)
 
     # ------------------------------------------------------------------ events
 

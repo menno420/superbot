@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from core.runtime import tasks
@@ -51,6 +52,24 @@ class UtilityCog(commands.Cog):
         """Help-menu direct-navigation hook (returns the utility panel)."""
         view = _UtilityPanelView(help_ctx_shim(interaction))
         return view.build_embed(), view
+
+    @app_commands.command(
+        name="utility",
+        description="Open the Utility hub (server info, polls, reminders).",
+    )
+    async def utility_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the Utility hub — ephemeral.
+
+        PR E1 — user-tier slash. Reuses
+        :meth:`build_help_menu_view` so the slash entry mirrors the
+        help-routed and prefix entries.
+        """
+        embed, view = await self.build_help_menu_view(interaction)
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
 
     @commands.command(name="clear", aliases=["purge"])
     @commands.has_permissions(manage_messages=True)
