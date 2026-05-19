@@ -933,7 +933,15 @@ def test_counters_snapshot_has_stable_shape():
     assert expected_keys <= set(counters)
     for v in counters.values():
         assert isinstance(v, int)
-    assert snap["subscribed_events"] == ["moderation.action_taken"]
+    # Phase 9c.1 added the audit subscriber alongside the moderation
+    # subscriber. The list is part of the public snapshot shape — pin
+    # both members but keep order-insensitive matching so a future
+    # addition (debug/info/warning/error in 9c.3/9c.4) doesn't break
+    # this guard.
+    assert set(snap["subscribed_events"]) == {
+        "moderation.action_taken",
+        "audit.action_recorded",
+    }
 
 
 def test_diagnostics_service_registers_server_logging_provider():

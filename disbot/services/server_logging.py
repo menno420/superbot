@@ -48,6 +48,12 @@ from utils.settings_keys import logging as _log_keys
 logger = logging.getLogger("bot.server_logging")
 
 EVT_MOD_ACTION = "moderation.action_taken"
+# Phase 9c.1 — subscribe to the generic audit-trail event emitted by
+# mutation pipelines. RolloutMutationPipeline is the pilot publisher;
+# other pipelines (SettingsMutationPipeline, BindingMutationPipeline,
+# ResourceProvisioningPipeline, GovernanceMutationPipeline) add their
+# audit emits in Phase 9c.2.
+EVT_AUDIT_ACTION_RECORDED = "audit.action_recorded"
 
 # ---------------------------------------------------------------------------
 # Counters (module-level; reset only via _reset_for_tests)
@@ -63,6 +69,10 @@ _COUNTERS: dict[str, int] = {
     "send_error": 0,
     "auto_create_error": 0,
     "subscriber_errors": 0,
+    # Phase 9c.1 — per-route bucket for the audit subscriber. Other
+    # route buckets (debug_sent / info_sent / warning_sent / error_sent)
+    # land alongside their respective subscribers in Phase 9c.3/9c.4.
+    "audit_sent": 0,
 }
 
 
@@ -74,7 +84,7 @@ def counters_snapshot() -> dict[str, Any]:
     """Stable counter snapshot for diagnostics consumers."""
     return {
         "counters": dict(_COUNTERS),
-        "subscribed_events": [EVT_MOD_ACTION],
+        "subscribed_events": [EVT_MOD_ACTION, EVT_AUDIT_ACTION_RECORDED],
     }
 
 
@@ -470,6 +480,199 @@ async def log_event(
     return True
 
 
+def format_audit_embed(
+    *,
+    mutation_id: str,
+    subsystem: str,
+    mutation_type: str,
+    target: str,
+    scope: str,
+    guild_id: int | None,
+    prev_value: str | None,
+    new_value: str | None,
+    actor_id: int | None,
+    actor_type: str,
+    occurred_at: str,
+) -> discord.Embed:
+    """Render an ``audit.action_recorded`` payload as a Discord embed.
+
+    Phase 9c.1 — generic audit-trail rendering. The payload contract
+    matches what :func:`services.rollout_mutation._emit_audit_event`
+    sends; future publishers (other mutation pipelines) MUST use the
+    same field names.
+    """
+    embed = discord.Embed(
+        title=f"📋 {mutation_type}",
+        description=(
+            f"`{subsystem}` · scope `{scope}`"
+            + (f" · guild `{guild_id}`" if guild_id is not None else "")
+        ),
+        color=discord.Color.dark_teal(),
+    )
+    embed.add_field(name="Target", value=f"`{target}`", inline=True)
+    actor_display = f"<@{actor_id}>" if actor_id else f"`{actor_type}`"
+    embed.add_field(name="Actor", value=actor_display, inline=True)
+    embed.add_field(name="Actor type", value=f"`{actor_type}`", inline=True)
+    embed.add_field(
+        name="Previous",
+        value=f"`{prev_value}`" if prev_value is not None else "*(none)*",
+        inline=True,
+    )
+    embed.add_field(
+        name="New",
+        value=f"`{new_value}`" if new_value is not None else "*(cleared)*",
+        inline=True,
+    )
+    embed.add_field(name="Mutation ID", value=f"`{mutation_id}`", inline=False)
+    embed.set_footer(text=f"Recorded at {occurred_at}")
+    return embed
+
+
+async def log_audit_event(
+    guild: discord.Guild,
+    *,
+    mutation_id: str,
+    subsystem: str,
+    mutation_type: str,
+    target: str,
+    scope: str,
+    guild_id: int | None,
+    prev_value: str | None,
+    new_value: str | None,
+    actor_id: int | None,
+    actor_type: str,
+    occurred_at: str,
+) -> bool:
+    """Send a structured audit embed to the routed audit channel.
+
+    Resolution: ``resolve_log_channel(guild, "audit")`` — which tries
+    ``logging.audit_channel`` first, then falls back to
+    ``logging.mod_channel`` per the Phase 9a route table.
+
+    Returns True if delivered, False on any other outcome. Every
+    failure path is fail-safe and counted.
+    """
+    if not await is_enabled(guild.id):
+        _bump("skipped_disabled")
+        return False
+
+    channel = await resolve_log_channel(guild, "audit")
+    if channel is None and await auto_create_enabled(guild.id):
+        channel = await ensure_log_channel(guild, "audit")
+    if channel is None:
+        _bump("missing_channel")
+        return False
+
+    embed = format_audit_embed(
+        mutation_id=mutation_id,
+        subsystem=subsystem,
+        mutation_type=mutation_type,
+        target=target,
+        scope=scope,
+        guild_id=guild_id,
+        prev_value=prev_value,
+        new_value=new_value,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=occurred_at,
+    )
+    try:
+        await channel.send(embed=embed)
+    except discord.Forbidden:
+        _bump("permission_error")
+        logger.warning(
+            "server_logging audit: missing send permission in #%s (guild %d)",
+            channel.name,
+            guild.id,
+        )
+        return False
+    except discord.HTTPException as exc:
+        _bump("send_error")
+        logger.warning(
+            "server_logging audit: HTTP error sending to #%s (guild %d): %s",
+            channel.name,
+            guild.id,
+            exc,
+        )
+        return False
+    except Exception as exc:  # noqa: BLE001 — fail-safe wrapper
+        _bump("send_error")
+        logger.warning(
+            "server_logging audit: unexpected error sending to #%s (guild %d): %s",
+            channel.name,
+            guild.id,
+            exc,
+            exc_info=True,
+        )
+        return False
+    _bump("audit_sent")
+    return True
+
+
+async def _on_audit_action(
+    *,
+    mutation_id: str,
+    subsystem: str,
+    mutation_type: str,
+    target: str,
+    scope: str,
+    guild_id: int | None,
+    prev_value: str | None,
+    new_value: str | None,
+    actor_id: int | None,
+    actor_type: str,
+    occurred_at: str,
+    **_extras: Any,
+) -> None:
+    """Bus subscriber for ``audit.action_recorded``.
+
+    Resolves the guild via the captured bot reference and delegates to
+    :func:`log_audit_event`. Global-scope mutations (``guild_id=None``)
+    are silently skipped — they have no guild-specific channel to
+    render into.
+
+    Extra payload fields are accepted via ``**_extras`` so the bus
+    contract stays loose: future publishers can add fields without
+    breaking this subscriber.
+
+    The bus already swallows handler exceptions; the try/except below
+    keeps the ``subscriber_errors`` counter honest independently.
+    """
+    try:
+        if guild_id is None:
+            _bump("skipped_no_guild")
+            return
+        bot = _BOT
+        if bot is None:
+            _bump("skipped_no_guild")
+            return
+        guild = bot.get_guild(guild_id)
+        if guild is None:
+            _bump("skipped_no_guild")
+            return
+        await log_audit_event(
+            guild,
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type=mutation_type,
+            target=target,
+            scope=scope,
+            guild_id=guild_id,
+            prev_value=prev_value,
+            new_value=new_value,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=occurred_at,
+        )
+    except Exception as exc:  # noqa: BLE001 — fail-safe subscriber
+        _bump("subscriber_errors")
+        logger.exception(
+            "server_logging audit subscriber raised %s — counted and swallowed.",
+            type(exc).__name__,
+            exc_info=exc,
+        )
+
+
 async def _on_moderation_action(
     *,
     guild_id: int,
@@ -540,10 +743,12 @@ def setup(bot: object | None = None) -> None:
     if _SUBSCRIBED:
         return
     bus.on(EVT_MOD_ACTION, _on_moderation_action)
+    bus.on(EVT_AUDIT_ACTION_RECORDED, _on_audit_action)
     _SUBSCRIBED = True
     logger.info(
-        "server_logging: subscribed to %r (default per-guild policy: OFF)",
+        "server_logging: subscribed to %r + %r (default per-guild policy: OFF)",
         EVT_MOD_ACTION,
+        EVT_AUDIT_ACTION_RECORDED,
     )
 
 
@@ -557,12 +762,15 @@ _register_diagnostics()
 
 
 __all__ = [
+    "EVT_AUDIT_ACTION_RECORDED",
     "EVT_MOD_ACTION",
     "auto_create_enabled",
     "counters_snapshot",
     "ensure_log_channel",
+    "format_audit_embed",
     "format_log_embed",
     "is_enabled",
+    "log_audit_event",
     "log_event",
     "resolve_log_channel",
     "setup",

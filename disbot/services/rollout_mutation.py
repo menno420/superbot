@@ -65,6 +65,13 @@ EVT_FEATURE_FLAGS_CHANGED = "feature_flags.changed"
 EVT_ROLLOUT_ADVANCED = "rollout.advanced"
 EVT_ENVIRONMENT_TIER_CHANGED = "environment_tier.changed"
 
+# Phase 9c.1 — generic audit signal emitted alongside each
+# pipeline-specific event. The payload contract is documented in
+# ``services.server_logging._on_audit_action`` so audit consumers
+# (server_logging, future audit dashboards) can subscribe via the
+# topic name without coupling to RolloutMutationPipeline internals.
+EVT_AUDIT_ACTION_RECORDED = "audit.action_recorded"
+
 # ---------------------------------------------------------------------------
 # Recognized literal sets (mirror migration 023 / 024 / 025 CHECK constraints)
 # ---------------------------------------------------------------------------
@@ -494,7 +501,13 @@ async def _emit_feature_flag_event(
     actor_type: str,
     committed_at: datetime,
 ) -> bool:
-    """Emit feature_flags.changed.  Returns False on emission failure."""
+    """Emit feature_flags.changed + audit.action_recorded.
+
+    Returns False on feature_flags.changed emission failure. Audit
+    emission failure is logged independently and does not affect the
+    feature-flags return — pipeline-specific consumers receive their
+    event regardless of audit-channel reachability.
+    """
     from core.events import bus
 
     try:
@@ -515,6 +528,77 @@ async def _emit_feature_flag_event(
             "RolloutMutationPipeline: feature_flags.changed emission failed "
             "for mutation_id=%s; DB state is correct, event lost.",
             mutation_id,
+        )
+        return False
+
+    # Phase 9c.1 — companion audit event for the generic audit
+    # consumer (server_logging). Emission failure here is independent
+    # of the feature-flags event success.
+    await _emit_audit_event(
+        mutation_id=mutation_id,
+        subsystem="logging",
+        mutation_type="set_flag_state",
+        target=f"flag:{flag_name}",
+        scope=scope,
+        guild_id=guild_id,
+        prev_value=prev_state,
+        new_value=new_state,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        committed_at=committed_at,
+    )
+    return True
+
+
+async def _emit_audit_event(
+    *,
+    mutation_id: str,
+    subsystem: str,
+    mutation_type: str,
+    target: str,
+    scope: Scope | str,
+    guild_id: int | None,
+    prev_value: str | None,
+    new_value: str | None,
+    actor_id: int | None,
+    actor_type: str,
+    committed_at: datetime,
+) -> bool:
+    """Emit ``audit.action_recorded`` for a single mutation.
+
+    Phase 9c.1 — generic audit-trail event consumed by
+    ``services.server_logging`` and routed to ``logging.audit_channel``
+    (with mod fallback via the Phase 9a route table). Other consumers
+    (future audit dashboards) are welcome to subscribe.
+
+    Failure-safe: emission failure is logged with ``exc_info=True`` and
+    swallowed. DB state is authoritative; a dropped event is non-fatal.
+    """
+    from core.events import bus
+
+    try:
+        await bus.emit(
+            EVT_AUDIT_ACTION_RECORDED,
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type=mutation_type,
+            target=target,
+            scope=scope,
+            guild_id=guild_id,
+            prev_value=prev_value,
+            new_value=new_value,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at.isoformat(),
+        )
+    except Exception:
+        logger.exception(
+            "audit.action_recorded emission failed for "
+            "mutation_id=%s (subsystem=%s, type=%s); DB state is correct, "
+            "event lost.",
+            mutation_id,
+            subsystem,
+            mutation_type,
         )
         return False
     return True
@@ -550,6 +634,21 @@ async def _emit_rollout_event(
             mutation_id,
         )
         return False
+
+    # Phase 9c.1 — companion audit emit. Rollout percent is global.
+    await _emit_audit_event(
+        mutation_id=mutation_id,
+        subsystem="logging",
+        mutation_type="set_rollout_percent",
+        target=f"flag:{flag_name}",
+        scope="global",
+        guild_id=None,
+        prev_value=str(prev_percent) if prev_percent is not None else None,
+        new_value=str(new_percent),
+        actor_id=actor_id,
+        actor_type=actor_type,
+        committed_at=committed_at,
+    )
     return True
 
 
@@ -583,6 +682,21 @@ async def _emit_environment_tier_event(
             mutation_id,
         )
         return False
+
+    # Phase 9c.1 — companion audit emit. Environment tier is guild-scoped.
+    await _emit_audit_event(
+        mutation_id=mutation_id,
+        subsystem="logging",
+        mutation_type="set_environment_tier",
+        target=f"guild:{guild_id}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=prev_tier,
+        new_value=new_tier,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        committed_at=committed_at,
+    )
     return True
 
 
@@ -592,6 +706,7 @@ def _now_utc() -> datetime:
 
 
 __all__ = [
+    "EVT_AUDIT_ACTION_RECORDED",
     "EVT_ENVIRONMENT_TIER_CHANGED",
     "EVT_FEATURE_FLAGS_CHANGED",
     "EVT_ROLLOUT_ADVANCED",
