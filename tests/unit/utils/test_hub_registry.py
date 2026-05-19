@@ -49,20 +49,35 @@ def test_committed_hub_set_matches_promoted_hubs():
     """The committed hub set is the union of S3 v1 (Games, Admin,
     Settings, Platform) plus any hubs promoted in later PRs.
 
-    S7 → Economy. S8 → Moderation/Safety. S9 → Community. Utility
-    (S10) joins when its hub view lands — adding a hub here without a
-    real panel would re-introduce the "Coming soon" category that the
-    mother-hub map forbids.
+    S7 → Economy. S8 → Moderation/Safety. S9 → Community. S10 →
+    Utility. The map's S10 milestone is now complete; future PRs
+    that add hubs must come with a real panel or fail this test.
     """
     assert {hub.key for hub in HUBS} == {
         "games",
         "economy",
         "moderation",
         "community",
+        "utility",
         "admin",
         "settings",
         "diagnostic",
     }
+
+
+def test_utility_hub_uses_existing_panel():
+    """S10 v1: the Utility hub routes to the existing utility_cog
+    build_help_menu_view (UtilityHubView). General and Help remain
+    top-level for now; promotion to parent_hub="utility" lands when
+    the hub view gains explicit child navigation.
+    """
+    utility = get_hub("utility")
+    assert utility is not None
+    assert utility.entry_command == "!utilitymenu"
+    assert utility.minimum_tier == "user"
+    assert utility.primary_children == ()
+    assert utility.cross_link_children == ()
+    assert utility.panel_available is True
 
 
 def test_community_hub_uses_new_cog():
@@ -152,14 +167,15 @@ def test_games_hub_primary_children_match_parent_hub_filter():
 
 
 def test_hubs_for_tier_user_sees_only_user_tier_hubs():
-    """Normal users see Games + Economy + Community (user tier) but
-    not Moderation (moderator) or Admin/Settings/Platform
+    """Normal users see Games + Economy + Community + Utility (user
+    tier) but not Moderation (moderator) or Admin/Settings/Platform
     (administrator).
     """
     visible = {hub.key for hub in hubs_for_tier("user")}
     assert "games" in visible
     assert "economy" in visible
     assert "community" in visible
+    assert "utility" in visible
     assert "moderation" not in visible
     assert "admin" not in visible
     assert "settings" not in visible
@@ -174,6 +190,7 @@ def test_hubs_for_tier_moderator_sees_moderation_but_not_admin():
     assert "games" in visible
     assert "economy" in visible
     assert "community" in visible
+    assert "utility" in visible
     assert "moderation" in visible
     assert "admin" not in visible
     assert "settings" not in visible
@@ -187,6 +204,7 @@ def test_hubs_for_tier_administrator_sees_all():
         "economy",
         "moderation",
         "community",
+        "utility",
         "admin",
         "settings",
         "diagnostic",
@@ -200,6 +218,7 @@ def test_hubs_for_tier_owner_sees_all():
         "economy",
         "moderation",
         "community",
+        "utility",
         "admin",
         "settings",
         "diagnostic",

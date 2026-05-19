@@ -152,6 +152,20 @@ HUBS: tuple[HubEntry, ...] = (
         minimum_tier="user",
     ),
     HubEntry(
+        key="utility",
+        display_name="Utility",
+        emoji="🧰",
+        purpose="Info, tools, and discovery commands.",
+        entry_command="!utilitymenu",
+        # S10 v1: routes to the existing utility hub panel. General
+        # and Help remain top-level for now; a follow-up promotes
+        # general to parent_hub of "utility" once the hub view adds
+        # explicit child navigation.
+        primary_children=(),
+        cross_link_children=(),
+        minimum_tier="user",
+    ),
+    HubEntry(
         key="admin",
         display_name="Admin / Operations",
         emoji="⚙️",

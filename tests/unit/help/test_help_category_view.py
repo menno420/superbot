@@ -115,13 +115,14 @@ def test_view_has_one_select_with_visible_hubs_plus_all_commands():
     select = _select(view)
     values = {opt.value for opt in select.options}
     # Committed hubs visible to administrator + ALL_COMMANDS sentinel.
-    # Economy joined in S7, Moderation in S8, Community in S9; Utility
-    # lands in S10.
+    # Economy joined in S7, Moderation in S8, Community in S9, Utility
+    # in S10 — the mother-hub map's S1-S10 mainline is now complete.
     assert values == {
         "games",
         "economy",
         "moderation",
         "community",
+        "utility",
         "admin",
         "settings",
         "diagnostic",
@@ -135,6 +136,7 @@ def test_user_tier_view_omits_admin_hubs():
     values = {opt.value for opt in select.options}
     assert "games" in values
     assert "community" in values
+    assert "utility" in values
     assert ALL_COMMANDS_KEY in values
     # Moderation is moderator-tier — must not surface for normal users.
     assert "moderation" not in values
