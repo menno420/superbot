@@ -259,7 +259,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "moderation",
         "tags": ["cleanup", "words", "moderation", "hygiene"],
-        "entry_points": ["wordmenu", "cleanuphistory"],
+        "entry_points": ["cleanup", "wordmenu", "cleanuphistory"],
         "default_channels": ["staff"],
         "related_subsystems": ["moderation"],
         "dependencies": [],

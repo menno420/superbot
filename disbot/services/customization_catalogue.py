@@ -75,6 +75,7 @@ KNOWN_PANEL_COMMANDS: tuple[tuple[str, str], ...] = (
     ("admin", "adminmenu"),
     ("chain", "chainmenu"),
     ("channel", "channelmenu"),
+    ("cleanup", "cleanup"),
     ("cleanup", "wordmenu"),
     ("counting", "countingmenu"),
     ("economy", "economymenu"),

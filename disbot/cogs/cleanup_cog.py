@@ -310,14 +310,34 @@ class Cleanup(commands.Cog):
         view = _WordMenuView(ctx, self)
         await send_panel(ctx, embed=view.build_embed(), view=view)
 
+    @commands.command(name="cleanup")
+    @commands.has_permissions(administrator=True)
+    async def cleanup_menu(self, ctx):
+        """Open the Cleanup hub panel — overview + routing to subviews."""
+        from cogs.cleanup.panel import CleanupPanelView
+
+        if ctx.guild.id not in self._word_cache:
+            await self._load_guild(ctx.guild.id)
+        view = CleanupPanelView(ctx.author, self, ctx.guild.id)
+        await send_panel(ctx, embed=view.build_embed(), view=view)
+
     async def build_help_menu_view(
         self,
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        """Help-menu direct-navigation hook (returns the word-list panel)."""
+        """Help-menu direct-navigation hook — returns the Cleanup hub panel.
+
+        Phase 5 replaces the previous direct-to-wordmenu hop. The
+        Prohibited Words manager is now reachable as the first button
+        of :class:`CleanupPanelView`, alongside Logging Status and
+        Settings.
+        """
+        from cogs.cleanup.panel import CleanupPanelView
+
         if interaction.guild_id not in self._word_cache:
             await self._load_guild(interaction.guild_id)
-        view = _WordMenuView(help_ctx_shim(interaction), self)
+        ctx_shim = help_ctx_shim(interaction)
+        view = CleanupPanelView(ctx_shim.author, self, interaction.guild_id)
         return view.build_embed(), view
 
 
