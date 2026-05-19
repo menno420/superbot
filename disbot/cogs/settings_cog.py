@@ -132,7 +132,7 @@ class SettingsCog(commands.Cog):
         view = SettingsHubView(ctx.author)
         await send_panel(ctx, embed=SettingsHubView.build_embed(), view=view)
 
-    @settings_root.command(
+    @settings_root.command(  # type: ignore[arg-type]
         name="access",
         help="Open the read-only access-policy explorer.",
     )
