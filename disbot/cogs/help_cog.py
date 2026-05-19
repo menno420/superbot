@@ -67,7 +67,12 @@ async def build_overview_embed(
     visible: set[str],
     member_tier: str,
 ) -> discord.Embed:
-    """Build a governance-aware overview embed grouped by visibility tier."""
+    """Build a governance-aware overview embed grouped by visibility tier.
+
+    Subsystems with ``parent_hub`` set (e.g. Blackjack under the Games
+    hub) are hidden from the top-level overview — they remain reachable
+    through their hub and via typed commands.
+    """
     embed = discord.Embed(
         title="📚 Help Menu",
         description="Select a category from the dropdown below.",
@@ -82,6 +87,8 @@ async def build_overview_embed(
 
         for name, meta in subsystems_by_name.items():
             if name not in visible:
+                continue
+            if meta.get("parent_hub"):
                 continue
             if meta.get("visibility_tier") not in group_tiers:
                 continue
@@ -185,8 +192,8 @@ def _attach_back_to_help_button(
             return
         fresh_visible = [
             name
-            for name, _ in all_subsystems_sorted()
-            if name in vis_result.visible_subsystems
+            for name, meta in all_subsystems_sorted()
+            if name in vis_result.visible_subsystems and not meta.get("parent_hub")
         ]
         new_page = min(page, max(0, math.ceil(len(fresh_visible) / _PAGE_SIZE) - 1))
         new_view = HelpPanelView(fresh_visible, new_page)
@@ -230,6 +237,8 @@ def _build_page_embed(
         for name, meta in subsystems_by_name.items():
             if name not in visible_set:
                 continue
+            if meta.get("parent_hub"):
+                continue
             if meta.get("visibility_tier") not in group_tiers:
                 continue
             emoji = meta.get("emoji", "•")
@@ -263,8 +272,8 @@ async def resolve_help_panel_state(
     vis_result = await governance_service.resolve_visibility(gctx)
     visible_list = [
         name
-        for name, _meta in all_subsystems_sorted()
-        if name in vis_result.visible_subsystems
+        for name, meta in all_subsystems_sorted()
+        if name in vis_result.visible_subsystems and not meta.get("parent_hub")
     ]
     view = HelpPanelView(visible_list, page=0)
     embed = _build_page_embed(
@@ -355,7 +364,9 @@ class HelpPanelView(PersistentView):
         vis_result = await governance_service.resolve_visibility(gctx)
         visible_set = vis_result.visible_subsystems
         visible_list = [
-            name for name, _ in all_subsystems_sorted() if name in visible_set
+            name
+            for name, meta in all_subsystems_sorted()
+            if name in visible_set and not meta.get("parent_hub")
         ]
         return visible_list, vis_result.member_tier
 
@@ -441,8 +452,14 @@ class HelpCog(commands.Cog):
         vis_result = await governance_service.resolve_visibility(gctx)
         visible_set = vis_result.visible_subsystems
         member_tier = vis_result.member_tier
+        # parent_hub children are reachable via their hub and via typed
+        # commands; they're hidden from the overview/select. The typed
+        # category-lookup branch below iterates SUBSYSTEMS directly and
+        # is therefore unaffected by this filter.
         visible_list = [
-            name for name, _ in all_subsystems_sorted() if name in visible_set
+            name
+            for name, meta in all_subsystems_sorted()
+            if name in visible_set and not meta.get("parent_hub")
         ]
 
         if category:
