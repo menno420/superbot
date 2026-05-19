@@ -318,8 +318,12 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: `xp_min`, `xp_max`, `xp_cooldown`
-    (`disbot/cogs/xp/schemas.py`).
+9. **existing_SettingSpec_declarations**: `xp_min`, `xp_max`, `xp_cooldown`,
+    `xp_announce_channel` (`disbot/cogs/xp/schemas.py`). PR #5 promoted
+    the announce-channel scalar to a SettingSpec so all four XP config
+    modals write through `SettingsMutationPipeline`; the existing
+    `announce_channel` BindingSpec (item 11) remains the canonical
+    typed-resource declaration and is read by the arbitration ladder.
 10. **existing_settings_keys**: `XP_MIN`, `XP_MAX`, `XP_COOLDOWN`,
     `XP_ANNOUNCE_CHANNEL` (`disbot/utils/settings_keys/xp.py`).
 11. **existing_BindingSpec_entries**: `announce_channel`

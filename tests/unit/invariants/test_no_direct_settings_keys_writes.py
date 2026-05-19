@@ -63,7 +63,8 @@ _ALLOWED_PATHS = {
     _DISBOT / "cogs" / "rps_tournament" / "_helpers.py",  # ACTIVE_TOURNAMENT
     _DISBOT / "governance" / "writes.py",         # internal governance writes
     _DISBOT / "views" / "blackjack" / "tournament_views.py",
-    _DISBOT / "views" / "xp" / "modals.py",       # XP_MIN/MAX/COOLDOWN/ANNOUNCE
+    # ``views/xp/modals.py`` migrated to SettingsMutationPipeline in PR #5
+    # — removed from the allowlist (the AST scan now enforces it).
     # Documentation reference (string literal in a module docstring,
     # not a call) — kept on the allowlist so the docstring is not
     # forced to rephrase.
