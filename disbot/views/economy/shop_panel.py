@@ -142,9 +142,17 @@ class _ShopSubView(discord.ui.View):
     @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         from views.economy.main_panel import EconomyPanelView
+        from views.navigation import attach_back_target
 
         embed = await _build_economy_embed(interaction.user, interaction.guild_id)
-        await interaction.response.edit_message(embed=embed, view=EconomyPanelView())
+        view = EconomyPanelView()
+        # AB2: if a grandparent was propagated from the opener
+        # (typically Help's back target), re-attach it so the rebuilt
+        # Economy panel keeps the back-to-Help chain.
+        origin = getattr(self, "_back_target", None)
+        if origin is not None:
+            attach_back_target(view, origin)
+        await interaction.response.edit_message(embed=embed, view=view)
         self.stop()
 
     async def on_timeout(self):

@@ -36,7 +36,7 @@ from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
 from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR
-from views.navigation import attach_back_button
+from views.navigation import BackTarget, attach_back_button, chain_back
 
 
 @register
@@ -176,6 +176,10 @@ class EconomyPanelView(PersistentView):
 
         uid, gid = interaction.user.id, interaction.guild_id
         shop_view = _ShopSubView(uid, gid)
+        # AB2: propagate this panel's back target (e.g. back-to-Help)
+        # so the shop's Back button rebuilds Economy with the chain
+        # re-attached.
+        shop_view._back_target = getattr(self, "_back_target", None)
         await interaction.response.edit_message(embed=_shop_embed(), view=shop_view)
 
     @discord.ui.button(
@@ -219,7 +223,14 @@ class EconomyPanelView(PersistentView):
         uid, gid = interaction.user.id, interaction.guild_id
         grouped = await _build_combined_inventory(uid, gid)
         view = UnifiedInventoryView(interaction.user, interaction.user, grouped)
-        attach_back_to_economy_button(view, interaction.user)
+        # AB2: forward this panel's own back target (back-to-Help if
+        # opened via /help economy) so back-to-Economy from Inventory
+        # rebuilds Economy WITH back-to-Help re-attached.
+        attach_back_to_economy_button(
+            view,
+            interaction.user,
+            grandparent=getattr(self, "_back_target", None),
+        )
         await safe_edit(interaction, embed=view.build_hub_embed(), view=view)
         view.message = interaction.message
 
@@ -291,12 +302,23 @@ class EconomyPanelView(PersistentView):
 def attach_back_to_economy_button(
     view: discord.ui.View,
     author: discord.Member | discord.User,
+    *,
+    grandparent: BackTarget | None = None,
 ) -> bool:
     """Append a "↩ Back to Economy" control to a child view opened from the hub.
 
     Thin wrapper around :func:`views.navigation.attach_back_button`. The
     parent-builder closure rebuilds a fresh :class:`EconomyPanelView` on
     click so the persistent hub reflects current state, not a snapshot.
+
+    AB2: when ``grandparent`` is supplied (typically Help's own
+    :class:`BackTarget`), :func:`views.navigation.chain_back` wraps the
+    builder so the rebuilt Economy panel also gets the grandparent
+    re-attached. This is how Help → Economy → Inventory → Back
+    preserves back-to-Help on the rebuilt Economy.
+
+    Also stashes ``view._back_target`` for further-down openers (e.g.
+    a Category view inside Inventory) to chain back through Economy.
 
     Returns ``False`` (no-op) if the view is already at Discord's 25-component
     cap — ``attach_back_button`` logs a WARNING in that case so operators can
@@ -309,15 +331,22 @@ def attach_back_to_economy_button(
         embed = await _build_economy_embed(author, interaction.guild_id)
         return embed, EconomyPanelView()
 
-    return attach_back_button(
+    composed_builder = chain_back(_build_economy_parent, grandparent)
+    added = attach_back_button(
         view,
         label="↩ Back to Economy",
         custom_id="economy:back",
-        parent_builder=_build_economy_parent,
+        parent_builder=composed_builder,
         row=4,
         style=discord.ButtonStyle.secondary,
         error_message="Could not reload the Economy hub. Please try again.",
     )
+    view._back_target = BackTarget(  # type: ignore[attr-defined]
+        builder=composed_builder,
+        label="↩ Back to Economy",
+        custom_id="economy:back",
+    )
+    return added
 
 
 __all__ = ["EconomyPanelView", "attach_back_to_economy_button"]
