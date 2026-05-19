@@ -18,7 +18,6 @@ from utils.hub_registry import (
 )
 from utils.subsystem_registry import SUBSYSTEMS
 
-
 # ---------------------------------------------------------------------------
 # Registry shape
 # ---------------------------------------------------------------------------

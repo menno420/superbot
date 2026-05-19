@@ -546,8 +546,7 @@ class HelpCategoryView(PersistentView):
             visible_list = [
                 name
                 for name, meta in all_subsystems_sorted()
-                if name in vis_result.visible_subsystems
-                and not meta.get("parent_hub")
+                if name in vis_result.visible_subsystems and not meta.get("parent_hub")
             ]
             new_view = HelpPanelView(visible_list, page=0)
             embed = _build_page_embed(
