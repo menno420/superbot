@@ -4,7 +4,7 @@ import logging
 from datetime import timedelta
 
 import discord
-from discord import Member
+from discord import Member, app_commands
 from discord.ext import commands
 
 from cogs.moderation._helpers import _build_mod_panel_embed
@@ -73,6 +73,27 @@ class ModerationCog(commands.Cog):
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook (returns the moderation panel)."""
         return _build_mod_panel_embed(), ModPanelView()
+
+    @app_commands.command(
+        name="moderation",
+        description="Open the Moderation hub (moderator only).",
+    )
+    @app_commands.default_permissions(moderate_members=True)
+    @app_commands.checks.has_permissions(moderate_members=True)
+    async def moderation_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the Moderation hub — ephemeral, mod-only.
+
+        PR E2 — privileged slash. Gated by ``moderate_members`` to
+        mirror the ``!modmenu`` prefix command's permission check.
+        Reuses :meth:`build_help_menu_view` so the embed + view are
+        identical to the prefix / help routes.
+        """
+        embed, view = await self.build_help_menu_view(interaction)
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
 
     # ------------------------------------------------------------------
     # Traditional text commands (kept for direct use)

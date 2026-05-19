@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from cogs.diagnostic._helpers import (
@@ -104,6 +105,27 @@ class DiagnosticCog(commands.Cog):
         """
         view = _PlatformHubView(interaction.user)
         return build_platform_hub_embed(), view
+
+    @app_commands.command(
+        name="platform",
+        description="Open the Platform / Diagnostics hub (administrator only).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    async def platform_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the Platform hub — ephemeral, admin-only.
+
+        PR E2 — privileged slash. Mirrors ``!platform`` (gated by
+        ``administrator=True``). Reuses
+        :meth:`build_platform_help_menu_view` so the slash entry
+        opens the same Platform hub as Help → Platform/Diagnostics.
+        """
+        embed, view = await self.build_platform_help_menu_view(interaction)
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
 
     # ------------------------------------------------------------------
     # Command overview

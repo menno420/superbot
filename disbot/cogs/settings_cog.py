@@ -33,6 +33,7 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from views.base import send_panel
@@ -185,6 +186,27 @@ class SettingsCog(commands.Cog):
 
         view = SettingsHubView(interaction.user)
         return SettingsHubView.build_embed(), view
+
+    @app_commands.command(
+        name="settings",
+        description="Open the Settings Manager hub (administrator only).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    async def settings_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for Settings Manager — ephemeral, admin-only.
+
+        PR E2 — privileged slash. Reuses :meth:`build_help_menu_view`
+        so the kill-switch gate is enforced identically: when the
+        feature flag is OFF the slash entry surfaces the disabled
+        embed; when ON the hub view is returned.
+        """
+        embed, view = await self.build_help_menu_view(interaction)
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
 
 
 class _DisabledHelpHookView(discord.ui.View):

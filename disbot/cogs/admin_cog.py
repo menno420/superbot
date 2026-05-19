@@ -5,6 +5,7 @@ import os
 import sys
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from cogs.admin.cog_manager import (  # noqa: F401 — re-exported for back-compat (callers may import here)
@@ -47,6 +48,27 @@ class AdminCog(commands.Cog):
         """Help-menu direct-navigation hook (returns the admin control panel)."""
         view = _AdminPanelView(help_ctx_shim(interaction), self)
         return view.build_embed(), view
+
+    @app_commands.command(
+        name="admin",
+        description="Open the Admin control panel (administrator only).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    async def admin_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the Admin hub — ephemeral, admin-only.
+
+        PR E2 — privileged slash. ``default_permissions`` hides the
+        command from non-admins in the Discord UI; ``checks.has_permissions``
+        enforces at runtime. Both layers are kept so the gate works
+        whether or not the guild's Discord client is up to date.
+        """
+        embed, view = await self.build_help_menu_view(interaction)
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
 
     # ------------------------------------------------------------------
     # Server Statistics
