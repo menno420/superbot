@@ -46,23 +46,11 @@ async def _build_embed(
     # what the next step is (S4 / user-centered UX rule #5).
     _EMPTY_HINTS = {
         "xp": "No XP earned yet. Chat in this server to start ranking up.",
-        "coins": (
-            "No coin totals yet. Use `!daily` once per day or `!work` to start "
-            "earning."
-        ),
+        "coins": "No coin totals yet. Use `!daily` once per day or `!work` to start earning.",  # noqa: E501
         "mining": "No mining records yet. Use `!mine` to start collecting items.",
-        "deathmatch": (
-            "No deathmatch results yet. Start a match with `!deathmatch` to "
-            "appear here."
-        ),
-        "rps": (
-            "No RPS games played yet. Challenge someone with `!rps` to appear "
-            "here."
-        ),
-        "counting": (
-            "No counting activity yet. Count in the counting channel to appear "
-            "here."
-        ),
+        "deathmatch": "No deathmatch results yet. Start a match with `!deathmatch` to appear here.",  # noqa: E501
+        "rps": "No RPS games played yet. Challenge someone with `!rps` to appear here.",
+        "counting": "No counting activity yet. Count in the counting channel to appear here.",  # noqa: E501
     }
 
     if category == "xp":
