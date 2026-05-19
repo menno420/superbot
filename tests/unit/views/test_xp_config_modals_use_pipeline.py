@@ -31,7 +31,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 _MODALS_PATH = (
     Path(__file__).resolve().parents[3] / "disbot" / "views" / "xp" / "modals.py"
 )
