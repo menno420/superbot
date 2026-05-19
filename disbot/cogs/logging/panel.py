@@ -160,6 +160,32 @@ class LoggingPanelView(HubView):
         await interaction.followup.send(msg, ephemeral=True)
 
     @discord.ui.button(
+        label="🗺️ Routes",
+        style=discord.ButtonStyle.blurple,
+        row=3,
+        custom_id="logging_panel.routes",
+    )
+    async def routes_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Open the Phase 9b Routes subpage for severity/audit channels."""
+        # Local import — routes_panel pulls in server_logging's route
+        # tables and the resolver, which we don't need at panel-load
+        # time.
+        from cogs.logging.routes_panel import (
+            LoggingRoutesView,
+            build_routes_embed,
+        )
+
+        if not await safe_defer(interaction):
+            return
+        view = LoggingRoutesView(interaction.user)
+        embed = await build_routes_embed(interaction.guild)
+        await safe_edit(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
         label="↩ Overview",
         style=discord.ButtonStyle.secondary,
         row=4,

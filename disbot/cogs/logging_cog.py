@@ -128,11 +128,18 @@ class LoggingCog(commands.Cog):
         """Open the channel-select view for ``mod`` or ``cleanup`` binding."""
         from cogs.logging.select_view import LogChannelSelectView
 
+        # Phase 9b: accept any of the seven routes (mod / cleanup /
+        # debug / info / warning / error / audit). The set is sourced
+        # from ``services.server_logging._ROUTE_TO_BINDING`` so adding
+        # a new route there propagates automatically.
+        from services.server_logging import _ROUTE_TO_BINDING
+
         kind = kind.strip().lower()
-        if kind not in ("mod", "cleanup"):
+        valid_kinds = sorted(_ROUTE_TO_BINDING.keys())
+        if kind not in valid_kinds:
             await ctx.send(
-                "Usage: `!logging set <mod|cleanup>` — opens the channel "
-                "selector for the requested log binding.",
+                f"Usage: `!logging set <{'|'.join(valid_kinds)}>` — opens "
+                "the channel selector for the requested log binding.",
                 delete_after=20,
             )
             return
@@ -155,17 +162,19 @@ class LoggingCog(commands.Cog):
     @logging_grp.command(name="create")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def logging_create(self, ctx: commands.Context, kind: str = "") -> None:
-        """Preview + create a new log channel for ``mod`` or ``cleanup``."""
+        """Preview + create a new log channel for any registered route."""
         from cogs.logging.provision_view import (
             LogChannelProvisionView,
             build_preview_embed,
         )
+        from services.server_logging import _ROUTE_TO_BINDING
 
         kind = kind.strip().lower()
-        if kind not in ("mod", "cleanup"):
+        valid_kinds = sorted(_ROUTE_TO_BINDING.keys())
+        if kind not in valid_kinds:
             await ctx.send(
-                "Usage: `!logging create <mod|cleanup>` — opens a "
-                "preview + Confirm view for the requested channel.",
+                f"Usage: `!logging create <{'|'.join(valid_kinds)}>` — opens "
+                "a preview + Confirm view for the requested channel.",
                 delete_after=20,
             )
             return
@@ -178,6 +187,26 @@ class LoggingCog(commands.Cog):
         preview_embed, allowed = await build_preview_embed(ctx.guild, kind)
         view = LogChannelProvisionView(ctx.author, kind, confirm_enabled=allowed)
         await ctx.send(embed=preview_embed, view=view)
+
+    @logging_grp.command(name="routes")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def logging_routes(self, ctx: commands.Context) -> None:
+        """Open the Phase 9b Routes subpage directly.
+
+        Mirrors the LoggingPanelView Routes button — shows every
+        configured route (mod / cleanup / debug / info / warning /
+        error / audit), its current binding, and Set / Create
+        controls per route.
+        """
+        from cogs.logging.routes_panel import (
+            LoggingRoutesView,
+            build_routes_embed,
+        )
+        from views.base import send_panel
+
+        view = LoggingRoutesView(ctx.author)
+        embed = await build_routes_embed(ctx.guild)
+        await send_panel(ctx, embed=embed, view=view)
 
     @logging_grp.command(name="test")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)

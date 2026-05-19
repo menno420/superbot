@@ -55,11 +55,13 @@ def _find_button(view: discord.ui.View, label_substr: str) -> discord.ui.Button:
 # ---------------------------------------------------------------------------
 
 
-def test_panel_view_has_seven_buttons_across_five_rows():
+def test_panel_view_has_eight_buttons_across_five_rows():
+    """Phase 9b added a Routes button alongside Test at row 3."""
     view = LoggingPanelView(_author())
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    # Refresh, Set Mod, Set Cleanup, Create Mod, Create Cleanup, Test, Overview.
-    assert len(buttons) == 7
+    # Refresh, Set Mod, Set Cleanup, Create Mod, Create Cleanup, Test,
+    # Routes (new in 9b), Overview.
+    assert len(buttons) == 8
     rows = sorted({b.row for b in buttons})
     assert rows == [0, 1, 2, 3, 4]
 
