@@ -5,6 +5,8 @@ Runtime impact: none
 Baseline inspected: `main` at Phase 9b merge (`baacf461`)  
 Purpose: define the safest completion pass before feature expansion, with a button-first command surface, complete Help discovery, consistent panel navigation, and a clear slash-front-door strategy.
 
+> **Status note (S1):** The PR sequence L1–L6 below is **superseded** by [`building-roadmap/mother-hub-map.md`](./building-roadmap/mother-hub-map.md) S1–S13. PR L1 (shared navigation helper) partially landed via PR #130 — S2 in the new sequence completes the migration. The findings, navigation duplication evidence, placeholder inventory, and panel/subsystem inventory in this document remain valid as the source audit; only the PR sequence is replaced.
+
 ---
 
 ## Executive summary
