@@ -122,9 +122,18 @@ async def _commit_selection(
     interaction: discord.Interaction,
     *,
     kind: str,
-    target: discord.abc.GuildChannel,
+    target: (
+        discord.abc.GuildChannel
+        | discord.app_commands.AppCommandChannel
+        | discord.app_commands.AppCommandThread
+    ),
 ) -> None:
     """Write the binding via :class:`BindingMutationPipeline`.
+
+    ``target`` accepts the interaction-time channel forms produced by
+    :class:`discord.ui.ChannelSelect` (``AppCommandChannel`` /
+    ``AppCommandThread``) as well as resolved guild channels — only
+    ``.id`` and ``.mention`` are used.
 
     Always responds ephemerally with success/failure.  Caller-facing
     errors carry the exception class name; the full traceback is
