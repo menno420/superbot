@@ -26,8 +26,8 @@ from cogs.admin_cog import (
     AdminCog,
     _AdminPanelView,
     attach_back_to_admin_button,
-    build_logging_status_embed,
 )
+from cogs.logging_cog import build_logging_status_embed
 
 
 def _ctx_shim(user_id: int = 1) -> MagicMock:
@@ -119,29 +119,41 @@ def test_admin_overview_description_mentions_both_tools_and_navigation():
 
 
 @pytest.mark.asyncio
-async def test_logging_button_calls_logging_status_builder():
+async def test_logging_button_routes_through_logging_cog_hook():
+    """S7d: Logging button opens LoggingPanelView via the standard
+    cog hook (same pattern as Settings / Diagnostics / Cleanup)."""
     view = _admin_view()
     btn = _find_button(view, "Logging")
     interaction = MagicMock()
     interaction.user = view._author
-    interaction.guild = MagicMock()
+
+    fake_cog = MagicMock()
+    fake_embed = discord.Embed(title="📝 Logging panel")
+    fake_view: discord.ui.View = discord.ui.View()
+    fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
+    interaction.client.get_cog.return_value = fake_cog
+
     with patch(
         "cogs.admin_cog.safe_defer",
         new_callable=AsyncMock,
         return_value=True,
     ), patch(
-        "cogs.admin_cog.build_logging_status_embed",
-        new_callable=AsyncMock,
-        return_value=discord.Embed(title="📝 Server logging — status"),
-    ) as builder, patch(
         "cogs.admin_cog.safe_edit",
         new_callable=AsyncMock,
         return_value=True,
     ) as edit:
         await btn.callback(interaction)
-    builder.assert_awaited_once_with(interaction.guild)
+    interaction.client.get_cog.assert_called_with("LoggingCog")
+    fake_cog.build_help_menu_view.assert_awaited_once_with(interaction)
     edit.assert_awaited_once()
-    assert edit.await_args.kwargs["view"] is view
+    assert edit.await_args.kwargs["embed"] is fake_embed
+    # Back-to-admin button must be attached to the routed sub-view.
+    back_btns = [
+        c
+        for c in fake_view.children
+        if isinstance(c, discord.ui.Button) and "Back to Admin" in (c.label or "")
+    ]
+    assert len(back_btns) == 1
 
 
 @pytest.mark.asyncio
@@ -150,16 +162,15 @@ async def test_logging_button_bails_when_defer_fails():
     btn = _find_button(view, "Logging")
     interaction = MagicMock()
     interaction.user = view._author
+    interaction.client.get_cog = MagicMock()
     with patch(
         "cogs.admin_cog.safe_defer",
         new_callable=AsyncMock,
         return_value=False,
-    ), patch(
-        "cogs.admin_cog.build_logging_status_embed",
-        new_callable=AsyncMock,
-    ) as builder:
+    ):
         await btn.callback(interaction)
-    builder.assert_not_awaited()
+    # Defer-failure short-circuits before the cog lookup.
+    interaction.client.get_cog.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
