@@ -50,6 +50,25 @@ away from is the view callback that writes to the DB itself, calls
 
 ---
 
+## Default-on canonical surface
+
+The Settings Manager cog (``!settings``) is the canonical landing
+surface for scalar config changes that go through
+``SettingsMutationPipeline``. Since stabilization-plan PR #8 it
+defaults ON — administrators see the hub the first time they
+invoke ``!settings`` without any opt-in. The feature flag remains
+in place as a kill-switch (``SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED=off``
+env override or the future ``!platform flags`` command) so a guild
+experiencing trouble can disable the runtime behaviour without
+touching deploy artefacts.
+
+The flag flip is independent of the architectural ownership rules
+below — those describe which pipeline owns each category of change
+regardless of whether the front-end happens to ride the Settings
+Manager cog or some other surface.
+
+---
+
 ## Ownership rules
 
 Eight categories of change, eight ownership rules.

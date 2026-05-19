@@ -76,11 +76,29 @@ def test_settings_subsystem_emoji_and_display_name():
 # ---------------------------------------------------------------------------
 
 
-def test_feature_flag_declared_default_off():
+def test_feature_flag_declared_default_on():
+    """PR #8 flipped the default to ON after PR #5/#6 closed the audit
+    gap and PR #7 finished the input-mode coverage. Pin the new default
+    + the unchanged ``owner`` so a drive-by edit can't silently revert
+    either field.
+    """
     flag = feature_flags.get("settings.manager_cog.enabled")
     assert flag is not None
-    assert flag.default_value is False
+    assert flag.default_value is True
     assert flag.owner == "platform"
+
+
+def test_feature_flag_description_documents_kill_switch():
+    """Operators need a discoverable kill-switch path. Pin both the
+    env-var override and the future ``!platform flags`` command in the
+    flag's own description so ``!platform flags get`` (when it lands)
+    surfaces a clear remediation hint.
+    """
+    flag = feature_flags.get("settings.manager_cog.enabled")
+    assert flag is not None
+    description = flag.description.lower()
+    assert "kill" in description or "off" in description
+    assert "superbot_ff_settings__manager_cog__enabled" in description
 
 
 # ---------------------------------------------------------------------------
@@ -175,6 +193,23 @@ def test_disabled_embed_mentions_flag_name():
     embed = settings_cog._disabled_embed()
     description = embed.description or ""
     assert "settings.manager_cog.enabled" in description
+
+
+def test_disabled_embed_documents_kill_switch_remediation():
+    """The embed shown when the flag is OFF must surface both
+    remediation paths so an operator can re-enable without spelunking
+    the codebase. PR #8 pins both the env-variable override and the
+    future ``!platform flags`` command.
+    """
+    embed = settings_cog._disabled_embed()
+    description = embed.description or ""
+    # Env override path — exact env-var name.
+    assert "SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED" in description
+    # Command path (future) — `!platform flags` framing.
+    assert "platform flags" in description.lower()
+    # Reflects the PR #8 flip — the embed should say "default ON" so
+    # operators reading it know they explicitly turned it OFF.
+    assert "default" in description.lower() and "on" in description.lower()
 
 
 # ---------------------------------------------------------------------------

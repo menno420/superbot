@@ -286,19 +286,29 @@ RESOURCE_PROVISIONING_PRIMARY = FeatureFlag(
 # The cog ALWAYS loads and registers in SUBSYSTEMS so help/admin/menu
 # discoverability stays stable; the flag gates the runtime *behaviour*
 # of the !settings command and the build_help_menu_view hook so
-# operators can disable the cog without breaking the registry.  When
-# the flag is OFF (default), invocations return an explanatory
-# embed describing how to enable it.
+# operators can disable the cog without breaking the registry.
+#
+# PR #8 flipped the default to ON now that PR #5/#6 routed XP and
+# Economy log-channel writes through SettingsMutationPipeline (closing
+# the audit gap) and PR #7 added channel/role/numeric-presets input
+# modes (closing the input-coverage gap).  The kill-switch path is
+# unchanged: operators flip OFF either via the
+# ``SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED=off`` env override or
+# the future ``!platform flags set …`` command.  When OFF, the cog
+# still loads (registry stability) but ``!settings`` returns the
+# disabled embed.
 SETTINGS_MANAGER_COG_ENABLED = FeatureFlag(
     name="settings.manager_cog.enabled",
     description=(
         "Gates the runtime behaviour of the user-facing Settings Manager "
-        "cog (!settings) introduced in S5.  Default OFF — the cog still "
-        "loads and registers so help discoverability stays stable, but "
-        "invocations return a clearly-worded 'disabled' embed until the "
-        "flag is flipped."
+        "cog (!settings) introduced in S5.  Default ON since PR #8 — the "
+        "cog opens the Settings hub for administrators by default.  "
+        "Operators can kill-switch it OFF via the "
+        "SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED=off env override or the "
+        "(future) !platform flags command; when OFF the cog returns a "
+        "clearly-worded 'disabled' embed instead."
     ),
-    default_value=False,
+    default_value=True,
     owner="platform",
     removal_target="S11 stable",
 )
