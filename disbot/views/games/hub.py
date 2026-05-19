@@ -238,8 +238,14 @@ class GamesHubView(HubView):
 
     def __init__(self, author: discord.Member | discord.User) -> None:
         super().__init__(author)
-        self._children = discover_game_children()
-        self.add_item(_GamesHubSelect(self._children))
+        # NOTE: discord.py's ``discord.ui.View`` uses ``self._children``
+        # for its internal items list (see ``discord/ui/view.py``
+        # `_init_children`). Naming our cached child-metadata list
+        # ``self._children`` overwrites the items list and lets tuples
+        # leak into the view's components — which fails serialization
+        # when the view is sent to Discord. Use a distinct name.
+        self._game_children = discover_game_children()
+        self.add_item(_GamesHubSelect(self._game_children))
 
     async def handle_select(
         self,
