@@ -1,12 +1,17 @@
-"""Unit tests for the Community hub view (S9).
+"""Unit tests for the Community hub view (S9 + PR #4).
 
-Pins the v1 behaviour:
+Pins the metadata-driven v2 behaviour:
 
-- Five cross-link buttons routing to xp / role / counting / chain /
-  leaderboard via each cog's existing ``build_help_menu_view`` hook.
-- Buttons follow the hub-ui-standard layout: progression on row 0,
-  community activities on row 1.
+- Primary children discovered from ``SUBSYSTEMS`` where
+  ``parent_hub == "community"`` (xp + role today).
+- Cross-link children discovered from
+  ``hub_registry.get_hub("community").cross_link_children``
+  (counting + chain + leaderboard today).
+- Buttons follow the hub-ui-standard layout: primary on row 0 with
+  primary style, cross-links on row 1 with secondary style.
 - Stable custom_ids in ``community:open:<subsystem>`` form.
+- Labels come from registry metadata (emoji + display_name) — not
+  view-local hardcoded strings.
 - Failure paths surface as ephemerals; the message is never left
   half-edited.
 
@@ -21,10 +26,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
+from utils.hub_registry import get_hub
+from utils.subsystem_registry import SUBSYSTEMS
 from views.community.hub import (
     CommunityHubView,
     _CommunityChildButton,
     build_community_hub_embed,
+    discover_community_children,
 )
 
 
@@ -44,6 +52,48 @@ def _interaction() -> MagicMock:
 
 
 # ---------------------------------------------------------------------------
+# discover_community_children — metadata-driven discovery
+# ---------------------------------------------------------------------------
+
+
+def test_discover_primary_comes_from_parent_hub_metadata():
+    """Primary children must equal the set of SUBSYSTEMS entries with
+    ``parent_hub == "community"`` — never a hardcoded view-local list.
+    """
+    primary, _cross = discover_community_children()
+    primary_keys = {name for name, _meta in primary}
+    expected = {
+        name
+        for name, meta in SUBSYSTEMS.items()
+        if meta.get("parent_hub") == "community"
+    }
+    assert primary_keys == expected
+
+
+def test_discover_cross_link_comes_from_hub_registry():
+    """Cross-links must equal the HubEntry.cross_link_children tuple —
+    never a hardcoded view-local list.
+    """
+    _primary, cross = discover_community_children()
+    cross_keys = [name for name, _meta in cross]
+    hub = get_hub("community")
+    assert hub is not None
+    assert tuple(cross_keys) == hub.cross_link_children
+
+
+def test_discover_primary_sorted_by_ui_priority_then_key():
+    """Ordering must be deterministic — ui_priority ascending, then key
+    ascending — so the button layout doesn't drift across imports.
+    """
+    primary, _cross = discover_community_children()
+    keys = [
+        (meta.get("ui_priority", 99), name)
+        for name, meta in primary
+    ]
+    assert keys == sorted(keys)
+
+
+# ---------------------------------------------------------------------------
 # Embed
 # ---------------------------------------------------------------------------
 
@@ -51,14 +101,30 @@ def _interaction() -> MagicMock:
 def test_embed_lists_all_five_children():
     embed = build_community_hub_embed()
     description = embed.description or ""
-    for token in ("XP", "Roles", "Counting", "Chain", "Leaderboard"):
-        assert token in description, token
+    # Match by display_name as registered today; this catches metadata
+    # drift but not styling tweaks to the description.
+    for key in ("xp", "role", "counting", "chain", "leaderboard"):
+        display = SUBSYSTEMS[key]["display_name"]
+        assert display in description, (
+            f"{key!r} display_name {display!r} missing from embed description"
+        )
 
 
 def test_embed_title_and_color():
     embed = build_community_hub_embed()
     assert "Community" in (embed.title or "")
     assert embed.color is not None
+
+
+def test_embed_section_headings_present():
+    """The Progression / Community games & standings headings are
+    hardcoded framing and must remain so a registry-only edit doesn't
+    silently collapse the layout.
+    """
+    embed = build_community_hub_embed()
+    description = embed.description or ""
+    assert "**Progression**" in description
+    assert "**Community games & standings**" in description
 
 
 # ---------------------------------------------------------------------------
@@ -74,7 +140,11 @@ def test_view_has_five_child_buttons():
 
 def test_buttons_cover_each_target_subsystem():
     view = CommunityHubView(_author())
-    subsystems = {btn._subsystem for btn in view.children if isinstance(btn, _CommunityChildButton)}  # type: ignore[attr-defined]
+    subsystems = {
+        btn._subsystem  # type: ignore[attr-defined]
+        for btn in view.children
+        if isinstance(btn, _CommunityChildButton)
+    }
     assert subsystems == {"xp", "role", "counting", "chain", "leaderboard"}
 
 
@@ -95,9 +165,9 @@ def test_button_custom_ids_are_stable_and_namespaced():
 
 
 def test_buttons_split_across_two_rows():
-    """Progression (XP/Roles) sit on row 0; community activities
-    (Counting/Chain/Leaderboard) sit on row 1 — pinning the layout
-    keeps the hub-ui-standard preset stable across edits.
+    """Primary children (XP/Roles, parent_hub="community") on row 0;
+    cross-links (Counting/Chain/Leaderboard, declared in
+    hub_registry.cross_link_children) on row 1.
     """
     view = CommunityHubView(_author())
     row0 = {
@@ -112,6 +182,44 @@ def test_buttons_split_across_two_rows():
     }
     assert row0 == {"xp", "role"}
     assert row1 == {"counting", "chain", "leaderboard"}
+
+
+def test_row_0_uses_primary_style_row_1_uses_secondary():
+    """Layout convention: primaries are visually highlighted (primary
+    style); cross-links recede (secondary style).
+    """
+    view = CommunityHubView(_author())
+    for btn in view.children:
+        if not isinstance(btn, _CommunityChildButton):
+            continue
+        if btn.row == 0:
+            assert btn.style is discord.ButtonStyle.primary, (
+                f"row-0 button {btn._subsystem!r} has non-primary style "  # type: ignore[attr-defined]
+                f"{btn.style!r}"
+            )
+        elif btn.row == 1:
+            assert btn.style is discord.ButtonStyle.secondary, (
+                f"row-1 button {btn._subsystem!r} has non-secondary style "  # type: ignore[attr-defined]
+                f"{btn.style!r}"
+            )
+
+
+def test_button_labels_come_from_registry_metadata():
+    """Labels must use the subsystem's registered emoji + display_name,
+    not a hardcoded view-local string. PR #4 removed the literal label
+    table; this test pins the new contract.
+    """
+    view = CommunityHubView(_author())
+    for btn in view.children:
+        if not isinstance(btn, _CommunityChildButton):
+            continue
+        key = btn._subsystem  # type: ignore[attr-defined]
+        meta = SUBSYSTEMS[key]
+        expected = f"{meta['emoji']} {meta['display_name']}"
+        assert btn.label == expected, (
+            f"button {key!r} label {btn.label!r} does not match registry "
+            f"metadata {expected!r}"
+        )
 
 
 # ---------------------------------------------------------------------------

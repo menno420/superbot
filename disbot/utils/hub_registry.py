@@ -146,16 +146,19 @@ HUBS: tuple[HubEntry, ...] = (
         emoji="🌱",
         purpose="Progression, roles, and community activities.",
         entry_command="!community",
-        # PR #3 promotes XP and Role to parent_hub of "community"
-        # (their primary placement). Counting, Chain (Games children)
-        # and Leaderboard (Economy child) remain cross-links via the
-        # Community hub view's hardcoded ``_HUB_CHILDREN`` tuple; PR #4
-        # migrates the view to discover them from this declaration.
+        # XP and Role are the primary children (parent_hub="community"
+        # since PR #3). Counting, Chain (whose primary is Games) and
+        # Leaderboard (whose primary is Economy) appear as cross-links —
+        # CommunityHubView discovers both groups from registry (PR #4).
         primary_children=(
             "xp",
             "role",
         ),
-        cross_link_children=(),
+        cross_link_children=(
+            "counting",
+            "chain",
+            "leaderboard",
+        ),
         minimum_tier="user",
     ),
     HubEntry(
