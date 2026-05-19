@@ -149,6 +149,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 15,
+        "parent_hub": "economy",
         "capabilities": [
             "inventory.item.view",
             "inventory.item.use",
@@ -196,6 +197,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 25,
+        "parent_hub": "community",
         "capabilities": [
             "xp.rank.view",
             "xp.leaderboard.view",
@@ -219,6 +221,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": True,
         "ui_priority": 70,
+        "parent_hub": "community",
         "capabilities": [
             "role.threshold.configure",
             "role.assignment.manage",
@@ -267,6 +270,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 72,
+        "parent_hub": "moderation",
         "capabilities": [
             "cleanup.word.add",
             "cleanup.word.remove",
@@ -459,6 +463,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 40,
+        "parent_hub": "economy",
         "capabilities": [
             "leaderboard.xp.view",
             "leaderboard.economy.view",
@@ -481,6 +486,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 65,
+        "parent_hub": "moderation",
         "capabilities": [
             "proof_channel.access.grant",
             "proof_channel.access.revoke",
@@ -527,6 +533,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 3,
+        "parent_hub": "utility",
         "capabilities": [
             "general.info.view",
             "general.community.interact",
@@ -619,6 +626,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 85,
+        "parent_hub": "moderation",
         "capabilities": [
             "logging.settings.configure",
             "logging.channel.bind",

@@ -55,26 +55,26 @@ or raises.
 | `blackjack` | `blackjack_cog.py:95` | `blackjack`, `bj`, `bjtournament`, `bjstart`, `bjstatus` | — | `BlackjackPanelView` | `!help blackjack` → opens Blackjack panel (shared resolver) | reached via Games | hub child (Games) |
 | `chain` | `chain_cog.py` | `chain`, `chainmenu` | — | `ChainPanelView` | `!help chain` → opens Chain panel (shared resolver) | reached via Games / Community | hub child |
 | `channel` | `channel_cog.py:144` | `lock`, `unlock` | several `*_channel`-family commands | `ChannelPanelView` | `!help channel` → opens Channel panel (shared resolver) | reached via Admin | hub child (Admin) |
-| `cleanup` | `cleanup_cog.py:324` | `cleanuphistory`, `word`, `wordmenu`, `cleanup` | — | `CleanupHubView` | `!help cleanup` → opens Cleanup panel (shared resolver) | reached via Moderation | hub child (Moderation) |
+| `cleanup` | `cleanup_cog.py:324` | `cleanuphistory`, `word`, `wordmenu`, `cleanup` | — | `CleanupHubView` | `!help cleanup` → opens Cleanup panel (shared resolver) | reached via Moderation; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `community` | `community_cog.py` | `community` | — | `CommunityHubView` | `!help community` → opens Community panel (shared resolver) | dropdown Community → panel | hub top-level |
 | `counting` | `counting_cog.py` | `countingmenu`, `start_match`, `end_match`, `reset_count` | — | `CountingPanelView` | `!help counting` → opens Counting panel (shared resolver) | reached via Games / Community | hub child |
 | `deathmatch` | `deathmatch_cog.py` | `dm_challenge`, `deathmatch`, `dm`, `dm_help` | — | `DeathmatchPanelView` | `!help deathmatch` → opens Deathmatch panel (shared resolver) | reached via Games | hub child (Games) |
 | `diagnostic` | `diagnostic_cog.py:70` | `diagnostics`, `diag`, `latency`, `platform` (group, 20+ subcommands) | — | `_DiagnosticsHubView` (generic hook); `_PlatformHubView` (platform builder) | `!help platform` / `!help diagnostic` → opens Platform Hub via the `HUB_PANEL_BUILDERS["diagnostic"]` override; `!help diagnostics` / `!help diag` → opens Diagnostics subsystem via the subsystem-alias branch (not the Platform hub) | hub top-level "Platform / Diagnostics" via the override; sibling subsystem aliases reach Diagnostics | hub top-level (Platform); `diagnostics`/`diag` open Diagnostics Hub |
 | `economy` | `economy_cog.py` | `economymenu`, `daily`, `work`, `shop`, `balance`/`bal`/`wallet` | several admin/legacy commands | `EconomyPanelView` | `!help economy` → opens Economy panel (shared resolver) | dropdown Economy → panel | hub top-level |
 | `games` | `games_cog.py` | `games` | — | `GamesHubView` | `!help games` → opens Games hub (shared resolver) | dropdown Games → panel | hub top-level (cleanest model) |
-| `general` | `general_cog.py` | `fact`, `joke`, `quote`, `motivate`, `greet` | — | `_GeneralPanelView` | `!help general` → opens General panel (shared resolver) | reached via Utility (future, once `parent_hub` is set) | hub child (Utility, future) |
+| `general` | `general_cog.py` | `fact`, `joke`, `quote`, `motivate`, `greet` | — | `_GeneralPanelView` | `!help general` → opens General panel (shared resolver) | reached via Utility (`parent_hub="utility"` since PR #3) | hub child (Utility) — declared |
 | `help` | `help_cog.py` | `help` (alias `hilfe`) | — | **no panel hook (Help itself is the panel)** | n/a (Help Home embeds + `HelpCategoryView` dropdown) | dropdown root | Help Home |
-| `inventory` | `inventory_cog.py:376` | `inventory`, `inv` | — | `UnifiedInventoryView` | `!help inventory` → opens Inventory panel (shared resolver) | reached via Economy (Inventory btn → in-place edit + Back-to-Economy; PR #143) | hub child (Economy, future) |
-| `leaderboard` | `leaderboard_cog.py:200` | (none public-flagged; entry inferred from registry) | — | `LeaderboardView` | `!help leaderboard` → opens Leaderboard panel (shared resolver) | top-level today; cross-linked from Economy / Community (future) | hub child (Economy / Community) |
-| `logging` | `logging_cog.py:88` | `logging` | — | `LoggingPanelView` | `!help logging` → opens Logging panel (shared resolver) | reached via Moderation / Admin | hub child |
-| `mining` | `mining_cog.py:65` | `mineinv`/`mineinventory`, `minestats` | mining game flow commands (start/dig/etc.) | `MiningHubView` | `!help mining` → opens Mining panel (shared resolver) | reached via Games (primary) / Economy cross-link | hub child (Games) |
+| `inventory` | `inventory_cog.py:376` | `inventory`, `inv` | — | `UnifiedInventoryView` | `!help inventory` → opens Inventory panel (shared resolver) | reached via Economy (Inventory btn → in-place edit + Back-to-Economy; PR #143). `parent_hub="economy"` since PR #3. | hub child (Economy) — declared |
+| `leaderboard` | `leaderboard_cog.py:200` | (none public-flagged; entry inferred from registry) | — | `LeaderboardView` | `!help leaderboard` → opens Leaderboard panel (shared resolver) | `parent_hub="economy"` since PR #3; Community cross-link migrates in PR #4 | hub child (Economy) — declared; Community cross-link in PR #4 |
+| `logging` | `logging_cog.py:88` | `logging` | — | `LoggingPanelView` | `!help logging` → opens Logging panel (shared resolver) | reached via Moderation / Admin; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
+| `mining` | `mining_cog.py:65` | `mineinv`/`mineinventory`, `minestats` | mining game flow commands (start/dig/etc.) | `MiningHubView` | `!help mining` → opens Mining panel (shared resolver) | reached via Games (primary, `parent_hub="games"`); Economy hub declares Mining as a `cross_link_children` since PR #3 | hub child (Games); Economy cross-link |
 | `moderation` | `moderation_cog.py` | `modmenu`, `warn`, `timeout`, `kick`, `ban`, `unban`, `clearwarnings`, `modlogs` | — | `ModPanelView` | `!help moderation` → opens Moderation panel (shared resolver) | dropdown Moderation → panel | hub top-level |
-| `proof_channel` | `proof_channel_cog.py:113` | `prizestatus`, `prizemenu`, `timedprize` | — | `_PrizeManagerView` | `!help proof` → opens Proof Channel panel (shared resolver) | reached via Moderation | hub child (Moderation) |
-| `role` | `role_cog.py:334` | `roles`, `rolesettings`, `rolemenu` (legacy alias) | 8+ legacy commands: `rolecreator`, `createrole`, `deleterole`, `setrole`, `unsetrole`, `assignroles`, `debugroles`, `refreshmembers`, plus react-role family | `RoleHubPanelView` | `!help roles` → opens Role panel (shared resolver) | reached via Community | hub child (Community); legacy commands remain as hidden compatibility |
+| `proof_channel` | `proof_channel_cog.py:113` | `prizestatus`, `prizemenu`, `timedprize` | — | `_PrizeManagerView` | `!help proof` → opens Proof Channel panel (shared resolver) | reached via Moderation; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
+| `role` | `role_cog.py:334` | `roles`, `rolesettings`, `rolemenu` (legacy alias) | 8+ legacy commands: `rolecreator`, `createrole`, `deleterole`, `setrole`, `unsetrole`, `assignroles`, `debugroles`, `refreshmembers`, plus react-role family | `RoleHubPanelView` | `!help roles` → opens Role panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; legacy commands remain as hidden compatibility |
 | `rps_tournament` | `rps_tournament_cog.py:118` | `rpsregister`/`rpsreg`, `rpsstart`/`rpsbegin`, `rpsbot`, `rpsmatchup`, `rpshelp`, `rpssettings` | — | `RPSPanelView` | `!help rps` → opens RPS panel (shared resolver) | reached via Games | hub child (Games) |
 | `settings` | `settings_cog.py` | (entry via `!settings`) | — | `SettingsHubView` | `!help settings` → opens Settings panel (shared resolver) | dropdown Settings → panel | hub top-level |
 | `utility` | `utility_cog.py` | `utilitymenu`, `clear`/`purge`, `info`, `serverinfo`, `userinfo`, `avatar`, `remind` | — | `_UtilityPanelView` | `!help utility` → opens Utility panel (shared resolver) | dropdown Utility → panel | hub top-level |
-| `xp` | `xp_cog.py` | `xpmenu`, `rank`, `givexp`, `resetxp`, `xpconfig` | — | `_XpHubView` | `!help xp` → opens XP panel (shared resolver) | reached via Community | hub child (Community); admin controls live in panel |
+| `xp` | `xp_cog.py` | `xpmenu`, `rank`, `givexp`, `resetxp`, `xpconfig` | — | `_XpHubView` | `!help xp` → opens XP panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; admin controls live in panel |
 
 ## 3. Known inconsistencies (resolved by PR #142 / PR #143)
 
@@ -129,11 +129,15 @@ routing issues. See `tests/unit/views/test_economy_inventory_edit.py`,
   via `parent_hub`, has all six game children explicitly listed, and
   the hub UI is built from a single source.
 - **S7–S10 Help promotions (Economy / Moderation / Community / Utility)
-  are first-pass.** Their hubs route to existing panels via
-  `build_help_menu_view`. Their `primary_children` are empty until a
-  follow-up PR flips `parent_hub` metadata on `inventory`, `leaderboard`,
-  `xp`, `role`, `cleanup`, `logging`, `proof_channel`, and `general` —
-  tracked as plan PR #3.
+  have declared parent_hub metadata for their children since PR #3.**
+  `inventory` and `leaderboard` point at Economy; `xp` and `role` point
+  at Community; `cleanup`, `logging`, and `proof_channel` point at
+  Moderation; `general` points at Utility. Each parent hub's
+  `primary_children` tuple in `hub_registry.py` mirrors that set. The
+  hub views still render children via their own discovery — Games uses
+  `discover_game_children()` from SUBSYSTEMS; Community uses a
+  hardcoded `_HUB_CHILDREN` tuple that PR #4 will migrate to
+  registry-driven discovery.
 - **Role public entry is `!roles`.** Legacy `rolemenu` and the
   rolemenu-style command family remain registered as hidden
   compatibility — they will not surface in Help.
@@ -166,15 +170,17 @@ Tracked as the stabilization-plan PR sequence
 here so a future reader can map this doc to the in-flight plan.
 
 - **`parent_hub` metadata for S7–S10 children** (plan PR #3) —
-  declare `parent_hub` on `inventory → economy`, `leaderboard →
-  economy`, `xp → community`, `role → community`, `cleanup →
-  moderation`, `logging → moderation`, `proof_channel → moderation`,
-  `general → utility`. After it lands, the *Recommendation* column
-  below the corresponding rows changes from "hub child (... future)"
-  to "hub child (...) — declared".
+  **done.** `parent_hub` declared on `inventory → economy`,
+  `leaderboard → economy`, `xp → community`, `role → community`,
+  `cleanup → moderation`, `logging → moderation`,
+  `proof_channel → moderation`, `general → utility`. The eight rows
+  above now read "hub child (...) — declared". Mining is additionally
+  declared as a `cross_link_children` on the Economy hub.
 - **Community metadata-driven hub** (plan PR #4) — replace
   `CommunityHubView._HUB_CHILDREN` hardcoded tuple with SUBSYSTEMS
   discovery, mirroring `views/games/hub.py:discover_game_children`.
+  After PR #3 the metadata exists; the migration is a view-only
+  change.
 - **XP config modal pipeline migration** (plan PR #5) — three modals
   in `disbot/views/xp/modals.py` write directly via `db.set_setting`;
   migrate to `SettingsMutationPipeline`.

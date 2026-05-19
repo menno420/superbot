@@ -31,10 +31,18 @@ from utils.subsystem_registry import SUBSYSTEMS
 
 
 def _hub_children() -> list[str]:
+    """Subsystems with any ``parent_hub`` set.
+
+    Pre-PR-#3 this was only games children (6 entries). PR #3 added
+    parent_hub on inventory, leaderboard, xp, role, cleanup, logging,
+    proof_channel, and general — so this filter now expands to cover
+    every subsystem expected to be hidden from the top-level overview.
+    The existing per-test loops naturally extend to the larger set.
+    """
     return [
         name
         for name, meta in SUBSYSTEMS.items()
-        if meta.get("parent_hub") == "games"
+        if meta.get("parent_hub")
     ]
 
 
@@ -60,9 +68,14 @@ async def test_build_overview_embed_excludes_parent_hub_children():
     )
 
     rendered = "\n".join(field.value for field in embed.fields)
+    # build_overview_embed renders each entry as
+    # ``{emoji} **{display_name}** — {desc}`` (help_cog.py:118). Match
+    # the bolded form so substring collisions in descriptions (e.g.
+    # "General" appearing inside "General utility commands") don't
+    # false-positive against a hub child's display_name.
     for child in _hub_children():
         display = SUBSYSTEMS[child]["display_name"]
-        assert display not in rendered, (
+        assert f"**{display}**" not in rendered, (
             f"hub child {child!r} ({display!r}) leaked into overview embed"
         )
 
@@ -99,9 +112,11 @@ def test_build_page_embed_excludes_parent_hub_children():
         member_tier="owner",
     )
     rendered = "\n".join(field.value for field in embed.fields)
+    # Match the bolded display form so descriptions can't collide with
+    # a hub child's display_name (see overview test above).
     for child in _hub_children():
         display = SUBSYSTEMS[child]["display_name"]
-        assert display not in rendered, (
+        assert f"**{display}**" not in rendered, (
             f"hub child {child!r} leaked into page-embed render"
         )
 
@@ -289,3 +304,90 @@ def test_typed_help_route_for_hub_child_resolves_to_subsystem():
     route = help_cog._resolve_route("mining", bot=bot)
     assert route.kind == "subsystem"
     assert route.target == "mining"
+
+
+# ---------------------------------------------------------------------------
+# PR #3 — new parent_hub assignments for S7-S10 children
+# ---------------------------------------------------------------------------
+
+
+def test_pr3_metadata_assignments_present():
+    """Pin the exact 8 parent_hub assignments PR #3 declares so future
+    metadata edits cannot silently break the Help filter or the hub
+    panel discovery contracts.
+    """
+    expected = {
+        "inventory": "economy",
+        "leaderboard": "economy",
+        "xp": "community",
+        "role": "community",
+        "cleanup": "moderation",
+        "logging": "moderation",
+        "proof_channel": "moderation",
+        "general": "utility",
+    }
+    for child, parent in expected.items():
+        actual = SUBSYSTEMS[child].get("parent_hub")
+        assert actual == parent, (
+            f"SUBSYSTEMS[{child!r}].parent_hub: expected {parent!r}, got {actual!r}"
+        )
+
+
+@pytest.mark.asyncio
+async def test_pr3_new_children_hidden_from_overview():
+    """Every subsystem promoted in PR #3 must not appear in the
+    top-level Help overview (the Phase 4 filter is parent_hub-driven).
+    """
+    bot = MagicMock()
+    ctx = MagicMock()
+    embed = await help_cog.build_overview_embed(
+        bot,
+        ctx,
+        visible=_all_visible_set(),
+        member_tier="owner",
+    )
+    rendered = "\n".join(field.value for field in embed.fields)
+
+    pr3_children = {
+        "inventory",
+        "leaderboard",
+        "xp",
+        "role",
+        "cleanup",
+        "logging",
+        "proof_channel",
+        "general",
+    }
+    # Match the bolded display form to avoid substring collisions
+    # (e.g. "General" appearing in Utility's description).
+    for child in pr3_children:
+        display = SUBSYSTEMS[child]["display_name"]
+        assert f"**{display}**" not in rendered, (
+            f"PR #3 child {child!r} ({display!r}) leaked into overview embed — "
+            f"parent_hub filter is broken"
+        )
+
+
+def test_pr3_typed_routes_still_resolve_to_subsystem():
+    """Typed ``!help <child>`` for each PR #3 child must still resolve
+    to its subsystem so the panel opens. The filter hides them from the
+    OVERVIEW, not from direct lookup.
+    """
+    from unittest.mock import MagicMock
+
+    bot = MagicMock()
+    bot.get_command = MagicMock(return_value=None)
+
+    for name in (
+        "inventory",
+        "leaderboard",
+        "xp",
+        "role",
+        "cleanup",
+        "logging",
+        "proof_channel",
+        "general",
+    ):
+        route = help_cog._resolve_route(name, bot=bot)
+        assert route.kind == "subsystem", f"{name!r} resolved as {route.kind!r}"
+        assert route.target == name, f"{name!r} resolved to target {route.target!r}"
