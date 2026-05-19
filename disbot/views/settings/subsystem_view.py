@@ -237,6 +237,141 @@ class _BackToHubButton(discord.ui.Button):
         )
 
 
+def attach_back_to_settings_button(
+    view: discord.ui.View,
+    author: discord.Member | discord.User,
+    subsystem: str,
+) -> None:
+    """Append a "↩ Back to Settings" control to a sub-view opened from this panel.
+
+    Mirrors :func:`cogs.help_cog._attach_back_to_help_button` and
+    :func:`cogs.admin_cog.attach_back_to_admin_button`.  The button
+    rebuilds a fresh :class:`SubsystemSettingsView` on click so the
+    embed reflects current setting / binding state.  No-op if the
+    sub-view already has 25 components (Discord cap).
+    """
+    if len(view.children) >= 25:
+        logger.warning(
+            "Back-to-settings button skipped — %s already has 25 children.",
+            type(view).__name__,
+        )
+        return
+
+    btn = discord.ui.Button(  # type: ignore[var-annotated]
+        label="↩ Back to Settings",
+        custom_id="settings:back",
+        style=discord.ButtonStyle.secondary,
+        row=4,
+    )
+
+    async def _back_callback(interaction: discord.Interaction) -> None:
+        new_view = SubsystemSettingsView(author, subsystem)
+        embed = await build_subsystem_embed(interaction, subsystem)
+        await interaction.response.edit_message(embed=embed, view=new_view)
+
+    btn.callback = _back_callback  # type: ignore[method-assign]
+    view.add_item(btn)
+
+
+class _OpenRelatedPanelButton(discord.ui.Button):
+    """Route from a subsystem settings page to the related cog panel.
+
+    At click time, look up the cog that owns the subsystem and call
+    its :func:`build_help_menu_view` hook (the same hook the help
+    menu uses).  When the cog or hook is missing, render a fallback
+    embed listing the subsystem's entry_points so the operator can
+    still discover the typed commands.
+    """
+
+    def __init__(self, subsystem: str) -> None:
+        self.subsystem = subsystem
+        super().__init__(
+            label="Open Panel",
+            emoji="🪟",
+            style=discord.ButtonStyle.blurple,
+            custom_id="settings_subsystem.open_panel",
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from core.runtime.interaction_helpers import safe_defer, safe_edit
+
+        if not await safe_defer(interaction):
+            return
+        bot = interaction.client
+        cog = _resolve_cog_for_subsystem(bot, self.subsystem)
+        hook = getattr(cog, "build_help_menu_view", None) if cog else None
+        if not callable(hook):
+            fallback = _build_no_panel_embed(self.subsystem)
+            await safe_edit(interaction, embed=fallback, view=self.view)
+            return
+        try:
+            sub_embed, sub_view = await hook(interaction)
+        except Exception as exc:  # noqa: BLE001 — navigation must not crash panel
+            logger.warning(
+                "Settings → cog panel open failed (subsystem=%r): %s",
+                self.subsystem,
+                exc,
+                exc_info=True,
+            )
+            msg = str(exc)[:200]
+            embed = discord.Embed(
+                title="Could not open cog panel",
+                description=f"`{self.subsystem}` → `{type(exc).__name__}`: {msg}",
+                color=discord.Color.orange(),
+            )
+            await safe_edit(interaction, embed=embed, view=self.view)
+            return
+        attach_back_to_settings_button(sub_view, interaction.user, self.subsystem)
+        await safe_edit(interaction, embed=sub_embed, view=sub_view)
+
+
+def _resolve_cog_for_subsystem(bot: Any, subsystem: str) -> Any:
+    """Find the cog matching ``subsystem`` by entry-point intersection.
+
+    Delegates to :func:`cogs.help_cog._cog_for_subsystem` so the
+    settings-to-cog navigation uses the exact same resolution logic
+    the help menu uses — no parallel router.
+    """
+    try:
+        from cogs.help_cog import _cog_for_subsystem
+    except Exception:  # noqa: BLE001 — help cog must be loaded for this path
+        return None
+    try:
+        return _cog_for_subsystem(bot, subsystem)
+    except Exception:  # noqa: BLE001 — never crash navigation
+        return None
+
+
+def _build_no_panel_embed(subsystem: str) -> discord.Embed:
+    """Fallback embed shown when no cog hook exists for the subsystem."""
+    meta = SUBSYSTEMS.get(subsystem) or {}
+    display = meta.get("display_name", subsystem)
+    entry_points = list(meta.get("entry_points") or ())
+    embed = discord.Embed(
+        title=f"No interactive panel for {display}",
+        description=(
+            "This subsystem does not expose a panel hook.  Use the "
+            "typed commands below to interact with it."
+        ),
+        color=discord.Color.orange(),
+    )
+    if entry_points:
+        embed.add_field(
+            name="Typed commands",
+            value=", ".join(f"`!{ep}`" for ep in entry_points),
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="Typed commands",
+            value="*(no entry_points declared)*",
+            inline=False,
+        )
+    embed.set_footer(text="Click ↩ Back to Hub to return to Settings.")
+    return embed
+
+
 # ---------------------------------------------------------------------------
 # S6 edit + reset selects.  Dispatch to the widget appropriate for the
 # SettingSpec.value_type / allowed_values shape.  See the per-widget
@@ -393,16 +528,21 @@ class _ResetSettingSelect(discord.ui.Select):
 
 
 class SubsystemSettingsView(HubView):
-    """Per-subsystem panel: read-only embed + S6 edit/reset selects."""
+    """Per-subsystem panel: read-only embed + S6 edit/reset selects + cog link."""
 
     def __init__(self, author: Any, subsystem: str) -> None:
         super().__init__(author)
         self.subsystem = subsystem
         self.add_item(_BackToHubButton())
+        self.add_item(_OpenRelatedPanelButton(subsystem))
         specs = _editable_specs(subsystem)
         if specs:
             self.add_item(_EditSettingSelect(subsystem, specs))
             self.add_item(_ResetSettingSelect(subsystem, specs))
 
 
-__all__ = ["SubsystemSettingsView", "build_subsystem_embed"]
+__all__ = [
+    "SubsystemSettingsView",
+    "attach_back_to_settings_button",
+    "build_subsystem_embed",
+]

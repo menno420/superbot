@@ -130,9 +130,12 @@ def test_view_omits_selects_when_subsystem_has_no_settings():
     view = SubsystemSettingsView(_FakeMember(), "blackjack")  # no schema
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
     assert selects == []
-    # Back button still present.
+    # Two buttons: "Back to Hub" + "Open Panel" (PR 3 navigation).
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(buttons) == 1
+    assert len(buttons) == 2
+    labels = [b.label or "" for b in buttons]
+    assert any("Back" in lbl for lbl in labels)
+    assert any("Open Panel" in lbl for lbl in labels)
 
 
 def test_view_omits_selects_when_specs_have_no_settings_key():

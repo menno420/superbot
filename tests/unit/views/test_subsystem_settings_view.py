@@ -235,8 +235,11 @@ def test_subsystem_view_has_back_button():
     import discord
 
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(buttons) == 1
-    assert "Back" in (buttons[0].label or "")
+    # PR 3 added an "Open Panel" navigation button next to "Back to Hub".
+    assert len(buttons) == 2
+    labels = [b.label or "" for b in buttons]
+    assert any("Back" in lbl for lbl in labels)
+    assert any("Open Panel" in lbl for lbl in labels)
 
 
 def test_subsystem_view_carries_subsystem_key():
