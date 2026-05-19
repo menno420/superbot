@@ -152,44 +152,28 @@ def _attach_back_to_help_button(
     """Add a "↩ Back to Help" control to a subsystem panel surfaced from help.
 
     Does not mutate the cog's panel class — adds the button to the live view
-    instance only.  No-op if the view already has 25 components (Discord cap).
-    Governance is not re-resolved here: the visible_list captured at help-menu
-    open time is the same set the user is allowed to see for the duration of
-    the panel session.  If governance changes mid-session, EVT_VISIBILITY_CHANGED
-    will invalidate the underlying session state through the normal pipeline.
+    instance only. No-op if the view already has 25 components (Discord cap;
+    the shared helper logs a WARNING in that case).
+
+    Re-resolves governance at click time so the Help menu the user returns
+    to reflects current visibility (not the stale snapshot from when the
+    panel was opened).
+
+    Phase 3.5: implementation moved to ``views.navigation.attach_back_button``;
+    the help-specific parent-builder (governance resolve + pagination clamp +
+    fresh HelpPanelView) is kept here as a closure.
     """
-    if len(view.children) >= 25:
-        logger.warning(
-            "Back-to-help button skipped — %s already has 25 children. "
-            "User cannot return to the help menu from this panel.",
-            type(view).__name__,
-        )
-        return
+    # Local import — navigation is at the views layer; help_cog is at
+    # the cogs layer. Function-local import keeps the import graph
+    # acyclic in case the navigation module ever grows imports of its
+    # own.
+    from views.navigation import attach_back_button
 
-    back_btn = discord.ui.Button(  # type: ignore[var-annotated]
-        label="↩ Back to Help",
-        custom_id="help:back",
-        style=discord.ButtonStyle.secondary,
-        row=4,
-    )
-
-    async def _back_callback(interaction: discord.Interaction) -> None:
-        # Recompute visible list at click time — governance may have changed.
-        try:
-            gctx = GovernanceContext.from_interaction(interaction)
-            vis_result = await governance_service.resolve_visibility(gctx)
-        except Exception as exc:
-            logger.warning(
-                "Back-to-help visibility resolve failed: %s",
-                exc,
-                exc_info=True,
-            )
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    "Could not load help menu. Please try again.",
-                    ephemeral=True,
-                )
-            return
+    async def _build_help_parent(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
         fresh_visible = [
             name
             for name, meta in all_subsystems_sorted()
@@ -203,10 +187,17 @@ def _attach_back_to_help_button(
             new_page,
             vis_result.member_tier,
         )
-        await interaction.response.edit_message(embed=embed, view=new_view)
+        return embed, new_view
 
-    back_btn.callback = _back_callback  # type: ignore[method-assign]
-    view.add_item(back_btn)
+    attach_back_button(
+        view,
+        label="↩ Back to Help",
+        custom_id="help:back",
+        parent_builder=_build_help_parent,
+        row=4,
+        style=discord.ButtonStyle.secondary,
+        error_message="Could not load help menu. Please try again.",
+    )
 
 
 def _build_page_embed(
