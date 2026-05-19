@@ -64,14 +64,13 @@ from cogs.rps_tournament.rules import (
     normalize_move,
 )
 from core.runtime import tasks
-from core.runtime.component_registry import stats_block
 from services import (  # noqa: F401 — game_state_service kept for back-compat patch sites
     economy_service,
     game_state_service,
 )
 from utils import db as global_db
 from utils.settings_keys import ACTIVE_TOURNAMENT
-from utils.ui_constants import GAME_COLOR, INFO_COLOR
+from utils.ui_constants import INFO_COLOR
 from views.rps import _RpsRegistrationView
 
 logger = logging.getLogger("bot")
@@ -120,39 +119,16 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         self,
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        """Help-menu direct-navigation hook (returns an RPS overview).
+        """Help-menu direct-navigation hook — returns the RPS hub panel.
 
-        RPS has no hub panel — the entry commands either start a quick
-        match (``!rps``) or open tournament registration (``!rpsregister``).
-        The returned overview embed describes both flows; the help-cog
-        appends the "↩ Back to Help" control automatically.
+        Phase 7 Option A: router-only panel listing Single Round / Tournament
+        / Rules. Tournament state stays in this cog; the panel routes to
+        the existing typed commands and never duplicates match orchestration.
         """
-        embed = stats_block(
-            "✂️ Rock-Paper-Scissors",
-            [
-                (
-                    "Quick match",
-                    "`!rps` solo vs bot · `!rps @user` PvP · `!rps @user <bet>`",
-                    False,
-                ),
-                (
-                    "Tournament",
-                    (
-                        "`!rpsregister` — open registration\n"
-                        "`!rpsstart` — begin bracket\n"
-                        "`!rpshelp` — full tournament help"
-                    ),
-                    False,
-                ),
-            ],
-            GAME_COLOR,
-            description=(
-                "Quick matches vs the bot or another player, plus scheduled "
-                "tournaments with optional entry fees."
-            ),
-            footer="Default mode: classic · best of 3.",
-        )
-        return embed, discord.ui.View(timeout=300)
+        from views.games.rps_panel import RPSPanelView, build_rps_overview_embed
+
+        view = RPSPanelView(interaction.user)
+        return build_rps_overview_embed(), view
 
     # ------------------------------------------------------------------
     # Lifecycle + recovery (delegators preserve test invariants)

@@ -65,13 +65,12 @@ from cogs.blackjack._state import (  # noqa: F401 — re-exported
     _TournPlayerState,
 )
 from core.runtime import resources, tasks
-from core.runtime.component_registry import stats_block
 from services import economy_service, game_state_service
 from services.blackjack_engine import is_blackjack as _is_blackjack
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
 from utils.settings_keys import ACTIVE_TOURNAMENT
-from utils.ui_constants import ECONOMY_COLOR, GAME_COLOR, SUCCESS_COLOR
+from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.blackjack import (  # noqa: F401 — re-exported
     BlackjackView,
     _ChallengeView,
@@ -97,28 +96,19 @@ class BlackjackCog(commands.Cog):
         self,
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        """Help-menu direct-navigation hook (returns a blackjack overview).
+        """Help-menu direct-navigation hook — returns the Blackjack hub panel.
 
-        The blackjack subsystem has no hub panel — the entry command starts
-        a game with an optional bet/opponent — so we return an informational
-        embed with no buttons. The help-cog appends the "↩ Back to Help"
-        control automatically.
+        Phase 7 Option A: router-only panel that lists Classic and Rules.
+        Game-engine code paths are untouched; Practice/Replay are deferred
+        to Phase 7b once the engine-side design is settled.
         """
-        embed = stats_block(
-            "🃏 Blackjack",
-            [
-                ("Solo vs bot", "`!blackjack <bet>` or `!bj <bet>`", False),
-                ("PvP challenge", "`!blackjack @user <bet>`", False),
-                ("Tournament", "`!bjtournament` — open registration", False),
-            ],
-            GAME_COLOR,
-            description=(
-                "Classic 21 — play solo against the bot or challenge another "
-                "player. Tournament mode runs scheduled brackets."
-            ),
-            footer="Bets are in 🪙 coins. Bet 0 for a free game.",
+        from views.games.blackjack_panel import (
+            BlackjackPanelView,
+            build_blackjack_overview_embed,
         )
-        return embed, discord.ui.View(timeout=300)
+
+        view = BlackjackPanelView(interaction.user)
+        return build_blackjack_overview_embed(), view
 
     # ------------------------------------------------------------------
     # Lifecycle + recovery
