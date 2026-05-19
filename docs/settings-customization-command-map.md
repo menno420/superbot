@@ -479,6 +479,44 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 24. **recommended_PR_phase**: S8.
 
 
+### community
+
+1. **cog_module**: `disbot/cogs/community_cog.py`.
+2. **subsystem**: `community`
+3. **current_commands**: `!community`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `community` entry — opens `CommunityHubView`
+   in `disbot/views/community/hub.py`.
+6. **help_menu_discoverable**: Yes (registered as a Help category via
+   `utils/hub_registry.py` HUBS entry; falls back to standard `SUBSYSTEMS`
+   iteration for "All Commands / Advanced").
+7. **dedicated_panel_command**: `!community`.
+8. **help_menu_direct_navigation_hook**: `CommunityCog.build_help_menu_view`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `community.hub.view`.
+14. **hardcoded_or_env_only_behavior**: hub children are hard-coded
+    cross-link buttons (`xp`, `role`, `counting`, `chain`, `leaderboard`)
+    in `views/community/hub.py:_HUB_CHILDREN`.
+15. **missing_customization_commands**: none — Community is a router-only
+    hub, not a configurable subsystem.
+16. **missing_settings_pages**: none planned; the hub itself has no
+    persisted state.
+17. **missing_menu_buttons_selects_modals**: future S9b promotes XP/Role
+    to `parent_hub="community"` and adds an Includes line in Help.
+18. **setting_class_per_value**: n/a (router only).
+19. **target_Settings_Manager_page**: none — children expose their own.
+20. **target_mutation_path**: n/a; no state.
+21. **target_help_or_menu_route**: Help direct-nav into `CommunityHubView`;
+    each button forwards to the target cog's `build_help_menu_view` hook.
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — interface skeleton, low risk.
+24. **recommended_PR_phase**: mother-hub PR sequence Phase S9.
+
+
 ### games
 
 1. **cog_module**: `disbot/cogs/games_cog.py`.
