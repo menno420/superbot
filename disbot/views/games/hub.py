@@ -29,7 +29,10 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord.ext import commands
 
+from services import governance_service
+from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
@@ -68,8 +71,17 @@ def discover_game_children() -> list[tuple[str, dict]]:
     return children
 
 
-def build_games_hub_embed() -> discord.Embed:
-    """Build the embed shown by :class:`GamesHubView`."""
+def build_games_hub_embed(
+    children: list[tuple[str, dict]] | None = None,
+) -> discord.Embed:
+    """Build the embed shown by :class:`GamesHubView`.
+
+    When ``children`` is supplied (typically pre-filtered by
+    :func:`build_games_hub_panel`), the embed only describes those
+    subsystems. When ``None``, falls back to the unfiltered list — used
+    by callers that construct the view directly (tests, persistent
+    re-registration).
+    """
     embed = discord.Embed(
         title="🎮 Games Hub",
         description=(
@@ -79,8 +91,11 @@ def build_games_hub_embed() -> discord.Embed:
         color=GAME_COLOR,
     )
 
+    if children is None:
+        children = discover_game_children()
+
     by_group: dict[str, list[tuple[str, dict]]] = {}
-    for name, meta in discover_game_children():
+    for name, meta in children:
         group = meta.get("hub_group") or "other"
         by_group.setdefault(group, []).append((name, meta))
 
@@ -110,6 +125,52 @@ def build_games_hub_embed() -> discord.Embed:
     return embed
 
 
+async def build_games_hub_panel(
+    author: discord.Member | discord.User,
+    *,
+    interaction: discord.Interaction | None = None,
+    ctx: commands.Context | None = None,
+    visible: set[str] | None = None,
+) -> tuple[discord.Embed, GamesHubView]:
+    """Resolve governance, filter children, and build the hub panel.
+
+    Single source of truth for opening the Games hub. Callers are:
+
+    * ``!games`` prefix command → pass ``ctx``.
+    * ``GamesCog.build_help_menu_view`` (help hook) → pass ``interaction``.
+    * Back-to-Games closure rebuilds → pass ``interaction``.
+
+    When ``visible`` is supplied the caller has already resolved
+    visibility (e.g. inside an outer closure) and we skip the
+    re-resolution. Otherwise the factory builds a
+    :class:`GovernanceContext` from whichever of ``interaction`` /
+    ``ctx`` was provided and calls
+    ``governance_service.resolve_visibility``.
+
+    Filtered children are passed to both the embed builder and the
+    view constructor so the surface stays in sync.
+    """
+    if visible is None:
+        if interaction is not None:
+            gctx = GovernanceContext.from_interaction(interaction)
+        elif ctx is not None:
+            gctx = GovernanceContext.from_ctx(ctx)
+        else:
+            raise ValueError(
+                "build_games_hub_panel requires interaction or ctx "
+                "when visible is not pre-resolved",
+            )
+        result = await governance_service.resolve_visibility(gctx)
+        visible = result.visible_subsystems
+
+    children = [
+        (name, meta) for name, meta in discover_game_children() if name in visible
+    ]
+    embed = build_games_hub_embed(children)
+    view = GamesHubView(author, children=children)
+    return embed, view
+
+
 def attach_back_to_games_button(
     view: discord.ui.View,
     author: discord.Member | discord.User,
@@ -119,8 +180,11 @@ def attach_back_to_games_button(
     Thin wrapper around :func:`views.navigation.attach_back_button` (S2).
     The parent-builder closure captures ``author`` so the rebuilt
     :class:`GamesHubView` remains invoker-restricted; the child list is
-    re-discovered from ``SUBSYSTEMS`` at click time so the hub reflects
-    the live registry, not the snapshot from when the panel was opened.
+    re-discovered (and re-filtered through governance) at click time so
+    the hub reflects the live state — not the snapshot from when the
+    panel was opened. PR D: rebuild now routes through
+    :func:`build_games_hub_panel` to apply governance filtering on the
+    rebuilt hub.
 
     Returns ``False`` (no-op) if the view is already at Discord's
     25-component cap — ``attach_back_button`` logs a WARNING in that
@@ -128,9 +192,9 @@ def attach_back_to_games_button(
     """
 
     async def _build_games_parent(
-        _interaction: discord.Interaction,
+        interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        return build_games_hub_embed(), GamesHubView(author)
+        return await build_games_hub_panel(author, interaction=interaction)
 
     return attach_back_button(
         view,
@@ -229,7 +293,11 @@ class GamesHubView(HubView):
 
     SUBSYSTEM = "games"
 
-    def __init__(self, author: discord.Member | discord.User) -> None:
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        children: list[tuple[str, dict]] | None = None,
+    ) -> None:
         super().__init__(author)
         # NOTE: discord.py's ``discord.ui.View`` uses ``self._children``
         # for its internal items list (see ``discord/ui/view.py``
@@ -237,7 +305,16 @@ class GamesHubView(HubView):
         # ``self._children`` overwrites the items list and lets tuples
         # leak into the view's components — which fails serialization
         # when the view is sent to Discord. Use a distinct name.
-        self._game_children = discover_game_children()
+        #
+        # PR D: ``children`` is normally pre-filtered by
+        # :func:`build_games_hub_panel` so only governance-visible
+        # subsystems render. ``None`` falls back to the unfiltered
+        # discovery — used by tests and any caller that constructs
+        # the view directly. Click-time recheck in :meth:`handle_select`
+        # still gates correctly even on the unfiltered path.
+        if children is None:
+            children = discover_game_children()
+        self._game_children = children
         self.add_item(_GamesHubSelect(self._game_children))
 
     async def handle_select(
@@ -257,6 +334,21 @@ class GamesHubView(HubView):
         if meta is None or meta.get("parent_hub") != "games":
             await interaction.response.send_message(
                 "That game is no longer routed to the Games hub.",
+                ephemeral=True,
+            )
+            return
+
+        # PR D: click-time governance recheck. If the subsystem has
+        # become invisible between render and click (visibility change,
+        # role removal, channel scope override), fail closed with an
+        # ephemeral. ``resolve_visibility`` is cached by
+        # ``(guild_id, channel_id, tier, role_ids)`` so the re-check is
+        # essentially free in steady state.
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
+        if sub_name not in vis_result.visible_subsystems:
+            await interaction.response.send_message(
+                "That feature is no longer available in this channel.",
                 ephemeral=True,
             )
             return

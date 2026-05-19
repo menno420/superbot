@@ -30,11 +30,15 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord.ext import commands
 
+from services import governance_service
+from services.governance_service import GovernanceContext
 from utils.hub_registry import get_hub
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GENERAL_COLOR
 from views.base import HubView
+from views.navigation import attach_back_button
 
 logger = logging.getLogger("bot.views.community")
 
@@ -88,15 +92,25 @@ def _format_child_label(subsystem: str, meta: dict) -> str:
     return f"{emoji} {display}"
 
 
-def build_community_hub_embed() -> discord.Embed:
+def build_community_hub_embed(
+    primary: list[tuple[str, dict]] | None = None,
+    cross_link: list[tuple[str, dict]] | None = None,
+) -> discord.Embed:
     """Build the embed shown by :class:`CommunityHubView`.
 
     Description is generated from the discovered children so it stays
     in sync with the registry. The "Progression" / "Community games &
     standings" group headings are hardcoded — they are presentational
     framing, not metadata.
+
+    PR D: when ``primary`` and ``cross_link`` are supplied (typically
+    pre-filtered by :func:`build_community_hub_panel`), the embed only
+    describes those subsystems. When either is ``None``, falls back to
+    unfiltered discovery — used by callers that construct the view
+    directly (tests, persistent re-registration).
     """
-    primary, cross_link = discover_community_children()
+    if primary is None or cross_link is None:
+        primary, cross_link = discover_community_children()
     parts = ["Pick a community feature below."]
 
     if primary:
@@ -124,6 +138,82 @@ def build_community_hub_embed() -> discord.Embed:
     return embed
 
 
+async def build_community_hub_panel(
+    author: discord.Member | discord.User,
+    *,
+    interaction: discord.Interaction | None = None,
+    ctx: commands.Context | None = None,
+    visible: set[str] | None = None,
+) -> tuple[discord.Embed, CommunityHubView]:
+    """Resolve governance, filter children, and build the hub panel.
+
+    Single source of truth for opening the Community hub. Callers:
+
+    * ``!community`` prefix command → pass ``ctx``.
+    * ``CommunityCog.build_help_menu_view`` (help hook) → pass ``interaction``.
+    * Back-to-Community closure rebuilds → pass ``interaction``.
+
+    When ``visible`` is supplied the caller has already resolved
+    visibility and we skip the re-resolution. Otherwise the factory
+    builds a :class:`GovernanceContext` from whichever of
+    ``interaction`` / ``ctx`` was provided and calls
+    ``governance_service.resolve_visibility``.
+
+    Both primary and cross-link children are filtered through the
+    visible set. Cross-links that point at a hidden subsystem are
+    dropped silently — operators see them again as soon as the
+    subsystem becomes visible.
+    """
+    if visible is None:
+        if interaction is not None:
+            gctx = GovernanceContext.from_interaction(interaction)
+        elif ctx is not None:
+            gctx = GovernanceContext.from_ctx(ctx)
+        else:
+            raise ValueError(
+                "build_community_hub_panel requires interaction or ctx "
+                "when visible is not pre-resolved",
+            )
+        result = await governance_service.resolve_visibility(gctx)
+        visible = result.visible_subsystems
+
+    primary, cross_link = discover_community_children()
+    primary = [(name, meta) for name, meta in primary if name in visible]
+    cross_link = [(name, meta) for name, meta in cross_link if name in visible]
+
+    embed = build_community_hub_embed(primary, cross_link)
+    view = CommunityHubView(author, primary=primary, cross_link=cross_link)
+    return embed, view
+
+
+def attach_back_to_community_button(
+    view: discord.ui.View,
+    author: discord.Member | discord.User,
+) -> bool:
+    """Append a "↩ Back to Community" control to a child view.
+
+    Mirrors :func:`disbot.views.games.hub.attach_back_to_games_button`.
+    The parent-builder closure routes through
+    :func:`build_community_hub_panel` so the rebuilt hub is filtered
+    through governance at click time.
+    """
+
+    async def _build_community_parent(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        return await build_community_hub_panel(author, interaction=interaction)
+
+    return attach_back_button(
+        view,
+        label="↩ Back to Community",
+        custom_id="community:back",
+        parent_builder=_build_community_parent,
+        row=4,
+        style=discord.ButtonStyle.secondary,
+        error_message="Could not reload the Community hub. Please try again.",
+    )
+
+
 class _CommunityChildButton(discord.ui.Button):
     """A button on the Community hub that opens a child cog's
     ``build_help_menu_view`` in place.
@@ -146,6 +236,21 @@ class _CommunityChildButton(discord.ui.Button):
         self._subsystem = subsystem
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        # PR D: click-time governance recheck. If the targeted
+        # subsystem has become invisible since this button was
+        # rendered, fail closed with an ephemeral and do NOT call into
+        # the cog. ``resolve_visibility`` is cached by ``(guild_id,
+        # channel_id, tier, role_ids)`` so the re-check is essentially
+        # free in steady state.
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
+        if self._subsystem not in vis_result.visible_subsystems:
+            await interaction.response.send_message(
+                "That feature is no longer available in this channel.",
+                ephemeral=True,
+            )
+            return
+
         # Local import keeps the help cog out of module-import time.
         from cogs.help_cog import _cog_for_subsystem
 
@@ -195,9 +300,23 @@ class CommunityHubView(HubView):
 
     SUBSYSTEM = "community"
 
-    def __init__(self, author: discord.Member | discord.User) -> None:
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        primary: list[tuple[str, dict]] | None = None,
+        cross_link: list[tuple[str, dict]] | None = None,
+    ) -> None:
         super().__init__(author)
-        primary, cross_link = discover_community_children()
+        # PR D: ``primary`` and ``cross_link`` are normally pre-filtered
+        # by :func:`build_community_hub_panel` so only
+        # governance-visible subsystems render. Either being ``None``
+        # falls back to unfiltered discovery — used by tests and any
+        # caller that constructs the view directly. Click-time recheck
+        # in :class:`_CommunityChildButton.callback` still gates
+        # correctly even on the unfiltered path.
+        if primary is None or cross_link is None:
+            primary, cross_link = discover_community_children()
         for subsystem, meta in primary:
             self.add_item(
                 _CommunityChildButton(
@@ -220,6 +339,8 @@ class CommunityHubView(HubView):
 
 __all__ = [
     "CommunityHubView",
+    "attach_back_to_community_button",
     "build_community_hub_embed",
+    "build_community_hub_panel",
     "discover_community_children",
 ]

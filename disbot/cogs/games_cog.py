@@ -22,7 +22,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim
 from views.base import send_panel
-from views.games.hub import GamesHubView, build_games_hub_embed
+from views.games.hub import build_games_hub_panel
 
 logger = logging.getLogger("bot.cogs.games")
 
@@ -36,8 +36,8 @@ class GamesCog(commands.Cog):
     @commands.command(name="games")
     async def games_menu(self, ctx: commands.Context) -> None:
         """Open the Games hub — competitive games and channel activities."""
-        view = GamesHubView(ctx.author)
-        await send_panel(ctx, embed=build_games_hub_embed(), view=view)
+        embed, view = await build_games_hub_panel(ctx.author, ctx=ctx)
+        await send_panel(ctx, embed=embed, view=view)
 
     async def build_help_menu_view(
         self,
@@ -45,8 +45,7 @@ class GamesCog(commands.Cog):
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook — returns the Games hub panel."""
         ctx_shim = help_ctx_shim(interaction)
-        view = GamesHubView(ctx_shim.author)
-        return build_games_hub_embed(), view
+        return await build_games_hub_panel(ctx_shim.author, interaction=interaction)
 
 
 async def setup(bot: commands.Bot) -> None:

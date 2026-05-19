@@ -26,7 +26,7 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import help_ctx_shim
 from views.base import send_panel
-from views.community.hub import CommunityHubView, build_community_hub_embed
+from views.community.hub import build_community_hub_panel
 
 logger = logging.getLogger("bot.cogs.community")
 
@@ -40,8 +40,8 @@ class CommunityCog(commands.Cog):
     @commands.command(name="community")
     async def community_menu(self, ctx: commands.Context) -> None:
         """Open the Community hub — XP, Roles, and community activities."""
-        view = CommunityHubView(ctx.author)
-        await send_panel(ctx, embed=build_community_hub_embed(), view=view)
+        embed, view = await build_community_hub_panel(ctx.author, ctx=ctx)
+        await send_panel(ctx, embed=embed, view=view)
 
     async def build_help_menu_view(
         self,
@@ -49,8 +49,7 @@ class CommunityCog(commands.Cog):
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook — returns the Community hub panel."""
         ctx_shim = help_ctx_shim(interaction)
-        view = CommunityHubView(ctx_shim.author)
-        return build_community_hub_embed(), view
+        return await build_community_hub_panel(ctx_shim.author, interaction=interaction)
 
 
 async def setup(bot: commands.Bot) -> None:
