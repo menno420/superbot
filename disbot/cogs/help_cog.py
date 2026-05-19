@@ -6,14 +6,33 @@ import math
 import discord
 from discord.ext import commands
 
+from cogs.help.route import HUB_PANEL_BUILDERS as _HUB_PANEL_BUILDERS
+from cogs.help.route import (
+    HelpOpener,
+    HelpRoute,
+)
+from cogs.help.route import open_route as _open_route
+from cogs.help.route import resolve_route as _resolve_route
 from core.runtime.persistent_views import PersistentView, register
 from services import governance_service
 from services.governance_service import GovernanceContext
-from utils.hub_registry import ALL_COMMANDS_KEY, get_hub, hubs_for_tier
+from utils.hub_registry import ALL_COMMANDS_KEY, hubs_for_tier
 from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
 from utils.ui_constants import ADMIN_COLOR, GENERAL_COLOR, MOD_COLOR, UTILITY_COLOR
 
 logger = logging.getLogger("bot")
+
+# Re-exports kept for test compatibility — the canonical definitions
+# live in ``cogs.help.route``. The Help route model is shared by the
+# typed ``!help <name>`` command and the Help dropdown so the same
+# name produces the same destination regardless of entry point.
+__all__ = [
+    "HelpOpener",
+    "HelpRoute",
+    "_HUB_PANEL_BUILDERS",
+    "_open_route",
+    "_resolve_route",
+]
 
 _PAGE_SIZE = 12  # subsystems per help page — well under Discord's 25-option limit
 
@@ -232,14 +251,13 @@ def _build_page_embed(
 
 
 def build_categories_overview_embed(member_tier: str) -> discord.Embed:
-    """Build the top-level Help embed showing mother-hub categories (S3).
+    """Build the top-level Help embed showing mother-hub categories.
 
     Iterates :data:`utils.hub_registry.HUBS`, filters to hubs visible at
     ``member_tier`` via :func:`hubs_for_tier`, and always appends the
-    permanent "All Commands / Advanced" fallback row. Each hub line
-    states purpose, includes-list (primary + cross-link children with
-    display names from ``SUBSYSTEMS``), and typed entry command — the
-    user-centered orientation rule from the mother-hub map.
+    permanent "Advanced / All Commands" fallback row. Each hub row is a
+    uniform two-line shape — purpose + typed entry command — with no
+    ``Includes:`` line. Child rosters live inside each hub panel.
     """
     embed = discord.Embed(
         title="📚 Help Menu",
@@ -247,38 +265,18 @@ def build_categories_overview_embed(member_tier: str) -> discord.Embed:
         color=UTILITY_COLOR,
     )
 
-    visible_hubs = hubs_for_tier(member_tier)
-    for hub in visible_hubs:
-        included: list[str] = []
-        for child_key in hub.primary_children:
-            child_meta = SUBSYSTEMS.get(child_key)
-            if child_meta is not None:
-                included.append(child_meta.get("display_name", child_key))
-        for child_key in hub.cross_link_children:
-            child_meta = SUBSYSTEMS.get(child_key)
-            if child_meta is not None:
-                included.append(
-                    f"{child_meta.get('display_name', child_key)} (cross-link)",
-                )
-
-        lines = [hub.purpose]
-        if included:
-            lines.append(f"Includes: {', '.join(included)}.")
-        lines.append(f"→ `{hub.entry_command}`")
+    for hub in hubs_for_tier(member_tier):
         embed.add_field(
             name=f"{hub.emoji} {hub.display_name}",
-            value="\n".join(lines),
+            value=f"{hub.purpose}\n→ `{hub.entry_command}`",
             inline=False,
         )
 
-    # All Commands / Advanced is permanent — guarantees discoverability
+    # Advanced / All Commands is permanent — guarantees discoverability
     # for every visible subsystem even when no mother hub owns it.
     embed.add_field(
-        name="📋 All Commands / Advanced",
-        value=(
-            "Browse every visible command directly, grouped by tier.\n"
-            "Power-user fallback: use this when you know the command name."
-        ),
+        name="📋 Advanced / All Commands",
+        value="Browse every available command directly.",
         inline=False,
     )
 
@@ -542,62 +540,40 @@ class HelpCategoryView(PersistentView):
         gctx = GovernanceContext.from_interaction(interaction)
         vis_result = await governance_service.resolve_visibility(gctx)
 
-        if value == ALL_COMMANDS_KEY:
-            visible_list = [
-                name
-                for name, meta in all_subsystems_sorted()
-                if name in vis_result.visible_subsystems and not meta.get("parent_hub")
-            ]
-            new_view = HelpPanelView(visible_list, page=0)
-            embed = _build_page_embed(
-                interaction.client,  # type: ignore[arg-type]
-                visible_list,
-                0,
-                vis_result.member_tier,
-            )
-            await interaction.response.edit_message(embed=embed, view=new_view)
-            return
+        # The sentinel "All Commands / Advanced" routes through the same
+        # resolver as everything else — keyed by the canonical "advanced"
+        # alias so typed Help and the dropdown share one branch.
+        name = "advanced" if value == ALL_COMMANDS_KEY else value
+        opener = HelpOpener.from_interaction(interaction)
+        route = _resolve_route(name, bot=opener.client)
 
-        # Hub category — route to the host cog's build_help_menu_view.
-        hub = get_hub(value)
-        if hub is None:
+        if route.kind == "unknown":
             await interaction.response.send_message(
                 "That category is no longer available.",
                 ephemeral=True,
             )
             return
 
-        cog = _cog_for_subsystem(interaction.client, hub.key)  # type: ignore[arg-type]
-        if cog is None:
+        embed, sub_view = await _open_route(
+            route,
+            opener,
+            visible_subsystems=vis_result.visible_subsystems,
+            member_tier=vis_result.member_tier,
+        )
+
+        if sub_view is None:
+            # Embed-only fallback (e.g. hub builder failed) — surface as
+            # an ephemeral so the category panel stays intact.
             await interaction.response.send_message(
-                f"The {hub.display_name} hub is not loaded right now.",
+                embed=embed,
                 ephemeral=True,
             )
             return
 
-        build_panel = getattr(cog, "build_help_menu_view", None)
-        if not callable(build_panel):
-            await interaction.response.send_message(
-                f"The {hub.display_name} hub doesn't expose a panel yet.",
-                ephemeral=True,
-            )
-            return
-
-        try:
-            embed, sub_view = await build_panel(interaction)
-        except Exception as exc:  # noqa: BLE001 — Help must never crash on hook
-            logger.warning(
-                "HelpCategoryView: build_help_menu_view failed for hub=%r: %s",
-                hub.key,
-                exc,
-                exc_info=True,
-            )
-            await interaction.response.send_message(
-                f"Could not open the {hub.display_name} hub — see bot logs.",
-                ephemeral=True,
-            )
-            return
-
+        # Attach Back-to-Help on every interactive surface opened from
+        # the category index. ``HelpPanelView`` (the Advanced branch)
+        # already provides its own pagination; the back button still
+        # gives the user a one-click return to the category index.
         _attach_back_to_help_button(sub_view)
         await interaction.response.edit_message(embed=embed, view=sub_view)
 
@@ -614,71 +590,41 @@ class HelpCog(commands.Cog):
         vis_result = await governance_service.resolve_visibility(gctx)
         visible_set = vis_result.visible_subsystems
         member_tier = vis_result.member_tier
-        # parent_hub children are reachable via their hub and via typed
-        # commands; they're hidden from the overview/select. The typed
-        # category-lookup branch below iterates SUBSYSTEMS directly and
-        # is therefore unaffected by this filter.
-        visible_list = [
-            name
-            for name, meta in all_subsystems_sorted()
-            if name in visible_set and not meta.get("parent_hub")
-        ]
+        prefix = ctx.prefix or "!"
 
         if category:
-            for name, meta in SUBSYSTEMS.items():
-                if name not in visible_set:
-                    continue
-                if category.lower() in (
-                    name.lower(),
-                    meta.get("display_name", "").lower(),
-                ):
-                    cog = _cog_for_subsystem(self.bot, name)
-                    if cog:
-                        await ctx.send(
-                            embed=build_cog_embed(cog, ctx.prefix or "!", name),
-                            delete_after=60,
-                        )
-                        return
+            opener = HelpOpener.from_ctx(ctx)
+            route = _resolve_route(category, bot=self.bot)
 
-            cog = self.bot.get_cog(category) or self.bot.get_cog(category + "Cog")
-            cmd = self.bot.get_command(category)
-            if cog:
+            if route.kind == "unknown":
                 await ctx.send(
-                    embed=build_cog_embed(cog, ctx.prefix or "!"),
-                    delete_after=60,
+                    f"No command or category named `{category}` found.",
+                    delete_after=10,
                 )
                 return
-            if cmd:
-                prefix = ctx.prefix or "!"
-                embed = discord.Embed(
-                    title=f"`{prefix}{cmd.name}`",
-                    description=cmd.help or "No description.",
-                    color=UTILITY_COLOR,
-                )
-                if cmd.aliases:
-                    embed.add_field(
-                        name="Aliases",
-                        value=", ".join(f"`{a}`" for a in cmd.aliases),
-                    )
-                embed.add_field(
-                    name="Usage",
-                    value=f"`{prefix}{cmd.name}{(' ' + cmd.signature) if cmd.signature else ''}`",
-                    inline=False,
-                )
+
+            embed, sub_view = await _open_route(
+                route,
+                opener,
+                visible_subsystems=visible_set,
+                member_tier=member_tier,
+                prefix=prefix,
+            )
+
+            if sub_view is None:
                 await ctx.send(embed=embed, delete_after=60)
                 return
-            await ctx.send(
-                f"No command or category named `{category}` found.",
-                delete_after=10,
-            )
+
+            # For typed Help with a hub/subsystem/advanced surface, send
+            # the panel as a fresh message and attach Back-to-Help so the
+            # user can return to the category index.
+            _attach_back_to_help_button(sub_view)
+            await ctx.send(embed=embed, view=sub_view)
             return
 
-        # S3: the top of Help is now the mother-hub category index.
-        # The legacy paginated subsystem list is reached only via the
-        # "All Commands / Advanced" entry inside HelpCategoryView; the
-        # hub-child filter lives in that branch (see
-        # HelpCategoryView._on_select), not here.
-        del visible_list
+        # S3: the top of Help is the mother-hub category index. The
+        # legacy paginated subsystem list is reached only via the
+        # "Advanced / All Commands" entry inside HelpCategoryView.
         view = HelpCategoryView(member_tier)
         embed = build_categories_overview_embed(member_tier)
 

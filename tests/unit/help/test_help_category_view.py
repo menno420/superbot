@@ -93,16 +93,21 @@ def test_categories_embed_hides_admin_only_hubs_from_normal_users():
     assert any("All Commands" in n for n in field_names)
 
 
-def test_categories_embed_includes_line_lists_games_children():
-    """The Games category must show its children in the 'Includes:'
-    line so users know what's behind the dropdown.
+def test_categories_embed_uses_uniform_row_shape_with_no_includes_line():
+    """Each hub row must be the uniform two-line shape — purpose +
+    typed entry command — with no ``Includes:`` line. Child rosters
+    live inside each hub panel, not on Help Home.
     """
     embed = build_categories_overview_embed(member_tier="user")
+    for field in embed.fields:
+        assert "Includes:" not in field.value, (
+            f"Help Home row {field.name!r} still has an Includes: line: "
+            f"{field.value!r}"
+        )
     games_field = next(f for f in embed.fields if "Games" in f.name)
-    # Pin a sampling of the known children rather than the full set —
-    # changes to game roster shouldn't break this test.
-    assert "Blackjack" in games_field.value
-    assert "Mining" in games_field.value
+    # Purpose + entry command, both present and on their own lines.
+    assert "Game" in games_field.value or "game" in games_field.value
+    assert "!games" in games_field.value
 
 
 # ---------------------------------------------------------------------------

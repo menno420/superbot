@@ -269,35 +269,23 @@ def test_help_panel_view_select_omits_hub_children_when_visible_list_excludes_th
 # ---------------------------------------------------------------------------
 
 
-def test_typed_help_category_lookup_unchanged_for_hub_children():
-    """``!help blackjack`` resolves by iterating SUBSYSTEMS directly —
-    the visible_set check still passes (governance allows blackjack),
-    and there is no parent_hub filter on the category lookup branch.
-
-    This test is a code-survey assertion rather than a runtime call: it
-    inspects ``help_cog.HelpCog.help_command`` source to confirm the
-    category branch doesn't filter on ``parent_hub``.
+def test_typed_help_route_for_hub_child_resolves_to_subsystem():
+    """``!help blackjack`` must resolve to the Blackjack subsystem so the
+    panel opens — never to a parent-hub filter that would silently drop
+    hub children. This is a runtime assertion against the resolver
+    rather than a source-text grep; the previous implementation lived
+    inside ``help_command`` and is now centralized in ``_resolve_route``.
     """
-    import inspect
+    from unittest.mock import MagicMock
 
-    # ``help_command`` is wrapped by ``@commands.command`` into a Command
-    # object — read the underlying callback source.
-    src = inspect.getsource(help_cog.HelpCog.help_command.callback)
-    # The overview branch builds visible_list with the parent_hub filter
-    # (this is the line whose comment we want to find).
-    assert "parent_hub" in src, (
-        "help_command source no longer mentions parent_hub — filter likely removed"
-    )
-    # The category branch iterates ``SUBSYSTEMS.items()`` and skips
-    # invisible names. It must NOT skip on parent_hub.
-    # Match the actual ``if category:`` statement, not occurrences
-    # inside docstrings or comments — code indentation is 8 spaces.
-    category_branch_start = src.find("\n        if category:")
-    assert category_branch_start != -1
-    category_branch = src[category_branch_start:]
-    # ``parent_hub`` must not appear inside the category branch.
-    # (If a future refactor adds such a filter, this test will tell us.)
-    assert "parent_hub" not in category_branch, (
-        "category lookup branch now filters by parent_hub — that would "
-        "break typed ``!help blackjack`` access"
-    )
+    bot = MagicMock()
+    bot.get_command = MagicMock(return_value=None)
+
+    route = help_cog._resolve_route("blackjack", bot=bot)
+    assert route.kind == "subsystem"
+    assert route.target == "blackjack"
+
+    # Mining is another canonical hub child — same expectation.
+    route = help_cog._resolve_route("mining", bot=bot)
+    assert route.kind == "subsystem"
+    assert route.target == "mining"
