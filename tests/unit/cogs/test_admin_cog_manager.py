@@ -28,8 +28,8 @@ import discord
 import pytest
 
 from cogs.admin.cog_manager import (
-    _CogManagerView,
     _PROTECTED_COGS,
+    _CogManagerView,
     _do_load,
     _do_reload,
     _do_unload,
