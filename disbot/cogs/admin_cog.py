@@ -225,10 +225,10 @@ class AdminCog(commands.Cog):
     async def logging_grp(self, ctx):
         """Server-logging admin commands.
 
-        Usage: `!logging status` · `!logging test`
+        Usage: `!logging status` · `!logging test` · `!logging set <mod|cleanup>`
         """
         await ctx.send(
-            "Usage: `!logging <status|test>` — see `docs/server-logging.md`.",
+            "Usage: `!logging <status|test|set>` — see `docs/server-logging.md`.",
             delete_after=20,
         )
 
@@ -237,6 +237,45 @@ class AdminCog(commands.Cog):
     async def logging_status(self, ctx):
         """Show this guild's server-logging configuration + counters."""
         await ctx.send(embed=await build_logging_status_embed(ctx.guild))
+
+    @logging_grp.command(name="set")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def logging_set(self, ctx, kind: str = ""):
+        """Open the channel-select view for ``mod`` or ``cleanup`` log binding.
+
+        Usage:
+            !logging set mod      open the mod-log channel selector
+            !logging set cleanup  open the cleanup-log channel selector
+
+        Writes through :class:`BindingMutationPipeline`; no scalar
+        settings are touched.  Available channels are filtered to
+        ``TextChannel`` only.
+        """
+        from cogs.logging.select_view import LogChannelSelectView
+
+        kind = kind.strip().lower()
+        if kind not in ("mod", "cleanup"):
+            await ctx.send(
+                "Usage: `!logging set <mod|cleanup>` — opens the channel "
+                "selector for the requested log binding.",
+                delete_after=20,
+            )
+            return
+        if ctx.guild is None:
+            await ctx.send(
+                "`!logging set` requires a guild context.",
+                delete_after=15,
+            )
+            return
+        view = LogChannelSelectView(ctx.author, kind)
+        await ctx.send(
+            (
+                f"Pick a channel to bind as the **{kind} log** for this guild.  "
+                "All writes route through `BindingMutationPipeline` and "
+                "produce an audit row."
+            ),
+            view=view,
+        )
 
     @logging_grp.command(name="test")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
