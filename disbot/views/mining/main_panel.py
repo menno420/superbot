@@ -9,6 +9,17 @@ The Mine button opens a fresh ephemeral ``MineView`` from
 buttons call DB helpers directly — no cog round-trip needed.  The
 Build button opens ``_BuildModal`` which loads the current recipes
 list and validates the user's inventory.
+
+Navigation rule (PR #1 menu-lifecycle fix): the hub does not ship a
+root-level "↩ Overview" button. Such a button would be a no-op when
+the hub is already on its root state, violating the architecture
+rule that root panels must not show no-op Overview controls. Action
+buttons themselves are the navigation surface; after a Harvest /
+Explore / Inventory / Stats action, the embed shows the result and
+the user can click any action button to take the next step. The
+``_MineResultsView`` in ``views.mining.mine_view`` retains its own
+"↩ Mining Menu" button because it IS a child screen returning to
+this hub's root.
 """
 
 from __future__ import annotations
@@ -96,7 +107,7 @@ class MiningHubView(PersistentView):
             ),
             color=SUCCESS_COLOR,
         )
-        embed.set_footer(text="Click ↩ Overview to return.")
+        embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
@@ -125,7 +136,7 @@ class MiningHubView(PersistentView):
             description=f"{interaction.user.mention} {text}",
             color=SUCCESS_COLOR if amount >= 0 else ERROR_COLOR,
         )
-        embed.set_footer(text="Click ↩ Overview to return.")
+        embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
@@ -166,7 +177,7 @@ class MiningHubView(PersistentView):
             description=description,
             color=MINING_COLOR,
         )
-        embed.set_footer(text="Click ↩ Overview to return.")
+        embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
@@ -195,7 +206,7 @@ class MiningHubView(PersistentView):
         )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
-        embed.set_footer(text="Click ↩ Overview to return.")
+        embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
@@ -206,19 +217,6 @@ class MiningHubView(PersistentView):
     )
     async def build_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_BuildModal())
-
-    @discord.ui.button(
-        label="↩ Overview",
-        style=discord.ButtonStyle.secondary,
-        custom_id="mining:overview",
-        row=2,
-    )
-    async def overview_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ):
-        await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]
