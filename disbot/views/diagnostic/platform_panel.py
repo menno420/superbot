@@ -137,7 +137,7 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
     bot = interaction.client
     guild = interaction.guild
     if name == "status":
-        return build_status_embed(bot)
+        return build_status_embed(bot)  # type: ignore[arg-type]
     if name == "runtime":
         return build_runtime_embed()
     if name == "caches":
@@ -180,7 +180,7 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
     if name == "migrations":
         return await build_migrations_embed(guild)
     if name == "identity":
-        return await build_identity_embed(bot)
+        return await build_identity_embed(bot)  # type: ignore[arg-type]
     if name == "consistency":
         from services.platform_consistency import collect_report
 

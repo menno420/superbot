@@ -16,6 +16,7 @@ from __future__ import annotations
 import datetime
 
 import discord
+from discord.ext import commands
 
 from services.platform_consistency import (
     ConsistencyReport,
@@ -482,7 +483,7 @@ def build_provisioning_embed() -> discord.Embed:
 # ---------------------------------------------------------------------------
 
 
-def build_status_embed(bot: discord.Client) -> discord.Embed:
+def build_status_embed(bot: commands.Bot) -> discord.Embed:
     """Build the embed for ``!platform status``."""
     from core.runtime import tasks as runtime_tasks
 
@@ -758,7 +759,7 @@ async def build_anchors_embed() -> discord.Embed:
 
 
 async def build_identity_embed(
-    bot: discord.Client,
+    bot: commands.Bot,
     mode: str = "",
 ) -> discord.Embed:
     """Build the embed for ``!platform identity [--fix]``."""

@@ -22,6 +22,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
 import pytest
+from discord.ext import commands
 
 from views.diagnostic.platform_panel import (
     _CATALOGUES_OPTIONS,
@@ -160,7 +161,7 @@ def _fake_interaction(bot: object = None, guild: object = None) -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_dispatch_status_uses_status_builder():
-    interaction = _fake_interaction(bot=MagicMock(spec=discord.Client))
+    interaction = _fake_interaction(bot=MagicMock(spec=commands.Bot))
     interaction.client.uptime = None
     interaction.client.guilds = []
     interaction.client.cogs = {}
@@ -260,7 +261,7 @@ async def test_dispatch_identity_runs_without_fix_mode():
     """The panel never triggers self-healing; identity always runs in
     read-only mode there (typed `!platform identity --fix` is the only
     way to trigger healing)."""
-    interaction = _fake_interaction(bot=MagicMock(spec=discord.Client))
+    interaction = _fake_interaction(bot=MagicMock(spec=commands.Bot))
     with patch(
         "views.diagnostic.platform_panel.build_identity_embed",
         new_callable=AsyncMock,
@@ -274,7 +275,7 @@ async def test_dispatch_identity_runs_without_fix_mode():
 @pytest.mark.asyncio
 async def test_dispatch_consistency_uses_collect_report():
     interaction = _fake_interaction(
-        bot=MagicMock(spec=discord.Client),
+        bot=MagicMock(spec=commands.Bot),
         guild=MagicMock(),
     )
     fake_report = MagicMock()
