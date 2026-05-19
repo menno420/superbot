@@ -82,6 +82,17 @@ via the Settings Manager cog and services — never directly.
 | S11   | Help / Admin / Platform integration pass | `claude/settings-discoverability-integration` |
 | S12   | Setup wizard integration planning | `claude/setup-wizard-planning` |
 
+**Feature-flag state.** The Settings Manager cog ships with the
+``settings.manager_cog.enabled`` flag.  S5/S6/S7 landed with the flag
+default OFF — operators opted in per guild.  PR #8 (after the
+stabilization plan's S5-S7 close-out: XP/Economy pipeline migrations
++ channel/role/numeric-presets input modes) **flipped the default to
+ON** so the hub is available by default once the cog loads.  The
+kill-switch remains: operators flip it OFF either via the
+``SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED=off`` env override or
+the (future) ``!platform flags`` command, and the cog returns the
+disabled embed in that state.
+
 
 ## Execution workflow
 

@@ -16,11 +16,12 @@ Hard limits for S5:
   :data:`utils.subsystem_registry.SUBSYSTEMS` so help / admin /
   menu discoverability stays stable.
 * The :data:`core.runtime.feature_flags.SETTINGS_MANAGER_COG_ENABLED`
-  flag (default OFF) gates the runtime *behaviour* of ``!settings``
-  and the ``build_help_menu_view`` hook.  When OFF, invocations
-  return a clearly-worded disabled embed describing how to enable
-  it.  This avoids the "command exists but mysteriously hidden"
-  discoverability bug.
+  flag (default ON since PR #8) gates the runtime *behaviour* of
+  ``!settings`` and the ``build_help_menu_view`` hook.  When OFF
+  (kill-switched), invocations return a clearly-worded disabled
+  embed describing how to re-enable it.  The cog still loads either
+  way so help/admin/menu discoverability stays stable — this avoids
+  the "command exists but mysteriously hidden" discoverability bug.
 
 Pinned by ``tests/unit/invariants/test_settings_cog_read_only.py``:
 no imports of mutation pipelines in ``disbot/cogs/settings*`` or
@@ -53,20 +54,24 @@ def _disabled_embed() -> discord.Embed:
         title="⚙️ Settings Manager — disabled",
         description=(
             "The Settings Manager cog is registered for discoverability, "
-            "but its runtime behaviour is gated behind the "
-            f"`{_FLAG_NAME}` feature flag, which defaults to **OFF**.\n\n"
-            "When this flag is ON the `!settings` command opens the "
-            "Settings hub (read-only browsing of every subsystem's "
-            "scalar settings, bindings, resource requirements, and "
-            "recent audit history).\n\n"
-            "Flip the flag via the feature-flag mutation pipeline "
-            "(future `!platform flags set …` command) or the "
+            "but its runtime behaviour has been kill-switched via the "
+            f"`{_FLAG_NAME}` feature flag.\n\n"
+            "Since PR #8 this flag defaults to **ON** — this guild has "
+            "explicitly turned it OFF (or the flag evaluator is "
+            "unavailable, in which case the gate fails closed for "
+            "safety).\n\n"
+            "When ON the `!settings` command opens the Settings hub "
+            "(browsing + scalar edit/reset of every subsystem's "
+            "settings, bindings, resource requirements, and recent "
+            "audit history).\n\n"
+            "Re-enable via the feature-flag mutation pipeline (future "
+            "`!platform flags set …` command) or the "
             "`SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED=on` env "
             "override."
         ),
         color=discord.Color.greyple(),
     )
-    embed.set_footer(text="S5 — read-only Settings Manager shell (default OFF).")
+    embed.set_footer(text="Settings Manager (default ON since PR #8).")
     return embed
 
 
