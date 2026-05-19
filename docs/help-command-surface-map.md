@@ -166,31 +166,57 @@ routing issues. See `tests/unit/views/test_economy_inventory_edit.py`,
 ## 5. Future routing surfaces
 
 Tracked as the stabilization-plan PR sequence
-(`/root/.claude/plans/superbot-planning-jolly-wadler.md` §8). Listed
-here so a future reader can map this doc to the in-flight plan.
+(`/root/.claude/plans/superbot-planning-jolly-wadler.md` §8). All
+nine PRs have landed; this section is now a historical map between
+the plan numbers and the merge PR numbers, plus the work that remains
+beyond the plan.
 
 - **`parent_hub` metadata for S7–S10 children** (plan PR #3) —
-  **done.** `parent_hub` declared on `inventory → economy`,
+  **done** via PR #145. `parent_hub` declared on `inventory → economy`,
   `leaderboard → economy`, `xp → community`, `role → community`,
   `cleanup → moderation`, `logging → moderation`,
   `proof_channel → moderation`, `general → utility`. The eight rows
   above now read "hub child (...) — declared". Mining is additionally
   declared as a `cross_link_children` on the Economy hub.
-- **Community metadata-driven hub** (plan PR #4) — replace
-  `CommunityHubView._HUB_CHILDREN` hardcoded tuple with SUBSYSTEMS
-  discovery, mirroring `views/games/hub.py:discover_game_children`.
-  After PR #3 the metadata exists; the migration is a view-only
-  change.
-- **XP config modal pipeline migration** (plan PR #5) — three modals
-  in `disbot/views/xp/modals.py` write directly via `db.set_setting`;
-  migrate to `SettingsMutationPipeline`.
-- **Economy log-channel pipeline migration** (plan PR #6) — preferred
-  via `BindingMutationPipeline`.
-- **Settings numeric presets + channel/role selectors** (plan PR #7).
-- **Settings default-on with kill switch** (plan PR #8).
-- **Slash front door** `/help` (plan PR #9) — reuses `resolve_route` +
-  `open_route` + `HelpOpener.from_interaction`. Broader slash rollout
-  (`/games`, `/economy`, etc.) follows in subsequent PRs.
+- **Community metadata-driven hub** (plan PR #4) — **done** via
+  PR #146. `CommunityHubView` discovers primary children from
+  `SUBSYSTEMS` (`parent_hub == "community"`) and cross-links from
+  `hub_registry.get_hub("community").cross_link_children`, mirroring
+  the Games hub pattern. Button labels now come from registry
+  metadata (`emoji` + `display_name`).
+- **XP config modal pipeline migration** (plan PR #5) — **done** via
+  PR #147. The three XP config modals (`_XpRangeModal`,
+  `_XpCooldownModal`, `_XpChannelModal`) now route through
+  `SettingsMutationPipeline().set_value(...)`; a new
+  `xp_announce_channel` SettingSpec carries the channel-id-as-str
+  shape. Each write lands a `settings_mutation_audit` row.
+- **Economy log-channel pipeline migration** (plan PR #6) — **done**
+  via PR #148. Used `SettingsMutationPipeline` (not
+  `BindingMutationPipeline`) because two of the three call sites are
+  listener-triggered with no actor; the binding pipeline currently
+  requires an administrator-tier actor. The existing `log_channel`
+  BindingSpec stays as the typed-resource declaration; the new
+  `economy_log_channel` SettingSpec drives the write path. Same
+  duality the PR #5 commit documented for `xp_announce_channel`.
+- **Settings numeric presets + channel/role selectors** (plan PR #7)
+  — **done** via PR #149. Added `SettingSpec.input_hint` +
+  `SettingSpec.presets` fields and three new widget modules
+  (`edit_channel.py`, `edit_role.py`, `edit_number_presets.py`).
+  Opted in `xp_announce_channel`, `economy_log_channel`
+  (`input_hint="channel"`), and `xp_cooldown`
+  (`input_hint="numeric_presets"`, six presets).
+- **Settings default-on with kill switch** (plan PR #8) — **done**
+  via PR #150. `SETTINGS_MANAGER_COG_ENABLED.default_value` flipped
+  to `True`; kill-switch path
+  (`SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED=off` env override or
+  the future `!platform flags` command) unchanged.
+- **Slash front door** `/help` (plan PR #9) — **done** via PR #151.
+  `HelpCog.help_slash` reuses `resolve_route` + `open_route` +
+  `HelpOpener.from_interaction` + `_attach_back_to_help_button`.
+  Responses are ephemeral. Broader slash rollout (`/games`,
+  `/economy`, `/community`, `/utility`, `/moderation`, `/admin`,
+  `/platform`, `/settings`) follows in subsequent PRs and uses the
+  same 30-line recipe.
 - **Setup wizard** (`!setup`) — deferred until the S7 logging-route
   pipeline, S8 cleanup-policy pipeline, S10 preset packs, and the P5
   platform UI framework all land. See `docs/roadmap_setup_platform.md`.
