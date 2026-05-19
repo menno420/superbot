@@ -142,6 +142,29 @@ class SettingSpec:
         strictness ``"off"``/``"light"``/``"normal"``/``"strict"``).
         Empty tuple (default) preserves backward compatibility — the
         widget is a free-form modal text input.
+    input_hint:
+        Optional dispatch hint that overrides ``value_type`` /
+        ``allowed_values`` routing in the S6/S7 edit dispatcher.
+        Recognised values (PR #7):
+
+        * ``""`` (default) — use the ``value_type`` / ``allowed_values``
+          rules: bool→toggle, str+allowed_values→enum select,
+          int/float→free-form modal, str→free-form modal.
+        * ``"channel"`` — render a Discord channel select (numeric
+          channel ID writes through the pipeline as a string).
+        * ``"role"`` — render a Discord role select (numeric role ID
+          writes through the pipeline as a string).
+        * ``"numeric_presets"`` — render a preset button row backed by
+          :attr:`presets`, with an override modal for custom values.
+
+        Unrecognised hints fall through to the default routing so
+        new hints can be added without coordinating every dispatcher
+        update.
+    presets:
+        Suggested values for the ``"numeric_presets"`` input mode.
+        Each entry becomes a button labelled with its value.  Empty
+        tuple (default) means "no presets — use the free-form modal
+        only", which is the previous int/float behaviour.
     """
 
     name: str
@@ -152,6 +175,8 @@ class SettingSpec:
     hint: str = ""
     validator: Callable[[Any], None] | None = None
     allowed_values: tuple[Any, ...] = ()
+    input_hint: str = ""
+    presets: tuple[Any, ...] = ()
 
 
 @dataclass(frozen=True)

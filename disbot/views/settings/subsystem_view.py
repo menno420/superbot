@@ -445,7 +445,53 @@ class _EditSettingSelect(discord.ui.Select):
 
         parent_msg = interaction.message
 
-        # Dispatch by value_type and allowed_values shape.
+        # Dispatch by explicit input_hint first (PR #7); fall through
+        # to the value_type / allowed_values rules so settings that
+        # don't opt into the new modes keep their existing widget.
+        hint = (spec.input_hint or "").strip().lower()
+        if hint == "channel":
+            from views.settings.edit_channel import ChannelSettingSelectView
+
+            view = ChannelSettingSelectView(self.subsystem, name, parent_msg)
+            await interaction.response.send_message(
+                f"Pick a channel for `{self.subsystem}.{name}` "
+                f"(current=`{current!r}`):",
+                view=view,
+                ephemeral=True,
+            )
+            return
+        if hint == "role":
+            from views.settings.edit_role import RoleSettingSelectView
+
+            view = RoleSettingSelectView(self.subsystem, name, parent_msg)
+            await interaction.response.send_message(
+                f"Pick a role for `{self.subsystem}.{name}` "
+                f"(current=`{current!r}`):",
+                view=view,
+                ephemeral=True,
+            )
+            return
+        if hint == "numeric_presets" and spec.presets:
+            from views.settings.edit_number_presets import NumericPresetsView
+
+            view = NumericPresetsView(
+                subsystem=self.subsystem,
+                setting_name=name,
+                value_type=spec.value_type,
+                current_value=current,
+                default_value=spec.default,
+                presets=spec.presets,
+                parent_message=parent_msg,
+            )
+            await interaction.response.send_message(
+                f"Pick a value for `{self.subsystem}.{name}` "
+                f"(current=`{current!r}`, default=`{spec.default!r}`):",
+                view=view,
+                ephemeral=True,
+            )
+            return
+
+        # Default routing — unchanged from S6.
         if spec.value_type is bool:
             from views.settings.edit_boolean import toggle_setting
 
