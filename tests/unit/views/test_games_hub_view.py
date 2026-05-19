@@ -125,6 +125,51 @@ def test_view_has_exactly_one_select():
     assert len(selects) == 1
 
 
+def test_view_children_are_all_ui_items_not_tuples():
+    """Regression: a previous bug stored the discovered child-meta list as
+    ``self._children``, which collides with ``discord.ui.View``'s internal
+    ``_children`` items list. That left raw tuples in ``view.children``,
+    which crashed Discord-side serialization when the view was sent.
+    """
+    view = GamesHubView(_author())
+    for child in view.children:
+        assert isinstance(child, discord.ui.Item), (
+            f"GamesHubView leaked a non-Item ({type(child).__name__}) "
+            "into its children — this would crash when sent to Discord."
+        )
+
+
+def test_view_serializes_to_components_without_raising():
+    """Regression: ``view.to_components()`` is the exact serialization
+    Discord runs before sending a view. If a non-Item child leaks in,
+    this raises and ``ctx.send(view=view)`` fails silently from the
+    user's perspective. Pin the contract.
+    """
+    view = GamesHubView(_author())
+    components = view.to_components()
+    assert len(components) >= 1
+    # Walk every serialized component to verify dict-like shape.
+    for row in components:
+        assert isinstance(row, dict)
+
+
+def test_view_does_not_shadow_discord_internal_children_attr():
+    """Regression: the GamesHubView used to set ``self._children`` directly,
+    which is the same attribute name ``discord.ui.View`` uses for its
+    internal items list. Pin that the view exposes its child-meta under
+    a different attribute name.
+    """
+    view = GamesHubView(_author())
+    # ``view.children`` (discord.py's property) returns the items list —
+    # one ``_GamesHubSelect`` and nothing else.
+    assert all(isinstance(c, discord.ui.Item) for c in view.children)
+    # The view caches its discovered child-meta as well, but under a
+    # name that does NOT collide with discord.py.
+    assert not hasattr(view, "_children") or all(
+        isinstance(c, discord.ui.Item) for c in view._children  # type: ignore[attr-defined]
+    ), "GamesHubView._children must not hold raw tuples (collides with discord.ui.View)"
+
+
 def test_view_has_no_built_in_back_button():
     """Back-to-Help is added by help_cog when surfaced from the help menu;
     direct ``!games`` invocation has no back nav (mirrors !countingmenu).
