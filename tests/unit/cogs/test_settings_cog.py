@@ -177,6 +177,61 @@ def test_disabled_embed_mentions_flag_name():
     assert "settings.manager_cog.enabled" in description
 
 
+# ---------------------------------------------------------------------------
+# !settings access subcommand (Phase 6 — access-policy explorer)
+# ---------------------------------------------------------------------------
+
+
+def test_settings_root_is_a_group_after_phase_6():
+    """``!settings`` was a single command; Phase 6 converts it to a group so
+    ``!settings access`` can hang off it without losing the bare-command UX."""
+    from discord.ext import commands
+
+    assert isinstance(settings_cog.SettingsCog.settings_root, commands.Group)
+    assert settings_cog.SettingsCog.settings_root.invoke_without_command is True
+
+
+def test_settings_access_subcommand_registered():
+    """The ``access`` subcommand must exist on the settings group."""
+    sub = settings_cog.SettingsCog.settings_root.get_command("access")
+    assert sub is not None
+    assert sub.name == "access"
+
+
+@pytest.mark.asyncio
+async def test_settings_access_opens_explorer_view_regardless_of_gate(monkeypatch):
+    """The access explorer is a separate diagnostic — it must not share the
+    Settings Manager gate. Even when the gate is OFF, ``!settings access``
+    opens the explorer.
+    """
+    from unittest.mock import AsyncMock, MagicMock
+
+    async def _flag_off(_name, _guild_id):
+        return False
+
+    monkeypatch.setattr(feature_flags, "is_enabled", _flag_off)
+    monkeypatch.setattr(
+        "governance.get_visible_subsystems",
+        AsyncMock(return_value={"settings"}),
+    )
+    # GovernanceContext.from_ctx reads ctx.guild / ctx.author / ctx.channel;
+    # the _FakeContext above satisfies enough of that interface.
+    fake_gctx = MagicMock()
+    monkeypatch.setattr(
+        "governance.GovernanceContext.from_ctx",
+        lambda _ctx: fake_gctx,
+    )
+
+    cog = settings_cog.SettingsCog(bot=None)  # type: ignore[arg-type]
+    ctx = _FakeContext(guild=_FakeGuild())
+    await cog.settings_access.callback(cog, ctx)
+
+    assert len(ctx.sent_embeds) == 1
+    embed = ctx.sent_embeds[0]
+    title = (embed.title or "").lower()
+    assert "access" in title
+
+
 def test_setup_function_exists_and_adds_cog():
     """The discord.py extension entry point must exist."""
     assert callable(settings_cog.setup)

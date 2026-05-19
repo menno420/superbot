@@ -108,9 +108,10 @@ class SettingsCog(commands.Cog):
         self.bot = bot
 
     @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
-    @commands.command(
+    @commands.group(
         name="settings",
         help="Open the Settings Manager hub (read-only).",
+        invoke_without_command=True,
     )
     @commands.has_permissions(administrator=True)
     async def settings_root(self, ctx: commands.Context) -> None:
@@ -118,6 +119,9 @@ class SettingsCog(commands.Cog):
 
         When the gate flag is OFF, returns the standard disabled
         embed.  When ON, opens the hub view.
+
+        Subcommands (e.g. ``!settings access``) are dispatched
+        independently and do not share the bare-``!settings`` gate.
         """
         guild_id = ctx.guild.id if ctx.guild else None
         if not await _is_enabled(guild_id):
@@ -127,6 +131,33 @@ class SettingsCog(commands.Cog):
 
         view = SettingsHubView(ctx.author)
         await send_panel(ctx, embed=SettingsHubView.build_embed(), view=view)
+
+    @settings_root.command(  # type: ignore[arg-type]
+        name="access",
+        help="Open the read-only access-policy explorer.",
+    )
+    async def settings_access(self, ctx: commands.Context) -> None:
+        """Open :class:`AccessExplorerView` for the invoker.
+
+        Independent of the Settings Manager gate flag: the access
+        explorer is a separate diagnostic surface and should always
+        be available to administrators who can already invoke
+        ``!settings``.
+        """
+        from governance import GovernanceContext, get_visible_subsystems
+        from views.access.explorer import (
+            AccessExplorerView,
+            build_explorer_overview_embed,
+        )
+
+        gctx = GovernanceContext.from_ctx(ctx)
+        visible = await get_visible_subsystems(gctx)
+        view = AccessExplorerView(ctx.author, visible_subsystems=visible)
+        await send_panel(
+            ctx,
+            embed=build_explorer_overview_embed(ctx.author),
+            view=view,
+        )
 
     async def build_help_menu_view(
         self,
