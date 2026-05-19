@@ -81,19 +81,19 @@ def test_utility_hub_uses_existing_panel():
 
 
 def test_community_hub_uses_new_cog():
-    """Post-PR-#3: the Community hub's ``community_cog`` is nav-only.
-    ``xp`` and ``role`` are now primary children via ``parent_hub=
+    """Post-PR-#4: the Community hub's ``community_cog`` is nav-only.
+    ``xp`` and ``role`` are primary children via ``parent_hub=
     "community"``. Counting, Chain (Games children) and Leaderboard
-    (Economy child) remain cross-links via the Community hub view's
-    hardcoded ``_HUB_CHILDREN`` tuple until PR #4 migrates the view
-    to discover them from registry.
+    (Economy child) are now declared as ``cross_link_children`` so the
+    ``CommunityHubView`` can discover them from registry rather than
+    a hardcoded view-local tuple.
     """
     community = get_hub("community")
     assert community is not None
     assert community.entry_command == "!community"
     assert community.minimum_tier == "user"
     assert community.primary_children == ("xp", "role")
-    assert community.cross_link_children == ()
+    assert community.cross_link_children == ("counting", "chain", "leaderboard")
     assert community.panel_available is True
 
 
