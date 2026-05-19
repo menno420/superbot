@@ -34,6 +34,7 @@ from core.runtime.subsystem_schema import (
     SubsystemSchema,
 )
 from utils.settings_keys import (
+    XP_ANNOUNCE_CHANNEL,
     XP_COOLDOWN,
     XP_MAX,
     XP_MIN,
@@ -48,6 +49,16 @@ def _validate_positive_int(value: object) -> None:
 def _validate_cooldown(value: object) -> None:
     if not isinstance(value, int) or value < 0:
         raise ValueError(f"expected non-negative int cooldown, got {value!r}")
+
+
+def _validate_channel_id_or_empty(value: object) -> None:
+    """Empty string clears the announce channel; otherwise a numeric ID."""
+    if not isinstance(value, str):
+        raise ValueError(f"expected str, got {type(value).__name__}")
+    if value and not value.isdigit():
+        raise ValueError(
+            "must be empty (to clear) or a numeric Discord channel ID",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +108,19 @@ XP_SETTINGS: tuple[SettingSpec, ...] = (
             "cooldown (not recommended in active guilds)."
         ),
         validator=_validate_cooldown,
+    ),
+    SettingSpec(
+        name="xp_announce_channel",
+        value_type=str,
+        default="",
+        settings_key=XP_ANNOUNCE_CHANNEL,
+        capability_required="xp.settings.configure",
+        hint=(
+            "Numeric Discord channel ID for level-up announcements.  "
+            "Leave empty to announce in the channel where the level-up "
+            "happened."
+        ),
+        validator=_validate_channel_id_or_empty,
     ),
 )
 
