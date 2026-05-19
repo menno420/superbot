@@ -6,13 +6,13 @@ import math
 import discord
 from discord.ext import commands
 
+from cogs.help.route import HUB_PANEL_BUILDERS as _HUB_PANEL_BUILDERS
 from cogs.help.route import (
-    HUB_PANEL_BUILDERS as _HUB_PANEL_BUILDERS,
     HelpOpener,
     HelpRoute,
-    open_route as _open_route,
-    resolve_route as _resolve_route,
 )
+from cogs.help.route import open_route as _open_route
+from cogs.help.route import resolve_route as _resolve_route
 from core.runtime.persistent_views import PersistentView, register
 from services import governance_service
 from services.governance_service import GovernanceContext
