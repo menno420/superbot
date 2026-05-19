@@ -131,23 +131,84 @@ async def resolve_log_channel(
 ) -> discord.TextChannel | None:
     """Resolve the configured log channel for *kind* (``"mod"`` / ``"cleanup"``).
 
-    Returns ``None`` if the setting is unset or points at a channel
-    not currently in the guild cache.  Cleanup falls back to the mod
-    channel id when its own slot is unset.
+    Resolution order (S7b):
+
+    1. ``logging.<kind>_channel`` binding — the canonical store going
+       forward.  Set/cleared by :class:`BindingMutationPipeline` via
+       :class:`cogs.logging.select_view.LogChannelSelectView`.
+    2. ``logging_<kind>_channel`` legacy scalar — transitional
+       fallback for guilds that configured logging before S7b.  Will
+       be removed once the binding-backfill helper lands.
+    3. For ``kind == "cleanup"`` only: fall back to the mod channel
+       (via the same two-step lookup against the mod binding then
+       the mod legacy scalar).
+
+    Returns ``None`` if no source resolves to a current TextChannel.
     """
     # core.runtime imports stay function-local to avoid re-entering
     # partially-loaded core.runtime during startup.
+    from core.runtime.bindings import get_binding
     from core.runtime.guild_resources import resolve_settings_channel
+    from core.runtime.subsystem_schema import BindingKind
 
-    keys: tuple[str, ...]
+    primary_binding = "mod_channel" if kind == "mod" else "cleanup_channel"
+    primary_legacy = (
+        _log_keys.LOGGING_MOD_CHANNEL
+        if kind == "mod"
+        else _log_keys.LOGGING_CLEANUP_CHANNEL
+    )
+
+    # 1. Try the primary binding.
+    try:
+        binding = await get_binding(
+            guild.id,
+            "logging",
+            primary_binding,
+            expected_kind=BindingKind.CHANNEL,
+        )
+    except Exception as exc:  # noqa: BLE001 — read must never crash logging
+        logger.warning(
+            "resolve_log_channel: get_binding(%r) failed: %s",
+            primary_binding,
+            exc,
+        )
+        binding = None  # fall through to legacy
+    if binding is not None and binding.target_id is not None:
+        ch = guild.get_channel(binding.target_id)
+        if isinstance(ch, discord.TextChannel):
+            return ch
+
+    # 2. Try the primary legacy scalar (transitional fallback).
+    legacy = await resolve_settings_channel(guild, primary_legacy)
+    if isinstance(legacy, discord.TextChannel):
+        return legacy
+
+    # 3. Cleanup falls back to the mod channel (both binding + legacy).
     if kind == "cleanup":
-        keys = (_log_keys.LOGGING_CLEANUP_CHANNEL, _log_keys.LOGGING_MOD_CHANNEL)
-    else:
-        keys = (_log_keys.LOGGING_MOD_CHANNEL,)
-    for key in keys:
-        channel = await resolve_settings_channel(guild, key)
-        if isinstance(channel, discord.TextChannel):
-            return channel
+        try:
+            mod_binding = await get_binding(
+                guild.id,
+                "logging",
+                "mod_channel",
+                expected_kind=BindingKind.CHANNEL,
+            )
+        except Exception as exc:  # noqa: BLE001 — read must never crash
+            logger.warning(
+                "resolve_log_channel: get_binding(mod_channel fallback) failed: %s",
+                exc,
+            )
+            mod_binding = None
+        if mod_binding is not None and mod_binding.target_id is not None:
+            ch = guild.get_channel(mod_binding.target_id)
+            if isinstance(ch, discord.TextChannel):
+                return ch
+        mod_legacy = await resolve_settings_channel(
+            guild,
+            _log_keys.LOGGING_MOD_CHANNEL,
+        )
+        if isinstance(mod_legacy, discord.TextChannel):
+            return mod_legacy
+
     return None
 
 
