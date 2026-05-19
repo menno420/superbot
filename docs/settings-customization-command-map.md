@@ -203,8 +203,15 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: none yet (daily/work cooldowns
-   pending promotion).
+9. **existing_SettingSpec_declarations**: `economy_log_channel`
+   (`disbot/cogs/economy/schemas.py`).  PR #6 promoted the log channel
+   to a SettingSpec so the cog's three direct ``db.set_setting`` writes
+   (``on_ready``, ``on_guild_join``, ``!setlogchannel``) route through
+   ``SettingsMutationPipeline`` and land in
+   ``settings_mutation_audit``.  The existing ``log_channel`` BindingSpec
+   (item 11) remains the canonical typed-resource declaration and is
+   read via the arbitration ladder.  Daily/work cooldowns pending
+   promotion.
 10. **existing_settings_keys**: `ECONOMY_LOG_CHANNEL`
     (`disbot/utils/settings_keys/economy.py`).
 11. **existing_BindingSpec_entries**: `log_channel`
