@@ -16,11 +16,13 @@ tests assert on routing surfaces only.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
 import pytest
 
+from governance.models import VisibilityResult
 from utils.subsystem_registry import SUBSYSTEMS
 from views.games.hub import (
     _GROUP_ORDER,
@@ -36,6 +38,30 @@ def _author(id_: int = 1) -> MagicMock:
     author = MagicMock(spec=discord.Member)
     author.id = id_
     return author
+
+
+@contextmanager
+def _all_visible():
+    """Stub resolve_visibility to return every subsystem visible.
+
+    PR D added a click-time recheck inside ``handle_select`` and the
+    rebuilt-hub path inside ``attach_back_to_games_button`` now goes
+    through ``build_games_hub_panel`` which resolves governance. Tests
+    that aren't designed to exercise the gating need a stub so the
+    factory doesn't hit the real DB.
+    """
+    vis_result = VisibilityResult(
+        visible_subsystems=set(SUBSYSTEMS),
+        member_tier="moderator",
+        resolved_from={},
+        traces={},
+    )
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ):
+        yield
 
 
 # ---------------------------------------------------------------------------
@@ -268,7 +294,7 @@ async def test_handle_select_missing_cog_renders_fallback():
     interaction.response.send_message = AsyncMock()
     interaction.response.edit_message = AsyncMock()
 
-    with patch("views.games.hub.SUBSYSTEMS") as fake_subs:
+    with _all_visible(), patch("views.games.hub.SUBSYSTEMS") as fake_subs:
         # Pick any real games child but make _cog_for_subsystem return None.
         sub_name = "blackjack"
         fake_subs.get.return_value = dict(SUBSYSTEMS[sub_name])
@@ -294,7 +320,9 @@ async def test_handle_select_hook_failure_renders_fallback():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
 
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    ):
         await view.handle_select(interaction, "blackjack")
 
     interaction.response.edit_message.assert_awaited_once()
@@ -314,7 +342,9 @@ async def test_handle_select_success_attaches_back_button():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(return_value=(child_embed, child_view))
 
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    ):
         await view.handle_select(interaction, "blackjack")
 
     interaction.response.edit_message.assert_awaited_once()
@@ -378,7 +408,8 @@ async def test_back_button_callback_rebuilds_games_hub_with_original_author():
     interaction.edit_original_response = AsyncMock()
 
     btn = next(c for c in view.children if isinstance(c, discord.ui.Button))
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+    with _all_visible():
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
 
     interaction.response.edit_message.assert_awaited_once()
     _args, kwargs = interaction.response.edit_message.call_args
@@ -406,3 +437,138 @@ def test_attach_back_to_games_button_delegates_to_shared_helper():
     # The shared helper must be reachable via an actual import — either at
     # module level or function-local. Pin both shapes.
     assert "from views.navigation" in module_src or "views.navigation" in fn_src
+
+
+# ---------------------------------------------------------------------------
+# PR D — Governance filtering and click-time recheck
+# ---------------------------------------------------------------------------
+
+
+def test_view_falls_back_to_unfiltered_when_children_omitted():
+    """Backward-compat: callers that construct ``GamesHubView(author)``
+    directly (tests, persistent re-registration) still get the
+    unfiltered discovery so the view renders. Click-time recheck is
+    the safety net for that path.
+    """
+    view = GamesHubView(_author())
+    options = [c for c in view.children if isinstance(c, discord.ui.Select)][0].options
+    option_values = {o.value for o in options}
+    expected = {name for name, _ in discover_game_children()}
+    assert option_values == expected
+
+
+def test_view_uses_pre_filtered_children_when_supplied():
+    """The factory passes ``children`` so only visible subsystems
+    appear in the select. Pin the constructor honors the filter.
+    """
+    only = [(name, dict(SUBSYSTEMS[name])) for name in ("blackjack",)]
+    view = GamesHubView(_author(), children=only)
+    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
+    option_values = {o.value for o in select.options}
+    assert option_values == {"blackjack"}
+
+
+@pytest.mark.asyncio
+async def test_build_games_hub_panel_filters_via_visible_set():
+    """When ``visible`` is supplied the factory does not call
+    ``resolve_visibility`` — pure filter path. The resulting view
+    contains only the filtered children.
+    """
+    from views.games.hub import build_games_hub_panel
+
+    _embed, view = await build_games_hub_panel(
+        _author(),
+        visible={"blackjack"},
+    )
+    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
+    option_values = {o.value for o in select.options}
+    assert option_values == {"blackjack"}
+
+
+@pytest.mark.asyncio
+async def test_build_games_hub_panel_resolves_when_visible_none():
+    """When ``visible`` is omitted the factory must call
+    ``governance_service.resolve_visibility`` exactly once.
+    """
+    from views.games.hub import build_games_hub_panel
+
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.user = _author()
+    interaction.guild_id = 7
+    interaction.channel = MagicMock()
+
+    vis_result = VisibilityResult(
+        visible_subsystems={"blackjack"},
+        member_tier="moderator",
+        resolved_from={},
+        traces={},
+    )
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ) as mock_resolve:
+        _embed, view = await build_games_hub_panel(
+            _author(),
+            interaction=interaction,
+        )
+
+    mock_resolve.assert_awaited_once()
+    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
+    option_values = {o.value for o in select.options}
+    # Only the subsystem the stub returned as visible appears.
+    assert option_values == {"blackjack"}
+
+
+@pytest.mark.asyncio
+async def test_build_games_hub_panel_raises_without_context():
+    """When ``visible`` is None and neither ``interaction`` nor ``ctx``
+    is given, the factory must raise — programming-error fail-fast.
+    """
+    from views.games.hub import build_games_hub_panel
+
+    with pytest.raises(ValueError, match="interaction or ctx"):
+        await build_games_hub_panel(_author())
+
+
+@pytest.mark.asyncio
+async def test_handle_select_fails_closed_when_subsystem_invisible():
+    """Click-time recheck: if a subsystem drops out of visibility
+    between render and click, the select must surface an ephemeral
+    and NOT call into the cog. This is the failure-closed safety net
+    for stale persistent views.
+    """
+    view = GamesHubView(_author())
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.client = MagicMock()
+    interaction.user = _author()
+    interaction.guild_id = 7
+    interaction.channel = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+
+    # Blackjack is no longer in visible_subsystems — stale click path.
+    vis_result = VisibilityResult(
+        visible_subsystems=set(),
+        member_tier="member",
+        resolved_from={},
+        traces={},
+    )
+    cog_lookup = MagicMock()
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ), patch("cogs.help_cog._cog_for_subsystem", cog_lookup):
+        await view.handle_select(interaction, "blackjack")
+
+    interaction.response.send_message.assert_awaited_once()
+    args, kwargs = interaction.response.send_message.call_args
+    message = args[0] if args else kwargs.get("content", "")
+    assert "no longer available" in message
+    assert kwargs.get("ephemeral") is True
+    # Crucial: the cog lookup must NOT have been called — gating
+    # happens BEFORE any side-effect.
+    cog_lookup.assert_not_called()
+    interaction.response.edit_message.assert_not_called()

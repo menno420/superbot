@@ -21,11 +21,13 @@ resolution.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
 import pytest
 
+from governance.models import VisibilityResult
 from utils.hub_registry import get_hub
 from utils.subsystem_registry import SUBSYSTEMS
 from views.community.hub import (
@@ -49,6 +51,30 @@ def _interaction() -> MagicMock:
     interaction.response.send_message = AsyncMock()
     interaction.response.edit_message = AsyncMock()
     return interaction
+
+
+@contextmanager
+def _all_visible():
+    """Patch resolve_visibility to return every subsystem visible.
+
+    PR D added a click-time recheck inside
+    ``_CommunityChildButton.callback`` that hits
+    ``governance_service.resolve_visibility`` before delegating to the
+    target cog. Existing button-callback tests assume the recheck
+    passes; without this stub the recheck tries to hit the DB.
+    """
+    vis_result = VisibilityResult(
+        visible_subsystems=set(SUBSYSTEMS),
+        member_tier="moderator",
+        resolved_from={},
+        traces={},
+    )
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ):
+        yield
 
 
 # ---------------------------------------------------------------------------
@@ -241,7 +267,9 @@ async def test_button_opens_host_cog_panel_in_place():
     fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
 
     interaction = _interaction()
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    ):
         await button.callback(interaction)
 
     fake_cog.build_help_menu_view.assert_awaited_once_with(interaction)
@@ -260,7 +288,9 @@ async def test_button_missing_cog_sends_ephemeral():
         row=0,
     )
     interaction = _interaction()
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=None):
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=None
+    ):
         await button.callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     interaction.response.edit_message.assert_not_called()
@@ -276,7 +306,9 @@ async def test_button_cog_without_hook_sends_ephemeral():
     )
     fake_cog = MagicMock(spec=[])  # no build_help_menu_view attr
     interaction = _interaction()
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    ):
         await button.callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     interaction.response.edit_message.assert_not_called()
@@ -293,7 +325,9 @@ async def test_button_hook_exception_sends_ephemeral():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
     interaction = _interaction()
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog):
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    ):
         await button.callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     interaction.response.edit_message.assert_not_called()
@@ -311,3 +345,147 @@ def test_view_contains_no_select_components():
     view = CommunityHubView(_author())
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
     assert selects == []
+
+
+# ---------------------------------------------------------------------------
+# PR D — Governance filtering and click-time recheck
+# ---------------------------------------------------------------------------
+
+
+def test_view_falls_back_to_unfiltered_when_lists_omitted():
+    """Backward-compat: ``CommunityHubView(author)`` still works for
+    tests and persistent re-registration paths that can't await the
+    factory. Click-time recheck remains the safety net.
+    """
+    view = CommunityHubView(_author())
+    buttons = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _CommunityChildButton)
+    }
+    # Same as before PR D — five children rendered when nothing is filtered.
+    assert buttons == {"xp", "role", "counting", "chain", "leaderboard"}
+
+
+def test_view_uses_pre_filtered_lists_when_supplied():
+    """The factory passes ``primary`` and ``cross_link`` so only
+    visible subsystems render. Pin the constructor honors the filter.
+    """
+    primary = [("xp", dict(SUBSYSTEMS["xp"]))]
+    cross_link = [("leaderboard", dict(SUBSYSTEMS["leaderboard"]))]
+    view = CommunityHubView(
+        _author(),
+        primary=primary,
+        cross_link=cross_link,
+    )
+    buttons = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _CommunityChildButton)
+    }
+    assert buttons == {"xp", "leaderboard"}
+
+
+@pytest.mark.asyncio
+async def test_build_community_hub_panel_filters_via_visible_set():
+    from views.community.hub import build_community_hub_panel
+
+    _embed, view = await build_community_hub_panel(
+        _author(),
+        visible={"xp", "leaderboard"},
+    )
+    buttons = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _CommunityChildButton)
+    }
+    assert buttons == {"xp", "leaderboard"}
+
+
+@pytest.mark.asyncio
+async def test_build_community_hub_panel_resolves_when_visible_none():
+    """The factory must call governance once when ``visible`` is None."""
+    from views.community.hub import build_community_hub_panel
+
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.user = _author()
+    interaction.guild_id = 7
+    interaction.channel = MagicMock()
+
+    vis_result = VisibilityResult(
+        visible_subsystems={"xp"},
+        member_tier="moderator",
+        resolved_from={},
+        traces={},
+    )
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ) as mock_resolve:
+        _embed, view = await build_community_hub_panel(
+            _author(),
+            interaction=interaction,
+        )
+
+    mock_resolve.assert_awaited_once()
+    buttons = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _CommunityChildButton)
+    }
+    assert buttons == {"xp"}
+
+
+@pytest.mark.asyncio
+async def test_button_fails_closed_when_subsystem_invisible():
+    """Click-time recheck: if a subsystem drops out of visibility
+    between render and click, the button must surface an ephemeral
+    and NOT call into the cog.
+    """
+    button = _CommunityChildButton(
+        subsystem="xp",
+        label="🏆 XP",
+        style=discord.ButtonStyle.primary,
+        row=0,
+    )
+    interaction = _interaction()
+    interaction.user = _author()
+    interaction.guild_id = 7
+    interaction.channel = MagicMock()
+
+    vis_result = VisibilityResult(
+        visible_subsystems=set(),  # xp not visible anymore
+        member_tier="member",
+        resolved_from={},
+        traces={},
+    )
+    cog_lookup = MagicMock()
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ), patch("cogs.help_cog._cog_for_subsystem", cog_lookup):
+        await button.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    args, kwargs = interaction.response.send_message.call_args
+    message = args[0] if args else kwargs.get("content", "")
+    assert "no longer available" in message
+    assert kwargs.get("ephemeral") is True
+    cog_lookup.assert_not_called()
+    interaction.response.edit_message.assert_not_called()
+
+
+def test_attach_back_to_community_button_adds_back_button():
+    """Symmetry pin: a back-to-community helper must exist for child
+    panels opened from the hub, mirroring back-to-games.
+    """
+    from views.community.hub import attach_back_to_community_button
+
+    view = discord.ui.View()
+    added = attach_back_to_community_button(view, _author())
+    assert added is True
+    btn = next(c for c in view.children if isinstance(c, discord.ui.Button))
+    assert btn.label == "↩ Back to Community"
+    assert btn.custom_id == "community:back"

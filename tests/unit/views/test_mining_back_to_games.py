@@ -18,11 +18,13 @@ rendering) and the live debugging steps in plan §5a Bug #5 take over.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
 import pytest
 
+from governance.models import VisibilityResult
+from utils.subsystem_registry import SUBSYSTEMS
 from views.games.hub import GamesHubView, attach_back_to_games_button
 from views.mining.main_panel import MiningHubView
 
@@ -77,7 +79,21 @@ async def test_games_hub_select_attaches_back_to_games_on_child(monkeypatch):
     interaction.client = MagicMock()
     interaction.response.edit_message = AsyncMock()
 
-    await hub.handle_select(interaction, "mining")
+    # PR D: GamesHubView.handle_select now re-resolves governance at
+    # click time. Stub it to return every subsystem visible so the test
+    # exercises the routing path, not the gating.
+    vis_result = VisibilityResult(
+        visible_subsystems=set(SUBSYSTEMS),
+        member_tier="moderator",
+        resolved_from={},
+        traces={},
+    )
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ):
+        await hub.handle_select(interaction, "mining")
 
     interaction.response.edit_message.assert_awaited_once()
     kwargs = interaction.response.edit_message.await_args.kwargs
