@@ -56,18 +56,6 @@ class AdminCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_load(self) -> None:
-        """Register schemas for subsystems owned by this cog.
-
-        Admin currently hosts the ``!logging`` group, so the
-        S7a logging schema (settings / bindings / resources) is
-        registered here.  S7d may extract a dedicated ``LoggingCog``
-        and move this call there.
-        """
-        from cogs.logging.schemas import register_schemas
-
-        register_schemas()
-
     # ------------------------------------------------------------------
     # Admin menu
     # ------------------------------------------------------------------
@@ -218,51 +206,6 @@ class AdminCog(commands.Cog):
         await ctx.send(f"✅ Log level set to `{level.upper()}`.")
 
     # ------------------------------------------------------------------
-    # Server logging admin (Phase 2 PR-11)
-    # ------------------------------------------------------------------
-    @commands.group(name="logging", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
-    async def logging_grp(self, ctx):
-        """Server-logging admin commands.
-
-        Usage: `!logging status` · `!logging test`
-        """
-        await ctx.send(
-            "Usage: `!logging <status|test>` — see `docs/server-logging.md`.",
-            delete_after=20,
-        )
-
-    @logging_grp.command(name="status")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
-    async def logging_status(self, ctx):
-        """Show this guild's server-logging configuration + counters."""
-        await ctx.send(embed=await build_logging_status_embed(ctx.guild))
-
-    @logging_grp.command(name="test")  # type: ignore[arg-type]
-    @commands.has_permissions(administrator=True)
-    async def logging_test(self, ctx):
-        """Send a synthetic warn embed to the configured log channel."""
-        from services import server_logging
-
-        if ctx.guild is None:
-            await ctx.send("This command requires a guild context.")
-            return
-        sent = await server_logging.log_event(
-            ctx.guild,
-            action="warn",
-            target_id=ctx.author.id,
-            actor_id=ctx.author.id,
-            reason="server_logging test event from !logging test",
-        )
-        if sent:
-            await ctx.send("✅ Test embed delivered to the configured log channel.")
-        else:
-            await ctx.send(
-                "ℹ️ No embed sent — see `!logging status` for the cause "
-                "(disabled / missing channel / send error counted).",
-            )
-
-    # ------------------------------------------------------------------
     # Startup message
     # ------------------------------------------------------------------
     @commands.Cog.listener()
@@ -281,58 +224,6 @@ class AdminCog(commands.Cog):
 # ---------------------------------------------------------------------------
 # Shared admin helpers
 # ---------------------------------------------------------------------------
-
-
-async def build_logging_status_embed(guild: discord.Guild | None) -> discord.Embed:
-    """Build the server-logging status embed.
-
-    Extracted from ``logging_status`` so the admin panel and the typed
-    ``!logging status`` command both render the same embed without
-    duplicating the field-building logic.
-    """
-    from services import server_logging
-
-    enabled = await server_logging.is_enabled(guild.id) if guild else False
-    auto_create = await server_logging.auto_create_enabled(guild.id) if guild else False
-    mod_channel = cleanup_channel = None
-    if guild:
-        mod_channel = await server_logging.resolve_log_channel(guild, "mod")
-        cleanup_channel = await server_logging.resolve_log_channel(guild, "cleanup")
-    counters = server_logging.counters_snapshot()["counters"]
-
-    embed = discord.Embed(
-        title="📝 Server logging — status",
-        color=SUCCESS_COLOR if enabled else INFO_COLOR,
-    )
-    embed.add_field(
-        name="Enabled",
-        value="✅ on" if enabled else "⚪ off",
-        inline=True,
-    )
-    embed.add_field(
-        name="Auto-create channels",
-        value="✅ on" if auto_create else "⚪ off",
-        inline=True,
-    )
-    embed.add_field(
-        name="Mod channel",
-        value=mod_channel.mention if mod_channel else "*(unset)*",
-        inline=False,
-    )
-    cleanup_value = (
-        cleanup_channel.mention if cleanup_channel else "*(falls back to mod)*"
-    )
-    embed.add_field(
-        name="Cleanup channel",
-        value=cleanup_value,
-        inline=False,
-    )
-    embed.add_field(
-        name="Counters (process-local)",
-        value="\n".join(f"`{k}` = {v}" for k, v in sorted(counters.items())),
-        inline=False,
-    )
-    return embed
 
 
 def attach_back_to_admin_button(
@@ -535,10 +426,7 @@ class _AdminPanelView(HubView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ):
-        if not await safe_defer(interaction):
-            return
-        embed = await build_logging_status_embed(interaction.guild)
-        await safe_edit(interaction, embed=embed, view=self)
+        await self._open_via_help_hook(interaction, cog_name="LoggingCog")
 
     # ------------------------------------------------------------------
     # Row 2 — cleanup + help shortcuts

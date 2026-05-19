@@ -85,22 +85,22 @@ without depending on bot startup or runtime registry population.
 
 ## Loaded cogs and registered subsystems
 
-The 20 cogs loaded at startup come from `disbot/config.py:INITIAL_EXTENSIONS`.
-The 21 subsystems live in `disbot/utils/subsystem_registry.py:SUBSYSTEMS`. The
+The 22 cogs loaded at startup come from `disbot/config.py:INITIAL_EXTENSIONS`.
+The 22 subsystems live in `disbot/utils/subsystem_registry.py:SUBSYSTEMS`. The
 extra subsystem with no corresponding cog file is `diagnostic` (its
 `!diagnostics` + `!platform` surface lives inside
 `disbot/cogs/diagnostic_cog.py`).
 
-Cogs (20): `admin_cog`, `blackjack_cog`, `chain_cog`, `channel_cog`,
+Cogs (22): `admin_cog`, `blackjack_cog`, `chain_cog`, `channel_cog`,
 `cleanup_cog`, `counting_cog`, `deathmatch_cog`, `diagnostic_cog`,
 `economy_cog`, `general_cog`, `help_cog`, `inventory_cog`, `leaderboard_cog`,
-`mining_cog`, `moderation_cog`, `proof_channel_cog`, `role_cog`,
-`rps_tournament_cog`, `utility_cog`, `xp_cog`.
+`logging_cog`, `mining_cog`, `moderation_cog`, `proof_channel_cog`,
+`role_cog`, `rps_tournament_cog`, `settings_cog`, `utility_cog`, `xp_cog`.
 
-Subsystems (21): `admin`, `moderation`, `economy`, `inventory`, `mining`,
+Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 `xp`, `role`, `channel`, `cleanup`, `blackjack`, `deathmatch`,
 `rps_tournament`, `counting`, `chain`, `leaderboard`, `proof_channel`,
-`utility`, `general`, `help`, `diagnostic`.
+`utility`, `general`, `help`, `diagnostic`, `settings`, `logging`.
 
 
 ## Per-cog inventory

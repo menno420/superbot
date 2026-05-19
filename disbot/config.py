@@ -52,6 +52,7 @@ INITIAL_EXTENSIONS = [
     "cogs.general_cog",
     "cogs.leaderboard_cog",
     "cogs.settings_cog",
+    "cogs.logging_cog",
 ]
 
 # ==========================

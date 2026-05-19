@@ -247,11 +247,22 @@ def test_format_log_embed_extra_value_truncated_at_cap():
 # ---------------------------------------------------------------------------
 
 
+def _unbound_binding() -> MagicMock:
+    """Helper: a get_binding return value with no target set."""
+    b = MagicMock()
+    b.target_id = None
+    return b
+
+
 @pytest.mark.asyncio
 async def test_resolve_log_channel_mod_returns_text_channel():
     guild = _make_guild()
     channel = _make_text_channel(name="mod-log")
     with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
         "core.runtime.guild_resources.resolve_settings_channel",
         new_callable=AsyncMock,
         return_value=channel,
@@ -275,12 +286,17 @@ async def test_resolve_log_channel_cleanup_falls_back_to_mod():
         return None
 
     with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
         "core.runtime.guild_resources.resolve_settings_channel",
         side_effect=fake_resolve,
     ):
         result = await resolve_log_channel(guild, "cleanup")
     assert result is mod_channel
-    # Looked at cleanup first, then mod.
+    # Looked at cleanup first, then mod (both legacy fallbacks since
+    # the binding mock returns unbound for both).
     assert calls == ["logging_cleanup_channel", "logging_mod_channel"]
 
 
@@ -288,6 +304,10 @@ async def test_resolve_log_channel_cleanup_falls_back_to_mod():
 async def test_resolve_log_channel_returns_none_when_setting_unset():
     guild = _make_guild()
     with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
         "core.runtime.guild_resources.resolve_settings_channel",
         new_callable=AsyncMock,
         return_value=None,
@@ -300,6 +320,10 @@ async def test_resolve_log_channel_skips_non_text_channel():
     guild = _make_guild()
     voice = MagicMock(spec=discord.VoiceChannel)
     with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
         "core.runtime.guild_resources.resolve_settings_channel",
         new_callable=AsyncMock,
         return_value=voice,
