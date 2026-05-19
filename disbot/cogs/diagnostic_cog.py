@@ -76,9 +76,34 @@ class DiagnosticCog(commands.Cog):
         The view reads ``bot`` from ``interaction.client`` inside each
         button callback, so no ctx-shim is required.  This matches the
         canonical pattern used by every other subsystem hub.
+
+        This hook stays pointed at the Diagnostics Hub so Admin →
+        Diagnostics and ``!help diagnostics`` / ``!help diag`` continue
+        to open the diagnostics surface. The Help "Platform /
+        Diagnostics" entry uses :meth:`build_platform_help_menu_view`
+        instead — see the ``_HUB_PANEL_BUILDERS`` override in
+        ``help_cog``.
         """
         view = _DiagnosticsHubView(interaction.user)
         return view.build_embed(), view
+
+    async def build_platform_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help-menu direct-navigation hook for the Platform hub.
+
+        Routed to by Help's ``_HUB_PANEL_BUILDERS`` override for the
+        ``diagnostic`` hub key (display name "Platform / Diagnostics").
+        ``DiagnosticCog`` owns both surfaces; this sibling hook keeps
+        :meth:`build_help_menu_view` free for the Diagnostics callers
+        that already depend on it.
+
+        Reads only ``interaction.user`` — the ``HelpOpener`` adapter is
+        a safe drop-in here.
+        """
+        view = _PlatformHubView(interaction.user)
+        return build_platform_hub_embed(), view
 
     # ------------------------------------------------------------------
     # Command overview
