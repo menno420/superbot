@@ -66,64 +66,64 @@ def test_committed_hub_set_matches_promoted_hubs():
 
 
 def test_utility_hub_uses_existing_panel():
-    """S10 v1: the Utility hub routes to the existing utility_cog
-    build_help_menu_view (UtilityHubView). General and Help remain
-    top-level for now; promotion to parent_hub="utility" lands when
-    the hub view gains explicit child navigation.
+    """Post-PR-#3: the Utility hub routes to the existing utility_cog
+    ``build_help_menu_view`` (UtilityHubView). ``general`` is now its
+    primary child via ``parent_hub="utility"``; ``help`` itself stays
+    top-level — it IS the Help surface.
     """
     utility = get_hub("utility")
     assert utility is not None
     assert utility.entry_command == "!utilitymenu"
     assert utility.minimum_tier == "user"
-    assert utility.primary_children == ()
+    assert utility.primary_children == ("general",)
     assert utility.cross_link_children == ()
     assert utility.panel_available is True
 
 
 def test_community_hub_uses_new_cog():
-    """S9: the Community hub gets a brand-new ``community_cog`` because
-    no existing domain cog naturally owns the union of XP + Roles +
-    Counting + Chain + Leaderboard. The cog is nav-only; cross-link
-    buttons forward to the host cogs' existing build_help_menu_view.
+    """Post-PR-#3: the Community hub's ``community_cog`` is nav-only.
+    ``xp`` and ``role`` are now primary children via ``parent_hub=
+    "community"``. Counting, Chain (Games children) and Leaderboard
+    (Economy child) remain cross-links via the Community hub view's
+    hardcoded ``_HUB_CHILDREN`` tuple until PR #4 migrates the view
+    to discover them from registry.
     """
     community = get_hub("community")
     assert community is not None
     assert community.entry_command == "!community"
     assert community.minimum_tier == "user"
-    assert community.primary_children == ()
+    assert community.primary_children == ("xp", "role")
     assert community.cross_link_children == ()
     assert community.panel_available is True
 
 
 def test_moderation_hub_uses_existing_panel():
-    """S8 v1: the Moderation/Safety hub routes to
-    moderation_cog.build_help_menu_view (ModPanelView). Cleanup and
-    Logging stay top-level for now — promotion to parent_hub of
-    "moderation" lands when the hub view gains explicit child nav.
+    """Post-PR-#3: the Moderation/Safety hub routes to
+    ``moderation_cog.build_help_menu_view`` (ModPanelView). Cleanup,
+    Logging, and Proof Channel are now primary children via
+    ``parent_hub="moderation"``.
     """
     moderation = get_hub("moderation")
     assert moderation is not None
     assert moderation.entry_command == "!modmenu"
     assert moderation.minimum_tier == "moderator"
-    assert moderation.primary_children == ()
+    assert moderation.primary_children == ("cleanup", "logging", "proof_channel")
     assert moderation.cross_link_children == ()
     assert moderation.panel_available is True
 
 
 def test_economy_hub_uses_existing_panel():
-    """S7 v1: the Economy hub category routes to the existing
-    economy_cog.build_help_menu_view panel. Inventory/Leaderboard
-    are NOT yet parent_hub="economy" — that promotion happens in a
-    follow-up PR once the hub view gains explicit child navigation.
+    """Post-PR-#3: the Economy hub category routes to the existing
+    ``economy_cog.build_help_menu_view`` panel. Inventory and
+    Leaderboard are now primary children via ``parent_hub="economy"``.
+    Mining stays under Games (its primary) and appears here only as a
+    cross-link.
     """
     economy = get_hub("economy")
     assert economy is not None
     assert economy.entry_command == "!economymenu"
-    # Empty primary_children / cross_links in v1 — pin so a future
-    # PR doesn't silently rewrite child wiring without updating
-    # subsystem metadata too.
-    assert economy.primary_children == ()
-    assert economy.cross_link_children == ()
+    assert economy.primary_children == ("inventory", "leaderboard")
+    assert economy.cross_link_children == ("mining",)
     assert economy.panel_available is True
     assert economy.minimum_tier == "user"
 
@@ -159,6 +159,47 @@ def test_games_hub_primary_children_match_parent_hub_filter():
     assert declared == actual, (
         f"Games primary_children {declared} != parent_hub filter {actual}"
     )
+
+
+def test_every_hub_primary_children_match_parent_hub_filter():
+    """For every hub whose key is referenced by at least one
+    subsystem's ``parent_hub``, the hub's ``primary_children`` must
+    equal the set of subsystems pointing at it. Generalises the
+    games-only check above so future PRs cannot silently drift
+    metadata away from the hub declaration.
+    """
+    # Collect parent_hub references per hub key.
+    parents: dict[str, set[str]] = {}
+    for name, meta in SUBSYSTEMS.items():
+        parent = meta.get("parent_hub")
+        if parent is None:
+            continue
+        parents.setdefault(parent, set()).add(name)
+
+    for hub_key, expected_children in parents.items():
+        hub = get_hub(hub_key)
+        assert hub is not None, (
+            f"subsystem(s) {expected_children} point at hub {hub_key!r} but "
+            f"no such hub exists in HUBS"
+        )
+        declared = set(hub.primary_children)
+        assert declared == expected_children, (
+            f"hub {hub_key!r}: primary_children {declared} != parent_hub "
+            f"filter {expected_children}"
+        )
+
+
+def test_cross_link_children_reference_real_subsystems():
+    """Every entry in any hub's ``cross_link_children`` must be a real
+    subsystem key. Pins the contract for the Mining → Economy
+    cross-link added in PR #3 and for any future cross-links.
+    """
+    for hub in HUBS:
+        for child in hub.cross_link_children:
+            assert child in SUBSYSTEMS, (
+                f"hub {hub.key!r} declares cross_link_children {child!r} "
+                f"which is not a valid SUBSYSTEMS key"
+            )
 
 
 # ---------------------------------------------------------------------------

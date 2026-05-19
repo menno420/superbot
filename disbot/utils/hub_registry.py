@@ -112,13 +112,15 @@ HUBS: tuple[HubEntry, ...] = (
         emoji="💰",
         purpose="Currency, items, work, shop, and standings.",
         entry_command="!economymenu",
-        # S7 v1 leaves primary_children empty. Inventory and Leaderboard
-        # remain top-level for now; a follow-up promotes them to
-        # parent_hub of "economy" once the hub view adds explicit child
-        # navigation. Mining stays under Games — the cross-link button
-        # ships alongside that promotion.
-        primary_children=(),
-        cross_link_children=(),
+        # PR #3 promotes Inventory and Leaderboard to parent_hub of
+        # "economy" (their primary placement). Mining stays under
+        # Games — Economy declares it as a cross-link so the Economy
+        # hub view can surface it without changing Mining's metadata.
+        primary_children=(
+            "inventory",
+            "leaderboard",
+        ),
+        cross_link_children=("mining",),
         minimum_tier="user",
     ),
     HubEntry(
@@ -127,12 +129,14 @@ HUBS: tuple[HubEntry, ...] = (
         emoji="🛡️",
         purpose="Warnings, timeouts, bans, cleanup, audit logs.",
         entry_command="!modmenu",
-        # S8 v1: routes to moderation_cog's existing build_help_menu_view
-        # which returns the ModPanelView. Cleanup and Logging are
-        # candidates for parent_hub of "moderation" in a follow-up once
-        # the hub view adds explicit child navigation across the three
-        # subsystems.
-        primary_children=(),
+        # PR #3 promotes Cleanup, Logging, and Proof Channel to
+        # parent_hub of "moderation" so they hide from the Help Home
+        # top-level overview and surface under this hub instead.
+        primary_children=(
+            "cleanup",
+            "logging",
+            "proof_channel",
+        ),
         cross_link_children=(),
         minimum_tier="moderator",
     ),
@@ -142,12 +146,15 @@ HUBS: tuple[HubEntry, ...] = (
         emoji="🌱",
         purpose="Progression, roles, and community activities.",
         entry_command="!community",
-        # S9: XP and Role are primary children but stay top-level for
-        # now (parent_hub metadata not flipped yet). The Community hub
-        # view in views/community/hub.py has explicit cross-link
-        # buttons to xp/role/counting/chain/leaderboard — no Help
-        # auto-discovery, no metadata changes to those subsystems.
-        primary_children=(),
+        # PR #3 promotes XP and Role to parent_hub of "community"
+        # (their primary placement). Counting, Chain (Games children)
+        # and Leaderboard (Economy child) remain cross-links via the
+        # Community hub view's hardcoded ``_HUB_CHILDREN`` tuple; PR #4
+        # migrates the view to discover them from this declaration.
+        primary_children=(
+            "xp",
+            "role",
+        ),
         cross_link_children=(),
         minimum_tier="user",
     ),
@@ -157,11 +164,10 @@ HUBS: tuple[HubEntry, ...] = (
         emoji="🧰",
         purpose="Info, tools, and discovery commands.",
         entry_command="!utilitymenu",
-        # S10 v1: routes to the existing utility hub panel. General
-        # and Help remain top-level for now; a follow-up promotes
-        # general to parent_hub of "utility" once the hub view adds
-        # explicit child navigation.
-        primary_children=(),
+        # PR #3 promotes General to parent_hub of "utility". Help
+        # itself stays top-level — it IS the Help surface so it never
+        # surfaces under any hub.
+        primary_children=("general",),
         cross_link_children=(),
         minimum_tier="user",
     ),
