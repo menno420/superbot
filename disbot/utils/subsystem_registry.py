@@ -521,6 +521,32 @@ SUBSYSTEMS: dict[str, dict] = {
             "settings.manager.view",
         ],
     },
+    "logging": {
+        "display_name": "Server Logging",
+        "description": (
+            "Per-guild moderation/cleanup event logging — channel "
+            "selection, auto-create, and audit (S7)"
+        ),
+        "emoji": "📝",
+        "color": ADMIN_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "admin",
+        "tags": ["logging", "audit", "moderation", "cleanup"],
+        "entry_points": ["logging"],
+        "default_channels": ["staff", "bot-mod-log", "bot-cleanup-log"],
+        "related_subsystems": ["moderation", "cleanup", "admin"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 85,
+        "capabilities": [
+            "logging.settings.configure",
+            "logging.channel.bind",
+            "logging.channel.create",
+        ],
+    },
 }
 
 # ---------------------------------------------------------------------------

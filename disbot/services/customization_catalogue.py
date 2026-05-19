@@ -79,6 +79,7 @@ KNOWN_PANEL_COMMANDS: tuple[tuple[str, str], ...] = (
     ("counting", "countingmenu"),
     ("economy", "economymenu"),
     ("general", "generalmenu"),
+    ("logging", "logging"),
     ("mining", "minemenu"),
     ("moderation", "modmenu"),
     ("proof_channel", "prizemenu"),
