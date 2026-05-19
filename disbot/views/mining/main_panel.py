@@ -151,7 +151,12 @@ class MiningHubView(PersistentView):
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
         if not inventory:
-            description = "Your mining inventory is empty."
+            # Empty-state UX rule (mother-hub-map.md): explain what the
+            # feature does and what the next step is.
+            description = (
+                "Your mining inventory is empty. Use `!mine` in the mining "
+                "channel to start collecting items."
+            )
         else:
             description = "\n".join(
                 f"**{item.title()}**: {qty}" for item, qty in sorted(inventory.items())

@@ -42,6 +42,29 @@ async def _build_embed(
     title, _ = CATEGORIES.get(category, ("Leaderboard", ""))
     embed = discord.Embed(title=title, color=ECONOMY_COLOR)
 
+    # Empty-state hints per category — explain what the feature does and
+    # what the next step is (S4 / user-centered UX rule #5).
+    _EMPTY_HINTS = {
+        "xp": "No XP earned yet. Chat in this server to start ranking up.",
+        "coins": (
+            "No coin totals yet. Use `!daily` once per day or `!work` to start "
+            "earning."
+        ),
+        "mining": "No mining records yet. Use `!mine` to start collecting items.",
+        "deathmatch": (
+            "No deathmatch results yet. Start a match with `!deathmatch` to "
+            "appear here."
+        ),
+        "rps": (
+            "No RPS games played yet. Challenge someone with `!rps` to appear "
+            "here."
+        ),
+        "counting": (
+            "No counting activity yet. Count in the counting channel to appear "
+            "here."
+        ),
+    }
+
     if category == "xp":
         rows = await db.fetchall(
             "SELECT user_id, xp, level FROM xp WHERE guild_id=$1 ORDER BY xp DESC LIMIT 10",
@@ -52,7 +75,7 @@ async def _build_embed(
             name = resources.member_display(guild, row["user_id"])
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — Level {row['level']} ({row['xp']} XP)")
-        embed.description = "\n".join(lines) or "No data yet!"
+        embed.description = "\n".join(lines) or _EMPTY_HINTS["xp"]
 
     elif category == "coins":
         rows = await db.fetchall(
@@ -64,7 +87,7 @@ async def _build_embed(
             name = resources.member_display(guild, row["user_id"])
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {row['coins']} 🪙")
-        embed.description = "\n".join(lines) or "No data yet!"
+        embed.description = "\n".join(lines) or _EMPTY_HINTS["coins"]
 
     elif category == "mining":
         rows = await db.get_all_mining_totals(guild.id)
@@ -73,7 +96,7 @@ async def _build_embed(
             name = resources.member_display(guild, user_id)
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {total} items")
-        embed.description = "\n".join(lines) or "No data yet!"
+        embed.description = "\n".join(lines) or _EMPTY_HINTS["mining"]
 
     elif category == "deathmatch":
         rows = await db.get_deathmatch_leaderboard()
@@ -82,7 +105,7 @@ async def _build_embed(
             name = resources.member_display(guild, row["user_id"])
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {row['wins']}W / {row['losses']}L")
-        embed.description = "\n".join(lines) or "No data yet!"
+        embed.description = "\n".join(lines) or _EMPTY_HINTS["deathmatch"]
 
     elif category == "rps":
         rows = await db.rps_get_leaderboard(guild.id)
@@ -92,7 +115,7 @@ async def _build_embed(
             lines.append(
                 f"{icon} **{row['name']}** — {row['wins']}W / {row['losses']}L / {row['ties']}T",
             )
-        embed.description = "\n".join(lines) or "No data yet!"
+        embed.description = "\n".join(lines) or _EMPTY_HINTS["rps"]
 
     elif category == "counting":
         # Aggregate counting totals across all channels for this guild
@@ -107,7 +130,7 @@ async def _build_embed(
             name = resources.member_display(guild, uid)
             icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
             lines.append(f"{icon} **{name}** — {cnt} counts")
-        embed.description = "\n".join(lines) or "No counting data yet!"
+        embed.description = "\n".join(lines) or _EMPTY_HINTS["counting"]
 
     return embed
 
