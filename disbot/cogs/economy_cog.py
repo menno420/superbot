@@ -94,7 +94,7 @@ class EconomyCog(commands.Cog):
         guild: discord.Guild,
         channel_id: str,
         *,
-        actor: discord.Member | None,
+        actor: discord.Member | discord.User | None,
         actor_type: str = "user",
     ) -> None:
         """Persist the economy log channel via :class:`SettingsMutationPipeline`.
