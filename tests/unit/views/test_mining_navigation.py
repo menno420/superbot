@@ -178,7 +178,12 @@ async def test_mining_menu_button_swaps_to_mining_hub_view():
 
 
 @pytest.mark.asyncio
-async def test_help_button_opens_help_panel_with_visible_subsystems():
+async def test_help_button_opens_help_category_view():
+    """S3: the mining Help button returns the user to the top of Help,
+    which is now :class:`HelpCategoryView` (the mother-hub category
+    index). The legacy paginated subsystem list is reached only via
+    the "All Commands / Advanced" entry inside that category view.
+    """
     results = _MineResultsView(user_id=1, guild_id=2)
     btn = _find_button(results, "Help")
     interaction = MagicMock()
@@ -186,8 +191,8 @@ async def test_help_button_opens_help_panel_with_visible_subsystems():
 
     vis_result = MagicMock()
     vis_result.visible_subsystems = {"mining", "economy"}
-    vis_result.member_tier = "everyone"
-    fake_panel_view = discord.ui.View()
+    vis_result.member_tier = "user"
+    fake_view = discord.ui.View()
     fake_embed = discord.Embed(title="Help")
 
     with patch(
@@ -202,17 +207,10 @@ async def test_help_button_opens_help_panel_with_visible_subsystems():
         "services.governance_service.GovernanceContext.from_interaction",
         return_value=MagicMock(),
     ), patch(
-        "cogs.help_cog.all_subsystems_sorted",
-        return_value=[
-            ("mining", {}),
-            ("economy", {}),
-            ("admin", {}),
-        ],
-    ), patch(
-        "cogs.help_cog.HelpPanelView",
-        return_value=fake_panel_view,
-    ) as panel_cls, patch(
-        "cogs.help_cog._build_page_embed",
+        "cogs.help_cog.HelpCategoryView",
+        return_value=fake_view,
+    ) as view_cls, patch(
+        "cogs.help_cog.build_categories_overview_embed",
         return_value=fake_embed,
     ), patch(
         "views.mining.mine_view.safe_edit",
@@ -221,12 +219,9 @@ async def test_help_button_opens_help_panel_with_visible_subsystems():
     ) as edit:
         await btn.callback(interaction)
 
-    panel_cls.assert_called_once()
-    visible_list_arg = panel_cls.call_args.args[0]
-    # admin is filtered out because it's not in visible_subsystems.
-    assert visible_list_arg == ["mining", "economy"]
+    view_cls.assert_called_once_with("user")
     edit.assert_awaited_once()
-    assert edit.await_args.kwargs["view"] is fake_panel_view
+    assert edit.await_args.kwargs["view"] is fake_view
 
 
 @pytest.mark.asyncio

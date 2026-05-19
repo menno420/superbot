@@ -9,6 +9,7 @@ from discord.ext import commands
 from core.runtime.persistent_views import PersistentView, register
 from services import governance_service
 from services.governance_service import GovernanceContext
+from utils.hub_registry import ALL_COMMANDS_KEY, get_hub, hubs_for_tier
 from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
 from utils.ui_constants import ADMIN_COLOR, GENERAL_COLOR, MOD_COLOR, UTILITY_COLOR
 
@@ -144,12 +145,8 @@ def _build_help_page_view(visible_list: list[str], page: int) -> HelpPanelView:
     return HelpPanelView(visible_list, page)
 
 
-def _attach_back_to_help_button(
-    view: discord.ui.View,
-    visible_list: list[str],
-    page: int,
-) -> None:
-    """Add a "↩ Back to Help" control to a subsystem panel surfaced from help.
+def _attach_back_to_help_button(view: discord.ui.View) -> None:
+    """Add a "↩ Back to Help" control to a panel surfaced from Help.
 
     Does not mutate the cog's panel class — adds the button to the live view
     instance only. No-op if the view already has 25 components (Discord cap;
@@ -159,9 +156,10 @@ def _attach_back_to_help_button(
     to reflects current visibility (not the stale snapshot from when the
     panel was opened).
 
-    Phase 3.5: implementation moved to ``views.navigation.attach_back_button``;
-    the help-specific parent-builder (governance resolve + pagination clamp +
-    fresh HelpPanelView) is kept here as a closure.
+    S3: rebuilds :class:`HelpCategoryView` — the new top-level of Help
+    after the category-index refactor. The pre-S3 implementation rebuilt
+    a paginated :class:`HelpPanelView`; that view is still reachable as
+    the "All Commands / Advanced" category but is no longer the top.
     """
     # Local import — navigation is at the views layer; help_cog is at
     # the cogs layer. Function-local import keeps the import graph
@@ -174,19 +172,8 @@ def _attach_back_to_help_button(
     ) -> tuple[discord.Embed, discord.ui.View]:
         gctx = GovernanceContext.from_interaction(interaction)
         vis_result = await governance_service.resolve_visibility(gctx)
-        fresh_visible = [
-            name
-            for name, meta in all_subsystems_sorted()
-            if name in vis_result.visible_subsystems and not meta.get("parent_hub")
-        ]
-        new_page = min(page, max(0, math.ceil(len(fresh_visible) / _PAGE_SIZE) - 1))
-        new_view = HelpPanelView(fresh_visible, new_page)
-        embed = _build_page_embed(
-            interaction.client,  # type: ignore[arg-type]
-            fresh_visible,
-            new_page,
-            vis_result.member_tier,
-        )
+        new_view = HelpCategoryView(vis_result.member_tier)
+        embed = build_categories_overview_embed(vis_result.member_tier)
         return embed, new_view
 
     attach_back_button(
@@ -244,16 +231,76 @@ def _build_page_embed(
     return embed
 
 
+def build_categories_overview_embed(member_tier: str) -> discord.Embed:
+    """Build the top-level Help embed showing mother-hub categories (S3).
+
+    Iterates :data:`utils.hub_registry.HUBS`, filters to hubs visible at
+    ``member_tier`` via :func:`hubs_for_tier`, and always appends the
+    permanent "All Commands / Advanced" fallback row. Each hub line
+    states purpose, includes-list (primary + cross-link children with
+    display names from ``SUBSYSTEMS``), and typed entry command — the
+    user-centered orientation rule from the mother-hub map.
+    """
+    embed = discord.Embed(
+        title="📚 Help Menu",
+        description="Pick a category from the dropdown below.",
+        color=UTILITY_COLOR,
+    )
+
+    visible_hubs = hubs_for_tier(member_tier)
+    for hub in visible_hubs:
+        included: list[str] = []
+        for child_key in hub.primary_children:
+            child_meta = SUBSYSTEMS.get(child_key)
+            if child_meta is not None:
+                included.append(child_meta.get("display_name", child_key))
+        for child_key in hub.cross_link_children:
+            child_meta = SUBSYSTEMS.get(child_key)
+            if child_meta is not None:
+                included.append(
+                    f"{child_meta.get('display_name', child_key)} (cross-link)",
+                )
+
+        lines = [hub.purpose]
+        if included:
+            lines.append(f"Includes: {', '.join(included)}.")
+        lines.append(f"→ `{hub.entry_command}`")
+        embed.add_field(
+            name=f"{hub.emoji} {hub.display_name}",
+            value="\n".join(lines),
+            inline=False,
+        )
+
+    # All Commands / Advanced is permanent — guarantees discoverability
+    # for every visible subsystem even when no mother hub owns it.
+    embed.add_field(
+        name="📋 All Commands / Advanced",
+        value=(
+            "Browse every visible command directly, grouped by tier.\n"
+            "Power-user fallback: use this when you know the command name."
+        ),
+        inline=False,
+    )
+
+    if not embed.fields:
+        embed.description = "No commands are available in this channel."
+    return embed
+
+
 async def resolve_help_panel_state(
     interaction: discord.Interaction,
-) -> tuple[discord.Embed, HelpPanelView]:
-    """Resolve governance + build the Help-panel ``(embed, view)`` pair.
+) -> tuple[discord.Embed, HelpCategoryView]:
+    """Resolve governance + build the Help top-level ``(embed, view)`` pair.
 
     Used by navigation buttons in other cogs / views (e.g.
     ``cogs.admin_cog._AdminPanelView.help_btn`` and
     ``views.mining.mine_view._MineResultsView.help_btn``) so they
-    don't re-implement governance resolution + page-embed
-    construction.
+    don't re-implement governance resolution + embed construction.
+
+    S3: the returned view is :class:`HelpCategoryView` — the new
+    mother-hub category index. The legacy :class:`HelpPanelView` is
+    reached by selecting "All Commands / Advanced" inside the
+    category view.
 
     Raises whatever ``governance_service.resolve_visibility`` raises;
     callers are responsible for catching to fall back to an in-place
@@ -261,18 +308,8 @@ async def resolve_help_panel_state(
     """
     gctx = GovernanceContext.from_interaction(interaction)
     vis_result = await governance_service.resolve_visibility(gctx)
-    visible_list = [
-        name
-        for name, meta in all_subsystems_sorted()
-        if name in vis_result.visible_subsystems and not meta.get("parent_hub")
-    ]
-    view = HelpPanelView(visible_list, page=0)
-    embed = _build_page_embed(
-        interaction.client,  # type: ignore[arg-type]
-        visible_list,
-        0,
-        vis_result.member_tier,
-    )
+    view = HelpCategoryView(vis_result.member_tier)
+    embed = build_categories_overview_embed(vis_result.member_tier)
     return embed, view
 
 
@@ -386,7 +423,7 @@ class HelpPanelView(PersistentView):
         if callable(build_panel):
             try:
                 embed, sub_view = await build_panel(interaction)
-                _attach_back_to_help_button(sub_view, self._visible, self._page)
+                _attach_back_to_help_button(sub_view)
                 await interaction.response.edit_message(embed=embed, view=sub_view)
                 return
             except Exception as exc:
@@ -429,6 +466,140 @@ class HelpPanelView(PersistentView):
             member_tier,
         )
         await interaction.response.edit_message(embed=embed, view=new_view)
+
+
+@register
+class HelpCategoryView(PersistentView):
+    """Top-level Help — mother-hub category index (S3).
+
+    Replaces the pre-S3 paginated subsystem-list view as the surface
+    ``!help`` opens. The dropdown shows one option per visible mother
+    hub plus a permanent "All Commands / Advanced" fallback that swaps
+    the view in place to :class:`HelpPanelView` (the legacy paginated
+    list, now reachable only via that option).
+
+    SUBSYSTEM is ``"help"`` — overwrites :class:`HelpPanelView`'s
+    registration in the persistent-view registry. That's intentional:
+    help anchors are skipped at restart (see
+    ``message_anchor_manager.restore_anchors``), so the registration
+    is effectively unused for restore but is kept for symmetry with
+    the rest of the codebase.
+
+    Stateless aside from ``_member_tier`` cached at construction time
+    so the dropdown options match the user's governance tier. The
+    select callback re-resolves visibility before opening a hub so a
+    user who lost a tier between Help renders gets the current state,
+    not the stale snapshot.
+    """
+
+    SUBSYSTEM = "help"
+
+    def __init__(self, member_tier: str | None = None) -> None:
+        super().__init__()
+        self._member_tier = member_tier or "user"
+        self._rebuild_items()
+
+    def _rebuild_items(self) -> None:
+        self.clear_items()
+        visible_hubs = hubs_for_tier(self._member_tier)
+        options: list[discord.SelectOption] = []
+        for hub in visible_hubs:
+            options.append(
+                discord.SelectOption(
+                    label=hub.display_name[:100],
+                    value=hub.key,
+                    description=hub.purpose[:100],
+                    emoji=hub.emoji or None,
+                ),
+            )
+        # All Commands / Advanced is permanent — guarantees discoverability
+        # for every visible subsystem even when no mother hub owns it.
+        options.append(
+            discord.SelectOption(
+                label="All Commands / Advanced",
+                value=ALL_COMMANDS_KEY,
+                description="Browse every visible command directly.",
+                emoji="📋",
+            ),
+        )
+        select = discord.ui.Select(  # type: ignore[var-annotated]
+            custom_id="help_categories:select",
+            placeholder="Pick a category…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            row=0,
+        )
+        select.callback = self._on_select  # type: ignore[method-assign]
+        self.add_item(select)
+
+    async def _on_select(self, interaction: discord.Interaction) -> None:
+        value = interaction.data["values"][0]  # type: ignore[typeddict-item]
+
+        # Re-resolve governance at click time so the user's current
+        # visibility/tier drives the next view, not the snapshot from
+        # when the category panel was first rendered.
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
+
+        if value == ALL_COMMANDS_KEY:
+            visible_list = [
+                name
+                for name, meta in all_subsystems_sorted()
+                if name in vis_result.visible_subsystems and not meta.get("parent_hub")
+            ]
+            new_view = HelpPanelView(visible_list, page=0)
+            embed = _build_page_embed(
+                interaction.client,  # type: ignore[arg-type]
+                visible_list,
+                0,
+                vis_result.member_tier,
+            )
+            await interaction.response.edit_message(embed=embed, view=new_view)
+            return
+
+        # Hub category — route to the host cog's build_help_menu_view.
+        hub = get_hub(value)
+        if hub is None:
+            await interaction.response.send_message(
+                "That category is no longer available.",
+                ephemeral=True,
+            )
+            return
+
+        cog = _cog_for_subsystem(interaction.client, hub.key)  # type: ignore[arg-type]
+        if cog is None:
+            await interaction.response.send_message(
+                f"The {hub.display_name} hub is not loaded right now.",
+                ephemeral=True,
+            )
+            return
+
+        build_panel = getattr(cog, "build_help_menu_view", None)
+        if not callable(build_panel):
+            await interaction.response.send_message(
+                f"The {hub.display_name} hub doesn't expose a panel yet.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            embed, sub_view = await build_panel(interaction)
+        except Exception as exc:  # noqa: BLE001 — Help must never crash on hook
+            logger.warning(
+                "HelpCategoryView: build_help_menu_view failed for hub=%r: %s",
+                hub.key,
+                exc,
+                exc_info=True,
+            )
+            await interaction.response.send_message(
+                f"Could not open the {hub.display_name} hub — see bot logs.",
+                ephemeral=True,
+            )
+            return
+
+        _attach_back_to_help_button(sub_view)
+        await interaction.response.edit_message(embed=embed, view=sub_view)
 
 
 class HelpCog(commands.Cog):
@@ -502,8 +673,14 @@ class HelpCog(commands.Cog):
             )
             return
 
-        view = HelpPanelView(visible_list, page=0)
-        embed = _build_page_embed(self.bot, visible_list, 0, member_tier)
+        # S3: the top of Help is now the mother-hub category index.
+        # The legacy paginated subsystem list is reached only via the
+        # "All Commands / Advanced" entry inside HelpCategoryView; the
+        # hub-child filter lives in that branch (see
+        # HelpCategoryView._on_select), not here.
+        del visible_list
+        view = HelpCategoryView(member_tier)
+        embed = build_categories_overview_embed(member_tier)
 
         # The help panel is invoke-and-see, not a stable hub: each !help should
         # appear at the bottom of the channel where the user just typed.

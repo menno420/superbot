@@ -320,7 +320,10 @@ async def test_open_via_help_hook_handles_hook_exception():
 
 
 @pytest.mark.asyncio
-async def test_help_button_opens_help_panel_view():
+async def test_help_button_opens_help_category_view():
+    """S3: the admin Help button returns the user to the top of Help,
+    which is now :class:`HelpCategoryView` (mother-hub categories).
+    """
     view = _admin_view()
     btn = _find_button(view, "Help")
     interaction = MagicMock()
@@ -328,8 +331,8 @@ async def test_help_button_opens_help_panel_view():
 
     vis_result = MagicMock()
     vis_result.visible_subsystems = {"economy", "moderation"}
-    vis_result.member_tier = "everyone"
-    fake_panel_view = discord.ui.View()
+    vis_result.member_tier = "administrator"
+    fake_view = discord.ui.View()
     fake_embed = discord.Embed(title="Help")
 
     with patch(
@@ -344,30 +347,20 @@ async def test_help_button_opens_help_panel_view():
         "services.governance_service.GovernanceContext.from_interaction",
         return_value=MagicMock(),
     ), patch(
-        "cogs.help_cog.all_subsystems_sorted",
-        return_value=[
-            ("economy", {}),
-            ("moderation", {}),
-            ("invisible_sub", {}),
-        ],
-    ), patch(
-        "cogs.help_cog.HelpPanelView",
-        return_value=fake_panel_view,
-    ) as panel_cls, patch(
-        "cogs.help_cog._build_page_embed",
+        "cogs.help_cog.HelpCategoryView",
+        return_value=fake_view,
+    ) as view_cls, patch(
+        "cogs.help_cog.build_categories_overview_embed",
         return_value=fake_embed,
-    ) as page_builder, patch(
+    ), patch(
         "cogs.admin_cog.safe_edit",
         new_callable=AsyncMock,
         return_value=True,
     ) as edit:
         await btn.callback(interaction)
-    panel_cls.assert_called_once()
-    visible_list_arg = panel_cls.call_args.args[0]
-    assert visible_list_arg == ["economy", "moderation"]
-    page_builder.assert_called_once()
+    view_cls.assert_called_once_with("administrator")
     edit.assert_awaited_once()
-    assert edit.await_args.kwargs["view"] is fake_panel_view
+    assert edit.await_args.kwargs["view"] is fake_view
 
 
 @pytest.mark.asyncio
