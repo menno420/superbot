@@ -353,6 +353,29 @@ class DiagnosticCog(commands.Cog):
         """Feature flags: declarations + Phase 2d evaluator state per flag."""
         await ctx.send(embed=await build_flags_embed(ctx.guild))
 
+    @platform_grp.command(name="flag")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_flag_manager(self, ctx):
+        """Open the editable per-guild flag manager (Phase 6.5a).
+
+        Every mutation routes through
+        :class:`services.rollout_mutation.RolloutMutationPipeline`
+        (validates, writes audit, invalidates cache, emits event).
+        """
+        from views.base import send_panel
+        from views.diagnostic.flag_manager import (
+            FlagManagerView,
+            build_flag_manager_overview_embed,
+        )
+
+        guild_id = ctx.guild.id if ctx.guild else None
+        view = FlagManagerView(ctx.author, guild_id=guild_id)
+        await send_panel(
+            ctx,
+            embed=build_flag_manager_overview_embed(),
+            view=view,
+        )
+
     @platform_grp.command(name="migrations")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_migrations(self, ctx):
