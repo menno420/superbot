@@ -351,8 +351,8 @@ def test_s5_base_files_exist_on_this_branch():
 
 
 def test_s6_invariant_allowlist_only_contains_edit_files():
-    """The S5 read-only invariant lifted in S6 must allowlist exactly
-    the five edit-flow files (and nothing else).  Catches a future
+    """The S5 read-only invariant lifted in S6 (and extended in PR #7)
+    must allowlist exactly the edit-flow files.  Catches a future
     drive-by edit that allowlists the hub or audit view by mistake.
     """
     from tests.unit.invariants.test_settings_cog_read_only import (
@@ -361,9 +361,14 @@ def test_s6_invariant_allowlist_only_contains_edit_files():
 
     names = {p.name for p in _ALLOWED_EDIT_FILES}
     assert names == {
+        # S6 — scalar edit / reset flows.
         "edit_boolean.py",
         "edit_number.py",
         "edit_text.py",
         "edit_enum.py",
         "reset_button.py",
+        # PR #7 — native selects + numeric presets.
+        "edit_channel.py",
+        "edit_role.py",
+        "edit_number_presets.py",
     }

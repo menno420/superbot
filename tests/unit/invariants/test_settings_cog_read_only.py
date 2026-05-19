@@ -107,6 +107,13 @@ _ALLOWED_EDIT_FILES: frozenset[Path] = frozenset(
         _DISBOT / "views" / "settings" / "edit_text.py",
         _DISBOT / "views" / "settings" / "edit_enum.py",
         _DISBOT / "views" / "settings" / "reset_button.py",
+        # PR #7 — channel / role native selects + numeric presets.
+        # Each calls SettingsMutationPipeline like the S6 widgets;
+        # routing decision lives in subsystem_view.py via the new
+        # SettingSpec.input_hint field.
+        _DISBOT / "views" / "settings" / "edit_channel.py",
+        _DISBOT / "views" / "settings" / "edit_role.py",
+        _DISBOT / "views" / "settings" / "edit_number_presets.py",
     },
 )
 
@@ -227,6 +234,10 @@ def test_settings_ui_paths_contain_expected_files():
         Path("disbot/views/settings/edit_text.py"),
         Path("disbot/views/settings/edit_enum.py"),
         Path("disbot/views/settings/reset_button.py"),
+        # PR #7 — channel/role native selects + numeric presets:
+        Path("disbot/views/settings/edit_channel.py"),
+        Path("disbot/views/settings/edit_role.py"),
+        Path("disbot/views/settings/edit_number_presets.py"),
     }
     missing = expected_relpaths - paths
     assert (

@@ -108,6 +108,12 @@ XP_SETTINGS: tuple[SettingSpec, ...] = (
             "cooldown (not recommended in active guilds)."
         ),
         validator=_validate_cooldown,
+        # PR #7 — Settings edit dispatcher picks the preset row when
+        # the hint is "numeric_presets" and ``presets`` is non-empty.
+        # Operators still get the free-form modal via the "Override…"
+        # button so values outside the preset set remain reachable.
+        input_hint="numeric_presets",
+        presets=(0, 15, 30, 60, 120, 300),
     ),
     SettingSpec(
         name="xp_announce_channel",
@@ -121,6 +127,12 @@ XP_SETTINGS: tuple[SettingSpec, ...] = (
             "happened."
         ),
         validator=_validate_channel_id_or_empty,
+        # PR #7 — opt in to the native channel select.  The Settings
+        # edit dispatcher renders a discord.ui.ChannelSelect; the
+        # legacy text-modal fallback is still reachable when the spec
+        # is mutated programmatically (the SettingSpec.value_type is
+        # still str so the pipeline accepts either shape).
+        input_hint="channel",
     ),
 )
 

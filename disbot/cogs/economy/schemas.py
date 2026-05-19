@@ -68,6 +68,10 @@ ECONOMY_SETTINGS: tuple[SettingSpec, ...] = (
             "settings_mutation_audit trail."
         ),
         validator=_validate_channel_id_or_empty,
+        # PR #7 — opt in to the native channel select.  Operators
+        # pick the channel from Discord's UI instead of pasting a
+        # numeric ID into a text modal.
+        input_hint="channel",
     ),
 )
 
