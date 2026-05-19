@@ -995,10 +995,18 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 11. **existing_BindingSpec_entries**: `mod_channel`, `cleanup_channel`
     — both `BindingKind.CHANNEL`, optional.  Declared in S7a; S7b
     wires the mutation path through `BindingMutationPipeline`.
+    Phase 9a (schema v2) adds five severity/source slots, all
+    `BindingKind.CHANNEL`, all optional, all falling back to
+    `mod_channel` when unset: `debug_channel`, `info_channel`,
+    `warning_channel`, `error_channel`, `audit_channel`. No subscriber
+    publishes into these yet — publisher callsites land in Phase 9c.
 12. **existing_ResourceRequirement_entries**: `mod_log` channel
     (`bot-mod-log`, RECOMMENDED), `cleanup_log` channel
     (`bot-cleanup-log`, RECOMMENDED).  Both link to the declared
-    bindings via `binding_name=`.
+    bindings via `binding_name=`.  Phase 9a adds five matching
+    RECOMMENDED requirements with `bot-debug-log` / `bot-info-log` /
+    `bot-warning-log` / `bot-error-log` / `bot-audit-log` suggested
+    names. Auto-create stays OFF by default.
 13. **current_access_policy_behavior**: `visibility_tier=administrator`;
     capabilities `logging.settings.configure`, `logging.channel.bind`,
     `logging.channel.create`.  Master switch `logging.enabled`

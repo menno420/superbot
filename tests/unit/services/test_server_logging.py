@@ -332,6 +332,164 @@ async def test_resolve_log_channel_skips_non_text_channel():
 
 
 # ---------------------------------------------------------------------------
+# Phase 9a — severity / audit route resolution
+# ---------------------------------------------------------------------------
+
+
+def _bound_binding(channel_id: int) -> MagicMock:
+    b = MagicMock()
+    b.target_id = channel_id
+    return b
+
+
+@pytest.mark.parametrize(
+    "kind,binding_name",
+    [
+        ("debug", "debug_channel"),
+        ("info", "info_channel"),
+        ("warning", "warning_channel"),
+        ("error", "error_channel"),
+        ("audit", "audit_channel"),
+    ],
+    ids=["debug", "info", "warning", "error", "audit"],
+)
+@pytest.mark.asyncio
+async def test_resolve_log_channel_severity_route_returns_own_binding(
+    kind: str,
+    binding_name: str,
+):
+    """Each Phase 9a route resolves to its own binding when set."""
+    guild = _make_guild()
+    own_channel = _make_text_channel(name=f"bot-{kind}-log")
+    guild.get_channel = MagicMock(return_value=own_channel)
+
+    seen: list[tuple[str, str]] = []
+
+    async def fake_get_binding(_gid, subsystem, name, expected_kind=None):
+        seen.append((subsystem, name))
+        if name == binding_name:
+            return _bound_binding(channel_id=own_channel.id)
+        return _unbound_binding()
+
+    with patch(
+        "core.runtime.bindings.get_binding",
+        side_effect=fake_get_binding,
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        result = await resolve_log_channel(guild, kind)
+
+    assert result is own_channel
+    # The route's own binding was queried first.
+    assert seen[0] == ("logging", binding_name)
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["debug", "info", "warning", "error", "audit"],
+)
+@pytest.mark.asyncio
+async def test_resolve_log_channel_severity_route_falls_back_to_mod(kind: str):
+    """When the route's own binding is unset, fall through to the mod binding."""
+    guild = _make_guild()
+    mod_channel = _make_text_channel(name="bot-mod-log")
+    guild.get_channel = MagicMock(return_value=mod_channel)
+
+    seen: list[tuple[str, str]] = []
+
+    async def fake_get_binding(_gid, subsystem, name, expected_kind=None):
+        seen.append((subsystem, name))
+        if name == "mod_channel":
+            return _bound_binding(channel_id=mod_channel.id)
+        return _unbound_binding()
+
+    with patch(
+        "core.runtime.bindings.get_binding",
+        side_effect=fake_get_binding,
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        result = await resolve_log_channel(guild, kind)
+
+    assert result is mod_channel
+    # The own binding was checked first, then the fallback hit mod.
+    binding_names_queried = [name for _, name in seen]
+    assert binding_names_queried[0] != "mod_channel"
+    assert "mod_channel" in binding_names_queried
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["debug", "info", "warning", "error", "audit"],
+)
+@pytest.mark.asyncio
+async def test_resolve_log_channel_severity_route_returns_none_when_all_unset(
+    kind: str,
+):
+    """No own binding, no mod binding, no legacy → None."""
+    guild = _make_guild()
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        assert await resolve_log_channel(guild, kind) is None
+
+
+@pytest.mark.asyncio
+async def test_resolve_log_channel_unknown_kind_returns_none():
+    """Unknown route tokens don't raise — they log a warning and return None."""
+    guild = _make_guild()
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        assert await resolve_log_channel(guild, "not_a_real_kind") is None
+
+
+def test_phase_9a_route_table_is_complete_and_acyclic():
+    """Pin the route table shape so a future edit doesn't silently
+    drop a route or introduce a fallback cycle.
+    """
+    from services.server_logging import _ROUTE_FALLBACK, _ROUTE_TO_BINDING
+
+    expected = {"mod", "cleanup", "debug", "info", "warning", "error", "audit"}
+    assert set(_ROUTE_TO_BINDING) == expected
+    assert set(_ROUTE_FALLBACK) == expected
+    # Acyclic: walking ``_ROUTE_FALLBACK`` from any starting kind must
+    # terminate at ``mod`` (fallback=None) within at most len(expected) hops.
+    for start in expected:
+        seen_chain: list[str] = []
+        cursor: str | None = start
+        for _ in range(len(expected) + 1):
+            if cursor is None:
+                break
+            assert cursor not in seen_chain, (
+                f"_ROUTE_FALLBACK has a cycle starting at {start!r}: "
+                f"{seen_chain + [cursor]}"
+            )
+            seen_chain.append(cursor)
+            cursor = _ROUTE_FALLBACK[cursor]
+        else:
+            raise AssertionError(
+                f"_ROUTE_FALLBACK chain from {start!r} did not terminate: {seen_chain}"
+            )
+
+
+# ---------------------------------------------------------------------------
 # ensure_log_channel
 # ---------------------------------------------------------------------------
 
