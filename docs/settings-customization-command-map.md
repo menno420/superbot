@@ -479,6 +479,42 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 24. **recommended_PR_phase**: S8.
 
 
+### games
+
+1. **cog_module**: `disbot/cogs/games_cog.py`.
+2. **subsystem**: `games`
+3. **current_commands**: `!games`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `games` entry — opens `GamesHubView`
+   in `disbot/views/games/hub.py`.
+6. **help_menu_discoverable**: Yes (via the standard `SUBSYSTEMS`
+   iteration in `help_cog.py`).
+7. **dedicated_panel_command**: `!games`.
+8. **help_menu_direct_navigation_hook**: `GamesCog.build_help_menu_view`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `games.hub.view`.
+14. **hardcoded_or_env_only_behavior**: hub children discovered dynamically
+    from `SUBSYSTEMS` entries whose `parent_hub == "games"`.
+15. **missing_customization_commands**: none — Games is a router, not a
+    configurable subsystem.
+16. **missing_settings_pages**: none planned; the hub itself has no
+    persisted state.
+17. **missing_menu_buttons_selects_modals**: per-child mode/replay panels
+    are layered later (Phase 7 of the interface-completion roadmap).
+18. **setting_class_per_value**: n/a (router only).
+19. **target_Settings_Manager_page**: none — children expose their own.
+20. **target_mutation_path**: n/a; no state.
+21. **target_help_or_menu_route**: Help direct-nav into `GamesHubView`,
+    Games hub's select into each child's `build_help_menu_view`.
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — interface skeleton, low risk.
+24. **recommended_PR_phase**: interface-completion Phase 3.
+
+
 ### blackjack
 
 1. **cog_module**: `disbot/cogs/blackjack_cog.py` (+ `disbot/cogs/blackjack/`

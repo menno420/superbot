@@ -172,6 +172,8 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 20,
+        "parent_hub": "games",
+        "hub_group": "activities",
         "capabilities": [
             "mining.resource.mine",
             "mining.resource.view",
@@ -272,6 +274,34 @@ SUBSYSTEMS: dict[str, dict] = {
             "cleanup.policy.configure",
         ],
     },
+    "games": {
+        "display_name": "Games",
+        "description": "Competitive games and channel activities",
+        "emoji": "🎮",
+        "color": GAME_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "games",
+        "tags": ["games", "hub", "activities"],
+        "entry_points": ["games"],
+        "default_channels": ["games", "bot-commands"],
+        "related_subsystems": [
+            "blackjack",
+            "rps_tournament",
+            "deathmatch",
+            "mining",
+            "counting",
+            "chain",
+        ],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 28,
+        "capabilities": [
+            "games.hub.view",
+        ],
+    },
     "blackjack": {
         "display_name": "Blackjack",
         "description": "Blackjack card game",
@@ -289,6 +319,8 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 30,
+        "parent_hub": "games",
+        "hub_group": "competitive",
         "capabilities": [
             "blackjack.game.play",
         ],
@@ -310,6 +342,8 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 32,
+        "parent_hub": "games",
+        "hub_group": "competitive",
         "capabilities": [
             "deathmatch.game.challenge",
             "deathmatch.stat.view",
@@ -332,6 +366,8 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 34,
+        "parent_hub": "games",
+        "hub_group": "competitive",
         "capabilities": [
             "rps_tournament.game.join",
             "rps_tournament.tournament.manage",
@@ -354,6 +390,8 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 36,
+        "parent_hub": "games",
+        "hub_group": "activities",
         "capabilities": [
             "counting.game.play",
             "counting.game.configure",
@@ -376,6 +414,8 @@ SUBSYSTEMS: dict[str, dict] = {
         "supports_dm": False,
         "has_cleanup_rules": False,
         "ui_priority": 38,
+        "parent_hub": "games",
+        "hub_group": "activities",
         "capabilities": [
             "chain.game.play",
             "chain.game.configure",
