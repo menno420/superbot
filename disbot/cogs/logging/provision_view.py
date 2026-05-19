@@ -24,14 +24,26 @@ import discord
 logger = logging.getLogger("bot.cogs.logging.provision_view")
 
 
+# Route tables — kept in sync with ``services.server_logging``'s
+# ``_ROUTE_TO_BINDING``. A consistency test pins them together.
 _KIND_TO_BINDING: dict[str, str] = {
     "mod": "mod_channel",
     "cleanup": "cleanup_channel",
+    "debug": "debug_channel",
+    "info": "info_channel",
+    "warning": "warning_channel",
+    "error": "error_channel",
+    "audit": "audit_channel",
 }
 
 _KIND_TO_LABEL: dict[str, str] = {
     "mod": "moderation log",
     "cleanup": "cleanup log",
+    "debug": "debug log",
+    "info": "info log",
+    "warning": "warning log",
+    "error": "error log",
+    "audit": "audit log",
 }
 
 
