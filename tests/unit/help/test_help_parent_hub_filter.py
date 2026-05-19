@@ -112,13 +112,16 @@ def test_build_page_embed_excludes_parent_hub_children():
 
 
 @pytest.mark.asyncio
-async def test_resolve_help_panel_state_visible_list_excludes_hub_children(
-    monkeypatch,
-):
-    """``resolve_help_panel_state`` must filter hub children out of the
-    visible_list it passes to HelpPanelView, otherwise pagination and
-    the select would still include them.
+async def test_resolve_help_panel_state_returns_category_view(monkeypatch):
+    """S3: ``resolve_help_panel_state`` returns the new
+    :class:`HelpCategoryView` (mother-hub category index), not the
+    legacy paginated subsystem list. The category view's dropdown lists
+    mother hubs + the permanent "All Commands / Advanced" fallback —
+    individual hub children (Blackjack, RPS, etc.) only appear after
+    the user selects the relevant hub.
     """
+    import discord as _discord
+
     interaction = MagicMock()
     interaction.client = MagicMock()
 
@@ -139,11 +142,64 @@ async def test_resolve_help_panel_state_visible_list_excludes_hub_children(
     )
 
     embed, view = await help_cog.resolve_help_panel_state(interaction)
-    visible_list = view._visible  # type: ignore[attr-defined]
+    assert isinstance(view, help_cog.HelpCategoryView)
 
+    # The top-level dropdown must never expose individual hub children
+    # (e.g. Blackjack, RPS, Mining) — those are reached via the parent
+    # hub category, not from Help directly.
+    option_values: set[str] = set()
+    for child in view.children:
+        if isinstance(child, _discord.ui.Select):
+            option_values.update(opt.value for opt in child.options)
+    for child in _hub_children():
+        assert child not in option_values, (
+            f"hub child {child!r} leaked into HelpCategoryView dropdown"
+        )
+    # The Games hub itself IS in the dropdown.
+    assert "games" in option_values
+
+
+@pytest.mark.asyncio
+async def test_help_category_view_all_commands_branch_filters_hub_children(
+    monkeypatch,
+):
+    """Selecting "All Commands / Advanced" inside :class:`HelpCategoryView`
+    swaps the view to :class:`HelpPanelView` populated with a
+    parent_hub-filtered list — so the paginated fallback never leaks
+    hub children into the top-level command list.
+    """
+    interaction = MagicMock()
+    interaction.client = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    interaction.data = {"values": [help_cog.ALL_COMMANDS_KEY]}
+
+    vis_result = MagicMock()
+    vis_result.visible_subsystems = _all_visible_set()
+    vis_result.member_tier = "owner"
+
+    monkeypatch.setattr(
+        help_cog.governance_service,
+        "resolve_visibility",
+        AsyncMock(return_value=vis_result),
+    )
+    monkeypatch.setattr(
+        help_cog.GovernanceContext,
+        "from_interaction",
+        lambda i: MagicMock(),
+    )
+
+    view = help_cog.HelpCategoryView(member_tier="owner")
+    await view._on_select(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    new_view = kwargs["view"]
+    assert isinstance(new_view, help_cog.HelpPanelView)
+    visible_list = new_view._visible  # type: ignore[attr-defined]
     for child in _hub_children():
         assert child not in visible_list, (
-            f"hub child {child!r} leaked into resolve_help_panel_state visible_list"
+            f"hub child {child!r} leaked into the All Commands view"
         )
     assert "games" in visible_list
 

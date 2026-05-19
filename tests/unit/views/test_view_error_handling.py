@@ -188,7 +188,7 @@ class TestBackCallbackErrorHandling:
             sub_view = MagicMock()
             sub_view.children = []
             sub_view.add_item = MagicMock(side_effect=lambda btn: None)
-            help_cog._attach_back_to_help_button(sub_view, ["general"], 0)
+            help_cog._attach_back_to_help_button(sub_view)
 
             # The back button was passed to add_item; retrieve it.
             assert sub_view.add_item.called
@@ -215,7 +215,7 @@ class TestBackCallbackErrorHandling:
             sub_view = MagicMock()
             sub_view.children = []
             sub_view.add_item = MagicMock()
-            help_cog._attach_back_to_help_button(sub_view, ["general"], 0)
+            help_cog._attach_back_to_help_button(sub_view)
             back_btn = sub_view.add_item.call_args[0][0]
             # Must not raise even if interaction is already done.
             await back_btn.callback(interaction)

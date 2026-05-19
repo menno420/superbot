@@ -320,19 +320,21 @@ def test_help_cog_back_button_uses_shared_navigation_helper():
     assert "views.navigation" in src or "from views.navigation" in src
 
 
-def test_help_cog_back_button_still_clamps_pagination_in_builder():
-    """The help-specific builder kept inside ``help_cog`` must still
-    re-resolve governance and clamp pagination — that logic is help's
-    concern, not the shared helper's.
+def test_help_cog_back_button_rebuilds_category_view_via_governance():
+    """S3: the help-specific builder kept inside ``help_cog`` must still
+    re-resolve governance at click time (so visibility/tier are fresh)
+    and must rebuild :class:`HelpCategoryView` — the new top of Help.
     """
     import inspect
 
     from cogs import help_cog
 
     src = inspect.getsource(help_cog._attach_back_to_help_button)
+    # Governance is still resolved at click time.
     assert "resolve_visibility" in src
-    assert "math.ceil" in src or "_PAGE_SIZE" in src
-    assert "parent_hub" in src  # the Phase 4 filter pin
+    # The new top-of-Help is the category index, not the paginated list.
+    assert "HelpCategoryView" in src
+    assert "build_categories_overview_embed" in src
 
 
 def test_logging_routes_back_uses_shared_navigation_helper():
