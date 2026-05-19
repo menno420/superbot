@@ -35,6 +35,7 @@ import discord
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils.ui_constants import ADMIN_COLOR
 from views.base import HubView
+from views.navigation import attach_back_button
 
 if TYPE_CHECKING:
     from cogs.cleanup_cog import Cleanup
@@ -96,6 +97,39 @@ def build_cleanup_overview_embed(
     return embed
 
 
+def _attach_back_to_cleanup_button(
+    child_view: discord.ui.View,
+    cleanup_panel: CleanupPanelView,
+) -> bool:
+    """Attach a "↩ Back to Cleanup" button on ``child_view``.
+
+    The parent-builder closure returns the *live* ``cleanup_panel``
+    instance — not a fresh ``CleanupPanelView()``. Re-using the same
+    instance preserves any back button attached to it by the opener
+    (back-to-Help when entered via ``!help cleanup`` / ``/help cleanup``,
+    back-to-Admin when entered via ``!adminmenu`` → Cleanup, none for
+    direct ``!cleanup``). A rebuild would lose that opener back button.
+
+    If ``cleanup_panel`` has timed out by click time, the rebuilt view
+    is inert; this is acceptable for AB1's scope. PR AB2's
+    ``BackTarget`` / ``chain_back`` flow rebuilds with origin
+    re-attached and avoids the inert-instance risk for deeper chains.
+    """
+
+    async def _return_to_cleanup(
+        _interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        return cleanup_panel.build_embed(), cleanup_panel
+
+    return attach_back_button(
+        child_view,
+        label="↩ Back to Cleanup",
+        custom_id="cleanup:back",
+        parent_builder=_return_to_cleanup,
+        error_message="Couldn't reopen the Cleanup hub. Try `!cleanup` again.",
+    )
+
+
 class CleanupPanelView(HubView):
     """Top-level Cleanup hub view — routes to existing subsystem panels."""
 
@@ -132,6 +166,7 @@ class CleanupPanelView(HubView):
         if self.guild_id is not None and self.guild_id not in self.cog._word_cache:
             await self.cog._load_guild(self.guild_id)
         view = _WordMenuView(help_ctx_shim(interaction), self.cog)
+        _attach_back_to_cleanup_button(view, self)
         await interaction.response.edit_message(
             embed=view.build_embed(),
             view=view,
@@ -171,16 +206,18 @@ class CleanupPanelView(HubView):
                     exc_info=True,
                 )
                 await interaction.response.send_message(
-                    "Couldn't open the logging panel.",
+                    f"Couldn't open the logging panel ({exc.__class__.__name__}).",
                     ephemeral=True,
                 )
                 return
+            _attach_back_to_cleanup_button(view, self)
             await interaction.response.edit_message(embed=embed, view=view)
             return
         # Fallback — construct the panel directly. Mirrors the contract
         # the cog itself uses, so any future signature changes propagate.
         view = LoggingPanelView(interaction.user)  # type: ignore[arg-type]
         embed = await view.build_embed(interaction)  # type: ignore[attr-defined]
+        _attach_back_to_cleanup_button(view, self)
         await interaction.response.edit_message(embed=embed, view=view)
 
     @discord.ui.button(
@@ -201,6 +238,7 @@ class CleanupPanelView(HubView):
 
         view = SubsystemSettingsView(interaction.user, "cleanup")
         embed = await build_subsystem_embed(interaction, "cleanup")
+        _attach_back_to_cleanup_button(view, self)
         await interaction.response.edit_message(embed=embed, view=view)
 
     @discord.ui.button(

@@ -272,3 +272,205 @@ async def test_refresh_button_rebuilds_embed_without_mutation():
     _args, kwargs = interaction.response.edit_message.call_args
     assert kwargs["view"] is view
     assert isinstance(kwargs["embed"], discord.Embed)
+
+
+# ---------------------------------------------------------------------------
+# Back-to-Cleanup attachment on every routed sub-view (PR AB1)
+# ---------------------------------------------------------------------------
+
+
+def _back_button(view: discord.ui.View) -> discord.ui.Button | None:
+    for child in view.children:
+        if (
+            isinstance(child, discord.ui.Button)
+            and child.custom_id == "cleanup:back"
+        ):
+            return child
+    return None
+
+
+@pytest.mark.asyncio
+async def test_words_button_attaches_back_to_cleanup_on_child():
+    """Prohibited Words view must carry a Back-to-Cleanup button so the
+    user is not trapped — issue #1 of the post-#152 stabilization sweep.
+    """
+    cog = _cog(words=["badword"])
+    view = CleanupPanelView(_author(), cog, guild_id=42)
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.client = MagicMock()
+    interaction.user = view._author
+    interaction.guild = MagicMock()
+    interaction.channel = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "cleanup:words"
+    )
+    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    _args, kwargs = interaction.response.edit_message.call_args
+    child_view = kwargs["view"]
+    back = _back_button(child_view)
+    assert back is not None, "Words view must have a cleanup:back button"
+    assert back.label == "↩ Back to Cleanup"
+
+
+@pytest.mark.asyncio
+async def test_logging_button_attaches_back_to_cleanup_on_child():
+    cog = _cog()
+    view = CleanupPanelView(_author(), cog, guild_id=42)
+
+    logging_cog = MagicMock()
+    returned_view = discord.ui.View()
+    logging_cog.build_help_menu_view = AsyncMock(
+        return_value=(discord.Embed(title="Logging"), returned_view),
+    )
+
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.client = MagicMock()
+    interaction.client.get_cog = MagicMock(return_value=logging_cog)
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    interaction.response.send_message = AsyncMock()
+
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "cleanup:logging"
+    )
+    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    back = _back_button(returned_view)
+    assert back is not None, "Logging view must have a cleanup:back button"
+    assert back.label == "↩ Back to Cleanup"
+
+
+@pytest.mark.asyncio
+async def test_logging_button_failure_path_includes_exception_class_name():
+    """If the logging cog's build hook raises, the ephemeral should name
+    the exception class so operators can triage from the user's report.
+    """
+    cog = _cog()
+    view = CleanupPanelView(_author(), cog, guild_id=42)
+
+    logging_cog = MagicMock()
+    logging_cog.build_help_menu_view = AsyncMock(
+        side_effect=RuntimeError("boom"),
+    )
+
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.client = MagicMock()
+    interaction.client.get_cog = MagicMock(return_value=logging_cog)
+    interaction.response = MagicMock()
+    interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "cleanup:logging"
+    )
+    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    interaction.response.send_message.assert_awaited_once()
+    args, kwargs = interaction.response.send_message.call_args
+    message = args[0] if args else kwargs.get("content", "")
+    assert "RuntimeError" in message
+    assert kwargs.get("ephemeral") is True
+    interaction.response.edit_message.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_settings_button_attaches_back_to_cleanup_on_child():
+    view = CleanupPanelView(_author(), _cog(), guild_id=42)
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.user = view._author
+    interaction.client = MagicMock()
+    interaction.guild = MagicMock()
+    interaction.channel = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+
+    with patch(
+        "views.settings.subsystem_view.build_subsystem_embed",
+        AsyncMock(return_value=discord.Embed(title="Cleanup settings")),
+    ):
+        btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button) and c.custom_id == "cleanup:settings"
+        )
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    _args, kwargs = interaction.response.edit_message.call_args
+    child_view = kwargs["view"]
+    back = _back_button(child_view)
+    assert back is not None, "Settings view must have a cleanup:back button"
+    assert back.label == "↩ Back to Cleanup"
+
+
+@pytest.mark.asyncio
+async def test_back_button_returns_to_same_cleanup_panel_instance():
+    """The back button's parent_builder must return the SAME live
+    CleanupPanelView instance (identity), not a fresh rebuild. This is
+    how AB1 preserves any back-to-Help / back-to-Admin attached by the
+    opener — a rebuild would lose those.
+    """
+    cog = _cog(words=["badword"])
+    view = CleanupPanelView(_author(), cog, guild_id=42)
+
+    # Mimic an opener attaching its own back button (e.g. back-to-Help)
+    # on the live CleanupPanelView before any subroute is opened.
+    synthetic_origin_btn = discord.ui.Button(
+        label="↩ Back to Help",
+        custom_id="help:back",
+        style=discord.ButtonStyle.secondary,
+        row=4,
+    )
+    view.add_item(synthetic_origin_btn)
+
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.client = MagicMock()
+    interaction.user = view._author
+    interaction.guild = MagicMock()
+    interaction.channel = MagicMock()
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    interaction.response.is_done = MagicMock(return_value=False)
+
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "cleanup:words"
+    )
+    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    _args, kwargs = interaction.response.edit_message.call_args
+    child_view = kwargs["view"]
+    back = _back_button(child_view)
+    assert back is not None
+
+    # Invoke the back button's callback directly and verify it edits
+    # the message with the original CleanupPanelView instance — the one
+    # that still carries the synthetic back-to-Help button.
+    next_interaction = MagicMock(spec=discord.Interaction)
+    next_interaction.client = MagicMock()
+    next_interaction.response = MagicMock()
+    next_interaction.response.is_done = MagicMock(return_value=False)
+    next_interaction.response.edit_message = AsyncMock()
+    next_interaction.response.send_message = AsyncMock()
+    next_interaction.edit_original_response = AsyncMock()
+
+    await back.callback(next_interaction)  # type: ignore[union-attr,misc]
+
+    next_interaction.response.edit_message.assert_awaited_once()
+    _args, edit_kwargs = next_interaction.response.edit_message.call_args
+    assert edit_kwargs["view"] is view, (
+        "Back button must return the live CleanupPanelView instance"
+    )
+    # The synthetic origin button (e.g. back-to-Help) must still be on
+    # the returned view — that's the whole point of preserving identity.
+    assert synthetic_origin_btn in view.children
