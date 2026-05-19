@@ -45,7 +45,7 @@ async def test_platform_anchors_renders_stats_and_db_counts():
         {"subsystem": "economy", "n": 2},
     ]
     with patch(
-        "cogs.diagnostic_cog.db.fetchall",
+        "utils.db.fetchall",
         new_callable=AsyncMock,
         return_value=rows,
     ):
