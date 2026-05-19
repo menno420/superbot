@@ -244,6 +244,38 @@ def _build_page_embed(
     return embed
 
 
+async def resolve_help_panel_state(
+    interaction: discord.Interaction,
+) -> tuple[discord.Embed, HelpPanelView]:
+    """Resolve governance + build the Help-panel ``(embed, view)`` pair.
+
+    Used by navigation buttons in other cogs / views (e.g.
+    ``cogs.admin_cog._AdminPanelView.help_btn`` and
+    ``views.mining.mine_view._MineResultsView.help_btn``) so they
+    don't re-implement governance resolution + page-embed
+    construction.
+
+    Raises whatever ``governance_service.resolve_visibility`` raises;
+    callers are responsible for catching to fall back to an in-place
+    error embed.
+    """
+    gctx = GovernanceContext.from_interaction(interaction)
+    vis_result = await governance_service.resolve_visibility(gctx)
+    visible_list = [
+        name
+        for name, _meta in all_subsystems_sorted()
+        if name in vis_result.visible_subsystems
+    ]
+    view = HelpPanelView(visible_list, page=0)
+    embed = _build_page_embed(
+        interaction.client,  # type: ignore[arg-type]
+        visible_list,
+        0,
+        vis_result.member_tier,
+    )
+    return embed, view
+
+
 @register
 class HelpPanelView(PersistentView):
     """Persistent, paginated help panel — resolves the 25-item dropdown cap."""

@@ -449,25 +449,9 @@ class _AdminPanelView(HubView):
         if not await safe_defer(interaction):
             return
         try:
-            from cogs.help_cog import HelpPanelView, _build_page_embed
-            from services import governance_service
-            from services.governance_service import GovernanceContext
-            from utils.subsystem_registry import all_subsystems_sorted
+            from cogs.help_cog import resolve_help_panel_state
 
-            gctx = GovernanceContext.from_interaction(interaction)
-            vis_result = await governance_service.resolve_visibility(gctx)
-            visible_list = [
-                name
-                for name, _meta in all_subsystems_sorted()
-                if name in vis_result.visible_subsystems
-            ]
-            new_view = HelpPanelView(visible_list, page=0)
-            embed = _build_page_embed(
-                interaction.client,  # type: ignore[arg-type]
-                visible_list,
-                0,
-                vis_result.member_tier,
-            )
+            embed, new_view = await resolve_help_panel_state(interaction)
             await safe_edit(interaction, embed=embed, view=new_view)
         except Exception as exc:  # noqa: BLE001 — navigation must not crash panel
             logging.getLogger("bot.cogs.admin").warning(

@@ -344,7 +344,7 @@ async def test_help_button_opens_help_panel_view():
         "services.governance_service.GovernanceContext.from_interaction",
         return_value=MagicMock(),
     ), patch(
-        "utils.subsystem_registry.all_subsystems_sorted",
+        "cogs.help_cog.all_subsystems_sorted",
         return_value=[
             ("economy", {}),
             ("moderation", {}),
