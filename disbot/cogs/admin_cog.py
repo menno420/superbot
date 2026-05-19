@@ -172,6 +172,130 @@ class AdminCog(commands.Cog):
         await ctx.send("\n".join(parts) or "✅ Nothing to unload.")
 
     # ------------------------------------------------------------------
+    # Slash-command tree sync + diagnostics (PR E')
+    # ------------------------------------------------------------------
+    @commands.command(name="syncslash", aliases=["syncs"])
+    @commands.is_owner()
+    async def sync_slash_commands(
+        self,
+        ctx: commands.Context,
+        scope: str = "guild",
+    ) -> None:
+        """Sync the app-command tree for slash commands (owner only).
+
+        PR E' — operator tooling for the post-deploy resync workflow.
+        After PR E1 / E2 add or change slash commands, the Discord
+        command tree needs to be told about them. Bot startup already
+        runs a global sync (per ``setup_hook``); this command exists
+        for cases where the operator needs to re-trigger one without
+        a full restart.
+
+        Usage::
+
+            !syncslash             # sync this guild (default — fast)
+            !syncslash guild       # sync this guild (explicit)
+            !syncslash global      # sync globally — rate-limited;
+                                   #   propagation can take up to 1 h
+
+        ``guild`` scope is the right choice in almost every case:
+        Discord rate-limits global sync, and per-guild sync makes
+        new commands appear immediately. ``global`` is only needed
+        if the bot deploys to a guild that hasn't seen the tree yet.
+        """
+        scope = scope.lower()
+        if scope not in ("guild", "global"):
+            await ctx.send("❌ Invalid scope. Use `guild` or `global`.")
+            return
+
+        if scope == "global":
+            try:
+                synced = await self.bot.tree.sync()
+            except discord.HTTPException as exc:
+                await ctx.send(
+                    f"⚠️ Global sync failed: `{type(exc).__name__}`: {exc}",
+                )
+                return
+            await ctx.send(
+                f"✅ Synced **{len(synced)}** slash commands globally. "
+                "Propagation may take up to an hour.",
+            )
+            return
+
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("❌ `guild` scope requires a guild context.")
+            return
+        try:
+            synced = await self.bot.tree.sync(guild=guild)
+        except discord.HTTPException as exc:
+            await ctx.send(
+                f"⚠️ Guild sync failed: `{type(exc).__name__}`: {exc}",
+            )
+            return
+        await ctx.send(
+            f"✅ Synced **{len(synced)}** slash commands to **{guild.name}**.",
+        )
+
+    @commands.command(name="slashes", aliases=["slashlist"])
+    @commands.has_permissions(administrator=True)
+    async def list_slash_commands(
+        self,
+        ctx: commands.Context,
+        scope: str = "guild",
+    ) -> None:
+        """List currently-registered slash commands (admin only).
+
+        PR E' — read-only deployment diagnostic. Useful for
+        confirming after a sync that the expected commands are
+        present, and for spotting drift between code (what's
+        decorated with ``@app_commands.command``) and what Discord
+        actually has registered.
+
+        Usage::
+
+            !slashes           # this guild (default)
+            !slashes guild     # this guild (explicit)
+            !slashes global    # global tree
+
+        Listing reads from the bot's in-memory tree (what code has
+        registered), not from Discord — so it reflects the current
+        process's state regardless of whether a sync has propagated
+        yet.
+        """
+        scope = scope.lower()
+        if scope not in ("guild", "global"):
+            await ctx.send("❌ Invalid scope. Use `guild` or `global`.")
+            return
+
+        if scope == "global":
+            commands_list = list(self.bot.tree.get_commands())
+            title = "📋 Global Slash Commands"
+        else:
+            guild = ctx.guild
+            if guild is None:
+                await ctx.send("❌ `guild` scope requires a guild context.")
+                return
+            commands_list = list(self.bot.tree.get_commands(guild=guild))
+            title = f"📋 Guild Slash Commands — {guild.name}"
+
+        if not commands_list:
+            await ctx.send(f"_No {scope} slash commands registered._")
+            return
+
+        ordered = sorted(commands_list, key=lambda c: c.name)
+        lines = [
+            f"`/{cmd.name}` — {cmd.description or '_no description_'}"
+            for cmd in ordered
+        ]
+        embed = discord.Embed(
+            title=title,
+            description="\n".join(lines),
+            color=INFO_COLOR,
+        )
+        embed.set_footer(text=f"{len(commands_list)} commands.")
+        await ctx.send(embed=embed)
+
+    # ------------------------------------------------------------------
     # Restart
     # ------------------------------------------------------------------
     @commands.command(name="restart")
