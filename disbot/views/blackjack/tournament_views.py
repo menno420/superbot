@@ -28,12 +28,10 @@ from cogs.blackjack._state import (
     _TournPlayerState,
 )
 from core.runtime import resources
-from services import economy_service, game_state_service
+from services import economy_service, game_state_service, tournament_state_service
 from services.blackjack_engine import hand_value as _hand_value
 from services.blackjack_engine import is_blackjack as _is_blackjack
-from utils import db
 from utils.channels import cleanup_category
-from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.ui_constants import ECONOMY_COLOR, ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
 from views.base import handle_view_error as _on_view_error
 from views.blackjack.embeds import _game_embed, _update_tourn_embed
@@ -306,4 +304,4 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         )
 
     _tournaments.pop(tourn.guild_id, None)
-    await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
+    await tournament_state_service.clear_active(tourn.guild_id)

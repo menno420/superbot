@@ -65,11 +65,10 @@ from cogs.blackjack._state import (  # noqa: F401 — re-exported
     _TournPlayerState,
 )
 from core.runtime import resources, tasks
-from services import economy_service, game_state_service
+from services import economy_service, game_state_service, tournament_state_service
 from services.blackjack_engine import is_blackjack as _is_blackjack
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
-from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.ui_constants import ECONOMY_COLOR, SUCCESS_COLOR
 from views.blackjack import (  # noqa: F401 — re-exported
     BlackjackView,
@@ -354,9 +353,9 @@ class BlackjackCog(commands.Cog):
         """On startup, find leftover BJ Tournament categories and notify players."""
         await self.bot.wait_until_ready()
         for guild in self.bot.guilds:
-            flag = await db.get_setting(guild.id, ACTIVE_TOURNAMENT, "")
+            flag = await tournament_state_service.get_active(guild.id)
             if flag == "blackjack":
-                await db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
+                await tournament_state_service.clear_active(guild.id)
             cat = resources.resolve_channel(
                 guild,
                 name="BJ Tournament",
@@ -501,7 +500,7 @@ class BlackjackCog(commands.Cog):
         if _tournaments.get(ctx.guild.id):
             await ctx.send("A tournament is already running.", delete_after=8)
             return
-        existing = await db.get_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
+        existing = await tournament_state_service.get_active(ctx.guild.id)
         if existing:
             await ctx.send(
                 f"A **{existing}** tournament is already active in this server.",
@@ -521,7 +520,7 @@ class BlackjackCog(commands.Cog):
             duration_mins,
         )
         _tournaments[ctx.guild.id] = tourn
-        await db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "blackjack")
+        await tournament_state_service.set_active(ctx.guild.id, "blackjack")
 
         view = _TournRegistrationView(tourn)
         msg = await ctx.send(embed=_tourn_embed(tourn), view=view)
@@ -574,7 +573,7 @@ async def _launch_tournament(
         if announce:
             await announce.send("❌ Tournament cancelled — no players registered.")  # type: ignore[union-attr]
         _tournaments.pop(tourn.guild_id, None)
-        await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
+        await tournament_state_service.clear_active(tourn.guild_id)
         return
 
     # Deduct entry fees (uses shared TournamentRegistration helper)
@@ -587,7 +586,7 @@ async def _launch_tournament(
                 "❌ Tournament cancelled — no players could afford the entry fee.",
             )
         _tournaments.pop(tourn.guild_id, None)
-        await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
+        await tournament_state_service.clear_active(tourn.guild_id)
         return
 
     if announce:
@@ -637,7 +636,7 @@ async def _launch_tournament(
             if announce:
                 await announce.send("❌ I don't have permission to create channels.")  # type: ignore[union-attr]
             _tournaments.pop(tourn.guild_id, None)
-            await db.set_setting(tourn.guild_id, ACTIVE_TOURNAMENT, "")
+            await tournament_state_service.clear_active(tourn.guild_id)
             return
         except Exception as e:
             logger.error("Failed to create tournament channel: %s", e)

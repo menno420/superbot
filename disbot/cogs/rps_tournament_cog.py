@@ -67,9 +67,8 @@ from core.runtime import tasks
 from services import (  # noqa: F401 — game_state_service kept for back-compat patch sites
     economy_service,
     game_state_service,
+    tournament_state_service,
 )
-from utils import db as global_db
-from utils.settings_keys import ACTIVE_TOURNAMENT
 from utils.ui_constants import INFO_COLOR
 from views.rps import _RpsRegistrationView
 
@@ -189,14 +188,14 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             await ctx.send("Registration is already active.")
             return
 
-        existing = await global_db.get_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
+        existing = await tournament_state_service.get_active(ctx.guild.id)
         if existing:
             await ctx.send(
                 f"A **{existing}** tournament is already active in this server.",
             )
             return
 
-        await global_db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "rps")
+        await tournament_state_service.set_active(ctx.guild.id, "rps")
 
         self.registration_active = True
         self.registration_role = role
@@ -293,7 +292,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             await ctx.send("An error occurred while ending registration.")
 
         if len(self.players) < 2:
-            await global_db.set_setting(ctx.guild.id, ACTIVE_TOURNAMENT, "")
+            await tournament_state_service.clear_active(ctx.guild.id)
 
     async def try_register_player(self, user, guild_id: int) -> bool:
         """Check entry fee, deduct if needed, register player. Returns success.
@@ -656,7 +655,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
             announce = guild.system_channel or last_channel
             await announce.send("\n".join(msg_lines))
             self.tournament_active = False
-            await global_db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
+            await tournament_state_service.clear_active(guild.id)
             self.players.clear()
             self.scores.clear()
             self.matches.clear()
