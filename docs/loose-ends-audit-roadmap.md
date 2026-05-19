@@ -6,6 +6,45 @@ Baseline inspected: `main` at Phase 9b merge (`baacf461`)
 Purpose: define the safest completion pass before feature expansion, with a button-first command surface, complete Help discovery, consistent panel navigation, and a clear slash-front-door strategy.
 
 > **Status note (S1):** The PR sequence L1–L6 below is **superseded** by [`building-roadmap/mother-hub-map.md`](./building-roadmap/mother-hub-map.md) S1–S13. PR L1 (shared navigation helper) partially landed via PR #130 — S2 in the new sequence completes the migration. The findings, navigation duplication evidence, placeholder inventory, and panel/subsystem inventory in this document remain valid as the source audit; only the PR sequence is replaced.
+>
+> **Stabilization plan update (PRs #143-#151, 2026-05):** A nine-PR
+> stabilization sequence landed on top of the post-PR-#142 baseline:
+>
+> - **Navigation duplication.** Five sibling Back-to-X helpers now
+>   exist (Help / Admin / Settings / Games / Economy) — PR #143 added
+>   `attach_back_to_economy_button` to round out the family for the
+>   live mother hubs. The duplication finding in Finding 1 below is
+>   still accurate as audit context, but the migration is now
+>   feature-complete for the affected surface.
+> - **Phase 4 parent_hub filter.** PR #145 declared `parent_hub`
+>   metadata on the eight S7-S10 children (`inventory`, `leaderboard`,
+>   `xp`, `role`, `cleanup`, `logging`, `proof_channel`, `general`),
+>   so the filter consistently hides them from the top-level Help
+>   overview.
+> - **Community hub.** PR #146 migrated `CommunityHubView` to
+>   metadata-driven discovery (primary children from `SUBSYSTEMS`,
+>   cross-links from `hub_registry`), mirroring the Games hub
+>   pattern.
+> - **Direct-write remediation.** PR #147 and PR #148 routed the
+>   last XP and Economy direct-write sites through
+>   `SettingsMutationPipeline` (closing the audit gap that Finding 5
+>   flagged).
+> - **Settings input modes.** PR #149 added the `channel_select`,
+>   `role_select`, and `numeric_presets` widgets and wired the
+>   dispatcher via the new `SettingSpec.input_hint` field.
+> - **Settings default-on.** PR #150 flipped
+>   `settings.manager_cog.enabled` to default ON with the
+>   `SUPERBOT_FF_SETTINGS__MANAGER_COG__ENABLED=off` env-var kill-switch
+>   retained.
+> - **Slash front door.** PR #151 added `/help` reusing `HelpRoute` —
+>   the first slash command in the bot. The remaining slash front
+>   doors (`/games`, `/economy`, `/community`, `/utility`,
+>   `/moderation`, `/admin`, `/platform`, `/settings`) are
+>   straightforward follow-ups using the same recipe.
+>
+> The placeholder inventory below remains the canonical audit; the
+> Mining root "↩ Overview" no-op button was removed in PR #143 and
+> the Games-fallback finding still applies.
 
 ---
 

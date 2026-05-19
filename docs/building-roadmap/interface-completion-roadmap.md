@@ -1,6 +1,6 @@
 # SuperBot Interface Completion Roadmap
 
-Status: Open roadmap — Phases 1, 3, 4, 5, 6, 6.5a, 7 (Option A) landed; Phase 8 audit-complete
+Status: Open roadmap — Phases 1, 3, 4, 5, 6, 6.5a, 7 (Option A) landed; Phase 8 audit-complete; stabilization plan PRs #143-#151 landed (navigation lifecycle + parent_hub metadata + Community metadata-driven + XP/Economy pipelines + Settings selectors/presets + Settings default-on + `/help` slash)
 Runtime impact: None for this doc
 
 This document captures the next major arc of SuperBot work: pulling the existing scattered cog surface into a coherent, discoverable, Discord-native application. The platform foundation (settings/customization map, registry, pipelines, `!platform` hub, Settings Manager shell, Logging subsystem) was complete before this roadmap started; the interface skeleton is now also landed (see status snapshot below).
@@ -36,6 +36,7 @@ This is the current actual state of the roadmap, reconciled against `main`. Per-
 | 9a — Logging schema + resolver | #128 | Five new severity/audit channel bindings + RECOMMENDED resource requirements. `LOGGING_CONFIG_SCHEMA.version` 1 → 2. Table-driven 7-route `resolve_log_channel` with mod fallback. |
 | 9b — Logging Routes UI | #129 | `LoggingRoutesView` subpage + 🗺️ Routes button on `LoggingPanelView` + `!logging routes` subcommand + parameterised `LogChannelSelectView` / `LogChannelProvisionView` for all 7 kinds. |
 | 3.5 *(partial)* — Shared nav helper | *(this refresh)* | `disbot/views/navigation.py` — `attach_back_button` + `transition_to`. Migrated help-cog back-button injection and `LoggingRoutesView.btn_back`. Admin / settings / games inline factories remain as-is and migrate on demand. |
+| Stabilization plan PRs #143-#151 | #143-#151 | Nine-PR sequence touching navigation lifecycle, registry metadata, and Settings UI. **#143** fixed Economy → Inventory detached panel, Economy → Work dead-end result, Mining root no-op Overview; added five-helper symmetry via `attach_back_to_economy_button`. **#144** refreshed `help-command-surface-map.md` post-PR-#142. **#145** declared `parent_hub` metadata on the eight S7-S10 children (inventory, leaderboard, xp, role, cleanup, logging, proof_channel, general). **#146** migrated `CommunityHubView` to metadata-driven discovery mirroring Games. **#147** routed three XP config modals through `SettingsMutationPipeline` and added the `xp_announce_channel` SettingSpec. **#148** routed `ECONOMY_LOG_CHANNEL` writes through the pipeline and added the `economy_log_channel` SettingSpec. **#149** added `SettingSpec.input_hint` + `presets` plus three new widget modules (`edit_channel.py`, `edit_role.py`, `edit_number_presets.py`); opted in xp/economy channel specs and `xp_cooldown` presets. **#150** flipped `settings.manager_cog.enabled` default to ON (kill-switch retained). **#151** added the `/help` slash front door reusing `HelpRoute` — first slash command in the bot. |
 
 ### Audit-complete (no implementation needed)
 
@@ -58,7 +59,7 @@ This is the current actual state of the roadmap, reconciled against `main`. Per-
 | Phase | Notes |
 |---|---|
 | 9c — Logging publishers + subscribers | Next major implementation candidate. Adds publish callsites + bus subscribers + per-route counter buckets. Needs the publisher-strategy decision documented in the Phase 9 section. |
-| 10 — Slash front doors | Thin `/help`, `/games`, `/cleanup`, `/platform`, `/settings` hybrid-command wrappers. Small but lower-impact than Phase 9c. |
+| 10 — Slash front doors | **Partial** — `/help` landed via PR #151 (proves the `HelpRoute` reuse pattern). Remaining `/games`, `/economy`, `/community`, `/utility`, `/moderation`, `/admin`, `/platform`, `/settings` follow-ups still ahead; each is a ~30-line addition mirroring the `/help` recipe. |
 | 11 — Setup wizard | Deferred until the prerequisites (cleanup panel ✅, access explorer ✅, `SetupPackCatalogue` prototype ⏳) stabilize. |
 
 ---
@@ -666,7 +667,7 @@ Wizard flow per pack:
 | 8 | Phase 8 (a–e) | ✅ audit-complete | Every panel already implemented; no PRs. Future Phase-8-adjacent work is UX standardization per `hub-ui-standard.md`, not panel re-creation. |
 | Cleanup Settings Foundation | follow-up | ⏳ deferred | Waits for runtime to consume new cleanup scalar settings. |
 | 9 | Phase 9 | ⏳ next major candidate | Logging advanced route table. **Not started by this roadmap-refresh PR.** Requires the prerequisites called out in Phase 9's open questions. |
-| 10 | Phase 10 | ⏳ later | Slash front doors. Thin hybrid-command wrappers. |
+| 10 | Phase 10 | ⏳ partial | Slash front doors. `/help` landed via PR #151 — proves the `HelpRoute` reuse pattern. Remaining `/games`, `/economy`, `/community`, `/utility`, `/moderation`, `/admin`, `/platform`, `/settings` follow-ups still ahead. |
 | 11 | Phase 11 | ⏳ deferred | Setup wizard. Prereqs partially met. |
 
 **Roadmap is open. Revise after each phase.**
