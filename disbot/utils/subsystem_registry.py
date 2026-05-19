@@ -7,6 +7,19 @@ Overrides (visibility, cleanup rules) belong in governance DB, never here.
 Capability namespace rule: {subsystem}.{resource}.{action} — three parts, enforced.
 Reserved prefixes: _internal.*, system.*, governance.*
 
+Optional metadata (Phase 1, schema v2):
+    parent_hub: str | None — the key of a routable hub subsystem this entry
+        belongs to (e.g. ``"games"``). When set, downstream UI code (Help
+        filter, hubs) may treat the entry as a hub member. Two-hop chains
+        (a parent_hub pointing at a subsystem that itself has parent_hub
+        set) are rejected at validation time.
+    hub_group: str | None — free-form visual grouping label (≤ 32 chars).
+        Hubs use this to render sub-sections (e.g. ``"competitive"`` vs
+        ``"activities"``); the rendering layer validates allowed values.
+
+Phase 1 only introduces the *capability* — no existing entries set either
+field. Assignments happen in Phase 3.
+
 See services/governance_service.py for runtime policy resolution.
 """
 
@@ -31,7 +44,11 @@ from utils.ui_constants import (
 REGISTRY_VERSION = 1
 
 # Incremented when the subsystem dict schema/shape itself changes.
-REGISTRY_SCHEMA_VERSION = 1
+# v2 (Phase 1): added optional ``parent_hub`` and ``hub_group`` fields.
+REGISTRY_SCHEMA_VERSION = 2
+
+# Maximum length of the optional ``hub_group`` label.
+_HUB_GROUP_MAX_LEN = 32
 
 # ---------------------------------------------------------------------------
 # Subsystem manifest
@@ -723,7 +740,56 @@ def validate_registry() -> None:
                     f"subsystem '{name}': unknown related_subsystem '{rel}'",
                 )
 
+        # parent_hub / hub_group — optional Phase 1 metadata (schema v2)
+        parent_hub = meta.get("parent_hub")
+        if parent_hub is not None:
+            if not isinstance(parent_hub, str) or not parent_hub:
+                raise RegistryValidationError(
+                    f"subsystem '{name}': parent_hub must be a non-empty string",
+                )
+            if parent_hub == name:
+                raise RegistryValidationError(
+                    f"subsystem '{name}': parent_hub cannot reference self",
+                )
+            if parent_hub not in all_names:
+                raise RegistryValidationError(
+                    f"subsystem '{name}': parent_hub '{parent_hub}' is not a "
+                    f"registered subsystem",
+                )
+
+        hub_group = meta.get("hub_group")
+        if hub_group is not None:
+            if not isinstance(hub_group, str) or not hub_group:
+                raise RegistryValidationError(
+                    f"subsystem '{name}': hub_group must be a non-empty string",
+                )
+            if len(hub_group) > _HUB_GROUP_MAX_LEN:
+                raise RegistryValidationError(
+                    f"subsystem '{name}': hub_group length must be ≤ "
+                    f"{_HUB_GROUP_MAX_LEN} (got {len(hub_group)})",
+                )
+
         dep_graph[name] = list(meta.get("dependencies", []))
+
+    # parent_hub cross-entry checks: no two-hop hubs, hub must be routable.
+    # A second pass is needed because each entry's parent_hub references
+    # another entry and the referenced entry's own parent_hub must be
+    # known to validate the no-two-hop rule.
+    for name, meta in SUBSYSTEMS.items():
+        parent_hub = meta.get("parent_hub")
+        if parent_hub is None:
+            continue
+        parent_meta = SUBSYSTEMS[parent_hub]
+        if parent_meta.get("parent_hub") is not None:
+            raise RegistryValidationError(
+                f"subsystem '{name}': parent_hub '{parent_hub}' itself has a "
+                f"parent_hub — two-hop hubs are not allowed",
+            )
+        if not parent_meta.get("entry_points"):
+            raise RegistryValidationError(
+                f"subsystem '{name}': parent_hub '{parent_hub}' has no "
+                f"entry_points and is not routable",
+            )
 
     # DFS cycle detection
     visited: set[str] = set()
