@@ -107,7 +107,7 @@ class HelpOpener:
             guild=interaction.guild,
             guild_id=interaction.guild_id,
             client=interaction.client,  # type: ignore[arg-type]
-            channel=interaction.channel,
+            channel=interaction.channel,  # type: ignore[arg-type]
         )
 
     @classmethod
