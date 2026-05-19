@@ -21,7 +21,7 @@ from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followu
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
-from views.mining.mine_view import MineView
+from views.mining.mine_view import MineView, _build_mine_prompt_embed
 
 
 @register
@@ -61,15 +61,10 @@ class MiningHubView(PersistentView):
             )
             return
         view = MineView(interaction.user.id, interaction.guild_id)
-        embed = discord.Embed(
-            title="Mining",
-            description=(
-                "Choose a direction to mine.\n"
-                "If you own a pickaxe, you'll get extra loot!"
-            ),
-            color=MINING_COLOR,
+        await interaction.response.edit_message(
+            embed=_build_mine_prompt_embed(),
+            view=view,
         )
-        await interaction.response.edit_message(embed=embed, view=view)
         view.message = interaction.message
 
     @discord.ui.button(
