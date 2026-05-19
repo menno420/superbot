@@ -1,18 +1,61 @@
 # SuperBot Interface Completion Roadmap
 
-Status: Open roadmap — revisable after every phase
-Runtime impact: None (PR-0 is docs-only)
+Status: Open roadmap — Phases 1, 3, 4, 5, 6, 6.5a, 7 (Option A) landed; Phase 8 audit-complete
+Runtime impact: None for this doc
 
-This document captures the next major arc of SuperBot work: pulling the existing scattered cog surface into a coherent, discoverable, Discord-native application. The platform foundation (settings/customization map, registry, pipelines, `!platform` hub, Settings Manager shell, Logging subsystem) is **complete**. This roadmap is what comes after.
+This document captures the next major arc of SuperBot work: pulling the existing scattered cog surface into a coherent, discoverable, Discord-native application. The platform foundation (settings/customization map, registry, pipelines, `!platform` hub, Settings Manager shell, Logging subsystem) was complete before this roadmap started; the interface skeleton is now also landed (see status snapshot below).
 
-Each phase below is sized to one PR. Phases must be reviewed and smoke-tested before later phases are committed to — do not lock in downstream work before the upstream phase has merged.
+Each phase is sized to one PR. Phases must be reviewed and smoke-tested before later phases are committed to — do not lock in downstream work before the upstream phase has merged.
 
 Related reference:
 
 - `command-integration-standard.md` — non-negotiable rules every phase must obey
 - `command-expansion-backlog.md` — near-term command and panel ideas
+- `hub-ui-standard.md` — UX standard (hub presets, component thresholds, candidate future mother hubs) — the standard new hubs must align with
 - `../settings-customization-command-map.md`
 - `../platform-consistency-ledger.md`
+
+---
+
+## Status snapshot
+
+This is the current actual state of the roadmap, reconciled against `main`. Per-phase technical detail remains below for historical reference and for future amendments.
+
+### Landed
+
+| Phase | PR | What landed |
+|---|---|---|
+| 1 — `parent_hub` / `hub_group` schema | #118 | Two optional fields on `SUBSYSTEMS`, validator rules, `REGISTRY_SCHEMA_VERSION` 1 → 2. |
+| 3 — Games hub | #119 | `games` subsystem, `!games`, `GamesHubView` (router-only), `parent_hub` set on Blackjack/RPS/Deathmatch/Mining/Counting/Chain. |
+| 4 — Help filter | #120 | `parent_hub` children hidden from the top-level Help menu while staying typed-accessible and reachable via their hub. |
+| 5 — Cleanup panel | #121 | `!cleanup` hub with `_WordMenuView` / `LoggingPanelView` / `SubsystemSettingsView` routing. |
+| 6 — Access policy explorer | #122 | `!settings access` read-only diagnostic via `governance.resolve_subsystem_state`; airtight tier filtering. |
+| 6.5a — Platform flag manager | #123 | `!platform flag` per-guild flag enable/disable through `RolloutMutationPipeline.set_flag_state` (audit + cache invalidation + event emission). |
+| 7 — Game panels *(Option A)* | #124 | `BlackjackPanelView` + `RPSPanelView` router-only. No engine touches. |
+| Hub UI standard | #125 | `docs/building-roadmap/hub-ui-standard.md` — five hub presets, component thresholds, future visibility metadata sketch, audit table. |
+
+### Audit-complete (no implementation needed)
+
+| Phase | Audit finding |
+|---|---|
+| 8 — Role, Economy, Proof, Inventory/Leaderboard, Channel panels | Every cog already exposes a fully integrated hub view via `build_help_menu_view`: `RoleHubPanelView`, `EconomyPanelView`, `_PrizeManagerView`, `UnifiedInventoryView` + `LeaderboardView`, `_ChannelManagerView`. No implementation PRs. Future Phase-8-adjacent work is **UX standardization and hub regrouping per `hub-ui-standard.md`**, not panel re-creation. |
+
+### Deferred / partial
+
+| Phase | Status |
+|---|---|
+| 2 — Shared navigation helpers | Deferred to Phase 3.5. The Games hub introduced the fourth back-nav call site, so the extraction now has stable API surface to design against — not done yet. |
+| 7b — Practice / Replay | Deferred. Requires a product + game-engine decision (bet=0 vs separate no-economy path, Practice's effect on stats/leaderboards/tournaments, `BlackjackView`'s post-game callback shape, double-charge prevention on Replay). Phase 7 Option A intentionally shipped without these. |
+| Cleanup Settings Foundation | Deferred until cleanup has real scalar settings the runtime consumes (channel-specific cleanup policy storage, etc.). Today's audit found zero DB-persisted cleanup scalars, so an empty `SubsystemSchema` would be noise. |
+| Platform Management Actions *(broader)* | Partially started by Phase 6.5a (`!platform flag` enables/disables flags). Binding edits, provisioning edits, cache-invalidation controls, migration-retry controls remain future work — each one needs its own canonical pipeline to route through. |
+
+### Still ahead (in priority order)
+
+| Phase | Notes |
+|---|---|
+| 9 — Logging advanced route table | Next major implementation candidate. Severity- and source-aware route lookup extending `resolve_log_channel`; new optional bindings on `SubsystemSchema`. **Do not start until the roadmap is reviewed and signed off; this PR does not start Phase 9.** |
+| 10 — Slash front doors | Thin `/help`, `/games`, `/cleanup`, `/platform`, `/settings` hybrid-command wrappers. Small but lower-impact than Phase 9. |
+| 11 — Setup wizard | Deferred until the prerequisites (cleanup panel ✅, access explorer ✅, `SetupPackCatalogue` prototype ⏳) stabilize. |
 
 ---
 
@@ -47,7 +90,7 @@ These are the load-bearing facts the roadmap is built on. They are stated up fro
 
 ---
 
-## Phase 1 — `parent_hub` and `hub_group` metadata in `SUBSYSTEMS`
+## Phase 1 — `parent_hub` and `hub_group` metadata in `SUBSYSTEMS` *(✅ landed via #118)*
 
 **Goal.** Add two optional fields to the SUBSYSTEMS schema and validate them. No Help filtering. No Games hub. No new cogs. No behavior change.
 
@@ -85,9 +128,9 @@ Revert the field-default additions, validator rules, and schema version bump tog
 
 ---
 
-## Phase 2 — Shared navigation helpers *(conditional)*
+## Phase 2 — Shared navigation helpers *(deferred to 3.5; not yet landed)*
 
-**Goal.** Extract the three (about-to-be-four) `attach_back_to_*` factories into one helper module, **only if** it can be done as a small import-safe PR.
+**Goal.** Extract the three (about-to-be-four) `attach_back_to_*` factories into one helper module, **only if** it can be done as a small import-safe PR. Deferred during the interface arc — Phase 3 landed first so the fourth call site exists, but the extraction itself was not opened. Pick this up when convenient; it is genuinely small.
 
 ### Decision gate (run before opening the PR)
 
@@ -126,7 +169,7 @@ Each existing factory becomes a one-line shim into the helper. Shims stay for on
 
 ---
 
-## Phase 3 — `games` Subsystem + `!games` Command + `GamesHubView`
+## Phase 3 — `games` Subsystem + `!games` Command + `GamesHubView` *(✅ landed via #119)*
 
 **Goal.** Add the Games hub as a router/hub only. The hub presents Blackjack, RPS (+ Tournament), Deathmatch, Mining, Counting, Chain as members, visually subgrouped Competitive vs Activities. **Game logic stays exactly where it is today.** Individual game cogs remain typed-accessible and Help-discoverable — Phase 4 handles Help filtering.
 
@@ -237,7 +280,7 @@ Only if Phase 2's decision gate aborted. Same approach as Phase 2, now with four
 
 ---
 
-## Phase 4 — Help menu filter for `parent_hub` children
+## Phase 4 — Help menu filter for `parent_hub` children *(✅ landed via #120)*
 
 **Goal.** Hide subsystems with a `parent_hub` set from the top-level `!help` menu. They remain typed-accessible and reachable through their hub.
 
@@ -270,9 +313,11 @@ Modify `disbot/cogs/help_cog.py`:
 
 ---
 
-## Phase 5 — Cleanup panel shell with `wordmenu` as subpage
+## Phase 5 — Cleanup panel shell with `wordmenu` as subpage *(✅ landed via #121)*
 
 **Goal.** Replace the standalone `!wordmenu` UX with a full `!cleanup` panel whose first iteration is mostly read-only and routes existing functionality. No channel-specific cleanup policy writes — that requires storage that does not yet exist.
+
+**Cleanup Settings Foundation deferral:** The schema audit (Step 5c) found zero DB-persisted cleanup scalars today. No empty `SubsystemSchema` was registered to avoid noise. When channel-specific cleanup policy storage lands (the open question below), that PR can declare the schema and lift the existing knobs in the same change.
 
 ### Approach
 
@@ -305,9 +350,11 @@ Add `SubsystemSchema` to `disbot/cogs/cleanup/` declaring whichever scalar setti
 
 ---
 
-## Phase 6 — Access policy read-only explorer
+## Phase 6 — Access policy read-only explorer *(✅ landed via #122)*
 
 **Goal.** Surface effective governance/access policy as a read-only explorer through `!settings access`. The write surface is a future PR.
+
+**Implementation note:** the audit-time "explain_access" helper from the roadmap was found to already exist as `governance.resolve_subsystem_state(ctx, name)`, which returns a `SubsystemEffectiveState` with the full `ResolutionTrace`. No new helper was added; the explorer is a UI on top of the existing resolver. The `commands.group` conversion of `!settings` (required to add `!settings access`) was the only collateral change.
 
 ### Approach
 
@@ -339,9 +386,64 @@ Governance is security-sensitive. Misreporting policy is worse than no UI. Tier 
 
 ---
 
-## Phase 7 — Blackjack and RPS mode/replay panels
+## Phase 6.5a — Platform flag manager *(✅ landed via #123)*
+
+**Goal.** Make `!platform flags` editable by adding `!platform flag` (singular) — an admin-only per-guild feature-flag editor that mutates state through the existing `services.rollout_mutation.RolloutMutationPipeline.set_flag_state`. The plural read-only command is unchanged.
+
+### Why this is a Phase 6.5 not a Phase 6
+
+The roadmap originally moved straight from the read-only access explorer (Phase 6) to per-game panels (Phase 7). Phase 6.5a was inserted mid-arc once `RolloutMutationPipeline` was identified as a canonical write path with no UI counterpart — the Discord-side flag editor had been deferred at pipeline-creation time. Adding the UI now (a) closes that loop, (b) gives operators a way to flip flags without env vars or DB writes, and (c) proves the "Platform Manager Panel" preset from `hub-ui-standard.md`.
+
+### Implementation
+
+- `disbot/views/diagnostic/flag_manager.py` — `FlagManagerView` (flag select + Enable/Disable/Refresh/Back buttons + detail embed showing default/effective/source/owner/guild-override marker).
+- `disbot/cogs/diagnostic_cog.py` — `!platform flag` subcommand added alongside the existing `!platform flags`.
+
+### Hard contracts (pinned by tests)
+
+- The view module imports nothing from `utils.db` at module load.
+- The view never calls `upsert_global_with_audit`, `upsert_guild_with_audit`, `delete_guild_override`, or `delete_global_override` — every mutation routes through `RolloutMutationPipeline`.
+- No Reset button: `RolloutMutationPipeline` does not expose a guild-override delete path, and the panel must not invent a direct DB delete. A future "Reset to default" button waits for the pipeline to grow that capability with audit + cache invalidation built in.
+
+### Non-goals (kept for later)
+
+- Global-scope mutation.
+- Rollout-percent slider.
+- Environment-tier editing.
+- Slash command.
+
+These belong to a future **Phase 6.5b** if and when broader Platform Management Actions are scheduled — see *Platform Management Actions (broader)* in the Status snapshot above for the full not-yet list (binding edits, provisioning edits, cache-invalidation buttons, migration retries).
+
+---
+
+## Phase 7 — Blackjack and RPS mode/replay panels *(Option A ✅ landed via #124; Option B / 7b deferred)*
 
 **Goal.** Per-game mode/replay panels for the two highest-priority Competitive games, layered on the now-existing Games hub.
+
+### What landed (Option A, router-only)
+
+`BlackjackPanelView` and `RPSPanelView` ship as router-only views:
+
+- Blackjack panel: Classic / Rules / Overview buttons. Each swaps the embed in place to surface the typed command for that mode.
+- RPS panel: Single Round / Tournament / Rules / Overview buttons. Same pattern.
+
+Both panels carry **no built-in back-nav** — the wrapping context (Games hub's `attach_back_to_games_button` or `help_cog`'s `_attach_back_to_help_button`) adds it, matching the convention used by Counting/Mining/Games hubs.
+
+Cog changes are minimal: `BlackjackCog.build_help_menu_view` and `RPSTournamentCog.build_help_menu_view` now return the panel instead of `(embed, empty View)`. Dead `stats_block` / `GAME_COLOR` imports removed.
+
+### Phase 7b deferred — Practice / Replay / Best-of
+
+Practice mode and Replay introduce **new game-engine behaviors** that require product + engine decisions. They are explicitly *not* in Phase 7 Option A and will land as Phase 7b when the design is settled.
+
+Open questions for Phase 7b:
+
+- **Practice mode semantics.** `bet=0` reusing the existing path, or a separate no-economy code path? Does Practice affect stats / leaderboards / tournament eligibility?
+- **Replay implementation.** Does `BlackjackView` need a post-game callback hook? How is double-charging prevented if the user clicks Replay while a charge is in flight?
+- **Best-of variants in RPS.** Best-of-3 already exists for tournaments; does single-round mode want a Best-of-3 toggle? If yes, where does the state live?
+
+Until those answers exist, the panels stay router-only. Tests pin the absence of Practice / Replay / Best-of / Change-Mode buttons so a future re-introduction is a deliberate code change, not a drift.
+
+### Original full-spec (kept for reference; relevant to Phase 7b)
 
 ### Blackjack panel
 
@@ -378,26 +480,31 @@ Practice mode must not credit/debit economy. Replay must not double-charge bets.
 
 ---
 
-## Phase 8 — Role, Economy, Proof, Inventory/Leaderboard, Channel panels
+## Phase 8 — Role, Economy, Proof, Inventory/Leaderboard, Channel panels *(✅ audit-complete; no implementation PRs)*
 
-Each sub-phase follows the same pattern: a `<cog>PanelView`, schema declaration, `build_help_menu_view` exposure, panel command, back-nav. One PR per cog, conservative scope, route existing commands rather than redesign features.
+The roadmap originally listed five sub-phases for cog-by-cog panel implementation. A source-level audit during the interface arc found that **every one of these panels already exists**:
 
-### 8a — Role Panel (`!roles`)
-Self Roles, Reaction Roles, Default Role, Skip Roles, Role Menu Setup, Role Settings, Back to Help. **Non-goal:** automated role creation/assignment beyond what exists. Hierarchy and permission risk.
+| Sub-phase | Existing implementation | Closest hub preset |
+|---|---|---|
+| 8a — Role | `RoleHubPanelView` in `disbot/cogs/role_cog.py` (Create / Manage / Time Roles / XP Roles / Reaction Roles / Diagnostics) | Operator Hub |
+| 8b — Economy | `EconomyPanelView` returned from `economy_cog.build_help_menu_view` | Operator Hub |
+| 8c — Proof | `_PrizeManagerView` in `proof_channel_cog.py` | Operator Hub |
+| 8d — Inventory + Leaderboard | `UnifiedInventoryView` + `LeaderboardView` | Feature Action Panel / User Navigation Hub |
+| 8e — Channel management | `_ChannelManagerView` in `channel_cog.py` | Operator Hub |
 
-### 8b — Economy Panel
-Balance, Daily, Work, Shop, Inventory, Transfer, Economy Settings, Economy Logs, Back to Help. Routes existing commands. **No new betting rules or shop redesign.**
+Every one of these cogs integrates with the Help menu via `build_help_menu_view`. No implementation PRs were opened for Phase 8.
 
-### 8c — Proof Panel (`!proof`)
-Submit Proof, Proof Requirements, Staff Review Queue, Approval Role, Proof Settings, Back to Help.
+The roadmap's original button lists for each sub-phase (Self Roles, Default Role, Skip Roles, etc.) were illustrative — they did not match existing commands. Renaming buttons to those labels without backing functionality would be a low-value churn PR. The roadmap itself says *"route existing commands rather than redesign features"*; the existing panels do exactly that.
 
-### 8d — Inventory / Leaderboard
-Add `build_help_menu_view` to each if missing; integrate into Economy panel.
+### Future Phase-8-adjacent work
 
-### 8e — Channel Management Panel
-Consolidate `disbot/views/channels/{create,delete,restrict}_panel.py` under one entry.
+If a phase-8-area panel needs attention in the future, the work is **UX standardization and hub regrouping** per `hub-ui-standard.md` — not panel re-creation. Possible follow-ups, none of which are scheduled today:
 
-**Risk per sub-phase:** low-medium. **Non-goals:** no feature redesigns; no new settings unless lifting an existing knob into schema.
+- Density audit: which Operator Hub panels exceed the component thresholds and would benefit from regrouping into a `parent_hub` cluster (the Games hub pattern)?
+- Preset alignment: does each panel fit one of the five hub presets cleanly, or does it straddle two roles and need splitting?
+- Helper extraction: the three (now four) `attach_back_to_*` factories across Help/Admin/Settings/Games are a candidate for Phase 3.5's shared helper. That extraction is **not** a Phase 8 task — it's the deferred Phase 2.
+
+Panel re-creation PRs that only shuffle existing working UI should be rejected — they add noise and merge-conflict surface without UX gain.
 
 ---
 
@@ -516,21 +623,26 @@ Wizard flow per pack:
 
 ## PR sequence
 
-| Order | Phase | Notes |
-|---|---|---|
-| PR-0 | Docs | This document |
-| 1 | Phase 1 | `parent_hub`/`hub_group` schema + validation only |
-| 2 | Phase 2 *(conditional)* | Navigation helper extraction — only if import-safe |
-| 3 | Phase 3 | Games hub + `!games` + `GamesHubView` (router only) |
-| 3.5 | *(if Phase 2 skipped)* | Extract navigation helper with 4 call sites |
-| 4 | Phase 4 | Help filter for `parent_hub` children |
-| 5 | Phase 5 | Cleanup panel shell |
-| 6 | Phase 6 | Access read-only explorer |
-| 7 | Phase 7 | Blackjack + RPS mode/replay panels |
-| 8 | Phase 8 (a–e) | Role, Economy, Proof, Inventory/Leaderboard, Channel — one PR each |
-| 9 | Phase 9 | Logging advanced routes |
-| 10 | Phase 10 | Slash front doors |
-| 11 | Phase 11 | Setup wizard scaffolding |
+| Order | Phase | Status | Notes |
+|---|---|---|---|
+| PR-0 | Docs (this file) | ✅ landed (#117) | The initial roadmap. |
+| 1 | Phase 1 | ✅ landed (#118) | `parent_hub`/`hub_group` schema v2 + validation. |
+| 2 | Phase 2 *(conditional)* | ⏳ deferred to 3.5 | Helper extraction never opened — the four call sites now exist so the extraction has stable API surface. |
+| 3 | Phase 3 | ✅ landed (#119) | Games hub + `!games` + `GamesHubView`. |
+| 3.5 | Helper extraction | ⏳ open follow-up | Extract `attach_back_to_*` shared helper now that there are four call sites. |
+| 4 | Phase 4 | ✅ landed (#120) | Help filter for `parent_hub` children. |
+| 5 | Phase 5 | ✅ landed (#121) | Cleanup panel shell with wordmenu as subpage. |
+| 6 | Phase 6 | ✅ landed (#122) | Access policy read-only explorer (`!settings access`). |
+| 6.5a | Platform flag manager | ✅ landed (#123) | `!platform flag` per-guild enable/disable via `RolloutMutationPipeline.set_flag_state`. |
+| 6.5b | Broader Platform Management Actions | ⏳ not scheduled | Binding edits, provisioning edits, cache-invalidation buttons, migration-retry controls — each needs its own canonical pipeline. |
+| 7 (Option A) | Phase 7a | ✅ landed (#124) | Router-only Blackjack + RPS panels. |
+| 7b | Practice / Replay / Best-of | ⏳ deferred | Requires product + game-engine decision; see Phase 7 open questions. |
+| Hub UI standard | Docs | ✅ landed (#125) | `hub-ui-standard.md`. |
+| 8 | Phase 8 (a–e) | ✅ audit-complete | Every panel already implemented; no PRs. Future Phase-8-adjacent work is UX standardization per `hub-ui-standard.md`, not panel re-creation. |
+| Cleanup Settings Foundation | follow-up | ⏳ deferred | Waits for runtime to consume new cleanup scalar settings. |
+| 9 | Phase 9 | ⏳ next major candidate | Logging advanced route table. **Not started by this roadmap-refresh PR.** Requires the prerequisites called out in Phase 9's open questions. |
+| 10 | Phase 10 | ⏳ later | Slash front doors. Thin hybrid-command wrappers. |
+| 11 | Phase 11 | ⏳ deferred | Setup wizard. Prereqs partially met. |
 
 **Roadmap is open. Revise after each phase.**
 
@@ -538,10 +650,13 @@ Wizard flow per pack:
 
 ## Open questions to resolve before affected phases
 
-1. **Phase 2 decision gate:** Does the helper extraction pass the import-safety check? Resolve before opening the Phase 2 PR; if any check fails, skip to Phase 3 and revisit at 3.5.
-2. **Phase 5 cleanup channel-policy storage:** When per-channel cleanup policy eventually ships, where is it stored? Resolve in its own design doc before Phase 5 writes (read-only Phase 5 doesn't need it).
-3. **Phase 6 `explain_access`:** Does `governance_service` already expose a read-only "why is this blocked" helper, or must we add one? Inspect before opening the PR.
-4. **Phase 9 event publishers:** Do `runtime.error_raised`, `runtime.warning_emitted`, `audit.action_recorded` already publish to the bus? If not, do the publish callsites land in Phase 9 or a follow-up? Default suggestion: follow-up.
-5. **Phase 10 slash sync:** Global vs per-guild slash registration today? Affects rollout strategy.
+1. **Phase 2 / 3.5 helper extraction:** Now that the four call sites (Help / Admin / Settings / Games) exist, what is the smallest API that covers all four without crossing into cog imports? Action: pick this up as a small follow-up PR; the original Phase 2 decision-gate questions still apply.
+2. **Phase 5 cleanup channel-policy storage:** When per-channel cleanup policy eventually ships, where is it stored? Resolve in its own design doc before any cleanup write surface lands. Today's `CleanupPanelView` is read-mostly and does not need this.
+3. **Phase 7b Practice mode semantics:** `bet=0` reusing existing path vs separate no-economy path? Stats / leaderboards / tournament effect? Resolve before opening Phase 7b.
+4. **Phase 7b Replay implementation:** Post-game callback shape on `BlackjackView`? Double-charge prevention strategy? Resolve before opening Phase 7b.
+5. **Phase 9 event publishers:** Do `runtime.error_raised`, `runtime.warning_emitted`, `audit.action_recorded` already publish to the bus? If not, do the publish callsites land in Phase 9 or a follow-up? Default suggestion: follow-up.
+6. **Phase 10 slash sync:** Global vs per-guild slash registration today? Affects rollout strategy.
+7. **Phase 6.5b scope:** Which Platform Management Actions are worth canonical-pipeline UIs first? Binding edits and cache invalidation are the highest-frequency candidates; migration retry is the lowest. Sequence and scoping decision pending.
 
-None of these block PR-0 or Phase 1.
+Resolved (kept for history):
+- ~~Phase 6 `explain_access` helper~~ — already existed as `governance.resolve_subsystem_state`. Phase 6 used it directly; no new helper added.
