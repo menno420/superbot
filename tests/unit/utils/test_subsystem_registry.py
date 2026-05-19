@@ -104,18 +104,27 @@ def test_registry_schema_version_is_v2():
 
 def test_real_registry_validates_under_schema_v2():
     """The conftest already validated the real registry — this asserts the
-    deep-frozen result still contains every existing entry and that the
-    new optional fields read as ``None`` for all of them (Phase 1 sets
-    none of them).
+    deep-frozen result still contains every existing entry and that every
+    ``parent_hub`` reference points at a real, routable subsystem.
+
+    Phase 1 added the fields. Phase 3 set them on the Games-hub children
+    (Blackjack, RPS Tournament, Deathmatch, Mining, Counting, Chain).
     """
     assert len(reg.SUBSYSTEMS) >= 22
     for name, meta in reg.SUBSYSTEMS.items():
-        assert meta.get("parent_hub") is None, (
-            f"subsystem {name!r} unexpectedly has parent_hub set in Phase 1"
-        )
-        assert meta.get("hub_group") is None, (
-            f"subsystem {name!r} unexpectedly has hub_group set in Phase 1"
-        )
+        parent = meta.get("parent_hub")
+        if parent is not None:
+            assert parent in reg.SUBSYSTEMS, (
+                f"subsystem {name!r} parent_hub={parent!r} is not registered"
+            )
+            parent_meta = reg.SUBSYSTEMS[parent]
+            assert parent_meta.get("parent_hub") is None, (
+                f"subsystem {name!r} has a two-hop parent_hub chain through "
+                f"{parent!r}"
+            )
+            assert parent_meta.get("entry_points"), (
+                f"subsystem {name!r} parent_hub={parent!r} has no entry_points"
+            )
 
 
 # ---------------------------------------------------------------------------
