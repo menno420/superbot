@@ -125,25 +125,68 @@ def _channel_kind_for_action(action: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+# Phase 9a — route table mapping public ``kind`` tokens to the
+# ``logging.<binding>`` slot they read from. Severity and audit routes
+# fall back through ``_ROUTE_FALLBACK`` to ``mod`` when their own
+# binding is unset; ``mod`` itself is terminal.
+_ROUTE_TO_BINDING: dict[str, str] = {
+    "mod": "mod_channel",
+    "cleanup": "cleanup_channel",
+    "debug": "debug_channel",
+    "info": "info_channel",
+    "warning": "warning_channel",
+    "error": "error_channel",
+    "audit": "audit_channel",
+}
+
+# Per-route fallback. ``cleanup`` historically falls back to ``mod``
+# (pre-Phase-9a behaviour preserved). Severity + audit routes also
+# fall back to ``mod`` so a guild that has only configured the mod
+# channel still gets every event delivered somewhere.
+_ROUTE_FALLBACK: dict[str, str | None] = {
+    "mod": None,
+    "cleanup": "mod",
+    "debug": "mod",
+    "info": "mod",
+    "warning": "mod",
+    "error": "mod",
+    "audit": "mod",
+}
+
+
 async def resolve_log_channel(
     guild: discord.Guild,
     kind: str,
 ) -> discord.TextChannel | None:
-    """Resolve the configured log channel for *kind* (``"mod"`` / ``"cleanup"``).
+    """Resolve the configured log channel for *kind*.
 
-    Resolution order (S7b):
+    Recognised ``kind`` values:
 
-    1. ``logging.<kind>_channel`` binding — the canonical store going
-       forward.  Set/cleared by :class:`BindingMutationPipeline` via
+    * Sources (pre-Phase 9): ``"mod"``, ``"cleanup"``.
+    * Severity routes (Phase 9a): ``"debug"``, ``"info"``,
+      ``"warning"``, ``"error"``.
+    * Audit route (Phase 9a): ``"audit"``.
+
+    Resolution order for any route:
+
+    1. ``logging.<route>_channel`` binding — the canonical store.
+       Set/cleared by :class:`BindingMutationPipeline` via
        :class:`cogs.logging.select_view.LogChannelSelectView`.
-    2. ``logging_<kind>_channel`` legacy scalar — transitional
-       fallback for guilds that configured logging before S7b.  Will
-       be removed once the binding-backfill helper lands.
-    3. For ``kind == "cleanup"`` only: fall back to the mod channel
-       (via the same two-step lookup against the mod binding then
-       the mod legacy scalar).
+    2. Legacy scalar fallback — only ``"mod"`` and ``"cleanup"`` have
+       legacy scalars (``LOGGING_MOD_CHANNEL`` /
+       ``LOGGING_CLEANUP_CHANNEL``). Severity / audit routes are new
+       in Phase 9a and never had a legacy scalar.
+    3. Source-tier fallback — every non-``"mod"`` route ultimately
+       falls back to ``"mod"`` (via this function called recursively),
+       so a guild that has only configured the mod channel still
+       receives every event somewhere.
 
-    Returns ``None`` if no source resolves to a current TextChannel.
+    Returns ``None`` if no source resolves to a current TextChannel
+    and the fallback chain is exhausted.
+
+    Unknown ``kind`` values return ``None`` after logging a warning —
+    callers can pass new tokens through without raising, but no
+    channel will be returned until the route table is extended.
     """
     # core.runtime imports stay function-local to avoid re-entering
     # partially-loaded core.runtime during startup.
@@ -151,63 +194,55 @@ async def resolve_log_channel(
     from core.runtime.guild_resources import resolve_settings_channel
     from core.runtime.subsystem_schema import BindingKind
 
-    primary_binding = "mod_channel" if kind == "mod" else "cleanup_channel"
-    primary_legacy = (
-        _log_keys.LOGGING_MOD_CHANNEL
-        if kind == "mod"
-        else _log_keys.LOGGING_CLEANUP_CHANNEL
-    )
+    binding_name = _ROUTE_TO_BINDING.get(kind)
+    if binding_name is None:
+        logger.warning(
+            "resolve_log_channel: unknown kind %r — returning None. "
+            "Add it to _ROUTE_TO_BINDING to enable lookup.",
+            kind,
+        )
+        return None
 
-    # 1. Try the primary binding.
+    # 1. Try the route's own binding.
     try:
         binding = await get_binding(
             guild.id,
             "logging",
-            primary_binding,
+            binding_name,
             expected_kind=BindingKind.CHANNEL,
         )
     except Exception as exc:  # noqa: BLE001 — read must never crash logging
         logger.warning(
             "resolve_log_channel: get_binding(%r) failed: %s",
-            primary_binding,
+            binding_name,
             exc,
         )
-        binding = None  # fall through to legacy
+        binding = None  # fall through to legacy / fallback
     if binding is not None and binding.target_id is not None:
         ch = guild.get_channel(binding.target_id)
         if isinstance(ch, discord.TextChannel):
             return ch
 
-    # 2. Try the primary legacy scalar (transitional fallback).
-    legacy = await resolve_settings_channel(guild, primary_legacy)
-    if isinstance(legacy, discord.TextChannel):
-        return legacy
-
-    # 3. Cleanup falls back to the mod channel (both binding + legacy).
-    if kind == "cleanup":
-        try:
-            mod_binding = await get_binding(
-                guild.id,
-                "logging",
-                "mod_channel",
-                expected_kind=BindingKind.CHANNEL,
-            )
-        except Exception as exc:  # noqa: BLE001 — read must never crash
-            logger.warning(
-                "resolve_log_channel: get_binding(mod_channel fallback) failed: %s",
-                exc,
-            )
-            mod_binding = None
-        if mod_binding is not None and mod_binding.target_id is not None:
-            ch = guild.get_channel(mod_binding.target_id)
-            if isinstance(ch, discord.TextChannel):
-                return ch
-        mod_legacy = await resolve_settings_channel(
+    # 2. Legacy scalar (mod/cleanup only — severity/audit are new in
+    # Phase 9a and have no pre-existing scalar).
+    if kind == "mod":
+        legacy = await resolve_settings_channel(guild, _log_keys.LOGGING_MOD_CHANNEL)
+        if isinstance(legacy, discord.TextChannel):
+            return legacy
+    elif kind == "cleanup":
+        legacy = await resolve_settings_channel(
             guild,
-            _log_keys.LOGGING_MOD_CHANNEL,
+            _log_keys.LOGGING_CLEANUP_CHANNEL,
         )
-        if isinstance(mod_legacy, discord.TextChannel):
-            return mod_legacy
+        if isinstance(legacy, discord.TextChannel):
+            return legacy
+
+    # 3. Source-tier fallback. ``_ROUTE_FALLBACK`` is acyclic and
+    # terminates at ``"mod"`` (fallback=None), so a single recursive
+    # call is bounded.
+    fallback = _ROUTE_FALLBACK.get(kind)
+    if fallback is not None and fallback != kind:
+        return await resolve_log_channel(guild, fallback)
 
     return None
 

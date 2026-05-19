@@ -115,6 +115,62 @@ LOGGING_BINDINGS: tuple[BindingSpec, ...] = (
         ),
         capability_required="logging.settings.configure",
     ),
+    # Phase 9a — severity/source channel slots. All optional. Unset
+    # slots fall through to ``mod_channel`` per
+    # ``services.server_logging.resolve_log_channel``. No subscriber
+    # currently emits events into these — publisher callsites
+    # (``runtime.error_raised``, ``runtime.warning_emitted``,
+    # ``audit.action_recorded``) land in a follow-up PR (Phase 9c).
+    BindingSpec(
+        name="debug_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for debug-level diagnostic events.  Falls back to "
+            "`mod_channel` when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    BindingSpec(
+        name="info_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for info-level events.  Falls back to `mod_channel` "
+            "when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    BindingSpec(
+        name="warning_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for warning-level events.  Falls back to "
+            "`mod_channel` when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    BindingSpec(
+        name="error_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for error-level events.  Falls back to `mod_channel` "
+            "when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    BindingSpec(
+        name="audit_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for audit-trail records (governance/settings/binding "
+            "mutations).  Falls back to `mod_channel` when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
 )
 
 
@@ -151,6 +207,64 @@ LOGGING_RESOURCE_REQUIREMENTS: tuple[ResourceRequirement, ...] = (
             "Falls back to the mod-log channel when unbound."
         ),
     ),
+    # Phase 9a — RECOMMENDED severity/source resource requirements.
+    # Auto-create stays OFF by default; an operator opts in per channel
+    # via the existing provisioning flow.
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="debug_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-debug-log",
+            suggested_category="Staff",
+        ),
+        binding_name="debug_channel",
+        description=("Operator-facing channel for debug-level diagnostic events."),
+    ),
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="info_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-info-log",
+            suggested_category="Staff",
+        ),
+        binding_name="info_channel",
+        description=("Operator-facing channel for info-level events."),
+    ),
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="warning_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-warning-log",
+            suggested_category="Staff",
+        ),
+        binding_name="warning_channel",
+        description=("Operator-facing channel for warning-level events."),
+    ),
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="error_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-error-log",
+            suggested_category="Staff",
+        ),
+        binding_name="error_channel",
+        description=("Operator-facing channel for error-level events."),
+    ),
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="audit_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-audit-log",
+            suggested_category="Staff",
+        ),
+        binding_name="audit_channel",
+        description=("Operator-facing channel for audit-trail records."),
+    ),
 )
 
 
@@ -159,7 +273,9 @@ LOGGING_CONFIG_SCHEMA = SubsystemSchema(
     settings=LOGGING_SETTINGS,
     bindings=LOGGING_BINDINGS,
     resource_requirements=LOGGING_RESOURCE_REQUIREMENTS,
-    version=1,
+    # v2 (Phase 9a): added debug/info/warning/error/audit channel
+    # bindings + matching RECOMMENDED resource requirements.
+    version=2,
 )
 
 

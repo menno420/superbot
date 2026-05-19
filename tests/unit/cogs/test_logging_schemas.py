@@ -117,10 +117,34 @@ def test_logging_settings_have_validators_that_reject_non_bool():
 
 
 def test_logging_bindings_declare_mod_and_cleanup_channels():
+    """Phase 9a expanded the binding set; the original two are still here."""
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
     binding_names = {b.name for b in LOGGING_CONFIG_SCHEMA.bindings}
-    assert binding_names == {"mod_channel", "cleanup_channel"}
+    assert {"mod_channel", "cleanup_channel"}.issubset(binding_names)
+
+
+def test_logging_bindings_include_severity_and_audit_routes_phase_9a():
+    """Phase 9a adds debug / info / warning / error / audit channel slots."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    binding_names = {b.name for b in LOGGING_CONFIG_SCHEMA.bindings}
+    assert binding_names == {
+        "mod_channel",
+        "cleanup_channel",
+        "debug_channel",
+        "info_channel",
+        "warning_channel",
+        "error_channel",
+        "audit_channel",
+    }
+
+
+def test_logging_schema_version_bumped_to_v2_for_phase_9a():
+    """Schema-shape change → version bump."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    assert LOGGING_CONFIG_SCHEMA.version == 2
 
 
 def test_logging_bindings_are_channel_kind_and_optional():
@@ -138,10 +162,27 @@ def test_logging_bindings_are_channel_kind_and_optional():
 
 
 def test_logging_resource_requirements_cover_both_channels():
+    """Phase 9a expanded the requirement set; the original two are still here."""
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
     intents = {r.intent for r in LOGGING_CONFIG_SCHEMA.resource_requirements}
-    assert intents == {"mod_log", "cleanup_log"}
+    assert {"mod_log", "cleanup_log"}.issubset(intents)
+
+
+def test_logging_resource_requirements_include_phase_9a_intents():
+    """Phase 9a adds RECOMMENDED resource requirements for every new route."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    intents = {r.intent for r in LOGGING_CONFIG_SCHEMA.resource_requirements}
+    assert intents == {
+        "mod_log",
+        "cleanup_log",
+        "debug_log",
+        "info_log",
+        "warning_log",
+        "error_log",
+        "audit_log",
+    }
 
 
 def test_logging_resource_requirements_link_to_bindings():
