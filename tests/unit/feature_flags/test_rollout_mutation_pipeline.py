@@ -217,10 +217,17 @@ async def test_set_flag_state_global_writes_db_clears_cache_emits_event(pipeline
     assert upsert_call.kwargs["mutation_type"] == "set_state"
     # Cache cleared for that flag
     mock_clear.assert_called_with(flag_name="bindings.primary")
-    # Event emitted with full payload
-    emit_call = mock_emit.await_args
-    assert emit_call.args[0] == EVT_FEATURE_FLAGS_CHANGED
-    payload = emit_call.kwargs
+    # Phase 9c.1: set_flag_state emits BOTH feature_flags.changed AND
+    # audit.action_recorded (in that order). Find the feature_flags
+    # emit by topic so the test stays robust if a future PR adds
+    # more companion emits.
+    feature_flag_emits = [
+        call
+        for call in mock_emit.await_args_list
+        if call.args and call.args[0] == EVT_FEATURE_FLAGS_CHANGED
+    ]
+    assert len(feature_flag_emits) == 1
+    payload = feature_flag_emits[0].kwargs
     assert payload["flag_name"] == "bindings.primary"
     assert payload["scope"] == "global"
     assert payload["guild_id"] is None
@@ -231,6 +238,24 @@ async def test_set_flag_state_global_writes_db_clears_cache_emits_event(pipeline
     assert payload["actor_type"] == "platform_owner"
     assert "occurred_at" in payload
     assert result.event_emitted is True
+
+    # Phase 9c.1: the audit companion event must also fire with the
+    # canonical payload (subsystem / mutation_type / target / scope /
+    # guild_id / prev_value / new_value / actor_*).
+    audit_emits = [
+        call
+        for call in mock_emit.await_args_list
+        if call.args and call.args[0] == "audit.action_recorded"
+    ]
+    assert len(audit_emits) == 1
+    audit_payload = audit_emits[0].kwargs
+    assert audit_payload["subsystem"] == "logging"
+    assert audit_payload["mutation_type"] == "set_flag_state"
+    assert audit_payload["target"] == "flag:bindings.primary"
+    assert audit_payload["scope"] == "global"
+    assert audit_payload["prev_value"] == "off"
+    assert audit_payload["new_value"] == "canary"
+    assert audit_payload["mutation_id"] == result.mutation_id
 
 
 # ---------------------------------------------------------------------------
@@ -368,12 +393,26 @@ async def test_set_rollout_percent_clears_all_guild_caches_for_flag(pipeline):
     assert upsert_call.kwargs["state"] == "production"
     # Cache cleared for the flag (every guild)
     mock_clear.assert_called_with(flag_name="bindings.primary")
-    # Event emitted: rollout.advanced
-    emit_call = mock_emit.await_args
-    assert emit_call.args[0] == EVT_ROLLOUT_ADVANCED
-    assert emit_call.kwargs["prev_percent"] == 10
-    assert emit_call.kwargs["new_percent"] == 50
+    # Phase 9c.1: set_rollout_percent emits rollout.advanced AND a
+    # companion audit.action_recorded. Find by topic.
+    rollout_emits = [
+        call
+        for call in mock_emit.await_args_list
+        if call.args and call.args[0] == EVT_ROLLOUT_ADVANCED
+    ]
+    assert len(rollout_emits) == 1
+    assert rollout_emits[0].kwargs["prev_percent"] == 10
+    assert rollout_emits[0].kwargs["new_percent"] == 50
     assert result.new_rollout_percent == 50
+    # Companion audit event.
+    audit_emits = [
+        call
+        for call in mock_emit.await_args_list
+        if call.args and call.args[0] == "audit.action_recorded"
+    ]
+    assert len(audit_emits) == 1
+    assert audit_emits[0].kwargs["mutation_type"] == "set_rollout_percent"
+    assert audit_emits[0].kwargs["new_value"] == "50"
 
 
 # ---------------------------------------------------------------------------
@@ -407,11 +446,26 @@ async def test_set_environment_tier_clears_full_guild_cache(pipeline):
     assert upsert_call.kwargs["prev_tier"] == "production"
     # The whole guild's cache is dropped (any flag could be affected).
     mock_clear.assert_called_with(guild_id=42)
-    emit_call = mock_emit.await_args
-    assert emit_call.args[0] == EVT_ENVIRONMENT_TIER_CHANGED
-    assert emit_call.kwargs["prev_tier"] == "production"
-    assert emit_call.kwargs["new_tier"] == "canary"
+    # Phase 9c.1: set_environment_tier emits environment_tier.changed
+    # AND a companion audit.action_recorded. Find by topic.
+    tier_emits = [
+        call
+        for call in mock_emit.await_args_list
+        if call.args and call.args[0] == EVT_ENVIRONMENT_TIER_CHANGED
+    ]
+    assert len(tier_emits) == 1
+    assert tier_emits[0].kwargs["prev_tier"] == "production"
+    assert tier_emits[0].kwargs["new_tier"] == "canary"
     assert result.new_tier == "canary"
+    audit_emits = [
+        call
+        for call in mock_emit.await_args_list
+        if call.args and call.args[0] == "audit.action_recorded"
+    ]
+    assert len(audit_emits) == 1
+    assert audit_emits[0].kwargs["mutation_type"] == "set_environment_tier"
+    assert audit_emits[0].kwargs["new_value"] == "canary"
+    assert audit_emits[0].kwargs["guild_id"] == 42
 
 
 # ---------------------------------------------------------------------------

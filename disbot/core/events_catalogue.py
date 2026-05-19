@@ -84,6 +84,15 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "feature_flags.changed",
         "rollout.advanced",
         "environment_tier.changed",
+        # ── Audit (Phase 9c.1 — server_logging consumer) ──────────────────
+        # Generic per-mutation audit signal emitted alongside each
+        # pipeline's domain-specific event. Payload contract: see
+        # ``services.server_logging._on_audit_action`` docstring.
+        # Server_logging subscribes and routes to ``logging.audit_channel``
+        # (falls back to ``mod_channel`` via the Phase 9a route table).
+        # Other consumers (future audit dashboards, AI explainers) are
+        # welcome to subscribe; subscriber failure is logged + swallowed.
+        "audit.action_recorded",
         # ── Participation (services/participation_mutation.py, Phase 2c PR-9) ─
         # Advisory.  Cache invalidation is inline (synchronous w.r.t. the
         # mutation result), NOT event-driven — these events are for
