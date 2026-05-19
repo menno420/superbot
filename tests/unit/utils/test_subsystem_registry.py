@@ -28,7 +28,6 @@ import pytest
 import utils.subsystem_registry as reg
 from services.governance_exceptions import RegistryValidationError
 
-
 # ---------------------------------------------------------------------------
 # Synthetic-registry helpers (mirror the governance startup-validation file)
 # ---------------------------------------------------------------------------
