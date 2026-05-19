@@ -114,8 +114,18 @@ def test_view_has_one_select_with_visible_hubs_plus_all_commands():
     view = HelpCategoryView(member_tier="administrator")
     select = _select(view)
     values = {opt.value for opt in select.options}
-    # S3 v1 hubs visible to administrator + ALL_COMMANDS sentinel.
-    assert values == {"games", "admin", "settings", "diagnostic", ALL_COMMANDS_KEY}
+    # Committed hubs visible to administrator + ALL_COMMANDS sentinel.
+    # Economy joined in S7, Moderation in S8; Community/Utility land in
+    # S9-S10.
+    assert values == {
+        "games",
+        "economy",
+        "moderation",
+        "admin",
+        "settings",
+        "diagnostic",
+        ALL_COMMANDS_KEY,
+    }
 
 
 def test_user_tier_view_omits_admin_hubs():
@@ -124,6 +134,8 @@ def test_user_tier_view_omits_admin_hubs():
     values = {opt.value for opt in select.options}
     assert "games" in values
     assert ALL_COMMANDS_KEY in values
+    # Moderation is moderator-tier — must not surface for normal users.
+    assert "moderation" not in values
     assert "admin" not in values
     assert "settings" not in values
     assert "diagnostic" not in values

@@ -107,6 +107,36 @@ HUBS: tuple[HubEntry, ...] = (
         minimum_tier="user",
     ),
     HubEntry(
+        key="economy",
+        display_name="Economy",
+        emoji="💰",
+        purpose="Currency, items, work, shop, and standings.",
+        entry_command="!economymenu",
+        # S7 v1 leaves primary_children empty. Inventory and Leaderboard
+        # remain top-level for now; a follow-up promotes them to
+        # parent_hub of "economy" once the hub view adds explicit child
+        # navigation. Mining stays under Games — the cross-link button
+        # ships alongside that promotion.
+        primary_children=(),
+        cross_link_children=(),
+        minimum_tier="user",
+    ),
+    HubEntry(
+        key="moderation",
+        display_name="Moderation & Safety",
+        emoji="🛡️",
+        purpose="Warnings, timeouts, bans, cleanup, audit logs.",
+        entry_command="!modmenu",
+        # S8 v1: routes to moderation_cog's existing build_help_menu_view
+        # which returns the ModPanelView. Cleanup and Logging are
+        # candidates for parent_hub of "moderation" in a follow-up once
+        # the hub view adds explicit child navigation across the three
+        # subsystems.
+        primary_children=(),
+        cross_link_children=(),
+        minimum_tier="moderator",
+    ),
+    HubEntry(
         key="admin",
         display_name="Admin / Operations",
         emoji="⚙️",

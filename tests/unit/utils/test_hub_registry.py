@@ -45,18 +45,56 @@ def test_all_commands_key_is_not_a_hub():
     assert ALL_COMMANDS_KEY not in {hub.key for hub in HUBS}
 
 
-def test_s3_v1_existing_hubs_only_rollout():
-    """S3 v1 ships exactly four mother-hub categories: Games, Admin,
-    Settings, Platform. Economy/Moderation/Community/Utility wait for
-    S7-S10. Pinning this prevents a future PR from silently adding a
-    "Coming soon" category that the mother-hub map forbids.
+def test_committed_hub_set_matches_promoted_hubs():
+    """The committed hub set is the union of S3 v1 (Games, Admin,
+    Settings, Platform) plus any hubs promoted in later PRs.
+
+    S7 promotes Economy. S8 promotes Moderation/Safety. Community
+    (S9) and Utility (S10) join when their hub views land — adding a
+    hub here without a real panel would re-introduce the "Coming
+    soon" category that the mother-hub map forbids.
     """
     assert {hub.key for hub in HUBS} == {
         "games",
+        "economy",
+        "moderation",
         "admin",
         "settings",
         "diagnostic",
     }
+
+
+def test_moderation_hub_uses_existing_panel():
+    """S8 v1: the Moderation/Safety hub routes to
+    moderation_cog.build_help_menu_view (ModPanelView). Cleanup and
+    Logging stay top-level for now — promotion to parent_hub of
+    "moderation" lands when the hub view gains explicit child nav.
+    """
+    moderation = get_hub("moderation")
+    assert moderation is not None
+    assert moderation.entry_command == "!modmenu"
+    assert moderation.minimum_tier == "moderator"
+    assert moderation.primary_children == ()
+    assert moderation.cross_link_children == ()
+    assert moderation.panel_available is True
+
+
+def test_economy_hub_uses_existing_panel():
+    """S7 v1: the Economy hub category routes to the existing
+    economy_cog.build_help_menu_view panel. Inventory/Leaderboard
+    are NOT yet parent_hub="economy" — that promotion happens in a
+    follow-up PR once the hub view gains explicit child navigation.
+    """
+    economy = get_hub("economy")
+    assert economy is not None
+    assert economy.entry_command == "!economymenu"
+    # Empty primary_children / cross_links in v1 — pin so a future
+    # PR doesn't silently rewrite child wiring without updating
+    # subsystem metadata too.
+    assert economy.primary_children == ()
+    assert economy.cross_link_children == ()
+    assert economy.panel_available is True
+    assert economy.minimum_tier == "user"
 
 
 # ---------------------------------------------------------------------------
@@ -98,11 +136,26 @@ def test_games_hub_primary_children_match_parent_hub_filter():
 
 
 def test_hubs_for_tier_user_sees_only_user_tier_hubs():
-    """Normal users see Games (user tier) but not Admin/Settings/Platform
-    (administrator tier).
+    """Normal users see Games + Economy (user tier) but not
+    Moderation (moderator) or Admin/Settings/Platform (administrator).
     """
     visible = {hub.key for hub in hubs_for_tier("user")}
     assert "games" in visible
+    assert "economy" in visible
+    assert "moderation" not in visible
+    assert "admin" not in visible
+    assert "settings" not in visible
+    assert "diagnostic" not in visible
+
+
+def test_hubs_for_tier_moderator_sees_moderation_but_not_admin():
+    """Moderators see user-tier hubs + Moderation, but still can't open
+    administrator-restricted hubs (Admin/Settings/Platform).
+    """
+    visible = {hub.key for hub in hubs_for_tier("moderator")}
+    assert "games" in visible
+    assert "economy" in visible
+    assert "moderation" in visible
     assert "admin" not in visible
     assert "settings" not in visible
     assert "diagnostic" not in visible
@@ -110,12 +163,26 @@ def test_hubs_for_tier_user_sees_only_user_tier_hubs():
 
 def test_hubs_for_tier_administrator_sees_all():
     visible = {hub.key for hub in hubs_for_tier("administrator")}
-    assert visible == {"games", "admin", "settings", "diagnostic"}
+    assert visible == {
+        "games",
+        "economy",
+        "moderation",
+        "admin",
+        "settings",
+        "diagnostic",
+    }
 
 
 def test_hubs_for_tier_owner_sees_all():
     visible = {hub.key for hub in hubs_for_tier("owner")}
-    assert visible == {"games", "admin", "settings", "diagnostic"}
+    assert visible == {
+        "games",
+        "economy",
+        "moderation",
+        "admin",
+        "settings",
+        "diagnostic",
+    }
 
 
 def test_hubs_for_tier_filters_panel_unavailable():
