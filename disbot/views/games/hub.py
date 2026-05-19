@@ -11,11 +11,9 @@ Mining, Counting, Chain). This view is a navigation surface only:
 * The select dropdown forwards to the child cog's
   :meth:`build_help_menu_view` hook, identical to how ``!help`` routes
   into a subsystem.
-* A "↩ Back to Games" button is attached to the child view so users can
-  return to the hub. The Phase 2 roadmap step (a shared back-nav helper)
-  is deferred to Phase 3.5; until then, the inline factory below mirrors
-  the existing patterns in ``help_cog.py``, ``admin_cog.py``, and
-  ``views/settings/subsystem_view.py``.
+* A "↩ Back to Games" button is attached to the child view via
+  :func:`views.navigation.attach_back_button` (S2). The closure captures
+  the original author so the rebuilt hub remains invoker-restricted.
 
 Direct ``!games`` invocation: the hub opens with the select only.
 ``!help`` is the way back to the help menu in that flow, mirroring
@@ -35,6 +33,7 @@ import discord
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
+from views.navigation import attach_back_button
 
 logger = logging.getLogger("bot.views.games")
 
@@ -117,37 +116,31 @@ def attach_back_to_games_button(
 ) -> bool:
     """Append a "↩ Back to Games" control to a child view opened from the hub.
 
-    No-op (returns ``False``) if the view already has Discord's 25-child
-    limit. The callback rebuilds a fresh :class:`GamesHubView` so the
-    child list reflects the current registry on click.
+    Thin wrapper around :func:`views.navigation.attach_back_button` (S2).
+    The parent-builder closure captures ``author`` so the rebuilt
+    :class:`GamesHubView` remains invoker-restricted; the child list is
+    re-discovered from ``SUBSYSTEMS`` at click time so the hub reflects
+    the live registry, not the snapshot from when the panel was opened.
 
-    Inline factory mirroring ``cogs.help_cog._attach_back_to_help_button``
-    and friends. Will be migrated into a shared helper in Phase 3.5.
+    Returns ``False`` (no-op) if the view is already at Discord's
+    25-component cap — ``attach_back_button`` logs a WARNING in that
+    case so operators can see why a panel lost its back nav.
     """
-    if len(view.children) >= 25:
-        logger.warning(
-            "Back-to-games button skipped — %s already has 25 children.",
-            type(view).__name__,
-        )
-        return False
 
-    back_btn = discord.ui.Button(  # type: ignore[var-annotated]
+    async def _build_games_parent(
+        _interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        return build_games_hub_embed(), GamesHubView(author)
+
+    return attach_back_button(
+        view,
         label="↩ Back to Games",
         custom_id="games:back",
-        style=discord.ButtonStyle.secondary,
+        parent_builder=_build_games_parent,
         row=4,
+        style=discord.ButtonStyle.secondary,
+        error_message="Could not reload the Games hub. Please try again.",
     )
-
-    async def _back_callback(interaction: discord.Interaction) -> None:
-        new_view = GamesHubView(author)
-        await interaction.response.edit_message(
-            embed=build_games_hub_embed(),
-            view=new_view,
-        )
-
-    back_btn.callback = _back_callback  # type: ignore[method-assign]
-    view.add_item(back_btn)
-    return True
 
 
 def _build_no_panel_embed(name: str, meta: dict) -> discord.Embed:

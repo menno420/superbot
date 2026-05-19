@@ -353,3 +353,56 @@ def test_build_no_panel_embed_handles_empty_entry_points():
     embed = _build_no_panel_embed("empty", fake_meta)
     assert embed.fields  # always shows a Commands field
     assert "No commands declared" in embed.fields[0].value
+
+
+# ---------------------------------------------------------------------------
+# Back-to-Games click-time behaviour (S2 migration)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_back_button_callback_rebuilds_games_hub_with_original_author():
+    """Clicking ↩ Back to Games must rebuild ``GamesHubView`` with the
+    same author the panel was opened by — pins the closure's author
+    capture across the navigation.attach_back_button migration.
+    """
+    author = _author(id_=42)
+    view = discord.ui.View()
+    attach_back_to_games_button(view, author)
+
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.response = MagicMock()
+    interaction.response.is_done = MagicMock(return_value=False)
+    interaction.response.edit_message = AsyncMock()
+    interaction.response.send_message = AsyncMock()
+    interaction.edit_original_response = AsyncMock()
+
+    btn = next(c for c in view.children if isinstance(c, discord.ui.Button))
+    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    rebuilt = kwargs["view"]
+    assert isinstance(rebuilt, GamesHubView)
+    # The rebuilt hub must keep the original author so invoker-restriction
+    # still applies after the user navigates back.
+    assert rebuilt._author is author
+
+
+def test_attach_back_to_games_button_delegates_to_shared_helper():
+    """Migration pin (S2): ``attach_back_to_games_button`` must call into
+    ``views.navigation.attach_back_button``. Prevents an accidental
+    in-line revert that would re-duplicate the back-nav logic.
+    """
+    import inspect
+
+    from views.games import hub as games_hub
+
+    fn_src = inspect.getsource(games_hub.attach_back_to_games_button)
+    module_src = inspect.getsource(games_hub)
+    # The wrapper must call the shared helper, not re-implement the
+    # 25-component cap / edit-message dance inline.
+    assert "attach_back_button" in fn_src
+    # The shared helper must be reachable via an actual import — either at
+    # module level or function-local. Pin both shapes.
+    assert "from views.navigation" in module_src or "views.navigation" in fn_src
