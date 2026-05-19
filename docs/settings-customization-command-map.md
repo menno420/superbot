@@ -927,6 +927,84 @@ Subsystems (21): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     (per-subsystem write surfaces).
 
 
+### logging
+
+1. **cog_module**: `disbot/cogs/logging/schemas.py` (S7a) — schema-only;
+   the `!logging` group still lives in `disbot/cogs/admin_cog.py:211`
+   until S7d extracts a dedicated `LoggingCog`.
+2. **subsystem**: `logging`
+3. **current_commands**: `!logging status`, `!logging test` (admin tier).
+4. **current_command_groups**: `!logging` (group at `admin_cog.py:211`).
+5. **current_command_panel_or_menu**: none yet — S7d adds the panel.
+   Discoverability passes today via `KNOWN_PANEL_COMMANDS`
+   (`("logging", "logging")`).
+6. **help_menu_discoverable**: Yes via SUBSYSTEMS — registered at
+   administrator tier with `entry_points=["logging"]`.  Help-menu
+   direct-nav routes through `AdminCog.build_help_menu_view` until
+   S7d ships the logging-specific panel.
+7. **dedicated_panel_command**: deferred to S7d.
+8. **help_menu_direct_navigation_hook**: indirect (`AdminCog` owns
+   `!logging`).  S7d adds a logging-specific
+   `build_help_menu_view`.
+9. **existing_SettingSpec_declarations**: `enabled` (bool, default
+   False), `auto_create_channels` (bool, default False).  Both point
+   at the existing legacy keys via `settings_key=` so the S6
+   edit/reset flows mutate them through `SettingsMutationPipeline`
+   today.
+10. **existing_settings_keys**: `LOGGING_ENABLED`,
+    `LOGGING_AUTO_CREATE_CHANNELS` from `utils.settings_keys.logging`.
+    The two channel-id keys (`LOGGING_MOD_CHANNEL`,
+    `LOGGING_CLEANUP_CHANNEL`) are legacy and are migrating to
+    bindings in S7b.
+11. **existing_BindingSpec_entries**: `mod_channel`, `cleanup_channel`
+    — both `BindingKind.CHANNEL`, optional.  Declared in S7a; S7b
+    wires the mutation path through `BindingMutationPipeline`.
+12. **existing_ResourceRequirement_entries**: `mod_log` channel
+    (`bot-mod-log`, RECOMMENDED), `cleanup_log` channel
+    (`bot-cleanup-log`, RECOMMENDED).  Both link to the declared
+    bindings via `binding_name=`.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capabilities `logging.settings.configure`, `logging.channel.bind`,
+    `logging.channel.create`.  Master switch `logging.enabled`
+    defaults to OFF; the service in `services/server_logging.py`
+    stays inert until an operator opts in.
+14. **hardcoded_or_env_only_behavior**: `DEFAULT_MOD_CHANNEL_NAME` /
+    `DEFAULT_CLEANUP_CHANNEL_NAME` are module-level constants in
+    `utils.settings_keys.logging`; the create-channel flow (S7c)
+    uses the schema's `suggested_name` instead, so these constants
+    become a legacy fallback once S7c lands.
+15. **missing_customization_commands**: existing-channel selection
+    (S7b), create-new-channel flow (S7c), per-event-class routing
+    (deferred — not in S7 scope).
+16. **missing_settings_pages**: bind-existing-channel flow (S7b),
+    create-channel preview/confirm flow (S7c), logging admin panel
+    (S7d).
+17. **missing_menu_buttons_selects_modals**: `LogChannelSelectView`
+    (S7b), `LogChannelProvisionView` + confirmation modal (S7c),
+    logging admin panel buttons (S7d).
+18. **setting_class_per_value**: scalar (`enabled`,
+    `auto_create_channels`); binding (`mod_channel`,
+    `cleanup_channel`); provisionable resource (`mod_log`,
+    `cleanup_log`).
+19. **target_Settings_Manager_page**: `!settings → logging` — the
+    page renders from the registered `LOGGING_CONFIG_SCHEMA` already.
+20. **target_mutation_path**: scalar edits via
+    `SettingsMutationPipeline` (S6 — works today); channel binding
+    via `BindingMutationPipeline` (S7b); channel creation via
+    `ResourceProvisioningPipeline` (S7c).
+21. **target_help_or_menu_route**: Help direct-nav routes via
+    `KNOWN_PANEL_COMMANDS` today; dedicated logging panel via
+    `build_help_menu_view` in S7d.
+22. **provisionable_resources**: `mod_log` channel,
+    `cleanup_log` channel — both RECOMMENDED priority, both consumed
+    by S7c.
+23. **priority**: `P1` — first real binding/provisioning consumer in
+    the Settings Manager.
+24. **recommended_PR_phase**: S7a (schema, this PR) + S7b
+    (binding-select) + S7c (provisioning preview/confirm) + S7d
+    (panel + Help / Admin integration).
+
+
 ## Setting class summary
 
 Cross-cut by class, this is the work distribution implied by the per-cog

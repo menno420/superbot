@@ -56,6 +56,18 @@ class AdminCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_load(self) -> None:
+        """Register schemas for subsystems owned by this cog.
+
+        Admin currently hosts the ``!logging`` group, so the
+        S7a logging schema (settings / bindings / resources) is
+        registered here.  S7d may extract a dedicated ``LoggingCog``
+        and move this call there.
+        """
+        from cogs.logging.schemas import register_schemas
+
+        register_schemas()
+
     # ------------------------------------------------------------------
     # Admin menu
     # ------------------------------------------------------------------
