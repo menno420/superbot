@@ -53,17 +53,22 @@ _ALLOWED_PATHS = {
     _DISBOT / "utils" / "db" / "settings.py",
     # Re-export module (re-exports ``set_setting`` from ``utils.db.settings``).
     _DISBOT / "utils" / "db" / "__init__.py",
+    # PR B' — runtime tournament-state flag has its own typed service.
+    # ``ACTIVE_TOURNAMENT`` is per-match runtime state (start/cancel/end
+    # lifecycle), not operator-tunable guild configuration; the audit
+    # surface SettingsMutationPipeline provides is wrong for it.
+    # The tournament_state_service is the canonical access boundary;
+    # the four pre-PR-B' callers (blackjack_cog, rps_tournament_cog,
+    # rps_tournament/_helpers, views/blackjack/tournament_views) were
+    # removed from this allowlist when they migrated to the service.
+    _DISBOT / "services" / "tournament_state_service.py",
     # Pre-existing callers — migrate to SettingsMutationPipeline in S10.
     # Each entry below corresponds to a per-subsystem S10 sub-PR
     # ("settings/<subsystem>") that will route the call through the
     # pipeline and remove the entry.
-    _DISBOT / "cogs" / "blackjack_cog.py",        # ACTIVE_TOURNAMENT writes
     # ``cogs/economy_cog.py`` migrated to SettingsMutationPipeline in PR #6
     # — removed from the allowlist (the AST scan now enforces it).
-    _DISBOT / "cogs" / "rps_tournament_cog.py",   # ACTIVE_TOURNAMENT writes
-    _DISBOT / "cogs" / "rps_tournament" / "_helpers.py",  # ACTIVE_TOURNAMENT
     _DISBOT / "governance" / "writes.py",         # internal governance writes
-    _DISBOT / "views" / "blackjack" / "tournament_views.py",
     # ``views/xp/modals.py`` migrated to SettingsMutationPipeline in PR #5
     # — removed from the allowlist (the AST scan now enforces it).
     # Documentation reference (string literal in a module docstring,

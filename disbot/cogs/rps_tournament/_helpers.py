@@ -25,9 +25,9 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources, tasks
+from services import tournament_state_service
 from utils import db as global_db
 from utils.channels import cleanup_category, create_private_channel
-from utils.settings_keys import ACTIVE_TOURNAMENT
 
 logger = logging.getLogger("bot")
 
@@ -160,9 +160,9 @@ async def clear_stale_tournament_flag(bot: commands.Bot) -> None:
     """
     await bot.wait_until_ready()
     for guild in bot.guilds:
-        flag = await global_db.get_setting(guild.id, ACTIVE_TOURNAMENT, "")
+        flag = await tournament_state_service.get_active(guild.id)
         if flag == "rps":
-            await global_db.set_setting(guild.id, ACTIVE_TOURNAMENT, "")
+            await tournament_state_service.clear_active(guild.id)
 
 
 async def cleanup_orphaned_channels(bot: commands.Bot) -> None:
