@@ -89,6 +89,34 @@ class EconomyCog(commands.Cog):
         """Auto-create an economy-log channel when the bot joins a new guild."""
         await self._ensure_log_channel(guild)
 
+    async def _record_log_channel(
+        self,
+        guild: discord.Guild,
+        channel_id: str,
+        *,
+        actor: discord.Member | discord.User | None,
+        actor_type: str = "user",
+    ) -> None:
+        """Persist the economy log channel via :class:`SettingsMutationPipeline`.
+
+        Used by both the system-triggered ``_ensure_log_channel`` path
+        (``on_ready`` / ``on_guild_join``, ``actor_type='system'``,
+        ``actor=None``) and the admin ``!setlogchannel`` command
+        (``actor_type='user'``, ``actor`` is the invoking member).
+        Either way the pipeline records the change in
+        ``settings_mutation_audit`` and invalidates the per-key cache.
+        """
+        from services.settings_mutation import SettingsMutationPipeline
+
+        await SettingsMutationPipeline().set_value(
+            guild,
+            "economy",
+            "economy_log_channel",
+            channel_id,
+            actor,
+            actor_type=actor_type,
+        )
+
     async def _ensure_log_channel(self, guild: discord.Guild) -> None:
         """Create #economy-log for *guild* if it doesn't already exist."""
         if await resources.resolve_settings_channel(guild, ECONOMY_LOG_CHANNEL):
@@ -96,7 +124,12 @@ class EconomyCog(commands.Cog):
 
         existing = resources.resolve_channel(guild, name="economy-log")
         if existing:
-            await db.set_setting(guild.id, ECONOMY_LOG_CHANNEL, str(existing.id))
+            await self._record_log_channel(
+                guild,
+                str(existing.id),
+                actor=None,
+                actor_type="system",
+            )
             return
 
         try:
@@ -121,7 +154,12 @@ class EconomyCog(commands.Cog):
                 category=cat,
                 topic="Live feed of XP level-ups, daily rewards, work earnings, and shop purchases.",
             )
-            await db.set_setting(guild.id, ECONOMY_LOG_CHANNEL, str(ch.id))
+            await self._record_log_channel(
+                guild,
+                str(ch.id),
+                actor=None,
+                actor_type="system",
+            )
             embed = discord.Embed(
                 title="📊 Economy Log",
                 description=(
@@ -279,7 +317,11 @@ class EconomyCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def setlogchannel(self, ctx: commands.Context, channel: discord.TextChannel):
         """Set the economy log channel. Usage: !setlogchannel #channel"""
-        await db.set_setting(ctx.guild.id, ECONOMY_LOG_CHANNEL, str(channel.id))
+        await self._record_log_channel(
+            ctx.guild,
+            str(channel.id),
+            actor=ctx.author,
+        )
         await ctx.send(f"✅ Economy log channel set to {channel.mention}.")
 
     # ------------------------------------------------------------------ !joblist

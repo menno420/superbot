@@ -58,7 +58,8 @@ _ALLOWED_PATHS = {
     # ("settings/<subsystem>") that will route the call through the
     # pipeline and remove the entry.
     _DISBOT / "cogs" / "blackjack_cog.py",        # ACTIVE_TOURNAMENT writes
-    _DISBOT / "cogs" / "economy_cog.py",          # ECONOMY_LOG_CHANNEL writes
+    # ``cogs/economy_cog.py`` migrated to SettingsMutationPipeline in PR #6
+    # — removed from the allowlist (the AST scan now enforces it).
     _DISBOT / "cogs" / "rps_tournament_cog.py",   # ACTIVE_TOURNAMENT writes
     _DISBOT / "cogs" / "rps_tournament" / "_helpers.py",  # ACTIVE_TOURNAMENT
     _DISBOT / "governance" / "writes.py",         # internal governance writes
