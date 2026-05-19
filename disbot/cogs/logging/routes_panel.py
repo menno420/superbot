@@ -294,13 +294,24 @@ class LoggingRoutesView(HubView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
-        from cogs.logging.panel import LoggingPanelView, build_panel_embed
+        # Phase 3.5 — share the defer + edit + error-handling flow with
+        # every other back-button in the codebase via views.navigation.
+        from views.navigation import transition_to
 
-        if not await safe_defer(interaction):
-            return
-        view = LoggingPanelView(self._author)
-        embed = await build_panel_embed(interaction.guild)
-        await safe_edit(interaction, embed=embed, view=view)
+        async def _build_logging_parent(
+            interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            from cogs.logging.panel import LoggingPanelView, build_panel_embed
+
+            view = LoggingPanelView(self._author)
+            embed = await build_panel_embed(interaction.guild)
+            return embed, view
+
+        await transition_to(
+            interaction,
+            builder=_build_logging_parent,
+            error_message="Couldn't open the logging panel — see bot logs.",
+        )
 
 
 __all__ = ["LoggingRoutesView", "build_routes_embed"]
