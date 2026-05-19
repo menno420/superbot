@@ -1,0 +1,395 @@
+"""Cog discovery, load/unload/reload primitives, and the interactive
+:class:`_CogManagerView` (PR C).
+
+Extracted from ``cogs/admin_cog.py`` to keep that file under the S4.6
+800-LOC ceiling. The module owns:
+
+* :data:`COGS_DIR` — absolute path to the cogs directory.
+* Discovery helpers (:func:`_normalize`, :func:`_find_module`,
+  :func:`_all_cog_modules`, :func:`_syntax_ok`).
+* :data:`_PROTECTED_COGS` — core cogs that may not be unloaded from
+  the panel UI (prefix ``!cog unload`` retains no protection).
+* :func:`_do_load`, :func:`_do_unload`, :func:`_do_reload` — shared
+  body for the ``!cog`` prefix command and the panel buttons.
+* :class:`_CogManagerSelect`, :class:`_CogManagerView` — interactive
+  panel surface.
+
+``admin_cog.py`` imports the helpers and view from here.
+"""
+
+from __future__ import annotations
+
+import ast
+import os
+import re
+from typing import TYPE_CHECKING
+
+import discord
+from discord.ext import commands
+
+from utils.ui_constants import INFO_COLOR
+from views.base import HubView
+
+if TYPE_CHECKING:
+    from cogs.admin_cog import AdminCog
+
+# Absolute path to ``cogs/`` — the parent directory of ``cogs/admin/``.
+COGS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _normalize(name: str) -> str:
+    """Strip underscores/spaces, lowercase, remove trailing 'cog'."""
+    return re.sub(r"[\s_]+", "", name.lower()).removesuffix("cog")
+
+
+def _find_module(name: str) -> str | None:
+    """Return the full module path (e.g. 'cogs.admin_cog') for a fuzzy cog name."""
+    target = _normalize(name)
+    for fname in sorted(os.listdir(COGS_DIR)):
+        if fname.endswith("_cog.py") and not fname.startswith("__"):
+            if _normalize(fname[:-3]) == target:
+                return f"cogs.{fname[:-3]}"
+    return None
+
+
+def _all_cog_modules() -> list[str]:
+    """Return module paths for every *_cog.py file."""
+    return [
+        f"cogs.{f[:-3]}"
+        for f in sorted(os.listdir(COGS_DIR))
+        if f.endswith("_cog.py") and not f.startswith("__")
+    ]
+
+
+def _syntax_ok(fname: str) -> bool:
+    """Return True if the file parses without syntax errors."""
+    try:
+        with open(os.path.join(COGS_DIR, fname), encoding="utf-8") as fh:
+            ast.parse(fh.read(), fname)
+        return True
+    except SyntaxError:
+        return False
+
+
+# Core cogs that must NOT be unloaded from the panel UI without a
+# deliberate operator action. Unloading any of these can wedge the
+# bot's safety / runtime surface (admin_cog itself is the obvious
+# self-foot-gun; settings, help, logging, and cleanup are the
+# bot's operator-facing minimum).
+#
+# Critical cogs may still be RELOADED from the panel (reversible) and
+# the prefix ``!cog unload <name>`` command retains no protection — it
+# is the operator's escape hatch when the panel won't open. Document
+# the asymmetry in any operator-facing copy that grows around this.
+_PROTECTED_COGS: frozenset[str] = frozenset(
+    {
+        "cogs.admin_cog",
+        "cogs.cleanup_cog",
+        "cogs.help_cog",
+        "cogs.logging_cog",
+        "cogs.settings_cog",
+    },
+)
+
+
+async def _do_load(bot: commands.Bot, module: str) -> str:
+    """Load ``module``; return an operator-readable status string."""
+    try:
+        await bot.load_extension(module)
+        return f"✅ `{module}` loaded."
+    except Exception as exc:  # noqa: BLE001 — operator-facing surface
+        return f"⚠️ Error loading `{module}`: {exc}"
+
+
+async def _do_unload(bot: commands.Bot, module: str) -> str:
+    """Unload ``module``; return an operator-readable status string."""
+    try:
+        await bot.unload_extension(module)
+        return f"🔴 `{module}` unloaded."
+    except Exception as exc:  # noqa: BLE001 — operator-facing surface
+        return f"⚠️ Error unloading `{module}`: {exc}"
+
+
+async def _do_reload(bot: commands.Bot, module: str) -> str:
+    """Reload ``module``; return an operator-readable status string."""
+    try:
+        await bot.reload_extension(module)
+        return f"🔄 `{module}` reloaded."
+    except Exception as exc:  # noqa: BLE001 — operator-facing surface
+        return f"⚠️ Error reloading `{module}`: {exc}"
+
+
+# ---------------------------------------------------------------------------
+# Interactive Cog Manager (PR C)
+# ---------------------------------------------------------------------------
+
+
+class _CogManagerSelect(discord.ui.Select):
+    """Dropdown listing every ``*_cog.py`` discovered under ``COGS_DIR``.
+
+    Selecting an option stashes the choice on the parent view; the
+    Load / Unload / Reload buttons act on that selection. Status icons
+    in the option label show the current state at panel-render time —
+    refresh after each mutation to keep them current.
+    """
+
+    def __init__(self, loaded: set[str]) -> None:
+        options: list[discord.SelectOption] = []
+        for fname in sorted(os.listdir(COGS_DIR)):
+            if not fname.endswith("_cog.py") or fname.startswith("__"):
+                continue
+            short = fname[:-3]
+            module = f"cogs.{short}"
+            load_glyph = "✅" if module in loaded else "❌"
+            syntax_glyph = "🟢" if _syntax_ok(fname) else "🔴"
+            protected_glyph = "🛡" if module in _PROTECTED_COGS else ""
+            label = f"{load_glyph}{syntax_glyph}{protected_glyph} {short}"[:100]
+            options.append(
+                discord.SelectOption(
+                    label=label,
+                    value=module,
+                    description=(
+                        "Protected core cog — panel unload denied"
+                        if module in _PROTECTED_COGS
+                        else None
+                    ),
+                ),
+            )
+        if not options:
+            options.append(
+                discord.SelectOption(label="No cogs found", value="__none__"),
+            )
+        super().__init__(
+            placeholder="Choose a cog…",
+            min_values=1,
+            max_values=1,
+            options=options[:25],  # Discord cap
+            custom_id="admin:cogmgr:select",
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view = self.view
+        if not isinstance(view, _CogManagerView):
+            await interaction.response.send_message(
+                "This dropdown is no longer attached to the cog manager.",
+                ephemeral=True,
+            )
+            return
+        value = self.values[0]
+        if value == "__none__":
+            await interaction.response.send_message(
+                "No cogs available.",
+                ephemeral=True,
+            )
+            return
+        view.selected_module = value
+        await interaction.response.edit_message(
+            embed=view.build_embed(),
+            view=view,
+        )
+
+
+class _CogManagerView(HubView):
+    """Owner-driven Load / Unload / Reload panel.
+
+    PR C replaces the previous read-only embed under "Cog List" with
+    an interactive surface. Mutations are owner-gated:
+
+    * Non-owners see the same status surface but the action buttons
+      ephemerally deny.
+    * Owners can load any cog, reload any cog (including protected
+      core cogs — reload is reversible), and unload any non-protected
+      cog.
+    * Unloading a protected core cog from the panel is refused; the
+      ephemeral surfaces the prefix-command escape hatch.
+
+    Load / Unload / Reload paths share their bodies with the
+    ``!cog`` prefix command via the module-level :func:`_do_load` /
+    :func:`_do_unload` / :func:`_do_reload` helpers.
+    """
+
+    def __init__(
+        self,
+        cog: AdminCog,
+        author: discord.Member | discord.User,
+    ) -> None:
+        super().__init__(author)
+        self.cog = cog
+        self.selected_module: str | None = None
+        self.last_status: str | None = None
+        self._add_components()
+
+    def _add_components(self) -> None:
+        loaded = set(self.cog.bot.extensions.keys())
+        self.add_item(_CogManagerSelect(loaded))
+
+        load = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Load",
+            style=discord.ButtonStyle.green,
+            row=1,
+            custom_id="admin:cogmgr:load",
+        )
+        load.callback = self._on_load  # type: ignore[method-assign]
+        self.add_item(load)
+
+        unload = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Unload",
+            style=discord.ButtonStyle.danger,
+            row=1,
+            custom_id="admin:cogmgr:unload",
+        )
+        unload.callback = self._on_unload  # type: ignore[method-assign]
+        self.add_item(unload)
+
+        reload_btn = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Reload",
+            style=discord.ButtonStyle.blurple,
+            row=1,
+            custom_id="admin:cogmgr:reload",
+        )
+        reload_btn.callback = self._on_reload  # type: ignore[method-assign]
+        self.add_item(reload_btn)
+
+        refresh = discord.ui.Button(  # type: ignore[var-annotated]
+            label="🔄 Refresh",
+            style=discord.ButtonStyle.secondary,
+            row=2,
+            custom_id="admin:cogmgr:refresh",
+        )
+        refresh.callback = self._on_refresh  # type: ignore[method-assign]
+        self.add_item(refresh)
+
+    def build_embed(self) -> discord.Embed:
+        loaded = set(self.cog.bot.extensions.keys())
+        lines = []
+        for fname in sorted(os.listdir(COGS_DIR)):
+            if not fname.endswith("_cog.py") or fname.startswith("__"):
+                continue
+            module = f"cogs.{fname[:-3]}"
+            load_icon = "✅" if module in loaded else "❌"
+            syntax_icon = "🟢" if _syntax_ok(fname) else "🔴"
+            protected_icon = " 🛡" if module in _PROTECTED_COGS else ""
+            marker = "  ← selected" if module == self.selected_module else ""
+            lines.append(
+                f"{load_icon} {syntax_icon}  `{fname[:-3]}`{protected_icon}{marker}",
+            )
+
+        description_parts = [
+            "**Pick a cog from the dropdown, then Load / Unload / Reload.**",
+            "",
+            "\n".join(lines) or "_No cogs found._",
+            "",
+            (
+                "✅ Loaded  ❌ Unloaded  🟢 OK  🔴 Syntax error  🛡 "
+                "Protected (panel unload denied — use `!cog unload <name>`)"
+            ),
+        ]
+        if self.last_status:
+            description_parts.append("")
+            description_parts.append(self.last_status)
+        embed = discord.Embed(
+            title="📋 Cog Manager",
+            description="\n".join(description_parts),
+            color=INFO_COLOR,
+        )
+        if self.selected_module:
+            embed.set_footer(text=f"Selected: {self.selected_module}")
+        else:
+            embed.set_footer(text="No cog selected.")
+        return embed
+
+    async def _require_owner_or_deny(
+        self,
+        interaction: discord.Interaction,
+    ) -> bool:
+        if not await interaction.client.is_owner(interaction.user):  # type: ignore[attr-defined]
+            await interaction.response.send_message(
+                "Owner only.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    async def _require_selection_or_deny(
+        self,
+        interaction: discord.Interaction,
+    ) -> bool:
+        if self.selected_module is None:
+            await interaction.response.send_message(
+                "Pick a cog from the dropdown first.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    async def _on_load(self, interaction: discord.Interaction) -> None:
+        if not await self._require_owner_or_deny(interaction):
+            return
+        if not await self._require_selection_or_deny(interaction):
+            return
+        assert self.selected_module is not None  # noqa: S101 — guarded above
+        self.last_status = await _do_load(self.cog.bot, self.selected_module)
+        await interaction.response.edit_message(
+            embed=self.build_embed(),
+            view=self,
+        )
+
+    async def _on_unload(self, interaction: discord.Interaction) -> None:
+        if not await self._require_owner_or_deny(interaction):
+            return
+        if not await self._require_selection_or_deny(interaction):
+            return
+        assert self.selected_module is not None  # noqa: S101 — guarded above
+        if self.selected_module in _PROTECTED_COGS:
+            short = self.selected_module.split(".")[-1]
+            await interaction.response.send_message(
+                f"`{self.selected_module}` is a protected core cog. "
+                f"Use `!cog unload {short}` from a terminal if you really "
+                "need to (risk of bot lockup).",
+                ephemeral=True,
+            )
+            return
+        self.last_status = await _do_unload(self.cog.bot, self.selected_module)
+        await interaction.response.edit_message(
+            embed=self.build_embed(),
+            view=self,
+        )
+
+    async def _on_reload(self, interaction: discord.Interaction) -> None:
+        if not await self._require_owner_or_deny(interaction):
+            return
+        if not await self._require_selection_or_deny(interaction):
+            return
+        assert self.selected_module is not None  # noqa: S101 — guarded above
+        # Reload is allowed even for protected core cogs — it is
+        # reversible and is the operator's hot-path for picking up a
+        # code change without restarting the process.
+        self.last_status = await _do_reload(self.cog.bot, self.selected_module)
+        await interaction.response.edit_message(
+            embed=self.build_embed(),
+            view=self,
+        )
+
+    async def _on_refresh(self, interaction: discord.Interaction) -> None:
+        # Refresh is open to any admin who reached the panel — it
+        # only re-reads load state, no mutation.
+        self.last_status = None
+        await interaction.response.edit_message(
+            embed=self.build_embed(),
+            view=self,
+        )
+
+
+__all__ = [
+    "COGS_DIR",
+    "_CogManagerView",
+    "_PROTECTED_COGS",
+    "_all_cog_modules",
+    "_do_load",
+    "_do_reload",
+    "_do_unload",
+    "_find_module",
+    "_normalize",
+    "_syntax_ok",
+]

@@ -1,55 +1,27 @@
 from __future__ import annotations
 
-import ast
 import logging
 import os
-import re
 import sys
 
 import discord
 from discord.ext import commands
 
+from cogs.admin.cog_manager import (  # noqa: F401 — re-exported for back-compat (callers may import here)
+    COGS_DIR,
+    _all_cog_modules,
+    _CogManagerView,
+    _do_load,
+    _do_reload,
+    _do_unload,
+    _find_module,
+)
 from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
-from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR
+from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR  # noqa: F401
 from views.base import HubView, send_panel
 
-COGS_DIR = os.path.dirname(os.path.abspath(__file__))
 PID_FILE = os.path.join(os.path.dirname(COGS_DIR), "bot.pid")
-
-
-def _normalize(name: str) -> str:
-    """Strip underscores/spaces, lowercase, remove trailing 'cog'."""
-    return re.sub(r"[\s_]+", "", name.lower()).removesuffix("cog")
-
-
-def _find_module(name: str) -> str | None:
-    """Return the full module path (e.g. 'cogs.admin_cog') for a fuzzy cog name."""
-    target = _normalize(name)
-    for fname in sorted(os.listdir(COGS_DIR)):
-        if fname.endswith("_cog.py") and not fname.startswith("__"):
-            if _normalize(fname[:-3]) == target:
-                return f"cogs.{fname[:-3]}"
-    return None
-
-
-def _all_cog_modules() -> list[str]:
-    """Return module paths for every *_cog.py file."""
-    return [
-        f"cogs.{f[:-3]}"
-        for f in sorted(os.listdir(COGS_DIR))
-        if f.endswith("_cog.py") and not f.startswith("__")
-    ]
-
-
-def _syntax_ok(fname: str) -> bool:
-    """Return True if the file parses without syntax errors."""
-    try:
-        with open(os.path.join(COGS_DIR, fname), encoding="utf-8") as fh:
-            ast.parse(fh.read(), fname)
-        return True
-    except SyntaxError:
-        return False
 
 
 class AdminCog(commands.Cog):
@@ -104,7 +76,13 @@ class AdminCog(commands.Cog):
     @commands.command(name="cog")
     @commands.is_owner()
     async def manage_cog(self, ctx, action: str, cog_name: str):
-        """Load, unload, or reload a cog by name (underscores and _cog suffix optional)."""
+        """Load, unload, or reload a cog by name (underscores and _cog suffix optional).
+
+        The prefix command intentionally retains no critical-cog
+        protection — it is the operator's escape hatch when the panel
+        won't open or a protected cog needs to be unloaded. The panel
+        Unload button refuses protected cogs (see ``_PROTECTED_COGS``).
+        """
         action = action.lower()
         if action not in ("load", "unload", "reload"):
             await ctx.send(
@@ -115,16 +93,12 @@ class AdminCog(commands.Cog):
         if not module:
             await ctx.send(f"❌ No cog found matching `{cog_name}`.")
             return
-        try:
-            if action == "load":
-                await self.bot.load_extension(module)
-            elif action == "unload":
-                await self.bot.unload_extension(module)
-            elif action == "reload":
-                await self.bot.reload_extension(module)
-            await ctx.send(f"✅ `{module}` {action}ed.")
-        except Exception as e:
-            await ctx.send(f"⚠️ Error {action}ing `{module}`: {e}")
+        if action == "load":
+            await ctx.send(await _do_load(self.bot, module))
+        elif action == "unload":
+            await ctx.send(await _do_unload(self.bot, module))
+        else:  # action == "reload"
+            await ctx.send(await _do_reload(self.bot, module))
 
     @commands.command(name="loadall")
     @commands.is_owner()
@@ -327,24 +301,21 @@ class _AdminPanelView(HubView):
 
     @discord.ui.button(label="📋 Cog List", style=discord.ButtonStyle.blurple, row=0)
     async def coglist_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        loaded = set(self.cog.bot.extensions.keys())
-        lines = []
-        for fname in sorted(os.listdir(COGS_DIR)):
-            if not fname.endswith("_cog.py") or fname.startswith("__"):
-                continue
-            module = f"cogs.{fname[:-3]}"
-            load_icon = "✅" if module in loaded else "❌"
-            syntax_icon = "🟢" if _syntax_ok(fname) else "🔴"
-            lines.append(f"{load_icon} {syntax_icon}  `{fname[:-3]}`")
-        embed = discord.Embed(
-            title="📋 Cog List",
-            description="\n".join(lines) or "No cogs found.",
-            color=INFO_COLOR,
+        """Open the interactive cog manager (PR C).
+
+        Replaces the previous read-only embed. Owners can load /
+        unload / reload from the panel; non-owners see the same
+        status surface but mutation buttons deny. Protected core
+        cogs (``_PROTECTED_COGS``) refuse unload from the panel —
+        prefix ``!cog unload`` retains no protection as the
+        operator's escape hatch.
+        """
+        view = _CogManagerView(self.cog, self._author)
+        attach_back_to_admin_button(view, self._author)
+        await interaction.response.edit_message(
+            embed=view.build_embed(),
+            view=view,
         )
-        embed.set_footer(
-            text="✅ Loaded  ❌ Unloaded  🟢 OK  🔴 Syntax Error  •  ↩ Overview to return",
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="🔄 Reload All", style=discord.ButtonStyle.grey, row=0)
     async def reload_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
