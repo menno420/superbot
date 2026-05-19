@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
 from typing import TypeAlias
 
 import discord
@@ -55,6 +56,33 @@ ParentBuilder: TypeAlias = Callable[
     [discord.Interaction],
     Awaitable[tuple[discord.Embed, discord.ui.View]],
 ]
+
+
+@dataclass(frozen=True)
+class BackTarget:
+    """A captured "what comes above me" for back-chain composition (AB2).
+
+    Each opener in a Help → X → Y chain can stash a ``BackTarget`` on
+    the child it opens (typically as ``child_view._back_target``). The
+    child's own opener, when it builds back-to-Y, uses
+    :func:`chain_back` to compose: pressing back rebuilds Y AND
+    re-attaches the captured ``BackTarget`` on the rebuilt Y. This
+    lets a deep navigation unwind all the way back to Help with each
+    intermediate parent's back button still attached, without inventing
+    a router or a stack.
+
+    Persistent-view fail-safe: ``BackTarget`` MUST NOT be persisted
+    across bot restarts (the ``builder`` closure cannot be
+    serialized). Persistent-view re-registration must construct views
+    without a ``_back_target``; in that case the panel still works
+    as the top-of-stack and click-time governance recheck (PR D) is
+    the correctness safety net.
+    """
+
+    builder: ParentBuilder
+    label: str
+    custom_id: str
+
 
 # Discord's per-view component cap. Pulled out as a constant so tests
 # don't hard-code the magic number.
@@ -209,9 +237,71 @@ async def transition_to(
     await safe_edit(interaction, embed=embed, view=view)
 
 
+def attach_back_target(view: discord.ui.View, target: BackTarget) -> bool:
+    """Convenience: :func:`attach_back_button` driven by a :class:`BackTarget`.
+
+    Equivalent to::
+
+        attach_back_button(
+            view,
+            label=target.label,
+            custom_id=target.custom_id,
+            parent_builder=target.builder,
+        )
+
+    Returns the same value as :func:`attach_back_button` — ``True`` if
+    the button was added, ``False`` if the view was at the 25-component
+    cap.
+    """
+    return attach_back_button(
+        view,
+        label=target.label,
+        custom_id=target.custom_id,
+        parent_builder=target.builder,
+    )
+
+
+def chain_back(
+    builder: ParentBuilder,
+    grandparent: BackTarget | None,
+) -> ParentBuilder:
+    """Return a wrapped builder that re-attaches ``grandparent`` after rebuild.
+
+    Composition rule: the wrapped builder calls ``builder`` to obtain
+    ``(embed, view)``, then — if ``grandparent`` is not ``None`` —
+    invokes :func:`attach_back_target` on the rebuilt view. The
+    grandparent itself may be a :class:`BackTarget` whose builder was
+    also produced by :func:`chain_back`, so arbitrary depth composes
+    naturally through the closure tree.
+
+    If ``grandparent`` is ``None`` this is the identity transform —
+    the builder is returned unchanged. That keeps top-of-stack openers
+    (direct ``!cleanup``, ``!economymenu``) from gaining an unwanted
+    spurious back button.
+
+    Persistent-view fail-safe: the wrapped builder is in-memory only.
+    Persistent views must re-register without a chain; click-time
+    checks remain the correctness safety net.
+    """
+    if grandparent is None:
+        return builder
+
+    async def _chained_builder(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        embed, view = await builder(interaction)
+        attach_back_target(view, grandparent)
+        return embed, view
+
+    return _chained_builder
+
+
 __all__ = [
     "MAX_COMPONENTS",
+    "BackTarget",
     "ParentBuilder",
     "attach_back_button",
+    "attach_back_target",
+    "chain_back",
     "transition_to",
 ]

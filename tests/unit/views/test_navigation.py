@@ -36,7 +36,10 @@ import pytest
 
 from views.navigation import (
     MAX_COMPONENTS,
+    BackTarget,
     attach_back_button,
+    attach_back_target,
+    chain_back,
     transition_to,
 )
 
@@ -352,3 +355,333 @@ def test_logging_routes_back_uses_shared_navigation_helper():
     src = inspect.getsource(LoggingRoutesView.btn_back)
     assert "transition_to" in src
     assert "views.navigation" in src or "from views.navigation" in src
+
+
+# ---------------------------------------------------------------------------
+# BackTarget / attach_back_target / chain_back (AB2)
+# ---------------------------------------------------------------------------
+
+
+async def _stub_builder(_interaction):
+    return discord.Embed(title="stub"), discord.ui.View()
+
+
+def test_back_target_is_frozen_and_hashable():
+    """``BackTarget`` is a frozen dataclass — values are immutable and
+    the instance is hashable so it can be safely stashed on views
+    without surprising aliasing.
+    """
+    target = BackTarget(
+        builder=_stub_builder,
+        label="↩ Back to X",
+        custom_id="x:back",
+    )
+    # Hashable.
+    {target}
+    # Frozen.
+    with pytest.raises(Exception):
+        target.label = "mutated"  # type: ignore[misc]
+
+
+def test_attach_back_target_delegates_to_attach_back_button():
+    """``attach_back_target(view, target)`` is equivalent to
+    ``attach_back_button(view, label=…, custom_id=…, parent_builder=…)``
+    — verify the button properties match.
+    """
+    view = discord.ui.View()
+    target = BackTarget(
+        builder=_stub_builder,
+        label="↩ Back to X",
+        custom_id="x:back",
+    )
+
+    added = attach_back_target(view, target)
+
+    assert added is True
+    assert len(view.children) == 1
+    btn = view.children[0]
+    assert isinstance(btn, discord.ui.Button)
+    assert btn.label == target.label
+    assert btn.custom_id == target.custom_id
+
+
+def test_chain_back_identity_when_no_grandparent():
+    """With ``grandparent=None``, ``chain_back`` returns the builder
+    unchanged — direct-entry openers must not pick up a spurious
+    back button on rebuild.
+    """
+    wrapped = chain_back(_stub_builder, None)
+    assert wrapped is _stub_builder
+
+
+@pytest.mark.asyncio
+async def test_chain_back_re_attaches_grandparent_on_rebuild():
+    """When ``grandparent`` is provided, the wrapped builder rebuilds
+    the parent AND attaches the grandparent's back button on it.
+    """
+    parent_embed = discord.Embed(title="parent")
+    parent_view = discord.ui.View()
+
+    async def builder(_interaction):
+        return parent_embed, parent_view
+
+    grandparent = BackTarget(
+        builder=_stub_builder,
+        label="↩ Back to Grandparent",
+        custom_id="gp:back",
+    )
+
+    wrapped = chain_back(builder, grandparent)
+    # Not the identity transform when grandparent is provided.
+    assert wrapped is not builder
+
+    embed, view = await wrapped(_interaction())
+    assert embed is parent_embed
+    assert view is parent_view
+    # The rebuilt view now carries the grandparent's button.
+    custom_ids = {
+        c.custom_id  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert "gp:back" in custom_ids
+
+
+@pytest.mark.asyncio
+async def test_chain_back_composes_arbitrarily_deep():
+    """Composition is associative: a chain of three builders unwinds
+    via two ``chain_back`` calls and the rebuilt top-most view ends
+    up carrying both intermediate back buttons.
+    """
+    top_view = discord.ui.View()
+
+    async def build_top(_interaction):
+        return discord.Embed(title="top"), top_view
+
+    mid_target = BackTarget(
+        builder=build_top,
+        label="↩ Back to Top",
+        custom_id="top:back",
+    )
+
+    async def build_middle(_interaction):
+        return discord.Embed(title="middle"), discord.ui.View()
+
+    composed_mid = chain_back(build_middle, mid_target)
+    leaf_target = BackTarget(
+        builder=composed_mid,
+        label="↩ Back to Middle",
+        custom_id="middle:back",
+    )
+
+    leaf_view = discord.ui.View()
+    attach_back_target(leaf_view, leaf_target)
+    # Leaf has back-to-middle.
+    leaf_custom_ids = {
+        c.custom_id  # type: ignore[attr-defined]
+        for c in leaf_view.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert "middle:back" in leaf_custom_ids
+
+    # Pressing back-to-middle invokes the composed builder; the
+    # rebuilt middle view must carry back-to-top.
+    middle_btn = next(
+        c
+        for c in leaf_view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "middle:back"
+    )
+    interaction = _interaction()
+    await middle_btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    rebuilt_middle = kwargs["view"]
+    mid_custom_ids = {
+        c.custom_id  # type: ignore[attr-defined]
+        for c in rebuilt_middle.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert "top:back" in mid_custom_ids
+
+
+# ---------------------------------------------------------------------------
+# Help cog stashes BackTarget for downstream chain composition (AB2)
+# ---------------------------------------------------------------------------
+
+
+def test_help_cog_back_button_stashes_back_target():
+    """``_attach_back_to_help_button`` must stash a ``BackTarget`` on
+    the view so downstream openers can use ``chain_back`` to keep
+    back-to-Help attached when they rebuild their own parent panels.
+    """
+    from cogs import help_cog
+
+    view = discord.ui.View()
+    help_cog._attach_back_to_help_button(view)
+    target = getattr(view, "_back_target", None)
+    assert target is not None
+    assert isinstance(target, BackTarget)
+    assert target.label == "↩ Back to Help"
+    assert target.custom_id == "help:back"
+
+
+# ---------------------------------------------------------------------------
+# Economy back chain (AB2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_attach_back_to_economy_button_re_attaches_grandparent():
+    """If ``attach_back_to_economy_button`` is called with a grandparent,
+    the rebuilt Economy panel produced by clicking back-to-Economy
+    must also have the grandparent's button re-attached. This is the
+    Help → Economy → Inventory → back path.
+    """
+    from views.economy.main_panel import attach_back_to_economy_button
+
+    grandparent = BackTarget(
+        builder=_stub_builder,
+        label="↩ Back to Help",
+        custom_id="help:back",
+    )
+
+    view = discord.ui.View()
+    author = MagicMock()
+
+    # Patch the binding at the point of use — main_panel imports the
+    # helper at module load, so patching the source module would not
+    # affect the rebound reference.
+    with patch(
+        "views.economy.main_panel._build_economy_embed",
+        AsyncMock(return_value=discord.Embed(title="Economy")),
+    ):
+        attach_back_to_economy_button(view, author, grandparent=grandparent)
+
+        # The Inventory view now has back-to-Economy.
+        economy_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button) and c.custom_id == "economy:back"
+        )
+
+        # Clicking back-to-Economy rebuilds Economy. The rebuilt view
+        # must carry back-to-Help (grandparent).
+        interaction = _interaction()
+        await economy_btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    rebuilt_economy = kwargs["view"]
+    rebuilt_custom_ids = {
+        c.custom_id  # type: ignore[attr-defined]
+        for c in rebuilt_economy.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert "help:back" in rebuilt_custom_ids
+
+
+def test_attach_back_to_economy_button_stashes_back_target_on_child():
+    """The Inventory view must receive ``_back_target`` so its own
+    children (e.g. a Category view) can chain back through Economy
+    if they want to rebuild.
+    """
+    from views.economy.main_panel import attach_back_to_economy_button
+
+    view = discord.ui.View()
+    attach_back_to_economy_button(view, MagicMock(), grandparent=None)
+    target = getattr(view, "_back_target", None)
+    assert target is not None
+    assert isinstance(target, BackTarget)
+    assert target.label == "↩ Back to Economy"
+    assert target.custom_id == "economy:back"
+
+
+def _shop_view_back_button(shop_view) -> discord.ui.Button:
+    """Look up the ``↩ Back`` button from a ``_ShopSubView`` instance.
+
+    The decorator-defined button is added to ``children`` on view
+    construction; iterate to find it rather than calling the raw
+    function descriptor on the class.
+    """
+    for child in shop_view.children:
+        if (
+            isinstance(child, discord.ui.Button)
+            and child.label is not None
+            and "Back" in child.label
+        ):
+            return child
+    raise AssertionError("Shop subview has no Back button")
+
+
+@pytest.mark.asyncio
+async def test_shop_subview_back_btn_re_attaches_origin_on_rebuild():
+    """When ``_ShopSubView`` was opened from an EconomyPanelView that
+    has a propagated origin (e.g. back-to-Help), the shop's Back
+    button must re-attach that origin on the rebuilt Economy.
+    """
+    from views.economy.shop_panel import _ShopSubView
+
+    shop_view = _ShopSubView(user_id=1, guild_id=42)
+    # Mimic the propagation that EconomyPanelView.shop_btn does.
+    shop_view._back_target = BackTarget(  # type: ignore[attr-defined]
+        builder=_stub_builder,
+        label="↩ Back to Help",
+        custom_id="help:back",
+    )
+
+    interaction = _interaction()
+    interaction.guild_id = 42
+
+    with patch(
+        "views.economy.shop_panel._build_economy_embed",
+        AsyncMock(return_value=discord.Embed(title="Economy")),
+    ):
+        await _shop_view_back_button(shop_view).callback(  # type: ignore[union-attr,misc]
+            interaction,
+        )
+
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    rebuilt_economy = kwargs["view"]
+    rebuilt_custom_ids = {
+        c.custom_id  # type: ignore[attr-defined]
+        for c in rebuilt_economy.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert "help:back" in rebuilt_custom_ids
+
+
+@pytest.mark.asyncio
+async def test_shop_subview_back_btn_with_no_origin_omits_chain():
+    """When ``_ShopSubView`` was opened directly (e.g. !shop / direct
+    !economymenu → shop), there is no origin to chain — the rebuilt
+    Economy must NOT have a spurious back button.
+    """
+    from views.economy.shop_panel import _ShopSubView
+
+    shop_view = _ShopSubView(user_id=1, guild_id=42)
+    # No _back_target propagated.
+
+    interaction = _interaction()
+    interaction.guild_id = 42
+
+    with patch(
+        "views.economy.shop_panel._build_economy_embed",
+        AsyncMock(return_value=discord.Embed(title="Economy")),
+    ):
+        await _shop_view_back_button(shop_view).callback(  # type: ignore[union-attr,misc]
+            interaction,
+        )
+
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    rebuilt_economy = kwargs["view"]
+    rebuilt_custom_ids = {
+        c.custom_id  # type: ignore[attr-defined]
+        for c in rebuilt_economy.children
+        if isinstance(c, discord.ui.Button)
+    }
+    # No spurious back buttons.
+    assert "help:back" not in rebuilt_custom_ids
+    assert "economy:back" not in rebuilt_custom_ids

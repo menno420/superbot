@@ -180,12 +180,16 @@ def _attach_back_to_help_button(view: discord.ui.View) -> None:
     after the category-index refactor. The pre-S3 implementation rebuilt
     a paginated :class:`HelpPanelView`; that view is still reachable as
     the "All Commands / Advanced" category but is no longer the top.
+
+    AB2: also stashes a :class:`BackTarget` on ``view._back_target`` so
+    that openers further down the chain can use :func:`chain_back` to
+    preserve back-to-Help when they rebuild this panel.
     """
     # Local import — navigation is at the views layer; help_cog is at
     # the cogs layer. Function-local import keeps the import graph
     # acyclic in case the navigation module ever grows imports of its
     # own.
-    from views.navigation import attach_back_button
+    from views.navigation import BackTarget, attach_back_button
 
     async def _build_help_parent(
         interaction: discord.Interaction,
@@ -204,6 +208,16 @@ def _attach_back_to_help_button(view: discord.ui.View) -> None:
         row=4,
         style=discord.ButtonStyle.secondary,
         error_message="Could not load help menu. Please try again.",
+    )
+    # AB2: child openers further down can compose back-to-Help via
+    # ``chain_back(_build_me, grandparent=self._back_target)``. The
+    # attribute is set unconditionally; persistent-view re-registration
+    # constructs without ever calling this helper, so ``_back_target``
+    # remains unset on restored views (the fail-safe contract).
+    view._back_target = BackTarget(  # type: ignore[attr-defined]
+        builder=_build_help_parent,
+        label="↩ Back to Help",
+        custom_id="help:back",
     )
 
 
