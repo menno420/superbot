@@ -4,6 +4,13 @@
 with a Back button that returns to the persistent ``EconomyPanelView``.
 ``_JobSelect`` is the dropdown — its callback performs the actual
 work transaction.
+
+After a successful work transaction the dropdown view is replaced with
+a fresh :class:`_WorkResultView` that exposes an enabled
+"↩ Back to Economy" button. The previous behaviour — disabling every
+child of ``_WorkSubView`` and re-rendering it — created a dead-end
+result screen because the Back button was disabled along with the
+dropdown.
 """
 
 from __future__ import annotations
@@ -135,9 +142,13 @@ class _JobSelect(discord.ui.Select):
         )
         embed.set_footer(text="Come back in 1 hour to work again!")
 
-        for item in self._work_view.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        await interaction.response.edit_message(embed=embed, view=self._work_view)
+        # Replace the dropdown view with a fresh result view so the
+        # ↩ Back to Economy button stays enabled. The previous flow
+        # disabled every child on ``_work_view`` (including Back),
+        # leaving the user on a dead-end result screen.
+        result_view = _WorkResultView(interaction.user)
+        await interaction.response.edit_message(embed=embed, view=result_view)
+        result_view.message = interaction.message
         self._work_view.stop()
 
         log_embed = discord.Embed(
@@ -160,6 +171,52 @@ class _WorkSubView(_WorkView):
         super().__init__(user_id, guild_id, available)
 
     @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
+    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        # Late import — main_panel imports from this module.
+        from views.economy.main_panel import EconomyPanelView
+
+        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
+        await interaction.response.edit_message(embed=embed, view=EconomyPanelView())
+        self.stop()
+
+
+class _WorkResultView(discord.ui.View):
+    """Result screen shown after a successful work transaction.
+
+    Single Back-to-Economy button — replaces the previous pattern of
+    disabling every child on ``_WorkSubView`` (which silently disabled
+    Back and left the user with no escape).
+    """
+
+    def __init__(self, author: discord.Member | discord.User):
+        super().__init__(timeout=60)
+        self._author = author
+        self.message: discord.Message | None = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self._author.id:
+            await interaction.response.send_message(
+                "This result screen isn't for you.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True  # type: ignore[attr-defined]
+        try:
+            if self.message:
+                await self.message.edit(view=self)
+        except Exception:
+            pass
+
+    @discord.ui.button(
+        label="↩ Back to Economy",
+        style=discord.ButtonStyle.secondary,
+        custom_id="economy:back",
+        row=0,
+    )
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         # Late import — main_panel imports from this module.
         from views.economy.main_panel import EconomyPanelView

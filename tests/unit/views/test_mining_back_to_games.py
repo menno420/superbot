@@ -1,0 +1,102 @@
+"""Regression tests for PR #1 — Games → Mining attaches Back-to-Games.
+
+Live Discord testing reported that opening Mining from the Games hub
+dropdown did not show a visible Back-to-Games button. Code inspection
+of ``GamesHubView.handle_select`` shows ``attach_back_to_games_button``
+IS called on the child view at line 296 of ``disbot/views/games/hub.py``.
+
+These tests pin the model-level contract: after Games → Mining the
+returned view carries ``custom_id="games:back"``. They reuse the
+existing ``attach_back_to_games_button`` helper — PR #1 does NOT
+duplicate it.
+
+If these tests pass but the button still does not render in live
+Discord, the remaining root cause is client-side (component cap
+interaction with PersistentView, row layout collision, mobile
+rendering) and the live debugging steps in plan §5a Bug #5 take over.
+"""
+
+from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock
+
+import discord
+import pytest
+
+from views.games.hub import GamesHubView, attach_back_to_games_button
+from views.mining.main_panel import MiningHubView
+
+
+def _author() -> MagicMock:
+    author = MagicMock(spec=discord.Member)
+    author.id = 1
+    author.display_name = "tester"
+    return author
+
+
+def _has_back_to_games(view: discord.ui.View) -> bool:
+    return any(
+        getattr(c, "custom_id", None) == "games:back" for c in view.children
+    )
+
+
+def test_attach_back_to_games_button_adds_games_back_id():
+    """Sanity-check: the helper exists and adds the canonical custom_id.
+    PR #1 reuses this helper rather than creating a parallel one.
+    """
+    view = MiningHubView()
+    added = attach_back_to_games_button(view, _author())
+    assert added is True
+    assert _has_back_to_games(view)
+
+
+@pytest.mark.asyncio
+async def test_games_hub_select_attaches_back_to_games_on_child(monkeypatch):
+    """End-to-end via ``GamesHubView.handle_select``: picking Mining
+    from the Games hub must call ``attach_back_to_games_button`` on the
+    child MiningHubView so the user can return to Games.
+    """
+    hub = GamesHubView(_author())
+
+    mining_view = MiningHubView()
+    mining_embed = discord.Embed(title="Mining")
+    fake_cog = MagicMock()
+    fake_cog.build_help_menu_view = AsyncMock(
+        return_value=(mining_embed, mining_view),
+    )
+
+    # ``handle_select`` does a local import; patch the help-cog symbol
+    # it pulls in at that point.
+    monkeypatch.setattr(
+        "cogs.help_cog._cog_for_subsystem",
+        lambda _bot, _key: fake_cog,
+    )
+
+    interaction = MagicMock()
+    interaction.user = _author()
+    interaction.client = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+
+    await hub.handle_select(interaction, "mining")
+
+    interaction.response.edit_message.assert_awaited_once()
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    swapped = kwargs["view"]
+    assert swapped is mining_view
+    assert _has_back_to_games(swapped), (
+        "Games → Mining must carry custom_id='games:back' attached by "
+        "GamesHubView.handle_select via attach_back_to_games_button."
+    )
+
+
+@pytest.mark.asyncio
+async def test_back_to_games_attaches_below_25_component_cap():
+    """MiningHubView has 6 action buttons after PR #1's no-op Overview
+    removal. Back-to-Games adds 1, well under Discord's 25-cap.
+    """
+    view = MiningHubView()
+    component_count_before = len(view.children)
+    assert component_count_before <= 24
+    attach_back_to_games_button(view, _author())
+    assert _has_back_to_games(view)
+    assert len(view.children) == component_count_before + 1
