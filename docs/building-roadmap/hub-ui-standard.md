@@ -136,6 +136,8 @@ When the field lands, it will be a schema-version bump (v3) and a single `if met
 
 ## Candidate future mother hubs
 
+> **Status update (S1):** The candidates below are now **committed structure**. See [`mother-hub-map.md`](./mother-hub-map.md) for the canonical hub map, primary-vs-cross-link policy, Help-as-category-index design, and the S1–S13 PR sequence that lands them. The candidate table is preserved as historical context — the canonical assignments (including primary owner, cross-links, and the cross-link policy that supersedes schema v3 multi-`parent_hub`) live in `mother-hub-map.md`.
+
 The Games hub (Phase 3) proved the pattern: a `parent_hub` group + `hub_group` subdivision + a single `XHubView` that discovers children dynamically. The same pattern fits several other clusters in `SUBSYSTEMS`:
 
 | Candidate hub | Likely children (today's subsystems) | Sub-groups |
@@ -148,7 +150,7 @@ The Games hub (Phase 3) proved the pattern: a `parent_hub` group + `hub_group` s
 | **Admin / Operations** | Admin, Diagnostic, Platform commands, Settings Manager, Cleanup admin slice | Cogs / Health / Settings |
 | **Setup** *(future)* | Setup wizard pages keyed by `SetupPackCatalogue` entries | One sub-group per pack |
 
-These are **candidates**, not commitments. Each candidate is its own future PR with the same shape as Phase 3 (registry entry + hub view + select callback + parent_hub on existing entries + tests). Some candidates overlap intentionally — Mining can legitimately appear under Games (as today) **and** Economy, depending on which `top_level_visibility` policy lands. The roadmap will not chase every candidate; the user picks which ones graduate from "candidate" to "scheduled".
+These were originally listed as **candidates**, not commitments. As of S1 (`mother-hub-map.md`), they are committed structure with explicit primary owners and cross-link assignments. The mapping in `mother-hub-map.md` supersedes the "Mining can appear under Games and Economy depending on `top_level_visibility`" speculation here — cross-listing is now done via UI buttons (no schema v3), and Mining's primary owner is Games.
 
 ---
 
