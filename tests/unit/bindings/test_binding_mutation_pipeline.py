@@ -241,12 +241,23 @@ async def test_set_binding_success_writes_row_and_emits_event(_xp_schema):
     assert result.new_status is ResourceStatus.BOUND
     assert result.event_emitted is True
     mock_upsert.assert_awaited_once()
-    mock_emit.assert_awaited_once()
-    # First positional arg to emit is the event name.
-    assert mock_emit.await_args.args[0] == EVT_BINDING_CHANGED
-    # mutation_id is in the kwargs and is a UUID string.
-    assert "mutation_id" in mock_emit.await_args.kwargs
-    assert result.mutation_id == mock_emit.await_args.kwargs["mutation_id"]
+    # Phase 9c.2: binding_mutation now also emits the companion
+    # ``audit.action_recorded`` event. Filter by topic so this test
+    # stays focused on EVT_BINDING_CHANGED.
+    binding_emits = [
+        c for c in mock_emit.await_args_list
+        if c.args and c.args[0] == EVT_BINDING_CHANGED
+    ]
+    assert len(binding_emits) == 1
+    assert "mutation_id" in binding_emits[0].kwargs
+    assert result.mutation_id == binding_emits[0].kwargs["mutation_id"]
+    # And the companion audit event fires with matching mutation_id.
+    audit_emits = [
+        c for c in mock_emit.await_args_list
+        if c.args and c.args[0] == "audit.action_recorded"
+    ]
+    assert len(audit_emits) == 1
+    assert audit_emits[0].kwargs["mutation_id"] == result.mutation_id
 
 
 @pytest.mark.asyncio
@@ -497,7 +508,18 @@ async def test_clear_binding_writes_and_emits_when_bound(_xp_schema):
     assert result.new_target_id is None
     assert result.new_status is ResourceStatus.UNRESOLVED
     mock_clear.assert_awaited_once()
-    mock_emit.assert_awaited_once()
+    # Phase 9c.2: clear_binding now also emits ``audit.action_recorded``.
+    binding_emits = [
+        c for c in mock_emit.await_args_list
+        if c.args and c.args[0] == EVT_BINDING_CHANGED
+    ]
+    audit_emits = [
+        c for c in mock_emit.await_args_list
+        if c.args and c.args[0] == "audit.action_recorded"
+    ]
+    assert len(binding_emits) == 1
+    assert len(audit_emits) == 1
+    assert audit_emits[0].kwargs["mutation_id"] == result.mutation_id
 
 
 @pytest.mark.asyncio

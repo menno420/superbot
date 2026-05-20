@@ -65,6 +65,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Literal
 
+from services.audit_events import emit_audit_action
 from utils.db import user_participation as up_db
 
 logger = logging.getLogger("bot.services.participation_mutation")
@@ -217,6 +218,21 @@ class ParticipationMutationPipeline:
             raise
         _invalidate_cache(user_id, guild_id)
         committed_at = _now_utc()
+        # Phase 9c.2: companion ``audit.action_recorded`` via the shared
+        # publisher. Best-effort; failure is logged inside the helper.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type="set_participation",
+            target=f"participation:{user_id}.{subsystem}",
+            scope="guild",
+            guild_id=guild_id,
+            prev_value=prev_state,
+            new_value=state,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at,
+        )
         event_emitted = await _emit(
             EVT_PARTICIPATION_CHANGED,
             mutation_id=mutation_id,
@@ -301,6 +317,21 @@ class ParticipationMutationPipeline:
             raise
         _invalidate_cache(user_id, guild_id)
         committed_at = _now_utc()
+        # Phase 9c.2: companion ``audit.action_recorded`` via the shared
+        # publisher. Best-effort; failure is logged inside the helper.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type="set_subscription",
+            target=f"subscription:{user_id}.{subsystem}.{topic}",
+            scope="guild",
+            guild_id=guild_id,
+            prev_value=str(prev_enabled) if prev_enabled is not None else None,
+            new_value=str(enabled),
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at,
+        )
         event_emitted = await _emit(
             EVT_SUBSCRIPTION_CHANGED,
             mutation_id=mutation_id,
@@ -394,6 +425,24 @@ class ParticipationMutationPipeline:
             raise
         _invalidate_cache(user_id, guild_id)
         committed_at = _now_utc()
+        # Phase 9c.2: companion ``audit.action_recorded`` via the shared
+        # publisher. PII consideration: the preference VALUE is
+        # deliberately omitted from both the primary event and the
+        # audit payload — the DB row carries the value if needed for
+        # forensics, but it never crosses the bus.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem="participation",
+            mutation_type="set_preference",
+            target=f"preference:{user_id}.{key}",
+            scope="guild",
+            guild_id=guild_id,
+            prev_value=None,
+            new_value=None,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at,
+        )
         # Event payload deliberately omits the value (could contain PII).
         event_emitted = await _emit(
             EVT_USER_PREFERENCE_CHANGED,
@@ -475,6 +524,21 @@ class ParticipationMutationPipeline:
             raise
         _invalidate_cache(user_id, guild_id)
         committed_at = _now_utc()
+        # Phase 9c.2: companion ``audit.action_recorded`` via the shared
+        # publisher. Best-effort; failure is logged inside the helper.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type="set_visibility",
+            target=f"visibility:{user_id}.{subsystem}",
+            scope="guild",
+            guild_id=guild_id,
+            prev_value=prev_visibility,
+            new_value=visibility,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at,
+        )
         event_emitted = await _emit(
             EVT_USER_VISIBILITY_CHANGED,
             mutation_id=mutation_id,

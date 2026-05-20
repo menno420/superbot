@@ -886,9 +886,14 @@ async def test_event_emitted_on_success(_isolated_state):
         actor,
         confirmed=True,
     )
-    assert len(_isolated_state["emitted"]) == 1
-    payload = _isolated_state["emitted"][0]
-    assert payload["event"] == "resource.provisioned"
+    # Phase 9c.2: resource_provisioning now also emits the companion
+    # ``audit.action_recorded`` event. Filter by topic so this test
+    # stays focused on resource.provisioned.
+    resource_emits = [
+        e for e in _isolated_state["emitted"] if e["event"] == "resource.provisioned"
+    ]
+    assert len(resource_emits) == 1
+    payload = resource_emits[0]
     assert payload["guild_id"] == 1
     assert payload["subsystem"] == "logging"
     assert payload["binding_name"] == "mod_channel"
@@ -897,6 +902,12 @@ async def test_event_emitted_on_success(_isolated_state):
     assert payload["created"] is True
     assert payload["resource_id"] == result.resource_id
     assert "occurred_at" in payload
+    # And the companion audit event fires with matching mutation_id.
+    audit_emits = [
+        e for e in _isolated_state["emitted"] if e["event"] == "audit.action_recorded"
+    ]
+    assert len(audit_emits) == 1
+    assert audit_emits[0]["mutation_id"] == result.mutation_id
 
 
 @pytest.mark.asyncio

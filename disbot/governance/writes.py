@@ -37,6 +37,7 @@ from governance.events import (
     _emit_governance_event,
 )
 from governance.models import GovernanceContext
+from services.audit_events import emit_audit_action
 from services.governance_exceptions import (
     GovernanceError,
     UnauthorizedGovernanceWriteError,
@@ -139,7 +140,8 @@ class GovernanceMutationPipeline:
         )
 
         mutation_id = str(uuid.uuid4())
-        occurred_at = datetime.now(tz=timezone.utc).isoformat()
+        committed_at = datetime.now(tz=timezone.utc)
+        occurred_at = committed_at.isoformat()
 
         # 4. DB write + audit in a single transaction.
         # ``asyncpg.Pool`` does not implement ``.transaction()`` — only an
@@ -180,6 +182,24 @@ class GovernanceMutationPipeline:
 
         # 5. In-memory cache invalidation (after successful commit)
         invalidate_guild_cache(ctx.guild_id)
+
+        # Phase 9c.2: companion ``audit.action_recorded`` event via the
+        # shared publisher. Best-effort; failure is logged inside the
+        # helper and does not affect the primary governance events
+        # below.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type="set_visibility",
+            target=f"{scope_type}:{scope_id}.{subsystem}",
+            scope=scope_type,
+            guild_id=ctx.guild_id,
+            prev_value=str(old_enabled) if old_enabled is not None else None,
+            new_value=str(enabled) if enabled is not None else None,
+            actor_id=ctx.member.id if ctx.member else None,
+            actor_type="user",
+            occurred_at=committed_at,
+        )
 
         # 6. Event emission (best-effort; DB state is already correct)
         event_payload = {
@@ -230,7 +250,8 @@ class GovernanceMutationPipeline:
         _validate_authority(ctx)
 
         mutation_id = str(uuid.uuid4())
-        occurred_at = datetime.now(tz=timezone.utc).isoformat()
+        committed_at = datetime.now(tz=timezone.utc)
+        occurred_at = committed_at.isoformat()
 
         # DB write + audit in a single transaction.  Same constraint as
         # set_visibility: transactions live on connections, not pools.  We
@@ -275,6 +296,27 @@ class GovernanceMutationPipeline:
             )
 
         invalidate_guild_cache(ctx.guild_id)
+
+        # Phase 9c.2: companion ``audit.action_recorded`` event via the
+        # shared publisher. Best-effort; failure is logged inside the
+        # helper.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem="governance",
+            mutation_type="set_cleanup_policy",
+            target=f"{scope_type}:{scope_id}",
+            scope=scope_type,
+            guild_id=ctx.guild_id,
+            prev_value=None,
+            new_value=(
+                f"after_{delete_after_seconds}s:"
+                f"invalid={delete_invalid_commands},"
+                f"failed={delete_failed_commands}"
+            ),
+            actor_id=ctx.member.id if ctx.member else None,
+            actor_type="user",
+            occurred_at=committed_at,
+        )
 
         try:
             await _emit_governance_event(
