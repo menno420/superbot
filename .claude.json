@@ -2,8 +2,10 @@
   "mcpServers": {
     "codegraph": {
       "type": "stdio",
-      "command": "codegraph",
+      "command": "npx",
       "args": [
+        "-y",
+        "@optave/codegraph@3.10.0",
         "mcp"
       ]
     }
