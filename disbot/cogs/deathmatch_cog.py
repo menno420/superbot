@@ -6,9 +6,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType, cooldown
 
-from core.runtime.component_registry import stats_block
 from utils import db
-from utils.ui_constants import GAME_COLOR
 
 
 class _Duel:
@@ -235,34 +233,19 @@ class Deathmatch(commands.Cog):
         self,
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        """Help-menu direct-navigation hook (returns a deathmatch overview).
+        """Help-menu direct-navigation hook — returns the Deathmatch panel.
 
-        Deathmatch starts a 1v1 duel from the entry command — there's no
-        hub panel. The returned overview embed describes the flow; the
-        help-cog appends the "↩ Back to Help" control automatically.
+        PR 6 replaced the previous empty ``discord.ui.View()`` with
+        :class:`DeathmatchPanelView` so the panel is actionable from
+        Help/Games (Fight Bot / Challenge Player / Rules buttons).
         """
-        embed = stats_block(
-            "⚔️ Deathmatch",
-            [
-                (
-                    "Challenge",
-                    "`!deathmatch @user`  (alias of `!dm_challenge @user`)",
-                    False,
-                ),
-                (
-                    "Stats",
-                    "`!leaderboard deathmatch` — top duelists",
-                    False,
-                ),
-            ],
-            GAME_COLOR,
-            description=(
-                "Challenge another player to a 1v1 duel.  Attack and defend "
-                "via buttons on the duel message until one combatant falls."
-            ),
-            footer="30-second cooldown between challenges.",
+        from views.games.deathmatch_panel import (
+            DeathmatchPanelView,
+            build_deathmatch_overview_embed,
         )
-        return embed, discord.ui.View(timeout=300)
+
+        view = DeathmatchPanelView(interaction.user)
+        return build_deathmatch_overview_embed(), view
 
     @commands.command(name="dm_challenge", aliases=["deathmatch", "challenge", "dm"])
     @cooldown(1, 30, BucketType.user)

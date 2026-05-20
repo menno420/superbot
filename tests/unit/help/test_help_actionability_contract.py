@@ -348,23 +348,13 @@ async def _build_panel_for(
 # ---------------------------------------------------------------------------
 
 
-_DEATHMATCH_XFAIL = pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Resolved in PR 6 — DeathmatchPanelView replaces the empty "
-        "discord.ui.View() and adds Fight Bot / Challenge Player. "
-        "Remove this xfail when PR 6 lands."
-    ),
-)
-
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "subsystem",
     [
         pytest.param("rps_tournament"),
         pytest.param("blackjack"),
-        pytest.param("deathmatch", marks=_DEATHMATCH_XFAIL),
+        pytest.param("deathmatch"),
         pytest.param("mining"),
         pytest.param("counting"),
         pytest.param("chain"),
@@ -483,15 +473,11 @@ async def test_rps_panel_challenge_button_opens_new_view() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Resolved in PR 6 — Deathmatch.build_help_menu_view no longer "
-        "returns an empty discord.ui.View(). Remove this xfail when PR "
-        "6 lands with DeathmatchPanelView."
-    ),
-)
 async def test_deathmatch_panel_is_not_empty_view() -> None:
+    """PR 6 regression pin: ``Deathmatch.build_help_menu_view`` must
+    return a view with actual buttons (no longer an empty
+    ``discord.ui.View()``).
+    """
     from cogs.deathmatch_cog import Deathmatch
 
     cog = Deathmatch(MagicMock())
@@ -499,9 +485,29 @@ async def test_deathmatch_panel_is_not_empty_view() -> None:
     has_buttons = any(isinstance(c, discord.ui.Button) for c in view.children)
     assert has_buttons, (
         "Deathmatch.build_help_menu_view returns an empty View "
-        f"(type={type(view).__name__}); PR 6 adds DeathmatchPanelView "
-        "with Fight Bot / Challenge Player / Rules / Leaderboard "
-        "buttons."
+        f"(type={type(view).__name__}); PR 6 expects DeathmatchPanelView "
+        "with Fight Bot / Challenge Player / Rules buttons."
+    )
+
+
+@pytest.mark.asyncio
+async def test_deathmatch_panel_fight_bot_spawns_new_view() -> None:
+    """PR 6 regression pin: Fight Bot must spawn ``_BotDuelView``."""
+    from views.games import deathmatch_panel
+
+    panel = deathmatch_panel.DeathmatchPanelView(
+        SimpleNamespace(id=111, display_name="tester")
+    )
+    btn = next(
+        c
+        for c in panel.children
+        if isinstance(c, discord.ui.Button)
+        and (c.custom_id or "").endswith(":fight_bot")
+    )
+    klass = await _classify_button(btn, panel)
+    assert klass in ACTION_CLASSES, (
+        f"DeathmatchPanelView 'Fight Bot' button classifies as "
+        f"{klass!r}; must be action_* — should spawn _BotDuelView."
     )
 
 
