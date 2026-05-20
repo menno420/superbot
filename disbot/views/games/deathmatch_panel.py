@@ -30,6 +30,7 @@ from cogs.deathmatch.actions import (
 from cogs.deathmatch_cog import Deathmatch, _ChallengeView, _Duel
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
+from views.games.common import BackToPanelButton
 
 logger = logging.getLogger("bot.views.games.deathmatch_panel")
 
@@ -286,7 +287,7 @@ class _DeathmatchChallengeSelectView(HubView):
     def __init__(self, author: discord.Member | discord.User) -> None:
         super().__init__(author)
         self.add_item(_DeathmatchOpponentSelect())
-        self.add_item(_DeathmatchBackToPanelButton())
+        self.add_item(_make_deathmatch_back_button())
 
 
 class _DeathmatchOpponentSelect(discord.ui.UserSelect):
@@ -365,22 +366,17 @@ def _resolve_deathmatch_cog(
     return None
 
 
-class _DeathmatchBackToPanelButton(discord.ui.Button):
-    def __init__(self) -> None:
-        super().__init__(
-            label="◀ Back to Deathmatch",
-            style=discord.ButtonStyle.secondary,
-            custom_id="deathmatch_panel:back",
-            row=4,
-        )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        parent_view = self.view
-        author = getattr(parent_view, "_author", interaction.user)
-        await interaction.response.edit_message(
-            embed=build_deathmatch_overview_embed(),
-            view=DeathmatchPanelView(author),
-        )
+def _make_deathmatch_back_button() -> BackToPanelButton:
+    """Return a fresh "◀ Back to Deathmatch" button for any Deathmatch
+    sub-view. Follow-up to PR 7 — Deathmatch now uses the shared
+    helper from ``views.games.common`` alongside RPS and Blackjack.
+    """
+    return BackToPanelButton(
+        label="◀ Back to Deathmatch",
+        custom_id="deathmatch_panel:back",
+        panel_builder=DeathmatchPanelView,
+        overview_builder=build_deathmatch_overview_embed,
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -138,3 +138,87 @@ async def test_rps_tournament_subview_includes_back_to_panel_button():
     )
     backs = [c for c in sub.children if isinstance(c, BackToPanelButton)]
     assert len(backs) == 1
+
+
+# ---------------------------------------------------------------------------
+# Blackjack + Deathmatch migrations (follow-up to PR 7)
+# ---------------------------------------------------------------------------
+
+
+def test_blackjack_bet_preset_view_includes_shared_back_button():
+    """Follow-up to PR 7: Blackjack now uses the shared
+    ``BackToPanelButton`` helper instead of its local
+    ``_BlackjackBackToPanelButton`` class.
+    """
+    from views.games.blackjack_panel import _BlackjackBetPresetView
+
+    view = _BlackjackBetPresetView(_author())  # type: ignore[arg-type]
+    backs = [c for c in view.children if isinstance(c, BackToPanelButton)]
+    assert len(backs) == 1
+    assert backs[0].custom_id == "blackjack_panel:back"
+
+
+def test_blackjack_challenge_select_view_includes_shared_back_button():
+    from views.games.blackjack_panel import _BlackjackChallengeSelectView
+
+    view = _BlackjackChallengeSelectView(_author())  # type: ignore[arg-type]
+    backs = [c for c in view.children if isinstance(c, BackToPanelButton)]
+    assert len(backs) == 1
+
+
+def test_blackjack_tournament_subview_includes_shared_back_button():
+    from views.games.blackjack_panel import _BlackjackTournamentSubView
+
+    sub = _BlackjackTournamentSubView(
+        _author(),  # type: ignore[arg-type]
+        is_admin=False,
+        has_active=False,
+    )
+    backs = [c for c in sub.children if isinstance(c, BackToPanelButton)]
+    assert len(backs) == 1
+
+
+def test_deathmatch_challenge_select_view_includes_shared_back_button():
+    from views.games.deathmatch_panel import _DeathmatchChallengeSelectView
+
+    view = _DeathmatchChallengeSelectView(_author())  # type: ignore[arg-type]
+    backs = [c for c in view.children if isinstance(c, BackToPanelButton)]
+    assert len(backs) == 1
+    assert backs[0].custom_id == "deathmatch_panel:back"
+
+
+@pytest.mark.asyncio
+async def test_blackjack_back_button_returns_blackjack_panel():
+    """The Blackjack back button must rebuild ``BlackjackPanelView``
+    on click — pin the helper wiring across the migration.
+    """
+    from views.games.blackjack_panel import (
+        BlackjackPanelView,
+        _BlackjackBetPresetView,
+    )
+
+    author = _author(42)
+    parent = _BlackjackBetPresetView(author)  # type: ignore[arg-type]
+    btn = next(c for c in parent.children if isinstance(c, BackToPanelButton))
+    interaction = _stub_interaction(author)
+    await btn.callback(interaction)
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    assert isinstance(kwargs["view"], BlackjackPanelView)
+
+
+@pytest.mark.asyncio
+async def test_deathmatch_back_button_returns_deathmatch_panel():
+    from views.games.deathmatch_panel import (
+        DeathmatchPanelView,
+        _DeathmatchChallengeSelectView,
+    )
+
+    author = _author(42)
+    parent = _DeathmatchChallengeSelectView(author)  # type: ignore[arg-type]
+    btn = next(c for c in parent.children if isinstance(c, BackToPanelButton))
+    interaction = _stub_interaction(author)
+    await btn.callback(interaction)
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    assert isinstance(kwargs["view"], DeathmatchPanelView)
