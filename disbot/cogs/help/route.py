@@ -48,9 +48,17 @@ HUB_ALIAS_OVERRIDES: dict[str, str] = {
 # ``build_help_menu_view`` which returns ``_DiagnosticsHubView``);
 # routing them through the hub key ``diagnostic`` would instead open
 # Platform Hub via ``build_platform_help_menu_view``.
+#
+# PR 3 (RPS rename) also registers ``rps`` and ``rock paper scissors``
+# here so they open the Rock Paper Scissors subsystem panel rather
+# than the ``!rps`` command's single-command help embed (which
+# ``bot.get_command("rps")`` would otherwise resolve to via the
+# fallthrough command branch).
 SUBSYSTEM_ALIAS_OVERRIDES: dict[str, str] = {
     "diagnostics": "diagnostic",
     "diag": "diagnostic",
+    "rps": "rps_tournament",
+    "rock paper scissors": "rps_tournament",
 }
 
 # Hubs whose dedicated Help builder is NOT ``build_help_menu_view``.

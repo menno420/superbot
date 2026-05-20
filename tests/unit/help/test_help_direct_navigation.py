@@ -253,7 +253,7 @@ async def test_rps_build_help_menu_view_returns_embed_and_view():
     embed, view = await cog.build_help_menu_view(_stub_interaction())
     assert isinstance(embed, discord.Embed)
     assert isinstance(view, discord.ui.View)
-    assert embed.title == "✂️ Rock-Paper-Scissors"
+    assert embed.title == "✂️ Rock Paper Scissors"
 
 
 @pytest.mark.asyncio

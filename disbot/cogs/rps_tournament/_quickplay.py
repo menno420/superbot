@@ -47,7 +47,7 @@ async def run_quickrps_command(
         embed = discord.Embed(
             title="✂️ RPS Challenge!",
             description=(
-                f"{ctx.author.mention} challenges {target.mention} to Rock-Paper-Scissors "
+                f"{ctx.author.mention} challenges {target.mention} to Rock Paper Scissors "
                 f"({bet_str}).\n{target.mention}, do you accept?"
             ),
             color=GAME_COLOR,

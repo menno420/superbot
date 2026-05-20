@@ -20,7 +20,7 @@ from views.base import HubView
 
 def build_rps_overview_embed() -> discord.Embed:
     embed = discord.Embed(
-        title="✂️ Rock-Paper-Scissors",
+        title="✂️ Rock Paper Scissors",
         description=(
             "Quick matches vs the bot or another player, plus scheduled "
             "tournaments with optional entry fees. Pick a mode to see "
@@ -47,7 +47,7 @@ def build_rps_single_round_embed() -> discord.Embed:
     embed = discord.Embed(
         title="✂️ RPS — Single Round",
         description=(
-            "Each round is a single classic Rock-Paper-Scissors throw "
+            "Each round is a single classic Rock Paper Scissors throw "
             "(the underlying tournament cog defaults to best-of-3 for "
             "tournament brackets — single-round behaviour is unchanged "
             "by this panel)."
