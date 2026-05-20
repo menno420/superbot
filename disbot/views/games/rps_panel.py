@@ -28,6 +28,7 @@ import discord
 
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
+from views.rps import _RpsPvpChallengeView, _RpsView
 
 logger = logging.getLogger("bot.views.games.rps_panel")
 
@@ -187,10 +188,8 @@ def build_rps_rules_embed() -> discord.Embed:
 def _spawn_solo_view(
     interaction: discord.Interaction,
     bet: int,
-) -> discord.ui.View:
+) -> _RpsView:
     """Construct the playable solo ``_RpsView`` from an interaction."""
-    from views.rps import _RpsView
-
     return _RpsView(
         interaction.user,  # type: ignore[arg-type]
         interaction.guild_id or 0,
@@ -293,8 +292,6 @@ class _RpsOpponentSelect(discord.ui.UserSelect):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        from views.rps import _RpsPvpChallengeView
-
         opponent = self.values[0]
         if not isinstance(opponent, discord.Member):
             await interaction.response.send_message(
@@ -533,10 +530,8 @@ class RPSPanelView(HubView):
         _button: discord.ui.Button,
     ) -> None:
         cog = _resolve_rps_cog(interaction)
-        is_admin = bool(
-            getattr(interaction.user, "guild_permissions", None)
-            and interaction.user.guild_permissions.administrator,
-        )
+        guild_perms = getattr(interaction.user, "guild_permissions", None)
+        is_admin = bool(guild_perms and guild_perms.administrator)
         registration_active = bool(getattr(cog, "registration_active", False))
         tournament_active = bool(getattr(cog, "tournament_active", False))
         player_count = len(getattr(cog, "players", []) or [])
