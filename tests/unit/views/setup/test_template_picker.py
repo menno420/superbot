@@ -4,16 +4,19 @@ Covers:
 
 * Picker embed lists known categories.
 * The select populates options from :data:`TEMPLATES`.
-* :func:`apply_template_to_guild` routes through
-  :class:`AutomationMutationPipeline.create_rule` with the right
-  template defaults + override injection, and never sets
-  ``enabled=True``.
+* :func:`apply_template_to_guild` builds an ``add_automation_rule``
+  ``SetupOperation`` and routes it through
+  :func:`services.setup_operations.apply_operations` — not through
+  ``AutomationMutationPipeline`` directly.  The dispatcher in turn
+  reaches the pipeline (with ``actor_type="platform_owner"``) and the
+  rule is created **disabled**.
 * Apply with a missing required override is short-circuited with a
-  validation message; the pipeline is not called.
+  validation message; the dispatcher is not called.
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -23,6 +26,10 @@ from services.automation_templates import (
     TEMPLATES,
     AutomationTemplate,
     get_template,
+)
+from services.setup_operations import (
+    SetupOperationBatchResult,
+    SetupOperationResult,
 )
 from views.setup.template_picker import (
     ApplyOutcome,
@@ -38,6 +45,29 @@ def _author():
     member = MagicMock()
     member.id = 99
     return member
+
+
+def _guild(guild_id: int = 1, owner_id: int = 99):
+    guild = MagicMock()
+    guild.id = guild_id
+    guild.owner_id = owner_id
+    return guild
+
+
+def _automation_result(template, rule_id: int = 101) -> AutomationMutationResult:
+    return AutomationMutationResult(
+        mutation_id="m1",
+        rule_id=rule_id,
+        guild_id=1,
+        mutation_type="create",
+        name=template.slug,
+        trigger_kind=template.trigger_kind,
+        action_kind=template.action_kind,
+        prev_enabled=None,
+        new_enabled=False,
+        committed_at=datetime.now(timezone.utc),
+        event_emitted=True,
+    )
 
 
 def test_build_picker_embed_lists_categories_with_counts():
@@ -102,28 +132,19 @@ def test_template_config_embed_post_apply_failure_is_red():
 
 @pytest.mark.asyncio
 async def test_apply_routes_through_mutation_pipeline_with_disabled_default():
-    """Apply must call the pipeline and never pass ``enabled=True``."""
-    template = next(
-        t for t in TEMPLATES if "channel_id" in t.required_overrides
-    )
+    """Apply must reach the pipeline with the right configs and never pass
+    ``enabled=True``.
 
-    fake_result = AutomationMutationResult(
-        mutation_id="m1",
-        rule_id=101,
-        guild_id=1,
-        mutation_type="create",
-        name=template.slug,
-        trigger_kind=template.trigger_kind,
-        action_kind=template.action_kind,
-        prev_enabled=None,
-        new_enabled=False,
-        committed_at=None,  # type: ignore[arg-type]
-        event_emitted=True,
-    )
+    The pipeline is reached through the dispatcher; patching at the
+    automation_mutation module catches the dispatcher's lazy import.
+    """
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
 
     pipeline_class = MagicMock()
     pipeline_instance = MagicMock()
-    pipeline_instance.create_rule = AsyncMock(return_value=fake_result)
+    pipeline_instance.create_rule = AsyncMock(
+        return_value=_automation_result(template, rule_id=101),
+    )
     pipeline_class.return_value = pipeline_instance
 
     with patch(
@@ -132,11 +153,10 @@ async def test_apply_routes_through_mutation_pipeline_with_disabled_default():
     ):
         outcome = await apply_template_to_guild(
             template=template,
-            guild_id=1,
-            guild_owner_id=99,
+            guild=_guild(),
+            actor=_author(),
             channel_id=12345,
             role_id=None,
-            actor_id=99,
         )
 
     assert outcome.ok is True
@@ -159,10 +179,86 @@ async def test_apply_routes_through_mutation_pipeline_with_disabled_default():
 
 
 @pytest.mark.asyncio
-async def test_apply_returns_validation_error_when_pipeline_rejects():
-    template = next(
-        t for t in TEMPLATES if "channel_id" in t.required_overrides
+async def test_apply_goes_through_setup_operations_dispatcher():
+    """The template apply path must build a SetupOperation and call
+    ``apply_operations`` — it must NOT reach AutomationMutationPipeline
+    via a direct import in template_picker."""
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
+    captured_ops: list = []
+
+    async def _fake_apply(ops, *, guild, actor, actor_type="user"):
+        del guild, actor
+        captured_ops.extend(ops)
+        return SetupOperationBatchResult(
+            results=[
+                SetupOperationResult(
+                    status="applied",
+                    operation=ops[0],
+                    label="ok",
+                    mutation_id="m1",
+                    data={"rule_id": 202},
+                ),
+            ],
+        )
+
+    with patch(
+        "services.setup_operations.apply_operations",
+        new=_fake_apply,
+    ):
+        outcome = await apply_template_to_guild(
+            template=template,
+            guild=_guild(),
+            actor=_author(),
+            channel_id=12345,
+            role_id=None,
+        )
+
+    assert outcome.ok is True
+    assert outcome.rule_id == 202
+    assert len(captured_ops) == 1
+    op = captured_ops[0]
+    assert op.kind == "add_automation_rule"
+    assert op.automation_rule_name == template.slug
+    assert op.trigger_kind == template.trigger_kind
+    assert op.action_kind == template.action_kind
+
+
+@pytest.mark.asyncio
+async def test_apply_passes_platform_owner_actor_type():
+    """``actor_type="platform_owner"`` must flow through the dispatcher all
+    the way to the AutomationMutationPipeline so audit attribution is
+    preserved across the migration."""
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
+
+    pipeline_class = MagicMock()
+    pipeline_instance = MagicMock()
+    pipeline_instance.create_rule = AsyncMock(
+        return_value=_automation_result(template),
     )
+    pipeline_class.return_value = pipeline_instance
+
+    with patch(
+        "services.automation_mutation.AutomationMutationPipeline",
+        pipeline_class,
+    ):
+        await apply_template_to_guild(
+            template=template,
+            guild=_guild(),
+            actor=_author(),
+            channel_id=12345,
+            role_id=None,
+        )
+
+    kwargs = pipeline_instance.create_rule.await_args.kwargs
+    assert kwargs["actor_type"] == "platform_owner", (
+        "actor_type must be preserved through the dispatcher; if this fails, "
+        "the dispatcher likely hardcodes a different actor_type for automation."
+    )
+
+
+@pytest.mark.asyncio
+async def test_apply_returns_validation_error_when_pipeline_rejects():
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
 
     from services.automation_mutation import InvalidAutomationConfigError
 
@@ -179,11 +275,10 @@ async def test_apply_returns_validation_error_when_pipeline_rejects():
     ):
         outcome = await apply_template_to_guild(
             template=template,
-            guild_id=1,
-            guild_owner_id=99,
+            guild=_guild(),
+            actor=_author(),
             channel_id=0,  # invalid sentinel
             role_id=None,
-            actor_id=99,
         )
 
     assert outcome.ok is False
@@ -249,7 +344,8 @@ async def test_apply_button_calls_pipeline_when_overrides_filled():
     interaction.response.send_message.assert_awaited_once()
     kwargs = apply_mock.await_args.kwargs
     assert kwargs["template"].slug == template.slug
-    assert kwargs["guild_id"] == 1
+    assert kwargs["guild"] is interaction.guild
+    assert kwargs["actor"] is interaction.user
     assert kwargs["channel_id"] == 12345
 
 

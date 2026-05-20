@@ -4,8 +4,12 @@ The wizard launcher's **Choose Preset** button opens
 :class:`TemplatePickerView`, which lists every operator-facing
 :class:`AutomationTemplate` grouped by category. Picking one opens
 :class:`TemplateConfigView`, which prompts for the template's required
-overrides (channel id, role id) and routes the apply through
-:class:`services.automation_mutation.AutomationMutationPipeline.create_rule`.
+overrides (channel id, role id) and routes the apply through the
+canonical setup-operation dispatcher
+(:func:`services.setup_operations.apply_operations`).  The dispatcher
+in turn calls :class:`services.automation_mutation.AutomationMutationPipeline.create_rule`
+so the audit + event-emission path is identical to recommendations
+applied via :class:`views.setup.final_review.FinalReviewView`.
 
 Rules are created **disabled** (``enabled=False`` per migration 032
 line 74); the operator must flip them on via ``!automation enable``
@@ -302,11 +306,10 @@ class TemplateConfigView(BaseView):
 
         outcome = await apply_template_to_guild(
             template=self.template,
-            guild_id=guild.id,
-            guild_owner_id=guild.owner_id or 0,
+            guild=guild,
+            actor=interaction.user,
             channel_id=self.selected_channel_id,
             role_id=self.selected_role_id,
-            actor_id=interaction.user.id,
         )
         await interaction.response.send_message(
             embed=build_template_config_embed(self.template, outcome=outcome),
@@ -334,23 +337,22 @@ class TemplateConfigView(BaseView):
 async def apply_template_to_guild(
     *,
     template: AutomationTemplate,
-    guild_id: int,
-    guild_owner_id: int,
+    guild: Any,
+    actor: Any,
     channel_id: int | None,
     role_id: int | None,
-    actor_id: int,
 ) -> ApplyOutcome:
     """Create one ``automation_rules`` row from a template (disabled).
 
-    Routes through :class:`AutomationMutationPipeline.create_rule` so
-    audit + event emission happen consistently. The pipeline already
+    Routes through :func:`services.setup_operations.apply_operations`
+    which dispatches an ``add_automation_rule`` `SetupOperation` to
+    :class:`AutomationMutationPipeline.create_rule`.  The pipeline
     creates rules with ``enabled=False`` by default (migration 032
-    line 74); we never override.
+    line 74); we never override.  ``actor_type="platform_owner"`` is
+    propagated through the dispatcher so audit rows match the legacy
+    direct-call behavior.
     """
-    from services.automation_mutation import (
-        AutomationMutationPipeline,
-        InvalidAutomationConfigError,
-    )
+    from services.setup_operations import SetupOperation, apply_operations
 
     trigger_overrides: dict[str, Any] = {}
     action_overrides: dict[str, Any] = {}
@@ -368,50 +370,48 @@ async def apply_template_to_guild(
         if "role_id" in template.default_trigger_config:
             trigger_overrides["role_id"] = role_id
 
-    pipeline = AutomationMutationPipeline()
-    try:
-        result = await pipeline.create_rule(
-            guild_id=guild_id,
-            guild_owner_id=guild_owner_id,
-            name=template.slug,
-            trigger_kind=template.trigger_kind,
-            action_kind=template.action_kind,
-            trigger_config=template.merged_trigger_config(trigger_overrides),
-            action_config=template.merged_action_config(action_overrides),
-            actor_id=actor_id,
-            actor_type="platform_owner",
-        )
-    except InvalidAutomationConfigError as exc:
-        logger.warning(
-            "template apply rejected for slug=%s guild=%d: %s",
-            template.slug,
-            guild_id,
-            exc,
-        )
+    op = SetupOperation(
+        kind="add_automation_rule",
+        subsystem="automation",
+        automation_rule_name=template.slug,
+        trigger_kind=template.trigger_kind,
+        action_kind=template.action_kind,
+        trigger_config=template.merged_trigger_config(trigger_overrides),
+        action_config=template.merged_action_config(action_overrides),
+    )
+
+    batch = await apply_operations(
+        [op],
+        guild=guild,
+        actor=actor,
+        actor_type="platform_owner",
+    )
+
+    if batch.applied:
+        result = batch.applied[0]
+        rule_id = (result.data or {}).get("rule_id")
         return ApplyOutcome(
-            ok=False,
-            rule_id=None,
+            ok=True,
+            rule_id=rule_id if isinstance(rule_id, int) else None,
             template_slug=template.slug,
-            detail=f"Validation failed: {exc}",
-        )
-    except Exception as exc:
-        logger.exception(
-            "template apply crashed for slug=%s guild=%d",
-            template.slug,
-            guild_id,
-        )
-        return ApplyOutcome(
-            ok=False,
-            rule_id=None,
-            template_slug=template.slug,
-            detail=f"{type(exc).__name__}: {exc}",
+            detail="created disabled",
         )
 
+    failed = batch.failed or batch.not_yet_implemented
+    detail = (
+        failed[0].error if (failed and failed[0].error) else "Unknown apply failure"
+    )
+    logger.warning(
+        "template apply rejected for slug=%s guild=%d: %s",
+        template.slug,
+        getattr(guild, "id", -1),
+        detail,
+    )
     return ApplyOutcome(
-        ok=True,
-        rule_id=result.rule_id,
+        ok=False,
+        rule_id=None,
         template_slug=template.slug,
-        detail="created disabled",
+        detail=detail,
     )
 
 

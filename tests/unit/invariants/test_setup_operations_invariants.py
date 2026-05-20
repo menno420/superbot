@@ -66,6 +66,29 @@ def _top_level_import_names(path: Path) -> set[str]:
     return names
 
 
+def _all_import_names(path: Path) -> set[str]:
+    """Return every imported module name in ``path``, including in-function
+    imports.
+
+    The dispatcher migration removes top-level pipeline imports from
+    setup-view modules, but a regression could sneak back in via a
+    lazy in-function import (which still couples the view to the
+    pipeline contract).  This helper feeds the "no nested forbidden
+    pipeline imports" invariant below.
+    """
+    tree = ast.parse(path.read_text())
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                names.add(alias.name.split(".")[0])
+                names.add(alias.name)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            names.add(node.module.split(".")[0])
+            names.add(node.module)
+    return names
+
+
 def _has_attr_call(tree: ast.AST, attr_name: str) -> bool:
     """True if the AST contains any ``<expr>.<attr_name>(...)`` call."""
     for node in ast.walk(tree):
@@ -150,6 +173,37 @@ def test_setup_views_invariant_path_exists():
     assert _SETUP_VIEWS_DIR.is_dir(), (
         f"disbot/views/setup/ not found at {_SETUP_VIEWS_DIR}; "
         "update the invariant path if the directory was renamed"
+    )
+
+
+def test_setup_views_do_not_import_mutation_pipelines_anywhere():
+    """Stronger form of the top-level pipeline-import ban.
+
+    After the template-picker dispatcher migration, no setup-view file
+    outside the purpose-built-pipeline-UI allowlist should import a
+    concrete mutation pipeline at *any* level (top-level or nested in a
+    function body).  Lazy imports were used by the legacy
+    ``apply_template_to_guild`` to dodge the top-level rule; this
+    invariant closes that loophole.
+
+    The allowlist still applies to the provisioning preview/confirm
+    panels.
+    """
+    violations: list[str] = []
+    for path in _iter_setup_view_files():
+        if path in _PIPELINE_IMPORT_ALLOWLIST:
+            continue
+        imports = _all_import_names(path)
+        bad = _FORBIDDEN_PIPELINE_MODULES & imports
+        if bad:
+            violations.append(f"{path.relative_to(_REPO_ROOT)}: imports {sorted(bad)}")
+    assert not violations, (
+        "Setup view files must not import concrete mutation pipelines at any "
+        "level (including in-function lazy imports) — route mutations through "
+        "services.setup_operations instead.\n"
+        "If this file is a purpose-built pipeline UI panel, add it to "
+        "_PIPELINE_IMPORT_ALLOWLIST with a migration note.\n\n"
+        + "\n".join(f"  {v}" for v in sorted(violations))
     )
 
 

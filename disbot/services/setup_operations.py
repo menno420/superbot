@@ -130,6 +130,10 @@ class SetupOperationResult:
     ``status`` is the canonical partition key for callers rendering results.
     ``mutation_id`` is set when the underlying pipeline returned one.
     ``error`` is set when ``status`` is ``"failed"`` or ``"not_yet_implemented"``.
+    ``data`` is an optional operation-kind-specific output dict (e.g. the
+    ``rule_id`` returned by ``add_automation_rule``) so callers can surface
+    pipeline-specific identifiers without breaking the canonical envelope.
+    Callers must treat unknown keys defensively.
     """
 
     status: str  # OperationStatus
@@ -137,6 +141,7 @@ class SetupOperationResult:
     label: str
     mutation_id: str | None = None
     error: str | None = None
+    data: dict[str, Any] | None = None
 
 
 @dataclass
@@ -332,6 +337,7 @@ async def _dispatch_one(
                 op,
                 guild=guild,
                 actor=actor,
+                actor_type=actor_type,
                 label=label,
             )
 
@@ -340,6 +346,7 @@ async def _dispatch_one(
                 op,
                 guild=guild,
                 actor=actor,
+                actor_type=actor_type,
                 label=label,
             )
 
@@ -507,6 +514,7 @@ async def _apply_automation_create(
     *,
     guild: Any,
     actor: Any,
+    actor_type: str,
     label: str,
 ) -> SetupOperationResult:
     from services.automation_mutation import AutomationMutationPipeline
@@ -522,13 +530,14 @@ async def _apply_automation_create(
         schedule=op.schedule,
         timezone_str=op.timezone or "UTC",
         actor_id=getattr(actor, "id", None),
-        actor_type="system",
+        actor_type=actor_type,
     )
     return SetupOperationResult(
         status="applied",
         operation=op,
         label=label,
         mutation_id=result.mutation_id,
+        data={"rule_id": result.rule_id},
     )
 
 
@@ -537,6 +546,7 @@ async def _apply_automation_set_enabled(
     *,
     guild: Any,
     actor: Any,
+    actor_type: str,
     label: str,
 ) -> SetupOperationResult:
     from services.automation_mutation import AutomationMutationPipeline
@@ -548,7 +558,7 @@ async def _apply_automation_set_enabled(
         rule_id=op.automation_rule_id or 0,
         enabled=enabled,
         actor_id=getattr(actor, "id", None),
-        actor_type="system",
+        actor_type=actor_type,
     )
     return SetupOperationResult(
         status="applied",
