@@ -1,4 +1,4 @@
-"""Setup-wizard launcher cog — Phase 9e / Track 4 PR 9.
+"""Setup-wizard launcher cog.
 
 Posts a persistent owner-gated launcher when the bot joins a guild and
 on every subsequent ``on_ready`` for guilds whose launcher is still
@@ -7,32 +7,35 @@ on every subsequent ``on_ready`` for guilds whose launcher is still
 Wires:
 * :mod:`services.setup_session` for the lifecycle row.
 * :mod:`services.setup_access` for owner / admin / non-admin gating.
-* :func:`services.setup_readiness.collect` for the readiness scan.
+* :func:`services.setup_readiness.collect` for readiness scans.
+* :class:`views.setup.hub.SetupHubView` for the guided setup hub.
+* :mod:`services.setup_ai_advisor` and
+  :class:`views.setup.ai_review.main_panel.AIReviewPanelView` for Smart
+  Suggestions.
+* :class:`views.setup.template_picker.TemplatePickerView` for preset
+  selection.
+* :mod:`views.setup.summary` for completed-setup summaries and drift review.
 
-This PR ships the launcher entry point only:
-* **Start Setup** and **Smart Suggestions** stub to "Coming soon"
-  (Tracks 5 + 8 fill them).
-* **Choose Preset** stub to "Coming soon" (Track 7 fills it).
-* **Run Readiness Scan** runs ``setup_readiness.collect`` and renders
-  the existing
-  :func:`cogs.diagnostic._platform_embeds.build_setup_readiness_embed`.
-* **Dismiss** flips ``setup_status`` to ``dismissed``; never deletes
-  Discord resources or DB rows.
+Interactive launcher actions:
+* **Start Setup** opens the guided setup hub and marks the session in progress.
+* **Run Readiness Scan** renders the deterministic setup-readiness snapshot.
+* **Smart Suggestions** collects a guild snapshot and opens the AI/deterministic
+  recommendation review panel.
+* **Choose Preset** opens the automation-template picker.
+* **View Summary** opens the completed setup summary when setup is complete.
+* **Dismiss** flips ``setup_status`` to ``dismissed``; never deletes Discord
+  resources or DB rows.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 
 from services import setup_access, setup_session
 from services.setup_session import SetupSession
-
-if TYPE_CHECKING:
-    pass
 
 logger = logging.getLogger("bot.cogs.setup")
 
@@ -41,10 +44,6 @@ _LAUNCHER_DESC = (
     "Welcome! I'll help you wire SuperBot up to this server.\n\n"
     "Use **Start Setup** for the guided walkthrough, **Run Readiness Scan** "
     "to see what's already configured, or **Dismiss** to defer."
-)
-_COMING_SOON = (
-    "This step is not wired up yet — it lands in an upcoming PR. "
-    "Run **Run Readiness Scan** to see the current configuration."
 )
 
 
@@ -388,7 +387,7 @@ class SetupLauncherView(discord.ui.View):
             return
         await setup_session.dismiss(interaction.guild_id)
         await interaction.response.send_message(
-            "Setup dismissed. Run `/setup` later to resume.",
+            "Setup dismissed. Use the setup launcher later to resume.",
             ephemeral=True,
         )
 
