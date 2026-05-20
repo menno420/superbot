@@ -348,14 +348,6 @@ async def _build_panel_for(
 # ---------------------------------------------------------------------------
 
 
-_BLACKJACK_XFAIL = pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Resolved in PR 5 — BlackjackPanelView becomes actionable "
-        "(Solo Free / Solo Bet / Challenge Player / Tournament / "
-        "Status). Remove this xfail when PR 5 lands."
-    ),
-)
 _DEATHMATCH_XFAIL = pytest.mark.xfail(
     strict=True,
     reason=(
@@ -371,7 +363,7 @@ _DEATHMATCH_XFAIL = pytest.mark.xfail(
     "subsystem",
     [
         pytest.param("rps_tournament"),
-        pytest.param("blackjack", marks=_BLACKJACK_XFAIL),
+        pytest.param("blackjack"),
         pytest.param("deathmatch", marks=_DEATHMATCH_XFAIL),
         pytest.param("mining"),
         pytest.param("counting"),
@@ -398,15 +390,11 @@ async def test_games_subsystem_panel_is_actionable(subsystem: str) -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Resolved in PR 5 — BlackjackPanelView.btn_classic no longer "
-        "renders a 'type !blackjack <bet>' instruction-only embed. "
-        "Remove this xfail when PR 5 lands."
-    ),
-)
-async def test_blackjack_classic_button_is_actionable_not_instruction_only() -> None:
+async def test_blackjack_panel_solo_free_spawns_new_view() -> None:
+    """PR 5 regression pin: Solo Free Play must spawn ``BlackjackView``
+    (a new playable view) rather than swap an instruction embed in
+    place.
+    """
     from views.games import blackjack_panel
 
     panel = blackjack_panel.BlackjackPanelView(
@@ -416,13 +404,34 @@ async def test_blackjack_classic_button_is_actionable_not_instruction_only() -> 
         c
         for c in panel.children
         if isinstance(c, discord.ui.Button)
-        and (c.custom_id or "").endswith(":classic")
+        and (c.custom_id or "").endswith(":solo_free")
     )
     klass = await _classify_button(btn, panel)
     assert klass in ACTION_CLASSES, (
-        f"BlackjackPanelView 'Classic' button classifies as {klass!r}; "
-        "must be action_* (PR 5 wires Solo Free / Solo Bet to "
-        "BlackjackView directly)."
+        f"BlackjackPanelView 'Solo Free Play' button classifies as "
+        f"{klass!r}; must be action_* — should spawn BlackjackView "
+        "directly."
+    )
+
+
+@pytest.mark.asyncio
+async def test_blackjack_panel_solo_bet_opens_preset_view() -> None:
+    """PR 5 regression pin: Solo Bet must open the preset sub-view."""
+    from views.games import blackjack_panel
+
+    panel = blackjack_panel.BlackjackPanelView(
+        SimpleNamespace(id=111, display_name="tester")
+    )
+    btn = next(
+        c
+        for c in panel.children
+        if isinstance(c, discord.ui.Button)
+        and (c.custom_id or "").endswith(":solo_bet")
+    )
+    klass = await _classify_button(btn, panel)
+    assert klass in ACTION_CLASSES, (
+        f"BlackjackPanelView 'Solo Bet' button classifies as {klass!r}; "
+        "must be action_* — should open the bet preset sub-view."
     )
 
 
