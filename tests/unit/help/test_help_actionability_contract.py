@@ -348,14 +348,6 @@ async def _build_panel_for(
 # ---------------------------------------------------------------------------
 
 
-_RPS_XFAIL = pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Resolved in PR 4 — RPSPanelView becomes actionable "
-        "(Quick Play / Bet Match / Challenge Player / Bot Match / "
-        "Tournament). Remove this xfail when PR 4 lands."
-    ),
-)
 _BLACKJACK_XFAIL = pytest.mark.xfail(
     strict=True,
     reason=(
@@ -378,7 +370,7 @@ _DEATHMATCH_XFAIL = pytest.mark.xfail(
 @pytest.mark.parametrize(
     "subsystem",
     [
-        pytest.param("rps_tournament", marks=_RPS_XFAIL),
+        pytest.param("rps_tournament"),
         pytest.param("blackjack", marks=_BLACKJACK_XFAIL),
         pytest.param("deathmatch", marks=_DEATHMATCH_XFAIL),
         pytest.param("mining"),
@@ -435,15 +427,10 @@ async def test_blackjack_classic_button_is_actionable_not_instruction_only() -> 
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Resolved in PR 4 — RPSPanelView.btn_single no longer renders a "
-        "'type !rps' instruction-only embed. Remove this xfail when PR "
-        "4 lands."
-    ),
-)
-async def test_rps_single_button_is_actionable_not_instruction_only() -> None:
+async def test_rps_panel_quick_play_spawns_new_view() -> None:
+    """PR 4 regression pin: Quick Play must spawn ``_RpsView`` (a new
+    playable view) rather than swap an instruction embed in place.
+    """
     from views.games import rps_panel
 
     panel = rps_panel.RPSPanelView(
@@ -453,25 +440,20 @@ async def test_rps_single_button_is_actionable_not_instruction_only() -> None:
         c
         for c in panel.children
         if isinstance(c, discord.ui.Button)
-        and (c.custom_id or "").endswith(":single")
+        and (c.custom_id or "").endswith(":quick_play")
     )
     klass = await _classify_button(btn, panel)
     assert klass in ACTION_CLASSES, (
-        f"RPSPanelView 'Single Round' button classifies as {klass!r}; "
-        "must be action_* (PR 4 wires Quick Play to _RpsView directly)."
+        f"RPSPanelView 'Quick Play' button classifies as {klass!r}; "
+        "must be action_* — should spawn _RpsView directly."
     )
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Resolved in PR 4 — RPSPanelView.btn_tournament no longer "
-        "renders a 'type !rpsregister' instruction-only embed. Remove "
-        "this xfail when PR 4 lands."
-    ),
-)
-async def test_rps_tournament_button_is_actionable_not_instruction_only() -> None:
+async def test_rps_panel_challenge_button_opens_new_view() -> None:
+    """PR 4 regression pin: Challenge Player must open a sub-view
+    (not just swap embeds).
+    """
     from views.games import rps_panel
 
     panel = rps_panel.RPSPanelView(
@@ -481,13 +463,13 @@ async def test_rps_tournament_button_is_actionable_not_instruction_only() -> Non
         c
         for c in panel.children
         if isinstance(c, discord.ui.Button)
-        and (c.custom_id or "").endswith(":tournament")
+        and (c.custom_id or "").endswith(":challenge")
     )
     klass = await _classify_button(btn, panel)
     assert klass in ACTION_CLASSES, (
-        f"RPSPanelView 'Tournament' button classifies as {klass!r}; "
-        "must be action_* (PR 4 wires Tournament to admin setup modal / "
-        "Join/Status flow)."
+        f"RPSPanelView 'Challenge Player' button classifies as "
+        f"{klass!r}; must be action_* — should open the UserSelect "
+        "sub-view."
     )
 
 
