@@ -1020,19 +1020,64 @@ def _fmt_snapshot_value(value: object) -> str:
 # ---------------------------------------------------------------------------
 
 
-async def build_setup_readiness_embed(guild_id: int) -> discord.Embed:
+def _render_health_findings(embed, report) -> None:
+    """Add per-subsystem "Health · <sub>" fields for error/warn findings.
+
+    Info-only findings stay in the description blurb; only actionable
+    findings get their own field to keep the embed compact.
+    """
+    actionable = [f for f in report.health_findings if f.severity in ("error", "warn")]
+    if not actionable:
+        return
+    by_sub: dict[str, list[str]] = {}
+    for f in actionable:
+        icon = "🔴" if f.severity == "error" else "🟡"
+        by_sub.setdefault(f.subsystem, []).append(
+            f"{icon} `{f.binding_name}` · {f.status} — {f.message}",
+        )
+    for subsystem in sorted(by_sub):
+        value = "\n".join(by_sub[subsystem])
+        # 1024-char field cap; truncate generously to avoid 400s.
+        if len(value) > 1000:
+            value = value[:997] + "..."
+        embed.add_field(
+            name=f"Health · {subsystem}",
+            value=value,
+            inline=False,
+        )
+
+
+async def build_setup_readiness_embed(
+    guild_id: int,
+    *,
+    guild: discord.Guild | None = None,
+) -> discord.Embed:
     """Render a per-guild setup-readiness inventory.
 
     Calls :func:`services.setup_readiness.collect`, then formats the
     per-subsystem counts + aggregate score into an embed. Subsystems
     with no declared config show as ``—``; populated subsystems show
     ``filled/declared`` for both bindings and settings plus a percent.
+
+    When ``guild`` is provided, the embed also renders Phase 9d
+    resource-health findings grouped by subsystem and a per-severity
+    summary line.
     """
     from services import setup_readiness
 
-    report = await setup_readiness.collect(guild_id)
+    report = await setup_readiness.collect(guild_id, guild=guild)
 
     title_score = "—" if report.aggregate_score is None else f"{report.percentage}%"
+
+    summary = report.health_summary
+    health_blurb = ""
+    if summary:
+        health_blurb = (
+            f" · health "
+            f"`{summary.get('error', 0)} err`"
+            f" `{summary.get('warn', 0)} warn`"
+            f" `{summary.get('info', 0)} info`"
+        )
 
     embed = discord.Embed(
         title=f"🛰 Setup Readiness — {title_score}",
@@ -1040,9 +1085,12 @@ async def build_setup_readiness_embed(guild_id: int) -> discord.Embed:
             f"**{report.bindings_bound}/{report.bindings_declared}** bindings · "
             f"**{report.settings_configured}/{report.settings_declared}** settings · "
             f"**{report.resources_declared}** resource declarations"
+            f"{health_blurb}"
         ),
         color=discord.Color.blurple(),
     )
+
+    _render_health_findings(embed, report)
 
     if not report.per_subsystem:
         embed.add_field(
