@@ -317,3 +317,53 @@ def test_register_diagnostics_calls_diagnostics_service():
     reg_mock.assert_called_once()
     args = reg_mock.call_args.args
     assert args[0] == "automation_scheduler"
+
+
+# ---------------------------------------------------------------------------
+# spawn_scheduler env-flag gate
+# ---------------------------------------------------------------------------
+
+
+def test_spawn_scheduler_skips_when_env_flag_disabled(monkeypatch):
+    """AUTOMATION_SCHEDULER_ENABLED defaults to false → spawn returns None
+    and never enters the supervised tasks layer."""
+    from services import automation_scheduler as mod
+
+    monkeypatch.delenv("AUTOMATION_SCHEDULER_ENABLED", raising=False)
+    with patch("core.runtime.tasks.spawn") as spawn_mock:
+        result = mod.spawn_scheduler(bot=None)
+    assert result is None
+    spawn_mock.assert_not_called()
+
+
+def test_spawn_scheduler_skips_when_env_flag_explicitly_false(monkeypatch):
+    from services import automation_scheduler as mod
+
+    monkeypatch.setenv("AUTOMATION_SCHEDULER_ENABLED", "false")
+    with patch("core.runtime.tasks.spawn") as spawn_mock:
+        result = mod.spawn_scheduler(bot=None)
+    assert result is None
+    spawn_mock.assert_not_called()
+
+
+def test_spawn_scheduler_runs_when_env_flag_true(monkeypatch):
+    from services import automation_scheduler as mod
+
+    monkeypatch.setenv("AUTOMATION_SCHEDULER_ENABLED", "true")
+    fake_task = MagicMock()
+    with patch("core.runtime.tasks.spawn", return_value=fake_task) as spawn_mock:
+        result = mod.spawn_scheduler(bot=None)
+    assert result is fake_task
+    spawn_mock.assert_called_once()
+    assert spawn_mock.call_args.args[0] == "automation_scheduler"
+
+
+def test_spawn_scheduler_force_bypasses_env_flag(monkeypatch):
+    from services import automation_scheduler as mod
+
+    monkeypatch.delenv("AUTOMATION_SCHEDULER_ENABLED", raising=False)
+    fake_task = MagicMock()
+    with patch("core.runtime.tasks.spawn", return_value=fake_task) as spawn_mock:
+        result = mod.spawn_scheduler(bot=None, force=True)
+    assert result is fake_task
+    spawn_mock.assert_called_once()

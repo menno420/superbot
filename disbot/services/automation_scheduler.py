@@ -373,11 +373,28 @@ def register_diagnostics() -> None:
 # ---------------------------------------------------------------------------
 
 
-def spawn_scheduler(bot: Any | None = None) -> Any:
+def spawn_scheduler(bot: Any | None = None, *, force: bool = False) -> Any | None:
     """Spawn the scheduler as a supervised task.
 
-    Returns the asyncio.Task so the cog can hold a reference.
+    Returns the asyncio.Task so the cog can hold a reference, or
+    ``None`` if the ``AUTOMATION_SCHEDULER_ENABLED`` env flag is
+    unset/false and ``force=False``. The flag defaults to ``"false"``
+    so production never spawns the loop without an explicit operator
+    opt-in.
     """
+    import os
+
+    if not force:
+        flag = os.getenv("AUTOMATION_SCHEDULER_ENABLED", "false").lower()
+        if flag not in ("true", "1", "yes", "on"):
+            logger.info(
+                "automation_scheduler: spawn skipped — "
+                "AUTOMATION_SCHEDULER_ENABLED is %r (set to 'true' to enable)",
+                flag,
+            )
+            register_diagnostics()
+            return None
+
     from core.runtime import tasks
 
     scheduler = get_or_create(bot)
