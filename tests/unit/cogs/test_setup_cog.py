@@ -363,6 +363,84 @@ async def test_smart_suggestions_button_owner_only():
 
 
 @pytest.mark.asyncio
+async def test_smart_suggestions_opens_ai_review_for_owner():
+    """Owner click runs deterministic advisor + opens AIReviewPanelView."""
+    from services.guild_snapshot import GuildSnapshot
+    from services.setup_plan import (
+        SetupPlanDraft,
+        SetupRecommendation,
+    )
+    from views.setup.ai_review.main_panel import AIReviewPanelView
+
+    view = SetupLauncherView()
+    interaction = _mock_interaction(_owner_member())
+
+    fake_snapshot = MagicMock(spec=GuildSnapshot)
+    fake_recommendation = SetupRecommendation(
+        subsystem="moderation",
+        binding_name="mod_log",
+        target_kind="channel",
+        target_id=42,
+        target_name="mod-logs",
+        confidence="high",
+        reason="name-match",
+    )
+    fake_draft = SetupPlanDraft(
+        recommendations=(fake_recommendation,),
+        source="deterministic",
+    )
+    fake_advisor = MagicMock()
+    fake_advisor.suggest = AsyncMock(return_value=fake_draft)
+
+    with (
+        patch(
+            "services.guild_snapshot.collect",
+            new_callable=AsyncMock,
+            return_value=fake_snapshot,
+        ),
+        patch(
+            "services.setup_ai_advisor.build_advisor",
+            return_value=fake_advisor,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ) as mark_mock,
+    ):
+        await view._suggestions.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    sent_view = interaction.response.send_message.await_args.kwargs.get("view")
+    assert isinstance(sent_view, AIReviewPanelView)
+    assert (
+        interaction.response.send_message.await_args.kwargs.get("ephemeral")
+        is True
+    )
+    mark_mock.assert_awaited_once()
+    assert mark_mock.await_args.kwargs.get("step") == "suggestions"
+
+
+@pytest.mark.asyncio
+async def test_smart_suggestions_falls_back_when_advisor_raises():
+    """If snapshot/advisor blows up, owner sees an apology — no crash."""
+    view = SetupLauncherView()
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "services.guild_snapshot.collect",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("snapshot down"),
+        ),
+    ):
+        await view._suggestions.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "smart suggestions" in msg.lower()
+
+
+@pytest.mark.asyncio
 async def test_preset_button_owner_only():
     view = SetupLauncherView()
     interaction = _mock_interaction(_admin_member())
