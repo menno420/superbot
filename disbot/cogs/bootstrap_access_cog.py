@@ -35,7 +35,9 @@ logger = logging.getLogger("bot.cogs.bootstrap_access")
 def _find_channel_guard_checks(bot: commands.Bot) -> list[Any]:
     """Return installed global checks that look like the legacy guard."""
     checks: Iterable[Any] = getattr(bot, "_checks", ())
-    return [check for check in checks if getattr(check, "__name__", "") == "_channel_guard"]
+    return [
+        check for check in checks if getattr(check, "__name__", "") == "_channel_guard"
+    ]
 
 
 def _is_shutting_down_from_legacy_guard(legacy_guard: Any | None) -> bool:
