@@ -212,6 +212,370 @@ TEMPLATES: tuple[AutomationTemplate, ...] = _ONBOARDING_TEMPLATES
 
 
 # ---------------------------------------------------------------------------
+# Server presets (Track 7 PR 21)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PresetOperation:
+    """One step of a :class:`ServerPreset`.
+
+    Operations stay in this leaf-level shape rather than reaching
+    into pipeline APIs directly so the wizard can preview the full
+    plan without touching Discord. ``kind`` literals:
+
+    * ``"bind_channel"``  — operator selects an existing channel.
+    * ``"create_channel"`` — provisioning pipeline creates it.
+    * ``"create_role"``   — wizard creates the role (Track 8).
+    * ``"add_rule"``      — apply an :class:`AutomationTemplate` by
+                            slug with operator-supplied overrides.
+    * ``"set_setting"``   — settings_mutation pipeline.
+    * ``"set_binding_target"`` — binding_mutation pipeline against
+                            an already-bound channel/role.
+    """
+
+    kind: str
+    description: str
+    payload: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ServerPreset:
+    """One named bundle of operations the wizard can apply at once."""
+
+    slug: str
+    display_name: str
+    description: str
+    operations: tuple[PresetOperation, ...] = ()
+    suggested_role_names: tuple[str, ...] = ()
+    suggested_categories: tuple[str, ...] = ()
+    suggested_log_channels: tuple[str, ...] = ()
+    suggested_command_channels: tuple[str, ...] = ()
+
+    def operations_of_kind(self, kind: str) -> tuple[PresetOperation, ...]:
+        return tuple(op for op in self.operations if op.kind == kind)
+
+
+@dataclass(frozen=True)
+class ReuseCandidate:
+    """One operator-visible suggestion: 'reuse this existing channel
+    instead of creating a new one'.
+    """
+
+    operation_index: int
+    suggested_name: str
+    existing_channel_id: int | None = None
+    existing_role_id: int | None = None
+    reason: str = ""
+
+
+@dataclass(frozen=True)
+class PresetPreview:
+    """What :func:`apply_preset` would do.
+
+    Pure read; tests pin that constructing this never touches the
+    Discord API or the DB.
+    """
+
+    preset_slug: str
+    operations: tuple[PresetOperation, ...] = ()
+    reuse_candidates: tuple[ReuseCandidate, ...] = ()
+    warnings: tuple[str, ...] = ()
+
+    @property
+    def operation_count(self) -> int:
+        return len(self.operations)
+
+
+_SERVER_PRESETS: tuple[ServerPreset, ...] = (
+    ServerPreset(
+        slug="minimal",
+        display_name="Minimal",
+        description=(
+            "Bare-bones setup: a rules channel binding + a mod log channel "
+            "binding. Nothing else."
+        ),
+        suggested_log_channels=("bot-mod-log",),
+        operations=(
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the rules channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "rules_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the moderation log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "mod_channel",
+                },
+            ),
+        ),
+    ),
+    ServerPreset(
+        slug="community",
+        display_name="Community",
+        description=(
+            "Welcome flow + general / off-topic channel bindings + "
+            "moderation log + new-member role."
+        ),
+        suggested_categories=("Community",),
+        suggested_log_channels=("bot-mod-log",),
+        suggested_command_channels=("bot-commands",),
+        suggested_role_names=("New Member",),
+        operations=(
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the welcome channel.",
+                payload={
+                    "subsystem": "onboarding",
+                    "binding_name": "welcome_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the rules channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "rules_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the moderation log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "mod_channel",
+                },
+            ),
+            PresetOperation(
+                kind="add_rule",
+                description="Welcome message on member join.",
+                payload={"template_slug": "welcome-message"},
+            ),
+            PresetOperation(
+                kind="add_rule",
+                description="Auto-assign New Member role on join.",
+                payload={"template_slug": "new-member-role"},
+            ),
+        ),
+    ),
+    ServerPreset(
+        slug="gaming",
+        display_name="Gaming",
+        description=(
+            "Community preset plus a games / leaderboard hub channel binding."
+        ),
+        suggested_categories=("Games",),
+        suggested_log_channels=("bot-mod-log",),
+        suggested_command_channels=("bot-commands",),
+        operations=(
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the rules channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "rules_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the moderation log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "mod_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the leaderboard / counting channel.",
+                payload={
+                    "subsystem": "counting",
+                    "binding_name": "channel",
+                },
+            ),
+            PresetOperation(
+                kind="add_rule",
+                description="Notify staff when a new member joins.",
+                payload={"template_slug": "notify-staff-on-join"},
+            ),
+        ),
+    ),
+    ServerPreset(
+        slug="moderation-heavy",
+        display_name="Moderation heavy",
+        description=(
+            "Strict log routing: mod / cleanup / audit channels each "
+            "bound to dedicated channels."
+        ),
+        suggested_categories=("Moderation",),
+        suggested_log_channels=("bot-mod-log", "bot-cleanup-log", "bot-audit-log"),
+        operations=(
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the rules channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "rules_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the moderation log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "mod_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the cleanup log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "cleanup_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the audit log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "audit_channel",
+                },
+            ),
+            PresetOperation(
+                kind="set_setting",
+                description="Turn logging on.",
+                payload={
+                    "subsystem": "logging",
+                    "name": "enabled",
+                    "value": True,
+                },
+            ),
+        ),
+    ),
+    ServerPreset(
+        slug="economy",
+        display_name="Economy",
+        description=("Bind economy + shop channels and seed the welcome message."),
+        suggested_categories=("Economy",),
+        operations=(
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the economy announce channel.",
+                payload={
+                    "subsystem": "economy",
+                    "binding_name": "announce_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind the moderation log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "mod_channel",
+                },
+            ),
+            PresetOperation(
+                kind="add_rule",
+                description="Welcome message on member join.",
+                payload={"template_slug": "welcome-message"},
+            ),
+        ),
+    ),
+    ServerPreset(
+        slug="custom",
+        display_name="Custom",
+        description=(
+            "Empty preset — the wizard builds the operations list as the "
+            "operator picks each binding."
+        ),
+        operations=(),
+    ),
+)
+
+
+SERVER_PRESETS: tuple[ServerPreset, ...] = _SERVER_PRESETS
+
+
+def known_preset_slugs() -> frozenset[str]:
+    return frozenset(p.slug for p in SERVER_PRESETS)
+
+
+def get_preset(slug: str) -> ServerPreset | None:
+    for preset in SERVER_PRESETS:
+        if preset.slug == slug:
+            return preset
+    return None
+
+
+def preview_preset(
+    preset: ServerPreset,
+    *,
+    existing_channels: dict[str, int] | None = None,
+    existing_roles: dict[str, int] | None = None,
+) -> PresetPreview:
+    """Render the preset against the operator's current resources.
+
+    Pure read — no Discord API, no DB. Returns the planned
+    operations alongside reuse candidates: when ``existing_channels``
+    or ``existing_roles`` contain a name that matches a suggested
+    resource, surface it so the wizard can offer "reuse" instead of
+    "create".
+    """
+    existing_channels = existing_channels or {}
+    existing_roles = existing_roles or {}
+    reuse: list[ReuseCandidate] = []
+    warnings: list[str] = []
+
+    for index, op in enumerate(preset.operations):
+        if op.kind == "create_channel":
+            name = str(op.payload.get("name") or "")
+            channel_id = existing_channels.get(name.lower())
+            if channel_id is not None:
+                reuse.append(
+                    ReuseCandidate(
+                        operation_index=index,
+                        suggested_name=name,
+                        existing_channel_id=channel_id,
+                        reason=f"channel #{name} already exists; reuse it.",
+                    ),
+                )
+        elif op.kind == "create_role":
+            name = str(op.payload.get("name") or "")
+            role_id = existing_roles.get(name.lower())
+            if role_id is not None:
+                reuse.append(
+                    ReuseCandidate(
+                        operation_index=index,
+                        suggested_name=name,
+                        existing_role_id=role_id,
+                        reason=f"role @{name} already exists; reuse it.",
+                    ),
+                )
+
+    # Sanity warnings: every "add_rule" must reference a known
+    # template slug.
+    for index, op in enumerate(preset.operations):
+        if op.kind == "add_rule":
+            slug = str(op.payload.get("template_slug") or "")
+            if get_template(slug) is None:
+                warnings.append(
+                    f"operation[{index}]: unknown template slug {slug!r}",
+                )
+
+    return PresetPreview(
+        preset_slug=preset.slug,
+        operations=preset.operations,
+        reuse_candidates=tuple(reuse),
+        warnings=tuple(warnings),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Lookup helpers
 # ---------------------------------------------------------------------------
 
@@ -232,9 +596,17 @@ def known_slugs() -> frozenset[str]:
 
 
 __all__ = [
+    "SERVER_PRESETS",
     "TEMPLATES",
     "AutomationTemplate",
+    "PresetOperation",
+    "PresetPreview",
+    "ReuseCandidate",
+    "ServerPreset",
+    "get_preset",
     "get_template",
+    "known_preset_slugs",
     "known_slugs",
     "list_templates_by_category",
+    "preview_preset",
 ]
