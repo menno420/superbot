@@ -208,7 +208,147 @@ _ONBOARDING_TEMPLATES: tuple[AutomationTemplate, ...] = (
 )
 
 
-TEMPLATES: tuple[AutomationTemplate, ...] = _ONBOARDING_TEMPLATES
+# ---------------------------------------------------------------------------
+# Server-pulse templates (Track 7 PR 22)
+# ---------------------------------------------------------------------------
+# Recurring rules the wizard offers under "Server pulse". All default
+# disabled so the operator opts in explicitly.
+
+_SERVER_PULSE_TEMPLATES: tuple[AutomationTemplate, ...] = (
+    AutomationTemplate(
+        slug="daily-readiness-reminder",
+        display_name="Daily readiness reminder",
+        description=(
+            "Post the readiness embed to the configured channel every "
+            "day so configuration drift stays visible."
+        ),
+        trigger_kind="scheduled_time",
+        action_kind="post_readiness_summary",
+        default_trigger_config={"quiet_hours": [22, 6]},
+        default_action_config={"channel_id": 0},
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="weekly-server-health-summary",
+        display_name="Weekly server health summary",
+        description="Post the readiness embed weekly to a configured channel.",
+        trigger_kind="interval",
+        action_kind="post_readiness_summary",
+        default_trigger_config={"interval_minutes": 10080},  # 7 days
+        default_action_config={"channel_id": 0},
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="weekly-leaderboard",
+        display_name="Weekly leaderboard",
+        description=(
+            "Post the leaderboard for a chosen subsystem to a channel every week."
+        ),
+        trigger_kind="interval",
+        action_kind="post_leaderboard_summary",
+        default_trigger_config={"interval_minutes": 10080},
+        default_action_config={"channel_id": 0, "subsystem": "xp"},
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="daily-game-prompt",
+        display_name="Daily game prompt",
+        description=(
+            "Send a message inviting members to play a game in the "
+            "configured channel."
+        ),
+        trigger_kind="scheduled_time",
+        action_kind="send_message",
+        default_action_config={
+            "channel_id": 0,
+            "template": "🎲 Daily game time — drop into the games channel!",
+        },
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="inactive-channel-nudge",
+        display_name="Inactive channel nudge",
+        description=(
+            "Post a gentle nudge to a channel that has been quiet for "
+            "more than N days."
+        ),
+        trigger_kind="channel_inactive",
+        action_kind="send_message",
+        default_trigger_config={"channel_id": 0, "days": 30},
+        default_action_config={
+            "channel_id": 0,
+            "template": "🌱 This channel has been quiet — anyone around?",
+        },
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="moderation-digest",
+        display_name="Moderation digest",
+        description="Send a weekly moderation summary to the staff channel.",
+        trigger_kind="interval",
+        action_kind="send_message",
+        default_trigger_config={"interval_minutes": 10080},
+        default_action_config={
+            "channel_id": 0,
+            "template": "🛡 Weekly moderation digest.",
+        },
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="economy-summary",
+        display_name="Economy summary",
+        description="Post the economy leaderboard / shop summary weekly.",
+        trigger_kind="interval",
+        action_kind="post_leaderboard_summary",
+        default_trigger_config={"interval_minutes": 10080},
+        default_action_config={"channel_id": 0, "subsystem": "economy"},
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="tournament-reminder",
+        display_name="Tournament reminder",
+        description=(
+            "Send a configurable reminder about the next tournament to "
+            "a chosen channel."
+        ),
+        trigger_kind="scheduled_time",
+        action_kind="send_message",
+        default_action_config={
+            "channel_id": 0,
+            "template": "🏆 Tournament starting soon — sign up!",
+        },
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+    AutomationTemplate(
+        slug="bot-update-changelog-post",
+        display_name="Bot update / changelog post",
+        description=(
+            "Post a changelog message to the configured staff channel — "
+            "useful for surfacing bot releases."
+        ),
+        trigger_kind="manual",
+        action_kind="send_message",
+        default_action_config={
+            "channel_id": 0,
+            "template": "🆕 SuperBot update — see #releases.",
+        },
+        required_overrides=("channel_id",),
+        category="server_pulse",
+    ),
+)
+
+
+TEMPLATES: tuple[AutomationTemplate, ...] = (
+    _ONBOARDING_TEMPLATES + _SERVER_PULSE_TEMPLATES
+)
 
 
 # ---------------------------------------------------------------------------
