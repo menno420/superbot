@@ -185,7 +185,26 @@ class SetupLauncherView(discord.ui.View):
         del button
         if not await self._gate_owner(interaction):
             return
-        await interaction.response.send_message(_COMING_SOON, ephemeral=True)
+        if interaction.guild_id is None:
+            await self._deny(
+                interaction,
+                "Setup requires a guild context.",
+            )
+            return
+
+        from views.setup.hub import SetupHubView, build_hub_embed
+
+        session = await self._resolve_session(interaction)
+        hub = SetupHubView(interaction.user, session=session)
+        await interaction.response.send_message(
+            embed=build_hub_embed(session),
+            view=hub,
+            ephemeral=True,
+        )
+        try:
+            await setup_session.mark_in_progress(interaction.guild_id, step="hub")
+        except Exception:
+            logger.exception("setup_cog._start: mark_in_progress failed")
 
     @discord.ui.button(
         label="Run Readiness Scan",
@@ -515,8 +534,7 @@ class SetupCog(commands.Cog):
             await message.edit(embed=embed, view=view)
         except discord.HTTPException as exc:
             logger.warning(
-                "setup_cog.on_ready: edit_message failed for launcher in "
-                "guild=%d: %s",
+                "setup_cog.on_ready: edit_message failed for launcher in guild=%d: %s",
                 guild.id,
                 exc,
             )
