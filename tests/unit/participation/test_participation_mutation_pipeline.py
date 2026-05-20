@@ -401,7 +401,10 @@ async def test_cache_invalidation_called_inline_after_write(pipeline):
             state="opted_out",
             actor_id=1,
         )
-    assert call_order == ["upsert", "invalidate", "emit"]
+    # Phase 9c.2: pipeline now emits the companion
+    # ``audit.action_recorded`` before the primary participation event.
+    # Two ``emit`` entries appear (audit first, then participation).
+    assert call_order == ["upsert", "invalidate", "emit", "emit"]
 
 
 # ---------------------------------------------------------------------------

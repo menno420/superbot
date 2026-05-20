@@ -50,6 +50,7 @@ from core.runtime.subsystem_schema import (
     SubsystemSchema,
     get_schema,
 )
+from services.audit_events import emit_audit_action
 from utils.db import bindings as bindings_db
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficient
@@ -225,6 +226,22 @@ class BindingMutationPipeline:
             raise
 
         committed_at = _now_utc()
+        # Phase 9c.2: companion ``audit.action_recorded`` event via the
+        # shared publisher. Best-effort; failure is logged inside the
+        # helper, not propagated.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type="clear_binding",
+            target=f"binding:{subsystem}.{binding_name}",
+            scope="guild",
+            guild_id=guild.id,
+            prev_value=str(old.target_id) if old.target_id is not None else None,
+            new_value=None,
+            actor_id=actor.id,
+            actor_type="user",
+            occurred_at=committed_at,
+        )
         event_emitted = await self._emit_event(
             mutation_id=mutation_id,
             guild_id=guild.id,
@@ -354,6 +371,22 @@ class BindingMutationPipeline:
             raise
 
         committed_at = _now_utc()
+        # Phase 9c.2: companion ``audit.action_recorded`` event via the
+        # shared publisher. Best-effort; failure is logged inside the
+        # helper, not propagated.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type="upsert_binding",
+            target=f"binding:{subsystem}.{binding_name}",
+            scope="guild",
+            guild_id=guild.id,
+            prev_value=str(old.target_id) if old.target_id is not None else None,
+            new_value=str(new_target_id),
+            actor_id=actor.id,
+            actor_type="user",
+            occurred_at=committed_at,
+        )
         event_emitted = await self._emit_event(
             mutation_id=mutation_id,
             guild_id=guild.id,

@@ -84,6 +84,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Literal
 
+from services.audit_events import emit_audit_action
+
 logger = logging.getLogger("bot.services.resource_provisioning")
 
 
@@ -561,6 +563,22 @@ class ResourceProvisioningPipeline:
         )
 
         committed_at = _now_utc()
+        # Phase 9c.2: companion ``audit.action_recorded`` event via the
+        # shared publisher. Best-effort; failure is logged inside the
+        # helper, not propagated.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=request.subsystem,
+            mutation_type="provision_resource",
+            target=f"binding:{request.subsystem}.{request.binding_name}",
+            scope="guild",
+            guild_id=guild.id,
+            prev_value=None,
+            new_value=f"{option.kind}:{resource_id}",
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at,
+        )
         # Step 10: best-effort event emission.
         event_emitted = await self._emit_event(
             mutation_id=mutation_id,

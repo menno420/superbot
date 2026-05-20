@@ -49,6 +49,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+from services.audit_events import emit_audit_action
+
 logger = logging.getLogger("bot.services.settings_mutation")
 
 
@@ -315,6 +317,23 @@ class SettingsMutationPipeline:
 
         committed_at = _now_utc()
         self._invalidate_cache(guild.id, spec.settings_key)
+
+        # Phase 9c.2: companion ``audit.action_recorded`` event emitted
+        # via the shared publisher. Best-effort; failure is logged
+        # inside the helper, not propagated.
+        await emit_audit_action(
+            mutation_id=mutation_id,
+            subsystem=subsystem,
+            mutation_type="set_value",
+            target=f"setting:{subsystem}.{name}",
+            scope="guild",
+            guild_id=guild.id,
+            prev_value=old_value_raw,
+            new_value=new_value_raw,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at,
+        )
 
         # Step 10: best-effort event emission.
         event_emitted = await self._emit_event(

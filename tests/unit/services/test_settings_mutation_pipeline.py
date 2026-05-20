@@ -611,9 +611,14 @@ async def test_event_emitted_with_full_payload(_isolated_state):
     actor = _FakeMember(7, guild=guild)
     pipeline = SettingsMutationPipeline()
     result = await pipeline.set_value(guild, "xp", "xp_min", 5, actor)
-    assert len(_isolated_state["emitted"]) == 1
-    payload = _isolated_state["emitted"][0]
-    assert payload["event"] == EVT_SETTINGS_CHANGED
+    # Phase 9c.2: settings_mutation now also emits the companion
+    # ``audit.action_recorded`` event via the shared publisher. Filter
+    # by topic so the test stays focused on EVT_SETTINGS_CHANGED.
+    settings_emits = [
+        e for e in _isolated_state["emitted"] if e["event"] == EVT_SETTINGS_CHANGED
+    ]
+    assert len(settings_emits) == 1
+    payload = settings_emits[0]
     assert payload["guild_id"] == 1
     assert payload["subsystem"] == "xp"
     assert payload["name"] == "xp_min"
@@ -623,6 +628,12 @@ async def test_event_emitted_with_full_payload(_isolated_state):
     assert payload["mutation_id"] == result.mutation_id
     assert "occurred_at" in payload
     assert result.event_emitted is True
+    # And the companion audit event fires with matching mutation_id.
+    audit_emits = [
+        e for e in _isolated_state["emitted"] if e["event"] == "audit.action_recorded"
+    ]
+    assert len(audit_emits) == 1
+    assert audit_emits[0]["mutation_id"] == result.mutation_id
 
 
 @pytest.mark.asyncio
