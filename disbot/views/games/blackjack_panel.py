@@ -37,6 +37,7 @@ from cogs.blackjack.actions import (
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.blackjack.embeds import _tourn_embed
+from views.games.common import BackToPanelButton
 
 logger = logging.getLogger("bot.views.games.blackjack_panel")
 
@@ -176,7 +177,7 @@ class _BlackjackBetPresetView(HubView):
         for preset in _BET_PRESETS:
             self.add_item(_BlackjackBetPresetButton(preset))
         self.add_item(_BlackjackBetCustomButton())
-        self.add_item(_BlackjackBackToPanelButton())
+        self.add_item(_make_blackjack_back_button())
 
 
 class _BlackjackBetPresetButton(discord.ui.Button):
@@ -281,7 +282,7 @@ class _BlackjackChallengeSelectView(HubView):
     def __init__(self, author: discord.Member | discord.User) -> None:
         super().__init__(author)
         self.add_item(_BlackjackOpponentSelect())
-        self.add_item(_BlackjackBackToPanelButton())
+        self.add_item(_make_blackjack_back_button())
 
 
 class _BlackjackOpponentSelect(discord.ui.UserSelect):
@@ -337,7 +338,7 @@ class _BlackjackTournamentSubView(HubView):
         super().__init__(author)
         if is_admin and not has_active:
             self.add_item(_BlackjackTournamentOpenButton())
-        self.add_item(_BlackjackBackToPanelButton())
+        self.add_item(_make_blackjack_back_button())
 
 
 class _BlackjackTournamentOpenButton(discord.ui.Button):
@@ -392,22 +393,17 @@ class _BlackjackTournamentOpenButton(discord.ui.Button):
             result.tournament.reg_message = interaction.message
 
 
-class _BlackjackBackToPanelButton(discord.ui.Button):
-    def __init__(self) -> None:
-        super().__init__(
-            label="◀ Back to Blackjack",
-            style=discord.ButtonStyle.secondary,
-            custom_id="blackjack_panel:back",
-            row=4,
-        )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        parent_view = self.view
-        author = getattr(parent_view, "_author", interaction.user)
-        await interaction.response.edit_message(
-            embed=build_blackjack_overview_embed(),
-            view=BlackjackPanelView(author),
-        )
+def _make_blackjack_back_button() -> BackToPanelButton:
+    """Return a fresh "◀ Back to Blackjack" button for any Blackjack
+    sub-view. Follow-up to PR 7 — Blackjack now uses the shared
+    helper from ``views.games.common`` alongside RPS.
+    """
+    return BackToPanelButton(
+        label="◀ Back to Blackjack",
+        custom_id="blackjack_panel:back",
+        panel_builder=BlackjackPanelView,
+        overview_builder=build_blackjack_overview_embed,
+    )
 
 
 # ---------------------------------------------------------------------------
