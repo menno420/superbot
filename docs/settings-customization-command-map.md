@@ -95,7 +95,8 @@ Cogs (22): `admin_cog`, `blackjack_cog`, `chain_cog`, `channel_cog`,
 `cleanup_cog`, `counting_cog`, `deathmatch_cog`, `diagnostic_cog`,
 `economy_cog`, `general_cog`, `help_cog`, `inventory_cog`, `leaderboard_cog`,
 `logging_cog`, `mining_cog`, `moderation_cog`, `proof_channel_cog`,
-`role_cog`, `rps_tournament_cog`, `settings_cog`, `utility_cog`, `xp_cog`.
+`role_cog`, `rps_tournament_cog`, `settings_cog`, `setup_cog`,
+`utility_cog`, `xp_cog`.
 
 Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 `xp`, `role`, `channel`, `cleanup`, `blackjack`, `deathmatch`,
