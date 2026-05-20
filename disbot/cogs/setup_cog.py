@@ -310,9 +310,67 @@ class SetupLauncherView(discord.ui.View):
         )
 
     @discord.ui.button(
+        label="View Summary",
+        style=discord.ButtonStyle.secondary,
+        custom_id="setup:summary",
+        row=1,
+    )
+    async def _view_summary(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        if not await self._gate_admin(interaction):
+            return
+        guild = interaction.guild
+        if guild is None or interaction.guild_id is None:
+            await self._deny(
+                interaction,
+                "View Summary requires a guild context.",
+            )
+            return
+        session = await self._resolve_session(interaction)
+        if session is None or session.setup_status != "complete":
+            await self._deny(
+                interaction,
+                "Setup is not complete yet. Run **Start Setup** to finish "
+                "the wizard before viewing the summary.",
+            )
+            return
+
+        from views.setup.summary import (
+            SummaryView,
+            build_summary_embed,
+            build_summary_snapshot,
+        )
+
+        try:
+            snapshot = await build_summary_snapshot(
+                session=session,
+                guild=guild,
+            )
+        except Exception:
+            logger.exception("setup_cog._view_summary: snapshot build failed")
+            await self._deny(
+                interaction,
+                "Could not build the summary. Try **Run Readiness Scan** "
+                "for a deterministic baseline.",
+            )
+            return
+
+        view = SummaryView(interaction.user, snapshot=snapshot)
+        await interaction.response.send_message(
+            embed=build_summary_embed(snapshot),
+            view=view,
+            ephemeral=True,
+        )
+
+    @discord.ui.button(
         label="Dismiss",
         style=discord.ButtonStyle.danger,
         custom_id="setup:dismiss",
+        row=1,
     )
     async def _dismiss(
         self,
