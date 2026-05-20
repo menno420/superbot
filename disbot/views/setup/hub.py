@@ -1,85 +1,41 @@
-"""Setup wizard hub — Phase 9i / Track 8 PR 23.
+"""Setup wizard hub — registry-driven section host.
 
-The owner-gated central view the launcher's **Start Setup** button
-opens. Lists the wizard sections and lets the operator step
-through them. Section state is persisted in
-``setup_session.current_step`` so the wizard survives bot
-restarts.
+The hub is the owner-gated central view that the launcher's **Start
+Setup** button opens.  It renders one button per registered
+`SetupSection` (see `services.setup_sections`).  Section modules under
+`views.setup.sections` register themselves at import time; this module
+triggers that import so the hub's button layout is always derived from
+the live registry.
 
-Sections (this PR ships the minimum-viable orchestration; the
-section-specific views can fill in their detail panels in
-follow-up PRs):
+The hub owns three responsibilities for every section:
 
-* **Readiness** — drop into ``build_setup_readiness_embed``
-  rendered ephemerally.
-* **Smart suggestions** — open ``AIReviewPanelView`` against the
-  current ``GuildSnapshot``.
-* **Final review** — open ``FinalReviewView`` to apply the
-  ``AcceptedSet`` through the existing mutation pipelines.
+* **Owner gating** — every section button rejects non-owners with an
+  ephemeral message before the section's `run` callback fires.
+* **Error isolation** — exceptions inside a section's `run` are caught,
+  logged, and surfaced as an ephemeral error if the section hasn't
+  already responded.  A buggy section cannot take the hub down.
+* **Step tracking** — successful section runs mark the session's
+  `current_step` so the launcher relabels correctly across restarts.
 
-No DB writes from this view directly; every state change goes
-through ``services.setup_session`` (status / step tracking) or
-the mutation pipelines (via :class:`FinalReviewView`).
+No DB writes from this view directly; every state change goes through
+`services.setup_session` (status / step) or `services.setup_operations`
+(mutations via the dispatcher).
 """
 
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
 
 import discord
 
+# Triggers section module imports → registry registration.
+import views.setup.sections  # noqa: F401
 from services import setup_access, setup_session
+from services.setup_sections import REGISTRY, SetupSection
 from services.setup_session import SetupSession
 from views.base import BaseView
 
-if TYPE_CHECKING:
-    pass
-
 logger = logging.getLogger("bot.views.setup.hub")
-
-
-def _build_suggestions_embed(draft) -> discord.Embed:
-    """Render the deterministic advisor's draft as a compact list.
-
-    The full AI-review interactive panel ships in a follow-up; v1
-    of the wizard renders the draft inline so the operator can
-    eyeball the recommendations and reach for **Final review** for
-    apply.
-    """
-    if not getattr(draft, "recommendations", ()):
-        return discord.Embed(
-            title="🤖 Smart suggestions",
-            description=(
-                "The deterministic advisor produced no recommendations "
-                "for this guild. Either every binding is already "
-                "configured or the channel/category names did not "
-                "match the rule table."
-            ),
-            color=discord.Color.dark_grey(),
-        )
-    embed = discord.Embed(
-        title="🤖 Smart suggestions",
-        description=(
-            f"_{_REVIEW_HEADER}_\n\n"
-            f"**{len(draft.recommendations)}** recommendation(s) — "
-            "open **Final review** to apply the high-confidence ones."
-        ),
-        color=discord.Color.blurple(),
-    )
-    lines = [
-        f"• `{rec.subsystem}.{rec.binding_name}` → "
-        f"`{rec.target_name}` ({rec.confidence})"
-        for rec in draft.recommendations
-    ]
-    value = "\n".join(lines)
-    if len(value) > 1000:
-        value = value[:997] + "..."
-    embed.add_field(name="Recommendations", value=value, inline=False)
-    return embed
-
-
-_REVIEW_HEADER = "Smart suggestions are recommendations. Review before applying."
 
 
 _HUB_TITLE = "🛰 SuperBot setup wizard"
@@ -88,6 +44,15 @@ _HUB_DESCRIPTION = (
     "actions go through audited mutation pipelines; nothing applies "
     "until **Final review** confirms it."
 )
+
+
+def _hub_sections_value() -> str:
+    sections = REGISTRY.all()
+    if not sections:
+        return "_No sections registered._"
+    return "\n".join(
+        f"{idx}. {section.label}" for idx, section in enumerate(sections, start=1)
+    )
 
 
 def build_hub_embed(session: SetupSession | None) -> discord.Embed:
@@ -110,21 +75,17 @@ def build_hub_embed(session: SetupSession | None) -> discord.Embed:
     )
     embed.add_field(
         name="Sections",
-        value=(
-            "1. Run readiness scan\n"
-            "2. Smart suggestions (review + accept)\n"
-            "3. Final review (apply accepted plan)"
-        ),
+        value=_hub_sections_value(),
         inline=False,
     )
     embed.set_footer(
-        text=("Owner-gated. No mutation runs until you confirm in Final review."),
+        text="Owner-gated. No mutation runs until you confirm in Final review.",
     )
     return embed
 
 
 class SetupHubView(BaseView):
-    """Top-level wizard view: lists sections + drives transitions."""
+    """Top-level wizard view: renders one button per registered section."""
 
     def __init__(
         self,
@@ -136,6 +97,8 @@ class SetupHubView(BaseView):
     ) -> None:
         super().__init__(author, public=public, timeout=timeout)
         self.session = session
+        for section in REGISTRY.all():
+            self.add_item(self._build_section_button(section))
 
     async def _refresh_session(self) -> None:
         if self.session is None:
@@ -163,106 +126,33 @@ class SetupHubView(BaseView):
             return False
         return True
 
-    @discord.ui.button(
-        label="Run readiness scan",
-        style=discord.ButtonStyle.primary,
-    )
-    async def _readiness(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
-        del button
-        if not await self._gate_owner(interaction):
-            return
-        guild = interaction.guild
-        if guild is None:
-            await interaction.response.send_message(
-                "Readiness requires a guild context.",
-                ephemeral=True,
-            )
-            return
-        from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
-
-        embed = await build_setup_readiness_embed(guild.id, guild=guild)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-        # Persist the readiness step so the launcher relabels correctly.
-        try:
-            await setup_session.mark_in_progress(guild.id, step="readiness")
-        except Exception:
-            logger.exception("setup hub: mark_in_progress failed")
-
-    @discord.ui.button(
-        label="Smart suggestions",
-        style=discord.ButtonStyle.success,
-    )
-    async def _suggestions(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
-        del button
-        if not await self._gate_owner(interaction):
-            return
-        guild = interaction.guild
-        if guild is None:
-            await interaction.response.send_message(
-                "Smart suggestions require a guild context.",
-                ephemeral=True,
-            )
-            return
-        from services.guild_snapshot import collect as collect_snapshot
-        from services.setup_plan import DeterministicAdvisor
-
-        try:
-            snapshot = await collect_snapshot(guild)
-            draft = await DeterministicAdvisor().suggest(snapshot)
-        except Exception:
-            logger.exception("setup hub: advisor flow failed")
-            await interaction.response.send_message(
-                "Advisor failed. Try again later or run readiness for "
-                "a deterministic baseline.",
-                ephemeral=True,
-            )
-            return
-
-        embed = _build_suggestions_embed(draft)
-        await interaction.response.send_message(
-            embed=embed,
-            ephemeral=True,
+    def _build_section_button(self, section: SetupSection) -> discord.ui.Button:
+        button: discord.ui.Button = discord.ui.Button(
+            label=section.label,
+            style=section.style,
+            emoji=section.emoji,
+            custom_id=f"setup_section:{section.slug}",
         )
-        try:
-            await setup_session.mark_in_progress(
-                guild.id,
-                step="suggestions",
-            )
-        except Exception:
-            logger.exception("setup hub: mark_in_progress failed")
 
-    @discord.ui.button(
-        label="Final review",
-        style=discord.ButtonStyle.secondary,
-    )
-    async def _final_review(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
-        del button
-        if not await self._gate_owner(interaction):
-            return
-        from views.setup.final_review import FinalReviewView, build_final_review_embed
+        async def _callback(
+            interaction: discord.Interaction,
+            *,
+            sec: SetupSection = section,
+        ) -> None:
+            if not await self._gate_owner(interaction):
+                return
+            try:
+                await sec.run(interaction, self)
+            except Exception:
+                logger.exception("setup hub section %s failed", sec.slug)
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        f"Section `{sec.slug}` failed. Check logs.",
+                        ephemeral=True,
+                    )
 
-        # In v1 the operator drives Smart suggestions → accept set first.
-        # Without an accepted set in this view's state we just open an
-        # empty FinalReview so the operator sees the "nothing to apply" copy.
-        final = FinalReviewView(interaction.user, accepted=[])
-        await interaction.response.send_message(
-            embed=build_final_review_embed(final.accepted),
-            view=final,
-            ephemeral=True,
-        )
+        button.callback = _callback  # type: ignore[assignment]
+        return button
 
 
 __all__ = [
