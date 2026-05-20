@@ -76,21 +76,7 @@ logger = logging.getLogger("bot")
 
 
 class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: ignore[call-arg]
-    """Rock Paper Scissors cog: quick play, PvP, bot matches, and tournaments.
-
-    PR 3 (display rename) renamed this from ``RPSTournamentCog`` to
-    ``RockPaperScissorsCog`` and changed the discord.py cog ``name=``
-    attribute from "Rock-Paper-Scissors Tournament" to "Rock Paper
-    Scissors". The canonical SUBSYSTEMS key remains ``rps_tournament``
-    for back-compat with saved state, providers, tournament ``kind``
-    values, and rank-provider aliases — see the operating-contract
-    plan §13 acceptance checklist for the deferred canonical-key
-    migration.
-
-    The ``RPSTournamentCog`` import alias below preserves any
-    out-of-tree or test imports that still reference the old class
-    name.
-    """
+    """Rock Paper Scissors: quick play, PvP, bot matches, tournaments."""
 
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -148,8 +134,10 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
     # ------------------------------------------------------------------
 
     async def cog_load(self) -> None:
+        from cogs.rps_tournament.schemas import register_schemas
         from core.runtime import message_pipeline
 
+        register_schemas()  # PR 8 — registers RPS_CONFIG_SCHEMA.
         tasks.spawn("rps:clear_stale_flag", clear_stale_tournament_flag(self.bot))
         tasks.spawn("rps:cleanup_orphaned", cleanup_orphaned_channels(self.bot))
         # PR G1 — drop any rps_pvp_pending game_state rows left over
@@ -190,7 +178,12 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
     # ------------------------------------------------------------------
 
     @commands.command(name="rpsregister", aliases=["rpsreg"])
-    async def rps_register(self, ctx, role: discord.Role = None, entry_fee: int = 0):
+    async def rps_register(
+        self,
+        ctx,
+        role: discord.Role = None,
+        entry_fee: int | None = None,
+    ):
         """Starts the registration period with a reaction role message.  !rpsregister [@role] [entry_fee]"""
         if self.tournament_active:
             await ctx.send(
@@ -208,6 +201,14 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
                 f"A **{existing}** tournament is already active in this server.",
             )
             return
+
+        # PR 8 — fall back to the guild-configured default entry fee
+        # when omitted; operator can pass 0 to override.
+        if entry_fee is None:
+            from cogs.rps_tournament.schemas import resolve_default_entry_fee
+
+            entry_fee = await resolve_default_entry_fee(ctx.guild.id)
+        self.entry_fee = entry_fee
 
         await tournament_state_service.set_active(ctx.guild.id, "rps")
 

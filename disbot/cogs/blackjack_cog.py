@@ -114,6 +114,9 @@ class BlackjackCog(commands.Cog):
     # ------------------------------------------------------------------
 
     async def cog_load(self):
+        from cogs.blackjack.schemas import register_schemas
+
+        register_schemas()  # PR 8 — registers BLACKJACK_CONFIG_SCHEMA.
         tasks.spawn("blackjack:cleanup_orphaned", self._cleanup_orphaned_tournaments())
         # PR G2/G3 — drop blackjack solo + PvP game_state rows left
         # over from a previous process.  Live views cannot be
@@ -492,7 +495,7 @@ class BlackjackCog(commands.Cog):
     async def bjtournament(
         self,
         ctx: commands.Context,
-        entry_fee: int = 0,
+        entry_fee: int | None = None,
         rounds: int = 5,
         duration_mins: int = 5,
     ):
@@ -507,6 +510,20 @@ class BlackjackCog(commands.Cog):
                 delete_after=8,
             )
             return
+        # PR 8 — fall back to the guild-configured default entry fee
+        # when the operator did not supply one explicitly.
+        if entry_fee is None:
+            from utils.settings_keys import BLACKJACK_DEFAULT_ENTRY_FEE
+
+            raw = await db.get_setting(
+                ctx.guild.id,
+                BLACKJACK_DEFAULT_ENTRY_FEE,
+                "0",
+            )
+            try:
+                entry_fee = int(raw)
+            except (TypeError, ValueError):
+                entry_fee = 0
         if entry_fee < 0 or rounds < 1 or duration_mins < 1:
             await ctx.send("Invalid parameters.", delete_after=5)
             return

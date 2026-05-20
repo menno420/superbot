@@ -576,8 +576,10 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: none.
-10. **existing_settings_keys**: none.
+9. **existing_SettingSpec_declarations**: `default_entry_fee`
+   (`disbot/cogs/blackjack/schemas.py`, PR 8).
+10. **existing_settings_keys**: `BLACKJACK_DEFAULT_ENTRY_FEE`
+    (`disbot/utils/settings_keys/games.py`).
 11. **existing_BindingSpec_entries**: none.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
@@ -606,8 +608,10 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: none.
-10. **existing_settings_keys**: none.
+9. **existing_SettingSpec_declarations**: `turn_timeout`
+   (`disbot/cogs/deathmatch/schemas.py`, PR 8).
+10. **existing_settings_keys**: `DEATHMATCH_TURN_TIMEOUT`
+    (`disbot/utils/settings_keys/games.py`).
 11. **existing_BindingSpec_entries**: none.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
@@ -638,8 +642,10 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: none.
-10. **existing_settings_keys**: `ACTIVE_TOURNAMENT`
+9. **existing_SettingSpec_declarations**: `default_entry_fee`
+   (`disbot/cogs/rps_tournament/schemas.py`, PR 8).
+10. **existing_settings_keys**: `ACTIVE_TOURNAMENT`,
+    `RPS_DEFAULT_ENTRY_FEE`
     (`disbot/utils/settings_keys/games.py`).
 11. **existing_BindingSpec_entries**: none.
 12. **existing_ResourceRequirement_entries**: none.

@@ -44,8 +44,14 @@ class _DuelView(discord.ui.View):
         duel: _Duel,
         duel_key: tuple,
         ctx: commands.Context,
+        *,
+        timeout: float = 60.0,
     ):
-        super().__init__(timeout=60.0)
+        # PR 8 — ``timeout`` is now a keyword arg; defaults to the
+        # historical 60s value when called without the setting-aware
+        # path (e.g. from tests). Callers reading the guild setting
+        # pass the configured value explicitly.
+        super().__init__(timeout=timeout)
         self.cog = cog
         self.duel = duel
         self.duel_key = duel_key
@@ -207,7 +213,26 @@ class _ChallengeView(discord.ui.View):
             item.disabled = True  # type: ignore[attr-defined]
         duel = _Duel(self.challenger, self.opponent)
         self.cog.active_duels[self.duel_key] = duel
-        duel_view = _DuelView(self.cog, duel, self.duel_key, self.ctx)
+        # PR 8 — read the per-guild turn timeout setting. Falls back to
+        # the historical 60s default when unset or unparseable.
+        from utils.settings_keys import DEATHMATCH_TURN_TIMEOUT
+
+        raw = await db.get_setting(
+            interaction.guild_id or 0,
+            DEATHMATCH_TURN_TIMEOUT,
+            "60",
+        )
+        try:
+            turn_timeout = float(int(raw))
+        except (TypeError, ValueError):
+            turn_timeout = 60.0
+        duel_view = _DuelView(
+            self.cog,
+            duel,
+            self.duel_key,
+            self.ctx,
+            timeout=turn_timeout,
+        )
         await interaction.response.edit_message(
             embed=duel_view.build_embed(),
             view=duel_view,
@@ -230,6 +255,15 @@ class Deathmatch(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.active_duels: dict[tuple, _Duel] = {}
+
+    async def cog_load(self) -> None:
+        """PR 8 — register the Deathmatch settings schema so
+        ``!platform setup-readiness`` can surface its configuration
+        state.
+        """
+        from cogs.deathmatch.schemas import register_schemas
+
+        register_schemas()
 
     async def build_help_menu_view(
         self,
