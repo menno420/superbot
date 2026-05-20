@@ -75,8 +75,22 @@ from views.rps import _RpsRegistrationView
 logger = logging.getLogger("bot")
 
 
-class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # type: ignore[call-arg]
-    """Cog for managing Rock-Paper-Scissors tournaments with multiple game modes."""
+class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: ignore[call-arg]
+    """Rock Paper Scissors cog: quick play, PvP, bot matches, and tournaments.
+
+    PR 3 (display rename) renamed this from ``RPSTournamentCog`` to
+    ``RockPaperScissorsCog`` and changed the discord.py cog ``name=``
+    attribute from "Rock-Paper-Scissors Tournament" to "Rock Paper
+    Scissors". The canonical SUBSYSTEMS key remains ``rps_tournament``
+    for back-compat with saved state, providers, tournament ``kind``
+    values, and rank-provider aliases — see the operating-contract
+    plan §13 acceptance checklist for the deferred canonical-key
+    migration.
+
+    The ``RPSTournamentCog`` import alias below preserves any
+    out-of-tree or test imports that still reference the old class
+    name.
+    """
 
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -203,7 +217,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         # Send the registration message
         fee_str = f"**{self.entry_fee}** 🪙" if self.entry_fee else "Free"
         embed = discord.Embed(
-            title="🎮 Rock-Paper-Scissors Tournament Registration 🎮",
+            title="🎮 Rock Paper Scissors Tournament Registration 🎮",
             description=(
                 "React ✅ or click **Join** to sign up!\n"
                 f"Registration ends in {self.registration_timer // 60} minutes."
@@ -713,7 +727,7 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
     async def rps_help(self, ctx):
         """Displays help information for RPS tournament commands."""
         help_text = (
-            "**Rock-Paper-Scissors Tournament Commands:**\n"
+            "**Rock Paper Scissors Tournament Commands:**\n"
             "`!rps_register [@role]` - Starts registration. Optionally mention a role to notify.\n"
             "`!rps_start [mode] [best_of]` - Start the tournament (Admin only). Modes: classic, lizard_spock, chess, elemental.\n"
             "`!rps_bot [mode] [best_of] [@members/@roles]` - Play against the bot.\n"
@@ -768,5 +782,13 @@ class RPSTournamentCog(commands.Cog, name="Rock-Paper-Scissors Tournament"):  # 
         await run_quickrps_command(ctx, target, bet)
 
 
+# Back-compat alias — PR 3 renamed ``RPSTournamentCog`` to
+# ``RockPaperScissorsCog`` but the old name stays importable so any
+# out-of-tree imports, test references, or pickled state that
+# reference ``cogs.rps_tournament_cog.RPSTournamentCog`` continue to
+# resolve to the same class object.
+RPSTournamentCog = RockPaperScissorsCog
+
+
 async def setup(bot):
-    await bot.add_cog(RPSTournamentCog(bot))
+    await bot.add_cog(RockPaperScissorsCog(bot))

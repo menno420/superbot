@@ -375,8 +375,8 @@ SUBSYSTEMS: dict[str, dict] = {
         ],
     },
     "rps_tournament": {
-        "display_name": "RPS Tournament",
-        "description": "Rock-Paper-Scissors tournament system",
+        "display_name": "Rock Paper Scissors",
+        "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
         "emoji": "✂️",
         "color": GAME_COLOR.value,
         "visibility_tier": "user",

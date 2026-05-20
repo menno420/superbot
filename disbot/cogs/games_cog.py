@@ -1,7 +1,7 @@
 """Games hub cog — thin router that opens :class:`GamesHubView`.
 
 This cog contains **zero** game logic. Individual game logic stays in
-Blackjack, RPS Tournament, Deathmatch, Mining, Counting, and Chain.
+Blackjack, Rock Paper Scissors, Deathmatch, Mining, Counting, and Chain.
 The hub here only owns:
 
 * The ``!games`` command that opens the hub directly.
