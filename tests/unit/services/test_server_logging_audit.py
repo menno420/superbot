@@ -282,6 +282,107 @@ async def test_subscriber_counts_missing_channel():
 
 
 @pytest.mark.asyncio
+async def test_subscriber_falls_back_to_mod_channel_when_audit_unset():
+    """Phase 9a route table: ``audit`` falls back to ``mod`` when
+    ``logging.audit_channel`` is unset. The subscriber must not bypass
+    the route table — it always asks for kind="audit" and trusts
+    ``resolve_log_channel`` to do the fallback chain."""
+    bot = MagicMock()
+    guild = _guild()
+    bot.get_guild.return_value = guild
+    mod_channel = _channel(name="bot-mod-log")
+
+    seen_kinds: list[str] = []
+
+    async def fake_resolve(_guild, kind):
+        # Mimic the real route table: kind="audit" resolves to the
+        # mod channel when audit_channel is unset.
+        seen_kinds.append(kind)
+        return mod_channel
+
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            side_effect=fake_resolve,
+        ),
+    ):
+        await _on_audit_action(**_PAYLOAD)
+
+    # The subscriber asks for "audit" exactly once and does not retry
+    # with "mod" on its own — the route table owns the fallback.
+    assert seen_kinds == ["audit"]
+    mod_channel.send.assert_awaited_once()
+    snap = counters_snapshot()
+    assert snap["counters"]["audit_sent"] >= 1
+
+
+@pytest.mark.asyncio
+async def test_subscriber_counts_send_error_on_http_exception():
+    """``discord.HTTPException`` (Discord rate limits, 5xx, etc.) on
+    ``channel.send`` bumps ``send_error`` and is swallowed."""
+    bot = MagicMock()
+    guild = _guild()
+    bot.get_guild.return_value = guild
+    channel = _channel()
+    channel.send = AsyncMock(
+        side_effect=discord.HTTPException(MagicMock(status=503), "service down"),
+    )
+
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            AsyncMock(return_value=channel),
+        ),
+    ):
+        # Must not raise.
+        await _on_audit_action(**_PAYLOAD)
+
+    snap = counters_snapshot()
+    assert snap["counters"]["send_error"] >= 1
+    assert snap["counters"]["audit_sent"] == 0
+
+
+@pytest.mark.asyncio
+async def test_subscriber_counts_send_error_on_unexpected_exception():
+    """A non-Discord ``Exception`` on ``channel.send`` (e.g. network
+    timeout from an aiohttp transport bug) is still caught and
+    counted under ``send_error``."""
+    bot = MagicMock()
+    guild = _guild()
+    bot.get_guild.return_value = guild
+    channel = _channel()
+    channel.send = AsyncMock(side_effect=RuntimeError("transport reset"))
+
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            AsyncMock(return_value=channel),
+        ),
+    ):
+        # Must not raise — the fail-safe wrapper covers BLE001.
+        await _on_audit_action(**_PAYLOAD)
+
+    snap = counters_snapshot()
+    assert snap["counters"]["send_error"] >= 1
+    assert snap["counters"]["audit_sent"] == 0
+
+
+@pytest.mark.asyncio
 async def test_subscriber_counts_permission_error():
     bot = MagicMock()
     guild = _guild()

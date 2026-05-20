@@ -74,6 +74,81 @@ Counters are exposed via `services.diagnostics_service` under the
 name `"server_logging"` and surface in `!platform consistency`
 (PR-10) under the "Runtime providers" section.
 
+## Audit logging (Phase 9c)
+
+A second channel slot — `logging.audit_channel` — receives the
+canonical `audit.action_recorded` event emitted by every production
+mutation pipeline (Phase 9c.1 / 9c.2). Each accepted mutation lands a
+single embed describing what was changed, by whom, with the
+pre/post values where they are not PII.
+
+### Subscriber
+
+`services.server_logging._on_audit_action` is registered on
+`audit.action_recorded` by `setup(bot)`. The handler reads the bus
+payload, resolves the channel via
+`resolve_log_channel(guild, "audit")`, and renders
+`format_audit_embed(...)`.
+
+### Routing and fallback
+
+Channel resolution uses the Phase 9a route table:
+
+1. If `logging.audit_channel` is set and resolves to a usable channel
+   → that channel.
+2. Otherwise the route table falls back to `logging.mod_channel`.
+3. If both are unset and `logging.auto_create_channels` is OFF, the
+   handler bumps `missing_channel` and returns.
+4. If `logging.auto_create_channels` is ON, `ensure_log_channel`
+   creates `bot-audit-log` (or the source-tier fallback) and binds
+   it on the fly.
+
+The subscriber itself always asks for `kind="audit"` — it never
+walks the fallback chain manually. This keeps the route table the
+single source of truth.
+
+### Payload contract
+
+`audit.action_recorded` carries 11 keyword fields, all required:
+
+| Field | Type | Notes |
+|---|---|---|
+| `mutation_id` | str (UUID) | Links the bus event to the per-pipeline DB audit row. |
+| `subsystem` | str | High-level area (`"logging"`, `"xp"`, `"governance"`, …). |
+| `mutation_type` | str | Pipeline-specific verb token (`"set_value"`, `"upsert_binding"`, `"set_flag_state"`, …). |
+| `target` | str | Human-resolvable identifier (`"setting:xp.xp_min"`, `"flag:bindings.primary"`). |
+| `scope` | str | `"global"`, `"guild"`, or a scope-type token (`"channel"`, `"category"`, …). |
+| `guild_id` | int \| None | Discord guild id, or `None` for global scope. |
+| `prev_value` | str \| None | Pre-mutation value, string-rendered. `None` for first writes / PII-shielded preferences. |
+| `new_value` | str \| None | Post-mutation value, string-rendered. `None` for clears / PII-shielded preferences. |
+| `actor_id` | int \| None | Discord user id, or `None` for system / backfill. |
+| `actor_type` | str | Capability-resolver actor type token. |
+| `occurred_at` | str (ISO-8601) | DB commit timestamp serialised by the shared publisher. |
+
+The shared publisher lives in
+`disbot/services/audit_events.py:emit_audit_action`. Every wired
+pipeline imports it directly so the payload contract stays
+identical across publishers.
+
+### Counters
+
+The `audit_sent` counter increments per delivered audit embed.
+Failure paths share the existing counters in the table above
+(`skipped_disabled`, `missing_channel`, `permission_error`,
+`send_error`, `subscriber_errors`). Operators monitor counts via
+`!platform diagnostics server_logging`.
+
+### Operator workflow (audit channel)
+
+1. Set `logging.enabled` to `true`.
+2. Set `logging.audit_channel` to your preferred audit destination
+   (typically a staff-only channel). If unset, audit embeds fall
+   back to `logging.mod_channel`.
+3. Optionally set `logging.auto_create_channels` to `true` so the
+   service can create `bot-audit-log` on demand.
+4. Verify with `!platform diagnostics server_logging` — every
+   accepted mutation should bump `audit_sent`.
+
 ## Channel provisioning
 
 When auto-create is enabled and the configured channel id is
