@@ -9,8 +9,8 @@ Pins:
 * The Final Review button opens the ``FinalReviewView`` with the
   current accepted set (empty in this view's lifecycle).
 * ``FinalReviewView`` routes each accepted recommendation through
-  ``BindingMutationPipeline.set_binding`` and isolates per-rec
-  failures into the ``failed`` list.
+  :func:`services.setup_operations.apply_operations` (not directly
+  through ``BindingMutationPipeline``) and isolates per-rec failures.
 * ``FinalReviewView`` disables Apply when ``accepted`` is empty.
 """
 
@@ -229,35 +229,99 @@ def test_final_review_view_disables_apply_when_empty():
 
 
 @pytest.mark.asyncio
-async def test_final_review_apply_routes_through_binding_pipeline():
-    pipeline_mock = MagicMock()
-    pipeline_mock.set_binding = AsyncMock(
-        return_value=MagicMock(mutation_id="m1"),
+async def test_final_review_apply_calls_setup_operations_dispatcher():
+    """FinalReviewView.Apply routes through setup_operations.apply_operations,
+    not directly through BindingMutationPipeline."""
+    from services.setup_operations import (
+        SetupOperationBatchResult,
+        SetupOperationResult,
     )
+
+    fake_op = MagicMock()
+    fake_result = SetupOperationResult(
+        status="applied",
+        operation=fake_op,
+        label="logging.mod_channel → mod-log",
+        mutation_id="m1",
+    )
+    fake_batch = SetupOperationBatchResult(results=[fake_result])
+
     view = FinalReviewView(_owner_member(), accepted=[_rec()])
     interaction = _interaction(_owner_member())
     with (
         patch(
-            "services.binding_mutation.BindingMutationPipeline",
-            return_value=pipeline_mock,
-        ),
+            "services.setup_operations.apply_operations",
+            new_callable=AsyncMock,
+            return_value=fake_batch,
+        ) as apply_mock,
         patch(
             "services.setup_session.mark_complete",
             new_callable=AsyncMock,
         ),
     ):
         await view._apply.callback(interaction)
-    pipeline_mock.set_binding.assert_awaited_once()
+    apply_mock.assert_awaited_once()
     assert view.summary is not None
     assert len(view.summary.applied) == 1
     assert view.summary.failed == []
 
 
 @pytest.mark.asyncio
+async def test_final_review_apply_does_not_call_binding_pipeline_directly():
+    """After the dispatcher migration, BindingMutationPipeline must NOT be
+    instantiated directly by FinalReviewView._apply."""
+    from services.setup_operations import (
+        SetupOperationBatchResult,
+        SetupOperationResult,
+    )
+
+    fake_batch = SetupOperationBatchResult(
+        results=[
+            SetupOperationResult(
+                status="applied",
+                operation=MagicMock(),
+                label="x",
+                mutation_id="m1",
+            )
+        ]
+    )
+
+    view = FinalReviewView(_owner_member(), accepted=[_rec()])
+    interaction = _interaction(_owner_member())
+    binding_ctor = MagicMock()
+    with (
+        patch(
+            "services.setup_operations.apply_operations",
+            new_callable=AsyncMock,
+            return_value=fake_batch,
+        ),
+        patch("services.binding_mutation.BindingMutationPipeline", binding_ctor),
+        patch("services.setup_session.mark_complete", new_callable=AsyncMock),
+    ):
+        await view._apply.callback(interaction)
+    # The view must not have constructed BindingMutationPipeline itself.
+    binding_ctor.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_final_review_apply_isolates_per_rec_failures():
-    pipeline_mock = MagicMock()
-    pipeline_mock.set_binding = AsyncMock(
-        side_effect=[MagicMock(mutation_id="m1"), RuntimeError("boom")],
+    """One failed operation in the batch does not abort later ones; the
+    summary receives correct applied/failed counts."""
+    from services.setup_operations import (
+        SetupOperationBatchResult,
+        SetupOperationResult,
+    )
+
+    op = MagicMock()
+    fake_batch = SetupOperationBatchResult(
+        results=[
+            SetupOperationResult(
+                status="applied", operation=op, label="a", mutation_id="m1"
+            ),
+            SetupOperationResult(
+                status="failed", operation=op, label="b", error="boom"
+            ),
+        ]
     )
     view = FinalReviewView(
         _owner_member(),
@@ -266,13 +330,11 @@ async def test_final_review_apply_isolates_per_rec_failures():
     interaction = _interaction(_owner_member())
     with (
         patch(
-            "services.binding_mutation.BindingMutationPipeline",
-            return_value=pipeline_mock,
-        ),
-        patch(
-            "services.setup_session.mark_complete",
+            "services.setup_operations.apply_operations",
             new_callable=AsyncMock,
+            return_value=fake_batch,
         ),
+        patch("services.setup_session.mark_complete", new_callable=AsyncMock),
     ):
         await view._apply.callback(interaction)
     assert view.summary is not None
@@ -283,24 +345,80 @@ async def test_final_review_apply_isolates_per_rec_failures():
 
 @pytest.mark.asyncio
 async def test_final_review_apply_skips_unsupported_target_kind():
+    """Unsupported/not_yet_implemented operations land in summary.skipped,
+    not in failed, and do not crash the apply."""
+    from services.setup_operations import (
+        SetupOperationBatchResult,
+        SetupOperationResult,
+    )
+
+    op = MagicMock()
+    fake_batch = SetupOperationBatchResult(
+        results=[
+            SetupOperationResult(
+                status="not_yet_implemented",
+                operation=op,
+                label="logging.mod_channel → ?",
+                error="operation kind 'bind_totally_made_up_kind' is not a known OperationKind",
+            )
+        ]
+    )
     view = FinalReviewView(
         _owner_member(),
         accepted=[_rec(target_kind="totally_made_up_kind")],
     )
-    pipeline_mock = MagicMock()
-    pipeline_mock.set_binding = AsyncMock()
     interaction = _interaction(_owner_member())
     with (
         patch(
-            "services.binding_mutation.BindingMutationPipeline",
-            return_value=pipeline_mock,
-        ),
-        patch(
-            "services.setup_session.mark_complete",
+            "services.setup_operations.apply_operations",
             new_callable=AsyncMock,
+            return_value=fake_batch,
         ),
+        patch("services.setup_session.mark_complete", new_callable=AsyncMock),
     ):
         await view._apply.callback(interaction)
-    pipeline_mock.set_binding.assert_not_awaited()
     assert view.summary is not None
     assert len(view.summary.skipped) == 1
+    assert view.summary.applied == []
+    assert view.summary.failed == []
+
+
+@pytest.mark.asyncio
+async def test_final_review_apply_partial_success_renders_applied_failed_skipped():
+    """build_final_review_embed renders correct counts from a mixed-status batch."""
+    from services.setup_operations import (
+        SetupOperationBatchResult,
+        SetupOperationResult,
+    )
+
+    op = MagicMock()
+    fake_batch = SetupOperationBatchResult(
+        results=[
+            SetupOperationResult(
+                status="applied", operation=op, label="a", mutation_id="x"
+            ),
+            SetupOperationResult(status="failed", operation=op, label="b", error="err"),
+            SetupOperationResult(
+                status="not_yet_implemented", operation=op, label="c", error="nyi"
+            ),
+        ]
+    )
+    view = FinalReviewView(
+        _owner_member(),
+        accepted=[_rec(), _rec(target_id=2), _rec(target_id=3)],
+    )
+    interaction = _interaction(_owner_member())
+    with (
+        patch(
+            "services.setup_operations.apply_operations",
+            new_callable=AsyncMock,
+            return_value=fake_batch,
+        ),
+        patch("services.setup_session.mark_complete", new_callable=AsyncMock),
+    ):
+        await view._apply.callback(interaction)
+    embed = build_final_review_embed(view.accepted, summary=view.summary)
+    desc = embed.description or ""
+    assert "Applied **1**" in desc
+    assert "failed **1**" in desc
+    assert "skipped **1**" in desc

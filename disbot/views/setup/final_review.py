@@ -2,17 +2,19 @@
 
 The last step of the wizard. The operator sees every accepted
 :class:`SetupRecommendation` in one place; clicking **Apply**
-routes each through the existing mutation pipelines.
+routes each through :mod:`services.setup_operations` (the canonical
+setup/preset/repair operation dispatcher) rather than calling mutation
+pipelines directly.
 
 Routing:
 
-* All recommendations go through
-  :class:`services.binding_mutation.BindingMutationPipeline.set_binding`
-  for binding kinds the operator picked from the AI / deterministic
-  advisor. Other target kinds (set_setting, create_role, etc.) are
-  routed in follow-up polish.
+* Accepted recommendations are converted to :class:`SetupOperation`
+  objects via :func:`services.setup_operations.operations_from_recommendations`
+  and applied via :func:`services.setup_operations.apply_operations`.
 * Failures are isolated per recommendation: one bad binding does
   not abort the rest.
+* Unsupported operation kinds are surfaced as skipped/not_yet_implemented,
+  not raised as exceptions.
 * Pipeline emission of ``audit.action_recorded`` (Track 1 PR 1)
   keeps the audit trail intact without any extra plumbing here.
 """
@@ -214,50 +216,41 @@ async def _apply_accepted(
     guild: Any,
     actor: Any,
 ) -> ApplySummary:
-    """Route each recommendation through the right pipeline.
+    """Route each recommendation through :mod:`services.setup_operations`.
 
-    All of v1 uses ``BindingMutationPipeline.set_binding`` because
-    the deterministic + AI advisors only produce binding
-    recommendations. Settings / role-create flows will route
-    through ``SettingsMutationPipeline`` / ``role_automation`` in
-    follow-up polish.
+    Converts recommendations to :class:`~services.setup_operations.SetupOperation`
+    objects, delegates to :func:`~services.setup_operations.apply_operations`,
+    then maps the :class:`~services.setup_operations.SetupOperationBatchResult`
+    back to :class:`ApplySummary` for rendering.
+
+    Failures are isolated per recommendation.  Unsupported or unrecognised
+    operation kinds appear in ``skipped`` rather than raising.
     """
-    from core.runtime.subsystem_schema import BindingKind
-    from services.binding_mutation import BindingMutationPipeline
+    from services.setup_operations import (
+        apply_operations,
+        operations_from_recommendations,
+    )
+
+    ops = operations_from_recommendations(recs)
+    batch = await apply_operations(ops, guild=guild, actor=actor)
 
     summary = ApplySummary()
-    pipeline = BindingMutationPipeline()
-    for rec in recs:
-        try:
-            kind_value = (rec.target_kind or "").lower()
-            try:
-                kind = BindingKind(kind_value)
-            except ValueError:
-                summary.skipped.append(
-                    f"{rec.subsystem}.{rec.binding_name}: unsupported "
-                    f"target_kind {kind_value!r}",
-                )
-                continue
-            await pipeline.set_binding(
-                guild,
-                rec.subsystem,
-                rec.binding_name,
-                kind,
-                rec.target_id,
-                actor,
-            )
-            summary.applied.append(
-                f"{rec.subsystem}.{rec.binding_name} → {rec.target_name}",
-            )
-        except Exception as exc:  # noqa: BLE001 — per-rec boundary
-            logger.exception(
-                "final_review: failed to apply %s.%s",
-                rec.subsystem,
-                rec.binding_name,
-            )
-            summary.failed.append(
-                f"{rec.subsystem}.{rec.binding_name}: {type(exc).__name__}: {exc}",
-            )
+    for result in batch.applied:
+        summary.applied.append(result.label)
+    for result in batch.failed:
+        summary.failed.append(
+            f"{result.label}: {result.error}" if result.error else result.label,
+        )
+    for result in batch.skipped:
+        summary.skipped.append(result.label)
+    for result in batch.not_yet_implemented:
+        summary.skipped.append(
+            (
+                f"{result.label} (not yet implemented)"
+                if not result.error
+                else f"{result.label}: {result.error}"
+            ),
+        )
     return summary
 
 
