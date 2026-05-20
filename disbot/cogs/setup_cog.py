@@ -503,7 +503,7 @@ class SetupCog(commands.Cog):
             return False
         except discord.HTTPException as exc:
             logger.warning(
-                "setup_cog.on_ready: HTTP error fetching launcher in " "guild=%d: %s",
+                "setup_cog.on_ready: HTTP error fetching launcher in guild=%d: %s",
                 guild.id,
                 exc,
             )
