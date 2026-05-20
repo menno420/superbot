@@ -244,7 +244,47 @@ class SetupLauncherView(discord.ui.View):
         del button
         if not await self._gate_owner(interaction):
             return
-        await interaction.response.send_message(_COMING_SOON, ephemeral=True)
+        guild = interaction.guild
+        if guild is None or interaction.guild_id is None:
+            await self._deny(
+                interaction,
+                "Smart Suggestions requires a guild context.",
+            )
+            return
+
+        from services.guild_snapshot import collect as collect_snapshot
+        from services.setup_ai_advisor import build_advisor
+        from views.setup.ai_review.main_panel import (
+            AIReviewPanelView,
+            build_ai_review_embed,
+        )
+
+        try:
+            snapshot = await collect_snapshot(guild)
+            advisor = build_advisor()
+            draft = await advisor.suggest(snapshot)
+        except Exception:
+            logger.exception("setup_cog._suggestions: advisor flow failed")
+            await self._deny(
+                interaction,
+                "Smart Suggestions failed. Run **Run Readiness Scan** for "
+                "a deterministic baseline.",
+            )
+            return
+
+        panel = AIReviewPanelView(interaction.user, draft=draft, snapshot=snapshot)
+        await interaction.response.send_message(
+            embed=build_ai_review_embed(draft),
+            view=panel,
+            ephemeral=True,
+        )
+        try:
+            await setup_session.mark_in_progress(
+                interaction.guild_id,
+                step="suggestions",
+            )
+        except Exception:
+            logger.exception("setup_cog._suggestions: mark_in_progress failed")
 
     @discord.ui.button(
         label="Choose Preset",
