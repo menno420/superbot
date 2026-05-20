@@ -1,0 +1,346 @@
+"""Phase 9h / Track 7 PR 20 — role_automation service tests.
+
+Pins:
+
+* ``compute_assignments`` produces no mutations (pure read).
+* The decision logic respects the documented invariants:
+  - Skip bots / skip members in skip-role list / skip joined_at=None.
+  - Never demote: a member at a higher tier stays put.
+  - Promote when days_in_guild crosses the next threshold.
+* ``explain_assignment_for`` returns deterministic per-member
+  reasoning.
+* ``check_preflight`` flags missing manage_roles, missing roles,
+  and hierarchy blockers (roles >= bot's top role position).
+* ``apply`` calls ``member.add_roles`` / ``member.remove_roles``
+  per assignment when not dry-run; emits one
+  ``audit.action_recorded`` event per change.
+* ``apply(dry_run=True)`` performs no Discord side effects and no
+  audit emit.
+* A raising ``add_roles`` is isolated — the rest of the batch
+  continues, failure counter increments.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from services.role_automation import (
+    ApplyResult,
+    Assignment,
+    PreflightResult,
+    RoleThreshold,
+    apply,
+    check_preflight,
+    compute_assignments,
+    explain_assignment_for,
+)
+
+
+def _role(rid: int, name: str, position: int = 1):
+    return SimpleNamespace(id=rid, name=name, position=position)
+
+
+def _member(
+    *,
+    mid: int,
+    display: str,
+    roles=(),
+    joined_days_ago: int | None = None,
+    is_bot: bool = False,
+):
+    joined_at = (
+        datetime.now(tz=timezone.utc) - timedelta(days=joined_days_ago)
+        if joined_days_ago is not None
+        else None
+    )
+    return SimpleNamespace(
+        id=mid,
+        display_name=display,
+        roles=list(roles),
+        joined_at=joined_at,
+        bot=is_bot,
+        add_roles=AsyncMock(),
+        remove_roles=AsyncMock(),
+    )
+
+
+def _guild(
+    *,
+    roles=(),
+    members=(),
+    me=None,
+    guild_id: int = 1,
+):
+    return SimpleNamespace(
+        id=guild_id,
+        roles=list(roles),
+        members=list(members),
+        me=me,
+    )
+
+
+def _me_member(*, manage_roles: bool = True, top_position: int = 10):
+    return SimpleNamespace(
+        guild_permissions=SimpleNamespace(manage_roles=manage_roles),
+        top_role=SimpleNamespace(position=top_position),
+    )
+
+
+# ---------------------------------------------------------------------------
+# compute_assignments
+# ---------------------------------------------------------------------------
+
+
+def test_compute_assignments_empty_thresholds_returns_empty():
+    g = _guild(members=[_member(mid=1, display="a", joined_days_ago=100)])
+    assert compute_assignments(g, []) == ()
+
+
+def test_compute_assignments_skips_bots_and_missing_joined_at():
+    threshold_role = _role(100, "Veteran")
+    g = _guild(
+        roles=[threshold_role],
+        members=[
+            _member(mid=1, display="bot", joined_days_ago=100, is_bot=True),
+            _member(mid=2, display="ghost"),  # no joined_at
+        ],
+    )
+    plans = compute_assignments(
+        g,
+        [RoleThreshold("Veteran", 30)],
+    )
+    assert plans == ()
+
+
+def test_compute_assignments_skips_members_in_skip_roles():
+    admin = _role(99, "Admin")
+    threshold_role = _role(100, "Veteran")
+    member = _member(
+        mid=1,
+        display="adminuser",
+        roles=[admin],
+        joined_days_ago=100,
+    )
+    g = _guild(roles=[admin, threshold_role], members=[member])
+    plans = compute_assignments(
+        g,
+        [RoleThreshold("Veteran", 30)],
+        skip_role_names=("Admin",),
+    )
+    assert plans == ()
+
+
+def test_compute_assignments_promotes_member_who_crosses_threshold():
+    veteran = _role(100, "Veteran")
+    g = _guild(
+        roles=[veteran],
+        members=[_member(mid=1, display="u1", joined_days_ago=45)],
+    )
+    plans = compute_assignments(
+        g,
+        [RoleThreshold("Veteran", 30)],
+    )
+    assert len(plans) == 1
+    assert plans[0].add_role_id == 100
+    assert plans[0].add_role_name == "Veteran"
+    assert plans[0].remove_role_ids == ()
+
+
+def test_compute_assignments_never_demotes():
+    veteran = _role(100, "Veteran", position=2)
+    legendary = _role(101, "Legendary", position=3)
+    member = _member(
+        mid=1,
+        display="u1",
+        roles=[legendary],
+        joined_days_ago=45,
+    )
+    g = _guild(roles=[veteran, legendary], members=[member])
+    plans = compute_assignments(
+        g,
+        [
+            RoleThreshold("Veteran", 30),
+            RoleThreshold("Legendary", 90),
+        ],
+    )
+    # 45 days isn't enough for Legendary, but member already has it
+    # — never demote.
+    assert plans == ()
+
+
+def test_compute_assignments_emits_remove_when_promoting():
+    veteran = _role(100, "Veteran", position=2)
+    legendary = _role(101, "Legendary", position=3)
+    member = _member(
+        mid=1,
+        display="u1",
+        roles=[veteran],
+        joined_days_ago=120,
+    )
+    g = _guild(roles=[veteran, legendary], members=[member])
+    plans = compute_assignments(
+        g,
+        [
+            RoleThreshold("Veteran", 30),
+            RoleThreshold("Legendary", 90),
+        ],
+    )
+    assert len(plans) == 1
+    assert plans[0].add_role_name == "Legendary"
+    assert plans[0].remove_role_names == ("Veteran",)
+
+
+def test_explain_assignment_for_returns_per_member_plan():
+    veteran = _role(100, "Veteran")
+    target = _member(mid=42, display="u42", joined_days_ago=60)
+    g = _guild(
+        roles=[veteran],
+        members=[
+            _member(mid=1, display="x", joined_days_ago=10),
+            target,
+        ],
+    )
+    plan = explain_assignment_for(g, target, [RoleThreshold("Veteran", 30)])
+    assert plan is not None
+    assert plan.member_id == 42
+    assert "Veteran" in plan.reason
+
+
+def test_explain_assignment_for_returns_none_when_no_change_needed():
+    veteran = _role(100, "Veteran")
+    target = _member(
+        mid=42,
+        display="u42",
+        roles=[veteran],
+        joined_days_ago=60,
+    )
+    g = _guild(roles=[veteran], members=[target])
+    plan = explain_assignment_for(g, target, [RoleThreshold("Veteran", 30)])
+    assert plan is None
+
+
+# ---------------------------------------------------------------------------
+# check_preflight
+# ---------------------------------------------------------------------------
+
+
+def test_preflight_flags_missing_manage_roles():
+    veteran = _role(100, "Veteran", position=5)
+    g = _guild(
+        roles=[veteran],
+        me=_me_member(manage_roles=False, top_position=10),
+    )
+    result = check_preflight(g, [RoleThreshold("Veteran", 30)])
+    assert result.bot_has_manage_roles is False
+    assert result.ok is False
+
+
+def test_preflight_flags_missing_role():
+    g = _guild(
+        roles=[],  # progression role absent
+        me=_me_member(),
+    )
+    result = check_preflight(g, [RoleThreshold("Veteran", 30)])
+    assert "Veteran" in result.missing_roles
+    assert result.ok is False
+
+
+def test_preflight_flags_hierarchy_blocker():
+    above_bot = _role(100, "Veteran", position=20)  # above bot's 10
+    g = _guild(roles=[above_bot], me=_me_member(top_position=10))
+    result = check_preflight(g, [RoleThreshold("Veteran", 30)])
+    assert "Veteran" in result.hierarchy_blockers
+    assert result.ok is False
+
+
+def test_preflight_ok_when_all_clear():
+    veteran = _role(100, "Veteran", position=5)
+    g = _guild(roles=[veteran], me=_me_member(top_position=10))
+    result = check_preflight(g, [RoleThreshold("Veteran", 30)])
+    assert result.ok is True
+
+
+# ---------------------------------------------------------------------------
+# apply
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_apply_dry_run_does_not_touch_members():
+    veteran = _role(100, "Veteran")
+    member = _member(mid=1, display="u1", joined_days_ago=60)
+    g = _guild(roles=[veteran], members=[member])
+    plans = compute_assignments(g, [RoleThreshold("Veteran", 30)])
+    result = await apply(g, plans, dry_run=True)
+    assert isinstance(result, ApplyResult)
+    assert result.skipped == len(plans)
+    member.add_roles.assert_not_awaited()
+    member.remove_roles.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_apply_calls_add_roles_for_promotions():
+    veteran = _role(100, "Veteran")
+    member = _member(mid=1, display="u1", joined_days_ago=60)
+    g = _guild(roles=[veteran], members=[member])
+    plans = compute_assignments(g, [RoleThreshold("Veteran", 30)])
+    with patch(
+        "services.role_automation.emit_audit_action",
+        new_callable=AsyncMock,
+    ) as emit_mock:
+        result = await apply(g, plans)
+    member.add_roles.assert_awaited_once()
+    assert result.succeeded == 1
+    emit_mock.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_apply_isolates_per_member_failures():
+    veteran = _role(100, "Veteran")
+    ok = _member(mid=1, display="ok", joined_days_ago=60)
+    bad = _member(mid=2, display="bad", joined_days_ago=60)
+    bad.add_roles = AsyncMock(side_effect=RuntimeError("hierarchy"))
+    g = _guild(roles=[veteran], members=[ok, bad])
+    plans = compute_assignments(g, [RoleThreshold("Veteran", 30)])
+    with patch(
+        "services.role_automation.emit_audit_action",
+        new_callable=AsyncMock,
+    ):
+        result = await apply(g, plans)
+    ok.add_roles.assert_awaited_once()
+    assert result.succeeded == 1
+    assert result.failed == 1
+    assert any("hierarchy" in e for e in result.errors)
+
+
+@pytest.mark.asyncio
+async def test_apply_emits_one_audit_event_per_change():
+    veteran = _role(100, "Veteran", position=2)
+    legendary = _role(101, "Legendary", position=3)
+    member = _member(
+        mid=1,
+        display="u1",
+        roles=[veteran],
+        joined_days_ago=120,
+    )
+    g = _guild(roles=[veteran, legendary], members=[member])
+    plans = compute_assignments(
+        g,
+        [
+            RoleThreshold("Veteran", 30),
+            RoleThreshold("Legendary", 90),
+        ],
+    )
+    assert len(plans) == 1
+    with patch(
+        "services.role_automation.emit_audit_action",
+        new_callable=AsyncMock,
+    ) as emit_mock:
+        await apply(g, plans)
+    # Promote = 1 remove + 1 add = 2 audit events
+    assert emit_mock.await_count == 2
