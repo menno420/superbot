@@ -18,9 +18,18 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import discord
 import pytest
 
 from services.automation_executor import AutomationRunResult, execute_rule
+
+
+def _channel():
+    """MagicMock specced as a TextChannel so isinstance narrowing in the executor
+    treats it as sendable."""
+    ch = MagicMock(spec=discord.TextChannel)
+    ch.send = AsyncMock()
+    return ch
 
 
 def _rule(
@@ -103,8 +112,7 @@ async def test_execute_owner_only_refuses_without_actor_id():
 @pytest.mark.asyncio
 async def test_send_message_dry_run_does_not_call_send():
     rule = _rule()
-    channel = MagicMock()
-    channel.send = AsyncMock()
+    channel = _channel()
     guild = _guild(channels={100: channel})
     result = await execute_rule(rule, dry_run=True, guild=guild)
     assert result.status == "success"
@@ -115,8 +123,7 @@ async def test_send_message_dry_run_does_not_call_send():
 @pytest.mark.asyncio
 async def test_send_message_happy_path_calls_channel_send():
     rule = _rule()
-    channel = MagicMock()
-    channel.send = AsyncMock()
+    channel = _channel()
     guild = _guild(channels={100: channel})
     result = await execute_rule(rule, dry_run=False, guild=guild)
     assert result.status == "success"
@@ -197,8 +204,7 @@ async def test_post_readiness_summary_dry_run_does_not_post():
         action_kind="post_readiness_summary",
         action_config={"channel_id": 100},
     )
-    channel = MagicMock()
-    channel.send = AsyncMock()
+    channel = _channel()
     guild = _guild(channels={100: channel})
     result = await execute_rule(rule, dry_run=True, guild=guild)
     assert result.status == "success"
@@ -212,8 +218,7 @@ async def test_post_readiness_summary_happy_path_posts_embed():
         action_kind="post_readiness_summary",
         action_config={"channel_id": 100},
     )
-    channel = MagicMock()
-    channel.send = AsyncMock()
+    channel = _channel()
     guild = _guild(channels={100: channel})
     fake_embed = MagicMock()
     with patch(
@@ -320,7 +325,7 @@ async def test_notify_owner_happy_path_dms():
 @pytest.mark.asyncio
 async def test_handler_exception_surfaces_as_failure_status():
     rule = _rule()
-    channel = MagicMock()
+    channel = _channel()
     channel.send = AsyncMock(side_effect=RuntimeError("rate limit"))
     guild = _guild(channels={100: channel})
     result = await execute_rule(rule, dry_run=False, guild=guild)

@@ -38,16 +38,15 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import Any
+
+import discord
 
 from services.automation_registry import (
     KNOWN_ACTION_KINDS,
     get_action,
     validate_action_config,
 )
-
-if TYPE_CHECKING:
-    import discord
 
 logger = logging.getLogger("bot.services.automation_executor")
 
@@ -210,6 +209,13 @@ async def _handle_send_message(
             "skipped": True,
             "reason": f"channel {channel_id} not in cache",
         }
+    if not isinstance(
+        channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel)
+    ):
+        return {
+            "skipped": True,
+            "reason": f"channel {channel_id} is not a sendable text/voice/stage channel",
+        }
     await channel.send(template)
     return {"sent_to": channel_id, "rendered_length": len(template)}
 
@@ -298,6 +304,13 @@ async def _handle_post_readiness_summary(
     channel = guild.get_channel(channel_id)
     if channel is None:
         return {"skipped": True, "reason": "channel not in cache"}
+    if not isinstance(
+        channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel)
+    ):
+        return {
+            "skipped": True,
+            "reason": "channel is not a sendable text/voice/stage channel",
+        }
     await channel.send(embed=embed)
     return {"posted_readiness_to": channel_id}
 
