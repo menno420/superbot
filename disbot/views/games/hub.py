@@ -8,16 +8,20 @@ for entries whose ``parent_hub`` equals ``"games"``, then groups them by
 Game logic stays in each individual cog (Blackjack, RPS, Deathmatch,
 Mining, Counting, Chain). This view is a navigation surface only:
 
-* The select dropdown forwards to the child cog's
-  :meth:`build_help_menu_view` hook, identical to how ``!help`` routes
-  into a subsystem.
+* PR 2 (Games Hub v2): direct game buttons replace the legacy
+  dropdown — Competitive on row 0 (primary style), Activities on row
+  1 (success style). Every button forwards to the child cog's
+  :meth:`build_help_menu_view` hook, identical to how the dropdown
+  used to.
 * A "↩ Back to Games" button is attached to the child view via
-  :func:`views.navigation.attach_back_button` (S2). The closure captures
-  the original author so the rebuilt hub remains invoker-restricted.
+  :func:`views.navigation.attach_back_button` (S2). The closure
+  captures the original author so the rebuilt hub remains
+  invoker-restricted.
 
-Direct ``!games`` invocation: the hub opens with the select only.
-``!help`` is the way back to the help menu in that flow, mirroring
-``!countingmenu`` / ``!minemenu`` / ``!adminmenu`` conventions.
+Direct ``!games`` invocation: the hub opens with the game buttons
+only. ``!help`` is the way back to the help menu in that flow,
+mirroring ``!countingmenu`` / ``!minemenu`` / ``!adminmenu``
+conventions.
 
 When the hub is surfaced via ``!help`` → "Games", :func:`HelpPanelView`
 appends the "↩ Back to Help" button itself — so this view never adds
@@ -47,6 +51,40 @@ _GROUP_HEADINGS: dict[str, str] = {
     "competitive": "🏆 Competitive",
     "activities": "🎲 Activities",
 }
+
+# Button row + style per hub_group. Competitive sits on row 0 with
+# primary (visually highlighted) styling; activities sit on row 1 with
+# success (green) styling. Unknown groups fall back to row 2 secondary
+# so the operator still sees them without colliding with primary/
+# activities rows.
+_GROUP_ROW_STYLE: dict[str, tuple[int, discord.ButtonStyle]] = {
+    "competitive": (0, discord.ButtonStyle.primary),
+    "activities": (1, discord.ButtonStyle.success),
+}
+_FALLBACK_ROW_STYLE: tuple[int, discord.ButtonStyle] = (
+    2,
+    discord.ButtonStyle.secondary,
+)
+
+
+def _row_style_for(meta: dict) -> tuple[int, discord.ButtonStyle]:
+    return _GROUP_ROW_STYLE.get(
+        meta.get("hub_group") or "",
+        _FALLBACK_ROW_STYLE,
+    )
+
+
+def _format_child_label(subsystem: str, meta: dict) -> str:
+    """Build a button label from registry metadata.
+
+    Mirrors :func:`views.community.hub._format_child_label`:
+    ``{emoji} {display_name}``, truncated to Discord's 80-char button
+    label cap.
+    """
+    emoji = meta.get("emoji") or ""
+    display = meta.get("display_name") or subsystem
+    label = f"{emoji} {display}".strip()
+    return label[:80]
 
 
 def discover_game_children() -> list[tuple[str, dict]]:
@@ -85,7 +123,7 @@ def build_games_hub_embed(
     embed = discord.Embed(
         title="🎮 Games Hub",
         description=(
-            "Pick a game from the dropdown to see its commands and modes. "
+            "Pick a game below to open it. "
             "Typed shortcuts (e.g. `!blackjack`, `!mine`) still work."
         ),
         color=GAME_COLOR,
@@ -231,62 +269,52 @@ def _build_no_panel_embed(name: str, meta: dict) -> discord.Embed:
     return embed
 
 
-class _GamesHubSelect(discord.ui.Select):
-    """Dropdown listing every ``parent_hub == "games"`` child."""
+class _GameHubButton(discord.ui.Button):
+    """Direct game button on the Games hub (PR 2).
 
-    def __init__(self, children: list[tuple[str, dict]]) -> None:
-        options: list[discord.SelectOption] = []
-        for name, meta in children[:25]:  # Discord cap
-            label = (meta.get("display_name") or name)[:100]
-            description = (meta.get("description") or "")[:100] or None
-            emoji = meta.get("emoji") or None
-            options.append(
-                discord.SelectOption(
-                    label=label,
-                    value=name,
-                    description=description,
-                    emoji=emoji,
-                ),
-            )
-        if not options:
-            # Discord rejects a Select with zero options; provide a sentinel.
-            options.append(
-                discord.SelectOption(
-                    label="No games available",
-                    value="__none__",
-                    description="No subsystems route to the Games hub yet.",
-                ),
-            )
+    Routes to the child cog's ``build_help_menu_view`` hook by
+    delegating to :meth:`GamesHubView.handle_select` — the same routing
+    brain the legacy dropdown used, so click-time governance recheck,
+    missing-cog fallback, and exception handling stay identical.
+    """
+
+    def __init__(
+        self,
+        *,
+        subsystem: str,
+        label: str,
+        style: discord.ButtonStyle,
+        row: int,
+    ) -> None:
         super().__init__(
-            placeholder="Choose a game…",
-            min_values=1,
-            max_values=1,
-            options=options,
-            custom_id="games:select",
-            row=0,
+            label=label,
+            style=style,
+            custom_id=f"games:open:{subsystem}",
+            row=row,
         )
+        self._subsystem = subsystem
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        # ``self.view`` is the GamesHubView this select was added to.
         view = self.view
         if not isinstance(view, GamesHubView):
             await interaction.response.send_message(
-                "This dropdown is no longer attached to the Games hub.",
+                "This button is no longer attached to the Games hub.",
                 ephemeral=True,
             )
             return
-        await view.handle_select(interaction, self.values[0])
+        await view.handle_select(interaction, self._subsystem)
 
 
 class GamesHubView(HubView):
     """Router-only hub for the Games subsystem.
 
     Discovers ``parent_hub == "games"`` children from
-    :data:`utils.subsystem_registry.SUBSYSTEMS` and surfaces them in a
-    single select. Selecting a child calls that child cog's
-    ``build_help_menu_view`` hook; if the hook is missing the hub falls
-    back to a typed-command embed so the operator can still discover
-    commands.
+    :data:`utils.subsystem_registry.SUBSYSTEMS` and renders one direct
+    button per child, grouped by ``hub_group`` (competitive on row 0,
+    activities on row 1). Clicking a button calls that child cog's
+    ``build_help_menu_view`` hook via :meth:`handle_select`; if the
+    hook is missing the hub falls back to a typed-command embed so the
+    operator can still discover commands.
 
     The view itself contains zero game logic — pure routing.
     """
@@ -306,7 +334,7 @@ class GamesHubView(HubView):
         # leak into the view's components — which fails serialization
         # when the view is sent to Discord. Use a distinct name.
         #
-        # PR D: ``children`` is normally pre-filtered by
+        # ``children`` is normally pre-filtered by
         # :func:`build_games_hub_panel` so only governance-visible
         # subsystems render. ``None`` falls back to the unfiltered
         # discovery — used by tests and any caller that constructs
@@ -315,7 +343,16 @@ class GamesHubView(HubView):
         if children is None:
             children = discover_game_children()
         self._game_children = children
-        self.add_item(_GamesHubSelect(self._game_children))
+        for subsystem, meta in self._game_children:
+            row, style = _row_style_for(meta)
+            self.add_item(
+                _GameHubButton(
+                    subsystem=subsystem,
+                    label=_format_child_label(subsystem, meta),
+                    style=style,
+                    row=row,
+                ),
+            )
 
     async def handle_select(
         self,

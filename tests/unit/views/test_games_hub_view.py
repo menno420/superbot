@@ -1,17 +1,22 @@
-"""Unit tests for the Games hub view (Phase 3).
+"""Unit tests for the Games hub view.
 
-Covers:
+PR 2 (Games Hub v2) replaced the legacy dropdown with direct game
+buttons. The shape contract this file pins:
 
 * ``discover_game_children`` filters and orders correctly.
 * ``build_games_hub_embed`` produces the expected sections.
-* ``GamesHubView`` has exactly one select with the right options.
-* ``attach_back_to_games_button`` adds a button and no-ops at the
-  25-child cap.
-* The select callback gracefully handles missing cog,
+* ``GamesHubView`` renders one button per visible game child, grouped
+  by ``hub_group`` (competitive on row 0 / primary style, activities
+  on row 1 / success style).
+* Every rendered hub button is actionable: not ``disabled``, no
+  "coming soon" / placeholder labels.
+* Component count stays safely below Discord's 25-component cap
+  (worst case includes Back-to-Help added by ``HelpPanelView``).
+* ``attach_back_to_games_button`` adds a button and no-ops at the cap.
+* The child-open callback routes through
+  ``GamesHubView.handle_select``, gracefully handling missing cog,
   missing ``build_help_menu_view`` hook, and exceptions from the hook.
-
-The Games hub is a router — it never contains game logic — so the
-tests assert on routing surfaces only.
+* Click-time governance recheck fails closed for stale visibility.
 """
 
 from __future__ import annotations
@@ -28,6 +33,7 @@ from views.games.hub import (
     _GROUP_ORDER,
     GamesHubView,
     _build_no_panel_embed,
+    _GameHubButton,
     attach_back_to_games_button,
     build_games_hub_embed,
     discover_game_children,
@@ -44,11 +50,11 @@ def _author(id_: int = 1) -> MagicMock:
 def _all_visible():
     """Stub resolve_visibility to return every subsystem visible.
 
-    PR D added a click-time recheck inside ``handle_select`` and the
-    rebuilt-hub path inside ``attach_back_to_games_button`` now goes
-    through ``build_games_hub_panel`` which resolves governance. Tests
-    that aren't designed to exercise the gating need a stub so the
-    factory doesn't hit the real DB.
+    Click-time recheck inside ``handle_select`` and the rebuilt-hub
+    path inside ``attach_back_to_games_button`` go through
+    ``build_games_hub_panel`` which resolves governance; tests that
+    aren't designed to exercise the gating need a stub so the factory
+    doesn't hit the real DB.
     """
     vis_result = VisibilityResult(
         visible_subsystems=set(SUBSYSTEMS),
@@ -71,12 +77,10 @@ def _all_visible():
 
 def test_discover_returns_only_parent_hub_games():
     names = [name for name, _ in discover_game_children()]
-    # Every returned child must declare parent_hub == "games" in the registry.
     for name in names:
         assert SUBSYSTEMS[name].get("parent_hub") == "games", (
             f"discover_game_children returned {name!r} which is not a games child"
         )
-    # And no games-tagged subsystem with parent_hub == "games" is missing.
     expected = {
         n for n, m in SUBSYSTEMS.items() if m.get("parent_hub") == "games"
     }
@@ -88,7 +92,6 @@ def test_discover_groups_competitive_before_activities():
     groups = [meta.get("hub_group") for _, meta in children]
     competitive_indices = [i for i, g in enumerate(groups) if g == "competitive"]
     activities_indices = [i for i, g in enumerate(groups) if g == "activities"]
-    # Every competitive index must come before every activities index.
     if competitive_indices and activities_indices:
         assert max(competitive_indices) < min(activities_indices), (
             f"groups out of order: {groups}"
@@ -106,7 +109,9 @@ def test_discover_is_deterministic():
         )
         for name, meta in children
     ]
-    assert keys == sorted(keys), f"discover_game_children is not deterministic: {keys}"
+    assert keys == sorted(keys), (
+        f"discover_game_children is not deterministic: {keys}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -132,7 +137,6 @@ def test_embed_mentions_typed_shortcuts_in_description():
     """Operators must still know typed commands work after the hub lands."""
     embed = build_games_hub_embed()
     description = embed.description or ""
-    # Either a literal typed shortcut OR an explicit "Typed shortcut" mention.
     assert (
         "!blackjack" in description
         or "!mine" in description
@@ -141,21 +145,32 @@ def test_embed_mentions_typed_shortcuts_in_description():
 
 
 # ---------------------------------------------------------------------------
-# GamesHubView shape
+# GamesHubView shape — PR 2 button-based layout
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_exactly_one_select():
+def test_view_has_no_select_components():
+    """PR 2 replaced the dropdown with direct buttons — no select stays."""
     view = GamesHubView(_author())
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
-    assert len(selects) == 1
+    assert selects == [], (
+        "Games Hub v2 uses buttons exclusively; the legacy "
+        "_GamesHubSelect dropdown was removed in PR 2."
+    )
+
+
+def test_view_renders_one_game_hub_button_per_visible_child():
+    view = GamesHubView(_author())
+    buttons = [c for c in view.children if isinstance(c, _GameHubButton)]
+    subsystems = {b._subsystem for b in buttons}  # type: ignore[attr-defined]
+    expected = {name for name, _ in discover_game_children()}
+    assert subsystems == expected
 
 
 def test_view_children_are_all_ui_items_not_tuples():
     """Regression: a previous bug stored the discovered child-meta list as
     ``self._children``, which collides with ``discord.ui.View``'s internal
-    ``_children`` items list. That left raw tuples in ``view.children``,
-    which crashed Discord-side serialization when the view was sent.
+    items list.
     """
     view = GamesHubView(_author())
     for child in view.children:
@@ -166,69 +181,153 @@ def test_view_children_are_all_ui_items_not_tuples():
 
 
 def test_view_serializes_to_components_without_raising():
-    """Regression: ``view.to_components()`` is the exact serialization
-    Discord runs before sending a view. If a non-Item child leaks in,
-    this raises and ``ctx.send(view=view)`` fails silently from the
-    user's perspective. Pin the contract.
+    """``view.to_components()`` is the exact serialization Discord runs
+    before sending a view. If a non-Item child leaks in, this raises
+    and ``ctx.send(view=view)`` fails silently from the user's
+    perspective.
     """
     view = GamesHubView(_author())
     components = view.to_components()
     assert len(components) >= 1
-    # Walk every serialized component to verify dict-like shape.
     for row in components:
         assert isinstance(row, dict)
 
 
 def test_view_does_not_shadow_discord_internal_children_attr():
-    """Regression: the GamesHubView used to set ``self._children`` directly,
-    which is the same attribute name ``discord.ui.View`` uses for its
-    internal items list. Pin that the view exposes its child-meta under
-    a different attribute name.
-    """
     view = GamesHubView(_author())
-    # ``view.children`` (discord.py's property) returns the items list —
-    # one ``_GamesHubSelect`` and nothing else.
     assert all(isinstance(c, discord.ui.Item) for c in view.children)
-    # The view caches its discovered child-meta as well, but under a
-    # name that does NOT collide with discord.py.
     assert not hasattr(view, "_children") or all(
-        isinstance(c, discord.ui.Item) for c in view._children  # type: ignore[attr-defined]
-    ), "GamesHubView._children must not hold raw tuples (collides with discord.ui.View)"
+        isinstance(c, discord.ui.Item)
+        for c in view._children  # type: ignore[attr-defined]
+    ), "GamesHubView._children must not hold raw tuples"
 
 
-def test_view_has_no_built_in_back_button():
-    """Back-to-Help is added by help_cog when surfaced from the help menu;
-    direct ``!games`` invocation has no back nav (mirrors !countingmenu).
+def test_view_has_no_built_in_back_to_help_button():
+    """Back-to-Help is added by HelpPanelView when surfaced from the
+    help menu; direct ``!games`` invocation has no back nav (mirrors
+    ``!countingmenu``).
     """
     view = GamesHubView(_author())
-    buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert buttons == []
+    back_labels = [
+        (c.label or "")
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and "Back" in (c.label or "")
+    ]
+    assert back_labels == [], (
+        f"Games hub should not include a built-in Back button: {back_labels}"
+    )
 
 
-def test_select_options_cover_every_child():
+# ---------------------------------------------------------------------------
+# Button row + style layout
+# ---------------------------------------------------------------------------
+
+
+def test_competitive_buttons_on_row_0_with_primary_style():
     view = GamesHubView(_author())
-    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
-    option_values = {o.value for o in select.options}
-    expected_values = {name for name, _ in discover_game_children()}
-    assert option_values == expected_values
+    for btn in view.children:
+        if not isinstance(btn, _GameHubButton):
+            continue
+        meta = SUBSYSTEMS[btn._subsystem]  # type: ignore[attr-defined]
+        if meta.get("hub_group") == "competitive":
+            assert btn.row == 0, (
+                f"competitive button {btn._subsystem!r} on row {btn.row}"  # type: ignore[attr-defined]
+            )
+            assert btn.style is discord.ButtonStyle.primary
 
 
-def test_select_options_carry_emoji_and_description():
+def test_activities_buttons_on_row_1_with_success_style():
     view = GamesHubView(_author())
-    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
-    for option in select.options:
-        meta = SUBSYSTEMS[option.value]
-        if meta.get("emoji"):
-            # PartialEmoji.name preserves the unicode glyph
-            actual = (
-                option.emoji.name
-                if option.emoji is not None
-                else None
+    for btn in view.children:
+        if not isinstance(btn, _GameHubButton):
+            continue
+        meta = SUBSYSTEMS[btn._subsystem]  # type: ignore[attr-defined]
+        if meta.get("hub_group") == "activities":
+            assert btn.row == 1, (
+                f"activities button {btn._subsystem!r} on row {btn.row}"  # type: ignore[attr-defined]
             )
-            assert actual == meta["emoji"], (
-                f"emoji for {option.value!r}: expected {meta['emoji']!r}, "
-                f"got {actual!r}"
+            assert btn.style is discord.ButtonStyle.success
+
+
+def test_button_labels_come_from_registry_metadata():
+    """Labels must use ``{emoji} {display_name}`` from the registry."""
+    view = GamesHubView(_author())
+    for btn in view.children:
+        if not isinstance(btn, _GameHubButton):
+            continue
+        meta = SUBSYSTEMS[btn._subsystem]  # type: ignore[attr-defined]
+        expected = f"{meta.get('emoji', '')} {meta.get('display_name', '')}".strip()
+        assert btn.label == expected[:80], (
+            f"button {btn._subsystem!r} label {btn.label!r} does not "  # type: ignore[attr-defined]
+            f"match registry metadata {expected!r}"
+        )
+
+
+def test_button_custom_ids_are_stable_and_namespaced():
+    view = GamesHubView(_author())
+    expected = {f"games:open:{name}" for name, _ in discover_game_children()}
+    actual = {
+        c.custom_id
+        for c in view.children
+        if isinstance(c, _GameHubButton)
+    }
+    assert actual == expected
+
+
+# ---------------------------------------------------------------------------
+# PR 2 actionability + no-placeholder + component count
+# ---------------------------------------------------------------------------
+
+
+def test_every_hub_button_is_actionable_not_disabled():
+    """No rendered Games Hub button may be ``disabled=True`` — placeholder
+    or "coming soon" buttons are forbidden by §2.9 of the operating
+    contract.
+    """
+    view = GamesHubView(_author())
+    for btn in view.children:
+        if not isinstance(btn, discord.ui.Button):
+            continue
+        assert btn.disabled is False, (
+            f"Games Hub button {btn.label!r} (custom_id={btn.custom_id!r}) "
+            "is disabled — placeholder buttons are forbidden."
+        )
+
+
+def test_no_placeholder_or_coming_soon_labels():
+    """No "Coming Soon" / "TODO" / "WIP" / "Placeholder" labels."""
+    forbidden_tokens = ("coming soon", "todo", "wip", "placeholder", "tbd")
+    view = GamesHubView(_author())
+    for btn in view.children:
+        if not isinstance(btn, discord.ui.Button):
+            continue
+        lower = (btn.label or "").lower()
+        for token in forbidden_tokens:
+            assert token not in lower, (
+                f"Games Hub button label {btn.label!r} contains forbidden "
+                f"placeholder token {token!r}."
             )
+
+
+def test_component_count_is_under_discord_cap():
+    """Components per view ≤ 25 (Discord hard cap), including the
+    worst-case scenario where ``HelpPanelView`` appends Back-to-Help
+    when opening via Help.
+    """
+    view = GamesHubView(_author())
+    # Add one extra child to simulate Back-to-Help.
+    view.add_item(
+        discord.ui.Button(
+            label="↩ Back to Help",
+            style=discord.ButtonStyle.secondary,
+            custom_id="help:back",
+            row=4,
+        ),
+    )
+    assert len(view.children) <= 25, (
+        f"Games hub + Back-to-Help has {len(view.children)} components, "
+        "exceeds Discord's 25-component cap."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -250,7 +349,6 @@ def test_attach_back_button_adds_one_button():
 
 def test_attach_back_button_noops_at_25_children():
     view = discord.ui.View()
-    # Fill view to exactly 25 children — Discord's hard cap.
     for i in range(25):
         view.add_item(
             discord.ui.Button(
@@ -266,7 +364,7 @@ def test_attach_back_button_noops_at_25_children():
 
 
 # ---------------------------------------------------------------------------
-# Select-callback routing
+# handle_select routing (shared by every _GameHubButton)
 # ---------------------------------------------------------------------------
 
 
@@ -295,7 +393,6 @@ async def test_handle_select_missing_cog_renders_fallback():
     interaction.response.edit_message = AsyncMock()
 
     with _all_visible(), patch("views.games.hub.SUBSYSTEMS") as fake_subs:
-        # Pick any real games child but make _cog_for_subsystem return None.
         sub_name = "blackjack"
         fake_subs.get.return_value = dict(SUBSYSTEMS[sub_name])
         with patch("cogs.help_cog._cog_for_subsystem", return_value=None):
@@ -351,13 +448,34 @@ async def test_handle_select_success_attaches_back_button():
     args, kwargs = interaction.response.edit_message.call_args
     assert kwargs["embed"] is child_embed
     assert kwargs["view"] is child_view
-    # The back-to-games button must have been attached to the child view.
     back_buttons = [
         c
         for c in child_view.children
         if isinstance(c, discord.ui.Button) and c.custom_id == "games:back"
     ]
     assert len(back_buttons) == 1
+
+
+@pytest.mark.asyncio
+async def test_button_callback_delegates_to_handle_select():
+    """Clicking a ``_GameHubButton`` must call
+    ``GamesHubView.handle_select`` with its bound subsystem — that is
+    how it shares the routing brain with the legacy dropdown's path.
+    """
+    view = GamesHubView(_author())
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, _GameHubButton) and c._subsystem == "blackjack"  # type: ignore[attr-defined]
+    )
+    interaction = MagicMock(spec=discord.Interaction)
+    with patch.object(
+        GamesHubView,
+        "handle_select",
+        new=AsyncMock(),
+    ) as mock_handle:
+        await btn.callback(interaction)
+    mock_handle.assert_awaited_once_with(interaction, "blackjack")
 
 
 # ---------------------------------------------------------------------------
@@ -381,7 +499,7 @@ def test_build_no_panel_embed_handles_empty_entry_points():
         "emoji": "🧪",
     }
     embed = _build_no_panel_embed("empty", fake_meta)
-    assert embed.fields  # always shows a Commands field
+    assert embed.fields
     assert "No commands declared" in embed.fields[0].value
 
 
@@ -393,8 +511,7 @@ def test_build_no_panel_embed_handles_empty_entry_points():
 @pytest.mark.asyncio
 async def test_back_button_callback_rebuilds_games_hub_with_original_author():
     """Clicking ↩ Back to Games must rebuild ``GamesHubView`` with the
-    same author the panel was opened by — pins the closure's author
-    capture across the navigation.attach_back_button migration.
+    same author the panel was opened by.
     """
     author = _author(id_=42)
     view = discord.ui.View()
@@ -415,15 +532,12 @@ async def test_back_button_callback_rebuilds_games_hub_with_original_author():
     _args, kwargs = interaction.response.edit_message.call_args
     rebuilt = kwargs["view"]
     assert isinstance(rebuilt, GamesHubView)
-    # The rebuilt hub must keep the original author so invoker-restriction
-    # still applies after the user navigates back.
     assert rebuilt._author is author
 
 
 def test_attach_back_to_games_button_delegates_to_shared_helper():
-    """Migration pin (S2): ``attach_back_to_games_button`` must call into
-    ``views.navigation.attach_back_button``. Prevents an accidental
-    in-line revert that would re-duplicate the back-nav logic.
+    """Migration pin (S2): ``attach_back_to_games_button`` must call
+    into ``views.navigation.attach_back_button``.
     """
     import inspect
 
@@ -431,65 +545,61 @@ def test_attach_back_to_games_button_delegates_to_shared_helper():
 
     fn_src = inspect.getsource(games_hub.attach_back_to_games_button)
     module_src = inspect.getsource(games_hub)
-    # The wrapper must call the shared helper, not re-implement the
-    # 25-component cap / edit-message dance inline.
     assert "attach_back_button" in fn_src
-    # The shared helper must be reachable via an actual import — either at
-    # module level or function-local. Pin both shapes.
     assert "from views.navigation" in module_src or "views.navigation" in fn_src
 
 
 # ---------------------------------------------------------------------------
-# PR D — Governance filtering and click-time recheck
+# Governance filtering and click-time recheck
 # ---------------------------------------------------------------------------
 
 
 def test_view_falls_back_to_unfiltered_when_children_omitted():
-    """Backward-compat: callers that construct ``GamesHubView(author)``
-    directly (tests, persistent re-registration) still get the
-    unfiltered discovery so the view renders. Click-time recheck is
-    the safety net for that path.
+    """Backward-compat: ``GamesHubView(author)`` still works for tests
+    and persistent re-registration that can't await the factory.
     """
     view = GamesHubView(_author())
-    options = [c for c in view.children if isinstance(c, discord.ui.Select)][0].options
-    option_values = {o.value for o in options}
+    button_subsystems = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _GameHubButton)
+    }
     expected = {name for name, _ in discover_game_children()}
-    assert option_values == expected
+    assert button_subsystems == expected
 
 
 def test_view_uses_pre_filtered_children_when_supplied():
     """The factory passes ``children`` so only visible subsystems
-    appear in the select. Pin the constructor honors the filter.
+    appear as buttons.
     """
     only = [(name, dict(SUBSYSTEMS[name])) for name in ("blackjack",)]
     view = GamesHubView(_author(), children=only)
-    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
-    option_values = {o.value for o in select.options}
-    assert option_values == {"blackjack"}
+    button_subsystems = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _GameHubButton)
+    }
+    assert button_subsystems == {"blackjack"}
 
 
 @pytest.mark.asyncio
 async def test_build_games_hub_panel_filters_via_visible_set():
-    """When ``visible`` is supplied the factory does not call
-    ``resolve_visibility`` — pure filter path. The resulting view
-    contains only the filtered children.
-    """
     from views.games.hub import build_games_hub_panel
 
     _embed, view = await build_games_hub_panel(
         _author(),
         visible={"blackjack"},
     )
-    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
-    option_values = {o.value for o in select.options}
-    assert option_values == {"blackjack"}
+    button_subsystems = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _GameHubButton)
+    }
+    assert button_subsystems == {"blackjack"}
 
 
 @pytest.mark.asyncio
 async def test_build_games_hub_panel_resolves_when_visible_none():
-    """When ``visible`` is omitted the factory must call
-    ``governance_service.resolve_visibility`` exactly once.
-    """
     from views.games.hub import build_games_hub_panel
 
     interaction = MagicMock(spec=discord.Interaction)
@@ -514,17 +624,16 @@ async def test_build_games_hub_panel_resolves_when_visible_none():
         )
 
     mock_resolve.assert_awaited_once()
-    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
-    option_values = {o.value for o in select.options}
-    # Only the subsystem the stub returned as visible appears.
-    assert option_values == {"blackjack"}
+    button_subsystems = {
+        c._subsystem  # type: ignore[attr-defined]
+        for c in view.children
+        if isinstance(c, _GameHubButton)
+    }
+    assert button_subsystems == {"blackjack"}
 
 
 @pytest.mark.asyncio
 async def test_build_games_hub_panel_raises_without_context():
-    """When ``visible`` is None and neither ``interaction`` nor ``ctx``
-    is given, the factory must raise — programming-error fail-fast.
-    """
     from views.games.hub import build_games_hub_panel
 
     with pytest.raises(ValueError, match="interaction or ctx"):
@@ -534,9 +643,8 @@ async def test_build_games_hub_panel_raises_without_context():
 @pytest.mark.asyncio
 async def test_handle_select_fails_closed_when_subsystem_invisible():
     """Click-time recheck: if a subsystem drops out of visibility
-    between render and click, the select must surface an ephemeral
-    and NOT call into the cog. This is the failure-closed safety net
-    for stale persistent views.
+    between render and click, ``handle_select`` must surface an
+    ephemeral and NOT call into the cog.
     """
     view = GamesHubView(_author())
     interaction = MagicMock(spec=discord.Interaction)
@@ -548,7 +656,6 @@ async def test_handle_select_fails_closed_when_subsystem_invisible():
     interaction.response.send_message = AsyncMock()
     interaction.response.edit_message = AsyncMock()
 
-    # Blackjack is no longer in visible_subsystems — stale click path.
     vis_result = VisibilityResult(
         visible_subsystems=set(),
         member_tier="member",
@@ -568,7 +675,5 @@ async def test_handle_select_fails_closed_when_subsystem_invisible():
     message = args[0] if args else kwargs.get("content", "")
     assert "no longer available" in message
     assert kwargs.get("ephemeral") is True
-    # Crucial: the cog lookup must NOT have been called — gating
-    # happens BEFORE any side-effect.
     cog_lookup.assert_not_called()
     interaction.response.edit_message.assert_not_called()

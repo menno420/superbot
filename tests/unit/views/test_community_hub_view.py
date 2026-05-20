@@ -255,11 +255,19 @@ def test_button_labels_come_from_registry_metadata():
 
 @pytest.mark.asyncio
 async def test_button_opens_host_cog_panel_in_place():
-    button = _CommunityChildButton(
-        subsystem="xp",
-        label="🏆 XP",
-        style=discord.ButtonStyle.primary,
-        row=0,
+    """Clicking a Community child button must open the host cog's
+    panel AND attach Back-to-Community so the user can return.
+
+    PR 2: this is the fix for the long-standing asymmetry where the
+    Games hub attached the back button after a successful child build
+    but the Community hub did not, leaving the user without a back
+    nav from any Community child panel.
+    """
+    parent_view = CommunityHubView(_author(id_=42))
+    button = next(
+        c
+        for c in parent_view.children
+        if isinstance(c, _CommunityChildButton) and c._subsystem == "xp"  # type: ignore[attr-defined]
     )
     fake_cog = MagicMock()
     fake_embed = discord.Embed(title="XP")
@@ -277,6 +285,17 @@ async def test_button_opens_host_cog_panel_in_place():
     _args, kwargs = interaction.response.edit_message.call_args
     assert kwargs["embed"] is fake_embed
     assert kwargs["view"] is fake_view
+    # Back-to-Community must have been attached to the child view.
+    back_buttons = [
+        c
+        for c in fake_view.children
+        if isinstance(c, discord.ui.Button)
+        and c.custom_id == "community:back"
+    ]
+    assert len(back_buttons) == 1, (
+        "Community child panel must have Back-to-Community attached — "
+        "this is the navigation symmetry fix from PR 2."
+    )
 
 
 @pytest.mark.asyncio

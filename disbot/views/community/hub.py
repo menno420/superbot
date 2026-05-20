@@ -285,6 +285,17 @@ class _CommunityChildButton(discord.ui.Button):
             )
             return
 
+        # PR 2: attach Back-to-Community to the child view so users can
+        # return to the Community hub from any opened child panel —
+        # mirrors the Games-hub pattern where ``handle_select`` calls
+        # ``attach_back_to_games_button(sub_view, self._author)`` after a
+        # successful child build. Without this, the child panel is
+        # reachable but the user has no Back navigation other than
+        # closing the hub entirely.
+        parent_view = self.view
+        if isinstance(parent_view, CommunityHubView):
+            attach_back_to_community_button(sub_view, parent_view._author)
+
         await interaction.response.edit_message(embed=embed, view=sub_view)
 
 
