@@ -240,7 +240,15 @@ class SetupLauncherView(discord.ui.View):
         del button
         if not await self._gate_owner(interaction):
             return
-        await interaction.response.send_message(_COMING_SOON, ephemeral=True)
+
+        from views.setup.template_picker import TemplatePickerView, build_picker_embed
+
+        picker = TemplatePickerView(interaction.user)
+        await interaction.response.send_message(
+            embed=build_picker_embed(),
+            view=picker,
+            ephemeral=True,
+        )
 
     @discord.ui.button(
         label="Dismiss",
@@ -515,8 +523,7 @@ class SetupCog(commands.Cog):
             await message.edit(embed=embed, view=view)
         except discord.HTTPException as exc:
             logger.warning(
-                "setup_cog.on_ready: edit_message failed for launcher in "
-                "guild=%d: %s",
+                "setup_cog.on_ready: edit_message failed for launcher in guild=%d: %s",
                 guild.id,
                 exc,
             )

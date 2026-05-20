@@ -373,6 +373,22 @@ async def test_preset_button_owner_only():
 
 
 @pytest.mark.asyncio
+async def test_preset_button_opens_template_picker_for_owner():
+    """Owner click opens the template picker view, not a stub."""
+    from views.setup.template_picker import TemplatePickerView
+
+    view = SetupLauncherView()
+    interaction = _mock_interaction(_owner_member())
+
+    await view._preset.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert isinstance(kwargs.get("view"), TemplatePickerView)
+    assert kwargs.get("ephemeral") is True
+
+
+@pytest.mark.asyncio
 async def test_readiness_button_admin_allowed():
     view = SetupLauncherView()
     interaction = _mock_interaction(_admin_member())
