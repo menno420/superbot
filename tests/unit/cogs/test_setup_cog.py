@@ -337,15 +337,46 @@ async def test_start_button_refuses_non_owner():
 
 
 @pytest.mark.asyncio
-async def test_start_button_shows_coming_soon_for_owner():
+async def test_start_button_opens_setup_hub_for_owner():
+    """Start Setup must open ``SetupHubView`` — no longer a stub."""
     view = SetupLauncherView()
     interaction = _mock_interaction(_owner_member())
+
+    with patch("services.setup_session.resume_session", AsyncMock(return_value=None)):
+        with patch(
+            "services.setup_session.mark_in_progress",
+            AsyncMock(),
+        ) as mark_mock:
+            await view._start.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    # Hub is rendered with an embed + view, sent ephemerally.
+    assert kwargs.get("ephemeral") is True
+    assert kwargs.get("embed") is not None
+    sent_view = kwargs.get("view")
+    assert sent_view is not None
+    # The view dispatched must be the wizard hub, not the launcher.
+    from views.setup.hub import SetupHubView
+
+    assert isinstance(sent_view, SetupHubView)
+    # Session step is persisted so the launcher relabels after restart.
+    mark_mock.assert_awaited_once()
+    assert mark_mock.await_args.kwargs.get("step") == "hub"
+
+
+@pytest.mark.asyncio
+async def test_start_button_requires_guild_context():
+    """No guild_id → deny rather than crash inside SetupHubView."""
+    view = SetupLauncherView()
+    interaction = _mock_interaction(_owner_member())
+    interaction.guild_id = None
 
     await view._start.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0]
-    assert "not wired up" in msg.lower()
+    assert "guild" in msg.lower()
 
 
 @pytest.mark.asyncio
