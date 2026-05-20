@@ -38,7 +38,10 @@ from services.automation_templates import (
 
 
 def test_onboarding_slugs_match_documented_set():
-    assert known_slugs() == {
+    onboarding_slugs = {
+        t.slug for t in list_templates_by_category("onboarding")
+    }
+    assert onboarding_slugs == {
         "welcome-message",
         "rules-channel-binding",
         "new-member-role",
@@ -59,7 +62,14 @@ def test_get_template_returns_none_for_unknown_slug():
 
 def test_list_templates_by_category_filters():
     items = list_templates_by_category("onboarding")
-    assert {t.slug for t in items} == known_slugs()
+    onboarding_slugs = {
+        "welcome-message",
+        "rules-channel-binding",
+        "new-member-role",
+        "delayed-followup-message",
+        "notify-staff-on-join",
+    }
+    assert {t.slug for t in items} == onboarding_slugs
     assert list_templates_by_category("uncategorized") == ()
 
 
