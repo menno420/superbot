@@ -91,7 +91,8 @@ extra subsystem with no corresponding cog file is `diagnostic` (its
 `!diagnostics` + `!platform` surface lives inside
 `disbot/cogs/diagnostic_cog.py`).
 
-Cogs (22): `admin_cog`, `blackjack_cog`, `chain_cog`, `channel_cog`,
+Cogs (22): `admin_cog`, `blackjack_cog`, `bootstrap_access_cog`,
+`chain_cog`, `channel_cog`,
 `cleanup_cog`, `counting_cog`, `deathmatch_cog`, `diagnostic_cog`,
 `economy_cog`, `general_cog`, `help_cog`, `inventory_cog`, `leaderboard_cog`,
 `logging_cog`, `mining_cog`, `moderation_cog`, `proof_channel_cog`,

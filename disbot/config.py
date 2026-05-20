@@ -31,6 +31,12 @@ PREFIX = os.getenv("BOT_PREFIX", "!")
 # Initial Cogs (Extensions)
 # ==========================
 INITIAL_EXTENSIONS = [
+    # bootstrap_access_cog MUST load first: it replaces the legacy
+    # `_channel_guard` defined in bot1.py with a fresh-guild-aware guard
+    # so guild operators can run !help / !setup / !platform / !diagnostics /
+    # !adminmenu / !settings / !syncslash before BOT_ALLOWED_CHANNELS is
+    # configured. Reordering this entry breaks fresh-guild onboarding.
+    "cogs.bootstrap_access_cog",
     "cogs.admin_cog",
     "cogs.help_cog",
     "cogs.role_cog",
