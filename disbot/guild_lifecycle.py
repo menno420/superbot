@@ -53,6 +53,9 @@ async def teardown(guild_id: int) -> None:
       18. Setup session         — delete the setup_session row (Phase 9e PR 8).
                                    The launcher cog re-creates it on the next
                                    on_guild_join.
+      19. Automation rules      — delete every automation_rules row for the
+                                   guild (Phase 9g PR 18). ``automation_runs``
+                                   rows are removed via ON DELETE CASCADE.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -112,6 +115,10 @@ async def teardown(guild_id: int) -> None:
     #     it via ``services.setup_session.start_session`` on the next
     #     ``on_guild_join``.
     await _teardown_setup_session(guild_id)
+
+    # 19. Automation rules (Phase 9g PR 18). ``automation_runs`` rows
+    #     get cleaned up by the ON DELETE CASCADE on rule_id.
+    await _teardown_automation_rules(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
@@ -477,6 +484,30 @@ async def _teardown_setup_session(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: setup_session teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_automation_rules(guild_id: int) -> None:
+    """Delete every automation_rules row for the departed guild.
+
+    Phase 9g PR 18. ``automation_runs`` history rows cascade away
+    via the FK; nothing else references the rules.
+    """
+    try:
+        from utils.db import automation as db
+
+        count = await db.delete_rules_for_guild(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d automation rule(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: automation_rules teardown failed for guild=%d: %s",
             guild_id,
             exc,
         )
