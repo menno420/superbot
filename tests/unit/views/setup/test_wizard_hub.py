@@ -9,8 +9,8 @@ Pins:
 * The Final Review button opens the ``FinalReviewView`` with the
   current accepted set (empty in this view's lifecycle).
 * ``FinalReviewView`` routes each accepted recommendation through
-  ``BindingMutationPipeline.set_binding`` and isolates per-rec
-  failures into the ``failed`` list.
+  :func:`services.setup_operations.apply_operations` (not directly
+  through ``BindingMutationPipeline``) and isolates per-rec failures.
 * ``FinalReviewView`` disables Apply when ``accepted`` is empty.
 """
 
