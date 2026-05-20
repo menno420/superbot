@@ -454,3 +454,214 @@ async def test_dismiss_button_refuses_non_owner():
 
     dismiss_mock.assert_not_awaited()
     interaction.response.send_message.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# Track 4 PR 10: status-aware labels + on_ready resumption
+# ---------------------------------------------------------------------------
+
+
+def _find_button(view, custom_id: str):
+    import discord
+
+    return next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == custom_id
+    )
+
+
+def test_launcher_view_default_label_is_start_setup():
+    view = SetupLauncherView()
+    assert _find_button(view, "setup:start").label == "Start Setup"
+
+
+def test_launcher_view_in_progress_relabels_to_resume_setup():
+    view = SetupLauncherView(status="in_progress")
+    assert _find_button(view, "setup:start").label == "Resume Setup"
+
+
+def test_launcher_view_complete_relabels_to_re_run_setup():
+    view = SetupLauncherView(status="complete")
+    assert _find_button(view, "setup:start").label == "Re-run Setup"
+
+
+def test_launcher_view_pending_keeps_default_label():
+    view = SetupLauncherView(status="pending")
+    assert _find_button(view, "setup:start").label == "Start Setup"
+
+
+def test_launcher_view_dismissed_keeps_default_label():
+    view = SetupLauncherView(status="dismissed")
+    assert _find_button(view, "setup:start").label == "Start Setup"
+
+
+def _session_with_message(
+    *,
+    status: str = "in_progress",
+    channel_id: int = 5555,
+    message_id: int = 8888,
+):
+    return SetupSession(
+        guild_id=1,
+        guild_name="Test",
+        owner_id=99,
+        setup_status=status,
+        setup_channel_id=channel_id,
+        setup_message_id=message_id,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+
+
+@pytest.mark.asyncio
+async def test_resume_one_launcher_edits_message_with_status_aware_view():
+    import discord
+
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    cog = SetupCog(bot)
+
+    message = MagicMock()
+    message.edit = AsyncMock()
+    channel = MagicMock(spec=discord.TextChannel)
+    channel.fetch_message = AsyncMock(return_value=message)
+    guild = MagicMock(id=1)
+    guild.get_channel = MagicMock(return_value=channel)
+
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_session_with_message(status="in_progress"),
+    ):
+        result = await cog._resume_one_launcher(guild)
+
+    assert result is True
+    channel.fetch_message.assert_awaited_once_with(8888)
+    message.edit.assert_awaited_once()
+    edited_view = message.edit.await_args.kwargs["view"]
+    assert isinstance(edited_view, SetupLauncherView)
+    assert _find_button(edited_view, "setup:start").label == "Resume Setup"
+
+
+@pytest.mark.asyncio
+async def test_resume_one_launcher_skips_when_no_session_row():
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    cog = SetupCog(bot)
+    guild = MagicMock(id=1)
+
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        result = await cog._resume_one_launcher(guild)
+
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_resume_one_launcher_skips_when_channel_or_message_id_missing():
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    cog = SetupCog(bot)
+    guild = MagicMock(id=1)
+
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_session_with_message(channel_id=None, message_id=None),
+    ):
+        result = await cog._resume_one_launcher(guild)
+
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_resume_one_launcher_handles_deleted_message_silently():
+    import discord
+
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    cog = SetupCog(bot)
+
+    channel = MagicMock(spec=discord.TextChannel)
+    channel.fetch_message = AsyncMock(
+        side_effect=discord.NotFound(MagicMock(), "gone"),
+    )
+    guild = MagicMock(id=1)
+    guild.get_channel = MagicMock(return_value=channel)
+
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_session_with_message(),
+    ):
+        # Must not raise.
+        result = await cog._resume_one_launcher(guild)
+
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_resume_one_launcher_handles_forbidden_silently():
+    import discord
+
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    cog = SetupCog(bot)
+
+    channel = MagicMock(spec=discord.TextChannel)
+    channel.name = "general"
+    channel.fetch_message = AsyncMock(
+        side_effect=discord.Forbidden(MagicMock(), "no perm"),
+    )
+    guild = MagicMock(id=1)
+    guild.get_channel = MagicMock(return_value=channel)
+
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_session_with_message(),
+    ):
+        result = await cog._resume_one_launcher(guild)
+
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_resume_launchers_iterates_every_guild_and_isolates_failures():
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    g1 = MagicMock(id=1)
+    g2 = MagicMock(id=2)
+    g3 = MagicMock(id=3)
+    bot.guilds = [g1, g2, g3]
+    cog = SetupCog(bot)
+
+    seen_ids: list[int] = []
+
+    async def fake_resume_one(guild):
+        seen_ids.append(guild.id)
+        if guild.id == 2:
+            raise RuntimeError("boom on guild 2")
+        return True
+
+    with patch.object(
+        cog,
+        "_resume_one_launcher",
+        side_effect=fake_resume_one,
+    ):
+        await cog._resume_launchers()
+
+    # All three guilds processed, the failure on guild 2 did not
+    # short-circuit the sweep.
+    assert seen_ids == [1, 2, 3]

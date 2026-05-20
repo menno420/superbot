@@ -74,15 +74,48 @@ def _build_launcher_embed(session: SetupSession | None) -> discord.Embed:
     return embed
 
 
+_START_LABELS_BY_STATUS = {
+    "pending": "Start Setup",
+    "in_progress": "Resume Setup",
+    "complete": "Re-run Setup",
+    "dismissed": "Start Setup",
+}
+
+
 class SetupLauncherView(discord.ui.View):
     """Persistent owner-gated launcher view.
 
     ``timeout=None`` + static ``custom_id`` per button = the message
-    survives bot restarts (Track 4 PR 10 re-binds it on ``on_ready``).
+    survives bot restarts; :meth:`SetupCog._resume_launchers` rebinds
+    in-flight launcher messages with a status-aware label set on
+    ``on_ready``.
+
+    Labels:
+
+    * ``status="pending"`` / ``None`` / ``"dismissed"`` — default
+      "Start Setup".
+    * ``status="in_progress"`` — "Resume Setup".
+    * ``status="complete"`` — "Re-run Setup".
+
+    Custom IDs never change; discord.py routes interactions by id,
+    not by label, so the rebound message keeps working against the
+    cog-load-registered view.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, status: str | None = None) -> None:
         super().__init__(timeout=None)
+        self.status = status
+        if status is not None:
+            self._apply_status_labels(status)
+
+    def _apply_status_labels(self, status: str) -> None:
+        start_label = _START_LABELS_BY_STATUS.get(status, "Start Setup")
+        for child in self.children:
+            if (
+                isinstance(child, discord.ui.Button)
+                and getattr(child, "custom_id", None) == "setup:start"
+            ):
+                child.label = start_label
 
     async def _resolve_session(
         self,
@@ -351,10 +384,19 @@ async def post_launcher(
 class SetupCog(commands.Cog):
     """Setup-wizard launcher.
 
-    Listens for ``on_guild_join`` and posts the owner-gated launcher
-    view. Adds a single persistent ``SetupLauncherView`` instance to
-    the bot at ``cog_load`` so existing launcher messages survive
-    restarts.
+    Listens for ``on_guild_join`` and ``on_ready`` and keeps the
+    launcher message in sync with the ``setup_session`` row:
+
+    * ``on_guild_join`` — fresh launcher posted, session row upserted
+      in ``pending``.
+    * ``on_ready`` — for every guild with a recorded launcher
+      message, the message is edited in place with a status-aware
+      embed + view (e.g. ``Start Setup`` becomes ``Resume Setup``
+      when the row is mid-flow).
+
+    The base ``SetupLauncherView`` is registered at ``cog_load`` so
+    discord.py can dispatch interactions even before the resume
+    sweep finishes (the rebound message has the same custom_ids).
     """
 
     def __init__(self, bot: commands.Bot) -> None:
@@ -362,14 +404,18 @@ class SetupCog(commands.Cog):
 
     async def cog_load(self) -> None:
         # Register the persistent view so discord.py can match
-        # interactions to it after restart. Track 4 PR 10 will
-        # rebind every active launcher message to fresh anchor
-        # entries.
+        # interactions to it after restart. The base instance has
+        # the default labels; ``_resume_launchers`` later edits
+        # individual messages with status-aware label sets.
         self.bot.add_view(SetupLauncherView())
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
         await self._handle_join(guild)
+
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        await self._resume_launchers()
 
     async def _handle_join(self, guild: discord.Guild) -> None:
         """Internal entry point — split out for direct testing."""
@@ -389,6 +435,93 @@ class SetupCog(commands.Cog):
                 "setup_cog.on_guild_join: handler failed for guild=%d",
                 guild.id,
             )
+
+    async def _resume_launchers(self) -> None:
+        """Walk ``self.bot.guilds`` and refresh each launcher message.
+
+        For every guild whose ``setup_session`` row carries both a
+        ``setup_channel_id`` and a ``setup_message_id``, the message
+        is edited in place with the right status-aware label set.
+        Stale channel / message ids are detected via ``Forbidden`` /
+        ``NotFound`` / ``HTTPException`` and the corresponding row
+        fields are NOT cleared here (Track 4 PR 9 keeps the cog
+        non-destructive; an explicit teardown is the only path that
+        removes session state).
+        """
+        for guild in list(self.bot.guilds):
+            try:
+                await self._resume_one_launcher(guild)
+            except Exception:
+                logger.exception(
+                    "setup_cog.on_ready: resume failed for guild=%d",
+                    guild.id,
+                )
+
+    async def _resume_one_launcher(self, guild: discord.Guild) -> bool:
+        """Refresh one guild's launcher message.
+
+        Returns ``True`` when the message was edited, ``False`` when
+        no row exists, the row has no channel/message ids, or the
+        original message could not be fetched.
+        """
+        session = await setup_session.resume_session(guild.id)
+        if session is None:
+            return False
+        if session.setup_channel_id is None or session.setup_message_id is None:
+            return False
+
+        channel = guild.get_channel(session.setup_channel_id)
+        if not isinstance(
+            channel,
+            (discord.TextChannel, discord.Thread),
+        ):
+            logger.debug(
+                "setup_cog.on_ready: channel %s not in guild %d cache; "
+                "skipping resume.",
+                session.setup_channel_id,
+                guild.id,
+            )
+            return False
+
+        try:
+            message = await channel.fetch_message(session.setup_message_id)
+        except discord.NotFound:
+            logger.info(
+                "setup_cog.on_ready: launcher message %s in guild %d is "
+                "gone; skipping resume (next on_guild_join will re-post).",
+                session.setup_message_id,
+                guild.id,
+            )
+            return False
+        except discord.Forbidden:
+            logger.warning(
+                "setup_cog.on_ready: cannot fetch launcher message in "
+                "#%s (guild=%d) — missing read_message_history.",
+                channel.name,
+                guild.id,
+            )
+            return False
+        except discord.HTTPException as exc:
+            logger.warning(
+                "setup_cog.on_ready: HTTP error fetching launcher in guild=%d: %s",
+                guild.id,
+                exc,
+            )
+            return False
+
+        view = SetupLauncherView(status=session.setup_status)
+        embed = _build_launcher_embed(session)
+        try:
+            await message.edit(embed=embed, view=view)
+        except discord.HTTPException as exc:
+            logger.warning(
+                "setup_cog.on_ready: edit_message failed for launcher in "
+                "guild=%d: %s",
+                guild.id,
+                exc,
+            )
+            return False
+        return True
 
 
 async def setup(bot: commands.Bot) -> None:
