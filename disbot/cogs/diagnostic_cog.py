@@ -273,6 +273,25 @@ class DiagnosticCog(commands.Cog):
         """High-level platform status: uptime, cogs, governance, scheduler."""
         await ctx.send(embed=build_status_embed(self.bot))
 
+    @platform_grp.command(name="setup-readiness", aliases=["readiness", "ready"])  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_setup_readiness(self, ctx):
+        """Per-guild setup-readiness inventory (PR H).
+
+        Walks ``core.runtime.subsystem_schema.all_schemas`` and joins
+        each subsystem's declared bindings + settings against this
+        guild's stored values to compute how much of the configurable
+        surface has been populated.
+
+        Read-only — does not mutate anything. The output is the
+        substrate for a future setup wizard; for now operators use it
+        to spot subsystems that need attention.
+        """
+        from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
+
+        embed = await build_setup_readiness_embed(ctx.guild.id)
+        await ctx.send(embed=embed)
+
     @platform_grp.command(name="anchors")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_anchors(self, ctx):

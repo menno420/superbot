@@ -1015,6 +1015,82 @@ def _fmt_snapshot_value(value: object) -> str:
     return _impl(value)
 
 
+# ---------------------------------------------------------------------------
+# Setup readiness (PR H)
+# ---------------------------------------------------------------------------
+
+
+async def build_setup_readiness_embed(guild_id: int) -> discord.Embed:
+    """Render a per-guild setup-readiness inventory.
+
+    Calls :func:`services.setup_readiness.collect`, then formats the
+    per-subsystem counts + aggregate score into an embed. Subsystems
+    with no declared config show as ``—``; populated subsystems show
+    ``filled/declared`` for both bindings and settings plus a percent.
+    """
+    from services import setup_readiness
+
+    report = await setup_readiness.collect(guild_id)
+
+    title_score = "—" if report.aggregate_score is None else f"{report.percentage}%"
+
+    embed = discord.Embed(
+        title=f"🛰 Setup Readiness — {title_score}",
+        description=(
+            f"**{report.bindings_bound}/{report.bindings_declared}** bindings · "
+            f"**{report.settings_configured}/{report.settings_declared}** settings · "
+            f"**{report.resources_declared}** resource declarations"
+        ),
+        color=discord.Color.blurple(),
+    )
+
+    if not report.per_subsystem:
+        embed.add_field(
+            name="No subsystem schemas registered",
+            value="`cog_load` did not call `subsystem_schema.register`.",
+            inline=False,
+        )
+        return embed
+
+    # Render each subsystem as one line; group up to ~15 per field so
+    # we stay under the 1024-char per-field cap with operator-readable
+    # wrapping.
+    lines: list[str] = []
+    for entry in report.per_subsystem:
+        # entry.has_config is False iff bindings_declared == 0 AND
+        # settings_declared == 0 — same case where score ends up None.
+        # Treat both as "nothing to score" and surface the em-dash.
+        if not entry.has_config or entry.score is None:
+            score = "—"
+        else:
+            score = f"{round(entry.score * 100)}%"
+        lines.append(
+            f"`{entry.subsystem:<14}` "
+            f"bindings {entry.bindings_bound}/{entry.bindings_declared} · "
+            f"settings {entry.settings_configured}/{entry.settings_declared} · "
+            f"resources {entry.resources_declared} · {score}",
+        )
+
+    # Chunk lines into ≤15 per field to stay comfortably under 1024.
+    chunk_size = 15
+    for i in range(0, len(lines), chunk_size):
+        chunk = lines[i : i + chunk_size]
+        name = (
+            f"Subsystems ({i + 1}–{i + len(chunk)})"
+            if len(lines) > chunk_size
+            else "Subsystems"
+        )
+        embed.add_field(name=name, value="\n".join(chunk), inline=False)
+
+    embed.set_footer(
+        text=(
+            "Read-only. Empty settings_keys (legacy KV) count as unconfigured. "
+            "Subsystems with no declared config show — in the score column."
+        ),
+    )
+    return embed
+
+
 __all__ = [
     "build_anchors_embed",
     "build_bindings_embed",
@@ -1033,6 +1109,7 @@ __all__ = [
     "build_schemas_embed",
     "build_sessions_embed",
     "build_settings_registry_embed",
+    "build_setup_readiness_embed",
     "build_slow_embed",
     "build_status_embed",
     "build_tasks_embed",
