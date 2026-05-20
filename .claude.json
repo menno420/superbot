@@ -4,8 +4,7 @@
       "type": "stdio",
       "command": "codegraph",
       "args": [
-        "serve",
-        "--mcp"
+        "mcp"
       ]
     }
   }
