@@ -13,13 +13,10 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-
 _TOKEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "discord_token_like",
-        re.compile(
-            r"[A-Za-z0-9_-]{23,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{20,}"
-        ),
+        re.compile(r"[A-Za-z0-9_-]{23,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{20,}"),
     ),
     (
         "api_key_like",
