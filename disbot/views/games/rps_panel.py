@@ -28,6 +28,7 @@ import discord
 
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
+from views.games.common import BackToPanelButton
 from views.rps import _RpsPvpChallengeView, _RpsView
 
 logger = logging.getLogger("bot.views.games.rps_panel")
@@ -205,7 +206,7 @@ class _RpsBetPresetView(HubView):
         for preset in _BET_PRESETS:
             self.add_item(_RpsBetPresetButton(preset))
         self.add_item(_RpsBetCustomButton())
-        self.add_item(_RpsBackToPanelButton())
+        self.add_item(_make_rps_back_button())
 
 
 class _RpsBetPresetButton(discord.ui.Button):
@@ -278,7 +279,7 @@ class _RpsChallengeSelectView(HubView):
     def __init__(self, author: discord.Member | discord.User) -> None:
         super().__init__(author)
         self.add_item(_RpsOpponentSelect())
-        self.add_item(_RpsBackToPanelButton())
+        self.add_item(_make_rps_back_button())
 
 
 class _RpsOpponentSelect(discord.ui.UserSelect):
@@ -344,7 +345,7 @@ class _RpsTournamentSubView(HubView):
             self.add_item(_RpsTournamentJoinButton())
         elif is_admin and not tournament_active:
             self.add_item(_RpsTournamentStartButton())
-        self.add_item(_RpsBackToPanelButton())
+        self.add_item(_make_rps_back_button())
 
 
 class _RpsTournamentStartButton(discord.ui.Button):
@@ -415,25 +416,20 @@ class _RpsTournamentJoinButton(discord.ui.Button):
             )
 
 
-class _RpsBackToPanelButton(discord.ui.Button):
-    """Return to the main RPS panel from any sub-view."""
+def _make_rps_back_button() -> BackToPanelButton:
+    """Return a fresh "◀ Back to RPS" button for any RPS sub-view.
 
-    def __init__(self) -> None:
-        super().__init__(
-            label="◀ Back to RPS",
-            style=discord.ButtonStyle.secondary,
-            custom_id="rps_panel:back",
-            row=4,
-        )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        parent_view = self.view
-        author = getattr(parent_view, "_author", interaction.user)
-        new_view = RPSPanelView(author)
-        await interaction.response.edit_message(
-            embed=build_rps_overview_embed(),
-            view=new_view,
-        )
+    Thin wrapper over the shared :class:`BackToPanelButton` helper —
+    PR 7 extracted this back-button pattern from three sites in this
+    file into ``views.games.common`` so other game panels can adopt
+    the same shape.
+    """
+    return BackToPanelButton(
+        label="◀ Back to RPS",
+        custom_id="rps_panel:back",
+        panel_builder=RPSPanelView,
+        overview_builder=build_rps_overview_embed,
+    )
 
 
 def _resolve_rps_cog(interaction: discord.Interaction):
