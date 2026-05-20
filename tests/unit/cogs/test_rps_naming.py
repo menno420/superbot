@@ -156,7 +156,7 @@ def test_legacy_rps_tournament_cog_alias_still_importable():
     """Back-compat: old imports continue to resolve to the renamed
     class without code changes anywhere else.
     """
-    from cogs.rps_tournament_cog import RPSTournamentCog, RockPaperScissorsCog
+    from cogs.rps_tournament_cog import RockPaperScissorsCog, RPSTournamentCog
 
     assert RPSTournamentCog is RockPaperScissorsCog
 
