@@ -7,11 +7,28 @@ and file in the codebase. It is exposed to Claude Code via an MCP server.
 
 ## Activation checklist
 
-1. Install the CLI: `npm install -g @optave/codegraph`
-2. Build the index from the project root: `codegraph build .`
-3. Confirm the index: `codegraph info` — look for `Active engine: native`
-4. The `.claude.json` already configures the MCP server (`codegraph mcp`).
-5. Restart Claude Code after installing to load the MCP server.
+No global install is required. The MCP server starts via pinned `npx` on every Claude Code launch.
+
+1. Verify the package resolves: `npx -y @optave/codegraph@3.10.0 --version`
+2. Build the index (first time or fresh clone): `npx -y @optave/codegraph@3.10.0 build .`
+3. Confirm the index: `npx -y @optave/codegraph@3.10.0 stats` — look for `Active engine: native`
+4. Inside Claude Code, confirm MCP tools are loaded by calling `mcp__codegraph__audit`, `mcp__codegraph__where`, or `mcp__codegraph__context`.
+5. Restart Claude Code only if this is the first session after the `.claude.json` change was pulled.
+
+### Fresh-session quick-check
+
+```bash
+npx -y @optave/codegraph@3.10.0 --version
+npx -y @optave/codegraph@3.10.0 stats || npx -y @optave/codegraph@3.10.0 build .
+```
+
+Then inside Claude Code verify these MCP tools respond:
+- `mcp__codegraph__audit`
+- `mcp__codegraph__where`
+- `mcp__codegraph__context`
+
+> If MCP tools are available but the index is missing, run the `build` command above — a Claude restart is **not** needed.
+> If MCP tools are absent entirely, restart Claude Code (the `npx` startup is loaded once at session init).
 
 ---
 
@@ -21,16 +38,16 @@ These tools are confirmed to produce accurate results (verified 2026-05-20, code
 
 | MCP tool name | CLI equivalent | Purpose |
 |---|---|---|
-| `mcp__codegraph__where` | `codegraph where <name>` | Find a symbol by name — returns kind, file, line, signature |
-| `mcp__codegraph__context` | `codegraph context <name>` | Full source + direct callers + callees + signature |
-| `mcp__codegraph__fn_impact` | `codegraph fn-impact <name>` | Blast-radius analysis — what breaks if this changes |
-| `mcp__codegraph__execution_flow` | `codegraph flow <name>` | Forward execution trace (callees) |
-| `mcp__codegraph__query` | `codegraph query <name>` | Dependency chain / shortest path between symbols |
-| `mcp__codegraph__audit` | `codegraph audit <target>` | Per-function health metrics + impact |
-| `mcp__codegraph__complexity` | `codegraph complexity <name>` | Cognitive / cyclomatic complexity |
-| `mcp__codegraph__list_functions` | `codegraph brief <path>` | Symbols in a file or directory (see caveat on caller counts below) |
+| `mcp__codegraph__where` | `npx -y @optave/codegraph@3.10.0 where <name>` | Find a symbol by name — returns kind, file, line, signature |
+| `mcp__codegraph__context` | `npx -y @optave/codegraph@3.10.0 context <name>` | Full source + direct callers + callees + signature |
+| `mcp__codegraph__fn_impact` | `npx -y @optave/codegraph@3.10.0 fn-impact <name>` | Blast-radius analysis — what breaks if this changes |
+| `mcp__codegraph__execution_flow` | `npx -y @optave/codegraph@3.10.0 flow <name>` | Forward execution trace (callees) |
+| `mcp__codegraph__query` | `npx -y @optave/codegraph@3.10.0 query <name>` | Dependency chain / shortest path between symbols |
+| `mcp__codegraph__audit` | `npx -y @optave/codegraph@3.10.0 audit <target>` | Per-function health metrics + impact |
+| `mcp__codegraph__complexity` | `npx -y @optave/codegraph@3.10.0 complexity <name>` | Cognitive / cyclomatic complexity |
+| `mcp__codegraph__list_functions` | `npx -y @optave/codegraph@3.10.0 brief <path>` | Symbols in a file or directory (see caveat on caller counts below) |
 
-Note: `mcp__codegraph__diff_impact` (`codegraph diff-impact`) is a valid CLI command but is
+Note: `mcp__codegraph__diff_impact` (`npx -y @optave/codegraph@3.10.0 diff-impact`) is a valid CLI command but is
 **not in the `.claude/settings.json` allow list** and has not been verified via the MCP server.
 Add it to settings.json before relying on it.
 
@@ -89,13 +106,13 @@ but CodeGraph reports 0 callers because both call sites use function-body import
 
 | Symptom | Fix |
 |---|---|
-| `codegraph: command not found` | `npm install -g @optave/codegraph` |
-| "index not initialized" or empty results | `codegraph build .` from the project root |
-| Stale index after editing files | `codegraph build .` to rebuild, or run `codegraph watch` for incremental updates |
-| MCP tools unavailable in Claude Code | Restart Claude Code so it reloads the MCP server from `.claude.json` |
-| `Active engine: wasm` in `codegraph info` | Performance is degraded. Rebuild the native binding: ensure `node-gyp` prerequisites are installed, then `npm rebuild better-sqlite3` inside the codegraph package. |
+| MCP tools unavailable and index present | Restart Claude Code — the `npx` MCP server is loaded once at session init |
+| MCP tools available but empty results | Index is missing. Run `npx -y @optave/codegraph@3.10.0 build .` — no restart needed |
+| "index not initialized" or empty results | `npx -y @optave/codegraph@3.10.0 build .` from the project root |
+| Stale index after editing files | `npx -y @optave/codegraph@3.10.0 build .` to rebuild, or run `npx -y @optave/codegraph@3.10.0 watch` for incremental updates |
+| `Active engine: wasm` in `codegraph stats` | Performance is degraded. Rebuild the native binding: ensure `node-gyp` prerequisites are installed, then `npm rebuild better-sqlite3` inside the codegraph package. |
 | `module_map` returns all zeros | Known bug for this codebase. Use `mcp__codegraph__fn_impact` or `mcp__codegraph__context` for function-level connectivity. |
 | `file_deps` shows 0 imports/imported-by | Known file-level edge bug. Use grep or `fn_impact`/`context` to trace cross-file references. |
 | `impact_analysis` returns 0 dependents | Same file-level edge bug as `file_deps`. Use `mcp__codegraph__fn_impact` for blast-radius. |
-| `semantic_search` returns "No embeddings found" | Run `codegraph embed` from the project root. |
+| `semantic_search` returns "No embeddings found" | Run `npx -y @optave/codegraph@3.10.0 embed` from the project root. |
 | `brief` caller count seems too high | The count is the transitive total, not direct callers. Use `mcp__codegraph__fn_impact` Level 1 for direct callers. |

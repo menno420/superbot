@@ -3,7 +3,7 @@
 
 This project has a CodeGraph MCP server (`mcp__codegraph__*` tools) configured. CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and file. Reads are sub-millisecond and return structural information grep cannot.
 
-Install: `npm install -g @optave/codegraph` — Build/rebuild index: `codegraph build .` from the project root.
+MCP startup: pinned via `npx -y @optave/codegraph@3.10.0 mcp` — no global install required. Build/rebuild index: `npx -y @optave/codegraph@3.10.0 build .` from the project root.
 
 ### Use CodeGraph first for structural exploration
 
@@ -25,7 +25,7 @@ Use CodeGraph for **structural** questions — what calls what, what would break
 - **Use CodeGraph first** for structural exploration; then verify with source files before editing.
 - **Don't grep first** when looking up a symbol by name. `mcp__codegraph__where` is faster and returns kind + location + signature in one call.
 - **`context` is the workhorse** — it returns source, direct callers, callees, and signature in one call. Prefer it over chaining `where` + `fn_impact`.
-- **Index lag**: after editing a file run `codegraph build .` to rebuild; don't re-query immediately after editing in the same turn without rebuilding.
+- **Index lag**: after editing a file run `npx -y @optave/codegraph@3.10.0 build .` to rebuild; don't re-query immediately after editing in the same turn without rebuilding.
 
 ### Known limitations — do not trust these uncritically
 
@@ -34,7 +34,7 @@ Use CodeGraph for **structural** questions — what calls what, what would break
 - **`mcp__codegraph__file_deps` shows 0 imports and 0 imported-by for every file.** The file-level edge traversal is broken; it returns symbol definitions correctly but import/dependency edges are always empty. Do not use it for import graph analysis.
 - **`mcp__codegraph__impact_analysis` returns 0 file dependents.** File-level transitive impact is broken by the same underlying edge issue. Use `mcp__codegraph__fn_impact` for function-level blast-radius instead.
 - **`mcp__codegraph__structure` shows `<-0 ->0` connectivity for all files.** The per-file in/out edge counts are always zero. The symbol counts and line counts are accurate; the connectivity data is not.
-- **`mcp__codegraph__semantic_search` requires embeddings to be built first.** Run `codegraph embed` from the project root before using it; without embeddings it returns an error. Embeddings are not built by default.
+- **`mcp__codegraph__semantic_search` requires embeddings to be built first.** Run `npx -y @optave/codegraph@3.10.0 embed` from the project root before using it; without embeddings it returns an error. Embeddings are not built by default.
 - **Python lazy/function-body imports are not resolved.** When a function is imported inside a function body (`from services.X import Y` inside a method), CodeGraph cannot trace the call edge. Affected symbols are labelled `dead-unresolved` with 0 callers even when they are widely used. Always grep-verify when a symbol is marked `dead-unresolved`.
 
 ### Source files win
@@ -43,5 +43,5 @@ If CodeGraph output conflicts with what the source file says, **source files are
 
 ### If `.codegraph/` doesn't exist
 
-Run `codegraph build .` from the project root. If `codegraph` is not installed, run `npm install -g @optave/codegraph` first.
+Run `npx -y @optave/codegraph@3.10.0 build .` from the project root. No global install is required — the MCP server starts through pinned `npx` automatically when Claude Code launches. If MCP tools are absent entirely, restart Claude Code after pulling this config; a restart is not needed just to rebuild the index.
 <!-- CODEGRAPH_END -->
