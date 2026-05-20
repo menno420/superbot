@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands, tasks
@@ -9,6 +8,7 @@ from discord.ext import commands, tasks
 from core.runtime import panel_manager, resources
 from core.runtime.component_registry import stats_block
 from core.runtime.persistent_views import PersistentView, register
+from services import role_automation
 from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.helpers import normalize_name
@@ -234,100 +234,53 @@ class RoleCog(commands.Cog):
         guild: discord.Guild,
         ctx: commands.Context = None,
     ) -> int:
-        """Assign time-based roles to all members. Returns count of assignments made."""
+        """Assign time-based roles to all members.
+
+        Returns the count of successful assignments. Delegates the
+        decision + mutation to
+        :mod:`services.role_automation` so that audit events
+        (``audit.action_recorded``) are emitted for every change and
+        the guild-wide batch shares logic with
+        :meth:`on_member_join`.
+        """
         await _ensure_defaults(guild.id)
         thresholds = await db.get_role_thresholds(guild.id)
         if not thresholds:
+            if ctx:
+                await ctx.send("✅ Role check complete — 0 assignment(s) made.")
             return 0
 
-        role_map = {row["role_name"]: row["days_required"] for row in thresholds}
-        progression = sorted(role_map, key=lambda r: role_map[r])
-
-        skip_role_names = [
+        skip_role_names = tuple(
             n.strip()
             for n in (await db.get_setting(guild.id, "skip_roles", "Admin")).split(",")
             if n.strip()
-        ]
-        admin_role = next(
-            (
-                r
-                for name in skip_role_names
-                for r in [_find_role_normalized(guild, name)]
-                if r
-            ),
-            None,
         )
-        assigned = 0
 
-        for member in guild.members:
-            if member.bot:
-                continue
-            if admin_role and admin_role in member.roles:
-                continue
-            if not member.joined_at:
-                continue
-
-            days = (datetime.now(tz=timezone.utc) - member.joined_at).days
-
-            target_name = None
-            for name in progression:
-                if days >= role_map[name]:
-                    target_name = name
-
-            target_role = (
-                _find_role_normalized(guild, target_name) if target_name else None
+        threshold_objs = tuple(
+            role_automation.RoleThreshold(
+                role_name=row["role_name"],
+                days_required=row["days_required"],
             )
+            for row in thresholds
+        )
 
-            current_highest: str | None = None
-            for role in member.roles:
-                matched = next(
-                    (
-                        n
-                        for n in role_map
-                        if normalize_name(n) == normalize_name(role.name)
-                    ),
-                    None,
-                )
-                if matched:
-                    if current_highest is None or progression.index(
-                        matched,
-                    ) > progression.index(current_highest):
-                        current_highest = matched
-
-            if (
-                current_highest
-                and target_name
-                and progression.index(current_highest) > progression.index(target_name)
-            ):
-                continue
-
-            to_remove = [
-                r
-                for r in member.roles
-                if any(normalize_name(r.name) == normalize_name(n) for n in role_map)
-                and r != target_role
-            ]
-            if to_remove:
-                try:
-                    await member.remove_roles(*to_remove)
-                except (discord.Forbidden, discord.HTTPException):
-                    pass
-
-            if target_role and target_role not in member.roles:
-                try:
-                    await member.add_roles(target_role)
-                    assigned += 1
-                    logger.info(
-                        "Assigned %s to %s",
-                        target_role.name,
-                        member.display_name,
-                    )
-                except (discord.Forbidden, discord.HTTPException):
-                    pass
+        assignments = role_automation.compute_assignments(
+            guild,
+            threshold_objs,
+            skip_role_names=skip_role_names,
+        )
+        result = await role_automation.apply(
+            guild,
+            assignments,
+            actor_id=None,
+            actor_type="system",
+        )
 
         if ctx:
-            await ctx.send(f"✅ Role check complete — {assigned} assignment(s) made.")
-        return assigned
+            await ctx.send(
+                f"✅ Role check complete — {result.succeeded} assignment(s) made.",
+            )
+        return result.succeeded
 
     # ------------------------------------------------------------------ primary commands
 
@@ -596,23 +549,29 @@ class RoleCog(commands.Cog):
             return
         await _ensure_defaults(member.guild.id)
         thresholds = await db.get_role_thresholds(member.guild.id)
-        zero_day = next(
-            (r["role_name"] for r in thresholds if r["days_required"] == 0),
-            None,
-        )
-        if not zero_day:
+        if not thresholds:
             return
-        role = _find_role_normalized(member.guild, zero_day)
-        if role:
-            try:
-                await member.add_roles(role)
-                logger.info(
-                    "Assigned '%s' to %s on join.",
-                    zero_day,
-                    member.display_name,
-                )
-            except (discord.Forbidden, discord.HTTPException):
-                pass
+
+        threshold_objs = tuple(
+            role_automation.RoleThreshold(
+                role_name=row["role_name"],
+                days_required=row["days_required"],
+            )
+            for row in thresholds
+        )
+        plan = role_automation.explain_assignment_for(
+            member.guild,
+            member,
+            threshold_objs,
+        )
+        if plan is None:
+            return
+        await role_automation.apply(
+            member.guild,
+            (plan,),
+            actor_id=None,
+            actor_type="system",
+        )
 
 
 async def setup(bot: commands.Bot) -> None:
