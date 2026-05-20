@@ -1,0 +1,306 @@
+"""Phase 9i / Track 8 PR 23 — wizard hub + final review tests.
+
+Pins:
+
+* The wizard hub gates every button on ``setup_access.is_server_owner``.
+* The Readiness button posts the ephemeral readiness embed.
+* The Smart Suggestions button collects a snapshot + invokes the
+  advisor + opens the ``AIReviewPanelView``.
+* The Final Review button opens the ``FinalReviewView`` with the
+  current accepted set (empty in this view's lifecycle).
+* ``FinalReviewView`` routes each accepted recommendation through
+  ``BindingMutationPipeline.set_binding`` and isolates per-rec
+  failures into the ``failed`` list.
+* ``FinalReviewView`` disables Apply when ``accepted`` is empty.
+"""
+
+from __future__ import annotations
+
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from services.setup_plan import SetupRecommendation
+from services.setup_session import SetupSession
+from views.setup.final_review import (
+    ApplySummary,
+    FinalReviewView,
+    build_final_review_embed,
+)
+from views.setup.hub import SetupHubView, build_hub_embed
+
+
+def _owner_member(guild_owner_id: int = 99):
+    import discord
+
+    m = MagicMock(spec=discord.Member)
+    m.id = guild_owner_id
+    m.guild = SimpleNamespace(owner_id=guild_owner_id)
+    m.guild_permissions = SimpleNamespace(administrator=False)
+    return m
+
+
+def _other_member():
+    import discord
+
+    m = MagicMock(spec=discord.Member)
+    m.id = 42
+    m.guild = SimpleNamespace(owner_id=99)
+    m.guild_permissions = SimpleNamespace(administrator=True)
+    return m
+
+
+def _interaction(user, guild=None):
+    interaction = MagicMock()
+    interaction.user = user
+    interaction.guild_id = 1
+    interaction.guild = guild if guild is not None else MagicMock(id=1)
+    interaction.message = MagicMock(id=100)
+    interaction.response = MagicMock()
+    interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+    interaction.response.defer = AsyncMock()
+    interaction.followup = MagicMock()
+    interaction.followup.edit_message = AsyncMock()
+    return interaction
+
+
+# ---------------------------------------------------------------------------
+# Hub
+# ---------------------------------------------------------------------------
+
+
+def test_build_hub_embed_handles_no_session():
+    embed = build_hub_embed(None)
+    assert "wizard" in (embed.title or "").lower()
+
+
+def test_build_hub_embed_surfaces_session_status():
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=87,
+        current_step="readiness",
+        delegated_admins=(),
+    )
+    embed = build_hub_embed(session)
+    description = (embed.description or "").lower()
+    assert "in_progress" in description
+    assert "readiness" in description
+    assert "87" in description
+
+
+@pytest.mark.asyncio
+async def test_hub_readiness_button_owner_only():
+    view = SetupHubView(_other_member())
+    interaction = _interaction(_other_member())
+    await view._readiness.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    assert "owner" in interaction.response.send_message.await_args.args[0].lower()
+
+
+@pytest.mark.asyncio
+async def test_hub_readiness_button_owner_posts_embed_and_marks_progress():
+    view = SetupHubView(_owner_member())
+    interaction = _interaction(_owner_member())
+    fake_embed = MagicMock()
+    with (
+        patch(
+            "cogs.diagnostic._platform_embeds.build_setup_readiness_embed",
+            new_callable=AsyncMock,
+            return_value=fake_embed,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ) as mark_mock,
+    ):
+        await view._readiness.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    mark_mock.assert_awaited_once_with(1, step="readiness")
+
+
+@pytest.mark.asyncio
+async def test_hub_suggestions_button_renders_deterministic_draft_inline():
+    import services.guild_snapshot  # noqa: F401
+
+    view = SetupHubView(_owner_member())
+    interaction = _interaction(_owner_member())
+    fake_snapshot = MagicMock()
+    fake_draft = SimpleNamespace(
+        recommendations=(
+            SetupRecommendation(
+                subsystem="logging",
+                binding_name="mod_channel",
+                target_kind="channel",
+                target_id=100,
+                target_name="mod-log",
+                confidence="high",
+                reason="x",
+            ),
+        ),
+    )
+    fake_advisor = MagicMock()
+    fake_advisor.suggest = AsyncMock(return_value=fake_draft)
+    with (
+        patch(
+            "services.guild_snapshot.collect",
+            new_callable=AsyncMock,
+            return_value=fake_snapshot,
+        ),
+        patch(
+            "services.setup_plan.DeterministicAdvisor",
+            return_value=fake_advisor,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._suggestions.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    embed = interaction.response.send_message.await_args.kwargs["embed"]
+    rendered = "\n".join(f.value or "" for f in embed.fields)
+    assert "mod_channel" in rendered
+
+
+@pytest.mark.asyncio
+async def test_hub_final_review_button_opens_panel_even_when_empty():
+    view = SetupHubView(_owner_member())
+    interaction = _interaction(_owner_member())
+    await view._final_review.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    sent_view = interaction.response.send_message.await_args.kwargs["view"]
+    assert isinstance(sent_view, FinalReviewView)
+
+
+# ---------------------------------------------------------------------------
+# Final review
+# ---------------------------------------------------------------------------
+
+
+def _rec(target_id: int = 100, target_kind: str = "channel"):
+    return SetupRecommendation(
+        subsystem="logging",
+        binding_name="mod_channel",
+        target_kind=target_kind,
+        target_id=target_id,
+        target_name=f"target-{target_id}",
+        confidence="high",
+        reason="x",
+    )
+
+
+def test_build_final_review_embed_empty_state():
+    embed = build_final_review_embed([])
+    assert "no recommendations" in (embed.description or "").lower()
+
+
+def test_build_final_review_embed_pre_apply_lists_pending():
+    embed = build_final_review_embed([_rec()])
+    assert "1" in (embed.description or "")
+    assert any(f.name == "Pending" for f in embed.fields)
+
+
+def test_build_final_review_embed_post_apply_shows_summary():
+    summary = ApplySummary(applied=["a"], failed=["b"], skipped=["c"])
+    embed = build_final_review_embed([_rec()], summary=summary)
+    desc = embed.description or ""
+    assert "Applied **1**" in desc
+    assert "failed **1**" in desc
+    assert "skipped **1**" in desc
+
+
+def test_final_review_view_disables_apply_when_empty():
+    import discord
+
+    view = FinalReviewView(_owner_member(), accepted=[])
+    apply_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == "Apply"
+    )
+    assert apply_btn.disabled is True
+
+
+@pytest.mark.asyncio
+async def test_final_review_apply_routes_through_binding_pipeline():
+    pipeline_mock = MagicMock()
+    pipeline_mock.set_binding = AsyncMock(
+        return_value=MagicMock(mutation_id="m1"),
+    )
+    view = FinalReviewView(_owner_member(), accepted=[_rec()])
+    interaction = _interaction(_owner_member())
+    with (
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline_mock,
+        ),
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._apply.callback(interaction)
+    pipeline_mock.set_binding.assert_awaited_once()
+    assert view.summary is not None
+    assert len(view.summary.applied) == 1
+    assert view.summary.failed == []
+
+
+@pytest.mark.asyncio
+async def test_final_review_apply_isolates_per_rec_failures():
+    pipeline_mock = MagicMock()
+    pipeline_mock.set_binding = AsyncMock(
+        side_effect=[MagicMock(mutation_id="m1"), RuntimeError("boom")],
+    )
+    view = FinalReviewView(
+        _owner_member(),
+        accepted=[_rec(target_id=100), _rec(target_id=101)],
+    )
+    interaction = _interaction(_owner_member())
+    with (
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline_mock,
+        ),
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._apply.callback(interaction)
+    assert view.summary is not None
+    assert len(view.summary.applied) == 1
+    assert len(view.summary.failed) == 1
+    assert "boom" in view.summary.failed[0]
+
+
+@pytest.mark.asyncio
+async def test_final_review_apply_skips_unsupported_target_kind():
+    view = FinalReviewView(
+        _owner_member(),
+        accepted=[_rec(target_kind="totally_made_up_kind")],
+    )
+    pipeline_mock = MagicMock()
+    pipeline_mock.set_binding = AsyncMock()
+    interaction = _interaction(_owner_member())
+    with (
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline_mock,
+        ),
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._apply.callback(interaction)
+    pipeline_mock.set_binding.assert_not_awaited()
+    assert view.summary is not None
+    assert len(view.summary.skipped) == 1
