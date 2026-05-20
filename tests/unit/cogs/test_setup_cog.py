@@ -498,6 +498,113 @@ async def test_preset_button_opens_template_picker_for_owner():
 
 
 @pytest.mark.asyncio
+async def test_view_summary_denies_when_status_not_complete():
+    """View Summary refuses cleanly when the wizard has not finished."""
+    view = SetupLauncherView()
+    interaction = _mock_interaction(_owner_member())
+    pending_session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="pending",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=pending_session,
+    ):
+        await view._view_summary.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "not complete" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_view_summary_opens_summary_view_when_complete():
+    """View Summary builds a snapshot + opens SummaryView."""
+    from services.setup_session import DriftReport
+    from views.setup.summary import SummarySnapshot, SummaryView
+
+    view = SetupLauncherView()
+    interaction = _mock_interaction(_owner_member())
+    complete_session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="complete",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=80,
+        current_step=None,
+        delegated_admins=(),
+    )
+
+    fake_drift = DriftReport(
+        has_drift=False,
+        score_delta=None,
+        prev_score=80,
+        current_score=80,
+        summary="No drift detected.",
+    )
+    fake_snapshot = SummarySnapshot(applied=(), drift=fake_drift)
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=complete_session,
+        ),
+        patch(
+            "views.setup.summary.build_summary_snapshot",
+            new_callable=AsyncMock,
+            return_value=fake_snapshot,
+        ) as snapshot_mock,
+    ):
+        await view._view_summary.callback(interaction)
+
+    snapshot_mock.assert_awaited_once()
+    interaction.response.send_message.assert_awaited_once()
+    sent_view = interaction.response.send_message.await_args.kwargs.get("view")
+    assert isinstance(sent_view, SummaryView)
+    assert interaction.response.send_message.await_args.kwargs.get("ephemeral") is True
+
+
+@pytest.mark.asyncio
+async def test_view_summary_button_random_denied():
+    """Random non-admin members must be denied."""
+    view = SetupLauncherView()
+    random = _random_member()
+    interaction = _mock_interaction(random)
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="complete",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=session,
+    ):
+        await view._view_summary.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "setup admin" in msg.lower()
+
+
+@pytest.mark.asyncio
 async def test_readiness_button_admin_allowed():
     view = SetupLauncherView()
     interaction = _mock_interaction(_admin_member())
