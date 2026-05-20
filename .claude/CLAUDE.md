@@ -16,9 +16,8 @@ Use CodeGraph for **structural** questions — what calls what, what would break
 | "What calls function Y?" (direct callers) | `mcp__codegraph__fn_impact` Level 1 |
 | "What does Y call?" (callees) | `mcp__codegraph__execution_flow` |
 | "What would break if I changed Z?" | `mcp__codegraph__fn_impact` |
-| "Survey an unfamiliar module/topic" | `mcp__codegraph__structure` |
 | "What files/functions exist under path/" | `mcp__codegraph__list_functions` |
-| "What does this file import/export?" | `mcp__codegraph__file_deps` |
+| "What does this file import/export?" | grep (file_deps is broken — see limitations) |
 | "Is the index healthy? / graph stats" | `mcp__codegraph__audit` |
 
 ### Rules of thumb
@@ -31,7 +30,11 @@ Use CodeGraph for **structural** questions — what calls what, what would break
 ### Known limitations — do not trust these uncritically
 
 - **`mcp__codegraph__module_map` is broken for this codebase.** It returns 0 in/out edges for every file despite 22 000+ edges existing in the index. Do not use it for connectivity analysis.
-- **`mcp__codegraph__brief` overcounts callers.** It reports call-site counts (not distinct calling functions) and inflates the numbers further. Do not use its caller count as authoritative; use `mcp__codegraph__fn_impact` or `mcp__codegraph__context` instead.
+- **`mcp__codegraph__brief` reports transitive impact count, not direct caller count.** The number shown as "callers" equals the total transitive dependent count (same as `fn_impact` total), not just the distinct functions that directly call the symbol. Use `mcp__codegraph__fn_impact` Level 1 or `mcp__codegraph__context` for accurate direct-caller counts.
+- **`mcp__codegraph__file_deps` shows 0 imports and 0 imported-by for every file.** The file-level edge traversal is broken; it returns symbol definitions correctly but import/dependency edges are always empty. Do not use it for import graph analysis.
+- **`mcp__codegraph__impact_analysis` returns 0 file dependents.** File-level transitive impact is broken by the same underlying edge issue. Use `mcp__codegraph__fn_impact` for function-level blast-radius instead.
+- **`mcp__codegraph__structure` shows `<-0 ->0` connectivity for all files.** The per-file in/out edge counts are always zero. The symbol counts and line counts are accurate; the connectivity data is not.
+- **`mcp__codegraph__semantic_search` requires embeddings to be built first.** Run `codegraph embed` from the project root before using it; without embeddings it returns an error. Embeddings are not built by default.
 - **Python lazy/function-body imports are not resolved.** When a function is imported inside a function body (`from services.X import Y` inside a method), CodeGraph cannot trace the call edge. Affected symbols are labelled `dead-unresolved` with 0 callers even when they are widely used. Always grep-verify when a symbol is marked `dead-unresolved`.
 
 ### Source files win
