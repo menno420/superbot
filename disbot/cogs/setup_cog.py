@@ -299,7 +299,15 @@ class SetupLauncherView(discord.ui.View):
         del button
         if not await self._gate_owner(interaction):
             return
-        await interaction.response.send_message(_COMING_SOON, ephemeral=True)
+
+        from views.setup.template_picker import TemplatePickerView, build_picker_embed
+
+        picker = TemplatePickerView(interaction.user)
+        await interaction.response.send_message(
+            embed=build_picker_embed(),
+            view=picker,
+            ephemeral=True,
+        )
 
     @discord.ui.button(
         label="Dismiss",
