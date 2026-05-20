@@ -295,9 +295,7 @@ class CountingProvider(RankProvider):
         sorted_totals = await self._all_totals(guild)
         return [
             RankEntry(
-                label=(
-                    f"**{resources.member_display(guild, uid)}** " f"— {cnt} counts"
-                ),
+                label=f"**{resources.member_display(guild, uid)}** — {cnt} counts",
             )
             for uid, cnt in sorted_totals[:10]
         ]
