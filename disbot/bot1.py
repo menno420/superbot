@@ -627,6 +627,18 @@ async def main() -> None:
                 ),
             )
 
+            # Automation scheduler (Track 6 PR 18 / #211): gated behind
+            # ``AUTOMATION_SCHEDULER_ENABLED=true``. ``spawn_scheduler``
+            # returns ``None`` when the flag is off (default), so the
+            # bot boots inert by default. The returned task is already
+            # supervised by ``core.runtime.tasks.spawn``; we still
+            # append it to ``_APP_TASKS`` so shutdown cancels it.
+            from services.automation_scheduler import spawn_scheduler
+
+            scheduler_task = spawn_scheduler(bot)
+            if scheduler_task is not None:
+                _APP_TASKS.append(scheduler_task)
+
             await _load_cogs()
 
             # Cross-check subsystem identity surfaces (C1 / INV-B):
