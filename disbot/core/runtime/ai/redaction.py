@@ -34,7 +34,8 @@ _TOKEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 
 _EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
 _URL_QUERY_RE = re.compile(
-    r"([?&](?:token|key|secret|password|signature)=)[^&\s]+", re.IGNORECASE
+    r"([?&](?:token|key|secret|password|signature)=)[^&\s]+",
+    re.IGNORECASE,
 )
 
 
@@ -52,7 +53,6 @@ def _count(replacements: dict[str, int], key: str) -> None:
 
 def redact_text(text: str) -> RedactionResult:
     """Redact sensitive-looking substrings from plain text."""
-
     replacements: dict[str, int] = {}
     value = text
 
@@ -80,7 +80,6 @@ def redact_text(text: str) -> RedactionResult:
 
 def redact_payload(payload: Any) -> RedactionResult:
     """Recursively redact strings in common JSON-like payloads."""
-
     replacements: dict[str, int] = {}
 
     def merge(child: RedactionResult) -> Any:
