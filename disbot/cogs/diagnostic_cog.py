@@ -351,6 +351,21 @@ class DiagnosticCog(commands.Cog):
         """Show the most recent slow-path entries (S3.2 ring buffer)."""
         await ctx.send(embed=build_slow_embed(limit))
 
+    @platform_grp.command(name="automation")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_automation(self, ctx):
+        """Open the automation management + diagnostics panel.
+
+        Renders the ``automation_scheduler`` snapshot alongside the
+        per-guild rule list and lets administrators enable / disable /
+        delete individual rules through the audited
+        :class:`AutomationMutationPipeline`.
+        """
+        from views.diagnostic.automation_panel import open_panel
+
+        embed, view = await open_panel(ctx)
+        await send_panel(ctx, embed=embed, view=view)
+
     @platform_grp.command(name="sessions")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_sessions(self, ctx, subsystem: str = ""):

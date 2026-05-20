@@ -118,6 +118,7 @@ def test_select_values_cover_every_platform_subcommand():
         "views",
         "sessions",
         "slow",
+        "automation",
         # Catalogues
         "schemas",
         "settings-registry",

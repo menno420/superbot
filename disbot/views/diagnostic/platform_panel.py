@@ -59,6 +59,7 @@ _RUNTIME_OPTIONS = (
     ("views", "🖼", "Registered PersistentView classes by subsystem"),
     ("sessions", "🎫", "Active session counts by subsystem"),
     ("slow", "🐢", "Slow-path log entries (latest 10)"),
+    ("automation", "🤖", "Scheduler status + per-guild rule management panel"),
 )
 
 _CATALOGUES_OPTIONS = (
@@ -150,6 +151,10 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
         return build_views_embed()
     if name == "slow":
         return build_slow_embed()
+    if name == "automation":
+        from views.diagnostic.automation_panel import build_automation_embed
+
+        return await build_automation_embed(guild)
     if name == "sessions":
         embed, error = await build_sessions_embed()
         if embed is not None:
