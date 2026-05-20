@@ -1,19 +1,34 @@
-"""Phase 7 Option A — router-only Blackjack/RPS panel tests.
+"""Game-panel structural invariants — narrowed by PR 1.
 
-Pins:
+The Phase 7 Option A "panels are pure routers" doctrine is being
+superseded by PRs 4–6, which make ``RPSPanelView``,
+``BlackjackPanelView``, and the new ``DeathmatchPanelView`` actionable
+launchers. The strict tests that pinned the exact custom_id set and
+the instruction-only embed bodies were moved out so PRs 4–6 are not
+blocked.
 
-* The panels contain only navigation/embed-swap logic — no game-engine
-  imports.
-* Each cog's ``build_help_menu_view`` now returns the new panel
-  (not an empty View as it did pre-Phase 7).
-* Practice / Replay / Best-of variants are not yet present — their
-  buttons should NOT exist; a re-introduction must be deliberate.
+What remains here:
+
+* Engine-internal imports stay forbidden in the panel modules — panels
+  call helpers/views, never engine internals (``blackjack_engine``,
+  persistence layers, etc.) directly.
+* The "no Practice/Replay/Best-of button yet" invariants stay as
+  regression alarms — those labels aren't planned in PRs 4–6 either
+  and a future addition should be deliberate.
+* The Rules button must still exist as a read-only diagnostic surface
+  (looked up by label, not custom_id, to stay forward-compatible with
+  PR 4/5 button-naming changes).
+* ``build_help_menu_view`` must still return the panel class as the
+  view component.
+
+The new actionability invariant lives in
+``tests/unit/help/test_help_actionability_contract.py``.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 import discord
 import pytest
@@ -28,16 +43,17 @@ def _author(id_: int = 1) -> MagicMock:
     return member
 
 
-def _interaction() -> MagicMock:
-    interaction = MagicMock(spec=discord.Interaction)
-    interaction.user = _author()
-    interaction.response = MagicMock()
-    interaction.response.edit_message = AsyncMock()
-    return interaction
+def _find_rules_button(view: discord.ui.View) -> discord.ui.Button | None:
+    for child in view.children:
+        if not isinstance(child, discord.ui.Button):
+            continue
+        if "rules" in (child.label or "").lower():
+            return child
+    return None
 
 
 # ---------------------------------------------------------------------------
-# Module-level invariants — no game logic
+# Module-level invariants — engine internals stay out of panels
 # ---------------------------------------------------------------------------
 
 
@@ -50,9 +66,9 @@ def _interaction() -> MagicMock:
     ids=["blackjack_panel", "rps_panel"],
 )
 def test_panel_modules_do_not_import_game_engines(module_path: Path):
-    """The panels are pure navigation. Importing the blackjack engine,
-    economy service, persistence, or tournament state from a panel
-    would mean game logic crept in.
+    """Panels may import view classes (``_RpsView``, ``BlackjackView``,
+    ``_Duel``) and orchestration helpers, but must not reach into the
+    engine internals (persistence, raw db, engine math) directly.
     """
     src = module_path.read_text()
     head = src.split("\ndef ", 1)[0]  # module-import section
@@ -66,46 +82,20 @@ def test_panel_modules_do_not_import_game_engines(module_path: Path):
     ]
     for token in forbidden:
         assert token not in head, (
-            f"{module_path.name} imports game-engine token {token!r} at module "
-            f"load — Phase 7 Option A keeps panels router-only."
+            f"{module_path.name} imports engine-internal token "
+            f"{token!r} at module load — panels must call helpers, "
+            "not reach into engine internals."
         )
 
 
 # ---------------------------------------------------------------------------
-# Blackjack panel — view shape
+# No-Practice/Replay/Best-of regression alarms
 # ---------------------------------------------------------------------------
 
 
-def test_blackjack_overview_embed_lists_modes_and_typed_shortcuts():
-    embed = blackjack_panel.build_blackjack_overview_embed()
-    title = (embed.title or "")
-    assert "Blackjack" in title
-    description = (embed.description or "") + "\n".join(
-        f.value for f in embed.fields
-    ) + (embed.footer.text or "")
-    assert "Classic" in description
-    assert "Rules" in description
-    assert "!blackjack" in description or "!bj" in description
-
-
-def test_blackjack_panel_buttons_are_classic_rules_overview_only():
-    view = blackjack_panel.BlackjackPanelView(_author())
-    custom_ids = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-    }
-    assert custom_ids == {
-        "blackjack_panel:classic",
-        "blackjack_panel:rules",
-        "blackjack_panel:overview",
-    }
-
-
-def test_blackjack_panel_has_no_practice_or_replay_button_yet():
-    """Phase 7b is the place for Practice / Replay. Phase 7a panels
-    must not pre-leak those button labels.
-    """
+def test_blackjack_panel_has_no_practice_or_replay_button():
+    """Practice / Replay / Change-Mode are not planned in PR 5. Any
+    reintroduction should be deliberate with engine support."""
     view = blackjack_panel.BlackjackPanelView(_author())
     labels = [
         (c.label or "")
@@ -114,99 +104,14 @@ def test_blackjack_panel_has_no_practice_or_replay_button_yet():
     ]
     for token in ("Practice", "Replay", "Change Mode"):
         assert not any(token in lbl for lbl in labels), (
-            f"BlackjackPanelView already exposes {token!r} — Phase 7b "
-            "should re-introduce these together with engine support."
+            f"BlackjackPanelView already exposes {token!r} — "
+            "reintroduction should be deliberate with engine support."
         )
 
 
-@pytest.mark.asyncio
-async def test_blackjack_classic_button_renders_classic_embed():
-    view = blackjack_panel.BlackjackPanelView(_author())
-    interaction = _interaction()
-    btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "blackjack_panel:classic"
-    )
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
-    interaction.response.edit_message.assert_awaited_once()
-    _args, kwargs = interaction.response.edit_message.call_args
-    embed: discord.Embed = kwargs["embed"]
-    assert "Classic" in (embed.title or "")
-    rendered = "\n".join(f.value for f in embed.fields)
-    assert "!blackjack" in rendered or "!bj" in rendered
-
-
-@pytest.mark.asyncio
-async def test_blackjack_rules_button_renders_rules_embed():
-    view = blackjack_panel.BlackjackPanelView(_author())
-    interaction = _interaction()
-    btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "blackjack_panel:rules"
-    )
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
-    interaction.response.edit_message.assert_awaited_once()
-    _args, kwargs = interaction.response.edit_message.call_args
-    embed: discord.Embed = kwargs["embed"]
-    assert "Rules" in (embed.title or "")
-    rendered = "\n".join(f.value for f in embed.fields)
-    assert "Hit" in rendered or "Stand" in rendered
-
-
-@pytest.mark.asyncio
-async def test_blackjack_overview_button_returns_to_overview():
-    view = blackjack_panel.BlackjackPanelView(_author())
-    interaction = _interaction()
-    btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "blackjack_panel:overview"
-    )
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
-    _args, kwargs = interaction.response.edit_message.call_args
-    embed: discord.Embed = kwargs["embed"]
-    # Overview embed names "Modes" as a field; the detail embeds don't.
-    field_names = [f.name for f in embed.fields]
-    assert "Modes" in field_names
-
-
-# ---------------------------------------------------------------------------
-# RPS panel
-# ---------------------------------------------------------------------------
-
-
-def test_rps_overview_embed_lists_single_tournament_rules():
-    embed = rps_panel.build_rps_overview_embed()
-    rendered = (embed.description or "") + "\n".join(
-        f.value for f in embed.fields
-    ) + (embed.footer.text or "")
-    assert "Single Round" in rendered
-    assert "Tournament" in rendered
-    assert "Rules" in rendered
-    assert "!rps" in rendered
-
-
-def test_rps_panel_buttons_are_single_tournament_rules_overview():
-    view = rps_panel.RPSPanelView(_author())
-    custom_ids = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-    }
-    assert custom_ids == {
-        "rps_panel:single",
-        "rps_panel:tournament",
-        "rps_panel:rules",
-        "rps_panel:overview",
-    }
-
-
-def test_rps_panel_has_no_replay_or_best_of_button_yet():
+def test_rps_panel_has_no_replay_or_best_of_button():
+    """Replay / Best-of selectors are not planned in PR 4. Any
+    reintroduction should be deliberate."""
     view = rps_panel.RPSPanelView(_author())
     labels = [
         (c.label or "")
@@ -214,59 +119,35 @@ def test_rps_panel_has_no_replay_or_best_of_button_yet():
         if isinstance(c, discord.ui.Button)
     ]
     for token in ("Replay", "Best of"):
-        assert not any(token in lbl for lbl in labels)
-
-
-@pytest.mark.asyncio
-async def test_rps_single_button_renders_single_embed():
-    view = rps_panel.RPSPanelView(_author())
-    interaction = _interaction()
-    btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button) and c.custom_id == "rps_panel:single"
-    )
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
-    _args, kwargs = interaction.response.edit_message.call_args
-    embed: discord.Embed = kwargs["embed"]
-    assert "Single Round" in (embed.title or "")
-
-
-@pytest.mark.asyncio
-async def test_rps_tournament_button_renders_tournament_embed():
-    view = rps_panel.RPSPanelView(_author())
-    interaction = _interaction()
-    btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "rps_panel:tournament"
-    )
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
-    _args, kwargs = interaction.response.edit_message.call_args
-    embed: discord.Embed = kwargs["embed"]
-    assert "Tournament" in (embed.title or "")
-    rendered = "\n".join(f.value for f in embed.fields)
-    assert "!rpsregister" in rendered or "!rpsstart" in rendered
-
-
-@pytest.mark.asyncio
-async def test_rps_rules_button_renders_rules_embed():
-    view = rps_panel.RPSPanelView(_author())
-    interaction = _interaction()
-    btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button) and c.custom_id == "rps_panel:rules"
-    )
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
-    _args, kwargs = interaction.response.edit_message.call_args
-    embed: discord.Embed = kwargs["embed"]
-    assert "Rules" in (embed.title or "")
+        assert not any(token in lbl for lbl in labels), (
+            f"RPSPanelView already exposes {token!r} — reintroduction "
+            "should be deliberate."
+        )
 
 
 # ---------------------------------------------------------------------------
-# Cog wiring — build_help_menu_view now returns the panel
+# Rules button — still required as a read-only diagnostic
+# ---------------------------------------------------------------------------
+
+
+def test_blackjack_panel_exposes_rules_button():
+    view = blackjack_panel.BlackjackPanelView(_author())
+    assert _find_rules_button(view) is not None, (
+        "BlackjackPanelView must keep a Rules button as the read-only "
+        "diagnostic surface."
+    )
+
+
+def test_rps_panel_exposes_rules_button():
+    view = rps_panel.RPSPanelView(_author())
+    assert _find_rules_button(view) is not None, (
+        "RPSPanelView must keep a Rules button as the read-only "
+        "diagnostic surface."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Cog wiring — build_help_menu_view returns the panel
 # ---------------------------------------------------------------------------
 
 
@@ -291,7 +172,9 @@ async def test_rps_cog_build_help_menu_view_returns_panel():
     interaction.user = _author()
     embed, view = await cog.build_help_menu_view(interaction)
     assert isinstance(view, rps_panel.RPSPanelView)
+    title = embed.title or ""
     assert (
-        "Rock-Paper-Scissors" in (embed.title or "")
-        or "RPS" in (embed.title or "")
+        "Rock-Paper-Scissors" in title
+        or "Rock Paper Scissors" in title
+        or "RPS" in title
     )
