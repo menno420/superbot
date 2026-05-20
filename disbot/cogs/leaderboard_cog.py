@@ -1,126 +1,75 @@
+"""Centralised leaderboards for XP, coins, mining, deathmatch, RPS, and counting.
+
+PR G refactored the per-category branches that previously lived in a
+single ``_build_embed`` function into a provider registry under
+:mod:`services.rank_providers`. This cog now contains only the
+embed-rendering shell + the Discord-facing command surface; adding a
+new category means registering a provider, not touching this file.
+"""
+
 from __future__ import annotations
 
 import discord
 from discord.ext import commands
 
-from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
-from utils import db
+from services.rank_providers import (
+    ALIASES,
+    RankProvider,
+    get_provider,
+    provider_names,
+)
 from utils.ui_constants import ECONOMY_COLOR, UTILITY_COLOR
 from views.base import BaseView
 
 MEDALS = ["🥇", "🥈", "🥉"]
 
-CATEGORIES = {
-    "xp": ("🏆 XP Leaderboard", "xp"),
-    "coins": ("🪙 Coin Leaderboard", "coins"),
-    "mining": ("⛏️ Mining Leaderboard", "mining"),
-    "deathmatch": ("⚔️ Deathmatch Leaderboard", "deathmatch"),
-    "rps": ("✂️ RPS Leaderboard", "rps"),
-    "counting": ("🔢 Counting Leaderboard", "counting"),
-}
 
-ALIASES_MAP = {
-    "minelb": "mining",
-    "miningleaderboard": "mining",
-    "dm_leaderboard": "deathmatch",
-    "dm_lb": "deathmatch",
-    "board": "deathmatch",
-    "rpslb": "rps",
-    "countlb": "counting",
-    "counting_leaderboard": "counting",
-    "lb": "xp",
-    "rankings": "xp",
-}
-
-
-async def _build_embed(
-    category: str,
+async def _build_provider_embed(
+    provider: RankProvider,
     guild: discord.Guild,
-    ctx_channel: discord.abc.GuildChannel,
 ) -> discord.Embed:
-    title, _ = CATEGORIES.get(category, ("Leaderboard", ""))
-    embed = discord.Embed(title=title, color=ECONOMY_COLOR)
-
-    # Empty-state hints per category — explain what the feature does and
-    # what the next step is (S4 / user-centered UX rule #5).
-    _EMPTY_HINTS = {
-        "xp": "No XP earned yet. Chat in this server to start ranking up.",
-        "coins": "No coin totals yet. Use `!daily` once per day or `!work` to start earning.",  # noqa: E501
-        "mining": "No mining records yet. Use `!mine` to start collecting items.",
-        "deathmatch": "No deathmatch results yet. Start a match with `!deathmatch` to appear here.",  # noqa: E501
-        "rps": "No RPS games played yet. Challenge someone with `!rps` to appear here.",
-        "counting": "No counting activity yet. Count in the counting channel to appear here.",  # noqa: E501
-    }
-
-    if category == "xp":
-        rows = await db.fetchall(
-            "SELECT user_id, xp, level FROM xp WHERE guild_id=$1 ORDER BY xp DESC LIMIT 10",
-            (guild.id,),
-        )
-        lines = []
-        for i, row in enumerate(rows):
-            name = resources.member_display(guild, row["user_id"])
-            icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
-            lines.append(f"{icon} **{name}** — Level {row['level']} ({row['xp']} XP)")
-        embed.description = "\n".join(lines) or _EMPTY_HINTS["xp"]
-
-    elif category == "coins":
-        rows = await db.fetchall(
-            "SELECT user_id, coins FROM xp WHERE guild_id=$1 ORDER BY coins DESC LIMIT 10",
-            (guild.id,),
-        )
-        lines = []
-        for i, row in enumerate(rows):
-            name = resources.member_display(guild, row["user_id"])
-            icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
-            lines.append(f"{icon} **{name}** — {row['coins']} 🪙")
-        embed.description = "\n".join(lines) or _EMPTY_HINTS["coins"]
-
-    elif category == "mining":
-        rows = await db.get_all_mining_totals(guild.id)
-        lines = []
-        for i, (user_id, total) in enumerate(rows):
-            name = resources.member_display(guild, user_id)
-            icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
-            lines.append(f"{icon} **{name}** — {total} items")
-        embed.description = "\n".join(lines) or _EMPTY_HINTS["mining"]
-
-    elif category == "deathmatch":
-        rows = await db.get_deathmatch_leaderboard()
-        lines = []
-        for i, row in enumerate(rows):
-            name = resources.member_display(guild, row["user_id"])
-            icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
-            lines.append(f"{icon} **{name}** — {row['wins']}W / {row['losses']}L")
-        embed.description = "\n".join(lines) or _EMPTY_HINTS["deathmatch"]
-
-    elif category == "rps":
-        rows = await db.rps_get_leaderboard(guild.id)
-        lines = []
-        for i, row in enumerate(rows):
-            icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
-            lines.append(
-                f"{icon} **{row['name']}** — {row['wins']}W / {row['losses']}L / {row['ties']}T",
-            )
-        embed.description = "\n".join(lines) or _EMPTY_HINTS["rps"]
-
-    elif category == "counting":
-        # Aggregate counting totals across all channels for this guild
-        state = await db.get_counting_state(guild.id)
-        totals: dict[str, int] = {}
-        for ch_data in state.get("channels", {}).values():
-            for uid, cnt in ch_data.get("leaderboard", {}).items():
-                totals[uid] = totals.get(uid, 0) + cnt
-        sorted_totals = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:10]
-        lines = []
-        for i, (uid, cnt) in enumerate(sorted_totals):
-            name = resources.member_display(guild, uid)
-            icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
-            lines.append(f"{icon} **{name}** — {cnt} counts")
-        embed.description = "\n".join(lines) or _EMPTY_HINTS["counting"]
-
+    """Render a leaderboard embed from a provider's top-N rows."""
+    embed = discord.Embed(title=provider.display_title, color=ECONOMY_COLOR)
+    entries = await provider.top(guild)
+    if not entries:
+        embed.description = provider.empty_hint
+        return embed
+    lines = []
+    for i, entry in enumerate(entries):
+        icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
+        lines.append(f"{icon} {entry.label}")
+    embed.description = "\n".join(lines)
     return embed
+
+
+def _build_overview_embed() -> discord.Embed:
+    return discord.Embed(
+        title="📊 Leaderboards",
+        description="Select a category below to view the leaderboard.",
+        color=UTILITY_COLOR,
+    )
+
+
+def _select_options() -> list[discord.SelectOption]:
+    """Build the category-selector options from the provider registry.
+
+    Order matches :func:`services.rank_providers.provider_names` so a
+    new provider added there shows up here without further edits.
+    """
+    options: list[discord.SelectOption] = []
+    for name in provider_names():
+        provider = get_provider(name)
+        if provider is None:
+            continue
+        options.append(
+            discord.SelectOption(
+                label=provider.select_label,
+                value=provider.name,
+                emoji=provider.select_emoji,
+            ),
+        )
+    return options
 
 
 class LeaderboardView(BaseView):
@@ -135,27 +84,37 @@ class LeaderboardView(BaseView):
         super().__init__(author, timeout=120)
         self.guild = guild
         self.channel = channel
+        self.add_item(_CategorySelect())
 
-    @discord.ui.select(
-        placeholder="Choose a leaderboard category…",
-        options=[
-            discord.SelectOption(label="XP", value="xp", emoji="🏆"),
-            discord.SelectOption(label="Coins", value="coins", emoji="🪙"),
-            discord.SelectOption(label="Mining", value="mining", emoji="⛏️"),
-            discord.SelectOption(label="Deathmatch", value="deathmatch", emoji="⚔️"),
-            discord.SelectOption(label="RPS", value="rps", emoji="✂️"),
-            discord.SelectOption(label="Counting", value="counting", emoji="🔢"),
-        ],
-    )
-    async def select_category(
-        self,
-        interaction: discord.Interaction,
-        select: discord.ui.Select,
-    ):
+
+class _CategorySelect(discord.ui.Select):
+    """Runtime-built select whose options come from the provider registry."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Choose a leaderboard category…",
+            options=_select_options(),
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
             return
-        embed = await _build_embed(select.values[0], self.guild, self.channel)
-        await interaction.edit_original_response(embed=embed, view=self)
+        view = self.view
+        if not isinstance(view, LeaderboardView):
+            await interaction.followup.send(
+                "This dropdown is no longer attached to the leaderboard.",
+                ephemeral=True,
+            )
+            return
+        provider = get_provider(self.values[0])
+        if provider is None:
+            await interaction.followup.send(
+                f"Unknown category `{self.values[0]}`.",
+                ephemeral=True,
+            )
+            return
+        embed = await _build_provider_embed(provider, view.guild)
+        await interaction.edit_original_response(embed=embed, view=view)
 
 
 class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg]
@@ -180,20 +139,25 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
         ],
     )
     async def leaderboard(self, ctx: commands.Context, category: str = ""):
-        """Show a leaderboard.  !leaderboard [xp|coins|mining|deathmatch|rps|counting]"""
-        cat = ALIASES_MAP.get(ctx.invoked_with, category.lower()) or ""
-        cat = ALIASES_MAP.get(cat, cat)
+        """Show a leaderboard.  !leaderboard [xp|coins|mining|deathmatch|rps|counting]
+
+        Aliases (``!minelb``, ``!dm_lb``, ``!rpslb``, ``!countlb``, etc.)
+        resolve to the same provider via the registry's alias map.
+        """
+        # Prefer the alias (``ctx.invoked_with``) only when it is itself
+        # a known alias key. Otherwise fall back to the operator-typed
+        # category argument so ``!leaderboard mining`` still works.
+        invoked = (ctx.invoked_with or "").lower()
+        if invoked in ALIASES:
+            provider = get_provider(invoked)
+        else:
+            provider = get_provider(category) if category else None
 
         view = LeaderboardView(ctx.guild, ctx.channel, ctx.author)  # type: ignore[arg-type]
-
-        if cat and cat in CATEGORIES:
-            embed = await _build_embed(cat, ctx.guild, ctx.channel)  # type: ignore[arg-type]
+        if provider is not None:
+            embed = await _build_provider_embed(provider, ctx.guild)
         else:
-            embed = discord.Embed(
-                title="📊 Leaderboards",
-                description="Select a category below to view the leaderboard.",
-                color=UTILITY_COLOR,
-            )
+            embed = _build_overview_embed()
 
         view.message = await ctx.send(embed=embed, view=view)
 
@@ -207,12 +171,7 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
             interaction.channel,  # type: ignore[arg-type]
             interaction.user,  # type: ignore[arg-type]
         )
-        embed = discord.Embed(
-            title="📊 Leaderboards",
-            description="Select a category below to view the leaderboard.",
-            color=UTILITY_COLOR,
-        )
-        return embed, view
+        return _build_overview_embed(), view
 
 
 async def setup(bot: commands.Bot):

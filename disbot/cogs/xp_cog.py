@@ -8,13 +8,42 @@ from discord.ext import commands
 from cogs.xp._helpers import _STAT_TYPES, _build_rank_embed
 from core.runtime.interaction_helpers import help_ctx_shim
 from services import xp_service
+from services.rank_providers import get_provider
 from utils import embeds as em
+from utils.ui_constants import ECONOMY_COLOR
 from views.base import send_panel
 from views.xp.config_panel import XpConfigView
 from views.xp.main_panel import _XpHubView
 from views.xp.rank_view import _RankView
 
 logger = logging.getLogger("bot")
+
+
+async def _build_rank_provider_embed(
+    provider,
+    member: discord.Member,
+    guild: discord.Guild,
+) -> discord.Embed:
+    """Render a single-user rank card for any non-XP provider.
+
+    XP and coins keep their richer level / progress-bar card via
+    :func:`cogs.xp._helpers._build_rank_embed`. Everything else uses
+    this thinner card: title from the provider, a single field with
+    the member's rank + provider-formatted value, or an empty-state
+    line when the member has no entry.
+    """
+    rank_pos, rendered = await provider.member_rank(guild, member.id)
+    embed = discord.Embed(
+        title=f"{provider.display_title} — {member.display_name}",
+        color=ECONOMY_COLOR,
+    )
+    embed.set_thumbnail(url=member.display_avatar.url)
+    if rank_pos is None:
+        embed.description = provider.empty_hint
+    else:
+        embed.add_field(name="Rank", value=f"#{rank_pos}", inline=True)
+        embed.add_field(name="Value", value=rendered, inline=True)
+    return embed
 
 
 class XpCog(commands.Cog):
@@ -55,18 +84,48 @@ class XpCog(commands.Cog):
 
     @commands.command(name="rank")
     async def rank(self, ctx: commands.Context, *args):
-        """Show XP/coin rank.  !rank [user] [xp|coins|both]"""
-        member: discord.Member = ctx.author  # type: ignore[assignment]
-        stat: str = "both"
-        for arg in args:
-            if arg.lower() in _STAT_TYPES:
-                stat = arg.lower()
-            else:
-                try:
-                    member = await commands.MemberConverter().convert(ctx, arg)
-                except commands.BadArgument:
-                    pass
+        """Show rank in a category.
 
+        PR G — provider-aware. Supported forms:
+
+        * ``!rank``                — XP + coins overview (legacy default).
+        * ``!rank xp|coins|both``  — XP/coin rank card (legacy).
+        * ``!rank @user``          — XP + coins for another member.
+        * ``!rank @user xp|coins`` — that user's XP or coin card.
+        * ``!rank <category>``     — your rank in mining / deathmatch /
+          rps / counting (any provider name or alias from
+          :mod:`services.rank_providers`).
+        """
+        member: discord.Member = ctx.author  # type: ignore[assignment]
+        stat: str | None = None
+        category: str | None = None
+        for arg in args:
+            lowered = arg.lower()
+            if lowered in _STAT_TYPES:
+                stat = lowered
+                continue
+            # Try a non-XP provider category (mining, deathmatch, rps,
+            # counting, plus all the aliases). Skip "xp"/"coins" — those
+            # already match _STAT_TYPES above so the legacy rank card
+            # path handles them.
+            if lowered not in {"xp", "coins"}:
+                provider = get_provider(lowered)
+                if provider is not None:
+                    category = provider.name
+                    continue
+            try:
+                member = await commands.MemberConverter().convert(ctx, arg)
+            except commands.BadArgument:
+                pass
+
+        if category is not None:
+            provider = get_provider(category)
+            assert provider is not None  # noqa: S101 — guarded above
+            embed = await _build_rank_provider_embed(provider, member, ctx.guild)
+            await ctx.send(embed=embed)
+            return
+
+        stat = stat or "both"
         embed = await _build_rank_embed(member, ctx.guild, stat)
         view = _RankView(member, ctx.guild, stat)
         view.message = await ctx.send(embed=embed, view=view)
