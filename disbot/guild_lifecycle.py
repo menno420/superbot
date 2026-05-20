@@ -50,6 +50,9 @@ async def teardown(guild_id: int) -> None:
       15. Guild-config cache    — drop cached guild config entries (F-1).
       16. Scope locks           — invoke registered per-cog teardown hooks (F-2).
       17. Governance feedback cooldown — documented, no per-guild cleanup needed.
+      18. Setup session         — delete the setup_session row (Phase 9e PR 8).
+                                   The launcher cog re-creates it on the next
+                                   on_guild_join.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -104,6 +107,11 @@ async def teardown(guild_id: int) -> None:
 
     # 17. Governance feedback cooldown dict in governance/__init__.
     _teardown_feedback_cooldown(guild_id)
+
+    # 18. Setup session row (Phase 9e PR 8). The launcher cog re-creates
+    #     it via ``services.setup_session.start_session`` on the next
+    #     ``on_guild_join``.
+    await _teardown_setup_session(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
@@ -453,3 +461,22 @@ def _teardown_feedback_cooldown(guild_id: int) -> None:
     The dict's own size guard (>500 entries → purge expired) handles unbounded
     growth without per-guild teardown.
     """
+
+
+async def _teardown_setup_session(guild_id: int) -> None:
+    """Delete the ``setup_session`` row for the departed guild.
+
+    Phase 9e PR 8. The launcher cog re-creates the row via
+    :func:`services.setup_session.start_session` on the next
+    ``on_guild_join``, so per-guild state is bounded.
+    """
+    try:
+        from utils.db import setup_session as db
+
+        await db.clear(guild_id)
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: setup_session teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
