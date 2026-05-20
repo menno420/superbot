@@ -210,7 +210,8 @@ async def _handle_send_message(
             "reason": f"channel {channel_id} not in cache",
         }
     if not isinstance(
-        channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel)
+        channel,
+        (discord.TextChannel, discord.VoiceChannel, discord.StageChannel),
     ):
         return {
             "skipped": True,
@@ -305,7 +306,8 @@ async def _handle_post_readiness_summary(
     if channel is None:
         return {"skipped": True, "reason": "channel not in cache"}
     if not isinstance(
-        channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel)
+        channel,
+        (discord.TextChannel, discord.VoiceChannel, discord.StageChannel),
     ):
         return {
             "skipped": True,
