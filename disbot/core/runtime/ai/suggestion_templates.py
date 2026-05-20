@@ -96,7 +96,6 @@ TEMPLATES: tuple[SuggestionTemplate, ...] = (
 
 def templates_for_task(task: AITask) -> tuple[SuggestionTemplate, ...]:
     """Return templates matching `task`."""
-
     return tuple(template for template in TEMPLATES if template.task == task)
 
 
