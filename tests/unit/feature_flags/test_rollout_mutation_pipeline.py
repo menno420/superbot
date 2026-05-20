@@ -258,6 +258,52 @@ async def test_set_flag_state_global_writes_db_clears_cache_emits_event(pipeline
     assert audit_payload["mutation_id"] == result.mutation_id
 
 
+@pytest.mark.asyncio
+async def test_set_flag_state_routes_audit_through_shared_helper(pipeline):
+    """Phase 9c.2: rollout mutation delegates audit emit to the shared
+    ``services.audit_events.emit_audit_action`` helper rather than
+    carrying its own inline emitter. Patching the name at the call
+    site verifies the import path."""
+    with (
+        patch(
+            "utils.db.feature_flag_state.get_global_override",
+            new_callable=AsyncMock,
+            return_value={"state": "off", "rollout_percent": None},
+        ),
+        patch(
+            "utils.db.feature_flag_state.upsert_global_with_audit",
+            new_callable=AsyncMock,
+        ),
+        patch.object(feature_flags, "clear_cache"),
+        patch("core.events.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.rollout_mutation.emit_audit_action",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as mock_audit,
+    ):
+        result = await pipeline.set_flag_state(
+            flag_name="bindings.primary",
+            scope="global",
+            state="canary",
+            actor_id=99,
+        )
+    mock_audit.assert_awaited_once()
+    kwargs = mock_audit.await_args.kwargs
+    assert kwargs["mutation_id"] == result.mutation_id
+    assert kwargs["subsystem"] == "logging"
+    assert kwargs["mutation_type"] == "set_flag_state"
+    assert kwargs["target"] == "flag:bindings.primary"
+    assert kwargs["scope"] == "global"
+    assert kwargs["prev_value"] == "off"
+    assert kwargs["new_value"] == "canary"
+    assert kwargs["actor_id"] == 99
+    assert kwargs["actor_type"] == "platform_owner"
+    # The shared helper takes a datetime for occurred_at; the helper
+    # itself serialises it. The rollout pipeline does NOT pre-format.
+    assert hasattr(kwargs["occurred_at"], "isoformat")
+
+
 # ---------------------------------------------------------------------------
 # DB write + cache + event (set_flag_state guild scope)
 # ---------------------------------------------------------------------------
