@@ -114,6 +114,16 @@ _ALLOWED_EDIT_FILES: frozenset[Path] = frozenset(
         _DISBOT / "views" / "settings" / "edit_channel.py",
         _DISBOT / "views" / "settings" / "edit_role.py",
         _DISBOT / "views" / "settings" / "edit_number_presets.py",
+        # S7 — binding edit + resource provisioning.  edit_binding is
+        # the mutation surface for declared BindingSpec slots
+        # (BindingMutationPipeline); provision_resource is the
+        # mutation surface for declared ResourceRequirement slots
+        # (ResourceProvisioningPipeline preview + confirmed provision).
+        # Both write paths are dispatched from subsystem_view.py via
+        # _EditBindingSelect / _ProvisionResourceSelect; subsystem_view
+        # itself stays read-only.
+        _DISBOT / "views" / "settings" / "edit_binding.py",
+        _DISBOT / "views" / "settings" / "provision_resource.py",
     },
 )
 
@@ -201,14 +211,18 @@ def test_allowlist_entries_exist():
 
 
 def test_allowlist_only_contains_edit_flow_files():
-    """Sanity: the allowlist must only contain ``views/settings/edit_*`` and
-    ``views/settings/reset_*`` files.  Catches a future drive-by edit that
-    allowlists, say, the hub or audit view by mistake."""
+    """Sanity: the allowlist must only contain mutation-flow widget files.
+
+    Acceptable prefixes are ``edit_`` (S6/S7 widget modules), ``reset_``
+    (S6 reset), and ``provision_`` (S7 resource provisioning).  Catches
+    a future drive-by edit that allowlists, say, the hub or audit view
+    by mistake."""
+    allowed_prefixes = ("edit_", "reset_", "provision_")
     for path in _ALLOWED_EDIT_FILES:
         name = path.name
-        assert name.startswith("edit_") or name.startswith(
-            "reset_"
-        ), f"unexpected allowlist entry: {path.relative_to(_REPO_ROOT)}"
+        assert name.startswith(allowed_prefixes), (
+            f"unexpected allowlist entry: {path.relative_to(_REPO_ROOT)}"
+        )
 
 
 def test_settings_ui_paths_contain_expected_files():

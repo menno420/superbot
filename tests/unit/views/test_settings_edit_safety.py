@@ -371,4 +371,7 @@ def test_s6_invariant_allowlist_only_contains_edit_files():
         "edit_channel.py",
         "edit_role.py",
         "edit_number_presets.py",
+        # S7 — binding edit + resource provisioning.
+        "edit_binding.py",
+        "provision_resource.py",
     }

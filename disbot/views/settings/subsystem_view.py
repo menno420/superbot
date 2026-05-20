@@ -573,8 +573,164 @@ class _ResetSettingSelect(discord.ui.Select):
         )
 
 
+def _editable_bindings(subsystem: str) -> list:
+    """Return BindingSpec instances editable by the Settings Manager.
+
+    The Settings Manager binding-edit widget supports channel / role /
+    category / thread targets; ``MEMBER`` bindings (rare) are filtered
+    out so the dropdown only offers slots the widget can actually edit.
+    """
+    from core.runtime.subsystem_schema import get_schema
+
+    schema = get_schema(subsystem)
+    if schema is None:
+        return []
+    editable_kinds = {"channel", "role", "category", "thread"}
+    return [
+        spec
+        for spec in schema.bindings
+        if getattr(spec.kind, "value", str(spec.kind)) in editable_kinds
+    ]
+
+
+def _provisionable_resources(subsystem: str) -> list:
+    """Return ResourceRequirement instances that map to an editable binding.
+
+    A resource requirement is launchable from the Settings Manager only
+    when its ``binding_name`` points at a declared, editable
+    BindingSpec.  Requirements without a binding cross-link are skipped
+    because we have no slot to write back into.
+    """
+    from core.runtime.subsystem_schema import get_schema
+
+    schema = get_schema(subsystem)
+    if schema is None:
+        return []
+    binding_names = {spec.name for spec in _editable_bindings(subsystem)}
+    return [
+        req
+        for req in schema.resource_requirements
+        if req.binding_name and req.binding_name in binding_names
+    ]
+
+
+class _EditBindingSelect(discord.ui.Select):
+    """Select listing every editable BindingSpec for the subsystem.
+
+    Picking a binding opens the appropriate :class:`BindingEditView`
+    for that binding's kind.
+    """
+
+    def __init__(self, subsystem: str, specs: list) -> None:
+        self.subsystem = subsystem
+        options: list[discord.SelectOption] = []
+        for spec in specs[:25]:
+            kind_value = getattr(spec.kind, "value", str(spec.kind))
+            options.append(
+                discord.SelectOption(
+                    label=spec.name[:100],
+                    value=spec.name,
+                    description=f"kind={kind_value}"[:100],
+                ),
+            )
+        super().__init__(
+            placeholder="Edit a binding…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            row=3,
+        )
+        self._specs_by_name = {spec.name: spec for spec in specs}
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        name = self.values[0]
+        spec = self._specs_by_name.get(name)
+        if spec is None:
+            await interaction.response.send_message(
+                f"❌ Unknown binding `{self.subsystem}.{name}`.",
+                ephemeral=True,
+            )
+            return
+        kind_value = getattr(spec.kind, "value", str(spec.kind))
+        parent_msg = interaction.message
+        from views.settings.edit_binding import BindingEditView
+
+        try:
+            view = BindingEditView(
+                self.subsystem,
+                name,
+                kind_value,
+                parent_msg,
+            )
+        except ValueError as exc:
+            await interaction.response.send_message(
+                f"❌ Cannot edit binding: {exc}",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            f"Pick a {kind_value} for `{self.subsystem}.{name}`:",
+            view=view,
+            ephemeral=True,
+        )
+
+
+class _ProvisionResourceSelect(discord.ui.Select):
+    """Select listing provisionable resource requirements for the subsystem.
+
+    Picking a resource opens the :class:`ProvisionResourceView` with the
+    Use-existing / Create-new actions for that slot.
+    """
+
+    def __init__(self, subsystem: str, requirements: list) -> None:
+        self.subsystem = subsystem
+        options: list[discord.SelectOption] = []
+        for req in requirements[:25]:
+            kind_value = getattr(req.kind, "value", str(req.kind))
+            options.append(
+                discord.SelectOption(
+                    label=f"{req.binding_name} ({kind_value})"[:100],
+                    value=req.binding_name,
+                    description=(req.description or req.intent)[:100],
+                ),
+            )
+        super().__init__(
+            placeholder="Provision a resource…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            row=4,
+        )
+        self._requirements_by_binding = {req.binding_name: req for req in requirements}
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        binding_name = self.values[0]
+        req = self._requirements_by_binding.get(binding_name)
+        if req is None:
+            await interaction.response.send_message(
+                f"❌ Unknown resource requirement `{binding_name}`.",
+                ephemeral=True,
+            )
+            return
+        kind_value = getattr(req.kind, "value", str(req.kind))
+        from views.settings.provision_resource import ProvisionResourceView
+
+        view = ProvisionResourceView(
+            self.subsystem,
+            binding_name,
+            kind_value,
+            interaction.message,
+        )
+        await interaction.response.send_message(
+            f"Provision `{self.subsystem}.{binding_name}` ({kind_value}): "
+            "pick an existing resource or create a new one.",
+            view=view,
+            ephemeral=True,
+        )
+
+
 class SubsystemSettingsView(HubView):
-    """Per-subsystem panel: read-only embed + S6 edit/reset selects + cog link."""
+    """Per-subsystem panel: read-only embed + edit/reset/binding/provision selects."""
 
     def __init__(self, author: Any, subsystem: str) -> None:
         super().__init__(author)
@@ -585,6 +741,12 @@ class SubsystemSettingsView(HubView):
         if specs:
             self.add_item(_EditSettingSelect(subsystem, specs))
             self.add_item(_ResetSettingSelect(subsystem, specs))
+        bindings = _editable_bindings(subsystem)
+        if bindings:
+            self.add_item(_EditBindingSelect(subsystem, bindings))
+        resources = _provisionable_resources(subsystem)
+        if resources:
+            self.add_item(_ProvisionResourceSelect(subsystem, resources))
 
 
 __all__ = [
