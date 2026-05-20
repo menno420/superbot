@@ -44,11 +44,22 @@ Public API
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from core.runtime.subsystem_schema import all_schemas
+from services.resource_health import (
+    SEV_ERROR,
+    SEV_INFO,
+    SEV_WARN,
+    ResourceHealthFinding,
+)
+from services.resource_health import inspect as inspect_resource_health
 from utils import db
 from utils.db import bindings as db_bindings
+
+if TYPE_CHECKING:
+    import discord
 
 logger = logging.getLogger("bot.setup_readiness")
 
@@ -78,7 +89,13 @@ class SubsystemReadiness:
 
 @dataclass(frozen=True)
 class ReadinessReport:
-    """Aggregate readiness snapshot for a guild."""
+    """Aggregate readiness snapshot for a guild.
+
+    Phase 9d (Track 2 PR 5): widened with ``health_findings`` and
+    ``health_summary`` — populated only when ``collect`` is called with
+    a live :class:`discord.Guild` so the legacy ``collect(guild_id)``
+    call path keeps working unchanged (empty tuple / empty dict).
+    """
 
     guild_id: int
     per_subsystem: tuple[SubsystemReadiness, ...]
@@ -88,6 +105,8 @@ class ReadinessReport:
     settings_configured: int
     resources_declared: int
     aggregate_score: float | None
+    health_findings: tuple[ResourceHealthFinding, ...] = ()
+    health_summary: dict[str, int] = field(default_factory=dict)
 
     @property
     def percentage(self) -> int:
@@ -144,7 +163,11 @@ def _compute_score(
     return max(0.0, min(1.0, filled / total))
 
 
-async def collect(guild_id: int) -> ReadinessReport:
+async def collect(
+    guild_id: int,
+    *,
+    guild: discord.Guild | None = None,
+) -> ReadinessReport:
     """Build the per-guild readiness report.
 
     Walks :func:`core.runtime.subsystem_schema.all_schemas` and, for each
@@ -156,6 +179,12 @@ async def collect(guild_id: int) -> ReadinessReport:
     Subsystems with no declared bindings or settings appear with
     ``score=None`` so they're surfaced in the report but don't drag the
     aggregate.
+
+    When ``guild`` is provided, the report additionally carries
+    ``health_findings`` from
+    :func:`services.resource_health.inspect`, plus a
+    ``health_summary`` dict counting findings by severity. The legacy
+    ``collect(guild_id)`` call path leaves both empty.
     """
     schemas = all_schemas()
     binding_rows = await db_bindings.list_for_guild(guild_id)
@@ -221,6 +250,20 @@ async def collect(guild_id: int) -> ReadinessReport:
     if scored:
         aggregate = sum(r.score for r in scored) / len(scored)  # type: ignore[misc]
 
+    health_findings: tuple[ResourceHealthFinding, ...] = ()
+    health_summary: dict[str, int] = {}
+    if guild is not None:
+        try:
+            health_findings = await inspect_resource_health(guild)
+        except Exception:
+            logger.exception(
+                "setup_readiness.collect: resource_health.inspect failed "
+                "for guild=%d; report continues with empty health_findings.",
+                guild_id,
+            )
+            health_findings = ()
+        health_summary = _summarise_health(health_findings)
+
     return ReadinessReport(
         guild_id=guild_id,
         per_subsystem=tuple(per_subsystem),
@@ -230,7 +273,20 @@ async def collect(guild_id: int) -> ReadinessReport:
         settings_configured=total_s_configured,
         resources_declared=total_r_declared,
         aggregate_score=aggregate,
+        health_findings=health_findings,
+        health_summary=health_summary,
     )
+
+
+def _summarise_health(
+    findings: tuple[ResourceHealthFinding, ...],
+) -> dict[str, int]:
+    """Count findings per severity (``info`` / ``warn`` / ``error``)."""
+    summary = {SEV_INFO: 0, SEV_WARN: 0, SEV_ERROR: 0}
+    for finding in findings:
+        if finding.severity in summary:
+            summary[finding.severity] += 1
+    return summary
 
 
 __all__ = [

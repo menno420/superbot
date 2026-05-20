@@ -289,7 +289,7 @@ class DiagnosticCog(commands.Cog):
         """
         from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
 
-        embed = await build_setup_readiness_embed(ctx.guild.id)
+        embed = await build_setup_readiness_embed(ctx.guild.id, guild=ctx.guild)
         await ctx.send(embed=embed)
 
     @platform_grp.command(name="anchors")  # type: ignore[arg-type]

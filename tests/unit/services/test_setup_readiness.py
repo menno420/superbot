@@ -375,3 +375,151 @@ async def test_build_setup_readiness_embed_handles_empty_registry():
     # And the embed explicitly surfaces the "no schemas" message.
     field_values = "\n".join(f.value or "" for f in embed.fields)
     assert "subsystem_schema.register" in field_values
+
+
+# ---------------------------------------------------------------------------
+# Phase 9d / Track 2 PR 5: health_findings + health_summary
+# ---------------------------------------------------------------------------
+
+
+def _stub_finding(
+    subsystem: str = "xp",
+    binding_name: str = "announce",
+    status: str = "stale_binding",
+    severity: str = "error",
+):
+    from core.runtime.subsystem_schema import BindingKind as _BK
+    from services.resource_health import ResourceHealthFinding
+
+    return ResourceHealthFinding(
+        subsystem=subsystem,
+        binding_name=binding_name,
+        kind=_BK.CHANNEL,
+        status=status,
+        severity=severity,
+        message=f"{status} on {subsystem}.{binding_name}",
+    )
+
+
+@pytest.mark.asyncio
+async def test_collect_without_guild_leaves_health_fields_empty():
+    """Backward-compat: ``collect(guild_id)`` (no ``guild=``) returns
+    a report whose ``health_findings`` is empty and ``health_summary``
+    is empty. This is the path every existing caller uses; the legacy
+    embed/test surface must not change shape."""
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
+        report = await setup_readiness.collect(guild_id=42)
+    assert report.health_findings == ()
+    assert report.health_summary == {}
+
+
+@pytest.mark.asyncio
+async def test_collect_with_guild_runs_health_inspection_and_summarises():
+    """When ``guild`` is provided, ``collect`` calls
+    ``resource_health.inspect`` and counts findings by severity."""
+    fake_findings = (
+        _stub_finding(severity="error"),
+        _stub_finding(binding_name="vip", severity="error"),
+        _stub_finding(binding_name="hint", severity="warn"),
+        _stub_finding(binding_name="ok_one", severity="info"),
+    )
+    fake_guild = object()  # opaque; resource_health.inspect is patched
+
+    with (
+        patch(
+            "services.setup_readiness.db_bindings.list_for_guild",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "services.setup_readiness.inspect_resource_health",
+            new_callable=AsyncMock,
+            return_value=fake_findings,
+        ) as mock_inspect,
+    ):
+        report = await setup_readiness.collect(guild_id=42, guild=fake_guild)
+    mock_inspect.assert_awaited_once_with(fake_guild)
+    assert report.health_findings == fake_findings
+    assert report.health_summary == {"info": 1, "warn": 1, "error": 2}
+
+
+@pytest.mark.asyncio
+async def test_collect_with_guild_swallows_inspection_failures():
+    """A raising resource_health inspection must not propagate; the
+    report degrades to empty findings + empty summary so the legacy
+    score columns still render."""
+    with (
+        patch(
+            "services.setup_readiness.db_bindings.list_for_guild",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "services.setup_readiness.inspect_resource_health",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("guild cache stale"),
+        ),
+    ):
+        report = await setup_readiness.collect(guild_id=42, guild=object())
+    assert report.health_findings == ()
+    # Summary is the zero-baseline so embed renderers don't have to
+    # branch on its presence.
+    assert report.health_summary == {"info": 0, "warn": 0, "error": 0}
+
+
+@pytest.mark.asyncio
+async def test_build_setup_readiness_embed_renders_health_section():
+    """When ``guild=`` is forwarded into the embed builder, actionable
+    (error/warn) findings render as per-subsystem fields and the
+    description carries a severity-summary blurb. Info-only findings
+    do not get their own field but DO count in the summary."""
+    from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
+
+    findings = (
+        _stub_finding(severity="error"),
+        _stub_finding(binding_name="vip", severity="warn", status="hierarchy_blocked"),
+        _stub_finding(binding_name="ok_one", severity="info", status="ok"),
+    )
+    with (
+        patch(
+            "services.setup_readiness.db_bindings.list_for_guild",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "services.setup_readiness.inspect_resource_health",
+            new_callable=AsyncMock,
+            return_value=findings,
+        ),
+    ):
+        embed = await build_setup_readiness_embed(guild_id=42, guild=object())
+
+    assert "1 err" in (embed.description or "")
+    assert "1 warn" in (embed.description or "")
+    assert "1 info" in (embed.description or "")
+    health_fields = [f for f in embed.fields if (f.name or "").startswith("Health ·")]
+    assert len(health_fields) == 1
+    assert "stale_binding" in (health_fields[0].value or "")
+    assert "hierarchy_blocked" in (health_fields[0].value or "")
+    # info-severity findings stay out of the per-field details.
+    assert "ok_one" not in (health_fields[0].value or "")
+
+
+@pytest.mark.asyncio
+async def test_build_setup_readiness_embed_without_guild_skips_health():
+    """The legacy embed builder call path (``guild_id`` only) renders
+    no Health · fields and no health blurb."""
+    from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
+
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
+        embed = await build_setup_readiness_embed(guild_id=42)
+    assert "err" not in (embed.description or "").lower()
+    assert "Health" not in "\n".join(f.name or "" for f in embed.fields)
