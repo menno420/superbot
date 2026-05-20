@@ -15,14 +15,30 @@ from typing import Any
 
 
 _TOKEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("discord_token_like", re.compile(r"[A-Za-z0-9_-]{23,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{20,}")),
-    ("api_key_like", re.compile(r"\b(?:sk|pk|rk|xoxb|ghp)_[A-Za-z0-9_\-]{12,}\b")),
-    ("database_url", re.compile(r"\b(?:postgres|postgresql)://[^\s]+", re.IGNORECASE)),
-    ("bearer_token", re.compile(r"\bBearer\s+[A-Za-z0-9._\-]+", re.IGNORECASE)),
+    (
+        "discord_token_like",
+        re.compile(
+            r"[A-Za-z0-9_-]{23,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{20,}"
+        ),
+    ),
+    (
+        "api_key_like",
+        re.compile(r"\b(?:sk|pk|rk|xoxb|ghp)_[A-Za-z0-9_\-]{12,}\b"),
+    ),
+    (
+        "database_url",
+        re.compile(r"\b(?:postgres|postgresql)://[^\s]+", re.IGNORECASE),
+    ),
+    (
+        "bearer_token",
+        re.compile(r"\bBearer\s+[A-Za-z0-9._\-]+", re.IGNORECASE),
+    ),
 )
 
 _EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b")
-_URL_QUERY_RE = re.compile(r"([?&](?:token|key|secret|password|signature)=)[^&\s]+", re.IGNORECASE)
+_URL_QUERY_RE = re.compile(
+    r"([?&](?:token|key|secret|password|signature)=)[^&\s]+", re.IGNORECASE
+)
 
 
 @dataclass(frozen=True)
@@ -44,6 +60,7 @@ def redact_text(text: str) -> RedactionResult:
     value = text
 
     for label, pattern in _TOKEN_PATTERNS:
+
         def _replace_token(_: re.Match[str], *, redaction_label: str = label) -> str:
             _count(replacements, redaction_label)
             return f"[{redaction_label}:redacted]"
