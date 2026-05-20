@@ -93,6 +93,11 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # Other consumers (future audit dashboards, AI explainers) are
         # welcome to subscribe; subscriber failure is logged + swallowed.
         "audit.action_recorded",
+        # ── Automation (services/automation_mutation.py, Phase 9g PR 16) ─
+        # Advisory. Emitted after every automation_rules CRUD mutation.
+        # The Track 6 PR 18 scheduler subscribes for cache invalidation;
+        # the wizard hub (Track 8) subscribes to refresh its panel.
+        "automation.rule_changed",
         # ── Participation (services/participation_mutation.py, Phase 2c PR-9) ─
         # Advisory.  Cache invalidation is inline (synchronous w.r.t. the
         # mutation result), NOT event-driven — these events are for
