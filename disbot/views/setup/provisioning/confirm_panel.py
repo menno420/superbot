@@ -55,9 +55,7 @@ def build_confirm_embed(
       exception text.
     """
     color = _OUTCOME_COLORS.get(status, discord.Color.dark_grey())
-    title = (
-        f"🛠 Provisioning · {request.subsystem}.{request.binding_name} · {status}"
-    )
+    title = f"🛠 Provisioning · {request.subsystem}.{request.binding_name} · {status}"
     description_lines = [
         f"**Mode:** `{request.mode}`",
     ]
