@@ -12,6 +12,11 @@ Pins:
   :func:`services.setup_operations.apply_operations` (not directly
   through ``BindingMutationPipeline``) and isolates per-rec failures.
 * ``FinalReviewView`` disables Apply when ``accepted`` is empty.
+
+Hub buttons are no longer hardcoded; they are rendered from the
+``services.setup_sections`` registry.  These tests look buttons up by
+``custom_id`` (``setup_section:<slug>``) so the contract under test is
+"section X is reachable from the hub," not "view exposes a `_X` field."
 """
 
 from __future__ import annotations
@@ -19,6 +24,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import discord
 import pytest
 
 from services.setup_plan import SetupRecommendation
@@ -29,6 +35,17 @@ from views.setup.final_review import (
     build_final_review_embed,
 )
 from views.setup.hub import SetupHubView, build_hub_embed
+
+
+def _section_button(view: SetupHubView, slug: str) -> discord.ui.Button:
+    target_id = f"setup_section:{slug}"
+    for item in view.children:
+        if isinstance(item, discord.ui.Button) and item.custom_id == target_id:
+            return item
+    raise AssertionError(
+        f"section button {slug!r} not found on hub view "
+        f"(children: {[getattr(c, 'custom_id', None) for c in view.children]})",
+    )
 
 
 def _owner_member(guild_owner_id: int = 99):
@@ -99,7 +116,7 @@ def test_build_hub_embed_surfaces_session_status():
 async def test_hub_readiness_button_owner_only():
     view = SetupHubView(_other_member())
     interaction = _interaction(_other_member())
-    await view._readiness.callback(interaction)
+    await _section_button(view, "readiness").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     assert "owner" in interaction.response.send_message.await_args.args[0].lower()
 
@@ -120,7 +137,7 @@ async def test_hub_readiness_button_owner_posts_embed_and_marks_progress():
             new_callable=AsyncMock,
         ) as mark_mock,
     ):
-        await view._readiness.callback(interaction)
+        await _section_button(view, "readiness").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     mark_mock.assert_awaited_once_with(1, step="readiness")
 
@@ -162,7 +179,7 @@ async def test_hub_suggestions_button_renders_deterministic_draft_inline():
             new_callable=AsyncMock,
         ),
     ):
-        await view._suggestions.callback(interaction)
+        await _section_button(view, "suggestions").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     embed = interaction.response.send_message.await_args.kwargs["embed"]
     rendered = "\n".join(f.value or "" for f in embed.fields)
@@ -173,10 +190,61 @@ async def test_hub_suggestions_button_renders_deterministic_draft_inline():
 async def test_hub_final_review_button_opens_panel_even_when_empty():
     view = SetupHubView(_owner_member())
     interaction = _interaction(_owner_member())
-    await view._final_review.callback(interaction)
+    await _section_button(view, "final_review").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     sent_view = interaction.response.send_message.await_args.kwargs["view"]
     assert isinstance(sent_view, FinalReviewView)
+
+
+def test_hub_renders_one_button_per_registered_section():
+    """Hub layout is derived from `services.setup_sections.REGISTRY`."""
+    from services.setup_sections import REGISTRY
+
+    view = SetupHubView(_owner_member())
+    registered = {section.slug for section in REGISTRY.all()}
+    rendered = {
+        item.custom_id.split(":", 1)[1]
+        for item in view.children
+        if isinstance(item, discord.ui.Button)
+        and (item.custom_id or "").startswith("setup_section:")
+    }
+    assert registered <= rendered, (
+        f"hub missing registered sections: {registered - rendered}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_hub_isolates_section_run_exceptions():
+    """A buggy section must not silently swallow the interaction.
+
+    The hub wraps every section's `run` and surfaces a friendly error
+    when the section hasn't already responded.
+    """
+    from services.setup_sections import REGISTRY, SetupSection
+
+    async def _boom(_interaction, _hub):
+        raise RuntimeError("section blew up")
+
+    REGISTRY.register(
+        SetupSection(
+            slug="boom_test",
+            label="Boom",
+            style=discord.ButtonStyle.danger,
+            run=_boom,
+            order=999,
+        ),
+    )
+    try:
+        view = SetupHubView(_owner_member())
+        interaction = _interaction(_owner_member())
+        interaction.response.is_done = MagicMock(return_value=False)
+        await _section_button(view, "boom_test").callback(interaction)
+    finally:
+        REGISTRY.unregister("boom_test")
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "boom_test" in msg and "failed" in msg
 
 
 # ---------------------------------------------------------------------------
