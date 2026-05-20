@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import atexit
 import datetime
 import logging
 import logging.handlers
@@ -14,6 +13,7 @@ import discord
 from discord.ext import commands
 
 import config
+from services.runtime import BOOT_ID, install_boot_id_logging
 from services.webhook_reporter import WebhookReporter
 from utils import db
 from utils.synonyms import find_command as _find_synonym
@@ -21,20 +21,24 @@ from utils.synonyms import find_command as _find_synonym
 # ---------------------------------------------------------------------------
 # Logging — structured JSON when python-json-logger is available,
 # falling back to plain text so the bot boots in minimal environments.
+# Every record carries ``boot_id`` via :class:`services.runtime.BootIdFilter`
+# so multi-replica deploys are debuggable.
 # ---------------------------------------------------------------------------
 try:
     from pythonjsonlogger import jsonlogger as _jsonlogger
 
     _fmt: logging.Formatter = _jsonlogger.JsonFormatter(
-        "%(asctime)s %(levelname)s %(name)s %(message)s",
+        "%(asctime)s %(levelname)s %(name)s %(boot_id)s %(message)s",
         rename_fields={"asctime": "timestamp", "levelname": "level", "name": "logger"},
     )
 except ImportError:  # python-json-logger not installed — use stdlib formatter
-    _fmt = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+    _fmt = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(name)s | boot=%(boot_id)s | %(message)s",
+    )
 _root = logging.getLogger()
 _root.setLevel(logging.INFO)
 
-for _h in (
+_handlers: list[logging.Handler] = [
     logging.handlers.RotatingFileHandler(
         "bot.log",
         maxBytes=10_000_000,
@@ -42,7 +46,9 @@ for _h in (
         encoding="utf-8",
     ),
     logging.StreamHandler(),
-):
+]
+install_boot_id_logging(_handlers)
+for _h in _handlers:
     _h.setFormatter(_fmt)
     _root.addHandler(_h)
 
@@ -57,34 +63,7 @@ reporter: WebhookReporter | None = (
 if not config.WEBHOOK_URL:
     logger.warning("DISCORD_WEBHOOK_URL not set — webhook logging disabled.")
 
-# ---------------------------------------------------------------------------
-# Prevent multiple instances
-# ---------------------------------------------------------------------------
-PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bot.pid")
-
-
-def check_existing_instance() -> None:
-    if os.path.exists(PID_FILE):
-        try:
-            with open(PID_FILE) as f:
-                old_pid = int(f.read().strip())
-            if os.path.exists(f"/proc/{old_pid}"):
-                logger.warning("Bot is already running (PID %d). Exiting.", old_pid)
-                raise SystemExit(1)
-        except (ValueError, FileNotFoundError):
-            pass
-    with open(PID_FILE, "w") as f:
-        f.write(str(os.getpid()))
-
-
-def _remove_pid() -> None:
-    try:
-        os.remove(PID_FILE)
-    except FileNotFoundError:
-        pass
-
-
-atexit.register(_remove_pid)
+logger.info("Boot identity: boot_id=%s", BOOT_ID)
 
 # ---------------------------------------------------------------------------
 # Bot instance
@@ -112,7 +91,6 @@ _APP_TASKS: list[asyncio.Task] = []
 def _begin_shutdown(*_) -> None:
     global _shutting_down
     _shutting_down = True
-    _remove_pid()
 
 
 # ---------------------------------------------------------------------------
@@ -540,9 +518,6 @@ async def _sample_process_memory() -> None:
 
 
 async def main() -> None:
-    # PID guard moved here from module level so test imports don't trigger it.
-    check_existing_instance()
-
     from services.governance_exceptions import GovernanceError
     from utils.subsystem_registry import validate_registry
 
@@ -554,6 +529,16 @@ async def main() -> None:
         raise SystemExit(1) from exc
 
     await db.init()
+
+    # Acquire the runtime instance lock now that migrations (including
+    # 034_bot_runtime_lock) have run. If another replica holds the lock
+    # this raises ``SystemExit(0)`` — Railway treats that as a graceful
+    # exit and does not crash-loop the loser.
+    from services import runtime as _runtime
+
+    await _runtime.acquire_lock_or_exit()
+    _heartbeat_stop = asyncio.Event()
+
     from core import runtime
     from core.runtime import message_pipeline
 
@@ -579,6 +564,15 @@ async def main() -> None:
             # is supervised + gated on bind-ready (Phase S2.4 / O-2b):
             # if the bind fails, the bot aborts startup instead of
             # silently running with a wedged orchestration probe.
+            # Heartbeat the runtime lock every 30 s so a healthy
+            # replica retains ownership and a stale row is auto-
+            # reclaimed by the next boot after the 90 s TTL.
+            heartbeat_task = _supervised_task(
+                _runtime.run_heartbeat_loop(_heartbeat_stop),
+                name="runtime_lock_heartbeat",
+            )
+            _APP_TASKS.append(heartbeat_task)
+
             health_ready = asyncio.Event()
             health_task = _supervised_task(
                 start_health_server(bot, ready_event=health_ready),
@@ -765,6 +759,11 @@ async def main() -> None:
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
+        # Signal the heartbeat loop to stop cleanly before cancelling
+        # all app tasks. ``run_heartbeat_loop`` exits its wait early
+        # when the event is set, which lets the lock release happen
+        # before we tear down the DB pool.
+        _heartbeat_stop.set()
         # Cancel only application-owned tasks — never asyncio.all_tasks().
         for task in _APP_TASKS:
             if not task.done():
@@ -776,6 +775,12 @@ async def main() -> None:
                 _, still_pending = await asyncio.wait(pending, timeout=5.0)
                 for t in still_pending:
                     t.cancel()
+        # Drop the lock row so the next replica reclaims immediately
+        # rather than waiting the 90 s heartbeat TTL.
+        try:
+            await _runtime.release_lock_best_effort()
+        except Exception:
+            pass
         await db.close()
         if reporter:
             await reporter.close()
