@@ -94,3 +94,21 @@ CLEANUP_WHITELIST_CHANNELS: set[int] = _parse_channel_ids(
         1403818013408624642,
     ],
 )
+
+
+# ==========================
+# Setup-wizard advisor (Phase 9f / Track 5)
+# ==========================
+# Provider for the AI-assisted setup advisor. One of:
+#   * ``deterministic`` — name-matching rules only (default).
+#   * ``openai``        — OpenAI gpt-4o-mini behind strict JSON schema.
+#                          Requires ``OPENAI_API_KEY``.
+#   * ``anthropic``     — Claude Sonnet / Haiku. Requires ``ANTHROPIC_API_KEY``.
+#                          Reserved; concrete adapter ships in a follow-up.
+# When the requested provider is unavailable (missing key, missing SDK),
+# the factory falls back to ``deterministic`` so CI / dev envs never make
+# external calls by accident.
+SETUP_ADVISOR_PROVIDER = os.getenv("SETUP_ADVISOR_PROVIDER", "deterministic").lower()
+SETUP_ADVISOR_OPENAI_MODEL = os.getenv("SETUP_ADVISOR_OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
