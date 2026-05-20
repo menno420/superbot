@@ -348,6 +348,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "hub_group": "competitive",
         "capabilities": [
             "blackjack.game.play",
+            "blackjack.tournament.manage",
         ],
     },
     "deathmatch": {
