@@ -126,8 +126,105 @@ async def record_readiness_score(guild_id: int, score: int | None) -> None:
     await db.set_readiness_score(guild_id, score)
 
 
+# ---------------------------------------------------------------------------
+# Drift detection (Phase 9i / Track 8 PR 24)
+# ---------------------------------------------------------------------------
+
+
+from dataclasses import dataclass  # noqa: E402 — local symbol
+
+
+@dataclass(frozen=True)
+class DriftReport:
+    """Diff between the last accepted state and a fresh readiness scan."""
+
+    has_drift: bool
+    score_delta: int | None
+    prev_score: int | None
+    current_score: int | None
+    new_error_findings: tuple[str, ...] = ()
+    new_warn_findings: tuple[str, ...] = ()
+    summary: str = ""
+
+
+_DRIFT_SCORE_THRESHOLD = 5
+
+
+def detect_drift(
+    *,
+    previous_score: int | None,
+    current_score: int | None,
+    current_health_summary: dict[str, int] | None = None,
+    new_findings: tuple[object, ...] = (),
+) -> DriftReport:
+    """Compute the drift between a previous readiness snapshot and a
+    fresh ``ReadinessReport``.
+
+    ``has_drift`` is True when:
+
+    * The readiness score moved by more than
+      ``_DRIFT_SCORE_THRESHOLD`` (5 points).
+    * The fresh health summary surfaces at least one ``error``
+      severity finding (a regression).
+    * One or more ``new_findings`` are passed in (the caller
+      already filtered).
+
+    The summary string is a one-liner the wizard renders in the
+    launcher / summary view.
+    """
+    score_delta: int | None = None
+    if previous_score is not None and current_score is not None:
+        score_delta = current_score - previous_score
+
+    new_errors = tuple(
+        f"{getattr(f, 'subsystem', '?')}.{getattr(f, 'binding_name', '?')}"
+        for f in new_findings
+        if getattr(f, "severity", None) == "error"
+    )
+    new_warns = tuple(
+        f"{getattr(f, 'subsystem', '?')}.{getattr(f, 'binding_name', '?')}"
+        for f in new_findings
+        if getattr(f, "severity", None) == "warn"
+    )
+    summary_health_errors = (current_health_summary or {}).get("error", 0)
+
+    score_moved = score_delta is not None and abs(score_delta) >= _DRIFT_SCORE_THRESHOLD
+    has_drift = bool(
+        score_moved or new_errors or new_warns or summary_health_errors > 0,
+    )
+
+    if not has_drift:
+        summary = "No drift detected. Configuration matches the accepted plan."
+    else:
+        bits = []
+        if score_moved and score_delta is not None:
+            direction = "improved" if score_delta > 0 else "regressed"
+            bits.append(f"readiness {direction} by {abs(score_delta)}%")
+        if new_errors:
+            bits.append(f"{len(new_errors)} new error finding(s)")
+        if new_warns:
+            bits.append(f"{len(new_warns)} new warning finding(s)")
+        if summary_health_errors and "error finding" not in " ".join(bits):
+            bits.append(
+                f"{summary_health_errors} health error(s) outstanding",
+            )
+        summary = "Drift detected: " + "; ".join(bits) + "."
+
+    return DriftReport(
+        has_drift=has_drift,
+        score_delta=score_delta,
+        prev_score=previous_score,
+        current_score=current_score,
+        new_error_findings=new_errors,
+        new_warn_findings=new_warns,
+        summary=summary,
+    )
+
+
 __all__ = [
+    "DriftReport",
     "SetupSession",
+    "detect_drift",
     "dismiss",
     "mark_complete",
     "mark_in_progress",
