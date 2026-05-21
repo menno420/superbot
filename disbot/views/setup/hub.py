@@ -81,6 +81,53 @@ def _hub_sections_value(
     return "\n".join(lines)
 
 
+def _next_step_hint(
+    sections: list[SetupSection],
+    progress_by_slug: dict[str, SectionProgress] | None,
+    pending_ops: int | None,
+    session: SetupSession | None,
+) -> str | None:
+    """Compute a one-line "what should I do next?" hint for the hub embed.
+
+    Returns ``None`` when there's nothing useful to say (e.g. no
+    progress info available). Otherwise picks one of:
+
+    - "Apply Final Review" — session is complete or all sections done.
+    - "Open Final Review" — operator has staged ops and could apply.
+    - "Try Apply all recommended" — sections have builders but nothing
+      is staged yet.
+    - "Pick a section to configure" — generic prompt.
+    """
+    if session is not None and session.setup_status == "complete":
+        return "✅ Setup is complete. Click **View Summary** for the digest."
+
+    if progress_by_slug is None:
+        return None
+
+    has_recommended_path = any(s.recommended_ops_builder is not None for s in sections)
+    has_pending = bool(pending_ops)
+    not_started = [
+        s
+        for s in sections
+        if progress_by_slug.get(s.slug)
+        and progress_by_slug[s.slug].status.value == "not_started"
+    ]
+
+    if has_pending and not not_started:
+        return "🚀 Every section has staged ops. Open **Final Review** to apply."
+    if has_pending:
+        return (
+            f"📝 **{pending_ops}** op(s) staged. Either open more sections "
+            f"or go to **Final Review**."
+        )
+    if has_recommended_path and not_started:
+        return (
+            "💡 Hit **Apply all recommended** for a one-click start, or "
+            "open sections individually."
+        )
+    return "👉 Pick a section to begin."
+
+
 def build_hub_embed(
     session: SetupSession | None,
     *,
@@ -98,9 +145,9 @@ def build_hub_embed(
 
     ``draft_ops`` is the iterable of staged operations for the guild.
     When supplied it drives the per-section status badges in the
-    "Sections" field.  When ``None`` the field renders without
-    badges, preserving the legacy layout for callers that haven't
-    been migrated yet.
+    "Sections" field AND the smart "next step" hint added to the
+    embed.  When ``None`` both fall back to legacy / less-helpful
+    rendering for callers that haven't been migrated yet.
     """
     color = discord.Color.blurple()
     if session is not None and session.setup_status == "complete":
@@ -109,6 +156,8 @@ def build_hub_embed(
     description = _HUB_DESCRIPTION
     if session is not None:
         description = f"{_HUB_DESCRIPTION}\n\n**Status:** `{session.setup_status}`"
+        if session.depth:
+            description += f" · depth: `{session.depth}`"
         if session.current_step:
             description += f" · current step: `{session.current_step}`"
         if session.last_readiness_score is not None:
@@ -144,6 +193,9 @@ def build_hub_embed(
         value=_hub_sections_value(sections, progress_by_slug),
         inline=False,
     )
+    hint = _next_step_hint(sections, progress_by_slug, pending_ops, session)
+    if hint:
+        embed.add_field(name="Next step", value=hint, inline=False)
     embed.set_footer(
         text="Owner-gated. No mutation runs until you confirm in Final review.",
     )

@@ -40,6 +40,7 @@ def test_documented_profile_slugs():
         "games_in_game_channels",
         "economy_in_economy_channels",
         "moderation_to_staff",
+        "recommended_by_name",
     }
 
 
@@ -170,3 +171,46 @@ def test_profiles_are_deterministic(slug):
     assert [(op.target_kind, op.target_id, op.value, op.metadata) for op in a] == [
         (op.target_kind, op.target_id, op.value, op.metadata) for op in b
     ]
+
+
+# ---------------------------------------------------------------------------
+# recommended_by_name (compound)
+# ---------------------------------------------------------------------------
+
+
+def test_recommended_by_name_applies_all_three_per_cog_profiles():
+    """The compound profile produces the union of games + economy +
+    moderation routing ops in one builder invocation."""
+    games_ch = _text_channel("games", channel_id=100)
+    mining_ch = _text_channel("mining", channel_id=101)
+    mod_ch = _text_channel("mod-chat", channel_id=200)
+    guild = _guild(text_channels=[games_ch, mining_ch, mod_ch])
+
+    ops = apply_profile("recommended_by_name", guild)
+    cogs_touched = {op.value for op in ops}
+    assert cogs_touched == {"games", "economy", "moderation"}
+    # Three guild-scope disable ops (one per cog).
+    guild_disables = [
+        op
+        for op in ops
+        if op.target_kind == "guild" and op.metadata["enabled"] == "false"
+    ]
+    assert len(guild_disables) == 3
+    # Per-channel enables for the matching channels per cog.
+    channel_enables = [
+        op
+        for op in ops
+        if op.target_kind == "channel" and op.metadata["enabled"] == "true"
+    ]
+    assert channel_enables  # at least one
+
+
+def test_recommended_by_name_with_no_matching_channels_only_disables():
+    """With no matching channels in the guild, the profile produces
+    three guild-scope disable ops and nothing else."""
+    guild = _guild(text_channels=[_text_channel("general")])
+    ops = apply_profile("recommended_by_name", guild)
+    assert len(ops) == 3
+    for op in ops:
+        assert op.target_kind == "guild"
+        assert op.metadata["enabled"] == "false"

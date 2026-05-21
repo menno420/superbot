@@ -163,6 +163,22 @@ def _build_moderation_to_staff(guild: discord.Guild) -> list[SetupOperation]:
     return ops
 
 
+def _build_recommended_by_name(guild: discord.Guild) -> list[SetupOperation]:
+    """Compound profile: apply games + economy + moderation routing in one go.
+
+    Stages the union of the three single-cog profiles' op lists.
+    Each op is unique on ``(cog_name, scope_kind, scope_id)`` since
+    the three builders touch different cog names, so no dedup is
+    required across profiles — only the per-channel dedup inside
+    each builder applies.
+    """
+    ops: list[SetupOperation] = []
+    ops.extend(_build_games_in_game_channels(guild))
+    ops.extend(_build_economy_in_economy_channels(guild))
+    ops.extend(_build_moderation_to_staff(guild))
+    return ops
+
+
 PROFILES: dict[str, CogRoutingProfile] = {
     "games_in_game_channels": CogRoutingProfile(
         slug="games_in_game_channels",
@@ -190,6 +206,16 @@ PROFILES: dict[str, CogRoutingProfile] = {
             "on detected mod / admin / staff channels."
         ),
         builder=_build_moderation_to_staff,
+    ),
+    "recommended_by_name": CogRoutingProfile(
+        slug="recommended_by_name",
+        display_name="Recommended (all cogs by channel name)",
+        description=(
+            "Apply games / economy / moderation routing in one pass — "
+            "each cog disabled at guild scope and re-enabled only in "
+            "channels whose name matches its intent."
+        ),
+        builder=_build_recommended_by_name,
     ),
 }
 
