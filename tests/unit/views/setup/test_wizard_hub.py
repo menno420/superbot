@@ -864,3 +864,41 @@ def test_hub_embed_omits_next_step_hint_without_draft_ops():
     embed = build_hub_embed(None, pending_ops=0)
     field_names = {f.name for f in embed.fields}
     assert "Next step" not in field_names
+
+
+def test_hub_embed_surfaces_depth_when_set():
+    """When the operator has picked a depth, the status line shows it
+    alongside the existing status / step / readiness markers."""
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+        depth="standard",
+    )
+    embed = build_hub_embed(session)
+    description = (embed.description or "").lower()
+    assert "depth: `standard`" in description
+
+
+def test_hub_embed_omits_depth_marker_when_unset():
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+        depth=None,
+    )
+    embed = build_hub_embed(session)
+    description = (embed.description or "").lower()
+    assert "depth:" not in description

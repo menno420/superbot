@@ -156,6 +156,8 @@ def build_hub_embed(
     description = _HUB_DESCRIPTION
     if session is not None:
         description = f"{_HUB_DESCRIPTION}\n\n**Status:** `{session.setup_status}`"
+        if session.depth:
+            description += f" · depth: `{session.depth}`"
         if session.current_step:
             description += f" · current step: `{session.current_step}`"
         if session.last_readiness_score is not None:
