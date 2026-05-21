@@ -564,6 +564,7 @@ REGISTRY.register(
             "so. You can revisit cleanup later from `!settings`."
         ),
         depths=frozenset({"standard", "advanced"}),
+        recommended_ops_builder=_recommended_cleanup_ops,
     ),
 )
 

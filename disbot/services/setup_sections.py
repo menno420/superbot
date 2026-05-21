@@ -74,6 +74,13 @@ class SetupSection:
             Default is all three depths so unmigrated sections remain
             visible everywhere; sections opt into a narrower scope
             (e.g. quick-only or advanced-only) at registration.
+        recommended_ops_builder: Optional async callable that returns
+            the section's recommended :class:`SetupOperation` bundle
+            given the live guild. When set, the hub's "Apply all
+            recommended" button picks it up so operators can stage
+            every section's safe default in one click. ``None`` means
+            the section has no auto-recommended path; operators must
+            customise it manually.
     """
 
     slug: str
@@ -86,6 +93,7 @@ class SetupSection:
     op_kinds: frozenset[str] = frozenset()
     description_if_skipped: str = ""
     depths: frozenset[str] = frozenset({"quick", "standard", "advanced"})
+    recommended_ops_builder: Any = None  # async (Guild) -> list[SetupOperation]
 
     @property
     def session_step(self) -> str:
