@@ -311,8 +311,129 @@ class _ScopeSelect(discord.ui.Select):
             return
 
 
+class _RoutingProfileSelect(discord.ui.Select):
+    """Batch picker: apply a named cog-routing profile in one click.
+
+    Each profile fans out a small set of ``set_cog_routing`` ops
+    (typically: disable at guild scope, then enable on detected
+    matching channels). Stages via ``setup_draft.append`` with
+    ``metadata.source="cog_routing_profile:<slug>"`` so the hub
+    status badge attributes the choice back to the profile.
+    """
+
+    def __init__(self) -> None:
+        from services.cog_routing_profiles import PROFILES
+
+        options = [
+            discord.SelectOption(
+                label=profile.display_name[:100],
+                value=profile.slug,
+                description=profile.description[:100],
+            )
+            for profile in PROFILES.values()
+        ]
+        super().__init__(
+            placeholder="Apply a routing profile (batch action)…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            custom_id="cog_routing_section_profile",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from services.cog_routing_profiles import apply_profile, get_profile
+
+        guild = interaction.guild
+        if guild is None or interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Cog routing profiles require a guild context.",
+                ephemeral=True,
+            )
+            return
+        slug = self.values[0]
+        profile = get_profile(slug)
+        if profile is None:
+            await interaction.response.send_message(
+                f"Unknown cog routing profile `{slug}`.",
+                ephemeral=True,
+            )
+            return
+        try:
+            ops = apply_profile(slug, guild)
+        except Exception:
+            logger.exception(
+                "cog_routing: apply_profile failed (slug=%s)",
+                slug,
+            )
+            await interaction.response.send_message(
+                "Could not build the routing profile — see logs.",
+                ephemeral=True,
+            )
+            return
+        if not ops:
+            await interaction.response.send_message(
+                f"Profile `{slug}` produced no operations.",
+                ephemeral=True,
+            )
+            return
+
+        staged = 0
+        for op in ops:
+            enabled_str = (
+                "enabled"
+                if (op.metadata or {}).get("enabled") == "true"
+                else "disabled"
+            )
+            label = (
+                f"[profile:{slug}] cog_routing.{op.target_kind}"
+                f"({op.target_name}).{op.value} = {enabled_str}"
+            )
+            try:
+                await setup_draft.append(
+                    op,
+                    guild_id=interaction.guild_id,
+                    actor_id=interaction.user.id,
+                    label=label,
+                    metadata={
+                        "source": f"cog_routing_profile:{slug}",
+                        "confidence": "high",
+                        "reason": f"Profile `{profile.display_name}`",
+                        "risk": "medium",
+                        "rollback_note": (
+                            "Re-stage with a different profile or delete "
+                            "the command_routing_policy rows manually."
+                        ),
+                    },
+                )
+                staged += 1
+            except Exception:
+                logger.exception(
+                    "cog_routing: profile append failed (slug=%s, target=%s)",
+                    slug,
+                    op.target_id,
+                )
+
+        try:
+            await setup_session.mark_in_progress(interaction.guild_id, step=SLUG)
+        except Exception:
+            logger.exception("cog_routing: mark_in_progress failed (profile)")
+
+        try:
+            pending = await setup_draft.count(interaction.guild_id)
+        except Exception:
+            logger.exception("cog_routing: setup_draft.count failed (profile)")
+            pending = 0
+
+        word = "operation" if staged == 1 else "operations"
+        await interaction.response.send_message(
+            f"✅ Staged **{staged} {word}** for profile "
+            f"`{profile.display_name}`. Pending operations: **{pending}**.",
+            ephemeral=True,
+        )
+
+
 class CogRoutingSectionView(BaseView):
-    """Entry view — hosts the scope-picker dropdown."""
+    """Entry view — hosts the scope picker plus a routing-profile batch picker."""
 
     def __init__(
         self,
@@ -322,6 +443,7 @@ class CogRoutingSectionView(BaseView):
     ) -> None:
         super().__init__(author, public=False, timeout=timeout)
         self.add_item(_ScopeSelect())
+        self.add_item(_RoutingProfileSelect())
 
 
 # ---------------------------------------------------------------------------
