@@ -82,16 +82,48 @@ def test_identity_section_uses_writable_moderation_setting():
 
 @pytest.mark.asyncio
 async def test_run_rejects_dm_context():
+    """``run`` routes through the section card, which rejects DMs."""
     interaction = _interaction(guild=None)
     interaction.guild = None
     await identity_section.run(interaction, MagicMock())
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0].lower()
-    assert "guild" in msg
+    assert "server" in msg or "guild" in msg
 
 
 @pytest.mark.asyncio
-async def test_run_renders_identity_panel_and_marks_progress():
+async def test_run_opens_section_card_in_guild():
+    """``run`` shows the section card; the detailed identity picker is
+    reachable via the card's Customize button."""
+    from views.setup.section_card import SectionCardView
+
+    interaction = _interaction()
+
+    with (
+        patch(
+            "views.setup.section_card.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "views.setup.section_card.setup_draft.list_ops",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.section_card.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await identity_section.run(interaction, MagicMock())
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert isinstance(kwargs["view"], SectionCardView)
+
+
+@pytest.mark.asyncio
+async def test_customize_run_renders_identity_panel_and_marks_progress():
     interaction = _interaction()
     with (
         patch.object(
@@ -105,7 +137,7 @@ async def test_run_renders_identity_panel_and_marks_progress():
             new_callable=AsyncMock,
         ) as mark_mock,
     ):
-        await identity_section.run(interaction, MagicMock())
+        await identity_section._customize_run(interaction, MagicMock())
 
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs

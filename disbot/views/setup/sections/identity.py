@@ -230,7 +230,11 @@ class IdentitySectionView(BaseView):
         await interaction.response.send_modal(_WarnThresholdModal(self))
 
 
-async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+async def _customize_run(
+    interaction: discord.Interaction,
+    hub: SetupHubView | None,
+) -> None:
+    """Detailed identity picker — opened by the section card's Customize."""
     del hub
     guild = interaction.guild
     if guild is None:
@@ -253,6 +257,32 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
         await setup_session.mark_in_progress(guild.id, step=SLUG)
     except Exception:
         logger.exception("identity section: mark_in_progress failed")
+
+
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+    """Identity section entry — shows the section card.
+
+    No auto-recommended path: identity defaults (e.g. warn threshold)
+    are subjective and depend on the server's moderation philosophy.
+    The card surfaces Customize / Skip / Hub buttons; operators tune
+    individual settings inside the detailed view.
+    """
+    from views.setup.section_card import show
+
+    detected = (
+        "Server-wide identity defaults (warn threshold, etc.) stay at "
+        "their existing values until you change them. Click Customize "
+        "to tune individual settings or revisit them later in "
+        "`!settings`."
+    )
+    await show(
+        interaction,
+        hub=hub,
+        section=REGISTRY.get(SLUG),  # type: ignore[arg-type]
+        detected_state=detected,
+        on_customize=_customize_run,
+        recommended_ops_builder=None,
+    )
 
 
 REGISTRY.register(
