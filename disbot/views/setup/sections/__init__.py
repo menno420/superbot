@@ -17,6 +17,7 @@ from views.setup.sections import (  # noqa: F401 — import side-effect
     final_review,
     identity,
     readiness,
+    server_scan,
     suggestions,
 )
 
@@ -24,5 +25,6 @@ __all__ = [
     "final_review",
     "identity",
     "readiness",
+    "server_scan",
     "suggestions",
 ]
