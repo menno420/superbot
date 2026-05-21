@@ -24,8 +24,10 @@ _LAUNCHER_TITLE = "🛰 SuperBot setup"
 _LAUNCHER_DESC = (
     "Welcome! I'll help you wire SuperBot up to this server.\n\n"
     "Use **Start Setup** for the guided walkthrough, **Run Readiness Scan** "
-    "to see what's already configured, or **Dismiss** to defer. You can also "
-    "run `!setup` or `/setup` from any channel."
+    "to see what's already configured, or **Dismiss** to defer.\n\n"
+    "**Quick commands:** `!setup` / `/setup` to open the hub, "
+    "`/setup-status` for a read-only peek, `/setup-reset` to clear "
+    "staged operations."
 )
 
 

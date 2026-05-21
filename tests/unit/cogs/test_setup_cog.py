@@ -1671,3 +1671,21 @@ async def test_setup_reset_slash_handles_clear_failure():
 
     msg = interaction.response.send_message.await_args.args[0]
     assert "could not" in msg.lower() or "logs" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# Launcher embed copy
+# ---------------------------------------------------------------------------
+
+
+def test_launcher_embed_mentions_slash_commands():
+    """Regression: the persistent launcher embed should surface the
+    direct-entry / status / reset slash commands so operators can
+    discover them without exploring the slash UI."""
+    from views.setup.launcher import _build_launcher_embed
+
+    embed = _build_launcher_embed(None)
+    description = (embed.description or "").lower()
+    assert "!setup" in description or "/setup" in description
+    assert "/setup-status" in description
+    assert "/setup-reset" in description
