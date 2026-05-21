@@ -536,7 +536,11 @@ async def _stage_cog_routing(
 # ---------------------------------------------------------------------------
 
 
-async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+async def _customize_run(
+    interaction: discord.Interaction,
+    hub: SetupHubView | None,
+) -> None:
+    """Detailed routing picker — opened by the section card's Customize."""
     del hub
     guild = interaction.guild
     if guild is None:
@@ -552,6 +556,31 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
         embed=embed,
         view=view,
         ephemeral=True,
+    )
+
+
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+    """Cog routing section entry — shows the section card.
+
+    No auto-recommended path: routing changes are server-wide and
+    can silently break the bot's behaviour if misapplied. The card
+    surfaces only the Customize and Skip buttons so the operator
+    must explicitly engage the profile picker or the per-scope view.
+    """
+    from views.setup.section_card import show
+
+    detected = (
+        "Cogs are enabled in every channel by default. "
+        "Click Customize to apply a routing profile (e.g. games-only-in-game-channels) "
+        "or set a per-scope override."
+    )
+    await show(
+        interaction,
+        hub=hub,
+        section=REGISTRY.get(SLUG),  # type: ignore[arg-type]
+        detected_state=detected,
+        on_customize=_customize_run,
+        recommended_ops_builder=None,
     )
 
 
