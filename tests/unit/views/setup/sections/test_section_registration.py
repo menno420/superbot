@@ -22,6 +22,7 @@ def test_all_production_sections_are_registered():
         "identity",
         "channels",
         "cleanup",
+        "cog_routing",
         "final_review",
     }
     assert expected <= slugs, (
@@ -30,7 +31,7 @@ def test_all_production_sections_are_registered():
 
 
 def test_section_render_order_is_stable():
-    """Production layout: server_scan → readiness → suggestions → identity → channels → cleanup → final_review."""
+    """Production layout: server_scan → readiness → suggestions → identity → channels → cleanup → cog_routing → final_review."""
     layout = [
         section.slug
         for section in REGISTRY.all()
@@ -42,6 +43,7 @@ def test_section_render_order_is_stable():
             "identity",
             "channels",
             "cleanup",
+            "cog_routing",
             "final_review",
         }
     ]
@@ -52,6 +54,7 @@ def test_section_render_order_is_stable():
         "identity",
         "channels",
         "cleanup",
+        "cog_routing",
         "final_review",
     ], (
         "production section ordering must remain stable; reorder requires "
@@ -73,6 +76,12 @@ def test_channels_section_uses_secondary_button():
 
 def test_cleanup_section_uses_secondary_button():
     section = REGISTRY.get("cleanup")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.secondary
+
+
+def test_cog_routing_section_uses_secondary_button():
+    section = REGISTRY.get("cog_routing")
     assert section is not None
     assert section.style == discord.ButtonStyle.secondary
 

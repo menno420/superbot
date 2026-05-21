@@ -16,6 +16,7 @@ from __future__ import annotations
 from views.setup.sections import (  # noqa: F401 — import side-effect
     channels,
     cleanup,
+    cog_routing,
     final_review,
     identity,
     readiness,
@@ -26,6 +27,7 @@ from views.setup.sections import (  # noqa: F401 — import side-effect
 __all__ = [
     "channels",
     "cleanup",
+    "cog_routing",
     "final_review",
     "identity",
     "readiness",
