@@ -1,4 +1,4 @@
-"""SettingsHubView — top-level navigation for ``!settings`` (S5).
+"""SettingsHubView — top-level navigation for ``!settings``.
 
 Hub-and-spoke navigation:
 
@@ -7,12 +7,15 @@ Hub-and-spoke navigation:
   customization findings).
 * A Discord ``Select`` lists every subsystem whose schema is
   registered, sorted by ``ui_priority``.  Picking a subsystem
-  replaces the panel with a :class:`~views.settings.subsystem_view.SubsystemSettingsView`.
+  replaces the panel with a :class:`~views.settings.subsystem_view.SubsystemSettingsView`,
+  which hosts the scalar edit + reset widgets.
 * Four buttons open diagnostic sub-panels:
   Needs setup / Invalid settings / Missing bindings / Recent changes.
 
-Strictly read-only — no edit / reset / mutate buttons.  S6 onward
-introduces the write surfaces.
+The hub itself is navigation-only — it never mutates state.  Write
+behaviour lives one level down in the subsystem drill-down's edit/reset
+widgets (see the read-only invariant allowlist in
+``tests/unit/invariants/test_settings_cog_read_only.py``).
 
 The hub depends on three S0–S4 catalogues:
 
@@ -89,12 +92,10 @@ def _build_header_embed() -> discord.Embed:
     embed = discord.Embed(
         title="⚙️ Settings Manager",
         description=(
-            "Read-only browsing of platform settings, bindings, resource "
-            "requirements, and recent audit history.  Use the dropdown to "
-            "drill into a subsystem; use the buttons for cross-cutting "
-            "diagnostics.\n"
-            "_Edit and reset flows arrive in S6; this is the read-only "
-            "navigation shell._"
+            "Browse platform settings, bindings, resource requirements, "
+            "and recent audit history.  Use the dropdown to drill into a "
+            "subsystem (scalar edit + reset live on the subsystem page); "
+            "use the buttons for cross-cutting diagnostics."
         ),
         color=discord.Color.blurple(),
     )

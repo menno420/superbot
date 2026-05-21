@@ -55,6 +55,8 @@ OperationKind = Literal[
     "add_automation_rule",
     "enable_automation_rule",
     "disable_automation_rule",
+    "set_cleanup_policy",
+    "set_cog_routing",
 ]
 
 OperationStatus = Literal["applied", "failed", "skipped", "not_yet_implemented"]
@@ -74,6 +76,13 @@ _KNOWN_KINDS: frozenset[str] = frozenset(
         "add_automation_rule",
         "enable_automation_rule",
         "disable_automation_rule",
+        # PR 8 + PR 9 op kinds.  The dispatcher returns
+        # ``not_yet_implemented`` for these until PR 11 adds routing
+        # arms (Final Review apply).  Listed here so the staging
+        # layer accepts them and the embed displays the right kind
+        # label.
+        "set_cleanup_policy",
+        "set_cog_routing",
     },
 )
 
@@ -242,6 +251,174 @@ async def apply_operations(
     return batch
 
 
+def preset_operations_to_setup_operations(
+    preset_ops: list[Any],  # list[services.automation_templates.PresetOperation]
+    *,
+    preset_slug: str,
+) -> list[SetupOperation]:
+    """Adapt :class:`services.automation_templates.PresetOperation` items
+    to :class:`SetupOperation` records the wizard's draft store can hold.
+
+    Each adapted op carries ``metadata.source = f"preset:{preset_slug}"``
+    so the Final Review embed can group preset-staged ops together
+    and the apply path can audit them with the right provenance.
+
+    Mapping:
+
+    * ``bind_channel`` — payload provides subsystem + binding_name;
+      no target_id yet (the wizard's per-binding picker fills it).
+    * ``create_channel`` — payload provides subsystem + binding_name
+      + name; the wizard's resource picker confirms before apply.
+    * ``create_role`` — payload provides name (subsystem set to "roles").
+    * ``set_setting`` — payload provides subsystem + setting_name + value.
+    * ``set_binding_target`` — payload provides subsystem + binding_name
+      + target_id.  Adapts to a ``bind_channel`` op.
+    * ``add_rule`` — payload provides template_slug; adapts to
+      ``add_automation_rule`` with the slug as the rule name.
+
+    Unknown preset kinds adapt to a SetupOperation whose ``kind`` is
+    not in ``_KNOWN_KINDS``; the dispatcher will surface them as
+    ``not_yet_implemented`` rather than silently dropping them.
+    """
+    result: list[SetupOperation] = []
+    base_metadata: dict[str, str] = {
+        "source": f"preset:{preset_slug}",
+        "confidence": "high",
+        "risk": "low",
+        "reason": f"Operator chose preset {preset_slug!r}",
+        "rollback_note": "",
+    }
+
+    for op in preset_ops:
+        kind = getattr(op, "kind", None) or ""
+        payload: dict[str, Any] = dict(getattr(op, "payload", {}) or {})
+        description = getattr(op, "description", "") or ""
+        metadata = dict(base_metadata)
+        if description:
+            metadata["reason"] = description
+
+        if kind == "bind_channel":
+            result.append(
+                SetupOperation(
+                    kind="bind_channel",
+                    subsystem=payload.get("subsystem", ""),
+                    binding_name=payload.get("binding_name"),
+                    target_kind="channel",
+                    metadata=metadata,
+                ),
+            )
+            continue
+        if kind == "set_binding_target":
+            result.append(
+                SetupOperation(
+                    kind="bind_channel",
+                    subsystem=payload.get("subsystem", ""),
+                    binding_name=payload.get("binding_name"),
+                    target_id=payload.get("target_id"),
+                    target_kind=payload.get("target_kind", "channel"),
+                    metadata=metadata,
+                ),
+            )
+            continue
+        if kind == "create_channel":
+            metadata["risk"] = "medium"
+            result.append(
+                SetupOperation(
+                    kind="create_channel",
+                    subsystem=payload.get("subsystem", ""),
+                    binding_name=payload.get("binding_name"),
+                    resource_name=payload.get("name"),
+                    resource_mode="create",
+                    metadata=metadata,
+                ),
+            )
+            continue
+        if kind == "create_role":
+            metadata["risk"] = "high"
+            result.append(
+                SetupOperation(
+                    kind="create_role",
+                    subsystem=payload.get("subsystem", "roles"),
+                    resource_name=payload.get("name"),
+                    resource_mode="create",
+                    metadata=metadata,
+                ),
+            )
+            continue
+        if kind == "set_setting":
+            result.append(
+                SetupOperation(
+                    kind="set_setting",
+                    subsystem=payload.get("subsystem", ""),
+                    setting_name=payload.get("setting_name"),
+                    value=payload.get("value"),
+                    metadata=metadata,
+                ),
+            )
+            continue
+        if kind == "add_rule":
+            metadata["risk"] = "medium"
+            result.append(
+                SetupOperation(
+                    kind="add_automation_rule",
+                    subsystem="automation",
+                    automation_rule_name=payload.get("template_slug"),
+                    trigger_kind=payload.get("trigger_kind"),
+                    action_kind=payload.get("action_kind"),
+                    trigger_config=payload.get("trigger_config"),
+                    action_config=payload.get("action_config"),
+                    metadata=metadata,
+                ),
+            )
+            continue
+
+        # Unknown preset kind — preserve as-is for the dispatcher's
+        # not_yet_implemented surface so it doesn't get silently dropped.
+        result.append(
+            SetupOperation(
+                kind=f"preset_unknown:{kind}",
+                subsystem=payload.get("subsystem", ""),
+                metadata=metadata,
+            ),
+        )
+
+    return result
+
+
+def metadata_from_recommendation(rec: Any) -> dict[str, str]:
+    """Map a :class:`services.setup_plan.SetupRecommendation` to the
+    canonical metadata dict consumed by the wizard's draft store and
+    render layer.
+
+    Canonical keys: ``reason``, ``confidence``, ``source``, ``risk``,
+    ``rollback_note``.
+
+    Defaults:
+
+    * ``reason`` — ``rec.reason`` if present, else empty string.
+    * ``confidence`` — ``rec.confidence`` (high/medium/low).
+    * ``source`` — ``rec.source`` (deterministic / ai_advisor /
+      readiness_repair / etc.).  Empty source falls back to
+      ``"deterministic"`` to match the recommendation model's default.
+    * ``risk`` — ``"low"``.  Bindings carry low default risk because
+      the canonical pipeline isolates failures and the operator
+      reviewed each one before Final Review.
+    * ``rollback_note`` — empty string for bindings (rebind to the
+      previous target or clear).
+
+    The helper is intentionally narrow — sections that build
+    metadata for non-binding ops should populate the canonical keys
+    themselves with appropriate risk / rollback values.
+    """
+    return {
+        "reason": str(getattr(rec, "reason", "") or ""),
+        "confidence": str(getattr(rec, "confidence", "medium") or "medium"),
+        "source": str(getattr(rec, "source", "deterministic") or "deterministic"),
+        "risk": "low",
+        "rollback_note": "",
+    }
+
+
 def operations_from_recommendations(
     recs: list[Any],  # list[services.setup_plan.SetupRecommendation]
 ) -> list[SetupOperation]:
@@ -274,10 +451,7 @@ def operations_from_recommendations(
                 target_id=rec.target_id,
                 target_name=rec.target_name,
                 target_kind=rec.target_kind,
-                metadata={
-                    "source": getattr(rec, "source", "unknown"),
-                    "confidence": getattr(rec, "confidence", None),
-                },
+                metadata=metadata_from_recommendation(rec),
             ),
         )
     return result

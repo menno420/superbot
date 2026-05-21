@@ -15,23 +15,84 @@ from services.setup_sections import REGISTRY
 
 def test_all_production_sections_are_registered():
     slugs = {section.slug for section in REGISTRY.all()}
-    expected = {"readiness", "suggestions", "identity", "final_review"}
+    expected = {
+        "server_scan",
+        "readiness",
+        "preset_select",
+        "suggestions",
+        "identity",
+        "channels",
+        "cleanup",
+        "cog_routing",
+        "final_review",
+    }
     assert expected <= slugs, (
         f"missing expected production section slugs: {expected - slugs}"
     )
 
 
 def test_section_render_order_is_stable():
-    """Production layout: readiness → suggestions → identity → final_review."""
+    """Production layout: server_scan → readiness → preset_select → suggestions → identity → channels → cleanup → cog_routing → final_review."""
     layout = [
         section.slug
         for section in REGISTRY.all()
-        if section.slug in {"readiness", "suggestions", "identity", "final_review"}
+        if section.slug
+        in {
+            "server_scan",
+            "readiness",
+            "preset_select",
+            "suggestions",
+            "identity",
+            "channels",
+            "cleanup",
+            "cog_routing",
+            "final_review",
+        }
     ]
-    assert layout == ["readiness", "suggestions", "identity", "final_review"], (
+    assert layout == [
+        "server_scan",
+        "readiness",
+        "suggestions",
+        "preset_select",
+        "identity",
+        "channels",
+        "cleanup",
+        "cog_routing",
+        "final_review",
+    ], (
         "production section ordering must remain stable; reorder requires "
         "an intentional update of this test"
     )
+
+
+def test_preset_select_section_uses_success_button():
+    section = REGISTRY.get("preset_select")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.success
+
+
+def test_server_scan_section_uses_primary_button():
+    section = REGISTRY.get("server_scan")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.primary
+
+
+def test_channels_section_uses_secondary_button():
+    section = REGISTRY.get("channels")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.secondary
+
+
+def test_cleanup_section_uses_secondary_button():
+    section = REGISTRY.get("cleanup")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.secondary
+
+
+def test_cog_routing_section_uses_secondary_button():
+    section = REGISTRY.get("cog_routing")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.secondary
 
 
 def test_readiness_section_uses_primary_button():

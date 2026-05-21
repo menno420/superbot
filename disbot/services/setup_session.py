@@ -105,20 +105,48 @@ async def mark_in_progress(guild_id: int, *, step: str | None = None) -> None:
 
 
 async def mark_complete(guild_id: int) -> None:
-    """Move the row to ``complete``; clears any in-flight step token."""
+    """Move the row to ``complete``; clears any in-flight step token
+    and drops any pending draft operations.
+
+    Final Review calls this after a successful apply, so the draft
+    is empty by that point.  Clearing here is defence-in-depth — if
+    something staged a draft after Final Review somehow, the next
+    setup run starts clean.
+    """
     await db.set_status(guild_id, "complete")
     await db.set_step(guild_id, None)
+    await _clear_draft(guild_id)
 
 
 async def dismiss(guild_id: int) -> None:
-    """Move the row to ``dismissed``; clears any in-flight step token.
+    """Move the row to ``dismissed``; clears any in-flight step token
+    and drops any pending draft operations.
 
-    Note: this only flips the launcher state. It does **not** delete
-    the guild's bound resources or settings — those persist so the
-    owner can re-run setup later.
+    Note: this only flips the launcher state and discards staged
+    drafts.  It does **not** delete the guild's already-applied
+    bindings, settings, or resources — those persist so the owner
+    can re-run setup later.
     """
     await db.set_status(guild_id, "dismissed")
     await db.set_step(guild_id, None)
+    await _clear_draft(guild_id)
+
+
+async def _clear_draft(guild_id: int) -> None:
+    """Best-effort draft clear.  Lazy import to avoid an import cycle
+    between :mod:`services.setup_session` and :mod:`services.setup_draft`
+    (the draft service imports :mod:`services.setup_operations`, which
+    is independent of this module).
+    """
+    try:
+        from services import setup_draft
+
+        await setup_draft.clear(guild_id)
+    except Exception:
+        logger.exception(
+            "setup_session: setup_draft.clear failed for guild_id=%s",
+            guild_id,
+        )
 
 
 async def record_readiness_score(guild_id: int, score: int | None) -> None:

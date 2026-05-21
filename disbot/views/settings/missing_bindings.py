@@ -22,9 +22,9 @@ async def build_missing_bindings_embed(
         description=(
             "Declared bindings whose runtime status is not `bound`.  "
             "Includes unresolved slots (no row yet), targets that "
-            "disappeared from Discord, and kind-drift cases.\n"
-            "_Read-only · S5.  The S7 logging UI introduces the bind "
-            "flow that fixes these in place._"
+            "disappeared from Discord, and kind-drift cases.  Bind "
+            "controls land alongside the setup wizard's binding "
+            "section (planned)."
         ),
         color=discord.Color.gold(),
     )

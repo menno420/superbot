@@ -1,12 +1,12 @@
 """ResetSettingButton — S6 reset widget for any scalar SettingSpec.
 
 A reset is functionally ``set_value(spec.default)`` but is recorded
-as a deliberate operator action.  S4's audit row will show the
-prev/new values regardless; the future S6 mutation_type extension
-may distinguish ``reset_value`` from ``set_value`` so dashboards
-can filter.
+as a deliberate operator action.  The audit row shows the
+prev/new values regardless; a future mutation_type extension may
+distinguish ``reset_value`` from ``set_value`` so dashboards can
+filter.
 
-Allowlisted by the S5/S6 read-only invariant scan.
+Allowlisted in ``tests/unit/invariants/test_settings_cog_read_only.py``.
 """
 
 from __future__ import annotations
