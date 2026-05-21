@@ -23,18 +23,15 @@ no Discord create calls — strictly view-rendering.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 import discord
 
 from services.guild_snapshot import (
-    CategoryMeta,
     ChannelMeta,
     GuildSnapshot,
-    RoleMeta,
 )
-
 
 # ---------------------------------------------------------------------------
 # Channel classifier
@@ -115,7 +112,11 @@ def classify_channel_name(name: str) -> tuple[str, ...]:
     if not name:
         return ()
     lowered = name.lower()
-    tags = [tag for tag, patterns in _NAME_PATTERNS.items() if any(p.search(lowered) for p in patterns)]
+    tags = [
+        tag
+        for tag, patterns in _NAME_PATTERNS.items()
+        if any(p.search(lowered) for p in patterns)
+    ]
     return tuple(sorted(tags))
 
 

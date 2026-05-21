@@ -42,7 +42,7 @@ SLUG = "server_scan"
 _CACHE_ATTR = "_cached_snapshot"
 
 
-def set_cached_snapshot(hub: "SetupHubView", snapshot: GuildSnapshot) -> None:
+def set_cached_snapshot(hub: SetupHubView, snapshot: GuildSnapshot) -> None:
     """Attach ``snapshot`` to ``hub`` so subsequent sections can read it.
 
     The attribute name is shared with :func:`get_cached_snapshot` so
@@ -53,12 +53,12 @@ def set_cached_snapshot(hub: "SetupHubView", snapshot: GuildSnapshot) -> None:
     setattr(hub, _CACHE_ATTR, snapshot)
 
 
-def get_cached_snapshot(hub: "SetupHubView") -> GuildSnapshot | None:
+def get_cached_snapshot(hub: SetupHubView) -> GuildSnapshot | None:
     """Return the cached snapshot for ``hub`` or ``None`` if absent."""
     return getattr(hub, _CACHE_ATTR, None)
 
 
-async def run(interaction: discord.Interaction, hub: "SetupHubView") -> None:
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(

@@ -134,7 +134,9 @@ def build_channels_embed(snapshot: GuildSnapshot | None) -> discord.Embed:
         match = _scan_match_for(snapshot, binding.name)
         match_str = f" · likely `#{match.name}`" if match is not None else ""
         required = " · *required*" if binding.required else ""
-        grouped.setdefault(sub, []).append((binding.name, f"`{binding.name}`{required}{match_str}"))
+        grouped.setdefault(sub, []).append(
+            (binding.name, f"`{binding.name}`{required}{match_str}"),
+        )
 
     for sub_name in sorted(grouped):
         lines = "\n".join(f"• {body}" for _, body in grouped[sub_name])
@@ -376,7 +378,7 @@ async def _stage_channel_binding(
 # ---------------------------------------------------------------------------
 
 
-async def run(interaction: discord.Interaction, hub: "SetupHubView") -> None:
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(

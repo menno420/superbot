@@ -29,7 +29,8 @@ Display rules:
 
 from __future__ import annotations
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import discord
 
@@ -38,7 +39,6 @@ from services.setup_operations import (
     SetupOperationBatchResult,
     SetupOperationResult,
 )
-
 
 # ---------------------------------------------------------------------------
 # Display constants
@@ -194,10 +194,7 @@ def _format_field_value(
     if not rows:
         return "_empty_"
     visible = rows[:max_items]
-    lines = [
-        f"• {render_op_line(op, md, label=label)}"
-        for op, md, label in visible
-    ]
+    lines = [f"• {render_op_line(op, md, label=label)}" for op, md, label in visible]
     if len(rows) > max_items:
         lines.append(f"_+{len(rows) - max_items} more_")
     return _truncate("\n".join(lines))
@@ -294,13 +291,13 @@ def render_batch_embed(
     metadata_for = metadata_by_index or {}
 
     def _resolve(result: SetupOperationResult) -> tuple[
-        SetupOperation, dict[str, Any] | None, str | None,
+        SetupOperation,
+        dict[str, Any] | None,
+        str | None,
     ]:
         idx = by_index.get(id(result))
         op = result.operation
-        md = (
-            metadata_for.get(idx) if idx is not None else None
-        ) or op.metadata
+        md = (metadata_for.get(idx) if idx is not None else None) or op.metadata
         operator_label = label_for.get(idx) if idx is not None else None
         # Fall back to the result's pre-built label when nothing else
         # was supplied.
@@ -342,10 +339,7 @@ def render_batch_embed(
 
 
 def _legend_footer() -> str:
-    return (
-        "Confidence: ● high · ◐ medium · ○ low   "
-        "Risk: ⚠ high · ▲ medium · · low"
-    )
+    return "Confidence: ● high · ◐ medium · ○ low   Risk: ⚠ high · ▲ medium · · low"
 
 
 __all__ = [

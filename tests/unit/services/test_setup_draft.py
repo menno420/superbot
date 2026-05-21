@@ -15,7 +15,6 @@ import pytest
 from services import setup_draft
 from services.setup_operations import SetupOperation
 
-
 # ---------------------------------------------------------------------------
 # append
 # ---------------------------------------------------------------------------

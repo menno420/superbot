@@ -64,7 +64,8 @@ _DEFAULT_RISK_BY_KIND: dict[str, str] = {
 
 def _serialise_value(value: Any) -> str | None:
     """Match SettingsMutationPipeline._serialize: bool → 'true'/'false',
-    else ``str(value)``; ``None`` stays ``None``."""
+    else ``str(value)``; ``None`` stays ``None``.
+    """
     if value is None:
         return None
     if isinstance(value, bool):

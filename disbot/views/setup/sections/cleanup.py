@@ -351,9 +351,7 @@ async def _stage_cleanup_policy(
         metadata={
             "source": "manual",
             "confidence": "high",
-            "reason": (
-                f"Operator chose `{level}` for {scope_kind} `{scope_name}`"
-            ),
+            "reason": (f"Operator chose `{level}` for {scope_kind} `{scope_name}`"),
             "risk": "low",
             "rollback_note": (
                 f"Re-stage with a different level or "
@@ -403,7 +401,7 @@ async def _stage_cleanup_policy(
 # ---------------------------------------------------------------------------
 
 
-async def run(interaction: discord.Interaction, hub: "SetupHubView") -> None:
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     del hub
     guild = interaction.guild
     if guild is None:

@@ -19,7 +19,6 @@ from services.automation_templates import (
 )
 from services.setup_operations import preset_operations_to_setup_operations
 
-
 # ---------------------------------------------------------------------------
 # Per-kind mapping
 # ---------------------------------------------------------------------------

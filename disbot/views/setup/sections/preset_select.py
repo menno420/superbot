@@ -303,7 +303,7 @@ async def _stage_preset(
 # ---------------------------------------------------------------------------
 
 
-async def run(interaction: discord.Interaction, hub: "SetupHubView") -> None:
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     del hub
     guild = interaction.guild
     if guild is None:

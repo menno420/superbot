@@ -180,9 +180,9 @@ class FinalReviewView(BaseView):
         self,
         author: discord.Member | discord.User,
         *,
-        accepted: list[SetupRecommendation]
-        | tuple[SetupRecommendation, ...]
-        | None = None,
+        accepted: (
+            list[SetupRecommendation] | tuple[SetupRecommendation, ...] | None
+        ) = None,
         ops: list[Any] | None = None,
         public: bool = False,
         timeout: int = 300,
@@ -289,10 +289,16 @@ _PHASE_ORDER: tuple[tuple[str, frozenset[str]], ...] = (
     ),
     (
         "binding_mutation",
-        frozenset({
-            "bind_channel", "bind_role", "bind_category",
-            "bind_thread", "bind_member", "clear_binding",
-        }),
+        frozenset(
+            {
+                "bind_channel",
+                "bind_role",
+                "bind_category",
+                "bind_thread",
+                "bind_member",
+                "clear_binding",
+            },
+        ),
     ),
     ("settings_mutation", frozenset({"set_setting"})),
     ("cleanup_policy", frozenset({"set_cleanup_policy"})),
@@ -363,9 +369,11 @@ async def _apply_ops_in_order(
             summary.skipped.append(r.label)
         for r in batch.not_yet_implemented:
             summary.skipped.append(
-                f"{r.label} (not yet implemented)"
-                if not r.error
-                else f"{r.label}: {r.error}",
+                (
+                    f"{r.label} (not yet implemented)"
+                    if not r.error
+                    else f"{r.label}: {r.error}"
+                ),
             )
     return summary
 

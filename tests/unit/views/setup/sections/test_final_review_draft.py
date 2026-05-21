@@ -38,7 +38,6 @@ from views.setup.final_review import (
 )
 from views.setup.sections import final_review as final_review_section
 
-
 # ---------------------------------------------------------------------------
 # _sort_ops_for_apply
 # ---------------------------------------------------------------------------

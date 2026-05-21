@@ -157,8 +157,12 @@ async def setup(bot: commands.Bot) -> None:
     silently breaking command access in production guilds.
     """
     existing_checks = _find_channel_guard_checks(bot)
-    legacy_guards = [c for c in existing_checks if not _check_is_owned_by_bootstrap_cog(c)]
-    bootstrap_remnants = [c for c in existing_checks if _check_is_owned_by_bootstrap_cog(c)]
+    legacy_guards = [
+        c for c in existing_checks if not _check_is_owned_by_bootstrap_cog(c)
+    ]
+    bootstrap_remnants = [
+        c for c in existing_checks if _check_is_owned_by_bootstrap_cog(c)
+    ]
     legacy_guard = legacy_guards[0] if legacy_guards else None
     for guard in existing_checks:
         bot.remove_check(guard)

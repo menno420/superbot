@@ -83,7 +83,9 @@ def build_hub_embed(
 
     if pending_ops is not None:
         prefix = (
-            description + "\n\n" if "**Status:**" not in description else description + " · "
+            description + "\n\n"
+            if "**Status:**" not in description
+            else description + " · "
         )
         description = f"{prefix}**Pending operations:** `{pending_ops}`"
 
