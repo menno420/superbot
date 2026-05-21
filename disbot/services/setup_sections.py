@@ -69,6 +69,11 @@ class SetupSection:
             what happens if this section is skipped.  Rendered on the
             section card (PR 3) and surfaced by the hub embed.  Empty
             string means "no special skip impact documented yet".
+        depths: Wizard depths in which this section appears.  The hub
+            filters its button layout by the session's depth choice.
+            Default is all three depths so unmigrated sections remain
+            visible everywhere; sections opt into a narrower scope
+            (e.g. quick-only or advanced-only) at registration.
     """
 
     slug: str
@@ -80,6 +85,7 @@ class SetupSection:
     step: str | None = None
     op_kinds: frozenset[str] = frozenset()
     description_if_skipped: str = ""
+    depths: frozenset[str] = frozenset({"quick", "standard", "advanced"})
 
     @property
     def session_step(self) -> str:
@@ -122,6 +128,18 @@ class SetupSectionRegistry:
             self._sections.values(),
             key=lambda s: (s.order, s.slug),
         )
+
+    def for_depth(self, depth: str | None) -> list[SetupSection]:
+        """Return registered sections that participate in ``depth``.
+
+        ``depth`` ∈ ``{"quick", "standard", "advanced"}``.  Passing
+        ``None`` (no choice persisted yet) returns every section so
+        the hub still works in legacy / pre-picker code paths.
+        Sorted by ``(order, slug)`` to match :meth:`all`.
+        """
+        if depth is None:
+            return self.all()
+        return [s for s in self.all() if depth in s.depths]
 
     def __contains__(self, slug: object) -> bool:
         return isinstance(slug, str) and slug in self._sections

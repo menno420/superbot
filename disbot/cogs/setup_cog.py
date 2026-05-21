@@ -57,10 +57,13 @@ async def _resolve_hub_entry(
 ):
     """Resolve the hub-entry response for ``member`` in ``guild``.
 
-    Returns one of three shapes:
+    Returns one of four shapes:
 
-    * ``(hub_embed, hub_view, "hub")`` — member can apply setup; full
-      hub is rendered. Caller marks the session in progress.
+    * ``(depth_embed, depth_view, "depth_picker")`` — first-time entry
+      for an apply-capable member with no depth chosen yet.
+    * ``(hub_embed, hub_view, "hub")`` — member can apply setup and
+      has a persisted depth; full hub renders, filtered by depth.
+      Caller marks the session in progress.
     * ``(readiness_embed, None, "readiness")`` — member is a setup
       admin without apply authority; render the deterministic
       readiness embed instead.
@@ -84,6 +87,15 @@ async def _resolve_hub_entry(
                     "setup_cog._resolve_hub_entry: start_session failed",
                 )
                 session = None
+
+        if session is not None and session.depth is None:
+            from views.setup.depth_panel import (
+                DepthPanelView,
+                build_depth_embed,
+            )
+
+            view = DepthPanelView(member, session=session)
+            return build_depth_embed(), view, "depth_picker"
 
         from services import setup_draft
         from views.setup.hub import SetupHubView, build_hub_embed
@@ -169,10 +181,11 @@ class SetupCog(commands.Cog):
             await ctx.send("Could not build the setup hub. See logs.")
             return
         await ctx.send(embed=embed, view=view)
-        try:
-            await setup_session.mark_in_progress(guild.id, step="hub")
-        except Exception:
-            logger.exception("setup_cog.setup_cmd: mark_in_progress failed")
+        if mode == "hub":
+            try:
+                await setup_session.mark_in_progress(guild.id, step="hub")
+            except Exception:
+                logger.exception("setup_cog.setup_cmd: mark_in_progress failed")
 
     @app_commands.command(
         name="setup",
@@ -224,10 +237,11 @@ class SetupCog(commands.Cog):
             view=view,
             ephemeral=True,
         )
-        try:
-            await setup_session.mark_in_progress(guild.id, step="hub")
-        except Exception:
-            logger.exception("setup_cog.setup_slash: mark_in_progress failed")
+        if mode == "hub":
+            try:
+                await setup_session.mark_in_progress(guild.id, step="hub")
+            except Exception:
+                logger.exception("setup_cog.setup_slash: mark_in_progress failed")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:

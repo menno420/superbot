@@ -440,6 +440,7 @@ REGISTRY.register(
             "be aggressively deleted unless existing policies already say "
             "so. You can revisit cleanup later from `!settings`."
         ),
+        depths=frozenset({"standard", "advanced"}),
     ),
 )
 

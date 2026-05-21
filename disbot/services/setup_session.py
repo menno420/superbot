@@ -42,6 +42,7 @@ class SetupSession:
     current_step: str | None
     delegated_admins: tuple[int, ...]
     skipped_sections: frozenset[str] = frozenset()
+    depth: str | None = None
 
     @classmethod
     def from_row(cls, row: dict[str, Any]) -> SetupSession:
@@ -56,6 +57,7 @@ class SetupSession:
             current_step=row.get("current_step"),
             delegated_admins=tuple(row.get("delegated_admins") or ()),
             skipped_sections=frozenset(row.get("skipped_sections") or ()),
+            depth=row.get("depth"),
         )
 
 
@@ -172,6 +174,15 @@ async def unmark_section_skipped(guild_id: int, slug: str) -> None:
     await db.remove_skipped_section(guild_id, slug)
 
 
+async def set_depth(guild_id: int, depth: str | None) -> None:
+    """Persist the operator's depth choice (quick / standard / advanced).
+
+    Passing ``None`` clears the choice, which makes the hub re-prompt
+    on the next open.
+    """
+    await db.set_depth(guild_id, depth)
+
+
 # ---------------------------------------------------------------------------
 # Drift detection (Phase 9i / Track 8 PR 24)
 # ---------------------------------------------------------------------------
@@ -277,6 +288,7 @@ __all__ = [
     "mark_section_skipped",
     "record_readiness_score",
     "resume_session",
+    "set_depth",
     "start_session",
     "unmark_section_skipped",
 ]

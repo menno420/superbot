@@ -180,3 +180,92 @@ def test_session_step_uses_explicit_step_override():
 
 def test_module_registry_is_a_setup_section_registry():
     assert isinstance(REGISTRY, SetupSectionRegistry)
+
+
+# ---------------------------------------------------------------------------
+# for_depth filtering
+# ---------------------------------------------------------------------------
+
+
+def test_for_depth_returns_only_matching_sections():
+    registry = SetupSectionRegistry()
+    quick_only = _section("quick_only", order=10)
+    quick_only_with_depth = SetupSection(
+        slug=quick_only.slug,
+        label=quick_only.label,
+        style=quick_only.style,
+        run=quick_only.run,
+        order=quick_only.order,
+        depths=frozenset({"quick"}),
+    )
+    standard_only = SetupSection(
+        slug="standard_only",
+        label="Standard Only",
+        style=discord.ButtonStyle.secondary,
+        run=_noop,
+        order=20,
+        depths=frozenset({"standard"}),
+    )
+    universal = SetupSection(
+        slug="universal",
+        label="Universal",
+        style=discord.ButtonStyle.secondary,
+        run=_noop,
+        order=30,
+        depths=frozenset({"quick", "standard", "advanced"}),
+    )
+    registry.register(quick_only_with_depth)
+    registry.register(standard_only)
+    registry.register(universal)
+
+    quick = {s.slug for s in registry.for_depth("quick")}
+    standard = {s.slug for s in registry.for_depth("standard")}
+    advanced = {s.slug for s in registry.for_depth("advanced")}
+
+    assert quick == {"quick_only", "universal"}
+    assert standard == {"standard_only", "universal"}
+    assert advanced == {"universal"}
+
+
+def test_for_depth_none_returns_every_section():
+    """``None`` is the legacy / pre-picker fallback — show everything."""
+    registry = SetupSectionRegistry()
+    registry.register(
+        SetupSection(
+            slug="advanced_only",
+            label="Advanced Only",
+            style=discord.ButtonStyle.secondary,
+            run=_noop,
+            order=10,
+            depths=frozenset({"advanced"}),
+        ),
+    )
+    sections = registry.for_depth(None)
+    assert len(sections) == 1
+
+
+def test_for_depth_is_sorted_consistently_with_all():
+    registry = SetupSectionRegistry()
+    registry.register(
+        SetupSection(
+            slug="z_section",
+            label="Z",
+            style=discord.ButtonStyle.secondary,
+            run=_noop,
+            order=10,
+            depths=frozenset({"standard"}),
+        ),
+    )
+    registry.register(
+        SetupSection(
+            slug="a_section",
+            label="A",
+            style=discord.ButtonStyle.secondary,
+            run=_noop,
+            order=10,
+            depths=frozenset({"standard"}),
+        ),
+    )
+    sections = registry.for_depth("standard")
+    # Order-then-slug means a_section first.
+    assert [s.slug for s in sections] == ["a_section", "z_section"]

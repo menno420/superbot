@@ -1049,7 +1049,18 @@ def _mock_ctx(author, guild=None, guild_id: int = 1):
     return ctx
 
 
-def _delegated_session(*, owner_id: int = 99, delegated=(42,)) -> SetupSession:
+def _delegated_session(
+    *,
+    owner_id: int = 99,
+    delegated=(42,),
+    depth: str | None = "standard",
+) -> SetupSession:
+    """Test fixture session.
+
+    Defaults ``depth="standard"`` so callers exercising the hub path
+    don't accidentally hit the depth picker. Pass ``depth=None`` to
+    test the picker flow.
+    """
     return SetupSession(
         guild_id=1,
         guild_name="Test",
@@ -1060,6 +1071,7 @@ def _delegated_session(*, owner_id: int = 99, delegated=(42,)) -> SetupSession:
         last_readiness_score=None,
         current_step=None,
         delegated_admins=tuple(delegated),
+        depth=depth,
     )
 
 
@@ -1128,6 +1140,37 @@ async def test_setup_cmd_starts_session_when_missing():
 
     start_mock.assert_awaited_once()
     ctx.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_setup_cmd_shows_depth_picker_when_depth_unset():
+    """First-time entry (session.depth=None) routes the operator
+    through the depth picker before opening the hub."""
+    from cogs.setup_cog import SetupCog
+    from views.setup.depth_panel import DepthPanelView
+
+    cog = SetupCog(MagicMock())
+    ctx = _mock_ctx(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(depth=None),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ) as mark_mock,
+    ):
+        await cog.setup_cmd.callback(cog, ctx)
+
+    ctx.send.assert_awaited_once()
+    sent_view = ctx.send.await_args.kwargs.get("view")
+    assert isinstance(sent_view, DepthPanelView)
+    # mark_in_progress should NOT fire — the operator hasn't reached
+    # the hub yet.
+    mark_mock.assert_not_awaited()
 
 
 @pytest.mark.asyncio

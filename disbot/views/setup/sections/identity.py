@@ -267,6 +267,7 @@ REGISTRY.register(
             "Identity defaults stay at the existing values. You can change "
             "them later in `!settings` without re-running the wizard."
         ),
+        depths=frozenset({"advanced"}),
     ),
 )
 # Identity stages `set_setting` ops but `set_setting` is shared with

@@ -151,7 +151,13 @@ def build_hub_embed(
 
 
 class SetupHubView(BaseView):
-    """Top-level wizard view: renders one button per registered section."""
+    """Top-level wizard view: renders one button per registered section.
+
+    Section layout is filtered by the session's persisted depth
+    (``quick`` / ``standard`` / ``advanced``). When ``session.depth``
+    is ``None`` (the legacy / pre-picker path) every registered
+    section renders so the hub is never empty.
+    """
 
     def __init__(
         self,
@@ -163,8 +169,36 @@ class SetupHubView(BaseView):
     ) -> None:
         super().__init__(author, public=public, timeout=timeout)
         self.session = session
-        for section in REGISTRY.all():
+        depth = session.depth if session is not None else None
+        for section in REGISTRY.for_depth(depth):
             self.add_item(self._build_section_button(section))
+        self.add_item(self._build_change_depth_button())
+
+    def _build_change_depth_button(self) -> discord.ui.Button:
+        button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Change depth",
+            style=discord.ButtonStyle.secondary,
+            custom_id="setup_hub:change_depth",
+            row=4,
+        )
+
+        async def _callback(interaction: discord.Interaction) -> None:
+            if not await self._gate_owner(interaction):
+                return
+            from views.setup.depth_panel import (
+                DepthPanelView,
+                build_depth_embed,
+            )
+
+            await self._refresh_session()
+            view = DepthPanelView(interaction.user, session=self.session)
+            await interaction.response.edit_message(
+                embed=build_depth_embed(),
+                view=view,
+            )
+
+        button.callback = _callback  # type: ignore[method-assign]
+        return button
 
     async def _refresh_session(self) -> None:
         if self.session is None:

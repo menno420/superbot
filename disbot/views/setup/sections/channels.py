@@ -436,6 +436,7 @@ REGISTRY.register(
             "have a dedicated log channel. Configure these later in "
             "`!settings`."
         ),
+        depths=frozenset({"standard", "advanced"}),
     ),
 )
 

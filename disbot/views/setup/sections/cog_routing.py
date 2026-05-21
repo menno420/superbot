@@ -447,6 +447,7 @@ REGISTRY.register(
             "default policy. You can tighten per-channel/category routing "
             "later in `!settings`."
         ),
+        depths=frozenset({"advanced"}),
     ),
 )
 
