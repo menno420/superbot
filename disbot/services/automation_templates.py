@@ -627,6 +627,43 @@ _SERVER_PRESETS: tuple[ServerPreset, ...] = (
         ),
     ),
     ServerPreset(
+        slug="existing-safe",
+        display_name="Existing-server safe",
+        description=(
+            "Binds likely-existing channels for rules + moderation log. "
+            "Never creates channels, roles, or automation rules — safe to "
+            "apply to a server that already has its own structure."
+        ),
+        suggested_log_channels=("bot-mod-log",),
+        suggested_command_channels=("bot-commands",),
+        operations=(
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind an existing rules channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "rules_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind an existing moderation log channel.",
+                payload={
+                    "subsystem": "logging",
+                    "binding_name": "mod_channel",
+                },
+            ),
+            PresetOperation(
+                kind="bind_channel",
+                description="Bind an existing bot-commands channel.",
+                payload={
+                    "subsystem": "moderation",
+                    "binding_name": "bot_command_channel",
+                },
+            ),
+        ),
+    ),
+    ServerPreset(
         slug="custom",
         display_name="Custom",
         description=(
