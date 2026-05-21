@@ -370,6 +370,8 @@ async def test_stage_channel_binding_surfaces_append_failure():
 
 @pytest.mark.asyncio
 async def test_run_rejects_dm_context():
+    """``run`` routes through the section card, which rejects DMs with
+    a 'server'/'guild' phrasing."""
     interaction = MagicMock()
     interaction.user = SimpleNamespace(id=99)
     interaction.guild = None
@@ -378,11 +380,47 @@ async def test_run_rejects_dm_context():
     await channels.run(interaction, MagicMock())
     interaction.response.send_message.assert_awaited_once()
     args = interaction.response.send_message.await_args.args
-    assert "guild" in args[0].lower()
+    assert "server" in args[0].lower() or "guild" in args[0].lower()
 
 
 @pytest.mark.asyncio
-async def test_run_uses_cached_snapshot_when_present():
+async def test_run_opens_section_card_in_guild():
+    """``run`` now shows the shared section card; the detailed channel
+    picker is reachable via the card's Customize button."""
+    from views.setup.section_card import SectionCardView
+
+    interaction = _interaction()
+    interaction.guild = MagicMock(id=1, name="Test", owner_id=99)
+    hub = SimpleNamespace()
+
+    with (
+        patch(
+            "views.setup.section_card.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "views.setup.section_card.setup_draft.list_ops",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.section_card.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await channels.run(interaction, hub)
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs.get("ephemeral") is True
+    assert isinstance(kwargs["view"], SectionCardView)
+
+
+@pytest.mark.asyncio
+async def test_customize_run_uses_cached_snapshot_when_present():
+    """The detailed picker (Customize target) still surfaces the
+    cached snapshot's classifier hints in the embed."""
     interaction = _interaction()
     hub = SimpleNamespace()
     snap = _snap(channels_list=[_ch("mod-log", ch_id=42)])
@@ -391,13 +429,85 @@ async def test_run_uses_cached_snapshot_when_present():
         "views.setup.sections.server_scan.get_cached_snapshot",
         return_value=snap,
     ):
-        await channels.run(interaction, hub)
+        await channels._customize_run(interaction, hub)
 
     interaction.response.send_message.assert_awaited_once()
     embed = interaction.response.send_message.await_args.kwargs["embed"]
     logging_field = next((f for f in embed.fields if f.name == "logging"), None)
     assert logging_field is not None
     assert "mod-log" in logging_field.value
+
+
+@pytest.mark.asyncio
+async def test_recommended_channel_ops_stages_high_confidence_picks():
+    """``_recommended_channel_ops`` walks the binding catalogue, asks
+    the recommender for a top pick per intent, and stages bind_channel
+    ops only for high-confidence matches."""
+    from services.channel_recommender import ChannelRecommendation
+
+    guild = MagicMock()
+    guild.id = 1
+    guild.name = "Test"
+
+    high = ChannelRecommendation(
+        channel_id=42,
+        channel_name="mod-log",
+        intent="mod_logs",
+        score=70,
+        confidence="high",
+        reasons=("Name match",),
+        action="bind",
+    )
+    medium = ChannelRecommendation(
+        channel_id=43,
+        channel_name="random-log",
+        intent="logs",
+        score=45,
+        confidence="medium",
+        reasons=("Keyword hint",),
+        action="bind",
+    )
+
+    def fake_top_pick(intent_slug, _snapshot):
+        if intent_slug == "mod_logs":
+            return high
+        if intent_slug == "logs":
+            return medium
+        return None
+
+    with (
+        patch(
+            "services.guild_snapshot.collect",
+            new_callable=AsyncMock,
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.channel_recommender.top_pick",
+            side_effect=fake_top_pick,
+        ),
+    ):
+        ops = await channels._recommended_channel_ops(guild)
+
+    # Only the high-confidence mod_logs pick should be staged.
+    assert len(ops) == 1
+    op = ops[0]
+    assert op.kind == "bind_channel"
+    assert op.target_id == 42
+    assert op.binding_name == "mod_channel"
+
+
+@pytest.mark.asyncio
+async def test_recommended_channel_ops_returns_empty_when_snapshot_fails():
+    guild = MagicMock()
+    guild.id = 1
+    guild.name = "Test"
+    with patch(
+        "services.guild_snapshot.collect",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("snapshot down"),
+    ):
+        ops = await channels._recommended_channel_ops(guild)
+    assert ops == []
 
 
 # ---------------------------------------------------------------------------

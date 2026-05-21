@@ -455,7 +455,11 @@ async def _stage_channel_binding(
 # ---------------------------------------------------------------------------
 
 
-async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+async def _customize_run(
+    interaction: discord.Interaction,
+    hub: SetupHubView | None,
+) -> None:
+    """Detailed channel picker — opened by the section card's Customize."""
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
@@ -468,12 +472,13 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     # hub view.  When absent (operator never ran the scan), the
     # classifier hints simply do not appear — the section still works.
     snapshot: GuildSnapshot | None = None
-    try:
-        from views.setup.sections.server_scan import get_cached_snapshot
+    if hub is not None:
+        try:
+            from views.setup.sections.server_scan import get_cached_snapshot
 
-        snapshot = get_cached_snapshot(hub)
-    except Exception:
-        logger.exception("channels: snapshot lookup raised")
+            snapshot = get_cached_snapshot(hub)
+        except Exception:
+            logger.exception("channels: snapshot lookup raised")
 
     embed = build_channels_embed(snapshot)
     view = ChannelsSectionView(interaction.user, snapshot=snapshot)
@@ -481,6 +486,73 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
         embed=embed,
         view=view,
         ephemeral=True,
+    )
+
+
+async def _recommended_channel_ops(
+    guild: discord.Guild,
+) -> list[SetupOperation]:
+    """Stage ``bind_channel`` ops for every binding whose intent has a
+    high-confidence channel recommendation.
+
+    Walks :data:`_BINDING_TO_INTENT`, fetches the recommender's top
+    pick per binding, and stages a bind op when the confidence is
+    ``high``. Medium / low picks are intentionally skipped — they're
+    not safe to auto-stage without operator confirmation, but the
+    embed still surfaces them so the operator can customise.
+    """
+    from services import guild_snapshot
+    from services.channel_recommender import top_pick
+
+    try:
+        snapshot = await guild_snapshot.collect(guild)
+    except Exception:
+        logger.exception("channels._recommended_channel_ops: snapshot failed")
+        return []
+
+    bindings = _all_channel_bindings()
+    ops: list[SetupOperation] = []
+    for subsystem, binding in bindings:
+        intent = _BINDING_TO_INTENT.get(binding.name)
+        if intent is None:
+            continue
+        pick = top_pick(intent, snapshot)
+        if pick is None or pick.confidence != "high":
+            continue
+        ops.append(
+            SetupOperation(
+                kind="bind_channel",
+                subsystem=subsystem,
+                binding_name=binding.name,
+                target_id=pick.channel_id,
+                target_name=pick.channel_name,
+                target_kind="channel",
+            ),
+        )
+    return ops
+
+
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+    """Channels section entry — shows the section card.
+
+    The detailed channel picker is reachable via the card's
+    Customize button; Apply Recommended stages bind ops for every
+    high-confidence intent pick.
+    """
+    from views.setup.section_card import show
+
+    detected = (
+        "Channel-binding recommendations are computed live from the "
+        "guild snapshot. Apply Recommended only stages high-confidence "
+        "picks; use Customize to choose manually."
+    )
+    await show(
+        interaction,
+        hub=hub,
+        section=REGISTRY.get(SLUG),  # type: ignore[arg-type]
+        detected_state=detected,
+        on_customize=_customize_run,
+        recommended_ops_builder=_recommended_channel_ops,
     )
 
 

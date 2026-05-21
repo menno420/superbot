@@ -512,7 +512,9 @@ async def _customize_run(
     )
 
 
-def _recommended_cleanup_ops(guild: discord.Guild) -> list[SetupOperation]:
+async def _recommended_cleanup_ops(
+    guild: discord.Guild,
+) -> list[SetupOperation]:
     """Default cleanup recommendation: Light cleanup at guild scope.
 
     Light deletes invalid commands after 10s and leaves failed-command

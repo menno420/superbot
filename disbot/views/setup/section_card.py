@@ -61,7 +61,10 @@ CustomizeCallback = Callable[
     Awaitable[None],
 ]
 
-RecommendedOpsBuilder = Callable[[discord.Guild], list[SetupOperation]]
+RecommendedOpsBuilder = Callable[
+    [discord.Guild],
+    Awaitable[list[SetupOperation]],
+]
 
 
 _STATUS_LABELS = {
@@ -223,7 +226,7 @@ class SectionCardView(BaseView):
             )
             return
         try:
-            ops = self._recommended_ops_builder(guild)
+            ops = await self._recommended_ops_builder(guild)
         except Exception:
             logger.exception(
                 "section_card._apply_recommended: builder failed (section=%s)",
