@@ -40,6 +40,18 @@ def _find_channel_guard_checks(bot: commands.Bot) -> list[Any]:
     ]
 
 
+def _check_is_owned_by_bootstrap_cog(check: Any) -> bool:
+    """Return True if ``check`` is a bound method of a
+    :class:`BootstrapAccessCog` instance.
+
+    Used by :func:`setup` to recognise a leftover check from a previous
+    load that didn't clean up properly.  The shape we look for is a
+    bound method (``__self__`` is the cog instance).
+    """
+    owner = getattr(check, "__self__", None)
+    return isinstance(owner, BootstrapAccessCog)
+
+
 def _is_shutting_down_from_legacy_guard(legacy_guard: Any | None) -> bool:
     """Read ``_shutting_down`` from the original guard's globals, if present."""
     if legacy_guard is None:
@@ -60,6 +72,25 @@ class BootstrapAccessCog(commands.Cog):
     def __init__(self, bot: commands.Bot, *, legacy_guard: Any | None = None) -> None:
         self.bot = bot
         self._legacy_guard = legacy_guard
+
+    def cog_unload(self) -> None:
+        """Remove the global channel guard so a reload doesn't leave a
+        duplicate registered on the next ``setup()`` call.
+
+        ``commands.Bot.reload_extension`` calls this hook before
+        re-loading the cog.  Without it, the second ``setup()`` would
+        register a *second* ``_channel_guard`` check, leading to
+        unpredictable command rejection in production guilds (one
+        check accepts the command, the other rejects, depending on
+        which one fires first).
+        """
+        try:
+            self.bot.remove_check(self._channel_guard)
+        except Exception:
+            logger.exception(
+                "BootstrapAccessCog.cog_unload: failed to remove "
+                "channel guard during teardown",
+            )
 
     async def _channel_guard(self, ctx: commands.Context) -> bool:
         if _is_shutting_down_from_legacy_guard(self._legacy_guard):
@@ -117,16 +148,28 @@ class BootstrapAccessCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    legacy_guards = _find_channel_guard_checks(bot)
+    """Replace the legacy channel guard with the fresh-guild-aware version.
+
+    Reload-safe: if a previous BootstrapAccessCog left its check
+    installed (e.g. a Discord interaction was running during reload
+    and ``cog_unload`` couldn't fire cleanly), the leftover check is
+    removed before we install ours.  This stops double-load from
+    silently breaking command access in production guilds.
+    """
+    existing_checks = _find_channel_guard_checks(bot)
+    legacy_guards = [c for c in existing_checks if not _check_is_owned_by_bootstrap_cog(c)]
+    bootstrap_remnants = [c for c in existing_checks if _check_is_owned_by_bootstrap_cog(c)]
     legacy_guard = legacy_guards[0] if legacy_guards else None
-    for guard in legacy_guards:
+    for guard in existing_checks:
         bot.remove_check(guard)
     cog = BootstrapAccessCog(bot, legacy_guard=legacy_guard)
     bot.add_check(cog._channel_guard)
     await bot.add_cog(cog)
     logger.info(
-        "BootstrapAccessCog loaded; replaced %d legacy channel guard(s).",
+        "BootstrapAccessCog loaded; replaced %d legacy guard(s) + "
+        "cleaned %d bootstrap remnant(s).",
         len(legacy_guards),
+        len(bootstrap_remnants),
     )
 
 
