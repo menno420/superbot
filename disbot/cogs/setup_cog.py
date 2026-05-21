@@ -29,6 +29,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from cogs.setup._helpers import build_status_embed as _build_status_embed
+from cogs.setup._helpers import resolve_hub_entry as _resolve_hub_entry
 from services import setup_access, setup_session
 from views.setup.launcher import (
     SetupLauncherView,
@@ -40,167 +42,6 @@ from views.setup.launcher import (
 )
 
 logger = logging.getLogger("bot.cogs.setup")
-
-
-# ---------------------------------------------------------------------------
-# Shared hub-entry helper for direct commands (!setup / /setup).
-# ---------------------------------------------------------------------------
-
-
-async def _resolve_hub_entry(
-    member: discord.Member,
-    guild: discord.Guild,
-) -> (
-    tuple[discord.Embed, discord.ui.View, str]
-    | tuple[discord.Embed, None, str]
-    | tuple[None, None, str]
-):
-    """Resolve the hub-entry response for ``member`` in ``guild``.
-
-    Returns one of four shapes:
-
-    * ``(depth_embed, depth_view, "depth_picker")`` — first-time entry
-      for an apply-capable member with no depth chosen yet.
-    * ``(hub_embed, hub_view, "hub")`` — member can apply setup and
-      has a persisted depth; full hub renders, filtered by depth.
-      Caller marks the session in progress.
-    * ``(readiness_embed, None, "readiness")`` — member is a setup
-      admin without apply authority; render the deterministic
-      readiness embed instead.
-    * ``(None, None, "denied")`` — member is not a setup admin.
-
-    The helper performs no Discord send; the calling command decides
-    whether to reply ephemerally (slash) or to ``ctx.send`` (prefix).
-    """
-    session = await setup_session.resume_session(guild.id)
-
-    if setup_access.can_apply_setup(member, session):
-        if session is None:
-            try:
-                session = await setup_session.start_session(
-                    guild_id=guild.id,
-                    guild_name=guild.name,
-                    owner_id=guild.owner_id or 0,
-                )
-            except Exception:
-                logger.exception(
-                    "setup_cog._resolve_hub_entry: start_session failed",
-                )
-                session = None
-
-        if session is not None and session.depth is None:
-            from views.setup.depth_panel import (
-                DepthPanelView,
-                build_depth_embed,
-            )
-
-            view = DepthPanelView(member, session=session)
-            return build_depth_embed(), view, "depth_picker"
-
-        from services import setup_draft
-        from views.setup.hub import SetupHubView, build_hub_embed
-
-        try:
-            draft_ops = await setup_draft.list_ops(guild.id)
-        except Exception:
-            logger.exception(
-                "setup_cog._resolve_hub_entry: setup_draft.list_ops failed",
-            )
-            draft_ops = []
-        hub = SetupHubView(member, session=session)
-        embed = build_hub_embed(
-            session,
-            pending_ops=len(draft_ops),
-            draft_ops=draft_ops,
-        )
-        return embed, hub, "hub"
-
-    if setup_access.is_setup_admin(member, session):
-        from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
-
-        embed = await build_setup_readiness_embed(guild.id, guild=guild)
-        return embed, None, "readiness"
-
-    return None, None, "denied"
-
-
-_STATUS_COLOR_BY_STATUS = {
-    "pending": discord.Color.blurple(),
-    "in_progress": discord.Color.gold(),
-    "complete": discord.Color.green(),
-    "dismissed": discord.Color.dark_grey(),
-}
-
-
-def _build_status_embed(
-    session: setup_session.SetupSession | None,
-    *,
-    pending_ops: int,
-) -> discord.Embed:
-    """Render a read-only status snapshot for ``/setup-status``.
-
-    Pure helper — takes a resolved session + the pending-op count and
-    returns the embed. No DB / Discord I/O. Mirrors the data points
-    the hub embed surfaces (status, depth, current step, readiness
-    score, pending ops, skipped sections) but with no buttons.
-    """
-    status = session.setup_status if session is not None else "no session"
-    color = _STATUS_COLOR_BY_STATUS.get(status, discord.Color.blurple())
-    embed = discord.Embed(
-        title="🛰 Setup status",
-        description=f"**Status:** `{status}`",
-        color=color,
-    )
-    if session is None:
-        embed.add_field(
-            name="No session row",
-            value=(
-                "The bot has not recorded any setup session for this guild. "
-                "Run `!setup` or `/setup` to start."
-            ),
-            inline=False,
-        )
-        return embed
-
-    if session.depth:
-        embed.add_field(name="Depth", value=f"`{session.depth}`", inline=True)
-    if session.current_step:
-        embed.add_field(
-            name="Current step",
-            value=f"`{session.current_step}`",
-            inline=True,
-        )
-    if session.last_readiness_score is not None:
-        embed.add_field(
-            name="Readiness",
-            value=f"`{session.last_readiness_score}%`",
-            inline=True,
-        )
-    embed.add_field(
-        name="Pending operations",
-        value=f"`{pending_ops}`",
-        inline=True,
-    )
-    if session.skipped_sections:
-        embed.add_field(
-            name="Skipped sections",
-            value=", ".join(f"`{s}`" for s in sorted(session.skipped_sections)),
-            inline=False,
-        )
-    if session.delegated_admins:
-        embed.add_field(
-            name="Delegated admins",
-            value=", ".join(f"<@{uid}>" for uid in session.delegated_admins),
-            inline=False,
-        )
-    if session.setup_channel_id is not None:
-        embed.add_field(
-            name="Setup channel",
-            value=f"<#{session.setup_channel_id}>",
-            inline=True,
-        )
-    embed.set_footer(text="Read-only. Run `!setup` / `/setup` to make changes.")
-    return embed
 
 
 # ---------------------------------------------------------------------------
@@ -321,6 +162,90 @@ class SetupCog(commands.Cog):
                 await setup_session.mark_in_progress(guild.id, step="hub")
             except Exception:
                 logger.exception("setup_cog.setup_slash: mark_in_progress failed")
+
+    @app_commands.command(
+        name="setup-depth",
+        description="Pick the wizard depth (owner/delegated admin only).",
+    )
+    @app_commands.describe(depth="Setup depth: quick, standard, or advanced.")
+    @app_commands.choices(
+        depth=[
+            app_commands.Choice(name="Quick (3 steps)", value="quick"),
+            app_commands.Choice(name="Standard (5–6 steps)", value="standard"),
+            app_commands.Choice(name="Advanced (all sections)", value="advanced"),
+        ],
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_depth_slash(
+        self,
+        interaction: discord.Interaction,
+        depth: app_commands.Choice[str],
+    ) -> None:
+        """Set the persisted wizard depth without opening the hub.
+
+        The hub's section list and the "Apply all recommended" button
+        re-filter by the new depth on the next open. The skip set and
+        any staged draft ops are preserved — only the depth pick is
+        replaced.
+        """
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            await interaction.response.send_message(
+                "Use `/setup-depth` from inside the server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            session = await setup_session.resume_session(guild.id)
+        except Exception:
+            logger.exception("setup_cog.setup_depth_slash: resume failed")
+            session = None
+
+        if not setup_access.can_apply_setup(member, session):
+            await interaction.response.send_message(
+                "Only the server owner or a delegated setup admin can "
+                "change the wizard depth.",
+                ephemeral=True,
+            )
+            return
+
+        if session is None:
+            # No session yet — create one so the depth choice persists.
+            try:
+                await setup_session.start_session(
+                    guild_id=guild.id,
+                    guild_name=guild.name,
+                    owner_id=guild.owner_id or 0,
+                )
+            except Exception:
+                logger.exception(
+                    "setup_cog.setup_depth_slash: start_session failed",
+                )
+                await interaction.response.send_message(
+                    "Could not initialise the setup session — see logs.",
+                    ephemeral=True,
+                )
+                return
+
+        try:
+            await setup_session.set_depth(guild.id, depth.value)
+        except Exception:
+            logger.exception("setup_cog.setup_depth_slash: set_depth failed")
+            await interaction.response.send_message(
+                "Could not save the depth choice — see logs.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            f"✅ Depth set to **{depth.name}**. Run `!setup` / `/setup` to "
+            f"see the filtered section list.",
+            ephemeral=True,
+        )
 
     @app_commands.command(
         name="setup-skip",
