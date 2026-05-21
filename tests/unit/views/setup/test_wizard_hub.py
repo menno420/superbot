@@ -576,3 +576,206 @@ async def test_final_review_apply_partial_success_renders_applied_failed_skipped
     assert "Applied **1**" in desc
     assert "failed **1**" in desc
     assert "skipped **1**" in desc
+
+
+# ---------------------------------------------------------------------------
+# "Apply all recommended" hub button
+# ---------------------------------------------------------------------------
+
+
+def _find_button(view, custom_id: str):
+    for child in view.children:
+        if isinstance(child, discord.ui.Button) and child.custom_id == custom_id:
+            return child
+    return None
+
+
+def test_apply_all_recommended_button_appears_when_section_has_builder():
+    """If any depth-filtered section declares a recommended_ops_builder,
+    the hub renders the "Apply all recommended" button on row 4."""
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+        depth="standard",  # standard includes cleanup + channels
+    )
+    view = SetupHubView(_owner_member(), session=session)
+    btn = _find_button(view, "setup_hub:apply_all_recommended")
+    assert btn is not None
+    assert btn.label == "Apply all recommended"
+    assert btn.row == 4
+
+
+def test_apply_all_recommended_button_absent_when_no_builders():
+    """If no section in the depth has a recommended_ops_builder (e.g.
+    a depth that only includes read-only sections), the button is
+    omitted from the hub."""
+    from unittest.mock import patch
+
+    from services.setup_sections import REGISTRY
+
+    # Patch the registry's for_depth to return only sections without
+    # builders. We use server_scan (read-only, no builder).
+    server_scan = REGISTRY.get("server_scan")
+    if server_scan is None:
+        pytest.skip("server_scan section not registered")
+
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+        depth="standard",
+    )
+    with patch.object(REGISTRY, "for_depth", return_value=[server_scan]):
+        view = SetupHubView(_owner_member(), session=session)
+    btn = _find_button(view, "setup_hub:apply_all_recommended")
+    assert btn is None
+
+
+@pytest.mark.asyncio
+async def test_apply_all_recommended_iterates_sections_and_stages_ops():
+    """Clicking the button calls every depth-filtered section's
+    recommended_ops_builder and stages each returned op via
+    setup_draft.append with metadata.source='setup_ux:recommended'."""
+    from services.setup_operations import SetupOperation
+    from services.setup_sections import REGISTRY, SetupSection
+
+    async def _build(_guild):
+        return [
+            SetupOperation(
+                kind="set_cleanup_policy",
+                subsystem="cleanup",
+                target_kind="guild",
+                target_id=1,
+                value="Light",
+            ),
+        ]
+
+    async def _section_run(_interaction, _hub):
+        return None
+
+    fake_section = SetupSection(
+        slug="_fake_apply_all",
+        label="Fake",
+        style=discord.ButtonStyle.secondary,
+        run=_section_run,
+        order=999,
+        depths=frozenset({"standard"}),
+        recommended_ops_builder=_build,
+    )
+
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+        depth="standard",
+    )
+
+    with patch.object(REGISTRY, "for_depth", return_value=[fake_section]):
+        view = SetupHubView(_owner_member(), session=session)
+        button = _find_button(view, "setup_hub:apply_all_recommended")
+        assert button is not None
+        interaction = _interaction(_owner_member())
+        interaction.guild = MagicMock(id=1)
+        interaction.response.defer = AsyncMock()
+        interaction.followup = MagicMock()
+        interaction.followup.send = AsyncMock()
+        with (
+            patch.object(
+                view,
+                "_refresh_session",
+                new_callable=AsyncMock,
+            ),
+            patch(
+                "services.setup_draft.append",
+                new_callable=AsyncMock,
+                return_value=1,
+            ) as append_mock,
+        ):
+            await button.callback(interaction)
+
+    assert append_mock.await_count == 1
+    metadata = append_mock.await_args.kwargs["metadata"]
+    assert metadata["source"] == "setup_ux:recommended"
+    interaction.followup.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_apply_all_recommended_handles_empty_builder_output():
+    """If every builder returns an empty list, the followup tells the
+    operator nothing was staged."""
+    from services.setup_sections import REGISTRY, SetupSection
+
+    async def _build(_guild):
+        return []
+
+    async def _section_run(_interaction, _hub):
+        return None
+
+    fake_section = SetupSection(
+        slug="_fake_empty",
+        label="Empty",
+        style=discord.ButtonStyle.secondary,
+        run=_section_run,
+        order=999,
+        depths=frozenset({"standard"}),
+        recommended_ops_builder=_build,
+    )
+
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+        depth="standard",
+    )
+
+    with patch.object(REGISTRY, "for_depth", return_value=[fake_section]):
+        view = SetupHubView(_owner_member(), session=session)
+        button = _find_button(view, "setup_hub:apply_all_recommended")
+        assert button is not None
+        interaction = _interaction(_owner_member())
+        interaction.guild = MagicMock(id=1)
+        interaction.response.defer = AsyncMock()
+        interaction.followup = MagicMock()
+        interaction.followup.send = AsyncMock()
+        with (
+            patch.object(
+                view,
+                "_refresh_session",
+                new_callable=AsyncMock,
+            ),
+            patch(
+                "services.setup_draft.append",
+                new_callable=AsyncMock,
+            ) as append_mock,
+        ):
+            await button.callback(interaction)
+
+    append_mock.assert_not_awaited()
+    interaction.followup.send.assert_awaited_once()
+    msg = interaction.followup.send.await_args.args[0]
+    assert "no" in msg.lower()

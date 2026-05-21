@@ -170,9 +170,106 @@ class SetupHubView(BaseView):
         super().__init__(author, public=public, timeout=timeout)
         self.session = session
         depth = session.depth if session is not None else None
-        for section in REGISTRY.for_depth(depth):
+        depth_sections = REGISTRY.for_depth(depth)
+        for section in depth_sections:
             self.add_item(self._build_section_button(section))
+        if any(s.recommended_ops_builder is not None for s in depth_sections):
+            self.add_item(self._build_apply_all_recommended_button())
         self.add_item(self._build_change_depth_button())
+
+    def _build_apply_all_recommended_button(self) -> discord.ui.Button:
+        button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Apply all recommended",
+            style=discord.ButtonStyle.success,
+            custom_id="setup_hub:apply_all_recommended",
+            row=4,
+        )
+
+        async def _callback(interaction: discord.Interaction) -> None:
+            if not await self._gate_owner(interaction):
+                return
+            if interaction.guild is None or interaction.guild_id is None:
+                await interaction.response.send_message(
+                    "Apply all recommended requires a guild context.",
+                    ephemeral=True,
+                )
+                return
+
+            await self._refresh_session()
+            depth_now = self.session.depth if self.session is not None else None
+            sections = [
+                s
+                for s in REGISTRY.for_depth(depth_now)
+                if s.recommended_ops_builder is not None
+            ]
+            if not sections:
+                await interaction.response.send_message(
+                    "No section in the current depth has a recommended "
+                    "default — pick sections individually instead.",
+                    ephemeral=True,
+                )
+                return
+
+            from core.runtime.interaction_helpers import safe_defer
+
+            if not await safe_defer(interaction, ephemeral=True, thinking=True):
+                return
+            from services import setup_draft
+
+            section_totals: dict[str, int] = {}
+            for section in sections:
+                builder = section.recommended_ops_builder
+                if builder is None:
+                    continue
+                try:
+                    ops = await builder(interaction.guild)
+                except Exception:
+                    logger.exception(
+                        "hub.apply_all_recommended: builder failed (slug=%s)",
+                        section.slug,
+                    )
+                    continue
+                staged = 0
+                for op in ops:
+                    try:
+                        await setup_draft.append(
+                            op,
+                            guild_id=interaction.guild_id,
+                            actor_id=interaction.user.id,
+                            label=f"[apply-all] {section.slug}.{op.kind}",
+                            metadata={"source": "setup_ux:recommended"},
+                        )
+                        staged += 1
+                    except Exception:
+                        logger.exception(
+                            "hub.apply_all_recommended: append failed",
+                        )
+                if staged:
+                    section_totals[section.slug] = staged
+
+            if not section_totals:
+                await interaction.followup.send(
+                    "No recommended operations were generated. Most likely "
+                    "the guild has no high-confidence channel matches or "
+                    "an existing default already covers every section.",
+                    ephemeral=True,
+                )
+                return
+            total = sum(section_totals.values())
+            lines = "\n".join(
+                f"• `{slug}`: **{count}** op(s)"
+                for slug, count in section_totals.items()
+            )
+            word = "operation" if total == 1 else "operations"
+            await interaction.followup.send(
+                f"✅ Staged **{total} {word}** across "
+                f"{len(section_totals)} section(s). Open Final review "
+                f"to apply.\n\n{lines}",
+                ephemeral=True,
+            )
+
+        button.callback = _callback  # type: ignore[method-assign]
+        return button
 
     def _build_change_depth_button(self) -> discord.ui.Button:
         button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]

@@ -546,13 +546,15 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
         "guild snapshot. Apply Recommended only stages high-confidence "
         "picks; use Customize to choose manually."
     )
+    # ``recommended_ops_builder`` is read from the registered
+    # ``SetupSection`` field by ``section_card.show`` — no need to
+    # pass it explicitly here.
     await show(
         interaction,
         hub=hub,
         section=REGISTRY.get(SLUG),  # type: ignore[arg-type]
         detected_state=detected,
         on_customize=_customize_run,
-        recommended_ops_builder=_recommended_channel_ops,
     )
 
 
@@ -571,6 +573,7 @@ REGISTRY.register(
             "`!settings`."
         ),
         depths=frozenset({"standard", "advanced"}),
+        recommended_ops_builder=_recommended_channel_ops,
     ),
 )
 
