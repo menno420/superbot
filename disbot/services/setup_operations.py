@@ -242,6 +242,40 @@ async def apply_operations(
     return batch
 
 
+def metadata_from_recommendation(rec: Any) -> dict[str, str]:
+    """Map a :class:`services.setup_plan.SetupRecommendation` to the
+    canonical metadata dict consumed by the wizard's draft store and
+    render layer.
+
+    Canonical keys: ``reason``, ``confidence``, ``source``, ``risk``,
+    ``rollback_note``.
+
+    Defaults:
+
+    * ``reason`` — ``rec.reason`` if present, else empty string.
+    * ``confidence`` — ``rec.confidence`` (high/medium/low).
+    * ``source`` — ``rec.source`` (deterministic / ai_advisor /
+      readiness_repair / etc.).  Empty source falls back to
+      ``"deterministic"`` to match the recommendation model's default.
+    * ``risk`` — ``"low"``.  Bindings carry low default risk because
+      the canonical pipeline isolates failures and the operator
+      reviewed each one before Final Review.
+    * ``rollback_note`` — empty string for bindings (rebind to the
+      previous target or clear).
+
+    The helper is intentionally narrow — sections that build
+    metadata for non-binding ops should populate the canonical keys
+    themselves with appropriate risk / rollback values.
+    """
+    return {
+        "reason": str(getattr(rec, "reason", "") or ""),
+        "confidence": str(getattr(rec, "confidence", "medium") or "medium"),
+        "source": str(getattr(rec, "source", "deterministic") or "deterministic"),
+        "risk": "low",
+        "rollback_note": "",
+    }
+
+
 def operations_from_recommendations(
     recs: list[Any],  # list[services.setup_plan.SetupRecommendation]
 ) -> list[SetupOperation]:
@@ -274,10 +308,7 @@ def operations_from_recommendations(
                 target_id=rec.target_id,
                 target_name=rec.target_name,
                 target_kind=rec.target_kind,
-                metadata={
-                    "source": getattr(rec, "source", "unknown"),
-                    "confidence": getattr(rec, "confidence", None),
-                },
+                metadata=metadata_from_recommendation(rec),
             ),
         )
     return result
