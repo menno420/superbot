@@ -412,3 +412,107 @@ async def test_run_opens_section_card_in_guild():
     assert kwargs.get("ephemeral") is True
     assert isinstance(kwargs["view"], SectionCardView)
     assert "Cleanup" in (kwargs["embed"].title or "")
+
+
+# ---------------------------------------------------------------------------
+# Profile batch picker
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_profile_select_stages_every_profile_op():
+    """Picking a profile stages each of its ops via setup_draft.append
+    with metadata.source = 'cleanup_profile:<slug>'."""
+    from views.setup.sections.cleanup import _ProfileSelect
+
+    select = _ProfileSelect()
+    select._values = ["light"]
+    interaction = _interaction()
+    interaction.guild = MagicMock(id=1, name="Test")
+
+    fake_ops = [
+        SimpleNamespace(
+            kind="set_cleanup_policy",
+            subsystem="cleanup",
+            target_kind="guild",
+            target_id=1,
+            target_name="Test",
+            value="Light",
+        ),
+    ]
+
+    with (
+        patch(
+            "services.cleanup_profiles.apply_profile",
+            return_value=fake_ops,
+        ),
+        patch(
+            "services.setup_draft.append",
+            new_callable=AsyncMock,
+            return_value=1,
+        ) as append_mock,
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await select.callback(interaction)
+
+    append_mock.assert_awaited_once()
+    metadata = append_mock.await_args.kwargs.get("metadata")
+    assert metadata["source"] == "cleanup_profile:light"
+    interaction.response.send_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_profile_select_rejects_unknown_slug():
+    from views.setup.sections.cleanup import _ProfileSelect
+
+    select = _ProfileSelect()
+    select._values = ["bogus"]
+    interaction = _interaction()
+
+    with patch(
+        "services.cleanup_profiles.get_profile",
+        return_value=None,
+    ):
+        await select.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "unknown" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_profile_select_requires_guild_context():
+    from views.setup.sections.cleanup import _ProfileSelect
+
+    select = _ProfileSelect()
+    select._values = ["light"]
+    interaction = _interaction()
+    interaction.guild = None
+    interaction.guild_id = None
+
+    await select.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+
+
+def test_cleanup_section_view_includes_profile_select():
+    """The section view exposes both the scope select AND the new
+    profile-batch select to the operator."""
+    from views.setup.sections.cleanup import (
+        CleanupSectionView,
+        _ProfileSelect,
+        _ScopeSelect,
+    )
+
+    view = CleanupSectionView(SimpleNamespace(id=99))
+    child_types = {type(c) for c in view.children}
+    assert _ScopeSelect in child_types
+    assert _ProfileSelect in child_types
