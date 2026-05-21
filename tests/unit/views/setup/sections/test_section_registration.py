@@ -18,6 +18,7 @@ def test_all_production_sections_are_registered():
     expected = {
         "server_scan",
         "readiness",
+        "preset_select",
         "suggestions",
         "identity",
         "channels",
@@ -31,7 +32,7 @@ def test_all_production_sections_are_registered():
 
 
 def test_section_render_order_is_stable():
-    """Production layout: server_scan → readiness → suggestions → identity → channels → cleanup → cog_routing → final_review."""
+    """Production layout: server_scan → readiness → preset_select → suggestions → identity → channels → cleanup → cog_routing → final_review."""
     layout = [
         section.slug
         for section in REGISTRY.all()
@@ -39,6 +40,7 @@ def test_section_render_order_is_stable():
         in {
             "server_scan",
             "readiness",
+            "preset_select",
             "suggestions",
             "identity",
             "channels",
@@ -51,6 +53,7 @@ def test_section_render_order_is_stable():
         "server_scan",
         "readiness",
         "suggestions",
+        "preset_select",
         "identity",
         "channels",
         "cleanup",
@@ -60,6 +63,12 @@ def test_section_render_order_is_stable():
         "production section ordering must remain stable; reorder requires "
         "an intentional update of this test"
     )
+
+
+def test_preset_select_section_uses_success_button():
+    section = REGISTRY.get("preset_select")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.success
 
 
 def test_server_scan_section_uses_primary_button():
