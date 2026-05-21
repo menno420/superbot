@@ -351,7 +351,11 @@ class SetupLauncherView(discord.ui.View):
             )
             return
 
-        view = SummaryView(interaction.user, snapshot=snapshot)
+        view = SummaryView(
+            interaction.user,
+            snapshot=snapshot,
+            session=session,
+        )
         await interaction.response.send_message(
             embed=build_summary_embed(snapshot),
             view=view,
