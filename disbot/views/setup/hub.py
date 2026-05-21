@@ -55,7 +55,20 @@ def _hub_sections_value() -> str:
     )
 
 
-def build_hub_embed(session: SetupSession | None) -> discord.Embed:
+def build_hub_embed(
+    session: SetupSession | None,
+    *,
+    pending_ops: int | None = None,
+) -> discord.Embed:
+    """Build the wizard hub embed.
+
+    ``pending_ops`` is the count of staged ``SetupOperation`` rows for
+    the guild's draft.  When non-zero it surfaces in the description so
+    the operator knows there is work to apply at Final Review.  When
+    ``None`` the field is omitted — callers that haven't checked the
+    draft store yet (or for whom it is irrelevant) keep the legacy
+    layout.
+    """
     color = discord.Color.blurple()
     if session is not None and session.setup_status == "complete":
         color = discord.Color.green()
@@ -67,6 +80,12 @@ def build_hub_embed(session: SetupSession | None) -> discord.Embed:
             description += f" · current step: `{session.current_step}`"
         if session.last_readiness_score is not None:
             description += f" · readiness `{session.last_readiness_score}%`"
+
+    if pending_ops is not None:
+        prefix = (
+            description + "\n\n" if "**Status:**" not in description else description + " · "
+        )
+        description = f"{prefix}**Pending operations:** `{pending_ops}`"
 
     embed = discord.Embed(
         title=_HUB_TITLE,

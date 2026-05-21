@@ -191,12 +191,18 @@ class SetupLauncherView(discord.ui.View):
             )
             return
 
+        from services import setup_draft
         from views.setup.hub import SetupHubView, build_hub_embed
 
         session = await self._resolve_session(interaction)
+        try:
+            pending_ops = await setup_draft.count(interaction.guild_id)
+        except Exception:
+            logger.exception("setup_cog._start: setup_draft.count failed")
+            pending_ops = None
         hub = SetupHubView(interaction.user, session=session)
         await interaction.response.send_message(
-            embed=build_hub_embed(session),
+            embed=build_hub_embed(session, pending_ops=pending_ops),
             view=hub,
             ephemeral=True,
         )

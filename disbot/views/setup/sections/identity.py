@@ -1,25 +1,30 @@
-"""Identity & defaults section — shows server identity and edits one default.
+"""Identity & defaults section — shows server identity and stages one default.
 
 This section is the first non-stage section in the setup wizard.  Unlike
 Readiness / Smart Suggestions / Final Review (which are wizard stages),
-this section configures actual settings.  It demonstrates the full
-section-driven SetupOperation flow end-to-end:
+this section configures an actual setting — but in the draft-first
+model: the modal submission **stages** a SetupOperation in the
+per-guild draft via :mod:`services.setup_draft`, and Final Review is
+the only path that applies the staged ops.
+
+Flow:
 
 1. The hub button opens an ephemeral panel showing identity facts about
    the guild plus the current value of a writable default.
 2. The operator clicks **Edit warn threshold** and submits a modal.
 3. The submitted value is packaged as a single
-   `SetupOperation(kind="set_setting", subsystem="moderation",
-   setting_name="warn_threshold", value=...)` and dispatched through
-   `services.setup_operations.apply_operations`.
-4. The dispatcher routes to `SettingsMutationPipeline.set_value`, which
-   validates, writes, audits, and emits the canonical event.
+   ``SetupOperation(kind="set_setting", subsystem="moderation",
+   setting_name="warn_threshold", value=...)`` and appended to the
+   guild's draft via :func:`services.setup_draft.append` with
+   canonical metadata (source=manual, confidence=high, risk=low).
+4. The operator sees a "Staged for Final review" confirmation; nothing
+   has applied to the database yet.
+5. The hub embed will reflect ``Pending operations: N`` when re-opened.
 
 `moderation.warn_threshold` is a real existing `SettingSpec`; using it
 keeps the demo honest while we avoid inventing a new subsystem for one
-demo setting.  Future sections (true Identity & Naming, Channel
-Bindings, Resource Provisioning) plug into the same registry without
-editing the hub.
+demo setting.  Subsequent sections (channels, roles, presets, etc.)
+follow the same draft-append pattern.
 """
 
 from __future__ import annotations
@@ -84,7 +89,9 @@ def _build_identity_embed(
         value=threshold_text,
         inline=True,
     )
-    embed.set_footer(text="Edits flow through the SetupOperation dispatcher.")
+    embed.set_footer(
+        text="Edits stage in the setup draft — Final Review applies them.",
+    )
     return embed
 
 
@@ -148,7 +155,8 @@ class _WarnThresholdModal(discord.ui.Modal, title="Edit warn threshold"):
             )
             return
 
-        from services.setup_operations import SetupOperation, apply_operations
+        from services import setup_draft
+        from services.setup_operations import SetupOperation
 
         op = SetupOperation(
             kind="set_setting",
@@ -156,41 +164,44 @@ class _WarnThresholdModal(discord.ui.Modal, title="Edit warn threshold"):
             setting_name=SETTING_NAME,
             value=value,
         )
+        label = f"{SETTING_SUBSYSTEM}.{SETTING_NAME} = {value}"
         try:
-            batch = await apply_operations(
-                [op],
-                guild=guild,
-                actor=interaction.user,
+            await setup_draft.append(
+                op,
+                guild_id=guild.id,
+                actor_id=interaction.user.id,
+                label=label,
+                metadata={
+                    "source": "manual",
+                    "confidence": "high",
+                    "reason": "Operator entered value via Identity section",
+                    "risk": "low",
+                },
             )
         except Exception:
-            logger.exception("identity section: apply_operations failed")
+            logger.exception("identity section: setup_draft.append failed")
             await interaction.response.send_message(
-                "Apply failed — see logs.",
+                "Could not stage the change — see logs.",
                 ephemeral=True,
             )
             return
 
-        if batch.applied:
-            try:
-                await setup_session.mark_in_progress(guild.id, step=SLUG)
-            except Exception:
-                logger.exception("identity section: mark_in_progress failed")
-            await interaction.response.send_message(
-                f"✅ Warn threshold set to **{value}**.",
-                ephemeral=True,
-            )
-            return
+        try:
+            await setup_session.mark_in_progress(guild.id, step=SLUG)
+        except Exception:
+            logger.exception("identity section: mark_in_progress failed")
 
-        if batch.failed:
-            error = batch.failed[0].error or "unknown error"
-            await interaction.response.send_message(
-                f"❌ Apply failed: {error}",
-                ephemeral=True,
-            )
-            return
+        try:
+            pending = await setup_draft.count(guild.id)
+        except Exception:
+            logger.exception("identity section: setup_draft.count failed")
+            pending = 0
 
         await interaction.response.send_message(
-            "Apply completed without effect.",
+            (
+                f"✅ Staged for Final review: **warn threshold = {value}**.  "
+                f"Pending operations: **{pending}**."
+            ),
             ephemeral=True,
         )
 

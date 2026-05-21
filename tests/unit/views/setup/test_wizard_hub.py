@@ -112,6 +112,28 @@ def test_build_hub_embed_surfaces_session_status():
     assert "87" in description
 
 
+def test_build_hub_embed_surfaces_pending_ops_count():
+    embed = build_hub_embed(None, pending_ops=4)
+    description = (embed.description or "").lower()
+    assert "pending operations" in description
+    assert "4" in description
+
+
+def test_build_hub_embed_omits_pending_count_when_none():
+    embed = build_hub_embed(None)
+    assert "pending operations" not in (embed.description or "").lower()
+
+
+def test_build_hub_embed_shows_zero_pending_when_drafts_empty():
+    """An explicit zero count still surfaces so the operator knows
+    the wizard checked the draft store and found nothing pending.
+    """
+    embed = build_hub_embed(None, pending_ops=0)
+    description = (embed.description or "").lower()
+    assert "pending operations" in description
+    assert "0" in description
+
+
 @pytest.mark.asyncio
 async def test_hub_readiness_button_owner_only():
     view = SetupHubView(_other_member())

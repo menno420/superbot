@@ -3,17 +3,19 @@
 Pins:
 
 * The section is registered and reachable via the registry.
-* `run()` renders the identity snapshot ephemerally, instantiates
-  `IdentitySectionView`, and marks the session step.
+* ``run()`` renders the identity snapshot ephemerally, instantiates
+  ``IdentitySectionView``, and marks the session step.
 * The warn-threshold modal validates input and rejects non-positive
-  integers without dispatching a SetupOperation.
-* On valid input, the modal dispatches exactly one
-  `SetupOperation(kind="set_setting", subsystem="moderation",
-  setting_name="warn_threshold", value=<int>)` through
-  `services.setup_operations.apply_operations` — not through
-  `SettingsMutationPipeline` directly.
-* On dispatcher failure (`status="failed"`), the operator sees the
-  error and the session is NOT marked progressed.
+  integers without staging a SetupOperation.
+* On valid input, the modal appends exactly one
+  ``SetupOperation(kind="set_setting", subsystem="moderation",
+  setting_name="warn_threshold", value=<int>)`` to the per-guild
+  draft via :mod:`services.setup_draft`, with canonical metadata
+  (source=manual, confidence=high, risk=low).
+* The modal **does not** call :func:`services.setup_operations.apply_operations`
+  directly — Final Review owns the apply path.
+* On draft-append failure, the operator sees an error and the
+  session is NOT marked progressed.
 """
 
 from __future__ import annotations
@@ -24,10 +26,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
-from services.setup_operations import (
-    SetupOperationBatchResult,
-    SetupOperationResult,
-)
 from services.setup_sections import REGISTRY
 from views.setup.sections import identity as identity_section
 
@@ -136,13 +134,13 @@ async def test_modal_rejects_non_integer():
     modal = _modal_with_value("not-a-number")
     interaction = _interaction()
     with patch(
-        "services.setup_operations.apply_operations",
+        "services.setup_draft.append",
         new_callable=AsyncMock,
-    ) as apply_mock:
+    ) as append_mock:
         await modal.on_submit(interaction)
     interaction.response.send_message.assert_awaited_once()
     assert "valid integer" in interaction.response.send_message.await_args.args[0]
-    apply_mock.assert_not_called()
+    append_mock.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -150,13 +148,13 @@ async def test_modal_rejects_non_positive_integer():
     modal = _modal_with_value("0")
     interaction = _interaction()
     with patch(
-        "services.setup_operations.apply_operations",
+        "services.setup_draft.append",
         new_callable=AsyncMock,
-    ) as apply_mock:
+    ) as append_mock:
         await modal.on_submit(interaction)
     interaction.response.send_message.assert_awaited_once()
     assert "positive" in interaction.response.send_message.await_args.args[0].lower()
-    apply_mock.assert_not_called()
+    append_mock.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -165,40 +163,34 @@ async def test_modal_rejects_dm_context():
     interaction = _interaction(guild=None)
     interaction.guild = None
     with patch(
-        "services.setup_operations.apply_operations",
+        "services.setup_draft.append",
         new_callable=AsyncMock,
-    ) as apply_mock:
+    ) as append_mock:
         await modal.on_submit(interaction)
     interaction.response.send_message.assert_awaited_once()
-    apply_mock.assert_not_called()
+    append_mock.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
-# Modal apply path
+# Modal draft-append path
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_modal_dispatches_set_setting_through_apply_operations():
+async def test_modal_appends_set_setting_to_draft_store():
     modal = _modal_with_value("5")
     interaction = _interaction()
-    fake_op = MagicMock()
-    fake_batch = SetupOperationBatchResult(
-        results=[
-            SetupOperationResult(
-                status="applied",
-                operation=fake_op,
-                label="moderation.warn_threshold = 5",
-                mutation_id="m1",
-            ),
-        ],
-    )
     with (
         patch(
-            "services.setup_operations.apply_operations",
+            "services.setup_draft.append",
             new_callable=AsyncMock,
-            return_value=fake_batch,
-        ) as apply_mock,
+            return_value=1,
+        ) as append_mock,
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
         patch(
             "services.setup_session.mark_in_progress",
             new_callable=AsyncMock,
@@ -206,43 +198,75 @@ async def test_modal_dispatches_set_setting_through_apply_operations():
     ):
         await modal.on_submit(interaction)
 
-    apply_mock.assert_awaited_once()
-    ops = apply_mock.await_args.args[0]
-    assert len(ops) == 1
-    op = ops[0]
+    append_mock.assert_awaited_once()
+    op = append_mock.await_args.args[0]
     assert op.kind == "set_setting"
     assert op.subsystem == "moderation"
     assert op.setting_name == "warn_threshold"
     assert op.value == 5
-    interaction.response.send_message.assert_awaited_once()
-    assert "5" in interaction.response.send_message.await_args.args[0]
+    kwargs = append_mock.await_args.kwargs
+    assert kwargs["guild_id"] == 1
+    assert kwargs["actor_id"] == 99
+    assert "warn_threshold = 5" in kwargs["label"]
+    md = kwargs["metadata"]
+    assert md["source"] == "manual"
+    assert md["confidence"] == "high"
+    assert md["risk"] == "low"
+    assert "Operator entered" in md["reason"]
 
 
 @pytest.mark.asyncio
-async def test_modal_does_not_call_settings_pipeline_directly():
-    """After the dispatcher migration, the modal must not instantiate
-    `SettingsMutationPipeline` itself — all writes flow through
-    `apply_operations`.
+async def test_modal_confirmation_includes_pending_count():
+    modal = _modal_with_value("5")
+    interaction = _interaction()
+    with (
+        patch(
+            "services.setup_draft.append",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=3,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await modal.on_submit(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "Staged for Final review" in msg
+    assert "warn threshold = 5" in msg
+    assert "3" in msg  # pending count
+
+
+@pytest.mark.asyncio
+async def test_modal_does_not_call_apply_operations_or_settings_pipeline():
+    """After the draft-first migration, the modal must not apply
+    anything directly.  Both ``apply_operations`` and the
+    ``SettingsMutationPipeline`` constructor stay untouched.
     """
     modal = _modal_with_value("7")
     interaction = _interaction()
-    fake_batch = SetupOperationBatchResult(
-        results=[
-            SetupOperationResult(
-                status="applied",
-                operation=MagicMock(),
-                label="x",
-                mutation_id="m1",
-            ),
-        ],
-    )
     pipeline_ctor = MagicMock()
     with (
         patch(
+            "services.setup_draft.append",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
             "services.setup_operations.apply_operations",
             new_callable=AsyncMock,
-            return_value=fake_batch,
-        ),
+        ) as apply_mock,
         patch(
             "services.settings_mutation.SettingsMutationPipeline",
             pipeline_ctor,
@@ -253,28 +277,19 @@ async def test_modal_does_not_call_settings_pipeline_directly():
         ),
     ):
         await modal.on_submit(interaction)
+    apply_mock.assert_not_called()
     pipeline_ctor.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_modal_surfaces_failure_and_does_not_mark_progress():
+async def test_modal_surfaces_append_failure_and_does_not_mark_progress():
     modal = _modal_with_value("5")
     interaction = _interaction()
-    fake_batch = SetupOperationBatchResult(
-        results=[
-            SetupOperationResult(
-                status="failed",
-                operation=MagicMock(),
-                label="moderation.warn_threshold",
-                error="validator refused value",
-            ),
-        ],
-    )
     with (
         patch(
-            "services.setup_operations.apply_operations",
+            "services.setup_draft.append",
             new_callable=AsyncMock,
-            return_value=fake_batch,
+            side_effect=RuntimeError("DB explosion"),
         ),
         patch(
             "services.setup_session.mark_in_progress",
@@ -284,6 +299,34 @@ async def test_modal_surfaces_failure_and_does_not_mark_progress():
         await modal.on_submit(interaction)
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0]
-    assert "failed" in msg.lower()
-    assert "validator refused value" in msg
+    assert "stage" in msg.lower()
     mark_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_modal_tolerates_count_failure_in_confirmation():
+    """A failure in setup_draft.count is logged but doesn't propagate;
+    the operator still gets a "Staged" message with pending=0.
+    """
+    modal = _modal_with_value("5")
+    interaction = _interaction()
+    with (
+        patch(
+            "services.setup_draft.append",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("count failed"),
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await modal.on_submit(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "Staged for Final review" in msg
