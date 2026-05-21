@@ -1689,3 +1689,116 @@ def test_launcher_embed_mentions_slash_commands():
     assert "!setup" in description or "/setup" in description
     assert "/setup-status" in description
     assert "/setup-reset" in description
+
+
+# ---------------------------------------------------------------------------
+# /setup-skip and /setup-unskip slash commands
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_setup_skip_slash_marks_section_skipped():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.mark_section_skipped",
+            new_callable=AsyncMock,
+        ) as skip_mock,
+    ):
+        await cog.setup_skip_slash.callback(cog, interaction, section="cleanup")
+
+    skip_mock.assert_awaited_once_with(1, "cleanup")
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "cleanup" in msg.lower()
+    assert "skipped" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_unskip_slash_unmarks_section():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.unmark_section_skipped",
+            new_callable=AsyncMock,
+        ) as unskip_mock,
+    ):
+        await cog.setup_unskip_slash.callback(
+            cog, interaction, section="cleanup",
+        )
+
+    unskip_mock.assert_awaited_once_with(1, "cleanup")
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "un-skipped" in msg.lower() or "unskipped" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_skip_slash_rejects_unknown_section():
+    """Unknown slugs surface a list of valid options."""
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.mark_section_skipped",
+            new_callable=AsyncMock,
+        ) as skip_mock,
+    ):
+        await cog.setup_skip_slash.callback(
+            cog, interaction, section="bogus-section",
+        )
+
+    skip_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "unknown" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_skip_slash_denies_random_member():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_random_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.mark_section_skipped",
+            new_callable=AsyncMock,
+        ) as skip_mock,
+    ):
+        await cog.setup_skip_slash.callback(
+            cog, interaction, section="cleanup",
+        )
+
+    skip_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()

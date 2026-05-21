@@ -323,6 +323,108 @@ class SetupCog(commands.Cog):
                 logger.exception("setup_cog.setup_slash: mark_in_progress failed")
 
     @app_commands.command(
+        name="setup-skip",
+        description="Mark a setup section as skipped (owner/delegated admin only).",
+    )
+    @app_commands.describe(
+        section="Section slug (e.g. cleanup, channels, cog_routing).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_skip_slash(
+        self,
+        interaction: discord.Interaction,
+        section: str,
+    ) -> None:
+        """Add ``section`` to the session's skipped_sections set.
+
+        The hub renders the section with a ⚠️ Skipped badge and the
+        ``Apply all recommended`` button skips it. Use
+        ``/setup-unskip`` to revert.
+        """
+        await self._toggle_skip(interaction, section, skipped=True)
+
+    @app_commands.command(
+        name="setup-unskip",
+        description="Remove a section from the skipped set (owner/delegated admin only).",
+    )
+    @app_commands.describe(
+        section="Section slug (e.g. cleanup, channels, cog_routing).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_unskip_slash(
+        self,
+        interaction: discord.Interaction,
+        section: str,
+    ) -> None:
+        """Drop ``section`` from the session's skipped_sections set."""
+        await self._toggle_skip(interaction, section, skipped=False)
+
+    async def _toggle_skip(
+        self,
+        interaction: discord.Interaction,
+        slug: str,
+        *,
+        skipped: bool,
+    ) -> None:
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            cmd = "skip" if skipped else "unskip"
+            await interaction.response.send_message(
+                f"Use `/setup-{cmd}` from inside the server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            session = await setup_session.resume_session(guild.id)
+        except Exception:
+            logger.exception("setup_cog._toggle_skip: resume failed")
+            session = None
+
+        if not setup_access.can_apply_setup(member, session):
+            await interaction.response.send_message(
+                "Only the server owner or a delegated setup admin can "
+                "change a section's skipped state.",
+                ephemeral=True,
+            )
+            return
+
+        from services.setup_sections import REGISTRY
+
+        if REGISTRY.get(slug) is None:
+            available = ", ".join(f"`{s.slug}`" for s in REGISTRY.all())
+            await interaction.response.send_message(
+                f"Unknown section `{slug}`. Available: {available}",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            if skipped:
+                await setup_session.mark_section_skipped(guild.id, slug)
+            else:
+                await setup_session.unmark_section_skipped(guild.id, slug)
+        except Exception:
+            verb = "mark" if skipped else "unmark"
+            logger.exception("setup_cog._toggle_skip: %s failed", verb)
+            await interaction.response.send_message(
+                "Could not update the skip state — see logs.",
+                ephemeral=True,
+            )
+            return
+
+        verb = "skipped" if skipped else "un-skipped"
+        await interaction.response.send_message(
+            f"✅ Section `{slug}` {verb}.",
+            ephemeral=True,
+        )
+
+    @app_commands.command(
         name="setup-reset",
         description="Clear all staged setup operations (owner/delegated admin only).",
     )

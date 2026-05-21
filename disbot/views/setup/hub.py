@@ -197,7 +197,11 @@ def build_hub_embed(
     if hint:
         embed.add_field(name="Next step", value=hint, inline=False)
     embed.set_footer(
-        text="Owner-gated. No mutation runs until you confirm in Final review.",
+        text=(
+            "Owner-gated. No mutation runs until Final review confirms. "
+            "Tip: /setup-status for a read-only peek · /setup-reset to "
+            "clear staged ops."
+        ),
     )
     return embed
 
