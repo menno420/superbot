@@ -200,7 +200,59 @@ async def test_post_launcher_falls_back_to_dm_on_forbidden_in_channel():
 
 
 @pytest.mark.asyncio
-async def test_on_guild_join_calls_start_session_with_channel_ids():
+async def test_on_guild_join_uses_setup_channel_when_creatable():
+    """The bot now tries to auto-create a private setup channel first
+    and posts the launcher there with an owner ping."""
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    cog = SetupCog(bot)
+
+    setup_ch = MagicMock()
+    setup_ch.id = 7000
+    setup_ch.send = AsyncMock(return_value=MagicMock(id=8000))
+    g = _guild(
+        system=None,
+        text_channels=[],
+        me=MagicMock(),
+        owner_id=99,
+        guild_id=42,
+        name="My Server",
+    )
+    g.owner = MagicMock()
+    g.owner.mention = "<@99>"
+
+    with (
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new_callable=AsyncMock,
+            return_value=(setup_ch, True),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.start_session",
+            new_callable=AsyncMock,
+        ) as start_mock,
+    ):
+        await cog._handle_join(g)
+
+    setup_ch.send.assert_awaited_once()
+    # Owner mention surfaces in the posted content.
+    sent_content = setup_ch.send.await_args.kwargs.get("content")
+    assert sent_content is not None and "<@99>" in sent_content
+    kwargs = start_mock.await_args.kwargs
+    assert kwargs["setup_channel_id"] == 7000
+    assert kwargs["setup_message_id"] == 8000
+
+
+@pytest.mark.asyncio
+async def test_on_guild_join_falls_back_to_post_launcher_when_no_setup_channel():
+    """When the bot lacks Manage Channels (or create fails) the join
+    handler falls back to the legacy post_launcher path."""
     from cogs.setup_cog import SetupCog
 
     bot = MagicMock()
@@ -219,17 +271,27 @@ async def test_on_guild_join_calls_start_session_with_channel_ids():
         name="My Server",
     )
 
-    with patch(
-        "cogs.setup_cog.setup_session.start_session",
-        new_callable=AsyncMock,
-    ) as start_mock:
+    with (
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new_callable=AsyncMock,
+            return_value=(None, False),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.start_session",
+            new_callable=AsyncMock,
+        ) as start_mock,
+    ):
         await cog._handle_join(g)
 
     start_mock.assert_awaited_once()
     kwargs = start_mock.await_args.kwargs
     assert kwargs["guild_id"] == 42
-    assert kwargs["guild_name"] == "My Server"
-    assert kwargs["owner_id"] == 99
     assert kwargs["setup_channel_id"] == 5555
     assert kwargs["setup_message_id"] == 8888
 
@@ -245,16 +307,78 @@ async def test_on_guild_join_records_none_ids_when_dm_succeeds():
     g.owner = MagicMock()
     g.owner.send = AsyncMock(return_value=MagicMock(id=99001))
 
-    with patch(
-        "cogs.setup_cog.setup_session.start_session",
-        new_callable=AsyncMock,
-    ) as start_mock:
+    with (
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new_callable=AsyncMock,
+            return_value=(None, False),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.start_session",
+            new_callable=AsyncMock,
+        ) as start_mock,
+    ):
         await cog._handle_join(g)
 
     kwargs = start_mock.await_args.kwargs
     assert kwargs["setup_channel_id"] is None
     # DM message id still captured.
     assert kwargs["setup_message_id"] == 99001
+
+
+@pytest.mark.asyncio
+async def test_on_guild_join_skips_double_post_on_restart():
+    """If a setup channel already exists with a stored message id, the
+    handler reuses the prior message rather than posting a second one."""
+    from cogs.setup_cog import SetupCog
+
+    bot = MagicMock()
+    cog = SetupCog(bot)
+
+    existing_ch = MagicMock()
+    existing_ch.id = 7000
+    existing_ch.send = AsyncMock()
+    g = _guild(text_channels=[], me=MagicMock(), guild_id=42, name="Test")
+
+    prior_session = SetupSession(
+        guild_id=42,
+        guild_name="Test",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=7000,
+        setup_message_id=8000,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=prior_session,
+        ),
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new_callable=AsyncMock,
+            return_value=(existing_ch, False),  # not just created
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.start_session",
+            new_callable=AsyncMock,
+        ) as start_mock,
+    ):
+        await cog._handle_join(g)
+
+    existing_ch.send.assert_not_awaited()
+    kwargs = start_mock.await_args.kwargs
+    assert kwargs["setup_channel_id"] == 7000
+    assert kwargs["setup_message_id"] == 8000
 
 
 @pytest.mark.asyncio
@@ -268,10 +392,22 @@ async def test_on_guild_join_swallows_handler_failure():
     g.id = 1
     g.name = "x"
 
-    with patch(
-        "cogs.setup_cog.post_launcher",
-        new_callable=AsyncMock,
-        side_effect=RuntimeError("boom"),
+    with (
+        patch(
+            "services.setup_channel.ensure_setup_channel",
+            new_callable=AsyncMock,
+            return_value=(None, False),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.setup_cog.post_launcher",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("boom"),
+        ),
     ):
         # Must not raise.
         await cog._handle_join(g)

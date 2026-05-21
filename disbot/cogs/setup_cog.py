@@ -238,11 +238,22 @@ class SetupCog(commands.Cog):
         await self._resume_launchers()
 
     async def _handle_join(self, guild: discord.Guild) -> None:
-        """Internal entry point — split out for direct testing."""
+        """Internal entry point — split out for direct testing.
+
+        Tries to auto-create a private ``#superbot-setup`` channel and
+        post the launcher there with an owner ping. If the bot lacks
+        Manage Channels (or the create fails), falls back to
+        :func:`post_launcher` which picks the safest existing channel
+        or DMs the owner.
+        """
         try:
-            channel, message = await post_launcher(guild)
-            channel_id = channel.id if channel is not None else None
-            message_id = message.id if message is not None else None
+            channel_id, message_id = await self._post_launcher_in_setup_channel(
+                guild,
+            )
+            if channel_id is None:
+                channel, message = await post_launcher(guild)
+                channel_id = channel.id if channel is not None else None
+                message_id = message.id if message is not None else None
             await setup_session.start_session(
                 guild_id=guild.id,
                 guild_name=guild.name,
@@ -255,6 +266,78 @@ class SetupCog(commands.Cog):
                 "setup_cog.on_guild_join: handler failed for guild=%d",
                 guild.id,
             )
+
+    async def _post_launcher_in_setup_channel(
+        self,
+        guild: discord.Guild,
+    ) -> tuple[int | None, int | None]:
+        """Try the private-setup-channel path; return ``(channel_id,
+        message_id)`` on success or ``(None, None)`` to signal the
+        caller should fall back to :func:`post_launcher`.
+
+        Resuming on bot restart hits the same path and is idempotent
+        (``ensure_setup_channel`` returns the existing channel without
+        recreating, and the cog keeps the prior message id when the
+        existing launcher message is still posted).
+        """
+        from services.setup_channel import ensure_setup_channel
+
+        existing_session = await setup_session.resume_session(guild.id)
+        existing_channel_id = (
+            existing_session.setup_channel_id if existing_session else None
+        )
+        try:
+            channel, was_created = await ensure_setup_channel(
+                guild,
+                existing_channel_id=existing_channel_id,
+            )
+        except Exception:
+            logger.exception(
+                "setup_cog._post_launcher_in_setup_channel: ensure failed "
+                "(guild=%d)",
+                guild.id,
+            )
+            return None, None
+        if channel is None:
+            return None, None
+
+        # On a restart where the channel already existed and we already
+        # posted a launcher, do not double-post — the existing message
+        # gets edited in place by ``_resume_launchers`` on ``on_ready``.
+        if (
+            not was_created
+            and existing_session is not None
+            and existing_session.setup_channel_id == channel.id
+            and existing_session.setup_message_id is not None
+        ):
+            return channel.id, existing_session.setup_message_id
+
+        embed = _build_launcher_embed(None)
+        view = SetupLauncherView()
+        owner_mention = guild.owner.mention if guild.owner is not None else ""
+        content = (
+            f"{owner_mention} SuperBot just joined! I'll use this private "
+            f"channel as the setup workspace. Click **Start Setup** below "
+            f"(or run `!setup` / `/setup`) to begin."
+            if was_created
+            else None
+        )
+        try:
+            message = await channel.send(
+                content=content,
+                embed=embed,
+                view=view,
+                allowed_mentions=discord.AllowedMentions(users=True, everyone=False),
+            )
+        except discord.HTTPException as exc:
+            logger.warning(
+                "setup_cog._post_launcher_in_setup_channel: send failed "
+                "in guild=%d: %s",
+                guild.id,
+                exc,
+            )
+            return None, None
+        return channel.id, message.id
 
     async def _resume_launchers(self) -> None:
         """Refresh every guild's launcher message in place; isolate failures."""
