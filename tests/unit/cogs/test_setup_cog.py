@@ -1802,3 +1802,112 @@ async def test_setup_skip_slash_denies_random_member():
     skip_mock.assert_not_awaited()
     msg = interaction.response.send_message.await_args.args[0]
     assert "owner" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# /setup-depth slash command
+# ---------------------------------------------------------------------------
+
+
+def _depth_choice(value: str):
+    """Build an app_commands.Choice mock for the /setup-depth tests."""
+    return SimpleNamespace(
+        name={
+            "quick": "Quick (3 steps)",
+            "standard": "Standard (5–6 steps)",
+            "advanced": "Advanced (all sections)",
+        }[value],
+        value=value,
+    )
+
+
+@pytest.mark.asyncio
+async def test_setup_depth_slash_persists_owner_choice():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(depth=None),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.set_depth",
+            new_callable=AsyncMock,
+        ) as set_depth_mock,
+    ):
+        await cog.setup_depth_slash.callback(
+            cog,
+            interaction,
+            depth=_depth_choice("standard"),
+        )
+
+    set_depth_mock.assert_awaited_once_with(1, "standard")
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "standard" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_depth_slash_starts_session_when_missing():
+    """Setting depth with no session row creates one first so the
+    choice persists."""
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.start_session",
+            new_callable=AsyncMock,
+        ) as start_mock,
+        patch(
+            "cogs.setup_cog.setup_session.set_depth",
+            new_callable=AsyncMock,
+        ) as set_depth_mock,
+    ):
+        await cog.setup_depth_slash.callback(
+            cog,
+            interaction,
+            depth=_depth_choice("quick"),
+        )
+
+    start_mock.assert_awaited_once()
+    set_depth_mock.assert_awaited_once_with(1, "quick")
+
+
+@pytest.mark.asyncio
+async def test_setup_depth_slash_denies_random_member():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_random_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ),
+        patch(
+            "cogs.setup_cog.setup_session.set_depth",
+            new_callable=AsyncMock,
+        ) as set_depth_mock,
+    ):
+        await cog.setup_depth_slash.callback(
+            cog,
+            interaction,
+            depth=_depth_choice("advanced"),
+        )
+
+    set_depth_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
