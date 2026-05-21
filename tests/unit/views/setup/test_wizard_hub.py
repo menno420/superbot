@@ -779,3 +779,88 @@ async def test_apply_all_recommended_handles_empty_builder_output():
     interaction.followup.send.assert_awaited_once()
     msg = interaction.followup.send.await_args.args[0]
     assert "no" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# Next-step hint
+# ---------------------------------------------------------------------------
+
+
+def test_hub_embed_next_step_hint_complete_session():
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="complete",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+    embed = build_hub_embed(session, pending_ops=0, draft_ops=[])
+    hint = next((f for f in embed.fields if f.name == "Next step"), None)
+    assert hint is not None
+    assert "summary" in (hint.value or "").lower()
+
+
+def test_hub_embed_next_step_hint_suggests_apply_all_when_nothing_staged():
+    """No pending ops + at least one section has a recommended builder
+    → hint mentions Apply all recommended."""
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+    embed = build_hub_embed(session, pending_ops=0, draft_ops=[])
+    hint = next((f for f in embed.fields if f.name == "Next step"), None)
+    assert hint is not None
+    value = (hint.value or "").lower()
+    # Cleanup + channels have recommended_ops_builder so the hint
+    # should mention Apply all recommended.
+    assert "apply all" in value
+
+
+def test_hub_embed_next_step_hint_routes_to_final_review_when_ops_staged():
+    """Pending ops + some sections not started → hint nudges toward
+    either more sections or Final Review."""
+    from services.setup_operations import SetupOperation
+
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+    ops = [
+        SetupOperation(
+            kind="set_cleanup_policy",
+            subsystem="cleanup",
+            metadata={"source": "setup_ux:recommended"},
+        ),
+    ]
+    embed = build_hub_embed(session, pending_ops=1, draft_ops=ops)
+    hint = next((f for f in embed.fields if f.name == "Next step"), None)
+    assert hint is not None
+    value = (hint.value or "").lower()
+    assert "final review" in value
+    assert "staged" in value
+
+
+def test_hub_embed_omits_next_step_hint_without_draft_ops():
+    """Legacy callers that don't pass draft_ops also don't get the
+    next-step hint — there's not enough info to compute it."""
+    embed = build_hub_embed(None, pending_ops=0)
+    field_names = {f.name for f in embed.fields}
+    assert "Next step" not in field_names
