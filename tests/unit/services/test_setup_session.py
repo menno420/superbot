@@ -123,16 +123,59 @@ async def test_mark_in_progress_without_step_does_not_touch_step(_mock_db):
 
 @pytest.mark.asyncio
 async def test_mark_complete_clears_step(_mock_db):
-    await svc.mark_complete(1)
+    with patch(
+        "services.setup_draft.clear",
+        new_callable=AsyncMock,
+    ):
+        await svc.mark_complete(1)
     _mock_db["set_status"].assert_awaited_once_with(1, "complete")
     _mock_db["set_step"].assert_awaited_once_with(1, None)
 
 
 @pytest.mark.asyncio
 async def test_dismiss_clears_step(_mock_db):
-    await svc.dismiss(1)
+    with patch(
+        "services.setup_draft.clear",
+        new_callable=AsyncMock,
+    ):
+        await svc.dismiss(1)
     _mock_db["set_status"].assert_awaited_once_with(1, "dismissed")
     _mock_db["set_step"].assert_awaited_once_with(1, None)
+
+
+@pytest.mark.asyncio
+async def test_mark_complete_clears_draft(_mock_db):
+    """mark_complete must also drop any pending draft operations."""
+    with patch(
+        "services.setup_draft.clear",
+        new_callable=AsyncMock,
+    ) as draft_clear:
+        await svc.mark_complete(42)
+    draft_clear.assert_awaited_once_with(42)
+
+
+@pytest.mark.asyncio
+async def test_dismiss_clears_draft(_mock_db):
+    """dismiss must wipe any staged work so a re-launch starts clean."""
+    with patch(
+        "services.setup_draft.clear",
+        new_callable=AsyncMock,
+    ) as draft_clear:
+        await svc.dismiss(42)
+    draft_clear.assert_awaited_once_with(42)
+
+
+@pytest.mark.asyncio
+async def test_mark_complete_tolerates_draft_clear_failure(_mock_db):
+    """A draft-clear failure must not prevent the session status flip."""
+    with patch(
+        "services.setup_draft.clear",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("DB exploded"),
+    ):
+        # Should not raise.
+        await svc.mark_complete(42)
+    _mock_db["set_status"].assert_awaited_once_with(42, "complete")
 
 
 @pytest.mark.asyncio
