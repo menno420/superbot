@@ -539,13 +539,15 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     from views.setup.section_card import show
 
     detected = "Resolver walks thread → channel → category → guild → default."
+    # ``recommended_ops_builder`` is read from the registered
+    # ``SetupSection`` field by ``section_card.show`` — no need to
+    # pass it explicitly here.
     await show(
         interaction,
         hub=hub,
         section=REGISTRY.get(SLUG),  # type: ignore[arg-type]
         detected_state=detected,
         on_customize=_customize_run,
-        recommended_ops_builder=_recommended_cleanup_ops,
     )
 
 

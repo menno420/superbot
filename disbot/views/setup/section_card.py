@@ -345,7 +345,20 @@ async def show(
     reflects today's progress. The card view captures the supplied
     callbacks so each section can plug in its own detail view and
     recommended-ops builder.
+
+    When ``recommended_ops_builder`` is not passed and
+    ``section.recommended_ops_builder`` is set, the field's value is
+    used as a fallback. This lets sections declare the builder once
+    on their ``SetupSection`` registration and have both the hub's
+    "Apply all recommended" button and the card's "Apply Recommended"
+    button reach the same builder without duplicate wiring.
     """
+    if recommended_ops_builder is None:
+        recommended_ops_builder = getattr(
+            section,
+            "recommended_ops_builder",
+            None,
+        )
     guild = interaction.guild
     member = interaction.user
     if guild is None or interaction.guild_id is None:
