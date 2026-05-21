@@ -232,3 +232,155 @@ async def test_build_snapshot_with_guild_uses_collected_score():
     assert snap.drift.current_score == 90
     assert snap.drift.score_delta == 5
     assert snap.drift.has_drift is True
+
+
+# ---------------------------------------------------------------------------
+# Delete-setup-channel button
+# ---------------------------------------------------------------------------
+
+
+def _session_with_channel(*, channel_id: int = 7000) -> SetupSession:
+    return SetupSession(
+        guild_id=1,
+        guild_name="Test",
+        owner_id=99,
+        setup_status="complete",
+        setup_channel_id=channel_id,
+        setup_message_id=8000,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+
+
+def test_summary_view_omits_delete_button_without_session():
+    view = SummaryView(_author(), snapshot=SummarySnapshot())
+    labels = {getattr(c, "label", None) for c in view.children}
+    assert "Delete setup channel" not in labels
+
+
+def test_summary_view_omits_delete_button_when_session_has_no_channel():
+    """If the session doesn't track a setup channel, no delete option."""
+    session = SetupSession(
+        guild_id=1,
+        guild_name="Test",
+        owner_id=99,
+        setup_status="complete",
+        setup_channel_id=None,  # no auto-created channel
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+    view = SummaryView(_author(), snapshot=SummarySnapshot(), session=session)
+    labels = {getattr(c, "label", None) for c in view.children}
+    assert "Delete setup channel" not in labels
+
+
+def test_summary_view_includes_delete_button_when_session_has_channel():
+    view = SummaryView(
+        _author(),
+        snapshot=SummarySnapshot(),
+        session=_session_with_channel(),
+    )
+    labels = {getattr(c, "label", None) for c in view.children}
+    assert "Delete setup channel" in labels
+
+
+@pytest.mark.asyncio
+async def test_delete_button_opens_confirmation_view():
+    """Clicking 'Delete setup channel' surfaces a Confirm/Cancel view
+    ephemerally — the deletion only fires after the operator confirms."""
+    from views.setup.summary import _DeleteSetupChannelConfirmView
+
+    view = SummaryView(
+        _author(),
+        snapshot=SummarySnapshot(),
+        session=_session_with_channel(),
+    )
+    delete_btn = next(
+        c for c in view.children if getattr(c, "label", None) == "Delete setup channel"
+    )
+    interaction = _interaction()
+    interaction.response.send_message = AsyncMock()
+    await delete_btn.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs.get("ephemeral") is True
+    assert isinstance(kwargs.get("view"), _DeleteSetupChannelConfirmView)
+
+
+@pytest.mark.asyncio
+async def test_confirm_calls_delete_setup_channel():
+    """Confirming the delete dispatches the service helper and edits
+    the prompt to a success message."""
+    from views.setup.summary import _DeleteSetupChannelConfirmView
+
+    confirm_view = _DeleteSetupChannelConfirmView(_author())
+    interaction = _interaction()
+    interaction.guild = MagicMock(id=1, name="Test")
+    interaction.guild_id = 1
+    interaction.response.edit_message = AsyncMock()
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session_with_channel(),
+        ),
+        patch(
+            "services.setup_channel.delete_setup_channel",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as delete_mock,
+    ):
+        await confirm_view._confirm.callback(interaction)
+
+    delete_mock.assert_awaited_once()
+    interaction.response.edit_message.assert_awaited_once()
+    content = interaction.response.edit_message.await_args.kwargs.get("content", "")
+    assert "deleted" in content.lower()
+
+
+@pytest.mark.asyncio
+async def test_cancel_keeps_channel_unchanged():
+    from views.setup.summary import _DeleteSetupChannelConfirmView
+
+    confirm_view = _DeleteSetupChannelConfirmView(_author())
+    interaction = _interaction()
+    interaction.response.edit_message = AsyncMock()
+
+    await confirm_view._cancel.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    content = interaction.response.edit_message.await_args.kwargs.get("content", "")
+    assert "cancel" in content.lower() or "unchanged" in content.lower()
+
+
+@pytest.mark.asyncio
+async def test_confirm_surfaces_failure_message():
+    from views.setup.summary import _DeleteSetupChannelConfirmView
+
+    confirm_view = _DeleteSetupChannelConfirmView(_author())
+    interaction = _interaction()
+    interaction.guild = MagicMock(id=1, name="Test")
+    interaction.guild_id = 1
+    interaction.response.edit_message = AsyncMock()
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session_with_channel(),
+        ),
+        patch(
+            "services.setup_channel.delete_setup_channel",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+    ):
+        await confirm_view._confirm.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    content = interaction.response.edit_message.await_args.kwargs.get("content", "")
+    assert "could not" in content.lower() or "renamed" in content.lower()

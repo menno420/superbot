@@ -70,6 +70,32 @@ _BINDING_TO_TAG: dict[str, str] = {
 }
 
 
+# Maps each known binding to a :class:`services.channel_recommender.Intent`
+# slug so the embed can surface the recommender's confidence + reason
+# alongside the legacy "likely match" hint. Keeping these as two
+# separate mappings (instead of derived from one) lets PR 8's intent
+# catalogue evolve independently of the wizard's binding registry.
+_BINDING_TO_INTENT: dict[str, str] = {
+    "mod_channel": "mod_logs",
+    "cleanup_channel": "logs",
+    "debug_channel": "logs",
+    "info_channel": "logs",
+    "warning_channel": "logs",
+    "error_channel": "logs",
+    "audit_channel": "logs",
+    "economy_log_channel": "logs",
+    "xp_announce_channel": "general",
+    "welcome_channel": "welcome",
+}
+
+
+_CONFIDENCE_GLYPH: dict[str, str] = {
+    "high": "✅",
+    "medium": "🟡",
+    "low": "⬜",
+}
+
+
 # ---------------------------------------------------------------------------
 # Binding discovery
 # ---------------------------------------------------------------------------
@@ -98,6 +124,27 @@ def _scan_match_for(snapshot: GuildSnapshot | None, binding_name: str) -> Any | 
     if tag is None:
         return None
     return first_match(classify_snapshot(snapshot), tag)
+
+
+def _recommendation_for(
+    snapshot: GuildSnapshot | None,
+    binding_name: str,
+):
+    """Return the top recommender pick for ``binding_name``, or ``None``.
+
+    Layered on top of the legacy ``_scan_match_for`` so panels that
+    have not opted into the recommender keep their existing hint
+    behaviour; new code reads this helper for the richer payload
+    (confidence + reason list).
+    """
+    if snapshot is None:
+        return None
+    intent_slug = _BINDING_TO_INTENT.get(binding_name)
+    if intent_slug is None:
+        return None
+    from services.channel_recommender import top_pick
+
+    return top_pick(intent_slug, snapshot)
 
 
 # ---------------------------------------------------------------------------
@@ -132,8 +179,23 @@ def build_channels_embed(snapshot: GuildSnapshot | None) -> discord.Embed:
     grouped: dict[str, list[tuple[str, str]]] = {}
     for sub, binding in bindings:
         match = _scan_match_for(snapshot, binding.name)
-        match_str = f" · likely `#{match.name}`" if match is not None else ""
+        recommendation = _recommendation_for(snapshot, binding.name)
         required = " · *required*" if binding.required else ""
+        if recommendation is not None:
+            glyph = _CONFIDENCE_GLYPH.get(recommendation.confidence, "⬜")
+            # Take the strongest single reason for compactness; the
+            # full reason tuple is available to richer UI in follow-ups.
+            top_reason = recommendation.reasons[0] if recommendation.reasons else ""
+            match_str = (
+                f" · {glyph} likely `#{recommendation.channel_name}` "
+                f"({recommendation.confidence}"
+                + (f" — {top_reason}" if top_reason else "")
+                + ")"
+            )
+        elif match is not None:
+            match_str = f" · likely `#{match.name}`"
+        else:
+            match_str = ""
         grouped.setdefault(sub, []).append(
             (binding.name, f"`{binding.name}`{required}{match_str}"),
         )
@@ -393,7 +455,11 @@ async def _stage_channel_binding(
 # ---------------------------------------------------------------------------
 
 
-async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+async def _customize_run(
+    interaction: discord.Interaction,
+    hub: SetupHubView | None,
+) -> None:
+    """Detailed channel picker — opened by the section card's Customize."""
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message(
@@ -406,12 +472,13 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     # hub view.  When absent (operator never ran the scan), the
     # classifier hints simply do not appear — the section still works.
     snapshot: GuildSnapshot | None = None
-    try:
-        from views.setup.sections.server_scan import get_cached_snapshot
+    if hub is not None:
+        try:
+            from views.setup.sections.server_scan import get_cached_snapshot
 
-        snapshot = get_cached_snapshot(hub)
-    except Exception:
-        logger.exception("channels: snapshot lookup raised")
+            snapshot = get_cached_snapshot(hub)
+        except Exception:
+            logger.exception("channels: snapshot lookup raised")
 
     embed = build_channels_embed(snapshot)
     view = ChannelsSectionView(interaction.user, snapshot=snapshot)
@@ -419,6 +486,73 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
         embed=embed,
         view=view,
         ephemeral=True,
+    )
+
+
+async def _recommended_channel_ops(
+    guild: discord.Guild,
+) -> list[SetupOperation]:
+    """Stage ``bind_channel`` ops for every binding whose intent has a
+    high-confidence channel recommendation.
+
+    Walks :data:`_BINDING_TO_INTENT`, fetches the recommender's top
+    pick per binding, and stages a bind op when the confidence is
+    ``high``. Medium / low picks are intentionally skipped — they're
+    not safe to auto-stage without operator confirmation, but the
+    embed still surfaces them so the operator can customise.
+    """
+    from services import guild_snapshot
+    from services.channel_recommender import top_pick
+
+    try:
+        snapshot = await guild_snapshot.collect(guild)
+    except Exception:
+        logger.exception("channels._recommended_channel_ops: snapshot failed")
+        return []
+
+    bindings = _all_channel_bindings()
+    ops: list[SetupOperation] = []
+    for subsystem, binding in bindings:
+        intent = _BINDING_TO_INTENT.get(binding.name)
+        if intent is None:
+            continue
+        pick = top_pick(intent, snapshot)
+        if pick is None or pick.confidence != "high":
+            continue
+        ops.append(
+            SetupOperation(
+                kind="bind_channel",
+                subsystem=subsystem,
+                binding_name=binding.name,
+                target_id=pick.channel_id,
+                target_name=pick.channel_name,
+                target_kind="channel",
+            ),
+        )
+    return ops
+
+
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+    """Channels section entry — shows the section card.
+
+    The detailed channel picker is reachable via the card's
+    Customize button; Apply Recommended stages bind ops for every
+    high-confidence intent pick.
+    """
+    from views.setup.section_card import show
+
+    detected = (
+        "Channel-binding recommendations are computed live from the "
+        "guild snapshot. Apply Recommended only stages high-confidence "
+        "picks; use Customize to choose manually."
+    )
+    await show(
+        interaction,
+        hub=hub,
+        section=REGISTRY.get(SLUG),  # type: ignore[arg-type]
+        detected_state=detected,
+        on_customize=_customize_run,
+        recommended_ops_builder=_recommended_channel_ops,
     )
 
 

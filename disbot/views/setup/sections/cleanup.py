@@ -268,8 +268,128 @@ class _ChannelPickSelect(discord.ui.ChannelSelect):
         )
 
 
+class _ProfileSelect(discord.ui.Select):
+    """Batch picker: apply a named cleanup profile in one click.
+
+    Stages every ``set_cleanup_policy`` op the profile's builder
+    returns. The hub status badge then reflects RECOMMENDED for the
+    cleanup section because every staged op carries
+    ``metadata.source="cleanup_profile:<slug>"`` (recognised by the
+    same status logic as the section-card recommended path —
+    treated as customized, since the operator chose a non-default
+    profile).
+    """
+
+    def __init__(self) -> None:
+        from services.cleanup_profiles import PROFILES
+
+        options = [
+            discord.SelectOption(
+                label=profile.display_name,
+                value=profile.slug,
+                description=profile.description[:100],
+            )
+            for profile in PROFILES.values()
+        ]
+        super().__init__(
+            placeholder="Apply a cleanup profile (batch action)…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            custom_id="cleanup_section_profile",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from services.cleanup_profiles import apply_profile, get_profile
+
+        guild = interaction.guild
+        if guild is None or interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Cleanup profiles require a guild context.",
+                ephemeral=True,
+            )
+            return
+        slug = self.values[0]
+        profile = get_profile(slug)
+        if profile is None:
+            await interaction.response.send_message(
+                f"Unknown cleanup profile `{slug}`.",
+                ephemeral=True,
+            )
+            return
+        try:
+            ops = apply_profile(slug, guild)
+        except Exception:
+            logger.exception(
+                "cleanup: apply_profile failed (slug=%s)",
+                slug,
+            )
+            await interaction.response.send_message(
+                "Could not build the cleanup profile — see logs.",
+                ephemeral=True,
+            )
+            return
+        if not ops:
+            await interaction.response.send_message(
+                f"Profile `{slug}` produced no operations.",
+                ephemeral=True,
+            )
+            return
+
+        staged = 0
+        for op in ops:
+            try:
+                await setup_draft.append(
+                    op,
+                    guild_id=interaction.guild_id,
+                    actor_id=interaction.user.id,
+                    label=f"[profile:{slug}] cleanup.{op.target_kind}({op.target_name}) = {op.value}",
+                    metadata={
+                        "source": f"cleanup_profile:{slug}",
+                        "confidence": "high",
+                        "reason": f"Profile `{profile.display_name}`",
+                        "risk": "low",
+                        "rollback_note": (
+                            "Re-stage with a different profile or delete "
+                            "the cleanup_policies rows manually."
+                        ),
+                    },
+                )
+                staged += 1
+            except Exception:
+                logger.exception(
+                    "cleanup: profile append failed (slug=%s, target=%s)",
+                    slug,
+                    op.target_id,
+                )
+
+        try:
+            await setup_session.mark_in_progress(interaction.guild_id, step=SLUG)
+        except Exception:
+            logger.exception("cleanup: mark_in_progress failed (profile)")
+
+        try:
+            pending = await setup_draft.count(interaction.guild_id)
+        except Exception:
+            logger.exception("cleanup: setup_draft.count failed (profile)")
+            pending = 0
+
+        word = "operation" if staged == 1 else "operations"
+        await interaction.response.send_message(
+            f"✅ Staged **{staged} {word}** for profile "
+            f"`{profile.display_name}`. Pending operations: **{pending}**.",
+            ephemeral=True,
+        )
+
+
 class CleanupSectionView(BaseView):
-    """Entry view — hosts the scope-picker dropdown."""
+    """Entry view — hosts the scope-picker dropdown + a profile-batch picker.
+
+    The scope picker is the per-channel/category/guild manual path
+    (already in the section card's Customize flow). The profile
+    picker is the new "I just want safe defaults across many scopes"
+    batch shortcut.
+    """
 
     def __init__(
         self,
@@ -279,6 +399,7 @@ class CleanupSectionView(BaseView):
     ) -> None:
         super().__init__(author, public=False, timeout=timeout)
         self.add_item(_ScopeSelect())
+        self.add_item(_ProfileSelect())
 
 
 # ---------------------------------------------------------------------------
@@ -391,7 +512,9 @@ async def _customize_run(
     )
 
 
-def _recommended_cleanup_ops(guild: discord.Guild) -> list[SetupOperation]:
+async def _recommended_cleanup_ops(
+    guild: discord.Guild,
+) -> list[SetupOperation]:
     """Default cleanup recommendation: Light cleanup at guild scope.
 
     Light deletes invalid commands after 10s and leaves failed-command

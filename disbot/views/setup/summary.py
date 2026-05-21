@@ -125,6 +125,116 @@ def build_summary_embed(snapshot: SummarySnapshot) -> discord.Embed:
     return embed
 
 
+def _build_delete_channel_button() -> discord.ui.Button:
+    """Construct the row-1 "Delete setup channel" button.
+
+    Click handler opens a confirmation view ephemerally — the
+    deletion only fires after the operator explicitly confirms.
+    """
+    button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
+        label="Delete setup channel",
+        style=discord.ButtonStyle.danger,
+        custom_id="setup_summary:delete_channel",
+        row=1,
+    )
+
+    async def _callback(interaction: discord.Interaction) -> None:
+        view = _DeleteSetupChannelConfirmView(interaction.user)
+        await interaction.response.send_message(
+            "⚠️ Delete the private `#superbot-setup` channel?\n"
+            "This cannot be undone. Setup state stays in the database — "
+            "you can rerun setup via `!setup` or `/setup` at any time.",
+            view=view,
+            ephemeral=True,
+        )
+
+    button.callback = _callback  # type: ignore[method-assign]
+    return button
+
+
+class _DeleteSetupChannelConfirmView(BaseView):
+    """Two-button confirmation view: Confirm delete vs. Cancel."""
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        timeout: int = 60,
+    ) -> None:
+        super().__init__(author, timeout=timeout)
+
+    @discord.ui.button(label="Confirm delete", style=discord.ButtonStyle.danger)
+    async def _confirm(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        guild = interaction.guild
+        if guild is None or interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Delete requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from services import setup_session as session_service
+        from services.setup_channel import delete_setup_channel
+
+        try:
+            session = await session_service.resume_session(interaction.guild_id)
+        except Exception:
+            logger.exception(
+                "summary._confirm: resume_session failed (guild=%d)",
+                interaction.guild_id,
+            )
+            session = None
+
+        if session is None or session.setup_channel_id is None:
+            await interaction.response.send_message(
+                "No setup channel is tracked on this server.",
+                ephemeral=True,
+            )
+            self.stop()
+            return
+
+        ok = await delete_setup_channel(guild, session.setup_channel_id)
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        if ok:
+            await interaction.response.edit_message(
+                content=(
+                    "✅ Setup channel deleted. Run `!setup` or `/setup` "
+                    "any time to revisit setup."
+                ),
+                view=self,
+            )
+        else:
+            await interaction.response.edit_message(
+                content=(
+                    "⚠️ Could not delete the channel — it may have been "
+                    "renamed, the bot may lack Manage Channels, or "
+                    "Discord refused the request. See logs."
+                ),
+                view=self,
+            )
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def _cancel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await interaction.response.edit_message(
+            content="Cancelled. The setup channel is unchanged.",
+            view=self,
+        )
+        self.stop()
+
+
 class SummaryView(BaseView):
     """Owner-facing summary panel.
 
@@ -133,6 +243,11 @@ class SummaryView(BaseView):
     have (the wizard hub passes through the last ``FinalReview``
     result; the launcher passes through the cached
     ``last_readiness_score`` plus a fresh drift detection).
+
+    When ``session`` is supplied AND the session tracks a bot-managed
+    setup channel (``setup_channel_id`` set), a "Delete setup
+    channel" button surfaces so the operator can clean up the
+    private workspace after Final Review completes.
     """
 
     def __init__(
@@ -140,11 +255,15 @@ class SummaryView(BaseView):
         author: discord.Member | discord.User,
         *,
         snapshot: SummarySnapshot,
+        session: SetupSession | None = None,
         public: bool = False,
         timeout: int = 180,
     ) -> None:
         super().__init__(author, public=public, timeout=timeout)
         self.snapshot = snapshot
+        self.session = session
+        if session is not None and session.setup_channel_id is not None:
+            self.add_item(_build_delete_channel_button())
 
     @discord.ui.button(
         label="Open Settings Manager",

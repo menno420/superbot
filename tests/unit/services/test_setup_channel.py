@@ -189,3 +189,78 @@ async def test_ensure_setup_channel_passes_private_overwrites():
     assert guild.me in overwrites
     # Owner must be granted access when present
     assert guild.owner in overwrites
+
+
+# ---------------------------------------------------------------------------
+# delete_setup_channel
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_delete_setup_channel_succeeds_when_name_matches():
+    from services.setup_channel import delete_setup_channel
+
+    tracked = _make_text_channel(channel_id=7000)
+    tracked.delete = AsyncMock()
+    guild = _make_guild(cached_channel=tracked)
+
+    ok = await delete_setup_channel(guild, 7000)
+    assert ok is True
+    tracked.delete.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_delete_setup_channel_refuses_renamed_channel():
+    """If an operator renamed the channel we treat it as no longer
+    bot-managed and decline to delete it."""
+    from services.setup_channel import delete_setup_channel
+
+    tracked = _make_text_channel(channel_id=7000)
+    tracked.name = "renamed-by-operator"
+    tracked.delete = AsyncMock()
+    guild = _make_guild(cached_channel=tracked)
+
+    ok = await delete_setup_channel(guild, 7000)
+    assert ok is False
+    tracked.delete.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_delete_setup_channel_returns_true_when_already_gone():
+    """A channel that has already been deleted (cache miss) is
+    treated as success so the caller can move on."""
+    from services.setup_channel import delete_setup_channel
+
+    guild = _make_guild(cached_channel=None)
+    ok = await delete_setup_channel(guild, 9999)
+    assert ok is True
+
+
+@pytest.mark.asyncio
+async def test_delete_setup_channel_returns_true_on_not_found_during_delete():
+    """A race where Discord reports NotFound during the delete is
+    also treated as success."""
+    from services.setup_channel import delete_setup_channel
+
+    tracked = _make_text_channel(channel_id=7000)
+    tracked.delete = AsyncMock(
+        side_effect=discord.NotFound(MagicMock(), "gone"),
+    )
+    guild = _make_guild(cached_channel=tracked)
+
+    ok = await delete_setup_channel(guild, 7000)
+    assert ok is True
+
+
+@pytest.mark.asyncio
+async def test_delete_setup_channel_returns_false_on_forbidden():
+    from services.setup_channel import delete_setup_channel
+
+    tracked = _make_text_channel(channel_id=7000)
+    tracked.delete = AsyncMock(
+        side_effect=discord.Forbidden(MagicMock(), "missing manage_channels"),
+    )
+    guild = _make_guild(cached_channel=tracked)
+
+    ok = await delete_setup_channel(guild, 7000)
+    assert ok is False

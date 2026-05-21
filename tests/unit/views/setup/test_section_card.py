@@ -23,6 +23,20 @@ async def _noop_run(_interaction, _hub):  # pragma: no cover — not exercised h
     return None
 
 
+def _async_returning(value):
+    """Test helper: build an async function that returns ``value``.
+
+    Mirrors the new async :data:`RecommendedOpsBuilder` contract so
+    fixtures can supply concrete op lists without an inline coro
+    factory at every call site.
+    """
+
+    async def _builder(_guild):
+        return value
+
+    return _builder
+
+
 def _section(slug="cleanup", *, description_if_skipped="", emoji="🧹"):
     return SetupSection(
         slug=slug,
@@ -180,7 +194,7 @@ def test_view_disables_customize_when_no_callback():
         section=section,
         hub=None,
         on_customize=None,
-        recommended_ops_builder=lambda g: [],
+        recommended_ops_builder=_async_returning([]),
     )
     customize_btn = next(c for c in view.children if c.label == "Customize")
     assert customize_btn.disabled is True
@@ -192,7 +206,7 @@ def test_view_has_skip_and_hub_buttons():
         section=_section(),
         hub=None,
         on_customize=_noop_run,
-        recommended_ops_builder=lambda g: [],
+        recommended_ops_builder=_async_returning([]),
     )
     labels = {c.label for c in view.children}
     assert "Skip" in labels
@@ -216,7 +230,7 @@ async def test_apply_recommended_stages_ops_with_recommended_source():
         section=section,
         hub=None,
         on_customize=_noop_run,
-        recommended_ops_builder=lambda g: ops,
+        recommended_ops_builder=_async_returning(ops),
     )
     interaction = _interaction_with_guild(_owner_member())
 
@@ -247,7 +261,7 @@ async def test_apply_recommended_handles_empty_builder_output():
         section=_section(),
         hub=None,
         on_customize=_noop_run,
-        recommended_ops_builder=lambda g: [],
+        recommended_ops_builder=_async_returning([]),
     )
     interaction = _interaction_with_guild(_owner_member())
 
@@ -269,7 +283,7 @@ async def test_skip_marks_section_skipped():
         section=_section(),
         hub=None,
         on_customize=_noop_run,
-        recommended_ops_builder=lambda g: [],
+        recommended_ops_builder=_async_returning([]),
     )
     interaction = _interaction_with_guild(_owner_member())
 
@@ -296,7 +310,7 @@ async def test_customize_calls_supplied_callback():
         section=_section(),
         hub=None,
         on_customize=fake_customize,
-        recommended_ops_builder=lambda g: [],
+        recommended_ops_builder=_async_returning([]),
     )
     interaction = _interaction_with_guild(_owner_member())
 
@@ -338,7 +352,7 @@ async def test_show_posts_ephemeral_card_and_marks_step():
             section=section,
             detected_state="Test",
             on_customize=_noop_run,
-            recommended_ops_builder=lambda g: [],
+            recommended_ops_builder=_async_returning([]),
         )
 
     interaction.response.send_message.assert_awaited_once()

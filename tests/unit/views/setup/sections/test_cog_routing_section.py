@@ -323,6 +323,7 @@ async def test_stage_does_not_call_apply_operations():
 
 @pytest.mark.asyncio
 async def test_run_rejects_dm_context():
+    """``run`` routes through the section card, which rejects DMs."""
     interaction = MagicMock()
     interaction.user = SimpleNamespace(id=99)
     interaction.guild = None
@@ -331,15 +332,131 @@ async def test_run_rejects_dm_context():
     await cog_routing.run(interaction, MagicMock())
     interaction.response.send_message.assert_awaited_once()
     args = interaction.response.send_message.await_args.args
-    assert "guild" in args[0].lower()
+    assert "server" in args[0].lower() or "guild" in args[0].lower()
 
 
 @pytest.mark.asyncio
-async def test_run_sends_routing_panel_in_guild():
+async def test_run_opens_section_card_in_guild():
+    """``run`` shows the section card; the detailed routing picker is
+    reachable via the card's Customize button."""
+    from unittest.mock import AsyncMock, patch
+
+    from views.setup.section_card import SectionCardView
+
     interaction = _interaction()
-    await cog_routing.run(interaction, MagicMock())
+    interaction.guild = MagicMock(id=1, name="Test", owner_id=99)
+
+    with (
+        patch(
+            "views.setup.section_card.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "views.setup.section_card.setup_draft.list_ops",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.section_card.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await cog_routing.run(interaction, MagicMock())
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs.get("ephemeral") is True
+    assert isinstance(kwargs["view"], SectionCardView)
+
+
+@pytest.mark.asyncio
+async def test_customize_run_sends_routing_picker_in_guild():
+    """The customize callback still surfaces the detailed routing picker."""
+    interaction = _interaction()
+    await cog_routing._customize_run(interaction, MagicMock())
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs
     assert kwargs.get("ephemeral") is True
     assert isinstance(kwargs["view"], cog_routing.CogRoutingSectionView)
     assert "Cog routing" in kwargs["embed"].title
+
+
+# ---------------------------------------------------------------------------
+# Routing profile batch picker
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_routing_profile_select_stages_every_op():
+    """Picking a routing profile stages each of its ops via setup_draft.append
+    with metadata.source = 'cog_routing_profile:<slug>'."""
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    from views.setup.sections.cog_routing import _RoutingProfileSelect
+
+    select = _RoutingProfileSelect()
+    select._values = ["games_in_game_channels"]
+    interaction = MagicMock()
+    interaction.user = SimpleNamespace(id=99)
+    interaction.guild_id = 1
+    interaction.guild = MagicMock(id=1, name="Test")
+    interaction.response = MagicMock()
+    interaction.response.send_message = AsyncMock()
+
+    fake_ops = [
+        SimpleNamespace(
+            kind="set_cog_routing",
+            subsystem="cog_routing",
+            target_kind="guild",
+            target_id=1,
+            target_name="Test",
+            value="games",
+            metadata={"enabled": "false"},
+        ),
+    ]
+
+    with (
+        patch(
+            "services.cog_routing_profiles.apply_profile",
+            return_value=fake_ops,
+        ),
+        patch(
+            "services.setup_draft.append",
+            new_callable=AsyncMock,
+            return_value=1,
+        ) as append_mock,
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await select.callback(interaction)
+
+    append_mock.assert_awaited_once()
+    metadata = append_mock.await_args.kwargs.get("metadata")
+    assert metadata["source"] == "cog_routing_profile:games_in_game_channels"
+    interaction.response.send_message.assert_awaited_once()
+
+
+def test_cog_routing_section_view_includes_profile_select():
+    """The section view exposes both the scope select AND the new
+    routing-profile batch select to the operator."""
+    from types import SimpleNamespace
+
+    from views.setup.sections.cog_routing import (
+        CogRoutingSectionView,
+        _RoutingProfileSelect,
+        _ScopeSelect,
+    )
+
+    view = CogRoutingSectionView(SimpleNamespace(id=99))
+    child_types = {type(c) for c in view.children}
+    assert _ScopeSelect in child_types
+    assert _RoutingProfileSelect in child_types

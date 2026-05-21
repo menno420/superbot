@@ -148,7 +148,63 @@ async def ensure_setup_channel(
     return channel, True
 
 
+async def delete_setup_channel(
+    guild: discord.Guild,
+    channel_id: int,
+    *,
+    reason: str = "Setup complete — operator confirmed auto-cleanup",
+) -> bool:
+    """Delete the bot-managed setup channel.
+
+    Returns ``True`` when the channel was deleted (or was already
+    gone), ``False`` when the deletion attempt failed. The channel
+    name is verified to equal ``SETUP_CHANNEL_NAME`` before deletion
+    so an operator-renamed channel is never deleted by this helper.
+
+    Operates idempotently: a missing channel id, a channel whose
+    name no longer matches the bot's naming convention, or a
+    Discord HTTP failure all return cleanly. The session row is
+    updated by the caller.
+    """
+    channel = guild.get_channel(channel_id)
+    if not isinstance(channel, discord.TextChannel):
+        # Channel already gone from the cache — treat as success so
+        # the caller can clear the session ids.
+        return True
+    if channel.name != SETUP_CHANNEL_NAME:
+        # Operator renamed the channel; we treat it as no longer
+        # ours and refuse to delete it.
+        logger.info(
+            "setup_channel: refusing to delete renamed channel %d (name=%r)",
+            channel_id,
+            channel.name,
+        )
+        return False
+    try:
+        await channel.delete(reason=reason)
+    except discord.NotFound:
+        return True
+    except discord.Forbidden as exc:
+        logger.warning(
+            "setup_channel: forbidden deleting channel %d in guild %d: %s",
+            channel_id,
+            guild.id,
+            exc,
+        )
+        return False
+    except discord.HTTPException as exc:
+        logger.warning(
+            "setup_channel: HTTP error deleting channel %d in guild %d: %s",
+            channel_id,
+            guild.id,
+            exc,
+        )
+        return False
+    return True
+
+
 __all__ = [
     "SETUP_CHANNEL_NAME",
+    "delete_setup_channel",
     "ensure_setup_channel",
 ]
