@@ -64,23 +64,24 @@ via the Settings Manager cog and services — never directly.
 
 12 numbered stages (S0–S12) plus two bridge milestones (S2.5, S4.5).
 
-| Stage | Title | Branch |
-|-------|-------|--------|
-| S0    | Settings & Customization Command Map (docs-first) | `claude/settings-customization-command-map` |
-| S1    | Read-only SettingsRegistry | `claude/settings-registry-readonly` |
-| S2    | CustomizationCatalogue | `claude/customization-catalogue` |
-| S2.5  | ResourceProvisioningCatalogue | `claude/resource-provisioning-catalogue` |
-| S3    | SettingsResolution | `claude/settings-resolution` |
-| S4    | SettingsMutationPipeline | `claude/settings-mutation-pipeline` |
-| S4.5  | ResourceProvisioningPipeline | `claude/resource-provisioning-pipeline` |
-| S5    | Settings Manager Cog shell + read-only views + help hook | `claude/settings-cog-readonly` |
-| S6    | Scalar edit / reset flows | `claude/settings-edit-flows` |
-| S7    | Logging customization with create/select channel flow | `claude/settings-logging-customization` |
-| S8    | Cleanup customization expansion | `claude/settings-cleanup-customization` |
-| S9    | Access policy manager | `claude/settings-access-policy` |
-| S10   | Subsystem setup packs / create-required-resources actions | `claude/settings-subsystem-pages-*` and `claude/settings-setup-packs-*` |
-| S11   | Help / Admin / Platform integration pass | `claude/settings-discoverability-integration` |
-| S12   | Setup wizard integration planning | `claude/setup-wizard-planning` |
+| Stage | Title | Status | Branch |
+|-------|-------|--------|--------|
+| S0    | Settings & Customization Command Map (docs-first) | landed | `claude/settings-customization-command-map` |
+| S1    | Read-only SettingsRegistry | landed | `claude/settings-registry-readonly` |
+| S2    | CustomizationCatalogue | landed | `claude/customization-catalogue` |
+| S2.5  | ResourceProvisioningCatalogue | landed | `claude/resource-provisioning-catalogue` |
+| S3    | SettingsResolution | landed | `claude/settings-resolution` |
+| S4    | SettingsMutationPipeline | landed | `claude/settings-mutation-pipeline` |
+| S4.5  | ResourceProvisioningPipeline | landed | `claude/resource-provisioning-pipeline` |
+| S5    | Settings Manager Cog shell + read-only views + help hook | landed | `claude/settings-cog-readonly` |
+| S6    | Scalar edit / reset flows | **landed** | `claude/settings-edit-flows` |
+| S6.5  | Channel/role native selects + numeric presets (PR #7) | **landed** | `claude/settings-input-hints` |
+| S7    | Logging customization with create/select channel flow | planned | `claude/settings-logging-customization` |
+| S8    | Cleanup customization expansion | planned | `claude/settings-cleanup-customization` |
+| S9    | Access policy manager | planned | `claude/settings-access-policy` |
+| S10   | Subsystem setup packs / create-required-resources actions | planned | `claude/settings-subsystem-pages-*` and `claude/settings-setup-packs-*` |
+| S11   | Help / Admin / Platform integration pass | planned | `claude/settings-discoverability-integration` |
+| S12   | Setup wizard integration planning | in progress | `claude/setup-wizard-planning` |
 
 **Feature-flag state.** The Settings Manager cog ships with the
 ``settings.manager_cog.enabled`` flag.  S5/S6/S7 landed with the flag

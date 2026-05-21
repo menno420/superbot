@@ -30,9 +30,8 @@ async def build_invalid_embed(
         description=(
             "Settings whose current KV value failed coercion or "
             "validation.  Resolver fell back to the declared default "
-            "for runtime safety; the underlying KV row needs an edit "
-            "(S6 introduces the edit flow).\n"
-            "_Read-only · S5._"
+            "for runtime safety; fix the underlying KV row via the "
+            "subsystem page's edit/reset control."
         ),
         color=discord.Color.orange(),
     )

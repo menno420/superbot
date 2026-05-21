@@ -1,4 +1,4 @@
-"""SubsystemSettingsView — per-subsystem read-only drill-down (S5).
+"""SubsystemSettingsView — per-subsystem drill-down.
 
 Renders the long-term subsystem-page shape:
 
@@ -7,18 +7,22 @@ Renders the long-term subsystem-page shape:
   per-guild so the panel shows the *current* effective value, its
   provenance, validity, and declared default.
 * Bindings — declared :class:`BindingSpec`s with kind + required +
-  hint.  The S5 view does NOT call into bindings runtime — it just
-  shows the declared shape.  S7 onward consumes
-  :func:`core.runtime.bindings.get_binding` to surface the current
-  bound resource.
+  hint.  Today the view shows the declared shape only; the binding
+  edit control is still on the roadmap (planned alongside the setup
+  wizard's binding section, which shares the picker widgets).
 * Resource requirements — declared :class:`ResourceRequirement`s with
   priority + suggested name.
 * Related cog panel — if the subsystem declares panel-shaped
   ``entry_points`` (anything ending in ``menu``), they are listed
   for quick reference.
+* Edit Setting select (S6) — routes by ``input_hint`` / ``value_type``
+  / ``allowed_values`` to the right widget: boolean toggle, free-form
+  text/number modal, enum select, native channel/role select, or
+  numeric-presets buttons.  Every widget writes through
+  :class:`services.settings_mutation.SettingsMutationPipeline`.
+* Reset Setting select (S6) — restores the spec's default value via
+  the same pipeline.
 * "↩ Back to Hub" button.
-
-S5 is strictly read-only.  No edit / reset / mutate controls.
 """
 
 from __future__ import annotations
@@ -211,7 +215,7 @@ async def build_subsystem_embed(
 
     embed.set_footer(
         text=(
-            f"Read-only · S5.  Edit / reset arrive in S6.  "
+            f"Scalar edit + reset live · use the selects below.  "
             f"guild_id={guild_id if guild_id is not None else 'DM'}"
         ),
     )

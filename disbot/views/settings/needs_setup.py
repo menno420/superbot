@@ -57,8 +57,7 @@ async def build_needs_setup_embed(
             "Subsystems whose schema declares **required** bindings or "
             "resource requirements.  This shows what _should_ be "
             "configured; the *bound vs unresolved* status of each slot "
-            "lives in the **Missing bindings** view.\n"
-            "_Read-only · S5._"
+            "lives in the **Missing bindings** view."
         ),
         color=discord.Color.gold(),
     )

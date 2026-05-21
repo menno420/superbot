@@ -1,31 +1,32 @@
-"""Settings Manager cog — S5 of the Global Settings & Customization Manager.
+"""Settings Manager cog — entry point for the Global Settings & Customization Manager.
 
-Lands the long-term Settings Manager navigation shape (hub +
-subsystem dropdown + four diagnostic sub-panels) in **strictly
-read-only** form.  Future milestones add edit / reset / mutate
-flows (S6+), the logging create-or-select flow (S7), cleanup
-expansion (S8), the access-policy manager (S9), and per-subsystem
-setup packs (S10).
+Hosts the long-term Settings Manager navigation shape (hub +
+subsystem dropdown + four diagnostic sub-panels).  S5 shipped the
+read-only navigation; S6 added scalar edit/reset flows; PR #7
+added native channel/role selects and numeric presets.  Today the
+cog opens a hub whose subsystem drill-down can edit + reset every
+declared scalar setting, with all writes routed through
+:class:`services.settings_mutation.SettingsMutationPipeline`.
 
-Hard limits for S5:
+Future milestones extend the surface further: binding edit (S7
+expansion), cleanup customization (S8), access-policy manager
+(S9), and per-subsystem setup packs (S10).
 
-* No edit modals, no reset buttons that write, no resource
-  creation, no binding mutation, no access-policy mutation, no
-  cleanup-policy mutation, no setup wizard, no slash commands.
-* The cog ALWAYS loads and registers in
-  :data:`utils.subsystem_registry.SUBSYSTEMS` so help / admin /
-  menu discoverability stays stable.
-* The :data:`core.runtime.feature_flags.SETTINGS_MANAGER_COG_ENABLED`
-  flag (default ON since PR #8) gates the runtime *behaviour* of
-  ``!settings`` and the ``build_help_menu_view`` hook.  When OFF
-  (kill-switched), invocations return a clearly-worded disabled
-  embed describing how to re-enable it.  The cog still loads either
-  way so help/admin/menu discoverability stays stable — this avoids
-  the "command exists but mysteriously hidden" discoverability bug.
+The cog itself stays write-free — the read-only invariant pinned
+by ``tests/unit/invariants/test_settings_cog_read_only.py`` is
+enforced at the COG level (``disbot/cogs/settings*``).  Write
+behaviour lives in an explicit allowlist of widget files under
+``disbot/views/settings/`` (see the invariant module for the
+allowlist and its justification).
 
-Pinned by ``tests/unit/invariants/test_settings_cog_read_only.py``:
-no imports of mutation pipelines in ``disbot/cogs/settings*`` or
-``disbot/views/settings/**``.
+The cog ALWAYS loads and registers in
+:data:`utils.subsystem_registry.SUBSYSTEMS` so help / admin / menu
+discoverability stays stable.  The
+:data:`core.runtime.feature_flags.SETTINGS_MANAGER_COG_ENABLED`
+flag (default ON since PR #8) gates the runtime *behaviour* of
+``!settings`` and the ``build_help_menu_view`` hook.  When OFF
+(kill-switched), invocations return a clearly-worded disabled
+embed describing how to re-enable it.
 """
 
 from __future__ import annotations
@@ -97,11 +98,13 @@ async def _is_enabled(guild_id: int | None) -> bool:
 
 
 class SettingsCog(commands.Cog):
-    """Read-only Settings Manager surface (S5).
+    """Settings Manager entry-point surface.
 
     Public commands:
 
-    * ``!settings`` — open the Settings hub.
+    * ``!settings`` — open the Settings hub (browse + scalar
+      edit/reset for every declared subsystem).
+    * ``!settings access`` — open the access-policy explorer.
 
     Public hooks:
 
@@ -116,7 +119,7 @@ class SettingsCog(commands.Cog):
     @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
     @commands.group(
         name="settings",
-        help="Open the Settings Manager hub (read-only).",
+        help="Open the Settings Manager hub (browse + edit/reset scalars).",
         invoke_without_command=True,
     )
     @commands.has_permissions(administrator=True)

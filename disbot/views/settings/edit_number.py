@@ -6,7 +6,7 @@ validator (via the pipeline), writes through
 :class:`services.settings_mutation.SettingsMutationPipeline`, and
 sends an ephemeral confirmation.
 
-Allowlisted by the S5/S6 read-only invariant scan.
+Allowlisted in ``tests/unit/invariants/test_settings_cog_read_only.py``.
 """
 
 from __future__ import annotations

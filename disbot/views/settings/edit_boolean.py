@@ -1,11 +1,14 @@
 """BooleanSettingToggle — S6 edit widget for ``bool`` SettingSpecs.
 
-Single-click toggle that reads the current value via S3's resolver
-and writes the inverted value via S4's
+Single-click toggle that reads the current value via the
+:mod:`services.settings_resolution` resolver and writes the
+inverted value via
 :class:`services.settings_mutation.SettingsMutationPipeline`.
 
-Lives under the S5 read-only-invariant allowlist: this is one of
-the five edit-flow files permitted to import the mutation pipeline.
+Allowlisted in
+``tests/unit/invariants/test_settings_cog_read_only.py``: this is
+one of the eight edit/reset widget files permitted to import the
+mutation pipeline.
 """
 
 from __future__ import annotations

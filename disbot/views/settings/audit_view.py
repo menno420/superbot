@@ -33,11 +33,11 @@ async def build_audit_embed(
     embed = discord.Embed(
         title="🕒 Recent settings changes",
         description=(
-            "Most recent rows from `settings_mutation_audit` (S4).  "
-            "Until the S6 edit flow lands, this table is populated only "
-            "by REPL or scripted writes; production cogs still call "
-            "`db.set_setting` directly (allowlisted per the AST invariant).\n"
-            "_Read-only · S5._"
+            "Most recent rows from `settings_mutation_audit`.  Populated "
+            "by every scalar edit + reset routed through "
+            "`SettingsMutationPipeline.set_value` (the Settings Manager "
+            "subsystem page's edit/reset widgets, plus any service "
+            "migrations that go through the pipeline)."
         ),
         color=discord.Color.blurple(),
     )

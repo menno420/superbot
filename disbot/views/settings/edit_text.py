@@ -4,7 +4,7 @@ Used for string settings whose ``SettingSpec.allowed_values`` is
 empty.  Settings that declare ``allowed_values`` are routed to the
 :mod:`views.settings.edit_enum` widget instead.
 
-Allowlisted by the S5/S6 read-only invariant scan.
+Allowlisted in ``tests/unit/invariants/test_settings_cog_read_only.py``.
 """
 
 from __future__ import annotations
