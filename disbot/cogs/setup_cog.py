@@ -32,6 +32,7 @@ from __future__ import annotations
 import logging
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from services import setup_access, setup_session
@@ -372,6 +373,56 @@ class SetupLauncherView(discord.ui.View):
         )
 
     @discord.ui.button(
+        label="Repost launcher",
+        style=discord.ButtonStyle.secondary,
+        custom_id="setup:repost_launcher",
+        row=1,
+    )
+    async def _repost_launcher(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        if not await self._gate_admin(interaction):
+            return
+        guild = interaction.guild
+        if guild is None:
+            await self._deny(
+                interaction,
+                "Repost launcher requires a guild context.",
+            )
+            return
+
+        channel, message = await post_launcher(guild)
+        if message is None:
+            await self._deny(
+                interaction,
+                "Could not post the launcher anywhere — bot has no sendable "
+                "channel and the owner has DMs closed.",
+            )
+            return
+
+        try:
+            await setup_session.start_session(
+                guild_id=guild.id,
+                guild_name=guild.name,
+                owner_id=guild.owner_id or 0,
+                setup_channel_id=channel.id if channel is not None else None,
+                setup_message_id=message.id,
+            )
+        except Exception:
+            logger.exception(
+                "setup_cog._repost_launcher: start_session refresh failed",
+            )
+
+        where = f"<#{channel.id}>" if channel is not None else "your DMs"
+        await interaction.response.send_message(
+            f"Launcher reposted in {where}.",
+            ephemeral=True,
+        )
+
+    @discord.ui.button(
         label="Dismiss",
         style=discord.ButtonStyle.danger,
         custom_id="setup:dismiss",
@@ -507,6 +558,72 @@ async def post_launcher(
 
 
 # ---------------------------------------------------------------------------
+# Shared hub-entry helper for direct commands (!setup / /setup).
+# ---------------------------------------------------------------------------
+
+
+async def _resolve_hub_entry(
+    member: discord.Member,
+    guild: discord.Guild,
+) -> (
+    tuple[discord.Embed, discord.ui.View, str]
+    | tuple[discord.Embed, None, str]
+    | tuple[None, None, str]
+):
+    """Resolve the hub-entry response for ``member`` in ``guild``.
+
+    Returns one of three shapes:
+
+    * ``(hub_embed, hub_view, "hub")`` — member can apply setup; full
+      hub is rendered. Caller marks the session in progress.
+    * ``(readiness_embed, None, "readiness")`` — member is a setup
+      admin without apply authority; render the deterministic
+      readiness embed instead.
+    * ``(None, None, "denied")`` — member is not a setup admin.
+
+    The helper performs no Discord send; the calling command decides
+    whether to reply ephemerally (slash) or to ``ctx.send`` (prefix).
+    """
+    session = await setup_session.resume_session(guild.id)
+
+    if setup_access.can_apply_setup(member, session):
+        if session is None:
+            try:
+                session = await setup_session.start_session(
+                    guild_id=guild.id,
+                    guild_name=guild.name,
+                    owner_id=guild.owner_id or 0,
+                )
+            except Exception:
+                logger.exception(
+                    "setup_cog._resolve_hub_entry: start_session failed",
+                )
+                session = None
+
+        from services import setup_draft
+        from views.setup.hub import SetupHubView, build_hub_embed
+
+        try:
+            pending_ops = await setup_draft.count(guild.id)
+        except Exception:
+            logger.exception(
+                "setup_cog._resolve_hub_entry: setup_draft.count failed",
+            )
+            pending_ops = None
+        hub = SetupHubView(member, session=session)
+        embed = build_hub_embed(session, pending_ops=pending_ops)
+        return embed, hub, "hub"
+
+    if setup_access.is_setup_admin(member, session):
+        from cogs.diagnostic._platform_embeds import build_setup_readiness_embed
+
+        embed = await build_setup_readiness_embed(guild.id, guild=guild)
+        return embed, None, "readiness"
+
+    return None, None, "denied"
+
+
+# ---------------------------------------------------------------------------
 # Cog
 # ---------------------------------------------------------------------------
 
@@ -538,6 +655,103 @@ class SetupCog(commands.Cog):
         # the default labels; ``_resume_launchers`` later edits
         # individual messages with status-aware label sets.
         self.bot.add_view(SetupLauncherView())
+
+    @commands.command(name="setup")
+    @commands.guild_only()
+    async def setup_cmd(self, ctx: commands.Context) -> None:
+        """Open or resume the setup wizard from any channel.
+
+        Owners and delegated setup admins get the hub; administrators
+        without delegation get a read-only readiness embed; everyone
+        else is denied. Recovery path when the launcher message has
+        been deleted.
+        """
+        guild = ctx.guild
+        member = ctx.author
+        if guild is None or not isinstance(member, discord.Member):
+            await ctx.send("Run `!setup` from inside the server.")
+            return
+
+        embed, view, mode = await _resolve_hub_entry(member, guild)
+        if mode == "denied":
+            await ctx.send(
+                "Only the server owner, an administrator, or a delegated "
+                "setup admin can open the setup wizard.",
+            )
+            return
+        if mode == "readiness":
+            if embed is None:
+                await ctx.send("Could not build the readiness scan.")
+                return
+            await ctx.send(embed=embed)
+            return
+
+        if embed is None or view is None:
+            await ctx.send("Could not build the setup hub. See logs.")
+            return
+        await ctx.send(embed=embed, view=view)
+        try:
+            await setup_session.mark_in_progress(guild.id, step="hub")
+        except Exception:
+            logger.exception("setup_cog.setup_cmd: mark_in_progress failed")
+
+    @app_commands.command(
+        name="setup",
+        description="Open the setup wizard (owner, delegated admin, or admin).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_slash(self, interaction: discord.Interaction) -> None:
+        """Slash front door for the setup wizard — ephemeral.
+
+        Mirrors the access ladder of the prefix command: owner /
+        delegated admin → hub; administrator → readiness; otherwise
+        denied (the ``has_permissions`` decorator will already have
+        short-circuited the deny case for non-admins).
+        """
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            await interaction.response.send_message(
+                "Use `/setup` from inside the server.",
+                ephemeral=True,
+            )
+            return
+
+        embed, view, mode = await _resolve_hub_entry(member, guild)
+        if mode == "denied":
+            await interaction.response.send_message(
+                "Only the server owner, an administrator, or a delegated "
+                "setup admin can open the setup wizard.",
+                ephemeral=True,
+            )
+            return
+        if mode == "readiness":
+            if embed is None:
+                await interaction.response.send_message(
+                    "Could not build the readiness scan.",
+                    ephemeral=True,
+                )
+                return
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+
+        if embed is None or view is None:
+            await interaction.response.send_message(
+                "Could not build the setup hub. See logs.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            ephemeral=True,
+        )
+        try:
+            await setup_session.mark_in_progress(guild.id, step="hub")
+        except Exception:
+            logger.exception("setup_cog.setup_slash: mark_in_progress failed")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
