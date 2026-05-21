@@ -1548,3 +1548,126 @@ async def test_setup_status_slash_denies_random_member():
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0]
     assert "owner" in msg.lower() or "admin" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# /setup-reset slash command
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_setup_reset_slash_clears_draft_for_owner():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=5,
+        ),
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+    ):
+        await cog.setup_reset_slash.callback(cog, interaction)
+
+    clear_mock.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "5" in msg
+    assert "cleared" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_reset_slash_short_circuits_when_draft_empty():
+    """Empty draft → friendly 'nothing to clear' message, no clear call."""
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+    ):
+        await cog.setup_reset_slash.callback(cog, interaction)
+
+    clear_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "already empty" in msg.lower() or "no staged" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_reset_slash_denies_random_member():
+    """Random members (no owner / delegation) cannot clear the draft."""
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_random_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ),
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+    ):
+        await cog.setup_reset_slash.callback(cog, interaction)
+
+    clear_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_reset_slash_handles_clear_failure():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=3,
+        ),
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("db down"),
+        ),
+    ):
+        await cog.setup_reset_slash.callback(cog, interaction)
+
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "could not" in msg.lower() or "logs" in msg.lower()

@@ -323,6 +323,77 @@ class SetupCog(commands.Cog):
                 logger.exception("setup_cog.setup_slash: mark_in_progress failed")
 
     @app_commands.command(
+        name="setup-reset",
+        description="Clear all staged setup operations (owner/delegated admin only).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_reset_slash(self, interaction: discord.Interaction) -> None:
+        """Clear the per-guild setup draft without dismissing the session.
+
+        Useful when the operator made mistakes while staging ops and
+        wants a clean slate without flipping the session to
+        ``dismissed`` (which would also clear the depth pick and
+        skipped-section set).
+        """
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            await interaction.response.send_message(
+                "Use `/setup-reset` from inside the server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            session = await setup_session.resume_session(guild.id)
+        except Exception:
+            logger.exception("setup_cog.setup_reset_slash: resume failed")
+            session = None
+
+        if not setup_access.can_apply_setup(member, session):
+            await interaction.response.send_message(
+                "Only the server owner or a delegated setup admin can "
+                "reset staged setup operations.",
+                ephemeral=True,
+            )
+            return
+
+        from services import setup_draft
+
+        try:
+            pending_before = await setup_draft.count(guild.id)
+        except Exception:
+            logger.exception("setup_cog.setup_reset_slash: count failed")
+            pending_before = 0
+
+        if pending_before == 0:
+            await interaction.response.send_message(
+                "No staged operations to clear — the draft is already empty.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            await setup_draft.clear(guild.id)
+        except Exception:
+            logger.exception("setup_cog.setup_reset_slash: clear failed")
+            await interaction.response.send_message(
+                "Could not clear staged operations — see logs.",
+                ephemeral=True,
+            )
+            return
+
+        word = "operation" if pending_before == 1 else "operations"
+        await interaction.response.send_message(
+            f"✅ Cleared **{pending_before}** staged {word}. The session "
+            f"keeps its status and depth — run `!setup` or `/setup` to "
+            f"continue.",
+            ephemeral=True,
+        )
+
+    @app_commands.command(
         name="setup-status",
         description="Quick at-a-glance setup state (read-only).",
     )
