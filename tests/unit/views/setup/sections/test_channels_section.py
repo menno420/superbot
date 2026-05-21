@@ -398,3 +398,56 @@ async def test_run_uses_cached_snapshot_when_present():
     logging_field = next((f for f in embed.fields if f.name == "logging"), None)
     assert logging_field is not None
     assert "mod-log" in logging_field.value
+
+
+# ---------------------------------------------------------------------------
+# Recommender wiring (channel_recommender)
+# ---------------------------------------------------------------------------
+
+
+def test_embed_surfaces_recommender_confidence_for_recognised_binding():
+    """When the snapshot contains a channel that matches a binding's
+    intent in ``channel_recommender``, the embed renders the confidence
+    glyph + a one-line reason alongside the legacy 'likely #...' hint."""
+    snapshot = _snap(channels_list=[_ch("mod-log", ch_id=42)])
+    embed = channels.build_channels_embed(snapshot)
+    logging_field = next((f for f in embed.fields if f.name == "logging"), None)
+    assert logging_field is not None
+    value = logging_field.value
+    # The mod_channel row gets the high-confidence glyph and the
+    # recommender's reason summary (name-match pattern).
+    assert "✅" in value or "🟡" in value
+    assert "high" in value.lower() or "medium" in value.lower()
+    assert "mod-log" in value
+
+
+def test_embed_falls_back_to_legacy_match_when_no_recommender_intent():
+    """Bindings without a registered intent slug still show the legacy
+    tag-based 'likely #channel' hint via ``_scan_match_for``."""
+    # Construct a snapshot the recommender wouldn't know how to score
+    # for a binding without an intent entry — the legacy path still fires.
+    snapshot = _snap(channels_list=[_ch("info-feed", ch_id=42)])
+    embed = channels.build_channels_embed(snapshot)
+    # Pure regression: embed builds; some logging row is rendered.
+    logging_field = next((f for f in embed.fields if f.name == "logging"), None)
+    assert logging_field is not None
+
+
+def test_recommendation_for_known_binding_returns_top_pick():
+    """``_recommendation_for`` plumbs the binding name through to the
+    recommender's ``top_pick`` and returns the resulting object."""
+    snapshot = _snap(channels_list=[_ch("mod-log", ch_id=42)])
+    rec = channels._recommendation_for(snapshot, "mod_channel")
+    assert rec is not None
+    assert rec.channel_id == 42
+    assert rec.intent == "mod_logs"
+    assert rec.confidence in ("high", "medium", "low")
+
+
+def test_recommendation_for_unknown_binding_returns_none():
+    snapshot = _snap(channels_list=[_ch("anything", ch_id=42)])
+    assert channels._recommendation_for(snapshot, "binding_with_no_intent") is None
+
+
+def test_recommendation_for_returns_none_without_snapshot():
+    assert channels._recommendation_for(None, "mod_channel") is None

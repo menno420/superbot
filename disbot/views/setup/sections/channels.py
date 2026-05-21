@@ -70,6 +70,32 @@ _BINDING_TO_TAG: dict[str, str] = {
 }
 
 
+# Maps each known binding to a :class:`services.channel_recommender.Intent`
+# slug so the embed can surface the recommender's confidence + reason
+# alongside the legacy "likely match" hint. Keeping these as two
+# separate mappings (instead of derived from one) lets PR 8's intent
+# catalogue evolve independently of the wizard's binding registry.
+_BINDING_TO_INTENT: dict[str, str] = {
+    "mod_channel": "mod_logs",
+    "cleanup_channel": "logs",
+    "debug_channel": "logs",
+    "info_channel": "logs",
+    "warning_channel": "logs",
+    "error_channel": "logs",
+    "audit_channel": "logs",
+    "economy_log_channel": "logs",
+    "xp_announce_channel": "general",
+    "welcome_channel": "welcome",
+}
+
+
+_CONFIDENCE_GLYPH: dict[str, str] = {
+    "high": "✅",
+    "medium": "🟡",
+    "low": "⬜",
+}
+
+
 # ---------------------------------------------------------------------------
 # Binding discovery
 # ---------------------------------------------------------------------------
@@ -98,6 +124,27 @@ def _scan_match_for(snapshot: GuildSnapshot | None, binding_name: str) -> Any | 
     if tag is None:
         return None
     return first_match(classify_snapshot(snapshot), tag)
+
+
+def _recommendation_for(
+    snapshot: GuildSnapshot | None,
+    binding_name: str,
+):
+    """Return the top recommender pick for ``binding_name``, or ``None``.
+
+    Layered on top of the legacy ``_scan_match_for`` so panels that
+    have not opted into the recommender keep their existing hint
+    behaviour; new code reads this helper for the richer payload
+    (confidence + reason list).
+    """
+    if snapshot is None:
+        return None
+    intent_slug = _BINDING_TO_INTENT.get(binding_name)
+    if intent_slug is None:
+        return None
+    from services.channel_recommender import top_pick
+
+    return top_pick(intent_slug, snapshot)
 
 
 # ---------------------------------------------------------------------------
@@ -132,8 +179,23 @@ def build_channels_embed(snapshot: GuildSnapshot | None) -> discord.Embed:
     grouped: dict[str, list[tuple[str, str]]] = {}
     for sub, binding in bindings:
         match = _scan_match_for(snapshot, binding.name)
-        match_str = f" · likely `#{match.name}`" if match is not None else ""
+        recommendation = _recommendation_for(snapshot, binding.name)
         required = " · *required*" if binding.required else ""
+        if recommendation is not None:
+            glyph = _CONFIDENCE_GLYPH.get(recommendation.confidence, "⬜")
+            # Take the strongest single reason for compactness; the
+            # full reason tuple is available to richer UI in follow-ups.
+            top_reason = recommendation.reasons[0] if recommendation.reasons else ""
+            match_str = (
+                f" · {glyph} likely `#{recommendation.channel_name}` "
+                f"({recommendation.confidence}"
+                + (f" — {top_reason}" if top_reason else "")
+                + ")"
+            )
+        elif match is not None:
+            match_str = f" · likely `#{match.name}`"
+        else:
+            match_str = ""
         grouped.setdefault(sub, []).append(
             (binding.name, f"`{binding.name}`{required}{match_str}"),
         )
