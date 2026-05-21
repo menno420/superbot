@@ -151,6 +151,44 @@ def build_channels_embed(snapshot: GuildSnapshot | None) -> discord.Embed:
 # ---------------------------------------------------------------------------
 
 
+class _ChannelPickSelect(discord.ui.ChannelSelect):
+    """Native channel picker — drafts a binding op on selection."""
+
+    def __init__(
+        self,
+        *,
+        subsystem: str,
+        binding_name: str,
+        scan_match_id: int | None,
+    ) -> None:
+        super().__init__(
+            placeholder=f"Pick a channel for {subsystem}.{binding_name}",
+            channel_types=[discord.ChannelType.text],
+            min_values=1,
+            max_values=1,
+        )
+        self.subsystem = subsystem
+        self.binding_name = binding_name
+        self.scan_match_id = scan_match_id
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not self.values:
+            await interaction.response.send_message(
+                "No channel picked.",
+                ephemeral=True,
+            )
+            return
+        picked = self.values[0]
+        await _stage_channel_binding(
+            interaction,
+            subsystem=self.subsystem,
+            binding_name=self.binding_name,
+            target_id=picked.id,
+            target_name=f"#{picked.name}",
+            scan_match_id=self.scan_match_id,
+        )
+
+
 class _ChannelPickView(BaseView):
     """Native channel picker for one binding.  Drafts on pick."""
 
@@ -167,35 +205,12 @@ class _ChannelPickView(BaseView):
         self.subsystem = subsystem
         self.binding_name = binding_name
         self.scan_match_id = scan_match_id
-
-        select = discord.ui.ChannelSelect(
-            placeholder=f"Pick a channel for {subsystem}.{binding_name}",
-            channel_types=[discord.ChannelType.text],
-            min_values=1,
-            max_values=1,
-        )
-        select.callback = self._on_pick
-        self.add_item(select)
-
-    async def _on_pick(self, interaction: discord.Interaction) -> None:
-        select = next(
-            (c for c in self.children if isinstance(c, discord.ui.ChannelSelect)),
-            None,
-        )
-        if select is None or not select.values:
-            await interaction.response.send_message(
-                "No channel picked.",
-                ephemeral=True,
-            )
-            return
-        picked = select.values[0]
-        await _stage_channel_binding(
-            interaction,
-            subsystem=self.subsystem,
-            binding_name=self.binding_name,
-            target_id=picked.id,
-            target_name=f"#{picked.name}",
-            scan_match_id=self.scan_match_id,
+        self.add_item(
+            _ChannelPickSelect(
+                subsystem=subsystem,
+                binding_name=binding_name,
+                scan_match_id=scan_match_id,
+            ),
         )
 
 
