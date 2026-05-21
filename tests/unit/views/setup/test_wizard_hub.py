@@ -288,7 +288,10 @@ def _rec(target_id: int = 100, target_kind: str = "channel"):
 
 def test_build_final_review_embed_empty_state():
     embed = build_final_review_embed([])
-    assert "no recommendations" in (embed.description or "").lower()
+    description = (embed.description or "").lower()
+    # The embed used to refer to "recommendations" specifically; the
+    # draft-first model means it now refers to staged work generically.
+    assert "no staged" in description or "nothing" in description
 
 
 def test_build_final_review_embed_pre_apply_lists_pending():
