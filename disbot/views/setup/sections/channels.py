@@ -431,6 +431,11 @@ REGISTRY.register(
         emoji="📡",
         order=40,
         op_kinds=frozenset({"bind_channel", "clear_binding"}),
+        description_if_skipped=(
+            "SuperBot keeps the current command-channel rules and may not "
+            "have a dedicated log channel. Configure these later in "
+            "`!settings`."
+        ),
     ),
 )
 

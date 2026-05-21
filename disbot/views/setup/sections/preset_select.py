@@ -330,6 +330,10 @@ REGISTRY.register(
         run=run,
         emoji="🎛",
         order=25,
+        description_if_skipped=(
+            "No bundled preset is staged. Configure channels, cleanup, and "
+            "routing one section at a time, or load a preset later."
+        ),
     ),
 )
 
