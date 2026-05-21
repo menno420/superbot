@@ -1438,3 +1438,113 @@ def test_launcher_view_has_repost_launcher_button():
     btn = _find_button(view, "setup:repost_launcher")
     assert btn.label == "Repost launcher"
     assert btn.row == 1
+
+
+# ---------------------------------------------------------------------------
+# /setup-status slash command
+# ---------------------------------------------------------------------------
+
+
+def test_status_embed_no_session_renders_no_session_row():
+    from cogs.setup_cog import _build_status_embed
+
+    embed = _build_status_embed(None, pending_ops=0)
+    assert "no session" in (embed.description or "").lower()
+    field_names = {f.name for f in embed.fields}
+    assert "No session row" in field_names
+
+
+def test_status_embed_full_session_renders_every_data_point():
+    from cogs.setup_cog import _build_status_embed
+
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=7000,
+        setup_message_id=8000,
+        last_readiness_score=85,
+        current_step="cleanup",
+        delegated_admins=(42,),
+        skipped_sections=frozenset({"identity"}),
+        depth="standard",
+    )
+    embed = _build_status_embed(session, pending_ops=3)
+    field_names = {f.name for f in embed.fields}
+    assert "Depth" in field_names
+    assert "Current step" in field_names
+    assert "Readiness" in field_names
+    assert "Pending operations" in field_names
+    assert "Skipped sections" in field_names
+    assert "Delegated admins" in field_names
+    assert "Setup channel" in field_names
+
+
+def test_status_embed_omits_optional_fields_when_unset():
+    from cogs.setup_cog import _build_status_embed
+
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="pending",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+    )
+    embed = _build_status_embed(session, pending_ops=0)
+    field_names = {f.name for f in embed.fields}
+    assert "Depth" not in field_names
+    assert "Current step" not in field_names
+    assert "Readiness" not in field_names
+    # Pending operations is always shown.
+    assert "Pending operations" in field_names
+
+
+@pytest.mark.asyncio
+async def test_setup_status_slash_returns_embed_for_admin():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_admin_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=2,
+        ),
+    ):
+        await cog.setup_status_slash.callback(cog, interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs.get("ephemeral") is True
+    assert kwargs.get("embed") is not None
+
+
+@pytest.mark.asyncio
+async def test_setup_status_slash_denies_random_member():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_random_member())
+
+    with patch(
+        "cogs.setup_cog.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_delegated_session(delegated=()),
+    ):
+        await cog.setup_status_slash.callback(cog, interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower() or "admin" in msg.lower()

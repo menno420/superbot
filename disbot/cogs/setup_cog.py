@@ -124,6 +124,85 @@ async def _resolve_hub_entry(
     return None, None, "denied"
 
 
+_STATUS_COLOR_BY_STATUS = {
+    "pending": discord.Color.blurple(),
+    "in_progress": discord.Color.gold(),
+    "complete": discord.Color.green(),
+    "dismissed": discord.Color.dark_grey(),
+}
+
+
+def _build_status_embed(
+    session: setup_session.SetupSession | None,
+    *,
+    pending_ops: int,
+) -> discord.Embed:
+    """Render a read-only status snapshot for ``/setup-status``.
+
+    Pure helper — takes a resolved session + the pending-op count and
+    returns the embed. No DB / Discord I/O. Mirrors the data points
+    the hub embed surfaces (status, depth, current step, readiness
+    score, pending ops, skipped sections) but with no buttons.
+    """
+    status = session.setup_status if session is not None else "no session"
+    color = _STATUS_COLOR_BY_STATUS.get(status, discord.Color.blurple())
+    embed = discord.Embed(
+        title="🛰 Setup status",
+        description=f"**Status:** `{status}`",
+        color=color,
+    )
+    if session is None:
+        embed.add_field(
+            name="No session row",
+            value=(
+                "The bot has not recorded any setup session for this guild. "
+                "Run `!setup` or `/setup` to start."
+            ),
+            inline=False,
+        )
+        return embed
+
+    if session.depth:
+        embed.add_field(name="Depth", value=f"`{session.depth}`", inline=True)
+    if session.current_step:
+        embed.add_field(
+            name="Current step",
+            value=f"`{session.current_step}`",
+            inline=True,
+        )
+    if session.last_readiness_score is not None:
+        embed.add_field(
+            name="Readiness",
+            value=f"`{session.last_readiness_score}%`",
+            inline=True,
+        )
+    embed.add_field(
+        name="Pending operations",
+        value=f"`{pending_ops}`",
+        inline=True,
+    )
+    if session.skipped_sections:
+        embed.add_field(
+            name="Skipped sections",
+            value=", ".join(f"`{s}`" for s in sorted(session.skipped_sections)),
+            inline=False,
+        )
+    if session.delegated_admins:
+        embed.add_field(
+            name="Delegated admins",
+            value=", ".join(f"<@{uid}>" for uid in session.delegated_admins),
+            inline=False,
+        )
+    if session.setup_channel_id is not None:
+        embed.add_field(
+            name="Setup channel",
+            value=f"<#{session.setup_channel_id}>",
+            inline=True,
+        )
+    embed.set_footer(text="Read-only. Run `!setup` / `/setup` to make changes.")
+    return embed
+
+
 # ---------------------------------------------------------------------------
 # Cog
 # ---------------------------------------------------------------------------
@@ -242,6 +321,55 @@ class SetupCog(commands.Cog):
                 await setup_session.mark_in_progress(guild.id, step="hub")
             except Exception:
                 logger.exception("setup_cog.setup_slash: mark_in_progress failed")
+
+    @app_commands.command(
+        name="setup-status",
+        description="Quick at-a-glance setup state (read-only).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_status_slash(self, interaction: discord.Interaction) -> None:
+        """Ephemeral read-only status view.
+
+        Surfaces the session lifecycle, depth choice, pending op
+        count, and skipped section list without opening the
+        interactive hub. Useful for "where am I?" peeks that don't
+        want to enter the wizard.
+        """
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            await interaction.response.send_message(
+                "Use `/setup-status` from inside the server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            session = await setup_session.resume_session(guild.id)
+        except Exception:
+            logger.exception("setup_cog.setup_status_slash: resume failed")
+            session = None
+
+        if not setup_access.is_setup_admin(member, session):
+            await interaction.response.send_message(
+                "Only the server owner, an administrator, or a delegated "
+                "setup admin can view setup status.",
+                ephemeral=True,
+            )
+            return
+
+        from services import setup_draft
+
+        try:
+            pending_ops = await setup_draft.count(guild.id)
+        except Exception:
+            logger.exception("setup_cog.setup_status_slash: draft.count failed")
+            pending_ops = 0
+
+        embed = _build_status_embed(session, pending_ops=pending_ops)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
