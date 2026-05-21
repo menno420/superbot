@@ -6,26 +6,24 @@ The existing :mod:`governance.cleanup` resolver continues to be
 authoritative at read time (``thread > channel > category > guild >
 fallback``); the wizard only stages writes.
 
-Levels map to ``cleanup_policies`` columns:
-
-* **Off**       — ``delete_invalid_commands=False, delete_failed_commands=False, delete_after_seconds=0``
-* **Light**     — ``delete_invalid_commands=True, delete_failed_commands=False, delete_after_seconds=10``
-* **Standard**  — ``delete_invalid_commands=True, delete_failed_commands=True, delete_after_seconds=5``
-* **Strict**    — ``delete_invalid_commands=True, delete_failed_commands=True, delete_after_seconds=2``
-
-PR 11 adds the ``set_cleanup_policy`` dispatcher routing arm; until
-then Final Review surfaces these as ``not_yet_implemented`` rather
-than silently dropping them.
+Levels map to ``cleanup_policies`` columns via
+:mod:`services.cleanup_levels`; Final Review's dispatcher routes the
+staged ``set_cleanup_policy`` op through
+:func:`governance.writes.set_cleanup_policy_for_scope`, which writes
+the policy row + governance audit row + emits
+``audit.action_recorded`` in one transaction.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import discord
 
 from services import setup_draft, setup_session
+from services.cleanup_levels import LEVELS
+from services.cleanup_levels import columns_for_level as level_metadata
 from services.setup_operations import SetupOperation
 from services.setup_sections import REGISTRY, SetupSection
 from views.base import BaseView
@@ -36,37 +34,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger("bot.views.setup.sections.cleanup")
 
 SLUG = "cleanup"
-
-
-# Operator-facing level names → cleanup_policies column values.
-# Exposed as a constant so tests can pin the mapping.
-LEVELS: dict[str, dict[str, Any]] = {
-    "Off": {
-        "delete_invalid_commands": False,
-        "delete_failed_commands": False,
-        "delete_after_seconds": 0,
-    },
-    "Light": {
-        "delete_invalid_commands": True,
-        "delete_failed_commands": False,
-        "delete_after_seconds": 10,
-    },
-    "Standard": {
-        "delete_invalid_commands": True,
-        "delete_failed_commands": True,
-        "delete_after_seconds": 5,
-    },
-    "Strict": {
-        "delete_invalid_commands": True,
-        "delete_failed_commands": True,
-        "delete_after_seconds": 2,
-    },
-}
-
-
-def level_metadata(level: str) -> dict[str, Any]:
-    """Return the cleanup_policies column values for a level name."""
-    return LEVELS[level]
 
 
 SCOPE_OPTIONS: list[discord.SelectOption] = [

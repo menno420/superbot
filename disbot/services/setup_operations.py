@@ -76,11 +76,10 @@ _KNOWN_KINDS: frozenset[str] = frozenset(
         "add_automation_rule",
         "enable_automation_rule",
         "disable_automation_rule",
-        # PR 8 + PR 9 op kinds.  The dispatcher returns
-        # ``not_yet_implemented`` for these until PR 11 adds routing
-        # arms (Final Review apply).  Listed here so the staging
-        # layer accepts them and the embed displays the right kind
-        # label.
+        # Per-feature op kinds.  ``set_cleanup_policy`` routes through
+        # governance.writes.set_cleanup_policy_for_scope; ``set_cog_routing``
+        # routes through services.command_routing.set_policy.  See the
+        # dispatch arms in this module.
         "set_cleanup_policy",
         "set_cog_routing",
     },
@@ -517,6 +516,22 @@ async def _dispatch_one(
                 label=label,
             )
 
+        if op.kind == "set_cleanup_policy":
+            return await _apply_set_cleanup_policy(
+                op,
+                guild=guild,
+                actor=actor,
+                label=label,
+            )
+
+        if op.kind == "set_cog_routing":
+            return await _apply_set_cog_routing(
+                op,
+                guild=guild,
+                actor=actor,
+                label=label,
+            )
+
         # Unreachable given validate_operation above, but explicit.
         return SetupOperationResult(
             status="not_yet_implemented",
@@ -733,6 +748,204 @@ async def _apply_automation_set_enabled(
 
 
 # ---------------------------------------------------------------------------
+# Cleanup policy + cog routing dispatchers
+# ---------------------------------------------------------------------------
+#
+# Both arms route through the existing canonical writers:
+#
+# * ``set_cleanup_policy`` → ``governance.writes.set_cleanup_policy_for_scope``
+#   (atomic upsert + governance audit row + ``audit.action_recorded``
+#   event, all in one transaction).
+# * ``set_cog_routing`` → ``services.command_routing.set_policy``
+#   (existing per-scope upsert primitive).  Routing rows do not yet
+#   ship through a mutation pipeline; we emit ``audit.action_recorded``
+#   here so the apply still surfaces in the audit channel.
+#
+# No direct DB writes from these helpers — every persistence call is
+# delegated.
+
+_CLEANUP_SCOPE_TYPES: frozenset[str] = frozenset({"guild", "category", "channel"})
+_ROUTING_SCOPE_TYPES: frozenset[str] = frozenset({"guild", "category", "channel"})
+
+
+def _coerce_routing_enabled(op: SetupOperation) -> bool:
+    """Return the operator-chosen enabled flag for a ``set_cog_routing`` op.
+
+    The wizard's cog-routing section stages the boolean as a string in
+    ``op.metadata["enabled"]`` ("true" / "false") so the JSONB column
+    in ``setup_draft_operations`` doesn't need a bespoke schema.  This
+    helper handles the round-trip cleanly.
+    """
+    raw = (op.metadata or {}).get("enabled")
+    if isinstance(raw, bool):
+        return raw
+    if isinstance(raw, str):
+        return raw.strip().lower() == "true"
+    # Default to True so a drafting bug doesn't silently disable a cog.
+    return True
+
+
+async def _apply_set_cleanup_policy(
+    op: SetupOperation,
+    *,
+    guild: Any,
+    actor: Any,
+    label: str,
+) -> SetupOperationResult:
+    """Persist a cleanup-policy draft via :mod:`governance.writes`.
+
+    Translates the operator-facing level (``Off`` / ``Light`` /
+    ``Standard`` / ``Strict``) to ``cleanup_policies`` columns via
+    :mod:`services.cleanup_levels` and calls
+    :func:`governance.writes.set_cleanup_policy_for_scope`, which
+    handles the DB write, governance audit row, cache invalidation,
+    and ``audit.action_recorded`` event in one transaction.
+    """
+    from governance.models import GovernanceContext
+    from governance.writes import set_cleanup_policy_for_scope
+    from services.cleanup_levels import columns_for_level, known_level_names
+
+    scope_kind = (op.target_kind or "").strip().lower()
+    if scope_kind not in _CLEANUP_SCOPE_TYPES:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=(
+                f"set_cleanup_policy: target_kind {scope_kind!r} is not one "
+                f"of {sorted(_CLEANUP_SCOPE_TYPES)}"
+            ),
+        )
+
+    level = op.value if isinstance(op.value, str) else None
+    if level is None or level not in known_level_names():
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=(
+                f"set_cleanup_policy: level {op.value!r} is not one of "
+                f"{sorted(known_level_names())}"
+            ),
+        )
+
+    # Guild-scope writes use scope_id=0 (the column is NOT NULL on the
+    # governance table) — see governance/writes.py.  Category/channel
+    # writes carry the snowflake.
+    scope_id = op.target_id if scope_kind != "guild" else 0
+    if scope_kind != "guild" and scope_id is None:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=f"set_cleanup_policy: {scope_kind} scope requires target_id",
+        )
+
+    columns = columns_for_level(level)
+    ctx = GovernanceContext(guild_id=guild.id, member=actor)
+    await set_cleanup_policy_for_scope(
+        ctx,
+        scope_kind,
+        scope_id or 0,
+        delete_invalid_commands=columns["delete_invalid_commands"],
+        delete_failed_commands=columns["delete_failed_commands"],
+        delete_after_seconds=columns["delete_after_seconds"],
+    )
+    return SetupOperationResult(
+        status="applied",
+        operation=op,
+        label=label,
+    )
+
+
+async def _apply_set_cog_routing(
+    op: SetupOperation,
+    *,
+    guild: Any,
+    actor: Any,
+    label: str,
+) -> SetupOperationResult:
+    """Persist a cog-routing draft via :mod:`services.command_routing`.
+
+    Reads the enabled flag from ``op.metadata["enabled"]`` (the wizard
+    section stages it as a "true"/"false" string), and routes through
+    the existing :func:`services.command_routing.set_policy`
+    primitive.  Emits ``audit.action_recorded`` so the apply is visible
+    in the audit channel.
+    """
+    import uuid
+    from datetime import datetime, timezone
+
+    from services import command_routing
+    from services.audit_events import emit_audit_action
+
+    scope_kind = (op.target_kind or "").strip().lower()
+    if scope_kind not in _ROUTING_SCOPE_TYPES:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=(
+                f"set_cog_routing: target_kind {scope_kind!r} is not one "
+                f"of {sorted(_ROUTING_SCOPE_TYPES)}"
+            ),
+        )
+
+    cog_name = op.value if isinstance(op.value, str) else None
+    if not cog_name:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="set_cog_routing: value must be the cog name (non-empty string)",
+        )
+
+    if scope_kind != "guild" and op.target_id is None:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=f"set_cog_routing: {scope_kind} scope requires target_id",
+        )
+
+    enabled = _coerce_routing_enabled(op)
+    scope_id = op.target_id if scope_kind != "guild" else None
+    actor_id = getattr(actor, "id", None)
+
+    mutation_id = str(uuid.uuid4())
+    await command_routing.set_policy(
+        guild_id=guild.id,
+        scope_type=scope_kind,
+        scope_id=scope_id,
+        cog_name=cog_name,
+        enabled=enabled,
+        actor_id=actor_id,
+    )
+    # Routing rows don't ship through a full mutation pipeline yet —
+    # surface the apply via the canonical audit event so dashboards
+    # and the audit channel still see it.
+    await emit_audit_action(
+        mutation_id=mutation_id,
+        subsystem="cog_routing",
+        mutation_type="set_cog_routing",
+        target=f"{scope_kind}:{scope_id if scope_id is not None else 'guild'}:{cog_name}",
+        scope=scope_kind,
+        guild_id=guild.id,
+        prev_value=None,
+        new_value="enabled" if enabled else "disabled",
+        actor_id=actor_id,
+        actor_type="user",
+        occurred_at=datetime.now(tz=timezone.utc),
+    )
+    return SetupOperationResult(
+        status="applied",
+        operation=op,
+        label=label,
+        mutation_id=mutation_id,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -760,6 +973,20 @@ def _label(op: SetupOperation) -> str:
             str(op.automation_rule_id) if op.automation_rule_id is not None else "?"
         )
         return f"{op.kind}: {name}"
+    if op.kind == "set_cleanup_policy":
+        scope = op.target_kind or "?"
+        scope_label = op.target_name or (
+            str(op.target_id) if op.target_id is not None else "guild"
+        )
+        return f"cleanup.{scope}({scope_label}) = {op.value!r}"
+    if op.kind == "set_cog_routing":
+        scope = op.target_kind or "?"
+        scope_label = op.target_name or (
+            str(op.target_id) if op.target_id is not None else "guild"
+        )
+        enabled = _coerce_routing_enabled(op)
+        flag = "enabled" if enabled else "disabled"
+        return f"cog_routing.{scope}({scope_label}).{op.value!r} = {flag}"
     return f"{op.kind}: {op.subsystem}"
 
 
