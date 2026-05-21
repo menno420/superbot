@@ -146,6 +146,50 @@ class SummaryView(BaseView):
         super().__init__(author, public=public, timeout=timeout)
         self.snapshot = snapshot
 
+    @discord.ui.button(
+        label="Open Settings Manager",
+        style=discord.ButtonStyle.success,
+    )
+    async def _open_settings(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Swap the current summary message to the Settings Manager hub.
+
+        Uses ``edit_message`` to keep the wizard's single anchored
+        message — the operator does not get yet another ephemeral.
+        """
+        del button
+        try:
+            from views.settings.hub import SettingsHubView
+        except Exception:
+            logger.exception(
+                "summary._open_settings: SettingsHubView import failed",
+            )
+            await interaction.response.send_message(
+                "Settings Manager is unavailable right now. Run `!settings` "
+                "to open it directly.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            embed = SettingsHubView.build_embed()
+            view = SettingsHubView(interaction.user)
+        except Exception:
+            logger.exception(
+                "summary._open_settings: SettingsHubView build failed",
+            )
+            await interaction.response.send_message(
+                "Could not open the Settings Manager. Run `!settings` " "instead.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.edit_message(embed=embed, view=view)
+        self.stop()
+
     @discord.ui.button(label="Close", style=discord.ButtonStyle.secondary)
     async def _close(
         self,
