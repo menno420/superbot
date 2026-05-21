@@ -59,6 +59,16 @@ class SetupSection:
         step: Optional override for the `setup_session.current_step`
             marker written when the section is invoked.  Defaults to
             `slug`.
+        op_kinds: SetupOperation kind strings this section can stage
+            (e.g. ``frozenset({"bind_channel"})`` for `channels`).
+            Used by `services.setup_progress.compute_section_status`
+            to decide which draft rows belong to this section.  Empty
+            for read-only sections (`server_scan`, `readiness`,
+            `final_review`).
+        description_if_skipped: Operator-facing one-liner that explains
+            what happens if this section is skipped.  Rendered on the
+            section card (PR 3) and surfaced by the hub embed.  Empty
+            string means "no special skip impact documented yet".
     """
 
     slug: str
@@ -68,6 +78,8 @@ class SetupSection:
     emoji: str | None = None
     order: int = 100
     step: str | None = None
+    op_kinds: frozenset[str] = frozenset()
+    description_if_skipped: str = ""
 
     @property
     def session_step(self) -> str:

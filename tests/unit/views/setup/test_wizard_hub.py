@@ -134,6 +134,67 @@ def test_build_hub_embed_shows_zero_pending_when_drafts_empty():
     assert "0" in description
 
 
+def test_build_hub_embed_renders_section_status_badges_when_draft_ops_provided():
+    """When ``draft_ops`` is passed, every Sections-field row gets a status
+    glyph; sections with matching staged ops show their op count."""
+    from services.setup_operations import SetupOperation
+
+    ops = [
+        SetupOperation(
+            kind="set_cleanup_policy",
+            subsystem="cleanup",
+            metadata={"source": "setup_ux:recommended"},
+        ),
+    ]
+    embed = build_hub_embed(None, pending_ops=1, draft_ops=ops)
+    sections_field = next(
+        f for f in embed.fields if (f.name or "").lower() == "sections"
+    )
+    value = sections_field.value or ""
+    # Cleanup row shows the recommended badge and a pending-op hint.
+    assert "Cleanup" in value
+    assert "✅" in value
+    assert "pending" in value
+
+
+def test_build_hub_embed_without_draft_ops_falls_back_to_legacy_layout():
+    """Existing callers that don't pass ``draft_ops`` see the original
+    numbered-label list with no badges."""
+    embed = build_hub_embed(None, pending_ops=0)
+    sections_field = next(
+        f for f in embed.fields if (f.name or "").lower() == "sections"
+    )
+    value = sections_field.value or ""
+    # No badge glyphs from the new layout — Cleanup still appears, but
+    # without ⬜/✅/🟡 prefixes.
+    assert "Cleanup" in value
+    assert "⬜" not in value
+    assert "✅" not in value
+
+
+def test_build_hub_embed_marks_skipped_sections_with_warning_badge():
+    """A section slug in ``session.skipped_sections`` renders as SKIPPED
+    even when no draft ops match its op_kinds."""
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(),
+        skipped_sections=frozenset({"cleanup"}),
+    )
+    embed = build_hub_embed(session, pending_ops=0, draft_ops=[])
+    sections_field = next(
+        f for f in embed.fields if (f.name or "").lower() == "sections"
+    )
+    value = sections_field.value or ""
+    assert "⚠️" in value
+
+
 @pytest.mark.asyncio
 async def test_hub_readiness_button_owner_only():
     view = SetupHubView(_other_member())
@@ -230,9 +291,9 @@ def test_hub_renders_one_button_per_registered_section():
         if isinstance(item, discord.ui.Button)
         and (item.custom_id or "").startswith("setup_section:")
     }
-    assert registered <= rendered, (
-        f"hub missing registered sections: {registered - rendered}"
-    )
+    assert (
+        registered <= rendered
+    ), f"hub missing registered sections: {registered - rendered}"
 
 
 @pytest.mark.asyncio

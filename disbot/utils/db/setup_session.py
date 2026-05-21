@@ -34,7 +34,8 @@ async def get(guild_id: int) -> dict[str, Any] | None:
         """
         SELECT guild_id, guild_name, owner_id, joined_at, setup_status,
                setup_channel_id, setup_message_id, last_readiness_score,
-               current_step, delegated_admins, created_at, updated_at
+               current_step, delegated_admins, skipped_sections,
+               created_at, updated_at
         FROM setup_session
         WHERE guild_id = $1
         """,
@@ -177,12 +178,59 @@ async def clear(guild_id: int) -> None:
     )
 
 
+async def add_skipped_section(guild_id: int, slug: str) -> None:
+    """Append ``slug`` to ``skipped_sections`` (idempotent set semantics)."""
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET skipped_sections = (
+                   SELECT ARRAY(SELECT DISTINCT UNNEST(skipped_sections || $2::TEXT))
+                   FROM setup_session WHERE guild_id = $1
+               ),
+               updated_at = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+        slug,
+    )
+
+
+async def remove_skipped_section(guild_id: int, slug: str) -> None:
+    """Drop ``slug`` from ``skipped_sections``."""
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET skipped_sections = ARRAY_REMOVE(skipped_sections, $2::TEXT),
+               updated_at = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+        slug,
+    )
+
+
+async def clear_skipped_sections(guild_id: int) -> None:
+    """Empty the skipped-section set for ``guild_id``."""
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET skipped_sections = '{}',
+               updated_at = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+    )
+
+
 __all__ = [
     "KNOWN_STATUSES",
     "add_delegated_admin",
+    "add_skipped_section",
     "clear",
+    "clear_skipped_sections",
     "get",
     "remove_delegated_admin",
+    "remove_skipped_section",
     "set_readiness_score",
     "set_status",
     "set_step",

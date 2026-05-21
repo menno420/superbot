@@ -441,6 +441,7 @@ REGISTRY.register(
         run=run,
         emoji="🧭",
         order=70,
+        op_kinds=frozenset({"set_cog_routing"}),
     ),
 )
 

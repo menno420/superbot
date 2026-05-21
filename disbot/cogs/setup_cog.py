@@ -197,13 +197,18 @@ class SetupLauncherView(discord.ui.View):
 
         session = await self._resolve_session(interaction)
         try:
-            pending_ops = await setup_draft.count(interaction.guild_id)
+            draft_ops = await setup_draft.list_ops(interaction.guild_id)
         except Exception:
-            logger.exception("setup_cog._start: setup_draft.count failed")
-            pending_ops = None
+            logger.exception("setup_cog._start: setup_draft.list_ops failed")
+            draft_ops = []
+        pending_ops = len(draft_ops)
         hub = SetupHubView(interaction.user, session=session)
         await interaction.response.send_message(
-            embed=build_hub_embed(session, pending_ops=pending_ops),
+            embed=build_hub_embed(
+                session,
+                pending_ops=pending_ops,
+                draft_ops=draft_ops,
+            ),
             view=hub,
             ephemeral=True,
         )
@@ -604,14 +609,18 @@ async def _resolve_hub_entry(
         from views.setup.hub import SetupHubView, build_hub_embed
 
         try:
-            pending_ops = await setup_draft.count(guild.id)
+            draft_ops = await setup_draft.list_ops(guild.id)
         except Exception:
             logger.exception(
-                "setup_cog._resolve_hub_entry: setup_draft.count failed",
+                "setup_cog._resolve_hub_entry: setup_draft.list_ops failed",
             )
-            pending_ops = None
+            draft_ops = []
         hub = SetupHubView(member, session=session)
-        embed = build_hub_embed(session, pending_ops=pending_ops)
+        embed = build_hub_embed(
+            session,
+            pending_ops=len(draft_ops),
+            draft_ops=draft_ops,
+        )
         return embed, hub, "hub"
 
     if setup_access.is_setup_admin(member, session):

@@ -41,6 +41,7 @@ class SetupSession:
     last_readiness_score: int | None
     current_step: str | None
     delegated_admins: tuple[int, ...]
+    skipped_sections: frozenset[str] = frozenset()
 
     @classmethod
     def from_row(cls, row: dict[str, Any]) -> SetupSession:
@@ -54,6 +55,7 @@ class SetupSession:
             last_readiness_score=row.get("last_readiness_score"),
             current_step=row.get("current_step"),
             delegated_admins=tuple(row.get("delegated_admins") or ()),
+            skipped_sections=frozenset(row.get("skipped_sections") or ()),
         )
 
 
@@ -105,8 +107,8 @@ async def mark_in_progress(guild_id: int, *, step: str | None = None) -> None:
 
 
 async def mark_complete(guild_id: int) -> None:
-    """Move the row to ``complete``; clears any in-flight step token
-    and drops any pending draft operations.
+    """Move the row to ``complete``; clears any in-flight step token,
+    drops pending draft operations, and clears the skipped-section set.
 
     Final Review calls this after a successful apply, so the draft
     is empty by that point.  Clearing here is defence-in-depth — if
@@ -115,12 +117,13 @@ async def mark_complete(guild_id: int) -> None:
     """
     await db.set_status(guild_id, "complete")
     await db.set_step(guild_id, None)
+    await db.clear_skipped_sections(guild_id)
     await _clear_draft(guild_id)
 
 
 async def dismiss(guild_id: int) -> None:
-    """Move the row to ``dismissed``; clears any in-flight step token
-    and drops any pending draft operations.
+    """Move the row to ``dismissed``; clears any in-flight step token,
+    drops pending draft operations, and clears the skipped-section set.
 
     Note: this only flips the launcher state and discards staged
     drafts.  It does **not** delete the guild's already-applied
@@ -129,6 +132,7 @@ async def dismiss(guild_id: int) -> None:
     """
     await db.set_status(guild_id, "dismissed")
     await db.set_step(guild_id, None)
+    await db.clear_skipped_sections(guild_id)
     await _clear_draft(guild_id)
 
 
@@ -152,6 +156,20 @@ async def _clear_draft(guild_id: int) -> None:
 async def record_readiness_score(guild_id: int, score: int | None) -> None:
     """Cache the latest readiness % so drift can be detected on re-runs."""
     await db.set_readiness_score(guild_id, score)
+
+
+async def mark_section_skipped(guild_id: int, slug: str) -> None:
+    """Record that ``slug`` was explicitly skipped during the current run.
+
+    Idempotent — the underlying primitive uses set semantics, so calling
+    twice with the same slug leaves the set unchanged.
+    """
+    await db.add_skipped_section(guild_id, slug)
+
+
+async def unmark_section_skipped(guild_id: int, slug: str) -> None:
+    """Drop ``slug`` from the skipped-sections set."""
+    await db.remove_skipped_section(guild_id, slug)
 
 
 # ---------------------------------------------------------------------------
@@ -256,7 +274,9 @@ __all__ = [
     "dismiss",
     "mark_complete",
     "mark_in_progress",
+    "mark_section_skipped",
     "record_readiness_score",
     "resume_session",
     "start_session",
+    "unmark_section_skipped",
 ]

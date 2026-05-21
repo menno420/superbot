@@ -265,6 +265,11 @@ REGISTRY.register(
         order=30,
     ),
 )
+# Identity stages `set_setting` ops but `set_setting` is shared with
+# many other surfaces (settings cog, automation, etc.). Leaving
+# op_kinds empty here keeps the channels/cleanup/cog_routing badges
+# from polluting the identity row; tighter scoping comes in PR 3 once
+# section cards declare a per-section subsystem filter.
 
 
 __all__ = [

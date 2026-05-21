@@ -430,6 +430,7 @@ REGISTRY.register(
         run=run,
         emoji="📡",
         order=40,
+        op_kinds=frozenset({"bind_channel", "clear_binding"}),
     ),
 )
 

@@ -395,6 +395,7 @@ REGISTRY.register(
         run=run,
         emoji="🧹",
         order=60,
+        op_kinds=frozenset({"set_cleanup_policy"}),
     ),
 )
 

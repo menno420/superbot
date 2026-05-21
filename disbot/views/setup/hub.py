@@ -25,12 +25,15 @@ No DB writes from this view directly; every state change goes through
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 
 import discord
 
 # Triggers section module imports → registry registration.
 import views.setup.sections  # noqa: F401
-from services import setup_access, setup_session
+from services import setup_access, setup_progress, setup_session
+from services.setup_operations import SetupOperation
+from services.setup_progress import SectionProgress, badge_for
 from services.setup_sections import REGISTRY, SetupSection
 from services.setup_session import SetupSession
 from views.base import BaseView
@@ -46,19 +49,43 @@ _HUB_DESCRIPTION = (
 )
 
 
-def _hub_sections_value() -> str:
-    sections = REGISTRY.all()
+def _hub_sections_value(
+    sections: list[SetupSection],
+    progress_by_slug: dict[str, SectionProgress] | None,
+) -> str:
+    """Render the "Sections" field of the hub embed.
+
+    When ``progress_by_slug`` is ``None`` (legacy callers that haven't
+    computed progress yet) the field falls back to the plain numbered
+    label list.  Otherwise each row is prefixed with a status glyph
+    and (for sections with staged ops) a trailing "(N pending)" hint.
+    """
     if not sections:
         return "_No sections registered._"
-    return "\n".join(
-        f"{idx}. {section.label}" for idx, section in enumerate(sections, start=1)
-    )
+    if progress_by_slug is None:
+        return "\n".join(
+            f"{idx}. {section.label}" for idx, section in enumerate(sections, start=1)
+        )
+    lines: list[str] = []
+    for idx, section in enumerate(sections, start=1):
+        progress = progress_by_slug.get(section.slug)
+        if progress is None:
+            lines.append(f"{idx}. {section.label}")
+            continue
+        glyph = badge_for(progress.status)
+        line = f"{glyph} {idx}. {section.label}"
+        if progress.pending_ops:
+            suffix = "op" if progress.pending_ops == 1 else "ops"
+            line += f" · {progress.pending_ops} pending {suffix}"
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def build_hub_embed(
     session: SetupSession | None,
     *,
     pending_ops: int | None = None,
+    draft_ops: Iterable[SetupOperation] | None = None,
 ) -> discord.Embed:
     """Build the wizard hub embed.
 
@@ -68,6 +95,12 @@ def build_hub_embed(
     ``None`` the field is omitted — callers that haven't checked the
     draft store yet (or for whom it is irrelevant) keep the legacy
     layout.
+
+    ``draft_ops`` is the iterable of staged operations for the guild.
+    When supplied it drives the per-section status badges in the
+    "Sections" field.  When ``None`` the field renders without
+    badges, preserving the legacy layout for callers that haven't
+    been migrated yet.
     """
     color = discord.Color.blurple()
     if session is not None and session.setup_status == "complete":
@@ -89,6 +122,18 @@ def build_hub_embed(
         )
         description = f"{prefix}**Pending operations:** `{pending_ops}`"
 
+    sections = REGISTRY.all()
+    progress_by_slug: dict[str, SectionProgress] | None
+    if draft_ops is None:
+        progress_by_slug = None
+    else:
+        progress_list = setup_progress.compute_all(
+            sections,
+            session=session,
+            draft_ops=draft_ops,
+        )
+        progress_by_slug = {p.slug: p for p in progress_list}
+
     embed = discord.Embed(
         title=_HUB_TITLE,
         description=description,
@@ -96,7 +141,7 @@ def build_hub_embed(
     )
     embed.add_field(
         name="Sections",
-        value=_hub_sections_value(),
+        value=_hub_sections_value(sections, progress_by_slug),
         inline=False,
     )
     embed.set_footer(
