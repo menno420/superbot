@@ -368,7 +368,11 @@ async def _stage_cleanup_policy(
 # ---------------------------------------------------------------------------
 
 
-async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+async def _customize_run(
+    interaction: discord.Interaction,
+    hub: SetupHubView | None,
+) -> None:
+    """Open the detailed cleanup picker (the card's Customize target)."""
     del hub
     guild = interaction.guild
     if guild is None:
@@ -387,6 +391,41 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     )
 
 
+def _recommended_cleanup_ops(guild: discord.Guild) -> list[SetupOperation]:
+    """Default cleanup recommendation: Light cleanup at guild scope.
+
+    Light deletes invalid commands after 10s and leaves failed-command
+    messages alone — a safe baseline for most servers.
+    """
+    return [
+        SetupOperation(
+            kind="set_cleanup_policy",
+            subsystem="cleanup",
+            binding_name=None,
+            setting_name=None,
+            target_id=guild.id,
+            target_name=guild.name,
+            target_kind="guild",
+            value="Light",
+        ),
+    ]
+
+
+async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
+    """Cleanup section entry — shows the section card."""
+    from views.setup.section_card import show
+
+    detected = "Resolver walks thread → channel → category → guild → default."
+    await show(
+        interaction,
+        hub=hub,
+        section=REGISTRY.get(SLUG),  # type: ignore[arg-type]
+        detected_state=detected,
+        on_customize=_customize_run,
+        recommended_ops_builder=_recommended_cleanup_ops,
+    )
+
+
 REGISTRY.register(
     SetupSection(
         slug=SLUG,
@@ -395,6 +434,13 @@ REGISTRY.register(
         run=run,
         emoji="🧹",
         order=60,
+        op_kinds=frozenset({"set_cleanup_policy"}),
+        description_if_skipped=(
+            "Cleanup stays at the current server default. Commands will not "
+            "be aggressively deleted unless existing policies already say "
+            "so. You can revisit cleanup later from `!settings`."
+        ),
+        depths=frozenset({"standard", "advanced"}),
     ),
 )
 

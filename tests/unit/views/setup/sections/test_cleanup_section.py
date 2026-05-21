@@ -368,6 +368,8 @@ async def test_stage_does_not_call_apply_operations():
 
 @pytest.mark.asyncio
 async def test_run_rejects_dm_context():
+    """PR 3 routes ``run`` through the section card, which rejects DMs
+    with a 'server'/'guild' phrasing inside its ``show`` helper."""
     interaction = MagicMock()
     interaction.user = SimpleNamespace(id=99)
     interaction.guild = None
@@ -376,15 +378,37 @@ async def test_run_rejects_dm_context():
     await cleanup.run(interaction, MagicMock())
     interaction.response.send_message.assert_awaited_once()
     args = interaction.response.send_message.await_args.args
-    assert "guild" in args[0].lower()
+    assert "server" in args[0].lower() or "guild" in args[0].lower()
 
 
 @pytest.mark.asyncio
-async def test_run_sends_cleanup_panel_in_guild():
+async def test_run_opens_section_card_in_guild():
+    """``run`` now shows the shared section card; the detailed cleanup
+    picker is reachable via the card's Customize button."""
+    from views.setup.section_card import SectionCardView
+
     interaction = _interaction()
-    await cleanup.run(interaction, MagicMock())
+
+    with (
+        patch(
+            "views.setup.section_card.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "views.setup.section_card.setup_draft.list_ops",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.section_card.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await cleanup.run(interaction, MagicMock())
+
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs
     assert kwargs.get("ephemeral") is True
-    assert isinstance(kwargs["view"], cleanup.CleanupSectionView)
-    assert "Cleanup" in kwargs["embed"].title
+    assert isinstance(kwargs["view"], SectionCardView)
+    assert "Cleanup" in (kwargs["embed"].title or "")

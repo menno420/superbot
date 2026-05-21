@@ -441,6 +441,13 @@ REGISTRY.register(
         run=run,
         emoji="🧭",
         order=70,
+        op_kinds=frozenset({"set_cog_routing"}),
+        description_if_skipped=(
+            "All loaded cogs stay enabled in every channel per the current "
+            "default policy. You can tighten per-channel/category routing "
+            "later in `!settings`."
+        ),
+        depths=frozenset({"advanced"}),
     ),
 )
 

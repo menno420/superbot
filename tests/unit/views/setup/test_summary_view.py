@@ -142,6 +142,48 @@ async def test_summary_view_close_button_disables_and_edits():
         assert getattr(child, "disabled", False) is True
 
 
+@pytest.mark.asyncio
+async def test_summary_view_open_settings_swaps_to_settings_hub():
+    """The new handoff button replaces the summary embed/view with the
+    Settings Manager hub in place — operators stay anchored to one
+    message across the cog transition."""
+    from views.settings.hub import SettingsHubView
+
+    view = SummaryView(_author(), snapshot=SummarySnapshot())
+    interaction = _interaction()
+    await view._open_settings.callback(interaction)
+    interaction.response.edit_message.assert_awaited_once()
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert isinstance(kwargs.get("view"), SettingsHubView)
+    assert kwargs.get("embed") is not None
+
+
+@pytest.mark.asyncio
+async def test_summary_view_open_settings_falls_back_when_hub_unavailable():
+    """If SettingsHubView construction blows up the user sees an
+    ephemeral fallback pointing at ``!settings`` instead of a crash."""
+    view = SummaryView(_author(), snapshot=SummarySnapshot())
+    interaction = _interaction()
+    interaction.response.send_message = AsyncMock()
+
+    with patch(
+        "views.settings.hub.SettingsHubView",
+        side_effect=RuntimeError("hub down"),
+    ):
+        await view._open_settings.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "!settings" in msg.lower()
+
+
+def test_summary_view_has_open_settings_button():
+    view = SummaryView(_author(), snapshot=SummarySnapshot())
+    labels = {getattr(c, "label", None) for c in view.children}
+    assert "Open Settings Manager" in labels
+    assert "Close" in labels
+
+
 # ---------------------------------------------------------------------------
 # build_summary_snapshot
 # ---------------------------------------------------------------------------

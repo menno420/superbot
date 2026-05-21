@@ -263,8 +263,18 @@ REGISTRY.register(
         run=run,
         emoji="🪪",
         order=30,
+        description_if_skipped=(
+            "Identity defaults stay at the existing values. You can change "
+            "them later in `!settings` without re-running the wizard."
+        ),
+        depths=frozenset({"advanced"}),
     ),
 )
+# Identity stages `set_setting` ops but `set_setting` is shared with
+# many other surfaces (settings cog, automation, etc.). Leaving
+# op_kinds empty here keeps the channels/cleanup/cog_routing badges
+# from polluting the identity row; tighter scoping comes once
+# section cards declare a per-section subsystem filter.
 
 
 __all__ = [

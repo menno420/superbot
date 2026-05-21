@@ -34,6 +34,7 @@ from services.automation_templates import (
 def test_documented_preset_slugs():
     assert known_preset_slugs() == {
         "minimal",
+        "existing-safe",
         "community",
         "gaming",
         "moderation-heavy",
@@ -134,6 +135,21 @@ def test_preview_warns_on_unknown_template_slug():
     )
     preview = preview_preset(preset)
     assert any("unknown template slug" in w for w in preview.warnings)
+
+
+def test_existing_safe_preset_binds_only_never_creates():
+    """``existing-safe`` is for servers that already have their own
+    structure: every operation must be ``bind_channel`` — no
+    creates, no role additions, no automation rules."""
+    preset = get_preset("existing-safe")
+    assert preset is not None
+    kinds = {op.kind for op in preset.operations}
+    assert kinds == {"bind_channel"}
+    # Specifically, the rules, mod log, and bot-commands bindings.
+    binding_names = {op.payload.get("binding_name") for op in preset.operations}
+    assert "rules_channel" in binding_names
+    assert "mod_channel" in binding_names
+    assert "bot_command_channel" in binding_names
 
 
 def test_minimal_preset_binds_rules_and_mod_log_only():

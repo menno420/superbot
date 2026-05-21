@@ -96,6 +96,7 @@ REGISTRY.register(
         style=discord.ButtonStyle.success,
         run=run,
         order=20,
+        depths=frozenset({"advanced"}),
     ),
 )
 

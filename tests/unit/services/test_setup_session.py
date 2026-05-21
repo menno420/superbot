@@ -28,6 +28,7 @@ def _row(**overrides):
         "last_readiness_score": None,
         "current_step": None,
         "delegated_admins": [],
+        "skipped_sections": [],
         "created_at": None,
         "updated_at": None,
     }
@@ -39,7 +40,9 @@ def _row(**overrides):
 def _mock_db():
     with (
         patch("services.setup_session.db.get", new_callable=AsyncMock) as get_mock,
-        patch("services.setup_session.db.upsert", new_callable=AsyncMock) as upsert_mock,
+        patch(
+            "services.setup_session.db.upsert", new_callable=AsyncMock
+        ) as upsert_mock,
         patch(
             "services.setup_session.db.set_status",
             new_callable=AsyncMock,
@@ -52,6 +55,18 @@ def _mock_db():
             "services.setup_session.db.set_readiness_score",
             new_callable=AsyncMock,
         ) as set_score_mock,
+        patch(
+            "services.setup_session.db.add_skipped_section",
+            new_callable=AsyncMock,
+        ) as add_skipped_mock,
+        patch(
+            "services.setup_session.db.remove_skipped_section",
+            new_callable=AsyncMock,
+        ) as remove_skipped_mock,
+        patch(
+            "services.setup_session.db.clear_skipped_sections",
+            new_callable=AsyncMock,
+        ) as clear_skipped_mock,
     ):
         yield {
             "get": get_mock,
@@ -59,6 +74,9 @@ def _mock_db():
             "set_status": set_status_mock,
             "set_step": set_step_mock,
             "set_readiness_score": set_score_mock,
+            "add_skipped_section": add_skipped_mock,
+            "remove_skipped_section": remove_skipped_mock,
+            "clear_skipped_sections": clear_skipped_mock,
         }
 
 
@@ -182,3 +200,45 @@ async def test_mark_complete_tolerates_draft_clear_failure(_mock_db):
 async def test_record_readiness_score_delegates(_mock_db):
     await svc.record_readiness_score(1, 75)
     _mock_db["set_readiness_score"].assert_awaited_once_with(1, 75)
+
+
+# ---------------------------------------------------------------------------
+# Skipped-section tracking
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_mark_section_skipped_delegates(_mock_db):
+    await svc.mark_section_skipped(1, "cleanup")
+    _mock_db["add_skipped_section"].assert_awaited_once_with(1, "cleanup")
+
+
+@pytest.mark.asyncio
+async def test_unmark_section_skipped_delegates(_mock_db):
+    await svc.unmark_section_skipped(1, "cleanup")
+    _mock_db["remove_skipped_section"].assert_awaited_once_with(1, "cleanup")
+
+
+@pytest.mark.asyncio
+async def test_mark_complete_clears_skipped_sections(_mock_db):
+    with patch("services.setup_session._clear_draft", new_callable=AsyncMock):
+        await svc.mark_complete(1)
+    _mock_db["clear_skipped_sections"].assert_awaited_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_dismiss_clears_skipped_sections(_mock_db):
+    with patch("services.setup_session._clear_draft", new_callable=AsyncMock):
+        await svc.dismiss(1)
+    _mock_db["clear_skipped_sections"].assert_awaited_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_resume_session_hydrates_skipped_sections(_mock_db):
+    _mock_db["get"].return_value = _row(
+        setup_status="in_progress",
+        skipped_sections=["cleanup", "cog_routing"],
+    )
+    session = await svc.resume_session(1)
+    assert session is not None
+    assert session.skipped_sections == frozenset({"cleanup", "cog_routing"})
