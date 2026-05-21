@@ -102,6 +102,41 @@ INTENTS: dict[str, Intent] = {
         requires_send=False,
         keyword_hints=("general", "lobby", "chat"),
     ),
+    "moderation": Intent(
+        slug="moderation",
+        label="Moderation chat",
+        tags=("likely_mod",),
+        requires_send=True,
+        keyword_hints=("mod-chat", "staff", "admin", "moderation"),
+    ),
+    "proof": Intent(
+        slug="proof",
+        label="Proof / reports / appeals",
+        tags=("likely_proof",),
+        requires_send=True,
+        keyword_hints=("proof", "evidence", "report", "appeal"),
+    ),
+    "games": Intent(
+        slug="games",
+        label="Games / leaderboards",
+        tags=("likely_game",),
+        requires_send=True,
+        keyword_hints=("game", "casino", "bet", "tournament", "leaderboard"),
+    ),
+    "counting": Intent(
+        slug="counting",
+        label="Counting",
+        tags=("likely_counting",),
+        requires_send=True,
+        keyword_hints=("counting", "count"),
+    ),
+    "mining": Intent(
+        slug="mining",
+        label="Mining / economy gameplay",
+        tags=("likely_mining",),
+        requires_send=True,
+        keyword_hints=("mining", "mine", "ore"),
+    ),
 }
 
 

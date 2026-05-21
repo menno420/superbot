@@ -67,7 +67,37 @@ def test_known_intents_cover_documented_set():
         "mod_logs",
         "welcome",
         "general",
+        "moderation",
+        "proof",
+        "games",
+        "counting",
+        "mining",
     }
+
+
+def test_proof_intent_matches_proof_channels():
+    """The `proof` intent surfaces `proofs` / `evidence` channels via
+    the canonical classifier tag."""
+    snap = _snapshot(_channel("proof"))
+    ranked = recommend("proof", snap)
+    assert ranked
+    assert ranked[0].confidence in ("high", "medium")
+
+
+def test_games_intent_matches_blackjack_via_classifier():
+    """A `blackjack` channel matches the `likely_game` classifier tag
+    and surfaces under the games intent."""
+    snap = _snapshot(_channel("blackjack"))
+    ranked = recommend("games", snap)
+    assert ranked
+    assert ranked[0].channel_name == "blackjack"
+
+
+def test_counting_intent_matches_count_channel():
+    snap = _snapshot(_channel("counting"))
+    ranked = recommend("counting", snap)
+    assert ranked
+    assert ranked[0].channel_name == "counting"
 
 
 @pytest.mark.parametrize("slug", sorted(known_intent_slugs()))
