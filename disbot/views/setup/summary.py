@@ -182,7 +182,7 @@ class SummaryView(BaseView):
                 "summary._open_settings: SettingsHubView build failed",
             )
             await interaction.response.send_message(
-                "Could not open the Settings Manager. Run `!settings` " "instead.",
+                "Could not open the Settings Manager. Run `!settings` instead.",
                 ephemeral=True,
             )
             return
