@@ -8,9 +8,9 @@ walks ``channel → category → guild → default-true`` so a fresh guild
 UX mirrors the cleanup section: operator picks a scope (guild
 default / category override / channel override), picks a cog from the
 SUBSYSTEMS registry, picks Enable or Disable, and the pick stages a
-``set_cog_routing`` op.  Final Review applies; until PR 11 adds the
-dispatcher routing arm Final Review surfaces these as
-``not_yet_implemented``.
+``set_cog_routing`` op.  Final Review's dispatcher routes the staged
+op through :func:`services.command_routing.set_policy` and emits
+``audit.action_recorded`` for visibility in the audit channel.
 """
 
 from __future__ import annotations
