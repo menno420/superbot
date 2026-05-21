@@ -15,25 +15,40 @@ from services.setup_sections import REGISTRY
 
 def test_all_production_sections_are_registered():
     slugs = {section.slug for section in REGISTRY.all()}
-    expected = {"server_scan", "readiness", "suggestions", "identity", "final_review"}
+    expected = {
+        "server_scan",
+        "readiness",
+        "suggestions",
+        "identity",
+        "channels",
+        "final_review",
+    }
     assert expected <= slugs, (
         f"missing expected production section slugs: {expected - slugs}"
     )
 
 
 def test_section_render_order_is_stable():
-    """Production layout: server_scan → readiness → suggestions → identity → final_review."""
+    """Production layout: server_scan → readiness → suggestions → identity → channels → final_review."""
     layout = [
         section.slug
         for section in REGISTRY.all()
         if section.slug
-        in {"server_scan", "readiness", "suggestions", "identity", "final_review"}
+        in {
+            "server_scan",
+            "readiness",
+            "suggestions",
+            "identity",
+            "channels",
+            "final_review",
+        }
     ]
     assert layout == [
         "server_scan",
         "readiness",
         "suggestions",
         "identity",
+        "channels",
         "final_review",
     ], (
         "production section ordering must remain stable; reorder requires "
@@ -45,6 +60,12 @@ def test_server_scan_section_uses_primary_button():
     section = REGISTRY.get("server_scan")
     assert section is not None
     assert section.style == discord.ButtonStyle.primary
+
+
+def test_channels_section_uses_secondary_button():
+    section = REGISTRY.get("channels")
+    assert section is not None
+    assert section.style == discord.ButtonStyle.secondary
 
 
 def test_readiness_section_uses_primary_button():
