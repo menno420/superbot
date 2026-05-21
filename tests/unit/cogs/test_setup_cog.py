@@ -1177,17 +1177,17 @@ async def test_repost_launcher_admin_can_repost():
 
     with (
         patch(
-            "cogs.setup_cog.setup_session.resume_session",
+            "views.setup.launcher.setup_session.resume_session",
             new_callable=AsyncMock,
             return_value=_delegated_session(delegated=()),
         ),
         patch(
-            "cogs.setup_cog.post_launcher",
+            "views.setup.launcher.post_launcher",
             new_callable=AsyncMock,
             return_value=(fake_channel, fake_message),
         ),
         patch(
-            "cogs.setup_cog.setup_session.start_session",
+            "views.setup.launcher.setup_session.start_session",
             new_callable=AsyncMock,
         ) as start_mock,
     ):
@@ -1208,12 +1208,12 @@ async def test_repost_launcher_denies_random_member():
 
     with (
         patch(
-            "cogs.setup_cog.setup_session.resume_session",
+            "views.setup.launcher.setup_session.resume_session",
             new_callable=AsyncMock,
             return_value=_delegated_session(delegated=()),
         ),
         patch(
-            "cogs.setup_cog.post_launcher",
+            "views.setup.launcher.post_launcher",
             new_callable=AsyncMock,
         ) as post_mock,
     ):
@@ -1232,17 +1232,17 @@ async def test_repost_launcher_handles_no_target():
 
     with (
         patch(
-            "cogs.setup_cog.setup_session.resume_session",
+            "views.setup.launcher.setup_session.resume_session",
             new_callable=AsyncMock,
             return_value=_delegated_session(delegated=()),
         ),
         patch(
-            "cogs.setup_cog.post_launcher",
+            "views.setup.launcher.post_launcher",
             new_callable=AsyncMock,
             return_value=(None, None),
         ),
         patch(
-            "cogs.setup_cog.setup_session.start_session",
+            "views.setup.launcher.setup_session.start_session",
             new_callable=AsyncMock,
         ) as start_mock,
     ):
