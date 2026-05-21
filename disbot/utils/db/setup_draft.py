@@ -51,6 +51,12 @@ _KNOWN_OP_KINDS: frozenset[str] = frozenset(
         "add_automation_rule",
         "enable_automation_rule",
         "disable_automation_rule",
+        # Per-feature op kinds staged by Setup Wizard sections.  Their
+        # dispatcher routing arms land alongside Final Review apply
+        # ordering (PR 11); until then the dispatcher surfaces them
+        # as ``not_yet_implemented``.
+        "set_cleanup_policy",
+        "set_cog_routing",
     },
 )
 

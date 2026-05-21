@@ -301,6 +301,7 @@ def test_known_op_kinds_matches_documented_set():
             "create_channel", "create_role", "create_category",
             "add_automation_rule", "enable_automation_rule",
             "disable_automation_rule",
+            "set_cleanup_policy", "set_cog_routing",
         },
     )
 

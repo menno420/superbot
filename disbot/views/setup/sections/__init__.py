@@ -15,6 +15,7 @@ from __future__ import annotations
 # so it doubles as a manifest of which sections ship today.
 from views.setup.sections import (  # noqa: F401 — import side-effect
     channels,
+    cleanup,
     final_review,
     identity,
     readiness,
@@ -24,6 +25,7 @@ from views.setup.sections import (  # noqa: F401 — import side-effect
 
 __all__ = [
     "channels",
+    "cleanup",
     "final_review",
     "identity",
     "readiness",

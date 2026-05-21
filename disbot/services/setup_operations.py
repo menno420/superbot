@@ -55,6 +55,8 @@ OperationKind = Literal[
     "add_automation_rule",
     "enable_automation_rule",
     "disable_automation_rule",
+    "set_cleanup_policy",
+    "set_cog_routing",
 ]
 
 OperationStatus = Literal["applied", "failed", "skipped", "not_yet_implemented"]
@@ -74,6 +76,13 @@ _KNOWN_KINDS: frozenset[str] = frozenset(
         "add_automation_rule",
         "enable_automation_rule",
         "disable_automation_rule",
+        # PR 8 + PR 9 op kinds.  The dispatcher returns
+        # ``not_yet_implemented`` for these until PR 11 adds routing
+        # arms (Final Review apply).  Listed here so the staging
+        # layer accepts them and the embed displays the right kind
+        # label.
+        "set_cleanup_policy",
+        "set_cog_routing",
     },
 )
 

@@ -103,12 +103,19 @@ CREATE TABLE IF NOT EXISTS setup_draft_operations (
     label                 TEXT         NOT NULL,
     metadata_json         JSONB,
     created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    -- Anchored to services.setup_operations._KNOWN_KINDS plus the
+    -- per-feature op kinds the Setup Wizard's later sections stage
+    -- (set_cleanup_policy, set_cog_routing).  The Python layer's
+    -- _KNOWN_OP_KINDS allowlist remains the authoritative validator;
+    -- this CHECK is defence-in-depth.  Widen here when new op kinds
+    -- land alongside their dispatcher routing arms.
     CHECK (op_kind IN (
         'bind_channel', 'bind_role', 'bind_category', 'bind_thread',
         'bind_member', 'clear_binding', 'set_setting',
         'create_channel', 'create_role', 'create_category',
         'add_automation_rule', 'enable_automation_rule',
-        'disable_automation_rule'
+        'disable_automation_rule',
+        'set_cleanup_policy', 'set_cog_routing'
     ))
 );
 
