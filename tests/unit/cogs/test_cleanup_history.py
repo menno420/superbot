@@ -206,6 +206,10 @@ async def test_cleanuphistory_limit_above_max_is_clamped():
     ):
         await cog.cleanup_history.callback(cog, ctx, MAX_CLEANUP_HISTORY_LIMIT + 1, keyword="prohibited")
     assert planner.await_args.kwargs["limit"] == MAX_CLEANUP_HISTORY_LIMIT
+    warning = ctx.send.await_args_list[0].args[0]
+    final = ctx.send.await_args_list[-1].args[0]
+    assert "Requested" in warning and "Maximum" in warning
+    assert "effective" in final and "Scanned" in final
 
 
 @pytest.mark.asyncio
@@ -221,14 +225,15 @@ async def test_cleanuphistory_missing_manage_messages_stops_early():
 @pytest.mark.asyncio
 async def test_cleanuphistory_spam_mode_duplicate_window():
     now = discord.utils.utcnow()
-    first = _msg("Hello   there")
-    first.created_at = now
-    second = _msg("hello there")
-    second.created_at = now - timedelta(seconds=5)
-    third = _msg("hello there")
-    third.created_at = now - timedelta(seconds=30)
+    newest = _msg("hello there")
+    newest.created_at = now
+    middle = _msg("Hello   there")
+    middle.created_at = now - timedelta(seconds=5)
+    oldest = _msg("hello there")
+    oldest.created_at = now - timedelta(seconds=30)
     cog = Cleanup(MagicMock())
-    ctx = _ctx([first, second, third])
+    # history() is newest-first; spam logic must still preserve oldest in a burst.
+    ctx = _ctx([newest, middle, oldest])
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
@@ -238,6 +243,6 @@ async def test_cleanuphistory_spam_mode_duplicate_window():
         patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
     ):
         await cog.cleanup_history.callback(cog, ctx, 100, keyword="spam")
-    first.delete.assert_not_called()
-    second.delete.assert_awaited_once()
-    third.delete.assert_not_called()
+    oldest.delete.assert_not_called()
+    middle.delete.assert_not_called()
+    newest.delete.assert_awaited_once()

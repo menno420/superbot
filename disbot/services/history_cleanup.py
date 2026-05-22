@@ -37,6 +37,7 @@ async def build_history_cleanup_plan(
 
     scanned = 0
     matched: list[discord.Message] = []
+    scanned_messages: list[discord.Message] = []
     exclude_message_ids = exclude_message_ids or set()
     command_prefixes = command_prefixes or []
     prohibited_patterns = [
@@ -47,6 +48,7 @@ async def build_history_cleanup_plan(
 
     async for message in channel.history(limit=limit):
         scanned += 1
+        scanned_messages.append(message)
         if message.id in exclude_message_ids:
             continue
         if message.author.bot:
@@ -63,18 +65,25 @@ async def build_history_cleanup_plan(
         elif mode == "prohibited":
             include = any(pattern.search(message.content or "") for pattern in prohibited_patterns)
         elif mode == "spam":
-            normalized = " ".join((message.content or "").lower().split())
-            if normalized:
-                created_at = message.created_at
-                previous = spam_last_seen.get(normalized)
-                if previous is None:
-                    spam_last_seen[normalized] = created_at
-                else:
-                    delta = (previous - created_at).total_seconds()
-                    if delta <= spam_duplicate_window_seconds:
-                        include = True
-                    else:
-                        spam_last_seen[normalized] = created_at
+            # processed in a second pass oldest→newest (history API is newest→oldest)
+            continue
         if include:
             matched.append(message)
+    if mode == "spam":
+        for message in reversed(scanned_messages):
+            if message.id in exclude_message_ids or message.author.bot:
+                continue
+            normalized = " ".join((message.content or "").lower().split())
+            if not normalized:
+                continue
+            created_at = message.created_at
+            previous = spam_last_seen.get(normalized)
+            if previous is None:
+                spam_last_seen[normalized] = created_at
+                continue
+            delta = (created_at - previous).total_seconds()
+            if delta <= spam_duplicate_window_seconds:
+                matched.append(message)
+            else:
+                spam_last_seen[normalized] = created_at
     return HistoryCleanupPlan(scanned=scanned, matched=matched)

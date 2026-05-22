@@ -194,12 +194,14 @@ class Cleanup(commands.Cog):
             )
             return
 
-        if limit > MAX_CLEANUP_HISTORY_LIMIT:
+        requested_limit = limit
+        effective_limit = min(requested_limit, MAX_CLEANUP_HISTORY_LIMIT)
+        if requested_limit > MAX_CLEANUP_HISTORY_LIMIT:
             await ctx.send(
-                f"⚠️ Limit capped at {MAX_CLEANUP_HISTORY_LIMIT}; scanning that many messages.",
+                f"⚠️ Requested {requested_limit} messages. Maximum is "
+                f"{MAX_CLEANUP_HISTORY_LIMIT}, so I will scan {effective_limit}.",
                 delete_after=7,
             )
-            limit = MAX_CLEANUP_HISTORY_LIMIT
 
         raw_filter = (keyword or "").strip()
         parts = raw_filter.split(maxsplit=1) if raw_filter else []
@@ -231,7 +233,7 @@ class Cleanup(commands.Cog):
         prohibited_words = await db.get_prohibited_words(ctx.guild.id)
         plan = await build_history_cleanup_plan(
             ctx.channel,
-            limit=limit,
+            limit=effective_limit,
             mode=mode,
             keyword=query,
             command_prefixes=self.command_prefixes,
@@ -243,14 +245,21 @@ class Cleanup(commands.Cog):
         confirmation_msg = None
         if not plan.matched:
             final_msg = await ctx.send(
-                f"Scanned {plan.scanned} messages. Matched 0 messages for `{mode}`.",
+                f"Scanned {plan.scanned} message(s) (requested {requested_limit}, "
+                f"effective {effective_limit}). Matched 0 messages for `{mode}`.",
             )
             await self._delete_helper_messages_later(ctx, final_msg)
             return
 
         confirmation_msg = await ctx.send(
-            f"Scanned {plan.scanned} messages and matched {len(plan.matched)} "
-            f"for `{mode}`. Delete matched messages? React ✅ to confirm or ❌ to cancel.",
+            f"Ready to scan up to {effective_limit} message(s)"
+            + (
+                f" (requested {requested_limit})"
+                if requested_limit != effective_limit
+                else ""
+            )
+            + f". Found {len(plan.matched)} candidate message(s) in `{mode}` mode. "
+            "Delete matched messages? React ✅ to confirm or ❌ to cancel.",
         )
         await confirmation_msg.add_reaction("✅")
         await confirmation_msg.add_reaction("❌")
@@ -285,7 +294,9 @@ class Cleanup(commands.Cog):
                     except discord.HTTPException:
                         failed += 1
                 final_msg = await ctx.send(
-                    f"Cleanup completed. Deleted {deleted} message(s), failed {failed}.",
+                    f"Cleanup completed. Scanned {plan.scanned} message(s) "
+                    f"(requested {requested_limit}, effective {effective_limit}). "
+                    f"Deleted {deleted} message(s), failed {failed}.",
                 )
                 self.logger.info(
                     "Cleanup history completed in %s: scanned=%s matched=%s deleted=%s failed=%s mode=%s",
@@ -304,12 +315,11 @@ class Cleanup(commands.Cog):
             await self._delete_helper_messages_later(ctx, confirmation_msg, final_msg)
 
     async def _delete_helper_messages_later(self, ctx, *messages) -> None:
-        await asyncio.sleep(HELPER_DELETE_DELAY_SECONDS)
         for msg in [*messages, getattr(ctx, "message", None)]:
             if msg is None:
                 continue
             try:
-                await msg.delete()
+                await msg.delete(delay=HELPER_DELETE_DELAY_SECONDS)
             except discord.NotFound:
                 continue
             except discord.Forbidden:
