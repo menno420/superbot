@@ -13,7 +13,6 @@ import discord
 from discord.ext import commands
 
 import config
-from services import governance_service
 from services.runtime import BOOT_ID, install_boot_id_logging
 from services.webhook_reporter import WebhookReporter
 from utils import db
@@ -270,6 +269,8 @@ async def on_command_completion(ctx: commands.Context) -> None:
 async def _maybe_cleanup_successful_command(ctx: commands.Context) -> None:
     if ctx.guild is None or ctx.author.bot or not getattr(ctx, "message", None):
         return
+    from services import governance_service
+
     try:
         gctx = governance_service.GovernanceContext.from_ctx(ctx)
         policy = await governance_service.resolve_cleanup_policy(gctx)

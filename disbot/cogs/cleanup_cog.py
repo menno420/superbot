@@ -202,9 +202,25 @@ class Cleanup(commands.Cog):
             mode = "keyword"
             query = raw_filter
 
+        if not raw_filter:
+            await ctx.send(
+                "Usage: `!cleanuphistory <limit> <mode>` where mode is "
+                "`keyword <text>`, `commands`, or `prohibited`. "
+                "Backward compatible: `!cleanuphistory <limit> <word>` is keyword mode.",
+                delete_after=8,
+            )
+            return
+
         if mode == "keyword" and not query:
             await ctx.send("Please provide text for keyword cleanup.", delete_after=5)
             return
+
+        perms = getattr(ctx.channel, "permissions_for", lambda _a: None)(ctx.guild.me)
+        if perms is not None and not perms.manage_messages:
+            await ctx.send(
+                "⚠️ I am missing **Manage Messages** in this channel, so cleanup may fail.",
+                delete_after=8,
+            )
 
         prohibited_words = await db.get_prohibited_words(ctx.guild.id)
         plan = await build_history_cleanup_plan(
@@ -276,8 +292,13 @@ class Cleanup(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.send("Cleanup confirmation timed out.", delete_after=5)
         finally:
-            await ctx.message.delete()
-            await confirmation_msg.delete()
+            for msg in (getattr(ctx, "message", None), confirmation_msg):
+                if msg is None:
+                    continue
+                try:
+                    await msg.delete()
+                except discord.DiscordException:
+                    pass
 
     @commands.group(name="word", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
