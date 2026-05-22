@@ -42,6 +42,7 @@ def _admin_cog() -> AdminCog:
     bot = MagicMock()
     bot.tree = MagicMock()
     bot.tree.sync = AsyncMock(return_value=[])
+    bot.tree.copy_global_to = MagicMock()
     bot.tree.get_commands = MagicMock(return_value=[])
     return AdminCog(bot=bot)
 
@@ -87,6 +88,7 @@ async def test_syncslash_default_scope_is_guild():
 
     await cog.sync_slash_commands.callback(cog, ctx)
 
+    cog.bot.tree.copy_global_to.assert_called_once_with(guild=ctx.guild)
     cog.bot.tree.sync.assert_awaited_once_with(guild=ctx.guild)
     ctx.send.assert_awaited_once()
     args, kwargs = ctx.send.call_args
@@ -103,6 +105,7 @@ async def test_syncslash_explicit_guild_scope():
 
     await cog.sync_slash_commands.callback(cog, ctx, "guild")
 
+    cog.bot.tree.copy_global_to.assert_called_once_with(guild=ctx.guild)
     cog.bot.tree.sync.assert_awaited_once_with(guild=ctx.guild)
 
 
@@ -120,6 +123,7 @@ async def test_syncslash_global_scope_calls_sync_without_guild():
     await cog.sync_slash_commands.callback(cog, ctx, "global")
 
     cog.bot.tree.sync.assert_awaited_once_with()
+    cog.bot.tree.copy_global_to.assert_not_called()
     args, kwargs = ctx.send.call_args
     msg = args[0] if args else kwargs.get("content", "")
     assert "globally" in msg
@@ -233,7 +237,8 @@ async def test_slashes_empty_tree_surfaces_message():
 
     args, kwargs = ctx.send.call_args
     msg = args[0] if args else kwargs.get("content", "")
-    assert "No guild slash commands registered" in msg
+    assert "No guild-local slash commands registered" in msg
+    assert "!syncslash guild" in msg
 
 
 @pytest.mark.asyncio

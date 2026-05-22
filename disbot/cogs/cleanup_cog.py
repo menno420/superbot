@@ -15,6 +15,7 @@ from core.runtime.message_pipeline import (
 )
 from services import governance_service, moderation_service
 from services.governance_service import GovernanceContext
+from services.history_cleanup import build_history_cleanup_plan
 from utils import db
 from utils.ui_constants import ADMIN_COLOR
 from views.base import HubView, send_panel
@@ -182,7 +183,7 @@ class Cleanup(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     @commands.cooldown(1, 10, commands.BucketType.channel)
     async def cleanup_history(self, ctx, limit: int = 100, *, keyword: str = None):
-        """Cleans up messages containing prohibited content or disallowed commands from the channel history."""
+        """Clean matching channel history by keyword, commands, or prohibited words."""
         if limit <= 0:
             await ctx.send(
                 "Please provide a positive number of messages to scan.",
@@ -190,10 +191,40 @@ class Cleanup(commands.Cog):
             )
             return
 
+        raw_filter = (keyword or "").strip()
+        parts = raw_filter.split(maxsplit=1) if raw_filter else []
+        mode = "prohibited"
+        query: str | None = None
+        if parts and parts[0].lower() in {"keyword", "commands", "prohibited"}:
+            mode = parts[0].lower()
+            query = parts[1] if len(parts) > 1 else None
+        elif raw_filter:
+            mode = "keyword"
+            query = raw_filter
+
+        if mode == "keyword" and not query:
+            await ctx.send("Please provide text for keyword cleanup.", delete_after=5)
+            return
+
+        prohibited_words = await db.get_prohibited_words(ctx.guild.id)
+        plan = await build_history_cleanup_plan(
+            ctx.channel,
+            limit=limit,
+            mode=mode,
+            keyword=query,
+            command_prefixes=self.command_prefixes,
+            prohibited_words=prohibited_words,
+        )
+        if not plan.matched:
+            await ctx.send(
+                f"Scanned {plan.scanned} messages. Matched 0 messages for `{mode}`.",
+                delete_after=7,
+            )
+            return
+
         confirmation_msg = await ctx.send(
-            f"Are you sure you want to clean up the last {limit} messages"
-            + (f" filtering by `{keyword}`" if keyword else "")
-            + "? React with ✅ to confirm or ❌ to cancel.",
+            f"Scanned {plan.scanned} messages and matched {len(plan.matched)} "
+            f"for `{mode}`. Delete matched messages? React ✅ to confirm or ❌ to cancel.",
         )
         await confirmation_msg.add_reaction("✅")
         await confirmation_msg.add_reaction("❌")
@@ -212,20 +243,33 @@ class Cleanup(commands.Cog):
                 check=check,
             )
             if str(reaction.emoji) == "✅":
+                deleted = 0
+                failed = 0
+                for message in plan.matched:
+                    try:
+                        await message.delete()
+                        deleted += 1
+                    except discord.Forbidden:
+                        failed += 1
+                        self.logger.warning(
+                            "cleanuphistory missing Manage Messages in #%s (%s)",
+                            getattr(ctx.channel, "name", "unknown"),
+                            getattr(ctx.channel, "id", "unknown"),
+                        )
+                    except discord.HTTPException:
+                        failed += 1
                 await ctx.send(
-                    f"Starting cleanup for the last {limit} messages"
-                    + (f" filtering by `{keyword}`" if keyword else ""),
-                    delete_after=5,
+                    f"Cleanup completed. Deleted {deleted} message(s), failed {failed}.",
+                    delete_after=7,
                 )
-                async for message in ctx.channel.history(limit=limit):
-                    if message.author.bot:
-                        continue
-                    if keyword and keyword.lower() not in message.content.lower():
-                        continue
-                    await self.remove_unwanted_message(message)
-                await ctx.send("Cleanup completed.", delete_after=5)
                 self.logger.info(
-                    f"Cleanup completed for the last {limit} messages in {ctx.channel.name}",
+                    "Cleanup history completed in %s: scanned=%s matched=%s deleted=%s failed=%s mode=%s",
+                    ctx.channel.name,
+                    plan.scanned,
+                    len(plan.matched),
+                    deleted,
+                    failed,
+                    mode,
                 )
             else:
                 await ctx.send("Cleanup canceled.", delete_after=5)
