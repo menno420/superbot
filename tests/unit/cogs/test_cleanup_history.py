@@ -44,6 +44,12 @@ def _ctx(messages):
     return ctx
 
 
+def _reply():
+    m = MagicMock()
+    m.delete = AsyncMock()
+    return m
+
+
 def _confirmed_reaction():
     return SimpleNamespace(emoji="✅", message=SimpleNamespace(id=100))
 
@@ -57,7 +63,7 @@ async def test_cleanuphistory_keyword_mode_deletes_only_matching_message():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [confirm, MagicMock()]
+    ctx.send.side_effect = [confirm, _reply()]
     with (
         patch(
             "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
@@ -82,7 +88,7 @@ async def test_cleanuphistory_backward_compat_keyword():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [confirm, MagicMock()]
+    ctx.send.side_effect = [confirm, _reply()]
     with (
         patch(
             "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
@@ -108,7 +114,7 @@ async def test_cleanuphistory_commands_mode_deletes_prefixed_messages():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [confirm, MagicMock()]
+    ctx.send.side_effect = [confirm, _reply()]
     with (
         patch(
             "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
@@ -134,7 +140,7 @@ async def test_cleanuphistory_prohibited_mode_uses_word_boundary():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [confirm, MagicMock()]
+    ctx.send.side_effect = [confirm, _reply()]
     with (
         patch(
             "cogs.cleanup_cog.db.get_prohibited_words",
@@ -171,7 +177,7 @@ async def test_cleanuphistory_no_filter_defaults_to_prohibited():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [confirm, MagicMock()]
+    ctx.send.side_effect = [confirm, _reply()]
     with (
         patch(
             "cogs.cleanup_cog.db.get_prohibited_words",
@@ -195,7 +201,7 @@ async def test_cleanuphistory_cancel_confirmation_deletes_nothing():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [confirm, MagicMock()]
+    ctx.send.side_effect = [confirm, _reply()]
     reaction = SimpleNamespace(emoji="❌", message=SimpleNamespace(id=100))
     with (
         patch(
@@ -220,7 +226,7 @@ async def test_cleanuphistory_delete_failure_is_counted():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    status_msg = MagicMock()
+    status_msg = _reply()
     ctx.send.side_effect = [confirm, status_msg]
     with (
         patch(
@@ -244,7 +250,7 @@ async def test_cleanuphistory_limit_above_max_is_clamped():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [MagicMock(), confirm, MagicMock()]
+    ctx.send.side_effect = [_reply(), confirm, _reply()]
     with (
         patch(
             "cogs.cleanup_cog.db.get_prohibited_words",
@@ -301,7 +307,7 @@ async def test_cleanuphistory_spam_mode_duplicate_window():
     confirm = MagicMock(id=100)
     confirm.add_reaction = AsyncMock()
     confirm.delete = AsyncMock()
-    ctx.send.side_effect = [confirm, MagicMock()]
+    ctx.send.side_effect = [confirm, _reply()]
     with (
         patch(
             "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),

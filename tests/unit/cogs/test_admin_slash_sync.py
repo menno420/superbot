@@ -95,7 +95,7 @@ async def test_syncslash_default_scope_is_guild():
     ctx.send.assert_awaited_once()
     args, kwargs = ctx.send.call_args
     msg = args[0] if args else kwargs.get("content", "")
-    assert "Synced" in msg
+    assert "synced" in msg.lower()
     assert "**2**" in msg
     assert "TestGuild" in msg
 

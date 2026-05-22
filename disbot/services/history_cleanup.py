@@ -66,7 +66,8 @@ async def build_history_cleanup_plan(
         elif mode == "commands":
             include = (
                 _extract_command_name(
-                    (message.content or "").lstrip(), command_prefixes,
+                    (message.content or "").lstrip(),
+                    command_prefixes,
                 )
                 is not None
             )
