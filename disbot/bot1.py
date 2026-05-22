@@ -263,6 +263,30 @@ async def on_command_completion(ctx: commands.Context) -> None:
     )
     if reporter:
         await reporter.on_command_success(ctx)
+    await _maybe_cleanup_successful_command(ctx)
+
+
+async def _maybe_cleanup_successful_command(ctx: commands.Context) -> None:
+    if ctx.guild is None or ctx.author.bot or not getattr(ctx, "message", None):
+        return
+    from services import governance_service
+
+    try:
+        gctx = governance_service.GovernanceContext.from_ctx(ctx)
+        policy = await governance_service.resolve_cleanup_policy(gctx)
+        if not policy.delete_message:
+            return
+        await ctx.message.delete(delay=policy.delete_after_seconds)
+    except discord.NotFound:
+        return
+    except discord.Forbidden:
+        logger.warning(
+            "Cleanup failed for successful command in guild=%s channel=%s: missing Manage Messages",
+            ctx.guild.id if ctx.guild else None,
+            ctx.channel.id if ctx.channel else None,
+        )
+    except discord.HTTPException as exc:
+        logger.warning("Cleanup failed for successful command: %s", exc)
 
 
 @bot.event

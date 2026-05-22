@@ -185,10 +185,8 @@ class AdminCog(commands.Cog):
 
         PR E' — operator tooling for the post-deploy resync workflow.
         After PR E1 / E2 add or change slash commands, the Discord
-        command tree needs to be told about them. Bot startup already
-        runs a global sync (per ``setup_hook``); this command exists
-        for cases where the operator needs to re-trigger one without
-        a full restart.
+        command tree needs to be told about them. This command lets
+        operators trigger that sync workflow on demand.
 
         Usage::
 
@@ -226,6 +224,7 @@ class AdminCog(commands.Cog):
             await ctx.send("❌ `guild` scope requires a guild context.")
             return
         try:
+            self.bot.tree.copy_global_to(guild=guild)
             synced = await self.bot.tree.sync(guild=guild)
         except discord.HTTPException as exc:
             await ctx.send(
@@ -233,7 +232,8 @@ class AdminCog(commands.Cog):
             )
             return
         await ctx.send(
-            f"✅ Synced **{len(synced)}** slash commands to **{guild.name}**.",
+            f"✅ Copied global slash commands and synced **{len(synced)}** commands "
+            f"to **{guild.name}**.",
         )
 
     @commands.command(name="slashes", aliases=["slashlist"])
@@ -279,7 +279,15 @@ class AdminCog(commands.Cog):
             title = f"📋 Guild Slash Commands — {guild.name}"
 
         if not commands_list:
-            await ctx.send(f"_No {scope} slash commands registered._")
+            if scope == "guild":
+                await ctx.send(
+                    "_No guild-local slash commands registered._ "
+                    "Most slash commands may be in the global tree. "
+                    "Use `!syncslash guild` to copy global commands into this guild "
+                    "and sync them immediately.",
+                )
+            else:
+                await ctx.send("_No global slash commands registered._")
             return
 
         ordered = sorted(commands_list, key=lambda c: c.name)
