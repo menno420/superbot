@@ -7,7 +7,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
-from cogs.cleanup_cog import Cleanup, MAX_CLEANUP_HISTORY_LIMIT
+from cogs.cleanup_cog import MAX_CLEANUP_HISTORY_LIMIT, Cleanup
+
+# ruff: noqa: S101
 
 
 def _msg(content: str):
@@ -30,7 +32,7 @@ def _ctx(messages):
 
     ctx.channel.history = _history
     ctx.channel.permissions_for = MagicMock(
-        return_value=SimpleNamespace(manage_messages=True)
+        return_value=SimpleNamespace(manage_messages=True),
     )
     ctx.channel.name = "general"
     ctx.channel.id = 9
@@ -57,8 +59,14 @@ async def test_cleanuphistory_keyword_mode_deletes_only_matching_message():
     confirm.delete = AsyncMock()
     ctx.send.side_effect = [confirm, MagicMock()]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 10, keyword="keyword bad")
     match.delete.assert_awaited_once()
@@ -76,8 +84,14 @@ async def test_cleanuphistory_backward_compat_keyword():
     confirm.delete = AsyncMock()
     ctx.send.side_effect = [confirm, MagicMock()]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 10, keyword="legacyword")
     match.delete.assert_awaited_once()
@@ -96,8 +110,14 @@ async def test_cleanuphistory_commands_mode_deletes_prefixed_messages():
     confirm.delete = AsyncMock()
     ctx.send.side_effect = [confirm, MagicMock()]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 10, keyword="commands")
     cmd.delete.assert_awaited_once()
@@ -116,8 +136,15 @@ async def test_cleanuphistory_prohibited_mode_uses_word_boundary():
     confirm.delete = AsyncMock()
     ctx.send.side_effect = [confirm, MagicMock()]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=["badword"])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words",
+            new=AsyncMock(return_value=["badword"]),
+        ),
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 10, keyword="prohibited")
     exact.delete.assert_awaited_once()
@@ -128,7 +155,9 @@ async def test_cleanuphistory_prohibited_mode_uses_word_boundary():
 async def test_cleanuphistory_zero_match_skips_confirmation():
     cog = Cleanup(MagicMock())
     ctx = _ctx([_msg("hello world")])
-    with patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[])):
+    with patch(
+        "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+    ):
         await cog.cleanup_history.callback(cog, ctx, 10, keyword="keyword missing")
     first_msg = ctx.send.await_args_list[0].args[0]
     assert "Matched 0" in first_msg
@@ -144,8 +173,15 @@ async def test_cleanuphistory_no_filter_defaults_to_prohibited():
     confirm.delete = AsyncMock()
     ctx.send.side_effect = [confirm, MagicMock()]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=["badword"])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words",
+            new=AsyncMock(return_value=["badword"]),
+        ),
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 100, keyword=None)
     exact.delete.assert_awaited_once()
@@ -162,8 +198,12 @@ async def test_cleanuphistory_cancel_confirmation_deletes_nothing():
     ctx.send.side_effect = [confirm, MagicMock()]
     reaction = SimpleNamespace(emoji="❌", message=SimpleNamespace(id=100))
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(reaction, ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch.object(
+            cog.bot, "wait_for", new=AsyncMock(return_value=(reaction, ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 10, keyword="keyword keyword")
     match.delete.assert_not_called()
@@ -183,8 +223,14 @@ async def test_cleanuphistory_delete_failure_is_counted():
     status_msg = MagicMock()
     ctx.send.side_effect = [confirm, status_msg]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 10, keyword="keyword keyword")
     completion = ctx.send.await_args_list[-1].args[0]
@@ -200,16 +246,32 @@ async def test_cleanuphistory_limit_above_max_is_clamped():
     confirm.delete = AsyncMock()
     ctx.send.side_effect = [MagicMock(), confirm, MagicMock()]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=["badword"])),
-        patch("cogs.cleanup_cog.build_history_cleanup_plan", new=AsyncMock(return_value=SimpleNamespace(scanned=1, matched=[_msg("badword")]))) as planner,
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words",
+            new=AsyncMock(return_value=["badword"]),
+        ),
+        patch(
+            "cogs.cleanup_cog.build_history_cleanup_plan",
+            new=AsyncMock(
+                return_value=SimpleNamespace(scanned=1, matched=[_msg("badword")]),
+            ),
+        ) as planner,
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
-        await cog.cleanup_history.callback(cog, ctx, MAX_CLEANUP_HISTORY_LIMIT + 1, keyword="prohibited")
+        await cog.cleanup_history.callback(
+            cog, ctx, MAX_CLEANUP_HISTORY_LIMIT + 1, keyword="prohibited",
+        )
     assert planner.await_args.kwargs["limit"] == MAX_CLEANUP_HISTORY_LIMIT
     warning = ctx.send.await_args_list[0].args[0]
     final = ctx.send.await_args_list[-1].args[0]
-    assert "Requested" in warning and "Maximum" in warning
-    assert "effective" in final and "Scanned" in final
+    assert "Requested" in warning
+    assert "Maximum" in warning
+    assert "effective" in final
+    assert "Scanned" in final
 
 
 @pytest.mark.asyncio
@@ -217,7 +279,9 @@ async def test_cleanuphistory_missing_manage_messages_stops_early():
     cog = Cleanup(MagicMock())
     ctx = _ctx([_msg("badword")])
     ctx.channel.permissions_for.return_value = SimpleNamespace(manage_messages=False)
-    with patch("cogs.cleanup_cog.build_history_cleanup_plan", new=AsyncMock()) as planner:
+    with patch(
+        "cogs.cleanup_cog.build_history_cleanup_plan", new=AsyncMock(),
+    ) as planner:
         await cog.cleanup_history.callback(cog, ctx, 100, keyword="prohibited")
     planner.assert_not_awaited()
 
@@ -239,8 +303,14 @@ async def test_cleanuphistory_spam_mode_duplicate_window():
     confirm.delete = AsyncMock()
     ctx.send.side_effect = [confirm, MagicMock()]
     with (
-        patch("cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[])),
-        patch.object(cog.bot, "wait_for", new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author))),
+        patch(
+            "cogs.cleanup_cog.db.get_prohibited_words", new=AsyncMock(return_value=[]),
+        ),
+        patch.object(
+            cog.bot,
+            "wait_for",
+            new=AsyncMock(return_value=(_confirmed_reaction(), ctx.author)),
+        ),
     ):
         await cog.cleanup_history.callback(cog, ctx, 100, keyword="spam")
     oldest.delete.assert_not_called()

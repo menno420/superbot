@@ -14,6 +14,8 @@ Pins:
 * ``!slashes`` is admin-gated (not owner-gated — it's read-only).
 """
 
+# ruff: noqa: S101
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock

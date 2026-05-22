@@ -323,7 +323,9 @@ class Cleanup(commands.Cog):
             except discord.NotFound:
                 continue
             except discord.Forbidden:
-                self.logger.warning("cleanuphistory could not delete helper message (Forbidden).")
+                self.logger.warning(
+                    "cleanuphistory could not delete helper message (Forbidden).",
+                )
             except discord.HTTPException as exc:
                 self.logger.warning("cleanuphistory helper delete failed: %s", exc)
 

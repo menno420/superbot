@@ -29,8 +29,14 @@ async def test_successful_command_is_deleted_when_policy_says_delete():
     ctx = _ctx()
     policy = SimpleNamespace(delete_message=True, delete_after_seconds=7)
     with (
-        patch("services.governance_service.GovernanceContext.from_ctx", return_value=MagicMock()),
-        patch("services.governance_service.resolve_cleanup_policy", new=AsyncMock(return_value=policy)),
+        patch(
+            "services.governance_service.GovernanceContext.from_ctx",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.governance_service.resolve_cleanup_policy",
+            new=AsyncMock(return_value=policy),
+        ),
     ):
         await bot1._maybe_cleanup_successful_command(ctx)
     ctx.message.delete.assert_awaited_once_with(delay=7)
@@ -41,8 +47,14 @@ async def test_successful_command_preserved_when_policy_says_no_delete():
     ctx = _ctx()
     policy = SimpleNamespace(delete_message=False, delete_after_seconds=0)
     with (
-        patch("services.governance_service.GovernanceContext.from_ctx", return_value=MagicMock()),
-        patch("services.governance_service.resolve_cleanup_policy", new=AsyncMock(return_value=policy)),
+        patch(
+            "services.governance_service.GovernanceContext.from_ctx",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.governance_service.resolve_cleanup_policy",
+            new=AsyncMock(return_value=policy),
+        ),
     ):
         await bot1._maybe_cleanup_successful_command(ctx)
     ctx.message.delete.assert_not_called()
@@ -69,7 +81,13 @@ async def test_forbidden_does_not_raise():
     policy = SimpleNamespace(delete_message=True, delete_after_seconds=0)
     ctx.message.delete.side_effect = discord.Forbidden(response, "Forbidden")
     with (
-        patch("services.governance_service.GovernanceContext.from_ctx", return_value=MagicMock()),
-        patch("services.governance_service.resolve_cleanup_policy", new=AsyncMock(return_value=policy)),
+        patch(
+            "services.governance_service.GovernanceContext.from_ctx",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.governance_service.resolve_cleanup_policy",
+            new=AsyncMock(return_value=policy),
+        ),
     ):
         await bot1._maybe_cleanup_successful_command(ctx)
