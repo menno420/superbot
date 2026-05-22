@@ -22,6 +22,9 @@ from views.base import HubView, send_panel
 
 CLEANUP_STAGE_NAME = "cleanup"
 CLEANUP_STAGE_ORDER = 10  # moderation tier per plan §3.2
+MAX_CLEANUP_HISTORY_LIMIT = 1000
+SPAM_DUPLICATE_WINDOW_SECONDS = 15
+HELPER_DELETE_DELAY_SECONDS = 3
 
 
 def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
@@ -191,36 +194,39 @@ class Cleanup(commands.Cog):
             )
             return
 
+        if limit > MAX_CLEANUP_HISTORY_LIMIT:
+            await ctx.send(
+                f"⚠️ Limit capped at {MAX_CLEANUP_HISTORY_LIMIT}; scanning that many messages.",
+                delete_after=7,
+            )
+            limit = MAX_CLEANUP_HISTORY_LIMIT
+
         raw_filter = (keyword or "").strip()
         parts = raw_filter.split(maxsplit=1) if raw_filter else []
         mode = "prohibited"
         query: str | None = None
-        if parts and parts[0].lower() in {"keyword", "commands", "prohibited"}:
+        if parts and parts[0].lower() in {"keyword", "commands", "prohibited", "spam"}:
             mode = parts[0].lower()
             query = parts[1] if len(parts) > 1 else None
         elif raw_filter:
             mode = "keyword"
             query = raw_filter
 
-        if not raw_filter:
-            await ctx.send(
-                "Usage: `!cleanuphistory <limit> <mode>` where mode is "
-                "`keyword <text>`, `commands`, or `prohibited`. "
-                "Backward compatible: `!cleanuphistory <limit> <word>` is keyword mode.",
-                delete_after=8,
-            )
-            return
-
         if mode == "keyword" and not query:
-            await ctx.send("Please provide text for keyword cleanup.", delete_after=5)
+            await ctx.send(
+                "Usage: `!cleanuphistory <limit> keyword <text>` "
+                f"(limit max: {MAX_CLEANUP_HISTORY_LIMIT}).",
+                delete_after=7,
+            )
             return
 
         perms = getattr(ctx.channel, "permissions_for", lambda _a: None)(ctx.guild.me)
         if perms is not None and not perms.manage_messages:
-            await ctx.send(
-                "⚠️ I am missing **Manage Messages** in this channel, so cleanup may fail.",
-                delete_after=8,
+            warning_msg = await ctx.send(
+                "❌ I need **Manage Messages** in this channel to run cleanuphistory.",
             )
+            await self._delete_helper_messages_later(ctx, warning_msg)
+            return
 
         prohibited_words = await db.get_prohibited_words(ctx.guild.id)
         plan = await build_history_cleanup_plan(
@@ -230,12 +236,16 @@ class Cleanup(commands.Cog):
             keyword=query,
             command_prefixes=self.command_prefixes,
             prohibited_words=prohibited_words,
+            exclude_message_ids={ctx.message.id},
+            spam_duplicate_window_seconds=SPAM_DUPLICATE_WINDOW_SECONDS,
         )
+        final_msg = None
+        confirmation_msg = None
         if not plan.matched:
-            await ctx.send(
+            final_msg = await ctx.send(
                 f"Scanned {plan.scanned} messages. Matched 0 messages for `{mode}`.",
-                delete_after=7,
             )
+            await self._delete_helper_messages_later(ctx, final_msg)
             return
 
         confirmation_msg = await ctx.send(
@@ -274,9 +284,8 @@ class Cleanup(commands.Cog):
                         )
                     except discord.HTTPException:
                         failed += 1
-                await ctx.send(
+                final_msg = await ctx.send(
                     f"Cleanup completed. Deleted {deleted} message(s), failed {failed}.",
-                    delete_after=7,
                 )
                 self.logger.info(
                     "Cleanup history completed in %s: scanned=%s matched=%s deleted=%s failed=%s mode=%s",
@@ -288,17 +297,25 @@ class Cleanup(commands.Cog):
                     mode,
                 )
             else:
-                await ctx.send("Cleanup canceled.", delete_after=5)
+                final_msg = await ctx.send("Cleanup canceled.")
         except asyncio.TimeoutError:
-            await ctx.send("Cleanup confirmation timed out.", delete_after=5)
+            final_msg = await ctx.send("Cleanup confirmation timed out.")
         finally:
-            for msg in (getattr(ctx, "message", None), confirmation_msg):
-                if msg is None:
-                    continue
-                try:
-                    await msg.delete()
-                except discord.DiscordException:
-                    pass
+            await self._delete_helper_messages_later(ctx, confirmation_msg, final_msg)
+
+    async def _delete_helper_messages_later(self, ctx, *messages) -> None:
+        await asyncio.sleep(HELPER_DELETE_DELAY_SECONDS)
+        for msg in [*messages, getattr(ctx, "message", None)]:
+            if msg is None:
+                continue
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                continue
+            except discord.Forbidden:
+                self.logger.warning("cleanuphistory could not delete helper message (Forbidden).")
+            except discord.HTTPException as exc:
+                self.logger.warning("cleanuphistory helper delete failed: %s", exc)
 
     @commands.group(name="word", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
