@@ -112,6 +112,22 @@ task_outcome_total = Counter(
     ["name", "outcome"],  # outcome: ok | error | cancelled
 )
 
+# LP-4: rolling-deploy handoff for the runtime lock. ``acquired_immediate``
+# is the happy path (no peer held the lock); ``acquired_after_wait`` means
+# the old replica drained and we took over; ``timeout`` means the boot
+# wait budget elapsed and this replica exited idle.
+runtime_lock_boot_handoff_total = Counter(
+    "runtime_lock_boot_handoff_total",
+    "Outcome of the boot-time runtime-lock acquisition loop.",
+    ["outcome"],  # acquired_immediate | acquired_after_wait | timeout
+)
+
+runtime_lock_boot_wait_seconds = Histogram(
+    "runtime_lock_boot_wait_seconds",
+    "Time spent waiting for the runtime lock during boot (acquired or timed out).",
+    buckets=(0.1, 0.5, 1.0, 5.0, 15.0, 30.0, 60.0, 120.0, 300.0),
+)
+
 governance_fail_open_total = Counter(
     "governance_fail_open_total",
     "Interaction-router governance gate fell open due to resolver error. "
