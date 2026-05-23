@@ -78,23 +78,22 @@ def _cog_for_subsystem(bot: commands.Bot, subsystem_name: str) -> commands.Cog |
     return None
 
 
-_HELP_HIDDEN_CLASSIFICATIONS: frozenset[str] = frozenset(
-    {"hidden", "deprecated", "legacy_duplicate"},
-)
-
-
 def _classification_hidden(cmd: commands.Command) -> bool:
-    """Return ``True`` if PR-06c classification metadata hides ``cmd``.
+    """Return ``True`` if classification metadata hides ``cmd`` from help.
 
-    Reads ``cmd.extras["classification"]`` (set by the cog via
-    ``@commands.command(extras={"classification": "..."})``); a
-    missing or unknown classification falls through to the existing
-    ``cmd.hidden`` / ``cmd.enabled`` flags.
+    Thin wrapper around the canonical
+    :func:`core.runtime.command_surface_ledger.is_command_hidden_from_help`
+    so help-rendering code consumes the **same policy** the ledger
+    surface uses — there is no second hidden-set declaration to drift
+    against.  An unknown / missing classification keeps the command
+    visible (the policy default is "show").
     """
-    extras = getattr(cmd, "extras", None)
-    if not isinstance(extras, dict):
-        return False
-    return extras.get("classification") in _HELP_HIDDEN_CLASSIFICATIONS
+    # Function-local import keeps the help cog's import graph
+    # consistent with the cycle-sensitive discipline used in
+    # ``cogs.help.route``.
+    from core.runtime.command_surface_ledger import is_command_hidden_from_help
+
+    return is_command_hidden_from_help(cmd)
 
 
 def _get_visible_commands(cog: commands.Cog) -> list[commands.Command]:

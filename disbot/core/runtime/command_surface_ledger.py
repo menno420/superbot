@@ -358,29 +358,74 @@ def _walk_slash_commands(bot: object) -> list[CommandSurfaceEntry]:
     return entries
 
 
-# PR-06c: classifications that the help renderer must exclude from
-# command listings and dropdowns.  ``primary_entrypoint`` and
-# ``power_user_shortcut`` always render; ``panel_action`` and
-# ``internal_admin`` render only inside their specific surfaces;
-# ``hidden`` / ``deprecated`` / ``legacy_duplicate`` are filtered.
+# PR-06c — Command visibility policy.
+#
+# Canonical set of classifications the help renderer must exclude
+# from command listings and dropdowns.  Lives **only** in this
+# module so ``cogs.help_cog`` and any future panel surface (slash
+# autocomplete, /platform listings, etc.) consume a single source of
+# truth instead of re-declaring the rule.
+#
+# Per the classification contract docstring above:
+#
+# * ``primary_entrypoint`` / ``power_user_shortcut`` — always render.
+# * ``panel_action`` / ``internal_admin`` — render only inside their
+#   specific surfaces (we treat them as visible here; permission
+#   tiers handle the audience).
+# * ``hidden`` — never render in help (still callable directly).
+# * ``legacy_duplicate`` — alias kept for backwards compat; render
+#   would clutter the help embed without informing the operator, so
+#   we hide it.
+# * ``deprecated`` — rendered with a deprecation badge per the
+#   contract.  The Classification docstring promises deprecated
+#   commands are surfaced with a deprecation warning; treating
+#   deprecated as visible aligns the runtime behaviour with that
+#   promise.  If a command should disappear immediately, classify
+#   it ``hidden`` rather than ``deprecated``.
 _HELP_HIDDEN_CLASSIFICATIONS: frozenset[Classification] = frozenset(
-    {"hidden", "deprecated", "legacy_duplicate"},
+    {"hidden", "legacy_duplicate"},
 )
 
 
 def is_hidden_from_help(entry: CommandSurfaceEntry) -> bool:
     """Return ``True`` if the help renderer should omit ``entry``.
 
-    PR-06c filtering helper consumed by ``cogs.help_cog`` and any
-    future panel surface.  ``hidden`` / ``deprecated`` /
-    ``legacy_duplicate`` commands are filtered out of the dropdown
-    and the per-cog command listing; they remain callable directly.
+    Canonical policy: ``hidden`` / ``legacy_duplicate`` are filtered
+    out of the dropdown and the per-cog command listing.  Deprecated
+    commands deliberately remain visible so operators see the
+    deprecation badge — see the docstring on
+    ``_HELP_HIDDEN_CLASSIFICATIONS`` above for the rationale.
 
-    Used downstream by ``cogs.help_cog._get_visible_commands`` to
-    layer classification-aware filtering on top of the existing
-    ``cmd.hidden`` / ``cmd.enabled`` flags.
+    Used downstream by ``cogs.help_cog._get_visible_commands`` and
+    any future panel surface that needs to decide whether a command
+    appears in a public listing.
     """
     return entry.classification in _HELP_HIDDEN_CLASSIFICATIONS
+
+
+def classification_from_command_extras(cmd: object) -> Classification:
+    """Read ``cmd.extras["classification"]`` from a live command object.
+
+    Mirrors :func:`_classification_from_command` (used by
+    :func:`build_ledger`) but is exported for callers that need to
+    consult the classification on a ``commands.Command`` without
+    rebuilding the ledger — e.g. ``cogs.help_cog`` filtering at
+    render time.  An unknown or missing classification falls back to
+    ``"primary_entrypoint"`` so the policy is purely additive.
+    """
+    return _classification_from_command(cmd)
+
+
+def is_command_hidden_from_help(cmd: object) -> bool:
+    """Apply :func:`is_hidden_from_help` directly to a command object.
+
+    Centralises the visibility policy so ``cogs.help_cog`` does not
+    re-declare ``_HELP_HIDDEN_CLASSIFICATIONS`` locally.  Reads the
+    classification via :func:`classification_from_command_extras` and
+    returns ``True`` when the classification is in the canonical
+    hidden set.
+    """
+    return classification_from_command_extras(cmd) in _HELP_HIDDEN_CLASSIFICATIONS
 
 
 def _visibility_for(subsystem: str | None) -> str | None:
@@ -597,7 +642,9 @@ __all__ = [
     "LedgerFindings",
     "RouterPrefixEntry",
     "build_ledger",
+    "classification_from_command_extras",
     "cog_name_to_subsystem",
     "get_cached_ledger",
+    "is_command_hidden_from_help",
     "is_hidden_from_help",
 ]
