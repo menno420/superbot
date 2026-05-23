@@ -209,6 +209,23 @@ webhook_dispatch_total = Counter(
     ["outcome"],  # success | error
 )
 
+# Lifecycle ring-buffer events as a Prometheus counter, broken out by
+# event name.  The event names are a bounded set (~10): phase:<NAME>
+# for each Phase value, shutdown_requested[_coalesced],
+# restart_requested[_coalesced], and close_executing.  Most valuable
+# series:
+#   - lifecycle_event_total{event="shutdown_requested_coalesced"} —
+#     multiple SIGTERMs in quick succession (probably a healthcheck
+#     spam or an orchestrator misconfiguration).
+#   - lifecycle_event_total{event="restart_requested"} — operator-
+#     triggered restart rate; non-zero unexpected rate = operator
+#     thrashing or an automated restart loop.
+lifecycle_event_total = Counter(
+    "lifecycle_event_total",
+    "Lifecycle events recorded in the ring buffer, by event name.",
+    ["event"],
+)
+
 # ---------------------------------------------------------------------------
 # F-1 guild_config cache (core/runtime/guild_config.py) — Phase S1.1
 # ---------------------------------------------------------------------------
