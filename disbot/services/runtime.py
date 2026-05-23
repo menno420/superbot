@@ -258,6 +258,29 @@ async def run_heartbeat_loop(
     * On a successful ``UPDATE 0`` (the row no longer matches our
       ``boot_id``): treat as fatal; another replica won. Exit
       immediately so we don't double-respond.
+
+    Note on the abrupt-exit semantics (LP-5):
+
+    Both branches above use ``os._exit(1)`` rather than the lifecycle
+    close path (``lifecycle.request_shutdown`` → finally block) on
+    purpose. The lock has either been stolen, or the DB is unreachable
+    for long enough that the lock TTL is about to expire. In both
+    cases another replica is about to start or has already started
+    serving traffic, and our finally block would race with it:
+
+      * lock release would fail-or-conflict (the row no longer matches
+        our ``boot_id`` anyway, so ``release()``'s WHERE clause matches
+        zero rows — best-effort would silently succeed without effect);
+      * task drain would add latency before exit while the new replica
+        is already taking commands;
+      * webhook reporters and DB pool cleanup would compete with the
+        successor's startup for the same resources.
+
+    The finally block is correct for *graceful* exits (SIGTERM,
+    ``!restart``, normal returns). Heartbeat-failure and lock-loss
+    paths are *adversarial* — we lost a race and need to leave fast.
+    Do not "fix" these to use the lifecycle path; the abrupt exit is
+    the correct primitive here.
     """
     consecutive_failures = 0
     while not stop_event.is_set():
