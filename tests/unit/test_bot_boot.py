@@ -185,6 +185,57 @@ def test_bot1_posts_startup_summary_webhook_before_bot_start() -> None:
     )
 
 
+def test_bot1_spawns_restart_close_driver() -> None:
+    """LP-3: the restart watchdog must be supervised at boot so a
+    ``lifecycle.request_restart`` call turns into ``bot.close()``."""
+    src = _src()
+    assert "restart_close_driver" in src, (
+        "bot1.py must spawn a supervised task named "
+        "'restart_close_driver' to drive bot.close() on restart (LP-3)."
+    )
+    assert "_drive_close_on_restart_request" in src, (
+        "bot1.py must define and spawn _drive_close_on_restart_request "
+        "(LP-3)."
+    )
+
+
+def test_bot1_restart_watchdog_uses_bounded_close_timeout() -> None:
+    """LP-3: the watchdog must wrap ``bot.close()`` in
+    ``asyncio.wait_for`` with a timeout so a wedged close cannot hold
+    the runtime lock past its TTL."""
+    src = _src()
+    assert "RESTART_CLOSE_TIMEOUT_SECONDS" in src, (
+        "bot1.py must declare RESTART_CLOSE_TIMEOUT_SECONDS as the "
+        "named bound for the restart close (LP-3)."
+    )
+    assert re.search(
+        r"asyncio\.wait_for\(\s*bot\.close\(\)\s*,",
+        src,
+    ), (
+        "bot1.py must wrap bot.close() in asyncio.wait_for with a "
+        "bounded timeout (LP-3)."
+    )
+
+
+def test_bot1_finally_block_transitions_to_restarting_when_restart_pending() -> (
+    None
+):
+    """LP-3: the finally block surfaces RESTARTING as the terminal
+    phase when a restart was requested, so the recent-event buffer
+    distinguishes restart-exit from shutdown-exit."""
+    src = _src()
+    finally_block = src.split("finally:", 1)[-1]
+    assert "Phase.RESTARTING" in finally_block, (
+        "bot1.py finally block must promote the terminal phase to "
+        "RESTARTING when lifecycle.restart_requested() is true (LP-3)."
+    )
+    assert "restart_requested()" in finally_block, (
+        "bot1.py finally block must consult "
+        "lifecycle.restart_requested() to choose between STOPPED and "
+        "RESTARTING (LP-3)."
+    )
+
+
 def test_bot1_shutdown_drain_logs_timeout() -> None:
     """PR-02b (revised): when the 5 s drain budget elapses with tasks
     still pending, a WARNING log must surface so operators see the
