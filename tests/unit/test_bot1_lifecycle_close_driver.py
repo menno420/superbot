@@ -163,6 +163,38 @@ async def test_webhook_fires_before_bot_close(
 
 
 @pytest.mark.asyncio
+async def test_close_driver_records_close_executing_lifecycle_event(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The close-driver records a ``close_executing`` lifecycle event
+    right before ``bot.close()`` so ``!platform runtime`` distinguishes
+    "intent recorded but executor never ran" from "executor ran".
+
+    Asserts both that the event exists and that it carries the kind in
+    metadata, so the event is informative without requiring a custom
+    embed.
+    """
+    fake_bot = _FakeBot()
+    monkeypatch.setattr(bot1, "bot", fake_bot)
+    monkeypatch.setattr(bot1, "reporter", None)
+    _install_fast_poll(monkeypatch)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm", actor="signal_handler")
+
+    await asyncio.wait_for(bot1._drive_close_on_lifecycle_request(), timeout=2.0)
+
+    event_names = [e.name for e in lifecycle.get_recent_events()]
+    assert "close_executing" in event_names
+    close_event = next(
+        e for e in lifecycle.get_recent_events() if e.name == "close_executing"
+    )
+    assert close_event.metadata == {"kind": "shutdown"}
+    assert close_event.actor == "signal_handler"
+    assert close_event.reason == "sigterm"
+
+
+@pytest.mark.asyncio
 async def test_idle_cancellation_exits_cleanly(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
