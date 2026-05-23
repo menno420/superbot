@@ -73,11 +73,18 @@ UNKNOWN: ChangeValue = ChangeValue(kind="unknown")
 _NORMALIZED_EMPTY: frozenset[str] = frozenset({"", "None", "null"})
 
 # Strings that normalize to ``True`` / ``False`` for boolean settings.
-# Settings stored as canonical strings ("true"/"false", "1"/"0",
-# "yes"/"no") should compare equal to the boolean form an operator
+# Settings stored as canonical strings ("true"/"false", "yes"/"no",
+# "on"/"off") should compare equal to the boolean form an operator
 # stages from the wizard.
-_TRUTHY_TOKENS: frozenset[str] = frozenset({"true", "1", "yes", "on"})
-_FALSY_TOKENS: frozenset[str] = frozenset({"false", "0", "no", "off"})
+#
+# Note: ``"0"`` / ``"1"`` are deliberately **not** in these sets — they
+# parse as ints below.  Mixing numeric and boolean equivalence here
+# would let a stored ``"1"`` collapse to a staged ``True`` via Python's
+# ``True == 1`` semantics, which would hide a real type-mismatch bug
+# from the operator (false no-op).  See ``values_equivalent`` for the
+# strict-bool guard that complements this.
+_TRUTHY_TOKENS: frozenset[str] = frozenset({"true", "yes", "on"})
+_FALSY_TOKENS: frozenset[str] = frozenset({"false", "no", "off"})
 
 
 def _normalize_for_compare(value: Any) -> Any:
@@ -141,8 +148,27 @@ def values_equivalent(current: Any, proposed: Any) -> bool:
     ``would_change``.  Centralising the rule here means a new
     equivalence (e.g. canonical channel-ID string vs int) is one edit
     rather than a sweep of adapters.
+
+    **Strict bool/int separation.**  Python's ``True == 1`` and
+    ``False == 0`` would otherwise let a stored numeric setting
+    collapse with a staged boolean (and vice versa), which would hide
+    a real type mismatch from the operator as a misleading "no
+    change" render.  This guard makes the equivalence asymmetric on
+    bool-ness: if exactly one side normalizes to a ``bool`` and the
+    other to a non-``bool``, they are **not** equivalent.
+
+    Operator-safe rule of thumb: when in doubt, render the diff.
+    A false diff is noise; a false no-op is the operator clicking
+    "Apply" thinking nothing changes when something does.
     """
-    return _normalize_for_compare(current) == _normalize_for_compare(proposed)
+    nc = _normalize_for_compare(current)
+    np = _normalize_for_compare(proposed)
+    # bool is a subclass of int in Python, so plain ``nc == np`` would
+    # report ``True == 1`` as equivalent.  Block that by checking
+    # bool-ness on both sides before deferring to ``==``.
+    if isinstance(nc, bool) != isinstance(np, bool):
+        return False
+    return nc == np
 
 
 @dataclass(frozen=True)
@@ -347,7 +373,15 @@ def render_change_plan(
 
     dropped = (len(entries) - rendered_count) if truncated else 0
     if truncated:
-        rendered.append(_TRUNCATION_SUFFIX)
+        # Only append the suffix if it actually fits in the remaining
+        # budget.  In the degenerate case where ``field_limit`` is
+        # smaller than the suffix itself, appending would push the
+        # body over the cap — better to silently drop the suffix and
+        # still report ``truncated=True`` via the dataclass field so
+        # callers can detect the situation programmatically.
+        suffix_sep_cost = 1 if rendered else 0
+        if total_len + suffix_sep_cost + len(_TRUNCATION_SUFFIX) <= field_limit:
+            rendered.append(_TRUNCATION_SUFFIX)
 
     return RenderedChangePlan(
         lines=tuple(rendered),

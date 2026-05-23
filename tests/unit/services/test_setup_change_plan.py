@@ -323,15 +323,19 @@ class TestValuesEquivalent:
             ("None", None),
             ("null", None),
             ("  ", None),
+            # Word-like bool tokens → bool.
             (True, "true"),
             (True, "True"),
-            (True, "1"),
             (True, "yes"),
             (True, "ON"),
             (False, "false"),
-            (False, "0"),
             (False, "no"),
             (False, "off"),
+            # Numeric strings → int.  ``"0"``/``"1"`` are intentionally
+            # parsed as int (not bool) so they collapse with int 0/1
+            # rather than bool False/True — see
+            # ``test_strict_bool_int_separation`` below for the
+            # rationale (operator-safe correctness over convenience).
             (1, "1"),
             (100, "100"),
             (0, "0"),
@@ -370,6 +374,52 @@ class TestValuesEquivalent:
         assert values_equivalent(current, proposed) is False, (
             f"{current!r} must NOT compare equal to {proposed!r}"
         )
+
+    # ---- Strict bool/int separation -------------------------------------
+    #
+    # Python evaluates ``True == 1`` and ``False == 0`` as ``True`` (bool
+    # is a subclass of int).  Without the strict-bool guard in
+    # ``values_equivalent``, a stored numeric setting would collapse with
+    # a staged boolean and the operator would see a misleading "no
+    # change" render.  Pin the policy here so a future contributor
+    # cannot accidentally re-introduce the collapse.
+
+    @pytest.mark.parametrize(
+        ("current", "proposed"),
+        [
+            (False, 0),
+            (True, 1),
+            (0, False),
+            (1, True),
+            ("0", False),  # "0" → int 0; False → bool False; differ
+            ("1", True),  # "1" → int 1; True → bool True; differ
+            ("yes", 1),  # "yes" → bool True; 1 → int 1; differ
+            ("no", 0),  # "no" → bool False; 0 → int 0; differ
+        ],
+    )
+    def test_strict_bool_int_separation(self, current, proposed):
+        """Bool/int must NOT collapse.  Operator-safe correctness: a
+        false no-op (rendered as "no change" when state would change)
+        is worse than a false diff (operator sees noise but no harm
+        done).  When in doubt, the renderer should show the diff."""
+        assert values_equivalent(current, proposed) is False, (
+            f"{current!r} vs {proposed!r} must NOT be equivalent — "
+            "Python's True == 1 would otherwise hide a real "
+            "type-mismatch in the preflight render."
+        )
+        assert values_equivalent(proposed, current) is False, (
+            "Strict bool/int check must be symmetric."
+        )
+
+    def test_bool_vs_string_int_form_is_mismatch(self):
+        """Concrete demonstration: a setting stored as numeric ``"1"``
+        and a staged boolean ``True`` are NOT equivalent — they
+        represent different observable values even though Python's
+        ``True == 1`` evaluates to True."""
+        assert values_equivalent(True, "1") is False
+        assert values_equivalent("1", True) is False
+        assert values_equivalent(False, "0") is False
+        assert values_equivalent("0", False) is False
 
 
 # ---------------------------------------------------------------------------
@@ -729,3 +779,63 @@ class TestRenderChangePlan:
         assert all(isinstance(l, str) for l in lines)
         # No truncation suffix on a short diff.
         assert not any("truncated" in line.lower() for line in lines)
+
+
+# ---------------------------------------------------------------------------
+# PR-04b (review fix) — degenerate field_limit edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestRenderChangePlanFieldLimitEdgeCases:
+    """Pin that the render helper NEVER returns a body longer than
+    ``field_limit`` — including the degenerate case where
+    ``field_limit`` is smaller than the truncation suffix itself.
+
+    Operator-safe rule: the render contract is "embed-field safe", so
+    a caller passing the result directly to ``embed.add_field(value=...)``
+    can rely on the cap.  Returning the suffix when it would push the
+    body over the cap was a bug in the original PR-04b helper.
+    """
+
+    def test_field_limit_smaller_than_suffix_returns_empty_body(self):
+        entries = [_entry(f"op{i}") for i in range(3)]
+        # _TRUNCATION_SUFFIX is ~38 chars; any field_limit below that
+        # cannot include it.
+        r = render_change_plan(entries, field_limit=20)
+        assert len(r.body) <= 20, (
+            f"Body must respect the field_limit; got {len(r.body)} chars: "
+            f"{r.body!r}"
+        )
+        # The dataclass still reports truncated=True so callers know
+        # content was dropped even when the suffix did not fit.
+        assert r.truncated is True
+
+    def test_field_limit_zero_returns_empty_body(self):
+        """Degenerate but well-defined: zero budget → empty body."""
+        entries = [_entry(f"op{i}") for i in range(3)]
+        r = render_change_plan(entries, field_limit=0)
+        assert r.body == ""
+        assert r.lines == ()
+        assert r.truncated is True
+
+    def test_field_limit_exactly_at_suffix_length_admits_only_suffix(self):
+        """A field_limit equal to the suffix length lets the suffix
+        through but admits no real content lines."""
+        from services.setup_change_plan import _TRUNCATION_SUFFIX
+
+        entries = [_entry(f"op{i}") for i in range(3)]
+        r = render_change_plan(entries, field_limit=len(_TRUNCATION_SUFFIX))
+        # Either empty body, or just the suffix — but never over the cap.
+        assert len(r.body) <= len(_TRUNCATION_SUFFIX)
+        assert r.truncated is True
+
+    def test_default_field_limit_handles_large_diff_without_overflow(self):
+        """50 long entries with the default 1024-char cap must produce
+        a body ≤ 1024 chars and a non-zero ``dropped_count``."""
+        from services.setup_change_plan import DISCORD_FIELD_VALUE_LIMIT
+
+        entries = [_entry("x" * 80) for _ in range(50)]
+        r = render_change_plan(entries, max_lines=50)
+        assert len(r.body) <= DISCORD_FIELD_VALUE_LIMIT
+        assert r.truncated is True
+        assert r.dropped_count > 0
