@@ -73,11 +73,18 @@ UNKNOWN: ChangeValue = ChangeValue(kind="unknown")
 _NORMALIZED_EMPTY: frozenset[str] = frozenset({"", "None", "null"})
 
 # Strings that normalize to ``True`` / ``False`` for boolean settings.
-# Settings stored as canonical strings ("true"/"false", "1"/"0",
-# "yes"/"no") should compare equal to the boolean form an operator
+# Settings stored as canonical strings ("true"/"false", "yes"/"no",
+# "on"/"off") should compare equal to the boolean form an operator
 # stages from the wizard.
-_TRUTHY_TOKENS: frozenset[str] = frozenset({"true", "1", "yes", "on"})
-_FALSY_TOKENS: frozenset[str] = frozenset({"false", "0", "no", "off"})
+#
+# Note: ``"0"`` / ``"1"`` are deliberately **not** in these sets — they
+# parse as ints below.  Mixing numeric and boolean equivalence here
+# would let a stored ``"1"`` collapse to a staged ``True`` via Python's
+# ``True == 1`` semantics, which would hide a real type-mismatch bug
+# from the operator (false no-op).  See ``values_equivalent`` for the
+# strict-bool guard that complements this.
+_TRUTHY_TOKENS: frozenset[str] = frozenset({"true", "yes", "on"})
+_FALSY_TOKENS: frozenset[str] = frozenset({"false", "no", "off"})
 
 
 def _normalize_for_compare(value: Any) -> Any:
@@ -141,8 +148,27 @@ def values_equivalent(current: Any, proposed: Any) -> bool:
     ``would_change``.  Centralising the rule here means a new
     equivalence (e.g. canonical channel-ID string vs int) is one edit
     rather than a sweep of adapters.
+
+    **Strict bool/int separation.**  Python's ``True == 1`` and
+    ``False == 0`` would otherwise let a stored numeric setting
+    collapse with a staged boolean (and vice versa), which would hide
+    a real type mismatch from the operator as a misleading "no
+    change" render.  This guard makes the equivalence asymmetric on
+    bool-ness: if exactly one side normalizes to a ``bool`` and the
+    other to a non-``bool``, they are **not** equivalent.
+
+    Operator-safe rule of thumb: when in doubt, render the diff.
+    A false diff is noise; a false no-op is the operator clicking
+    "Apply" thinking nothing changes when something does.
     """
-    return _normalize_for_compare(current) == _normalize_for_compare(proposed)
+    nc = _normalize_for_compare(current)
+    np = _normalize_for_compare(proposed)
+    # bool is a subclass of int in Python, so plain ``nc == np`` would
+    # report ``True == 1`` as equivalent.  Block that by checking
+    # bool-ness on both sides before deferring to ``==``.
+    if isinstance(nc, bool) != isinstance(np, bool):
+        return False
+    return nc == np
 
 
 @dataclass(frozen=True)
@@ -195,12 +221,202 @@ class ChangePlanEntry:
     preflight_skipped_reason: str | None = None
 
 
+# ---------------------------------------------------------------------------
+# PR-04b — Rendering helper (text only; embed-agnostic)
+# ---------------------------------------------------------------------------
+
+
+# Discord's per-field value limit.  An embed.add_field(value=...) call
+# with more than this many characters is rejected by the API.  We cap
+# the rendered diff to this size so render helpers stay safe to drop
+# into an embed field without the caller doing their own truncation.
+DISCORD_FIELD_VALUE_LIMIT: int = 1024
+
+# Single-line ceiling.  Even when ``max_lines`` would admit more
+# entries, we hard-cap an individual line so one pathological label
+# can't blow the whole budget on its own.  Slightly below the field
+# limit so we always have room for a truncation suffix.
+_SINGLE_LINE_CAP: int = 256
+
+# Suffix appended when the rendered output had to be truncated to fit
+# the field cap.  Counts against the cap so the visible body shrinks
+# accordingly.
+_TRUNCATION_SUFFIX: str = "… (truncated, see logs for full diff)"
+
+
+@dataclass(frozen=True)
+class RenderedChangePlan:
+    """Result of :func:`format_change_plan_lines`.
+
+    Holds the lines plus enough metadata for tests / operator output
+    to detect truncation without re-running the renderer.
+
+    * ``lines`` — the truncated, embed-safe lines, joined with a
+      newline character to total at most
+      :data:`DISCORD_FIELD_VALUE_LIMIT` chars.
+    * ``rendered_count`` — how many entries were rendered.
+    * ``truncated`` — ``True`` when at least one entry was dropped or a
+      line was clipped to fit the field cap.
+    * ``dropped_count`` — number of entries omitted entirely.
+    """
+
+    lines: tuple[str, ...]
+    rendered_count: int
+    truncated: bool
+    dropped_count: int
+
+    @property
+    def body(self) -> str:
+        """Newline-joined string suitable for ``embed.add_field``."""
+        return "\n".join(self.lines)
+
+
+def _truncate_line(line: str) -> tuple[str, bool]:
+    """Cap a single line at ``_SINGLE_LINE_CAP`` so one entry cannot
+    monopolise the field budget.  Returns ``(line, was_truncated)``.
+    """
+    if len(line) <= _SINGLE_LINE_CAP:
+        return line, False
+    return line[: _SINGLE_LINE_CAP - 1] + "…", True
+
+
+def _format_entry(entry: ChangePlanEntry) -> str:
+    """Return the canonical single-line render for one entry."""
+    if entry.preflight_skipped_reason:
+        return (
+            f"⚠ {entry.label} · preflight unavailable "
+            f"({entry.preflight_skipped_reason})"
+        )
+    if entry.read_error:
+        return f"⚠ {entry.label} · read error: {entry.read_error}"
+    if not entry.would_change:
+        return f"✅ {entry.label} · no change (current matches proposed)"
+    marker = "✏"
+    if entry.risk in ("medium", "high"):
+        marker = "⚠"
+    risk_suffix = (
+        f"   [risk={entry.risk}]" if entry.risk and entry.risk != "unknown" else ""
+    )
+    return (
+        f"{marker} {entry.label} · current={entry.current!r} → "
+        f"{entry.proposed!r}{risk_suffix}"
+    )
+
+
+def render_change_plan(
+    entries: list[ChangePlanEntry],
+    *,
+    max_lines: int = 10,
+    field_limit: int = DISCORD_FIELD_VALUE_LIMIT,
+) -> RenderedChangePlan:
+    """Render a preflight diff into an embed-safe block.
+
+    PR-04b helper that **owns the Discord embed field budget**.  The
+    caller passes the entries it wants surfaced; this helper:
+
+    1. Renders up to ``max_lines`` entries (line-count cap).
+    2. Hard-caps any single line at :data:`_SINGLE_LINE_CAP` chars so
+       one pathological label cannot consume the whole budget.
+    3. Packs the lines into a body whose total newline-joined length
+       stays under ``field_limit`` (default
+       :data:`DISCORD_FIELD_VALUE_LIMIT`).
+    4. Appends :data:`_TRUNCATION_SUFFIX` as the last line when any
+       content was clipped, so operators see the truncation signal
+       directly in the embed.
+
+    Returns a :class:`RenderedChangePlan` carrying both the lines
+    and truncation metadata, so tests and ``!platform`` diagnostics
+    can detect "we dropped N entries" without re-running the renderer.
+
+    Backwards compat: :func:`format_change_plan_lines` returns just
+    the lines (the original PR-04b shape).
+    """
+    if not entries:
+        return RenderedChangePlan(
+            lines=(),
+            rendered_count=0,
+            truncated=False,
+            dropped_count=0,
+        )
+
+    rendered: list[str] = []
+    truncated = False
+    rendered_count = 0
+    total_len = 0
+
+    # First, line-count cap.
+    candidates = entries[:max_lines]
+    line_cap_dropped = len(entries) - len(candidates)
+    if line_cap_dropped:
+        truncated = True
+
+    for entry in candidates:
+        raw = _format_entry(entry)
+        line, line_was_clipped = _truncate_line(raw)
+        if line_was_clipped:
+            truncated = True
+
+        # +1 for the separator between this line and the previous.
+        sep_cost = 1 if rendered else 0
+        # Reserve room for the truncation suffix if we end up needing
+        # one.  This is a conservative budget — if every line fits we
+        # never use it.
+        suffix_budget = len(_TRUNCATION_SUFFIX) + 1  # +1 for "\n"
+        if total_len + sep_cost + len(line) + suffix_budget > field_limit:
+            # Adding this line would push us into the suffix budget;
+            # stop and mark truncated.
+            truncated = True
+            break
+        rendered.append(line)
+        total_len += sep_cost + len(line)
+        rendered_count += 1
+
+    dropped = (len(entries) - rendered_count) if truncated else 0
+    if truncated:
+        # Only append the suffix if it actually fits in the remaining
+        # budget.  In the degenerate case where ``field_limit`` is
+        # smaller than the suffix itself, appending would push the
+        # body over the cap — better to silently drop the suffix and
+        # still report ``truncated=True`` via the dataclass field so
+        # callers can detect the situation programmatically.
+        suffix_sep_cost = 1 if rendered else 0
+        if total_len + suffix_sep_cost + len(_TRUNCATION_SUFFIX) <= field_limit:
+            rendered.append(_TRUNCATION_SUFFIX)
+
+    return RenderedChangePlan(
+        lines=tuple(rendered),
+        rendered_count=rendered_count,
+        truncated=truncated,
+        dropped_count=dropped,
+    )
+
+
+def format_change_plan_lines(
+    entries: list[ChangePlanEntry],
+    *,
+    max_lines: int = 10,
+) -> list[str]:
+    """Backwards-compat shim — returns just the rendered lines.
+
+    PR-04b shipped this as the original surface; PR-04b (review)
+    upgraded the helper to enforce Discord's 1024-char field limit
+    through :func:`render_change_plan`, which returns a richer
+    :class:`RenderedChangePlan`.  Callers that only need the lines
+    keep working unchanged.
+    """
+    return list(render_change_plan(entries, max_lines=max_lines).lines)
+
+
 __all__ = [
     "ABSENT",
+    "DISCORD_FIELD_VALUE_LIMIT",
+    "RenderedChangePlan",
     "UNKNOWN",
     "ChangePlanEntry",
     "ChangeValue",
     "ChangeValueKind",
     "RiskLevel",
+    "format_change_plan_lines",
+    "render_change_plan",
     "values_equivalent",
 ]
