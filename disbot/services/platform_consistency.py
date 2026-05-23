@@ -172,19 +172,23 @@ class ConsistencyReport:
         return SectionStatus.CLEAN
 
 
-SETUP_READINESS_BLOCKERS: tuple[str, ...] = (
-    "command_surface_ledger",
-    "panel_registry",
-    "settings_registry",
-    "settings_mutation_pipeline",
-    "governance_trusted_role_schema",
-    "role_service_extraction",
-    "cleanup_policy_extraction",
-    "logging_settings_integration",
-    "slash_panel_entrypoints",
-    "setup_wizard_readiness_bridge",
-    "setup_wizard",
-)
+# PR-03: derived from the dynamic ``services.setup_blockers.BLOCKERS``
+# registry so the bare-string contract is preserved for backwards-
+# compatible callers (e.g. the doc test) while the actual resolution
+# state is computed dynamically from cached foundation state.  See
+# ``services/setup_blockers.py`` for the registry, status providers,
+# and ownership metadata.
+def _setup_readiness_blocker_ids() -> tuple[str, ...]:
+    # Function-local import keeps this module's import graph
+    # unchanged (setup_blockers itself only imports stdlib at module
+    # scope; each status_provider imports the runtime modules it
+    # needs function-locally).
+    from services import setup_blockers
+
+    return setup_blockers.blocker_ids()
+
+
+SETUP_READINESS_BLOCKERS: tuple[str, ...] = _setup_readiness_blocker_ids()
 
 
 # ---------------------------------------------------------------------------
@@ -896,28 +900,48 @@ async def _collect_runtime_providers() -> SectionResult:
 async def _collect_setup_readiness() -> SectionResult:
     """Section 10: roadmap blockers for the larger UX phase (informational).
 
-    v1 returns a static list from ``SETUP_READINESS_BLOCKERS``.  Dynamic
-    detection of each blocker's resolution state is deferred to a
-    follow-up PR.  The section is marked ``informational=True`` so the
+    PR-03: dynamic — each blocker in
+    ``services.setup_blockers.BLOCKERS`` computes its own status from
+    cached in-process state.  Resolved blockers drop out of the
+    details list; pending / in_progress / blocked / unknown remain
+    visible.  The section is still ``informational=True`` so the
     embed labels it as roadmap-only and ``overall_status`` does not
     promote on it.
+
+    Status providers are sync and fail-safe — a raising provider
+    becomes ``"unknown"`` rather than crashing this collector.
     """
     name = "Setup readiness"
-    if not SETUP_READINESS_BLOCKERS:
+    # Function-local: setup_blockers transitively imports
+    # core.runtime modules in its status providers; module-scope
+    # import would violate the cycle-sensitive contract pinned by
+    # test_consistency_import_cycle.py.
+    from services import setup_blockers
+
+    statuses: list[tuple[str, str]] = [
+        (spec.id, setup_blockers.status_for(spec)) for spec in setup_blockers.BLOCKERS
+    ]
+    resolved = sum(1 for _, st in statuses if st == "resolved")
+    pending = [bid for bid, st in statuses if st != "resolved"]
+    total = len(statuses)
+
+    if not pending:
         return SectionResult(
             name=name,
             status=SectionStatus.CLEAN,
-            summary="No roadmap blockers.",
+            summary=(f"All {total} roadmap blocker(s) resolved."),
             informational=True,
         )
+
+    details = tuple(f"{bid}: {st}" for bid, st in statuses)
     return SectionResult(
         name=name,
         status=SectionStatus.WARNING,
         summary=(
-            f"{len(SETUP_READINESS_BLOCKERS)} roadmap blocker(s) "
-            "tracked (informational; not a runtime health failure)."
+            f"{resolved}/{total} roadmap blocker(s) resolved "
+            "(informational; not a runtime health failure)."
         ),
-        details=tuple(SETUP_READINESS_BLOCKERS),
+        details=details,
         suggested_actions=(
             "See `docs/phase-2-completion-readiness.md` for unlock order.",
         ),

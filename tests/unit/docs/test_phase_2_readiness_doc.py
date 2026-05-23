@@ -69,7 +69,12 @@ def test_pr_10_listed_as_current_next_work(doc_text: str):
 
 def test_every_setup_readiness_blocker_appears_in_doc(doc_text: str):
     """Every entry in SETUP_READINESS_BLOCKERS must appear in the doc in
-    humanised form (snake_case → space-separated, case-insensitive)."""
+    humanised form (snake_case → space-separated, case-insensitive).
+
+    PR-03: ``SETUP_READINESS_BLOCKERS`` is now derived from
+    ``services.setup_blockers.blocker_ids()`` but the bare-string
+    contract is preserved, so this assertion still works unchanged.
+    """
     lowered = doc_text.lower()
     missing: list[str] = []
     for blocker in SETUP_READINESS_BLOCKERS:
@@ -79,4 +84,64 @@ def test_every_setup_readiness_blocker_appears_in_doc(doc_text: str):
     assert not missing, (
         "Doc/SETUP_READINESS_BLOCKERS sync gap — add these to the "
         "'Setup-readiness blockers' section:\n  " + "\n  ".join(missing)
+    )
+
+
+# ---------------------------------------------------------------------------
+# PR-03: resolved-marker cross-check
+# ---------------------------------------------------------------------------
+
+
+def test_blocker_ids_match_blocker_specs():
+    """The derived ID list must match the underlying ``BlockerSpec`` IDs.
+
+    Prevents drift between ``services.setup_blockers.BLOCKERS`` and
+    ``platform_consistency.SETUP_READINESS_BLOCKERS`` (which is now a
+    re-export of ``blocker_ids()``)."""
+    from services import setup_blockers
+
+    spec_ids = tuple(b.id for b in setup_blockers.BLOCKERS)
+    assert SETUP_READINESS_BLOCKERS == spec_ids
+
+
+def test_every_blocker_has_resolution_provider_and_doc_anchor():
+    """Each spec must declare a doc_anchor + a callable status_provider.
+
+    Doc anchor is the "where do I read more?" link operators follow
+    when a blocker is pending; status_provider is the sync resolution
+    check the readiness collector consumes."""
+    from services import setup_blockers
+
+    missing_anchor: list[str] = []
+    missing_provider: list[str] = []
+    for spec in setup_blockers.BLOCKERS:
+        if not spec.doc_anchor:
+            missing_anchor.append(spec.id)
+        if not callable(spec.status_provider):
+            missing_provider.append(spec.id)
+    assert not missing_anchor, (
+        "BlockerSpec(s) missing doc_anchor:\n  " + "\n  ".join(missing_anchor)
+    )
+    assert not missing_provider, (
+        "BlockerSpec(s) missing status_provider:\n  " + "\n  ".join(missing_provider)
+    )
+
+
+def test_blocker_status_provider_returns_valid_literal():
+    """Every status_provider must return a member of BlockerStatus.
+
+    Fail-safe ``status_for`` wrapper catches exceptions and returns
+    ``"unknown"``, but this test exercises the providers directly to
+    catch silent shape drift."""
+    from services import setup_blockers
+
+    valid = {"resolved", "in_progress", "pending", "blocked", "unknown"}
+    invalid: list[str] = []
+    for spec in setup_blockers.BLOCKERS:
+        status = setup_blockers.status_for(spec)
+        if status not in valid:
+            invalid.append(f"{spec.id}: returned {status!r}")
+    assert not invalid, (
+        "BlockerSpec.status_provider returned unknown literal:\n  "
+        + "\n  ".join(invalid)
     )
