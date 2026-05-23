@@ -1,264 +1,224 @@
-# 003 — Deferred follow-ups after the SuperBot 2.0 refactor program
+# 003 — SuperBot 2.0 refactor program: final state + deferred follow-ups
 
-> Status: planning notes (PR-07).
+> Status: ADR (PR-07).
 > Supersedes: nothing.
 > Related: [`/home/user/superbot/.claude/plans/1-recommended-target-agent-zazzy-eclipse.md`](../../.claude/plans/1-recommended-target-agent-zazzy-eclipse.md)
-> (the program plan that PR-01a..PR-06c implements).
+> (the program plan that PR-01a..PR-06c implement).
 
-The refactor program that lands as PR-01a → PR-06c on this iteration
-stabilises the readiness contract, runtime task ownership, the
-dynamic blocker registry, the setup operation preflight, the
-smoke-test checklist, and the command-classification pipeline.  This
-ADR captures the work that was deliberately **deferred** so a later
-contributor can pick it up without re-deriving context.
+The refactor program landed as 13 stacked PRs (#244..#256) plus this
+ADR.  This document records, in this order:
 
-Each section below is a scoping note, not an implementation plan.
+1. Completed and merged in this stack
+2. Open, ready, blocked only by canary
+3. Intentionally deferred
+4. Rejected / WONTFIX
+5. Ideas Lab follow-ups
 
----
-
-## 1. PR-02c — Delete `_APP_TASKS` after canary
-
-**Status:** ready once PR-02b (#247) has run a clean canary release.
-
-**Why deferred:** PR-02b's shutdown drain switches to
-`core.runtime.tasks.cancel_all()` but keeps `_APP_TASKS` populated
-as a one-release safety mirror.  PR-02c is the mechanical deletion
-of `_APP_TASKS`, `_supervised_task`, and `_on_app_task_done` from
-`bot1.py` after operators confirm the new drain path is stable in
-production.
-
-**Scope when picked up:**
-
-- Delete `_APP_TASKS: list[asyncio.Task]` and every `.append()` site.
-- Delete `_supervised_task` body; call `core.runtime.tasks.spawn`
-  with the existing `on_error` hook directly at each callsite.
-- Delete `_on_app_task_done` (replaced by the `on_error` hook).
-- Tighten the invariant allowlist in
-  `tests/unit/invariants/test_no_unmanaged_create_task.py` — only
-  `core/runtime/tasks.py:62` and `bot1.py:613` remain.
-- `bot1.py` line count drops by roughly 50 lines.
-
-**Risk:** Low (mechanical; PR-02b already proved parity).
+The post-review fixes (snapshot-before-cancel for the shutdown drain,
+strict bool/int separation in the preflight normalizer, embed-field
+1024-char enforcement, centralized help-visibility policy with
+deprecated commands rendered per contract) are part of the stack and
+are reflected below.
 
 ---
 
-## 2. PR-04b — Flip `SETUP_PREFLIGHT_DIFF` to default-on + Final Review render
+## 1. Completed and merged
 
-**Status:** ready once PR-04a (#252) has run a clean canary release.
-
-**Why deferred:** PR-04a ships the `preflight_operations` contract
-behind `SETUP_PREFLIGHT_DIFF=false` (default).  PR-04b flips the
-default and wires the Final Review embed to render the current /
-proposed diff for staged operations.
-
-**Scope when picked up:**
-
-- Flip default to `SETUP_PREFLIGHT_DIFF=true` in
-  `is_preflight_enabled` (or remove the env-gated branch entirely
-  if the canary is clean).
-- Add Final Review embed render branch in
-  `disbot/views/setup/final_review.py` that:
-  - Calls `await preflight_operations(ops, guild=guild)` before
-    rendering.
-  - Renders each `ChangePlanEntry` with `current → proposed`,
-    `risk`, `rollback_note`, and `read_error` (when present).
-  - Falls back to validation-only preview if preflight raises (the
-    fail-safe is per-entry; entries with `read_error` should still
-    show, just with a "preflight unavailable" annotation).
-- Add render snapshot tests in
-  `tests/unit/views/setup/test_final_review_diff.py`.
-
-**Risk:** Medium — touches the Final Review apply gate.  Apply
-behaviour itself stays unchanged; only the pre-apply render changes.
+| PR | Code | Notes |
+|---|---|---|
+| #244 | PR-01a — typed readiness contract | merged |
+| #245 | PR-02a — task compat wrapper + `on_error` hook | merged |
+| #246 | PR-06a — command classification contract types | merged |
+| #247 | PR-02b — shutdown drain through `core.runtime.tasks` | merged; `cancel_all()` returns the cancellation snapshot, drain runs on every exit, timeout WARNING logged |
+| #248 | PR-01b — startup outcome + sync readiness snapshot | merged |
+| #249 | PR-03 — dynamic setup blocker registry | merged |
+| #250 | PR-06b — slash command ledger ingestion | merged |
+| #251 | PR-05 — Discord smoke-test checklist | merged; doc-only, pins all 5 setup slash commands + preflight + blockers |
+| #252 | PR-04a — setup operation preflight | merged; `values_equivalent` normalizer replaces the original `str()` comparison |
 
 ---
 
-## 3. PR-06c Part B — Mass command annotation sweep
+## 2. Open, ready, blocked only by canary
 
-**Status:** ready anytime; deliberately defer until needed.
+These PRs are technically complete (rebased on current main, tests
+green, lint clean).  They should land **only after the parent's
+canary window** has elapsed without regressions.
 
-**Why deferred:** PR-06c shipped the classification pipeline
-(`extras["classification"]` → `CommandSurfaceEntry.classification`
-→ help filter) with no per-cog annotations.  Defaults remain
-`primary_entrypoint`, so every existing command's effective
-behaviour is unchanged.  Mass annotation crosses the >50-file
-threshold from the program plan's stop condition.
+### #253 — PR-06c · classification ingestion + help filter
 
-**Scope when picked up:**
+**Status:** open, mergeable, ready for review.
 
-- Audit every `@commands.command` and `@app_commands.command`
+**Review-fix highlights:**
+- Single source of truth for visibility policy in
+  `core/runtime/command_surface_ledger._HELP_HIDDEN_CLASSIFICATIONS`.
+  `cogs/help_cog` consumes the canonical helper via
+  `is_command_hidden_from_help`; no local re-declaration.
+- Hidden set narrowed to `{"hidden", "legacy_duplicate"}` —
+  **`deprecated` commands stay visible** per the Classification
+  Literal contract ("surfaced with a deprecation warning").
+- Operators who want a command to disappear immediately classify it
+  `hidden`; the deprecation badge itself is a follow-up (see §3).
+
+**Merge condition:** ready now; PR-06a (#246) and PR-06b (#250) are
+already on main.
+
+### #255 — PR-02c · remove `_APP_TASKS` mirror
+
+**Status:** open, rebased on current main, single commit on
+`bot1.py`.
+
+**Contract:** consumes the PR-02b review contract on main:
+
+```python
+cancelled = _runtime_tasks.cancel_all()  # returns the snapshot
+if cancelled:
+    _, still_pending = await asyncio.wait(cancelled, timeout=5.0)
+    if still_pending:
+        logger.warning("Shutdown drain timeout ...")
+```
+
+* No re-snapshot via `tasks.active()` in the finally-block.
+* Drain runs on every exit path, not just SIGTERM.
+* Five supervised app tasks (heartbeat, health, session_gc, memory
+  sampler, automation scheduler) all spawn through
+  `core.runtime.tasks.spawn` with `on_error=_on_app_task_died_webhook`.
+
+**Merge condition:** clean canary of #247 — one release window with
+no shutdown / drain regressions.  After that this PR is mechanical;
+the diff is a single-commit removal of `_APP_TASKS` /
+`_supervised_task`.
+
+### #256 — PR-04b · flip preflight default-on + diff render helper
+
+**Status:** open, rebased on current main, 3 commits (default-on
+flip, render helper, review fix).
+
+**Review-fix highlights:**
+
+- **`values_equivalent` strict bool/int separation.**  Drops `"0"` /
+  `"1"` from bool token sets.  Adds a strict-bool guard so
+  `True != 1` and `False != 0` in the preflight comparison.  An
+  operator-staged boolean against a stored numeric setting (or vice
+  versa) no longer collapses into a silent no-op render.  Operator-
+  safe rule: when in doubt, show the diff.
+- **`render_change_plan` field-limit guard.**  When
+  `field_limit < len(_TRUNCATION_SUFFIX)` (degenerate small budget),
+  the renderer drops the suffix instead of appending it, so the body
+  never exceeds the cap.  `RenderedChangePlan.truncated` still
+  reports the truncation programmatically.
+
+**Merge condition:** clean canary of #252 — one release window with
+no false no-op / false diff complaints from operators.  The Final
+Review embed integration that consumes the render helper is a
+separate small follow-up (see §3).
+
+---
+
+## 3. Intentionally deferred
+
+### Final Review embed render integration
+
+`FinalReviewView` builds its embed in a sync constructor.  Calling
+`preflight_operations` requires an async context, so wiring the diff
+into the pre-apply embed needs either an async pre-render method on
+the view or a small refactor of the render path.
+
+* Scope: add an async pre-render hook on `FinalReviewView`, call
+  `preflight_operations` when `is_preflight_enabled()`, pass the
+  resulting `RenderedChangePlan` to `build_final_review_embed` as a
+  new optional parameter, add an embed field "Preflight diff" with
+  `RenderedChangePlan.body`.
+* Risk: low (additive UI change, gated by the flag).
+
+### Deprecated-command warning badge in help
+
+PR-06c (#253) correctly flips deprecated commands to **visible** per
+the contract.  The badge itself ("deprecation warning") still needs
+to render — currently deprecated commands appear in help looking
+identical to primary commands.
+
+* Scope: extend `cogs/help/route.py` (or the cog-embed render path)
+  to inspect `cmd.extras["classification"]` and prepend a
+  `⚠️ DEPRECATED` marker to the help entry when present.
+
+### PR-06c Part B — Mass command annotation sweep
+
+* Audit every `@commands.command` and `@app_commands.command`
   callsite in `disbot/cogs/**/*.py`.
-- Classify each:
-  - `power_user_shortcut` — short aliases like `!d` for `!daily`.
-  - `panel_action` — invoked from a panel button rather than typed.
-  - `legacy_duplicate` — alias kept for backward compat.
-  - `internal_admin` — staff/operator only (already covered by
-    visibility tier, but the classification refines further).
-  - `hidden` — never surfaced in help.
-  - `deprecated` — surfaced with a deprecation warning.
-- Acceptance: `LedgerFindings.unclassified_entry_points` is empty
-  on boot.  (The default makes every command "classified" today;
-  Part B converts opt-out absences into opt-in tags so the help
-  surface can shrink.)
+* Classify each: `power_user_shortcut`, `panel_action`,
+  `legacy_duplicate`, `internal_admin`, `hidden`, `deprecated`.
+* Acceptance: `LedgerFindings.unclassified_entry_points` is empty
+  on boot.
 
-**Risk:** Low-medium (broad surface annotation, but mechanical).
+### Setup repair mode
 
----
+Reuse `services/readiness_repair.py` — produce `SetupOperation`
+batches and route through `apply_operations`.  Shares the diff
+contract + `render_change_plan` with Final Review.
 
-## 4. Setup repair mode
+### Feature maturity labels
 
-**Status:** ready once PR-04b lands.
+Adds `maturity: Literal["alpha"|"beta"|"stable"|"deprecated"]` to
+`SUBSYSTEMS` entries; renders the badge in help + readiness embed.
+Depends on Part B annotation sweep.
 
-**Why deferred:** Setup repair needs the `ChangePlanEntry` contract
-to render "current broken → proposed fix" diffs in a repair embed.
+### Operator changelog panel
 
-**Scope when picked up:**
+Needs a release-manifest contract.  Reads from a markdown source-of-
+truth committed alongside ADRs; consumes
+`ReadinessSnapshot.startup_outcomes` to flag releases that landed on
+a degraded boot.
 
-- `services/readiness_repair.py` **already exists** with
-  `RepairPreview` / `RepairResult` dataclasses and per-action
-  helpers (`_apply_clear_stale_binding`, `_apply_bind_existing`,
-  `_apply_create_missing`, `_apply_enable_logging`).  The
-  migration is to **produce `SetupOperation` batches** and route
-  them through `services.setup_operations.apply_operations`
-  instead of calling the per-action helpers directly.
-- Reuse `preflight_operations` so the repair embed and Final Review
-  share the same diff renderer.
-- Estimated: 1 PR.
+### Tournament platformization
 
-**Risk:** Medium — touches existing repair flow.
+Migrate `services/tournament_state_service.py` and the
+`cogs/rps_tournament_cog.py` / `cogs/deathmatch_cog.py` cogs to
+produce `SetupOperation` batches routed through
+`services.setup_operations.apply_operations`.  Large; split per-cog.
 
----
+### Config arbitration / per-guild access audit
 
-## 5. Feature maturity labels
-
-**Status:** ready once PR-06c Part B lands.
-
-**Why deferred:** Maturity labels (alpha / beta / stable /
-deprecated) ride on top of the classification pipeline.  Without
-per-command opt-in (Part B), there is no surface to attach
-maturity to.
-
-**Scope when picked up:**
-
-- Add a `maturity: Literal["alpha"|"beta"|"stable"|"deprecated"]`
-  field to `SUBSYSTEMS` entries.
-- Render the badge in help / `!platform consistency` / readiness
-  snapshot.
-
-**Risk:** Low.
+Audit direct `db.get_setting` / `guild_settings` reads in
+moderation / roles / logging / deathmatch / blackjack / governance.
+Move static `ALLOWED_CHANNELS` in `disbot/config.py` behind a
+per-guild access policy service.
 
 ---
 
-## 6. Operator changelog panel
+## 4. Rejected / WONTFIX
 
-**Status:** ready once PR-01b (#248) lands and a release-manifest
-contract is designed.
+### Runtime danger-signs dashboard
 
-**Why deferred:** A changelog panel needs the **release manifest**
-contract (what shipped, when, who owns it) which does not exist
-yet.  PR-01b's readiness snapshot is one input; a markdown
-source-of-truth committed alongside ADRs is the other.
-
-**Scope when picked up:**
-
-- Define the release manifest format (JSON file? markdown
-  front-matter?  ADR-style?).
-- Add a panel surface that reads the manifest and renders the
-  N most recent releases.
-- Consumes `ReadinessSnapshot.startup_outcomes` to flag releases
-  that landed on a degraded boot.
-
-**Risk:** Low (read-only).
-
----
-
-## 7. Runtime danger-signs dashboard
-
-**Status:** **WONTFIX** — merged into the PR-01b readiness snapshot.
-
-The original source plan proposed a separate "runtime danger
-signs" dashboard.  The revision plan merged this into the PR-01b
+Merged into the PR-01b readiness snapshot.  The original source plan
+proposed a separate dashboard; the revision plan merged this into
 `ReadinessSnapshot` so there is exactly one place that composes
-deploy-relevant signals (`tasks.active()`, `runtime_lock_owned`,
-`recent_fatal_logs`, etc.).  Future danger-signal surfaces should
+deploy-relevant signals.  Future danger-signal surfaces should
 extend the snapshot, not build a parallel dashboard.
 
 ---
 
-## 8. Tournament platformization
+## 5. Ideas Lab follow-ups
 
-**Status:** large; multi-PR; defer until lifecycle / setup /
-sessions / locks / command navigation foundations are stable.
+### Automated Discord smoke runner
 
-**Why deferred:** Per the revision plan, tournament platformization
-needs every PR-01a..PR-06c foundation in place first.  Even after
-that, the migration is too large for a single PR.
-
-**Scope when picked up:**
-
-- Migrate `services/tournament_state_service.py` and the
-  `cogs/rps_tournament_cog.py` / `cogs/deathmatch_cog.py` cogs to
-  produce `SetupOperation` batches routed through
-  `services.setup_operations.apply_operations` instead of calling
-  mutation pipelines directly.
-- Split per-cog (rps_tournament first, deathmatch second) to keep
-  reviewable diff size.
-
-**Risk:** Medium-high.
+PR-05 (#251) ships the smoke checklist as a doc.  An automated
+runner is a stretch goal that would call read-only Discord APIs on a
+5-minute interval when `SMOKE_TEST_GUILD_ID` is set.  Off by default;
+env-gated.
 
 ---
 
-## 9. Config arbitration / per-guild access audit
+## Recommended merge order
 
-**Status:** flagged by the source plan for "before more setup
-sections are added".  Not a hard prerequisite for any PR-01a..PR-06c
-work (none of those PRs added a new setup section).
-
-**Why deferred:** A broad audit of direct `db.get_setting()` and
-`guild_settings` reads in moderation / roles / logging / deathmatch /
-blackjack / governance is its own coordinated effort.  It would
-duplicate work if attempted alongside PR-04a / PR-04b which are
-already touching the setup mutation path.
-
-**Scope when picked up:**
-
-- Audit every direct `db.get_setting` / `guild_settings` read.
-- Add an arbitration accessor per migrated key (mirroring the
-  existing XP / economy / governance accessors).
-- Move static `ALLOWED_CHANNELS` (in `disbot/config.py`) behind a
-  per-guild access policy service so fresh-guild onboarding
-  becomes a config rather than a code change.
-
-**Risk:** Medium (broad surface, but each accessor is mechanical).
-
----
-
-## 10. Automated Discord smoke runner
-
-**Status:** Ideas Lab — not on the critical path.
-
-**Why deferred:** PR-05 ships the smoke checklist as a **doc**.  The
-revision plan deliberately defers an automated runner to keep PR-05
-small and operator-facing.  An automated runner is an Ideas Lab
-follow-up.
-
-**Scope when picked up (if approved):**
-
-- Periodic background task (`tasks.spawn("smoke_test:loop", ...)`)
-  that runs every 5 minutes when `SMOKE_TEST_GUILD_ID` is set.
-- Each smoke step is read-only (fetch guild channels, fetch own
-  member, fetch first persistent panel anchor, etc.).
-- Per-step 5 s timeout.
-- Surfaces results via a new `smoke_test` diagnostics provider
-  and bumps a `smoke_test_failures_total{step}` Prometheus
-  metric.
-
-**Risk:** Low (env-gated; off by default).
-
----
+1. Foundation already on main: #244 .. #252.
+2. Open now, no canary gate: **#253** (PR-06c help filter).
+3. After **#247 canary**: **#255** (remove `_APP_TASKS`).
+4. After **#252 canary**: **#256** (preflight default-on + render).
+5. Last (this ADR): **#254** — merges after #253, #255, #256 are
+   either merged or definitively decided.
 
 ## Tracking
 
-When any of the above ships, replace the **Status** line with
+When a deferred item ships, replace its **Status** line with
 `shipped in #NNN — YYYY-MM-DD` and leave the rest of the section
 intact for archaeology.
