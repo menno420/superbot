@@ -627,23 +627,35 @@ async def _drive_close_on_lifecycle_request() -> None:
                     "Lifecycle close-beginning webhook skipped: %s",
                     report_err,
                 )
+        from services import metrics as _metrics
+
         if pending is not None:
             _lifecycle.record_close_executing(pending)
-            from services import metrics as _metrics
-
             _metrics.lifecycle_close_driver_total.labels(kind=pending.kind).inc()
+        kind_label = pending.kind if pending is not None else "unknown"
+        close_started_at = time.monotonic()
         try:
             await asyncio.wait_for(
                 bot.close(),
                 timeout=LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
             )
         except asyncio.TimeoutError:
+            # Observe the timeout value so a single observation in the
+            # topmost bucket is the canonical "force-exit" signature in
+            # Prometheus.  Done before os._exit so the next scrape (if
+            # it lands in the millisecond window before exit) sees it.
+            _metrics.lifecycle_close_duration_seconds.labels(
+                kind=kind_label,
+            ).observe(LIFECYCLE_CLOSE_TIMEOUT_SECONDS)
             logger.critical(
                 "bot.close() exceeded %.1fs timeout — force-exiting "
                 "so the orchestration platform respawns.",
                 LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
             )
             os._exit(1)
+        _metrics.lifecycle_close_duration_seconds.labels(
+            kind=kind_label,
+        ).observe(time.monotonic() - close_started_at)
         return
 
 

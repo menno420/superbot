@@ -187,6 +187,95 @@ async def test_close_driver_increments_close_metric_with_kind_label(
     assert after == before + 1
 
 
+def _histogram_count_and_sum(histogram_child) -> tuple[float, float]:
+    """Read (count, sum) from a Prometheus Histogram label child.
+
+    Histogram does not expose a public ``_count`` attribute — the count
+    is the +Inf bucket value.  Using ``collect()`` here so the assertion
+    is decoupled from prometheus_client's internal layout.
+    """
+    samples = next(iter(histogram_child.collect())).samples
+    count = next(s.value for s in samples if s.name.endswith("_count"))
+    total = next(s.value for s in samples if s.name.endswith("_sum"))
+    return count, total
+
+
+@pytest.mark.asyncio
+async def test_close_driver_observes_close_duration_histogram(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Each successful bot.close() observation lands in
+    ``lifecycle_close_duration_seconds{kind=...}`` so operators can
+    alert on a sustained drift towards higher buckets before close
+    actually hits the bounded timeout."""
+    from services import metrics as _metrics
+
+    fake_bot = _FakeBot()
+    monkeypatch.setattr(bot1, "bot", fake_bot)
+    monkeypatch.setattr(bot1, "reporter", None)
+    _install_fast_poll(monkeypatch)
+
+    histogram = _metrics.lifecycle_close_duration_seconds.labels(kind="shutdown")
+    before_count, before_sum = _histogram_count_and_sum(histogram)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+
+    await asyncio.wait_for(bot1._drive_close_on_lifecycle_request(), timeout=2.0)
+
+    after_count, after_sum = _histogram_count_and_sum(histogram)
+    assert after_count == before_count + 1
+    # Healthy close completes in well under 1s; bound under the timeout
+    # to avoid CI scheduler jitter false positives.
+    assert (after_sum - before_sum) < bot1.LIFECYCLE_CLOSE_TIMEOUT_SECONDS
+
+
+@pytest.mark.asyncio
+async def test_close_timeout_observes_full_timeout_in_duration_histogram(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The force-exit timeout path must observe the full timeout value
+    before calling ``os._exit`` so a Prometheus scrape arriving in the
+    millisecond window before exit can distinguish "close hung" from
+    "close took 0s and the process died for unrelated reasons"."""
+    from services import metrics as _metrics
+
+    class HangingBot:
+        async def close(self) -> None:
+            await asyncio.sleep(60.0)
+
+    monkeypatch.setattr(bot1, "bot", HangingBot())
+    monkeypatch.setattr(bot1, "reporter", None)
+    monkeypatch.setattr(bot1, "LIFECYCLE_CLOSE_TIMEOUT_SECONDS", 0.05)
+    _install_fast_poll(monkeypatch)
+
+    class _ForceExit(BaseException):
+        pass
+
+    def _fake_exit(_code: int) -> None:
+        raise _ForceExit
+
+    monkeypatch.setattr(bot1.os, "_exit", _fake_exit)
+
+    histogram = _metrics.lifecycle_close_duration_seconds.labels(kind="shutdown")
+    before_count, before_sum = _histogram_count_and_sum(histogram)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+
+    with pytest.raises(_ForceExit):
+        await asyncio.wait_for(
+            bot1._drive_close_on_lifecycle_request(),
+            timeout=2.0,
+        )
+
+    after_count, after_sum = _histogram_count_and_sum(histogram)
+    assert after_count == before_count + 1
+    # Observation is the timeout constant (0.05s in this test) — that
+    # exact value is what marks "force-exit" in dashboards.
+    assert (after_sum - before_sum) == pytest.approx(0.05, abs=0.001)
+
+
 @pytest.mark.asyncio
 async def test_close_driver_metric_uses_restart_kind_for_restart_intent(
     monkeypatch: pytest.MonkeyPatch,
