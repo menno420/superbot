@@ -112,9 +112,10 @@ async def test_first_load_installs_exactly_one_check_when_no_legacy_present():
 
 
 @pytest.mark.asyncio
-async def test_first_load_preserves_legacy_guard_reference():
-    """The legacy bot1._channel_guard is captured so the cog can
-    forward ``_shutting_down`` from it.
+async def test_first_load_removes_legacy_guard_from_bot_checks():
+    """LP-2: the legacy ``bot1._channel_guard`` is removed at load time.
+    The cog no longer captures a reference to it; the shutdown signal
+    is owned by ``core.runtime.lifecycle`` instead.
     """
     legacy = _legacy_guard_fn()
     bot = _make_bot(legacy)
@@ -122,7 +123,9 @@ async def test_first_load_preserves_legacy_guard_reference():
 
     cog_arg = bot.add_cog.await_args.args[0]
     assert isinstance(cog_arg, BootstrapAccessCog)
-    assert cog_arg._legacy_guard is legacy
+    # Legacy guard is gone; only the new bootstrap check is registered.
+    assert legacy not in bot._checks
+    assert _find_channel_guard_checks(bot)[0] is not legacy
 
 
 # ---------------------------------------------------------------------------
@@ -154,7 +157,9 @@ async def test_reload_cleans_bootstrap_remnant_before_installing_new_check():
 @pytest.mark.asyncio
 async def test_reload_with_remnant_and_legacy_keeps_only_new_check():
     """Both a bootstrap remnant AND a legacy guard present (worst case);
-    setup cleans both and installs exactly one check.
+    setup cleans both and installs exactly one check (LP-2: no
+    legacy-guard reference is captured any more — lifecycle owns the
+    shutdown signal).
     """
     bot = _make_bot()
     prev_cog = BootstrapAccessCog(bot)
@@ -168,17 +173,14 @@ async def test_reload_with_remnant_and_legacy_keeps_only_new_check():
     assert len(channel_guards) == 1
     assert channel_guards[0] is not prev_cog._channel_guard
     assert channel_guards[0] is not legacy
-    # The new cog still picked up the legacy guard for _shutting_down
-    # forwarding.
-    cog_arg = bot.add_cog.await_args.args[0]
-    assert cog_arg._legacy_guard is legacy
+    assert legacy not in bot._checks
+    assert prev_cog._channel_guard not in bot._checks
 
 
 @pytest.mark.asyncio
-async def test_reload_does_not_preserve_remnant_as_legacy_guard():
-    """A bootstrap remnant must NOT be captured as the legacy guard
-    reference — only a true legacy function (not bound to a
-    BootstrapAccessCog) qualifies.
+async def test_reload_removes_remnant_when_no_legacy_present():
+    """LP-2: with only a bootstrap remnant in place, setup() still
+    removes the remnant and installs exactly one new check.
     """
     bot = _make_bot()
     prev_cog = BootstrapAccessCog(bot)
@@ -186,10 +188,9 @@ async def test_reload_does_not_preserve_remnant_as_legacy_guard():
 
     await setup(bot)
 
-    cog_arg = bot.add_cog.await_args.args[0]
-    # No legacy guard captured because the only existing check was a
-    # bootstrap remnant.
-    assert cog_arg._legacy_guard is None
+    channel_guards = _find_channel_guard_checks(bot)
+    assert len(channel_guards) == 1
+    assert prev_cog._channel_guard not in bot._checks
 
 
 # ---------------------------------------------------------------------------

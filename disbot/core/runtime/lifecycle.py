@@ -1,0 +1,278 @@
+"""Process lifecycle state machine for SuperBot — LP-2.
+
+Owns the canonical state for "is this process accepting commands? draining?
+restarting?" so callers do not pass around module-level booleans. Replaces
+the legacy ``_shutting_down: bool`` in ``bot1.py``.
+
+This module deliberately exposes a minimal API: callers ask for the
+current phase, request a transition, or read recent events. The actual
+exec / exit happens in ``bot1.py``; this module records intent and does
+nothing else.
+
+Phases
+------
+STARTING
+    Initial state before ``on_ready`` fires. Commands admitted (no
+    behaviour change versus the pre-LP-2 ``_shutting_down=False``).
+RUNNING
+    ``on_ready`` fired; commands accepted normally.
+DRAINING
+    Shutdown or restart requested; new commands rejected; in-flight
+    commands still running.
+SHUTTING_DOWN
+    Cleanup in progress (``bot1.main`` finally block).
+RESTARTING
+    Cleanup complete, awaiting exec / respawn. Reserved for LP-3.
+STOPPED
+    Terminal: cleanup done, process about to exit.
+FAILED_STARTUP
+    Terminal: startup raised before ``RUNNING``. Reserved for LP-5 +.
+
+Idempotency
+-----------
+``request_shutdown`` and ``request_restart`` coalesce: a second call
+while a request is already pending is a no-op and returns ``False`` so
+the caller can tell whether its request was the one that took effect.
+A restart request while a plain shutdown is pending also coalesces and
+does *not* upgrade the kind — the first intent wins.
+"""
+
+from __future__ import annotations
+
+import enum
+import time
+from collections import deque
+from dataclasses import dataclass, field
+from typing import Any
+
+
+class Phase(enum.Enum):
+    STARTING = "STARTING"
+    RUNNING = "RUNNING"
+    DRAINING = "DRAINING"
+    SHUTTING_DOWN = "SHUTTING_DOWN"
+    RESTARTING = "RESTARTING"
+    STOPPED = "STOPPED"
+    FAILED_STARTUP = "FAILED_STARTUP"
+
+
+_DRAINING_PHASES: frozenset[Phase] = frozenset(
+    {Phase.DRAINING, Phase.SHUTTING_DOWN, Phase.RESTARTING, Phase.STOPPED},
+)
+_ADMITTING_PHASES: frozenset[Phase] = frozenset(
+    {Phase.STARTING, Phase.RUNNING},
+)
+
+
+@dataclass(frozen=True)
+class LifecycleEvent:
+    """One transition or request recorded in the ring buffer."""
+
+    name: str
+    phase: Phase
+    at: float  # ``time.monotonic()`` seconds
+    actor: str | None = None
+    reason: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class PendingShutdown:
+    """The shutdown / restart request currently in flight, if any."""
+
+    kind: str  # "shutdown" or "restart"
+    reason: str
+    actor: str | None
+    requested_at: float
+    grace_seconds: float | None
+
+
+_EVENT_BUFFER_SIZE = 128
+
+_phase: Phase = Phase.STARTING
+_pending: PendingShutdown | None = None
+_events: deque[LifecycleEvent] = deque(maxlen=_EVENT_BUFFER_SIZE)
+
+
+def get_phase() -> Phase:
+    """Return the current lifecycle phase."""
+    return _phase
+
+
+def set_phase(phase: Phase, *, reason: str | None = None) -> None:
+    """Record a phase transition.
+
+    Intended for the entry point (``bot1.py``) and the lifecycle module
+    itself. Cogs should not call this directly — they use
+    :func:`request_shutdown` / :func:`request_restart`.
+    """
+    global _phase
+    if _phase == phase:
+        return
+    _phase = phase
+    _record_event(f"phase:{phase.value}", reason=reason)
+
+
+def is_shutting_down() -> bool:
+    """True if the bot is draining, shutting down, restarting, or stopped.
+
+    Mirrors the semantics of the legacy ``_shutting_down: bool`` in
+    ``bot1.py``: any phase past ``RUNNING`` counts as "not accepting new
+    work".
+    """
+    return _phase in _DRAINING_PHASES
+
+
+def restart_requested() -> bool:
+    """True if a restart (rather than a plain shutdown) is pending."""
+    return _pending is not None and _pending.kind == "restart"
+
+
+def can_accept_commands() -> bool:
+    """True if new commands may be admitted.
+
+    Returns True only in ``STARTING`` and ``RUNNING``. Every other phase
+    — including the terminal ``FAILED_STARTUP`` — rejects new commands.
+    """
+    return _phase in _ADMITTING_PHASES
+
+
+def request_shutdown(
+    reason: str,
+    *,
+    actor: str | None = None,
+    grace_seconds: float | None = None,
+) -> bool:
+    """Request a graceful shutdown.
+
+    Returns ``True`` if this call established the pending request,
+    ``False`` if a request was already in flight (coalesced).
+    """
+    global _pending
+    if _pending is not None:
+        _record_event(
+            "shutdown_requested_coalesced",
+            reason=reason,
+            actor=actor,
+        )
+        return False
+    _pending = PendingShutdown(
+        kind="shutdown",
+        reason=reason,
+        actor=actor,
+        requested_at=time.monotonic(),
+        grace_seconds=grace_seconds,
+    )
+    _record_event("shutdown_requested", reason=reason, actor=actor)
+    if _phase in (Phase.STARTING, Phase.RUNNING):
+        set_phase(Phase.DRAINING, reason=reason)
+    return True
+
+
+def request_restart(
+    reason: str,
+    *,
+    actor: str | None = None,
+    grace_seconds: float | None = None,
+) -> bool:
+    """Request a graceful restart.
+
+    Returns ``True`` if this call established the pending request,
+    ``False`` if a request was already in flight (coalesced — even if
+    the existing pending intent was a plain ``shutdown``; the first
+    intent wins so callers do not race to upgrade the kind).
+    """
+    global _pending
+    if _pending is not None:
+        _record_event(
+            "restart_requested_coalesced",
+            reason=reason,
+            actor=actor,
+        )
+        return False
+    _pending = PendingShutdown(
+        kind="restart",
+        reason=reason,
+        actor=actor,
+        requested_at=time.monotonic(),
+        grace_seconds=grace_seconds,
+    )
+    _record_event("restart_requested", reason=reason, actor=actor)
+    if _phase in (Phase.STARTING, Phase.RUNNING):
+        set_phase(Phase.DRAINING, reason=reason)
+    return True
+
+
+def get_pending() -> PendingShutdown | None:
+    """Return the current pending request, or ``None`` if none."""
+    return _pending
+
+
+def remaining_shutdown_seconds() -> float | None:
+    """Seconds left in the grace window.
+
+    Returns ``None`` if no shutdown is pending, or if the pending
+    request did not specify a grace window.
+    """
+    if _pending is None or _pending.grace_seconds is None:
+        return None
+    elapsed = time.monotonic() - _pending.requested_at
+    return max(0.0, _pending.grace_seconds - elapsed)
+
+
+def get_recent_events(limit: int = 20) -> list[LifecycleEvent]:
+    """Return the most recent lifecycle events, newest last.
+
+    ``limit <= 0`` returns an empty list.
+    """
+    if limit <= 0:
+        return []
+    return list(_events)[-limit:]
+
+
+def _record_event(
+    name: str,
+    *,
+    reason: str | None = None,
+    actor: str | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> None:
+    _events.append(
+        LifecycleEvent(
+            name=name,
+            phase=_phase,
+            at=time.monotonic(),
+            actor=actor,
+            reason=reason,
+            metadata=metadata or {},
+        ),
+    )
+
+
+def reset_for_tests() -> None:
+    """Reset module state back to ``STARTING`` with no pending request.
+
+    Test-only entry point — production code must not call this.
+    """
+    global _phase, _pending
+    _phase = Phase.STARTING
+    _pending = None
+    _events.clear()
+
+
+__all__ = [
+    "LifecycleEvent",
+    "PendingShutdown",
+    "Phase",
+    "can_accept_commands",
+    "get_pending",
+    "get_phase",
+    "get_recent_events",
+    "is_shutting_down",
+    "remaining_shutdown_seconds",
+    "request_restart",
+    "request_shutdown",
+    "reset_for_tests",
+    "restart_requested",
+    "set_phase",
+]

@@ -164,7 +164,7 @@ def test_find_channel_guard_checks_matches_by_name():
 
 async def test_channel_guard_allows_inside_allowed_channels(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", {12345})
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=12345, command_name="daily")
 
     assert await cog._channel_guard(ctx) is True
@@ -172,7 +172,7 @@ async def test_channel_guard_allows_inside_allowed_channels(monkeypatch):
 
 async def test_channel_guard_allows_force_outside_allowed_channels(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=999, command_name="force")
 
     assert await cog._channel_guard(ctx) is True
@@ -180,7 +180,7 @@ async def test_channel_guard_allows_force_outside_allowed_channels(monkeypatch):
 
 async def test_channel_guard_allows_guild_owner_for_bootstrap_command(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=999, command_name="setup", author_id=42, owner_id=42)
 
     assert await cog._channel_guard(ctx) is True
@@ -188,7 +188,7 @@ async def test_channel_guard_allows_guild_owner_for_bootstrap_command(monkeypatc
 
 async def test_channel_guard_denies_normal_command_outside_allowed_channels(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=999, command_name="daily", author_id=42, owner_id=42)
 
     assert await cog._channel_guard(ctx) is False
@@ -196,20 +196,31 @@ async def test_channel_guard_denies_normal_command_outside_allowed_channels(monk
 
 async def test_channel_guard_denies_dm_context(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", {12345})
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=12345, guild=None, command_name="help")
     ctx.guild = None
 
     assert await cog._channel_guard(ctx) is False
 
 
-async def test_channel_guard_respects_legacy_shutdown_flag(monkeypatch):
-    monkeypatch.setattr(config, "ALLOWED_CHANNELS", {12345})
-    legacy = _legacy_channel_guard_factory(shutting_down=True)
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=legacy)
-    ctx = _ctx(channel_id=12345, command_name="help")
+async def test_channel_guard_blocks_when_lifecycle_is_shutting_down(monkeypatch):
+    """LP-2: command admission consults
+    :func:`core.runtime.lifecycle.can_accept_commands` (no longer the
+    legacy ``_shutting_down`` attribute on the previous guard).
+    """
+    from core.runtime import lifecycle
 
-    assert await cog._channel_guard(ctx) is False
+    monkeypatch.setattr(config, "ALLOWED_CHANNELS", {12345})
+    lifecycle.reset_for_tests()
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("test")
+    try:
+        cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
+        ctx = _ctx(channel_id=12345, command_name="help")
+
+        assert await cog._channel_guard(ctx) is False
+    finally:
+        lifecycle.reset_for_tests()
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +230,7 @@ async def test_channel_guard_respects_legacy_shutdown_flag(monkeypatch):
 
 async def test_on_command_error_replies_for_missing_permissions_on_bootstrap(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=999, command_name="settings")
     error = commands.MissingPermissions(["manage_guild"])
 
@@ -230,7 +241,7 @@ async def test_on_command_error_replies_for_missing_permissions_on_bootstrap(mon
 
 async def test_on_command_error_silent_for_non_bootstrap_command(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=999, command_name="daily")
     error = commands.MissingPermissions(["manage_guild"])
 
@@ -241,7 +252,7 @@ async def test_on_command_error_silent_for_non_bootstrap_command(monkeypatch):
 
 async def test_on_command_error_silent_inside_allowed_channels(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", {12345})
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=12345, command_name="settings")
     error = commands.MissingPermissions(["manage_guild"])
 
@@ -270,7 +281,7 @@ async def test_on_command_error_handles_each_known_error(
     expected_substring,
 ):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
-    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot), legacy_guard=None)
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
     ctx = _ctx(channel_id=999, command_name="diagnostics")
 
     await cog.on_command_error(ctx, error_factory())

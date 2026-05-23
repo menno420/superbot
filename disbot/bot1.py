@@ -13,6 +13,7 @@ import discord
 from discord.ext import commands
 
 import config
+from core.runtime import lifecycle as _lifecycle
 from services.runtime import BOOT_ID, install_boot_id_logging
 from services.webhook_reporter import WebhookReporter
 from utils import db
@@ -83,13 +84,13 @@ bot = commands.Bot(
 
 ALLOWED_CHANNELS = config.ALLOWED_CHANNELS
 
-# Set by SIGTERM handler — channel guard rejects new commands during drain.
-_shutting_down = False
-
 
 def _begin_shutdown(*_) -> None:
-    global _shutting_down
-    _shutting_down = True
+    """SIGTERM handler: route through the lifecycle service so command
+    admission (``_channel_guard``) and any future observers see one
+    canonical "draining" signal instead of a module-local bool (LP-2).
+    """
+    _lifecycle.request_shutdown(reason="sigterm")
 
 
 # ---------------------------------------------------------------------------
@@ -191,6 +192,10 @@ async def on_ready() -> None:
     live_update_scheduler.setup(bot)
     if reporter:
         await reporter.on_startup(bot)
+    # LP-2: surface "ready to serve" as a lifecycle phase. Only transition
+    # when no shutdown was requested mid-startup; otherwise stay in DRAINING.
+    if _lifecycle.get_phase() is _lifecycle.Phase.STARTING:
+        _lifecycle.set_phase(_lifecycle.Phase.RUNNING, reason="on_ready")
 
 
 @bot.event
@@ -384,7 +389,7 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
 
 @bot.check
 async def _channel_guard(ctx: commands.Context) -> bool:
-    if _shutting_down:
+    if not _lifecycle.can_accept_commands():
         return False
     return ctx.guild is not None and (
         ctx.channel.id in ALLOWED_CHANNELS
@@ -828,6 +833,14 @@ async def main() -> None:
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
+        # LP-2: mark the cleanup phase so observers see one canonical
+        # "the bot is winding down" signal. The transition is recorded
+        # in the lifecycle event buffer regardless of which exit path
+        # we arrived through (normal return, SIGTERM, exception).
+        _lifecycle.set_phase(
+            _lifecycle.Phase.SHUTTING_DOWN,
+            reason="main_finally",
+        )
         # Signal the heartbeat loop to stop cleanly before cancelling
         # all app tasks. ``run_heartbeat_loop`` exits its wait early
         # when the event is set, which lets the lock release happen
@@ -869,6 +882,8 @@ async def main() -> None:
         await db.close()
         if reporter:
             await reporter.close()
+        # LP-2: cleanup is done; surface the terminal phase.
+        _lifecycle.set_phase(_lifecycle.Phase.STOPPED, reason="cleanup_complete")
 
 
 if __name__ == "__main__":
