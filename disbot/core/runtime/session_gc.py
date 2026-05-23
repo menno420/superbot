@@ -138,9 +138,15 @@ def start() -> asyncio.Task:
     """Create and return the background GC task.
 
     Must be called inside a running asyncio event loop (i.e., after bot startup).
-    The caller is responsible for cancelling the task on shutdown.
+    PR-02b: spawned through ``core.runtime.tasks.spawn`` so the canonical
+    supervisor tracks the task, increments ``task_outcome_total`` on
+    completion, and includes it in ``tasks.active()``.  The returned task
+    is still the same ``asyncio.Task`` instance for callers that retain
+    it; ``tasks.cancel_all()`` cancels it on shutdown.
     """
-    task = asyncio.create_task(_run_gc_loop(), name="session_gc")
+    from core.runtime import tasks as runtime_tasks
+
+    task = runtime_tasks.spawn("session_gc:loop", _run_gc_loop())
     logger.info(
         "Session GC started — TTL=%ds, interval=%ds",
         SESSION_TTL,

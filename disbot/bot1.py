@@ -664,14 +664,17 @@ async def main() -> None:
             # Automation scheduler (Track 6 PR 18 / #211): gated behind
             # ``AUTOMATION_SCHEDULER_ENABLED=true``. ``spawn_scheduler``
             # returns ``None`` when the flag is off (default), so the
-            # bot boots inert by default. The returned task is already
-            # supervised by ``core.runtime.tasks.spawn``; we still
-            # append it to ``_APP_TASKS`` so shutdown cancels it.
+            # bot boots inert by default.
+            #
+            # PR-02b: the returned task is already supervised by
+            # ``core.runtime.tasks.spawn`` inside ``spawn_scheduler`` —
+            # the previous ``_APP_TASKS.append(scheduler_task)`` was a
+            # double-supervision artifact.  Shutdown drain now runs
+            # ``tasks.cancel_all()`` so the canonical supervisor is the
+            # single owner of the scheduler's cancellation.
             from services.automation_scheduler import spawn_scheduler
 
-            scheduler_task = spawn_scheduler(bot)
-            if scheduler_task is not None:
-                _APP_TASKS.append(scheduler_task)
+            spawn_scheduler(bot)
 
             await _load_cogs()
 
@@ -810,13 +813,17 @@ async def main() -> None:
         # when the event is set, which lets the lock release happen
         # before we tear down the DB pool.
         _heartbeat_stop.set()
-        # Cancel only application-owned tasks — never asyncio.all_tasks().
-        for task in _APP_TASKS:
-            if not task.done():
-                task.cancel()
-        # Graceful drain: give in-flight app coroutines up to 5 s to finish.
-        if _shutting_down and _APP_TASKS:
-            pending = {t for t in _APP_TASKS if not t.done()}
+        # PR-02b: drain through the canonical task supervisor instead
+        # of iterating ``_APP_TASKS``.  Every supervised app task is
+        # already in ``tasks._TASKS`` (the local ``_APP_TASKS`` list
+        # is kept populated for one release until PR-02c removes it
+        # entirely).  ``tasks.cancel_all`` cancels every still-running
+        # spawned task and ``tasks.active()`` returns the snapshot to
+        # await with the 5-second drain budget preserved from the
+        # previous implementation.
+        _runtime_tasks.cancel_all()
+        if _shutting_down:
+            pending = _runtime_tasks.active()
             if pending:
                 _, still_pending = await asyncio.wait(pending, timeout=5.0)
                 for t in still_pending:
