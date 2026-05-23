@@ -23,6 +23,8 @@ re-walking ``bot.commands``.
 Public surface:
 
     CommandSurfaceEntry      — frozen dataclass per command
+    Classification           — Literal of canonical classification values
+    CLASSIFICATIONS          — tuple of all canonical classification values
     RouterPrefixEntry        — frozen dataclass per registered router prefix
     LedgerFindings           — frozen dataclass with orphan/duplicate buckets
     CommandSurfaceLedger     — frozen aggregate snapshot
@@ -39,7 +41,7 @@ import datetime
 import logging
 import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal, get_args
 
 logger = logging.getLogger("bot.runtime.command_surface_ledger")
 
@@ -47,6 +49,43 @@ logger = logging.getLogger("bot.runtime.command_surface_ledger")
 # ---------------------------------------------------------------------------
 # Public types
 # ---------------------------------------------------------------------------
+
+
+# PR-06a — Classification contract.
+#
+# Each command entrypoint is classified so help/navigation surfaces and
+# the readiness embed can decide whether to render, dim, hide, or warn
+# about a command without consulting the help cog directly.  PR-06a
+# ships only the type + the default; PR-06b wires slash-command
+# ingestion; PR-06c sweeps the cogs to annotate.
+#
+# Values:
+#
+# * ``primary_entrypoint`` — the canonical command operators use.
+#   Default for unannotated commands so PR-06a is purely additive.
+# * ``power_user_shortcut`` — alternative spelling kept for fluency;
+#   help may dim it after PR-06c.
+# * ``panel_action`` — invoked from a panel button rather than typed;
+#   help can omit from the prefix-typed listing.
+# * ``legacy_duplicate`` — an alias kept around for backwards-compat;
+#   PR-06c may filter from help suggestions.
+# * ``internal_admin`` — surfaced only to staff/operators.
+# * ``hidden`` — never surfaced in help (still callable).
+# * ``deprecated`` — surfaced with a deprecation warning.
+Classification = Literal[
+    "primary_entrypoint",
+    "power_user_shortcut",
+    "panel_action",
+    "legacy_duplicate",
+    "internal_admin",
+    "hidden",
+    "deprecated",
+]
+
+# Canonical tuple of every classification value.  Used by the
+# invariant test to assert nothing has drifted between the Literal and
+# any classification registry added by PR-06c.
+CLASSIFICATIONS: tuple[Classification, ...] = get_args(Classification)
 
 
 @dataclass(frozen=True)
@@ -61,6 +100,11 @@ class CommandSurfaceEntry:
     parent_group: str | None = None
     is_declared: bool = False
     kind: str = "prefix"  # reserved values: "prefix" | "slash"
+    # PR-06a: classification defaults to ``primary_entrypoint`` so
+    # adding the field is purely additive.  PR-06c populates this from
+    # per-cog declarations (decorator or metadata map) and surfaces
+    # the unclassified set as a finding.
+    classification: Classification = "primary_entrypoint"
 
 
 @dataclass(frozen=True)
@@ -80,6 +124,12 @@ class LedgerFindings:
     duplicate_alias_names: tuple[str, ...] = ()
     undeclared_entry_points: tuple[str, ...] = ()
     router_prefix_unknown: tuple[str, ...] = ()
+    # PR-06a: populated by PR-06c once per-cog classification metadata
+    # exists.  Empty in PR-06a because the default classification
+    # (``primary_entrypoint``) means every command is considered
+    # classified out of the box.  Reserved here so the dataclass shape
+    # is stable across the PR-06a → PR-06c sequence.
+    unclassified_entry_points: tuple[str, ...] = ()
 
     @property
     def total(self) -> int:
@@ -89,6 +139,7 @@ class LedgerFindings:
             + len(self.duplicate_alias_names)
             + len(self.undeclared_entry_points)
             + len(self.router_prefix_unknown)
+            + len(self.unclassified_entry_points)
         )
 
 
@@ -392,6 +443,9 @@ def _snapshot() -> dict[str, Any]:
             "duplicate_alias_names": len(ledger.findings.duplicate_alias_names),
             "undeclared_entry_points": len(ledger.findings.undeclared_entry_points),
             "router_prefix_unknown": len(ledger.findings.router_prefix_unknown),
+            "unclassified_entry_points": len(
+                ledger.findings.unclassified_entry_points,
+            ),
         },
     }
 
@@ -406,6 +460,8 @@ _register_diagnostics()
 
 
 __all__ = [
+    "CLASSIFICATIONS",
+    "Classification",
     "CommandSurfaceEntry",
     "CommandSurfaceLedger",
     "LedgerFindings",
