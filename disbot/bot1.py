@@ -610,8 +610,7 @@ async def _drive_close_on_lifecycle_request() -> None:
         actor = pending.actor if pending and pending.actor else "<unknown>"
         reason = pending.reason if pending else "<unknown>"
         logger.info(
-            "Lifecycle %s requested by %s (reason=%r); closing bot "
-            "(timeout %.1fs).",
+            "Lifecycle %s requested by %s (reason=%r); closing bot (timeout %.1fs).",
             kind,
             actor,
             reason,

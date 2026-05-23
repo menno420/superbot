@@ -281,7 +281,7 @@ class WebhookReporter:
 
     async def on_lifecycle_close_beginning(
         self,
-        pending: "PendingShutdown",
+        pending: PendingShutdown,
     ) -> None:
         """Posted by the close-driver immediately before ``bot.close()``.
 
@@ -292,9 +292,7 @@ class WebhookReporter:
         """
         is_restart = pending.kind == "restart"
         title = (
-            "♻️ Bot Restart Beginning"
-            if is_restart
-            else "🛑 Bot Shutdown Beginning"
+            "♻️ Bot Restart Beginning" if is_restart else "🛑 Bot Shutdown Beginning"
         )
         color = discord.Color.gold() if is_restart else discord.Color.red()
         embed = discord.Embed(
