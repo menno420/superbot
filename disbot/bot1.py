@@ -629,6 +629,9 @@ async def _drive_close_on_lifecycle_request() -> None:
                 )
         if pending is not None:
             _lifecycle.record_close_executing(pending)
+            from services import metrics as _metrics
+
+            _metrics.lifecycle_close_driver_total.labels(kind=pending.kind).inc()
         try:
             await asyncio.wait_for(
                 bot.close(),

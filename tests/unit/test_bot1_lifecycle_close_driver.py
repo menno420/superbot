@@ -163,6 +163,55 @@ async def test_webhook_fires_before_bot_close(
 
 
 @pytest.mark.asyncio
+async def test_close_driver_increments_close_metric_with_kind_label(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Each close-driver invocation increments
+    ``lifecycle_close_driver_total{kind=...}`` so operators can alert
+    on unexpected close/restart rates from Prometheus."""
+    from services import metrics as _metrics
+
+    fake_bot = _FakeBot()
+    monkeypatch.setattr(bot1, "bot", fake_bot)
+    monkeypatch.setattr(bot1, "reporter", None)
+    _install_fast_poll(monkeypatch)
+
+    before = _metrics.lifecycle_close_driver_total.labels(kind="shutdown")._value.get()
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+
+    await asyncio.wait_for(bot1._drive_close_on_lifecycle_request(), timeout=2.0)
+
+    after = _metrics.lifecycle_close_driver_total.labels(kind="shutdown")._value.get()
+    assert after == before + 1
+
+
+@pytest.mark.asyncio
+async def test_close_driver_metric_uses_restart_kind_for_restart_intent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Restart and shutdown invocations land on distinct label series so
+    operators can graph them separately."""
+    from services import metrics as _metrics
+
+    fake_bot = _FakeBot()
+    monkeypatch.setattr(bot1, "bot", fake_bot)
+    monkeypatch.setattr(bot1, "reporter", None)
+    _install_fast_poll(monkeypatch)
+
+    before = _metrics.lifecycle_close_driver_total.labels(kind="restart")._value.get()
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_restart(reason="!restart", actor="op")
+
+    await asyncio.wait_for(bot1._drive_close_on_lifecycle_request(), timeout=2.0)
+
+    after = _metrics.lifecycle_close_driver_total.labels(kind="restart")._value.get()
+    assert after == before + 1
+
+
+@pytest.mark.asyncio
 async def test_close_driver_records_close_executing_lifecycle_event(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
