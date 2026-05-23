@@ -36,7 +36,10 @@ except ImportError:  # python-json-logger not installed — use stdlib formatter
         "%(asctime)s | %(levelname)s | %(name)s | boot=%(boot_id)s | %(message)s",
     )
 _root = logging.getLogger()
-_root.setLevel(logging.INFO)
+_log_level = getattr(logging, config.LOG_LEVEL, logging.INFO)
+if not isinstance(_log_level, int):
+    _log_level = logging.INFO
+_root.setLevel(_log_level)
 
 _handlers: list[logging.Handler] = [
     logging.handlers.RotatingFileHandler(
