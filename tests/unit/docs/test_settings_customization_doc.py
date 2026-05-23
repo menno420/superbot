@@ -35,6 +35,7 @@ _RPM_OVERVIEW = _DOCS / "resource-provisioning-overview.md"
 _SUBSYSTEM_REGISTRY_SRC = _DISBOT / "utils" / "subsystem_registry.py"
 _CONFIG_SRC = _DISBOT / "config.py"
 _PLATFORM_CONSISTENCY_SRC = _DISBOT / "services" / "platform_consistency.py"
+_SETUP_BLOCKERS_SRC = _DISBOT / "services" / "setup_blockers.py"
 _SETTINGS_KEYS_INIT_SRC = _DISBOT / "utils" / "settings_keys" / "__init__.py"
 
 # 24-field template labels (snake_case form). The doc may format them with
@@ -132,15 +133,53 @@ def _initial_extensions() -> tuple[str, ...]:
 
 
 def _setup_readiness_blockers() -> tuple[str, ...]:
-    """Statically extract SETUP_READINESS_BLOCKERS from platform_consistency.py."""
-    value = _module_assignment(_PLATFORM_CONSISTENCY_SRC, "SETUP_READINESS_BLOCKERS")
+    """Statically extract the canonical blocker IDs.
+
+    PR-03: ``SETUP_READINESS_BLOCKERS`` is now derived from
+    ``services.setup_blockers.BLOCKERS`` (a tuple of ``BlockerSpec``
+    instances with literal ``id="..."`` arguments).  This helper
+    parses the BlockerSpec(...) call expressions and pulls the ``id``
+    keyword argument from each — keeping the doc-test fully static
+    (no code execution).
+    """
+    tree = ast.parse(_SETUP_BLOCKERS_SRC.read_text(encoding="utf-8"))
+    blockers_value: ast.AST | None = None
+    for node in tree.body:
+        if isinstance(node, ast.AnnAssign):
+            tgt = node.target
+            if (
+                isinstance(tgt, ast.Name)
+                and tgt.id == "BLOCKERS"
+                and node.value is not None
+            ):
+                blockers_value = node.value
+                break
+        elif isinstance(node, ast.Assign):
+            for tgt in node.targets:
+                if isinstance(tgt, ast.Name) and tgt.id == "BLOCKERS":
+                    blockers_value = node.value
+                    break
+            if blockers_value is not None:
+                break
     assert isinstance(
-        value, (ast.Tuple, ast.List)
-    ), "SETUP_READINESS_BLOCKERS must be a tuple/list literal"
+        blockers_value, (ast.Tuple, ast.List)
+    ), "setup_blockers.BLOCKERS must be a tuple/list literal of BlockerSpec(...) calls"
     out: list[str] = []
-    for elt in value.elts:
-        assert isinstance(elt, ast.Constant) and isinstance(elt.value, str)
-        out.append(elt.value)
+    for elt in blockers_value.elts:
+        assert isinstance(elt, ast.Call), "BLOCKERS entries must be BlockerSpec(...) calls"
+        # id may be passed positionally or as a keyword; canonical form
+        # in setup_blockers.py is keyword.
+        spec_id: str | None = None
+        for kw in elt.keywords:
+            if kw.arg == "id" and isinstance(kw.value, ast.Constant):
+                spec_id = kw.value.value
+                break
+        if spec_id is None and elt.args:
+            first = elt.args[0]
+            if isinstance(first, ast.Constant) and isinstance(first.value, str):
+                spec_id = first.value
+        assert spec_id is not None, f"BlockerSpec call missing id: {ast.dump(elt)}"
+        out.append(spec_id)
     return tuple(out)
 
 
