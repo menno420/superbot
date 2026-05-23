@@ -609,4 +609,123 @@ class TestFormatChangePlanLines:
             for i in range(20)
         ]
         lines = format_change_plan_lines(entries, max_lines=3)
-        assert len(lines) == 3
+        # PR-04b review fix: render_change_plan now appends a
+        # truncation suffix when entries are dropped, so the line
+        # count is max_lines + 1 (the indicator).
+        assert len(lines) == 4
+        assert lines[-1].startswith("…")
+
+
+# ---------------------------------------------------------------------------
+# PR-04b (review fix) — render_change_plan enforces Discord field limit
+# ---------------------------------------------------------------------------
+
+
+from services.setup_change_plan import (  # noqa: E402
+    DISCORD_FIELD_VALUE_LIMIT,
+    RenderedChangePlan,
+    format_change_plan_lines,
+    render_change_plan,
+)
+
+
+def _entry(label: str = "x", *, would_change: bool = True) -> ChangePlanEntry:
+    return ChangePlanEntry(
+        op=SetupOperation(kind="set_setting", subsystem="xp"),
+        label=label,
+        current=ChangeValue(kind="value", value="a"),
+        proposed=ChangeValue(kind="value", value="b"),
+        would_change=would_change,
+    )
+
+
+class TestRenderChangePlan:
+    def test_empty_entries_returns_empty_block(self):
+        r = render_change_plan([])
+        assert r.lines == ()
+        assert r.rendered_count == 0
+        assert r.truncated is False
+        assert r.dropped_count == 0
+        assert r.body == ""
+
+    def test_short_diff_renders_all_entries_no_truncation(self):
+        entries = [_entry(f"op{i}") for i in range(3)]
+        r = render_change_plan(entries)
+        assert r.rendered_count == 3
+        assert r.truncated is False
+        assert r.dropped_count == 0
+        assert len(r.lines) == 3
+        # Body fits within Discord's field cap.
+        assert len(r.body) <= DISCORD_FIELD_VALUE_LIMIT
+
+    def test_many_line_diff_truncated_by_line_count(self):
+        """``max_lines`` still works (per-entry cap) and the truncation
+        suffix appears."""
+        entries = [_entry(f"op{i}") for i in range(20)]
+        r = render_change_plan(entries, max_lines=5)
+        # 5 rendered + 1 truncation suffix
+        assert r.rendered_count == 5
+        assert r.truncated is True
+        assert r.dropped_count == 15
+        assert r.lines[-1].startswith("…")
+        assert len(r.body) <= DISCORD_FIELD_VALUE_LIMIT
+
+    def test_single_very_long_line_is_clipped(self):
+        """One pathological label cannot consume the whole budget; the
+        line is clipped to the per-line cap with an ellipsis."""
+        long_label = "x" * 5000
+        r = render_change_plan([_entry(long_label)])
+        assert r.truncated is True
+        # The single line must fit the per-line cap (~256 chars), well
+        # under the field cap.
+        assert all(len(line) <= 1024 for line in r.lines)
+        # The very long content is signalled as truncated via ellipsis.
+        assert any("…" in line for line in r.lines)
+
+    def test_exactly_at_field_limit_does_not_overflow(self):
+        """A render that exactly hits the field-cap budget must still
+        return a body ≤ 1024 chars (suffix budget is reserved)."""
+        # ~50-char labels × 30 entries ≈ 1500 raw chars (over cap),
+        # so the renderer must stop early.
+        entries = [_entry("x" * 50) for _ in range(30)]
+        r = render_change_plan(entries, max_lines=30)
+        assert r.truncated is True
+        assert len(r.body) <= DISCORD_FIELD_VALUE_LIMIT
+
+    def test_over_limit_diff_stops_packing_before_overflow(self):
+        """When the line-count cap would admit more entries but the
+        char budget runs out, the renderer must stop packing rather
+        than blow the field limit."""
+        entries = [_entry("x" * 100) for _ in range(20)]
+        r = render_change_plan(entries, max_lines=20)
+        assert r.rendered_count < 20
+        assert r.dropped_count == 20 - r.rendered_count
+        assert r.truncated is True
+        assert len(r.body) <= DISCORD_FIELD_VALUE_LIMIT
+
+    def test_truncation_suffix_carries_dropped_count(self):
+        """``dropped_count`` reports how many entries were omitted so
+        operators / tests can detect the truncation programmatically."""
+        entries = [_entry(f"op{i}") for i in range(50)]
+        r = render_change_plan(entries, max_lines=3)
+        assert r.rendered_count == 3
+        assert r.dropped_count == 47
+        assert r.truncated is True
+
+    def test_custom_field_limit_respected(self):
+        """The ``field_limit`` parameter lets callers reuse the helper
+        for non-embed-field surfaces (e.g. a panel description that
+        caps at 4096)."""
+        entries = [_entry(f"op{i}") for i in range(50)]
+        r = render_change_plan(entries, max_lines=50, field_limit=4096)
+        assert len(r.body) <= 4096
+
+    def test_format_change_plan_lines_backcompat_shape(self):
+        """The legacy helper still returns a list[str]; callers that
+        only need the lines keep working unchanged."""
+        entries = [_entry(f"op{i}") for i in range(3)]
+        lines = format_change_plan_lines(entries)
+        assert isinstance(lines, list)
+        assert all(isinstance(l, str) for l in lines)
+        # No truncation suffix on a short diff.
+        assert not any("truncated" in line.lower() for line in lines)
