@@ -179,6 +179,20 @@ lifecycle_close_duration_seconds = Histogram(
     buckets=(0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0),
 )
 
+# Time from process start to the STARTING → RUNNING transition (i.e.
+# Discord's on_ready event firing).  Observed exactly once per boot,
+# at the moment lifecycle.set_phase(RUNNING) is called for the first
+# time.  Sustained drift towards higher buckets indicates a degrading
+# boot path (slow migrations, slow extension load, slow Discord
+# handshake, slow identity-contract validation, etc).  Buckets span
+# 0.5 s — 5 min so both fast healthy boots and pathological cold-starts
+# land somewhere informative.
+lifecycle_startup_seconds = Histogram(
+    "lifecycle_startup_seconds",
+    "Time from process start to lifecycle phase RUNNING (on_ready fired).",
+    buckets=(0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0),
+)
+
 governance_fail_open_total = Counter(
     "governance_fail_open_total",
     "Interaction-router governance gate fell open due to resolver error. "
