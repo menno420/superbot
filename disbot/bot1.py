@@ -83,10 +83,6 @@ ALLOWED_CHANNELS = config.ALLOWED_CHANNELS
 # Set by SIGTERM handler — channel guard rejects new commands during drain.
 _shutting_down = False
 
-# Application-owned background tasks.  Only these are cancelled on shutdown —
-# discord.py-internal tasks are left alone to avoid library-level errors.
-_APP_TASKS: list[asyncio.Task] = []
-
 
 def _begin_shutdown(*_) -> None:
     global _shutting_down
@@ -94,26 +90,19 @@ def _begin_shutdown(*_) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Supervised app-task helper — Phase S2.4 / C-2 (PR-02a compat wrapper)
-# Every entry-point-layer asyncio.create_task call should go through this
-# helper so unhandled exceptions are loud (critical log + webhook alert)
-# instead of escaping the event loop silently.
+# Supervised app-task helper — Phase S2.4 / C-2 (PR-02c, final form)
 #
-# PR-02a: _supervised_task now delegates to core.runtime.tasks.spawn,
-# passing the existing webhook-alert behaviour as an ``on_error`` hook.
-# The canonical task supervisor handles strong refs, metrics, the
-# cancellation/clean-exit filter, and ERROR-level logging; this module's
-# hook layers the CRITICAL log + webhook follow-up on top.  _APP_TASKS
-# stays as the entry-point-level mirror used by shutdown drain (the
-# drain migration to ``tasks.cancel_all`` is PR-02b).
+# PR-02c removes the historical ``_APP_TASKS`` mirror and the
+# ``_supervised_task`` compatibility wrapper.  Callers now use
+# ``core.runtime.tasks.spawn`` directly with the
+# ``_on_app_task_died_webhook`` on_error hook, which is the canonical
+# entry-point for app-owned background tasks.  The canonical task
+# supervisor (``core.runtime.tasks``) handles strong refs, metrics,
+# the cancellation/clean-exit filter, and ERROR-level logging; this
+# module's hook layers the CRITICAL log + webhook follow-up on top.
 # ---------------------------------------------------------------------------
 
 from core.runtime import tasks as _runtime_tasks  # noqa: E402
-
-
-def _supervised_task(coro, *, name: str) -> asyncio.Task:
-    """Spawn an app-owned background task with a death-detecting callback."""
-    return _runtime_tasks.spawn(name, coro, on_error=_on_app_task_died_webhook)
 
 
 def _on_app_task_died_webhook(
@@ -530,9 +519,11 @@ PROCESS_MEMORY_SAMPLE_INTERVAL: int = 60  # seconds between RSS samples
 async def _sample_process_memory() -> None:
     """Update the ``process_memory_rss_bytes`` gauge every interval.
 
-    Runs forever until cancelled at shutdown.  Wrapped in ``_supervised_task``
-    by main(), so a psutil failure surfaces as a CRITICAL log + webhook
-    alert rather than vanishing silently.
+    Runs forever until cancelled at shutdown.  Spawned via
+    ``core.runtime.tasks.spawn`` with the
+    ``_on_app_task_died_webhook`` on_error hook by main(), so a
+    psutil failure surfaces as a CRITICAL log + webhook alert rather
+    than vanishing silently.
     """
     import psutil
 
@@ -593,26 +584,29 @@ async def main() -> None:
             from core.runtime import session_gc
             from healthserver import start_health_server
 
-            # Track app-owned tasks so shutdown only cancels OUR tasks,
-            # not discord.py-internal ones (OPS-001 fix).  Health server
-            # is supervised + gated on bind-ready (Phase S2.4 / O-2b):
-            # if the bind fails, the bot aborts startup instead of
-            # silently running with a wedged orchestration probe.
-            # Heartbeat the runtime lock every 30 s so a healthy
-            # replica retains ownership and a stale row is auto-
-            # reclaimed by the next boot after the 90 s TTL.
-            heartbeat_task = _supervised_task(
+            # PR-02c: app-owned tasks go directly through
+            # ``core.runtime.tasks.spawn`` with the webhook-alert
+            # ``on_error`` hook.  The supervisor's module-level
+            # ``_TASKS`` set is the single owner; shutdown drain
+            # iterates it via ``cancel_all()``.  Health server is
+            # gated on bind-ready (Phase S2.4 / O-2b): if the bind
+            # fails, the bot aborts startup instead of silently
+            # running with a wedged orchestration probe.  Heartbeat
+            # the runtime lock every 30 s so a healthy replica
+            # retains ownership and a stale row is auto-reclaimed by
+            # the next boot after the 90 s TTL.
+            _runtime_tasks.spawn(
+                "runtime_lock_heartbeat",
                 _runtime.run_heartbeat_loop(_heartbeat_stop),
-                name="runtime_lock_heartbeat",
+                on_error=_on_app_task_died_webhook,
             )
-            _APP_TASKS.append(heartbeat_task)
 
             health_ready = asyncio.Event()
-            health_task = _supervised_task(
+            health_task = _runtime_tasks.spawn(
+                "health_server",
                 start_health_server(bot, ready_event=health_ready),
-                name="health_server",
+                on_error=_on_app_task_died_webhook,
             )
-            _APP_TASKS.append(health_task)
 
             # Wait for either the bind to succeed (ready_event set) or
             # the supervised task to die.  5 s is generous — bind is a
@@ -648,17 +642,19 @@ async def main() -> None:
                     "continuing — probe traffic may be slow at first.",
                 )
 
-            _APP_TASKS.append(session_gc.start())
+            # PR-02c: session_gc.start() now uses tasks.spawn
+            # internally (PR-02b); calling it once registers the
+            # GC loop with the canonical supervisor.
+            session_gc.start()
 
             # Phase S3.3 / O-4: sample process RSS every 60s so slow
             # memory leaks surface in Prometheus before they OOM the
             # container.  Supervised so a psutil failure logs critical
             # + webhook-alerts rather than escaping silently.
-            _APP_TASKS.append(
-                _supervised_task(
-                    _sample_process_memory(),
-                    name="process_memory_sampler",
-                ),
+            _runtime_tasks.spawn(
+                "process_memory_sampler",
+                _sample_process_memory(),
+                on_error=_on_app_task_died_webhook,
             )
 
             # Automation scheduler (Track 6 PR 18 / #211): gated behind
@@ -834,11 +830,13 @@ async def main() -> None:
         # when the event is set, which lets the lock release happen
         # before we tear down the DB pool.
         _heartbeat_stop.set()
-        # PR-02b (revised): drain through the canonical task supervisor.
-        # ``cancel_all`` returns the stable snapshot of tasks that were
-        # still running at cancellation time, so we await *exactly that
-        # set* rather than re-snapshotting after the cancellation (which
-        # would race against done-callbacks).
+        # PR-02c: drain through the canonical task supervisor.  Every
+        # supervised app task is registered in ``tasks._TASKS``; the
+        # historical ``_APP_TASKS`` mirror is gone — there is exactly
+        # one owner now.  ``cancel_all`` returns the stable snapshot
+        # of tasks that were still running at cancellation time, so we
+        # await *exactly that set* rather than re-snapshotting after
+        # the cancellation (which would race against done-callbacks).
         #
         # The drain runs on **every** exit path — normal return, SIGTERM,
         # uncaught exception — not just SIGTERM.  An app task that
