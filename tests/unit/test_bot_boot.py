@@ -185,36 +185,124 @@ def test_bot1_posts_startup_summary_webhook_before_bot_start() -> None:
     )
 
 
-def test_bot1_spawns_restart_close_driver() -> None:
-    """LP-3: the restart watchdog must be supervised at boot so a
-    ``lifecycle.request_restart`` call turns into ``bot.close()``."""
+def test_bot1_spawns_lifecycle_close_driver() -> None:
+    """The lifecycle close-driver must be supervised at boot so any
+    pending lifecycle request (SIGTERM shutdown or ``!restart``) turns
+    into ``bot.close()``."""
     src = _src()
-    assert "restart_close_driver" in src, (
+    assert "lifecycle_close_driver" in src, (
         "bot1.py must spawn a supervised task named "
-        "'restart_close_driver' to drive bot.close() on restart (LP-3)."
+        "'lifecycle_close_driver' to drive bot.close() on any pending "
+        "lifecycle request."
     )
-    assert "_drive_close_on_restart_request" in src, (
-        "bot1.py must define and spawn _drive_close_on_restart_request "
-        "(LP-3)."
+    assert "_drive_close_on_lifecycle_request" in src, (
+        "bot1.py must define and spawn _drive_close_on_lifecycle_request."
     )
 
 
-def test_bot1_restart_watchdog_uses_bounded_close_timeout() -> None:
-    """LP-3: the watchdog must wrap ``bot.close()`` in
+def test_bot1_close_driver_uses_bounded_timeout() -> None:
+    """The close-driver must wrap ``bot.close()`` in
     ``asyncio.wait_for`` with a timeout so a wedged close cannot hold
     the runtime lock past its TTL."""
     src = _src()
-    assert "RESTART_CLOSE_TIMEOUT_SECONDS" in src, (
-        "bot1.py must declare RESTART_CLOSE_TIMEOUT_SECONDS as the "
-        "named bound for the restart close (LP-3)."
+    assert "LIFECYCLE_CLOSE_TIMEOUT_SECONDS" in src, (
+        "bot1.py must declare LIFECYCLE_CLOSE_TIMEOUT_SECONDS as the "
+        "named bound for the close."
     )
     assert re.search(
         r"asyncio\.wait_for\(\s*bot\.close\(\)\s*,",
         src,
     ), (
         "bot1.py must wrap bot.close() in asyncio.wait_for with a "
-        "bounded timeout (LP-3)."
+        "bounded timeout."
     )
+
+
+def test_bot1_close_driver_gates_on_pending_and_draining() -> None:
+    """The close-driver eligibility must consult both the lifecycle
+    pending request and the DRAINING phase — that pair is what makes
+    one watchdog cover both shutdown and restart."""
+    src = _src()
+    assert "_lifecycle.get_pending()" in src, (
+        "bot1.py close-driver must consult _lifecycle.get_pending() — "
+        "not restart_requested() — so shutdown intent is also closed."
+    )
+    assert "_lifecycle.Phase.DRAINING" in src, (
+        "bot1.py close-driver must gate on _lifecycle.Phase.DRAINING."
+    )
+
+
+def test_bot1_close_driver_does_not_own_cleanup() -> None:
+    """Architectural boundary: cleanup belongs to ``main()``'s finally
+    block, not the close-driver.  The driver function body must not
+    call runtime-lock release, db.close, reporter.close, os.execv, or
+    sys.exit.  ``os._exit`` is permitted (close-timeout fail-safe).
+
+    AST-scoped to the driver function so that legitimate uses of those
+    same calls elsewhere in bot1.py (the actual finalizer) are not
+    flagged.
+    """
+    tree = ast.parse(_src())
+    driver_fn: ast.AsyncFunctionDef | None = None
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.AsyncFunctionDef)
+            and node.name == "_drive_close_on_lifecycle_request"
+        ):
+            driver_fn = node
+            break
+    assert driver_fn is not None, (
+        "bot1.py must define async def _drive_close_on_lifecycle_request."
+    )
+
+    forbidden_attr_calls = {
+        "release_lock_best_effort",
+        "execv",
+    }
+    forbidden_attr_chains = {
+        ("db", "close"),
+        ("reporter", "close"),
+        ("sys", "exit"),
+    }
+    for node in ast.walk(driver_fn):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if isinstance(func, ast.Attribute):
+            if func.attr in forbidden_attr_calls:
+                raise AssertionError(
+                    f"close-driver must not call {func.attr!r}; "
+                    f"cleanup is owned by main()'s finally block.",
+                )
+            if isinstance(func.value, ast.Name):
+                pair = (func.value.id, func.attr)
+                if pair in forbidden_attr_chains:
+                    raise AssertionError(
+                        f"close-driver must not call "
+                        f"{pair[0]}.{pair[1]}; cleanup is owned by "
+                        f"main()'s finally block.",
+                    )
+
+
+def test_bot1_no_legacy_restart_close_driver_names() -> None:
+    """Guard against regressing the restart-only close-driver split.
+
+    The previous design coupled close execution to restart intent;
+    SIGTERM shutdowns therefore never reached bot.close().  Re-adding
+    any of these names would reintroduce that split.
+    """
+    src = _src()
+    for legacy in (
+        "_drive_close_on_restart_request",
+        "restart_close_driver",
+        "RESTART_CLOSE_TIMEOUT_SECONDS",
+        "_RESTART_CLOSE_POLL_INTERVAL",
+    ):
+        assert legacy not in src, (
+            f"Legacy restart-only close-driver name {legacy!r} "
+            f"reintroduced — see plan; the close-driver must remain "
+            f"keyed on lifecycle pending + DRAINING phase."
+        )
 
 
 def test_bot1_finally_block_transitions_to_restarting_when_restart_pending() -> (
