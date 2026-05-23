@@ -134,6 +134,35 @@ def test_bot1_applies_config_log_level_at_boot() -> None:
     )
 
 
+def test_bot1_sigterm_handler_routes_through_lifecycle() -> None:
+    """LP-2: SIGTERM must enter the lifecycle service rather than
+    flipping a module-local ``_shutting_down: bool``. The legacy global
+    is gone; observers (``_channel_guard``, future PRs) read from
+    ``lifecycle.can_accept_commands()``.
+    """
+    src = _src()
+    assert "_lifecycle.request_shutdown(reason=" in src, (
+        "bot1._begin_shutdown must call lifecycle.request_shutdown(...) "
+        "so SIGTERM is observable through the lifecycle event buffer (LP-2)."
+    )
+    assert "_shutting_down = True" not in src, (
+        "Legacy ``_shutting_down = True`` assignment must be gone — "
+        "the lifecycle service is now the single source of truth (LP-2)."
+    )
+
+
+def test_bot1_channel_guard_admits_via_lifecycle() -> None:
+    """LP-2: ``_channel_guard`` must consult
+    :func:`core.runtime.lifecycle.can_accept_commands` rather than the
+    legacy ``_shutting_down`` bool.
+    """
+    src = _src()
+    assert "_lifecycle.can_accept_commands()" in src, (
+        "bot1._channel_guard must check lifecycle.can_accept_commands() "
+        "so command admission tracks the lifecycle phase (LP-2)."
+    )
+
+
 def test_bot1_shutdown_drain_logs_timeout() -> None:
     """PR-02b (revised): when the 5 s drain budget elapses with tasks
     still pending, a WARNING log must surface so operators see the

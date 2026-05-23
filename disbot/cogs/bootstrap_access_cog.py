@@ -24,6 +24,7 @@ from typing import Any
 from discord.ext import commands
 
 import config
+from core.runtime import lifecycle
 from core.runtime.command_access import (
     can_bypass_channel_guard,
     is_bootstrap_command,
@@ -52,13 +53,6 @@ def _check_is_owned_by_bootstrap_cog(check: Any) -> bool:
     return isinstance(owner, BootstrapAccessCog)
 
 
-def _is_shutting_down_from_legacy_guard(legacy_guard: Any | None) -> bool:
-    """Read ``_shutting_down`` from the original guard's globals, if present."""
-    if legacy_guard is None:
-        return False
-    return bool(getattr(legacy_guard, "__globals__", {}).get("_shutting_down", False))
-
-
 def _command_name(ctx: commands.Context) -> str | None:
     command = getattr(ctx, "command", None)
     if command is None:
@@ -69,9 +63,8 @@ def _command_name(ctx: commands.Context) -> str | None:
 class BootstrapAccessCog(commands.Cog):
     """Installs the fresh-guild-aware global channel guard."""
 
-    def __init__(self, bot: commands.Bot, *, legacy_guard: Any | None = None) -> None:
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self._legacy_guard = legacy_guard
 
     def cog_unload(self) -> None:
         """Remove the global channel guard so a reload doesn't leave a
@@ -93,7 +86,11 @@ class BootstrapAccessCog(commands.Cog):
             )
 
     async def _channel_guard(self, ctx: commands.Context) -> bool:
-        if _is_shutting_down_from_legacy_guard(self._legacy_guard):
+        # LP-2: command admission is owned by the lifecycle service.
+        # Previously this read ``_shutting_down`` from the legacy guard's
+        # ``__globals__`` — that lookup is gone now that bot1.py routes
+        # SIGTERM through ``lifecycle.request_shutdown``.
+        if not lifecycle.can_accept_commands():
             return False
         if ctx.guild is None:
             return False
@@ -157,23 +154,20 @@ async def setup(bot: commands.Bot) -> None:
     silently breaking command access in production guilds.
     """
     existing_checks = _find_channel_guard_checks(bot)
-    legacy_guards = [
-        c for c in existing_checks if not _check_is_owned_by_bootstrap_cog(c)
-    ]
-    bootstrap_remnants = [
-        c for c in existing_checks if _check_is_owned_by_bootstrap_cog(c)
-    ]
-    legacy_guard = legacy_guards[0] if legacy_guards else None
+    legacy_count = sum(
+        1 for c in existing_checks if not _check_is_owned_by_bootstrap_cog(c)
+    )
+    remnant_count = len(existing_checks) - legacy_count
     for guard in existing_checks:
         bot.remove_check(guard)
-    cog = BootstrapAccessCog(bot, legacy_guard=legacy_guard)
+    cog = BootstrapAccessCog(bot)
     bot.add_check(cog._channel_guard)
     await bot.add_cog(cog)
     logger.info(
         "BootstrapAccessCog loaded; replaced %d legacy guard(s) + "
         "cleaned %d bootstrap remnant(s).",
-        len(legacy_guards),
-        len(bootstrap_remnants),
+        legacy_count,
+        remnant_count,
     )
 
 
