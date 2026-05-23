@@ -9,6 +9,7 @@ import pytest
 
 from core.runtime import command_surface_ledger as ledger_mod
 from core.runtime.command_surface_ledger import (
+    CLASSIFICATIONS,
     CommandSurfaceEntry,
     CommandSurfaceLedger,
     LedgerFindings,
@@ -470,3 +471,80 @@ def test_does_not_call_validate_identity_contract():
                         "Ledger imports validate_identity_contract — "
                         "complementary, not consumer",
                     )
+
+
+# ---------------------------------------------------------------------------
+# PR-06a — Classification contract (additive)
+# ---------------------------------------------------------------------------
+
+
+class TestClassification:
+    def test_classifications_tuple_matches_literal_args(self):
+        """Canonical tuple must list every value declared in the
+        Classification Literal — drift would let cog annotations use a
+        value the type checker accepts but no consumer knows about."""
+        from typing import get_args
+
+        from core.runtime.command_surface_ledger import Classification
+
+        assert set(CLASSIFICATIONS) == set(get_args(Classification))
+
+    def test_classifications_includes_seven_canonical_values(self):
+        assert set(CLASSIFICATIONS) == {
+            "primary_entrypoint",
+            "power_user_shortcut",
+            "panel_action",
+            "legacy_duplicate",
+            "internal_admin",
+            "hidden",
+            "deprecated",
+        }
+
+    def test_command_surface_entry_default_classification(self):
+        entry = CommandSurfaceEntry(
+            name="daily",
+            cog_name="EconomyCog",
+            subsystem="economy",
+            visibility_tier="user",
+        )
+        assert entry.classification == "primary_entrypoint"
+
+    def test_command_surface_entry_classification_explicitly_set(self):
+        entry = CommandSurfaceEntry(
+            name="legacy_daily",
+            cog_name="EconomyCog",
+            subsystem="economy",
+            visibility_tier="user",
+            classification="legacy_duplicate",
+        )
+        assert entry.classification == "legacy_duplicate"
+
+    def test_findings_unclassified_entry_points_default_empty(self):
+        findings = LedgerFindings()
+        assert findings.unclassified_entry_points == ()
+        assert findings.total == 0
+
+    def test_findings_total_includes_unclassified_count(self):
+        findings = LedgerFindings(
+            unclassified_entry_points=("economy.daily", "rps.duel"),
+        )
+        assert findings.total == 2
+
+    def test_diagnostics_snapshot_includes_unclassified_count(self):
+        """The diagnostics provider exposes the new bucket so the
+        readiness embed and !platform diagnostics show it without
+        cog-side knowledge of the field name."""
+        from core.runtime.command_surface_ledger import _snapshot
+
+        bot = MagicMock()
+        bot.walk_commands = lambda: []
+        with patch(
+            "core.runtime.command_surface_ledger._walk_router_prefixes",
+            return_value=[],
+        ):
+            build_ledger(bot)
+        snap = _snapshot()
+        assert "unclassified_entry_points" in snap["findings"]
+        assert snap["findings"]["unclassified_entry_points"] == 0
+
+
