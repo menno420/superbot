@@ -59,6 +59,92 @@ ABSENT: ChangeValue = ChangeValue(kind="absent")
 UNKNOWN: ChangeValue = ChangeValue(kind="unknown")
 
 
+# ---------------------------------------------------------------------------
+# PR-04a — Normalized preflight comparison
+# ---------------------------------------------------------------------------
+
+
+# Strings that ``utils.db.get_setting`` may return for a "no value
+# stored" cell, in addition to ``None``.  Treated as equivalent to
+# ``None`` so a freshly-set value to "" or an unset row to "" is not
+# rendered as a misleading diff.  Aligns with the convention used by
+# the settings mutation pipeline (see ``services.settings_resolution``
+# canonical accessors).
+_NORMALIZED_EMPTY: frozenset[str] = frozenset({"", "None", "null"})
+
+# Strings that normalize to ``True`` / ``False`` for boolean settings.
+# Settings stored as canonical strings ("true"/"false", "1"/"0",
+# "yes"/"no") should compare equal to the boolean form an operator
+# stages from the wizard.
+_TRUTHY_TOKENS: frozenset[str] = frozenset({"true", "1", "yes", "on"})
+_FALSY_TOKENS: frozenset[str] = frozenset({"false", "0", "no", "off"})
+
+
+def _normalize_for_compare(value: Any) -> Any:
+    """Return a canonical form of ``value`` for the preflight diff.
+
+    The settings layer stores everything as TEXT, so naive string
+    comparison would either hide real type mismatches (``int 1`` vs
+    string ``"1"``) or surface false positives (``bool True`` vs
+    string ``"true"``).  The normalizer collapses common equivalent
+    forms so the preflight diff only flags **observable** changes.
+
+    Rules (deliberately small — bigger normalization is the settings
+    layer's job):
+
+    * ``None`` → ``None``.
+    * Strings ``""`` / ``"None"`` / ``"null"`` → ``None`` (DB layer
+      sometimes stores the empty form for "unset").
+    * Booleans → ``True`` / ``False`` directly.
+    * Strings matching ``_TRUTHY_TOKENS`` → ``True``.
+    * Strings matching ``_FALSY_TOKENS`` → ``False``.
+    * Numeric strings → ``int`` if exactly parseable, else stripped
+      string.
+    * Other strings → stripped + lowercased so trailing whitespace
+      / case drift does not show as a diff.
+    * Everything else: returned unchanged.
+
+    The normalizer is deterministic and side-effect-free.  Adding a
+    new equivalence here costs one entry; the comparison itself
+    remains a single ``==``.
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value
+    if isinstance(value, str):
+        s = value.strip()
+        if s in _NORMALIZED_EMPTY:
+            return None
+        lowered = s.lower()
+        if lowered in _TRUTHY_TOKENS:
+            return True
+        if lowered in _FALSY_TOKENS:
+            return False
+        # Numeric coercion — only exact int parse so we don't
+        # accidentally collapse "1.0" with "1" for non-numeric keys.
+        try:
+            return int(s)
+        except ValueError:
+            pass
+        return lowered
+    return value
+
+
+def values_equivalent(current: Any, proposed: Any) -> bool:
+    """Return ``True`` when the preflight should treat the two values
+    as the same observable state.
+
+    Use this in every preflight adapter that needs to decide
+    ``would_change``.  Centralising the rule here means a new
+    equivalence (e.g. canonical channel-ID string vs int) is one edit
+    rather than a sweep of adapters.
+    """
+    return _normalize_for_compare(current) == _normalize_for_compare(proposed)
+
+
 @dataclass(frozen=True)
 class ChangePlanEntry:
     """Per-operation preflight result.
@@ -116,4 +202,5 @@ __all__ = [
     "ChangeValue",
     "ChangeValueKind",
     "RiskLevel",
+    "values_equivalent",
 ]

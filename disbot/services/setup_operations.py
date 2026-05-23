@@ -415,8 +415,17 @@ async def _preflight_set_setting(
     op: SetupOperation,
     guild_id: int | None,
 ) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
-    """Read the current setting value to diff against ``op.value``."""
-    from services.setup_change_plan import UNKNOWN, ChangeValue
+    """Read the current setting value to diff against ``op.value``.
+
+    Uses :func:`services.setup_change_plan.values_equivalent` for the
+    diff so settings stored as TEXT in the DB compare correctly to the
+    typed values the wizard stages (e.g. ``"true"`` vs ``True``,
+    ``"100"`` vs ``int 100``, ``""`` vs ``None``).  Naive string
+    comparison would either hide real mismatches or render false
+    positives — see ``test_setup_change_plan.TestValuesEquivalent`` for
+    the full equivalence table.
+    """
+    from services.setup_change_plan import UNKNOWN, ChangeValue, values_equivalent
 
     if guild_id is None or not op.subsystem or not op.setting_name:
         return (
@@ -441,7 +450,7 @@ async def _preflight_set_setting(
         )
     current = ChangeValue(kind="value", value=current_raw)
     proposed = ChangeValue(kind="value", value=op.value)
-    would_change = str(current_raw) != str(op.value)
+    would_change = not values_equivalent(current_raw, op.value)
     return current, proposed, would_change, None
 
 
