@@ -343,3 +343,141 @@ async def test_platform_slow_limit_argument_caps_field_count():
 
     embed = ctx.send.call_args.kwargs["embed"]
     assert len(embed.fields) == 3  # capped at limit=3
+
+
+# ---------------------------------------------------------------------------
+# !platform lifecycle — dedicated lifecycle embed
+#
+# The lifecycle provider is already rolled into !platform runtime, but
+# operators looking for shutdown/restart context shouldn't have to scan
+# the multi-provider dump.  This command formats phase, pending request,
+# and the recent_events ring buffer (including close_executing entries
+# from the close-driver) into a focused single-purpose embed.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_renders_running_phase_with_no_pending():
+    """Healthy path: RUNNING phase, no pending request, no events recorded."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "RUNNING",
+        "can_accept_commands": True,
+        "pending": None,
+        "remaining_shutdown_seconds": None,
+        "recent_events": [],
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    assert "RUNNING" in (embed.description or "")
+    field_names = {f.name for f in embed.fields}
+    assert field_names == {"Pending request", "Recent events"}
+    pending_field = next(f for f in embed.fields if f.name == "Pending request")
+    assert pending_field.value.strip().startswith("_none_") or "none" in pending_field.value
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_renders_pending_shutdown_with_grace():
+    """DRAINING phase with grace-remaining displays the grace value so
+    operators can see how much time the request has left before the
+    close-driver will fire."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "DRAINING",
+        "can_accept_commands": False,
+        "pending": {
+            "kind": "shutdown",
+            "reason": "sigterm",
+            "actor": "signal_handler",
+            "grace_seconds": 30.0,
+        },
+        "remaining_shutdown_seconds": 12.5,
+        "recent_events": [],
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    pending_field = next(f for f in embed.fields if f.name == "Pending request")
+    assert "shutdown" in pending_field.value
+    assert "sigterm" in pending_field.value
+    assert "signal_handler" in pending_field.value
+    assert "12.5" in pending_field.value  # grace remaining
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_renders_close_executing_event_newest_first():
+    """The close-driver records ``close_executing`` events; they must
+    surface in this embed so an operator can confirm the executor ran
+    after intent was recorded.  Recent events are oldest-last in the
+    snapshot but should be displayed newest-first."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "DRAINING",
+        "can_accept_commands": False,
+        "pending": {
+            "kind": "shutdown",
+            "reason": "sigterm",
+            "actor": "signal_handler",
+        },
+        "remaining_shutdown_seconds": None,
+        "recent_events": [
+            {
+                "name": "shutdown_requested",
+                "phase": "RUNNING",
+                "actor": "signal_handler",
+                "reason": "sigterm",
+            },
+            {
+                "name": "phase:DRAINING",
+                "phase": "DRAINING",
+                "actor": None,
+                "reason": "sigterm",
+            },
+            {
+                "name": "close_executing",
+                "phase": "DRAINING",
+                "actor": "signal_handler",
+                "reason": "sigterm",
+            },
+        ],
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    events_field = next(f for f in embed.fields if f.name.startswith("Recent events"))
+    body = events_field.value
+    # All three event names should be present.
+    assert "close_executing" in body
+    assert "shutdown_requested" in body
+    assert "phase:DRAINING" in body
+    # Newest-first ordering: close_executing must appear before
+    # shutdown_requested in the rendered text.
+    assert body.index("close_executing") < body.index("shutdown_requested")
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_degrades_gracefully_when_provider_unregistered():
+    """Mirror build_caches_embed's KeyError fallback — render an
+    informative embed instead of letting the exception escape into
+    ctx.send."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    with patch(
+        "services.diagnostics_service.snapshot",
+        side_effect=KeyError("lifecycle"),
+    ):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    assert "not registered" in (embed.description or "")
