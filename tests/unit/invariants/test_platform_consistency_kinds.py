@@ -24,7 +24,6 @@ import pytest
 
 from services import platform_consistency as pc
 
-
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _MODULE_PATH = _REPO_ROOT / "disbot" / "services" / "platform_consistency.py"
 
