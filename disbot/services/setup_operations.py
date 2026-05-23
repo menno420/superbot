@@ -33,7 +33,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    from services.setup_change_plan import ChangePlanEntry, ChangeValue
 
 logger = logging.getLogger("bot.services.setup_operations")
 
@@ -203,6 +206,9 @@ def preview_operations(ops: list[SetupOperation]) -> list[SetupOperationResult]:
     Validates each operation's kind only.  Operations with known kinds are
     optimistically reported as ``"applied"``; unknown kinds are
     ``"not_yet_implemented"``.  No DB reads are performed.
+
+    Kept as the sync fast path; consumers wanting a real current /
+    proposed diff call :func:`preflight_operations` (PR-04a).
     """
     results: list[SetupOperationResult] = []
     for op in ops:
@@ -218,6 +224,273 @@ def preview_operations(ops: list[SetupOperation]) -> list[SetupOperationResult]:
             ),
         )
     return results
+
+
+# ---------------------------------------------------------------------------
+# PR-04a — Preflight (read-only ChangePlan diff)
+# ---------------------------------------------------------------------------
+
+
+import os  # noqa: E402
+
+_PREFLIGHT_FLAG_ENV = "SETUP_PREFLIGHT_DIFF"
+
+
+def is_preflight_enabled() -> bool:
+    """Return ``True`` when the preflight diff feature is enabled.
+
+    Reads the ``SETUP_PREFLIGHT_DIFF`` env var.  Default: off in
+    PR-04a; PR-04b flips the default after a clean canary.  Final
+    Review consults this helper to decide whether to invoke
+    :func:`preflight_operations` or fall back to the validation-only
+    :func:`preview_operations` path.
+    """
+    val = os.getenv(_PREFLIGHT_FLAG_ENV, "").strip().lower()
+    return val in ("1", "true", "yes", "on")
+
+
+async def preflight_operations(
+    ops: list[SetupOperation],
+    *,
+    guild: Any,
+) -> list[ChangePlanEntry]:
+    """Return one :class:`ChangePlanEntry` per operation.
+
+    PR-04a: real current/proposed diff for the most common operation
+    kinds (``bind_*`` / ``clear_binding``, ``set_setting``,
+    ``set_cog_routing``).  Other kinds emit a ChangePlanEntry with
+    ``preflight_skipped_reason="no_adapter"`` so the Final Review
+    embed can label them ``"preflight unavailable"`` rather than
+    silently dropping the op.
+
+    **Read-only** by contract: adapters here must not write to the
+    DB or call a mutation pipeline.  The
+    ``tests/unit/invariants/test_setup_preflight_readonly.py``
+    invariant enforces this at AST level.
+
+    Failures in a single adapter are isolated — the entry gets a
+    ``read_error`` string and the rest of the batch continues.  An
+    unknown ``op.kind`` produces a no-adapter entry rather than
+    raising.
+    """
+    from services.setup_change_plan import (
+        ABSENT,
+        UNKNOWN,
+        ChangePlanEntry,
+        ChangeValue,
+    )
+
+    entries: list[ChangePlanEntry] = []
+    guild_id = getattr(guild, "id", None)
+    for op in ops:
+        meta = op.metadata or {}
+        risk = meta.get("risk", "unknown") if isinstance(meta, dict) else "unknown"
+        rollback = meta.get("rollback_note", "") if isinstance(meta, dict) else ""
+        if risk not in ("low", "medium", "high", "unknown"):
+            risk = "unknown"
+
+        # Defaults — overwritten by per-kind adapters below.
+        current: ChangeValue = UNKNOWN
+        proposed: ChangeValue = UNKNOWN
+        would_change = True
+        read_error: str | None = None
+        skipped_reason: str | None = None
+
+        kind = op.kind
+        if kind not in _KNOWN_KINDS:
+            # Validation-time failure: render as no-adapter.
+            skipped_reason = "unknown_op_kind"
+            proposed = ChangeValue(kind="value", value=op.target_id or op.value)
+        elif kind in _BINDING_KINDS:
+            current, proposed, would_change, read_error = await _preflight_bind(
+                op,
+                guild_id,
+            )
+        elif kind == "clear_binding":
+            current, proposed, would_change, read_error = (
+                await _preflight_clear_binding(
+                    op,
+                    guild_id,
+                )
+            )
+        elif kind == "set_setting":
+            current, proposed, would_change, read_error = await _preflight_set_setting(
+                op,
+                guild_id,
+            )
+        elif kind == "set_cog_routing":
+            current, proposed, would_change, read_error = (
+                await _preflight_set_cog_routing(
+                    op,
+                    guild_id,
+                )
+            )
+        else:
+            # Known kind without a v1 read adapter (create_*, automation,
+            # cleanup_policy).  Render proposed value where available;
+            # signal that the diff is not computed.
+            skipped_reason = "no_adapter"
+            current = ABSENT if kind.startswith("create_") else UNKNOWN
+            proposed_val = (
+                op.value if op.value is not None else op.target_id or op.target_name
+            )
+            proposed = ChangeValue(kind="value", value=proposed_val)
+
+        entries.append(
+            ChangePlanEntry(
+                op=op,
+                label=_label(op),
+                current=current,
+                proposed=proposed,
+                would_change=would_change,
+                risk=risk,
+                rollback_note=rollback,
+                read_error=read_error,
+                preflight_skipped_reason=skipped_reason,
+            ),
+        )
+    return entries
+
+
+async def _preflight_bind(
+    op: SetupOperation,
+    guild_id: int | None,
+) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
+    """Read the current binding row to diff against ``op``."""
+    from services.setup_change_plan import ABSENT, UNKNOWN, ChangeValue
+
+    if guild_id is None or not op.subsystem or not op.binding_name:
+        return (
+            UNKNOWN,
+            ChangeValue(kind="value", value=op.target_id),
+            True,
+            "missing guild/subsystem/binding_name on op",
+        )
+    try:
+        from utils.db import bindings as bindings_db
+
+        row = await bindings_db.get_one(guild_id, op.subsystem, op.binding_name)
+    except Exception as exc:  # noqa: BLE001 — preflight is fail-safe
+        return (
+            UNKNOWN,
+            ChangeValue(kind="value", value=op.target_id),
+            True,
+            f"{type(exc).__name__}: {exc}",
+        )
+    current: ChangeValue
+    if row is None:
+        current = ABSENT
+    else:
+        current = ChangeValue(kind="value", value=row.get("target_id"))
+    proposed = ChangeValue(kind="value", value=op.target_id)
+    if current.kind != "value" or proposed.kind != "value":
+        would_change = True
+    else:
+        would_change = current.value != proposed.value
+    return current, proposed, would_change, None
+
+
+async def _preflight_clear_binding(
+    op: SetupOperation,
+    guild_id: int | None,
+) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
+    """Read the current binding row to determine whether clear is a no-op."""
+    from services.setup_change_plan import ABSENT, UNKNOWN, ChangeValue
+
+    if guild_id is None or not op.subsystem or not op.binding_name:
+        return (UNKNOWN, ABSENT, True, "missing guild/subsystem/binding_name on op")
+    try:
+        from utils.db import bindings as bindings_db
+
+        row = await bindings_db.get_one(guild_id, op.subsystem, op.binding_name)
+    except Exception as exc:  # noqa: BLE001 — preflight is fail-safe
+        return (UNKNOWN, ABSENT, True, f"{type(exc).__name__}: {exc}")
+    if row is None:
+        return (ABSENT, ABSENT, False, None)
+    current = ChangeValue(kind="value", value=row.get("target_id"))
+    return (current, ABSENT, True, None)
+
+
+async def _preflight_set_setting(
+    op: SetupOperation,
+    guild_id: int | None,
+) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
+    """Read the current setting value to diff against ``op.value``.
+
+    Uses :func:`services.setup_change_plan.values_equivalent` for the
+    diff so settings stored as TEXT in the DB compare correctly to the
+    typed values the wizard stages (e.g. ``"true"`` vs ``True``,
+    ``"100"`` vs ``int 100``, ``""`` vs ``None``).  Naive string
+    comparison would either hide real mismatches or render false
+    positives — see ``test_setup_change_plan.TestValuesEquivalent`` for
+    the full equivalence table.
+    """
+    from services.setup_change_plan import UNKNOWN, ChangeValue, values_equivalent
+
+    if guild_id is None or not op.subsystem or not op.setting_name:
+        return (
+            UNKNOWN,
+            ChangeValue(kind="value", value=op.value),
+            True,
+            "missing guild/subsystem/setting_name on op",
+        )
+    try:
+        from utils import db
+
+        current_raw = await db.get_setting(
+            guild_id,
+            f"{op.subsystem}.{op.setting_name}",
+        )
+    except Exception as exc:  # noqa: BLE001 — preflight is fail-safe
+        return (
+            UNKNOWN,
+            ChangeValue(kind="value", value=op.value),
+            True,
+            f"{type(exc).__name__}: {exc}",
+        )
+    current = ChangeValue(kind="value", value=current_raw)
+    proposed = ChangeValue(kind="value", value=op.value)
+    would_change = not values_equivalent(current_raw, op.value)
+    return current, proposed, would_change, None
+
+
+async def _preflight_set_cog_routing(
+    op: SetupOperation,
+    guild_id: int | None,
+) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
+    """Read the current cog-routing policy for a given scope."""
+    from services.setup_change_plan import UNKNOWN, ChangeValue
+
+    if guild_id is None or not op.subsystem:
+        return (
+            UNKNOWN,
+            ChangeValue(kind="value", value=op.value),
+            True,
+            "missing guild/subsystem on op",
+        )
+    proposed_val = bool(op.value) if op.value is not None else False
+    proposed = ChangeValue(kind="value", value=proposed_val)
+    try:
+        from services import command_routing
+
+        # The cog-routing scope is per-channel; the op carries the
+        # scope target_id when present.  Without a target_id we read
+        # the guild-level policy.
+        current_val = await command_routing.is_cog_enabled(
+            guild_id,
+            op.subsystem,
+            channel_id=op.target_id,
+        )
+    except Exception as exc:  # noqa: BLE001 — preflight is fail-safe
+        return (
+            UNKNOWN,
+            proposed,
+            True,
+            f"{type(exc).__name__}: {exc}",
+        )
+    current = ChangeValue(kind="value", value=bool(current_val))
+    would_change = bool(current_val) != proposed_val
+    return current, proposed, would_change, None
 
 
 async def apply_operations(
