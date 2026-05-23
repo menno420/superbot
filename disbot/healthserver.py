@@ -1,14 +1,19 @@
 """Minimal HTTP health server for container orchestration probes.
 
-Exposes two endpoints on 0.0.0.0:8080 (configurable via HEALTH_PORT env var):
+Exposes these endpoints on 0.0.0.0:8080 (configurable via HEALTH_PORT env var):
 
-  GET /health  — liveness probe; returns 200 while the event loop is running
-  GET /ready   — readiness probe; returns 200 only when the bot is logged in
-                 to Discord AND the lifecycle service is admitting commands.
-                 Returns 503 during STARTING (gateway not connected yet) or
-                 any draining/terminal phase (DRAINING, SHUTTING_DOWN,
-                 RESTARTING, STOPPED) so the orchestrator routes traffic
-                 away during graceful shutdown / restart.
+  GET /health     — liveness probe; returns 200 while the event loop is running
+  GET /ready      — readiness probe; returns 200 only when the bot is logged in
+                    to Discord AND the lifecycle service is admitting commands.
+                    Returns 503 during STARTING (gateway not connected yet) or
+                    any draining/terminal phase (DRAINING, SHUTTING_DOWN,
+                    RESTARTING, STOPPED) so the orchestrator routes traffic
+                    away during graceful shutdown / restart.
+  GET /lifecycle  — diagnostic dump of the full lifecycle snapshot (phase,
+                    pending request, recent events).  Always returns 200 with
+                    the snapshot JSON.  Operators ``curl`` this during an
+                    incident when the bot is unresponsive in Discord but the
+                    HTTP server is still serving.
 
 The server runs as a background asyncio task alongside the bot, sharing the
 same event loop. It adds no threads and has negligible overhead.
@@ -127,6 +132,26 @@ async def _ready_handler(request: web.Request) -> web.Response:
     )
 
 
+async def _lifecycle_handler(request: web.Request) -> web.Response:
+    """Diagnostic dump of the full lifecycle snapshot as JSON.
+
+    Always returns 200 — this is a diagnostic endpoint, not a probe.
+    The same data is available via ``!platform lifecycle`` and the
+    ``!lc`` shortcut, but those require the bot to be responsive in
+    Discord.  This endpoint works as long as the aiohttp server is
+    serving, so operators can ``curl`` the bot during an incident
+    where the Discord gateway is wedged but the HTTP listener is up.
+
+    The payload is the same shape returned by
+    :func:`core.runtime.lifecycle.diagnostics_snapshot`, suitable
+    for piping into ``jq`` for ad-hoc queries.
+    """
+    return web.Response(
+        text=json.dumps(lifecycle.diagnostics_snapshot()),
+        content_type="application/json",
+    )
+
+
 async def _metrics_handler(request: web.Request) -> web.Response:
     """Prometheus metrics exposition endpoint."""
     return web.Response(body=generate_latest(), content_type=CONTENT_TYPE_LATEST)
@@ -156,6 +181,7 @@ async def start_health_server(
     app["bot"] = bot
     app.router.add_get("/health", _health_handler)
     app.router.add_get("/ready", _ready_handler)
+    app.router.add_get("/lifecycle", _lifecycle_handler)
     app.router.add_get("/metrics", _metrics_handler)
 
     runner = web.AppRunner(app, access_log=None)
