@@ -647,6 +647,24 @@ async def _drive_close_on_lifecycle_request() -> None:
             _metrics.lifecycle_close_duration_seconds.labels(
                 kind=kind_label,
             ).observe(LIFECYCLE_CLOSE_TIMEOUT_SECONDS)
+            # Highest-severity lifecycle webhook: bot.close() hung and
+            # the driver is force-exiting.  Tight timeout — the process
+            # is already past its bounded close budget; no point letting
+            # the webhook stall further.
+            if reporter is not None and pending is not None:
+                try:
+                    await asyncio.wait_for(
+                        reporter.on_lifecycle_close_timeout(
+                            pending,
+                            timeout_seconds=LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
+                        ),
+                        timeout=1.0,
+                    )
+                except Exception as report_err:
+                    logger.debug(
+                        "Lifecycle close-timeout webhook skipped: %s",
+                        report_err,
+                    )
             logger.critical(
                 "bot.close() exceeded %.1fs timeout — force-exiting "
                 "so the orchestration platform respawns.",
