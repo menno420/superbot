@@ -14,11 +14,15 @@ from __future__ import annotations
 import datetime
 import logging
 import traceback
+from typing import TYPE_CHECKING
 
 import aiohttp
 import discord
 
 from core.runtime.ai.redaction import redact_text
+
+if TYPE_CHECKING:
+    from core.runtime.lifecycle import PendingShutdown
 
 logger = logging.getLogger("bot.webhook")
 
@@ -274,6 +278,42 @@ class WebhookReporter:
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         await self._send(embed, username="Bot Health")
+
+    async def on_lifecycle_close_beginning(
+        self,
+        pending: "PendingShutdown",
+    ) -> None:
+        """Posted by the close-driver immediately before ``bot.close()``.
+
+        Operators see one canonical "the bot is about to close" signal
+        for both SIGTERM shutdown and ``!restart``.  The caller wraps
+        this in best-effort try/except + ``asyncio.wait_for`` so a
+        stalled webhook cannot delay ``bot.close()`` and the finalizer.
+        """
+        is_restart = pending.kind == "restart"
+        title = (
+            "♻️ Bot Restart Beginning"
+            if is_restart
+            else "🛑 Bot Shutdown Beginning"
+        )
+        color = discord.Color.gold() if is_restart else discord.Color.red()
+        embed = discord.Embed(
+            title=title,
+            color=color,
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        embed.add_field(name="Kind", value=pending.kind, inline=True)
+        embed.add_field(
+            name="Reason",
+            value=pending.reason or "<unknown>",
+            inline=True,
+        )
+        embed.add_field(
+            name="Actor",
+            value=pending.actor or "<unknown>",
+            inline=True,
+        )
+        await self._send(embed, username="Bot Lifecycle")
 
     async def on_app_task_died(self, name: str, error: BaseException) -> None:
         """A supervised application task raised after startup.
