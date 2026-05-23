@@ -116,6 +116,24 @@ def test_bot1_shutdown_drains_via_core_runtime_tasks() -> None:
     )
 
 
+def test_bot1_applies_config_log_level_at_boot() -> None:
+    """LP-0: bot1.py applies ``config.LOG_LEVEL`` to the root logger at
+    boot so the env var matches the runtime behaviour of the
+    ``!loglevel`` operator command at ``cogs/admin_cog.py:329-334``.
+    Invalid values fall back to ``logging.INFO`` so a typo in the env
+    var never blocks startup.
+    """
+    src = _src()
+    assert re.search(r"getattr\(\s*logging\s*,\s*config\.LOG_LEVEL\s*,", src), (
+        "bot1.py must resolve config.LOG_LEVEL via getattr(logging, ...) "
+        "so the LOG_LEVEL env var takes effect at boot (LP-0)."
+    )
+    assert not re.search(r"_root\.setLevel\(\s*logging\.INFO\s*\)", src), (
+        "bot1.py must not hardcode root setLevel to logging.INFO — "
+        "the LOG_LEVEL env var must be honoured (LP-0)."
+    )
+
+
 def test_bot1_shutdown_drain_logs_timeout() -> None:
     """PR-02b (revised): when the 5 s drain budget elapses with tasks
     still pending, a WARNING log must surface so operators see the
