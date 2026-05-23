@@ -24,6 +24,7 @@ from cogs.diagnostic._platform_embeds import (
     build_customization_embed,
     build_flags_embed,
     build_identity_embed,
+    build_lifecycle_embed,
     build_locks_embed,
     build_migrations_embed,
     build_participation_schemas_embed,
@@ -320,6 +321,12 @@ class DiagnosticCog(commands.Cog):
     async def platform_runtime(self, ctx):
         """High-level runtime snapshot: every registered diagnostic provider."""
         await ctx.send(embed=build_runtime_embed())
+
+    @platform_grp.command(name="lifecycle")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_lifecycle(self, ctx):
+        """Lifecycle state: phase, pending request, recent events."""
+        await ctx.send(embed=build_lifecycle_embed())
 
     @platform_grp.command(name="caches")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)

@@ -534,6 +534,97 @@ def build_runtime_embed() -> discord.Embed:
     return embed
 
 
+_LIFECYCLE_PHASE_COLORS: dict[str, discord.Color] = {
+    "STARTING": discord.Color.gold(),
+    "RUNNING": discord.Color.green(),
+    "DRAINING": discord.Color.gold(),
+    "SHUTTING_DOWN": discord.Color.dark_red(),
+    "RESTARTING": discord.Color.dark_red(),
+    "STOPPED": discord.Color.dark_red(),
+    "FAILED_STARTUP": discord.Color.dark_red(),
+}
+
+
+def build_lifecycle_embed() -> discord.Embed:
+    """Build the embed for ``!platform lifecycle``.
+
+    Renders the lifecycle service state machine — current phase, the
+    pending shutdown/restart request if any (with grace remaining),
+    and the most recent events from the ring buffer, newest first.
+    The events include ``shutdown_requested`` / ``restart_requested``
+    (intent), ``close_executing`` (close-driver invocation), and the
+    ``phase:<NAME>`` transitions, so operators get a one-screen view
+    of what the lifecycle has done lately.
+
+    Falls back to a degraded embed if the ``lifecycle`` provider is
+    not registered, matching the ``build_caches_embed`` pattern.
+    """
+    from services import diagnostics_service
+
+    try:
+        snap = diagnostics_service.snapshot("lifecycle")
+    except KeyError:
+        return discord.Embed(
+            title="🔄 Lifecycle",
+            description="Provider not registered.",
+            color=discord.Color.greyple(),
+        )
+
+    phase = str(snap.get("phase", "unknown"))
+    can_accept = bool(snap.get("can_accept_commands", False))
+    embed = discord.Embed(
+        title="🔄 Lifecycle",
+        description=(f"Phase: **{phase}** · Accepting commands: **{can_accept}**"),
+        color=_LIFECYCLE_PHASE_COLORS.get(phase, discord.Color.greyple()),
+    )
+
+    pending = snap.get("pending")
+    if pending:
+        remaining = snap.get("remaining_shutdown_seconds")
+        remaining_part = (
+            f" · grace remaining: **{remaining:.1f}s**"
+            if isinstance(remaining, (int, float)) and remaining > 0
+            else ""
+        )
+        embed.add_field(
+            name="Pending request",
+            value=(
+                f"kind: `{pending.get('kind', '<unknown>')}`{remaining_part}\n"
+                f"reason: `{pending.get('reason', '<unknown>')}`\n"
+                f"actor: `{pending.get('actor', '<unknown>')}`"
+            ),
+            inline=False,
+        )
+    else:
+        embed.add_field(name="Pending request", value="_none_", inline=False)
+
+    events = list(snap.get("recent_events", []))
+    if events:
+        # Snapshot is oldest-first; render newest-first and cap at 10 so
+        # the field fits Discord's 1024-char limit comfortably.
+        lines: list[str] = []
+        for event in reversed(events[-10:]):
+            actor_part = f" by `{event['actor']}`" if event.get("actor") else ""
+            reason_part = f" — {event['reason']}" if event.get("reason") else ""
+            lines.append(
+                f"• `{event.get('name', '?')}` @ "
+                f"{event.get('phase', '?')}{actor_part}{reason_part}",
+            )
+        embed.add_field(
+            name=f"Recent events ({len(events)})",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="Recent events",
+            value="_none recorded_",
+            inline=False,
+        )
+
+    return embed
+
+
 def build_caches_embed() -> discord.Embed:
     """Build the embed for ``!platform caches``."""
     from services import diagnostics_service
@@ -1147,6 +1238,7 @@ __all__ = [
     "build_customization_embed",
     "build_flags_embed",
     "build_identity_embed",
+    "build_lifecycle_embed",
     "build_locks_embed",
     "build_migrations_embed",
     "build_participation_schemas_embed",
