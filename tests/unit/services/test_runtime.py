@@ -348,3 +348,68 @@ async def test_heartbeat_metric_increments_lost_when_peer_reclaims():
 
     assert _heartbeat_counter_value("lost") == before + 1
     exit_mock.assert_called_with(1)
+
+
+# ---------------------------------------------------------------------------
+# runtime_lock_heartbeat_seconds — duration of each heartbeat UPDATE call,
+# observed on every attempt (success AND exception) so DB latency trends
+# are not blinded by exception-path samples being skipped.
+# ---------------------------------------------------------------------------
+
+
+def _heartbeat_seconds_count_and_sum() -> tuple[float, float]:
+    """Return (count, sum) of the heartbeat-seconds histogram."""
+    from services import metrics as _metrics
+
+    samples = next(iter(_metrics.runtime_lock_heartbeat_seconds.collect())).samples
+    count = next(s.value for s in samples if s.name.endswith("_count"))
+    total = next(s.value for s in samples if s.name.endswith("_sum"))
+    return count, total
+
+
+@pytest.mark.asyncio
+async def test_heartbeat_seconds_histogram_observes_each_successful_call():
+    """Every successful heartbeat call observes a duration so operators
+    can graph the latency distribution without gaps."""
+    stop = asyncio.Event()
+    before_count, _ = _heartbeat_seconds_count_and_sum()
+
+    async def _hb(*_a, **_kw):
+        stop.set()
+        return True
+
+    with patch.object(rl_db, "heartbeat", side_effect=_hb):
+        await runtime.run_heartbeat_loop(stop, interval_seconds=0)
+
+    after_count, after_sum = _heartbeat_seconds_count_and_sum()
+    assert after_count == before_count + 1
+    # Duration must be non-negative; a real DB UPDATE in a healthy
+    # process completes in well under a second.
+    assert after_sum >= 0
+
+
+@pytest.mark.asyncio
+async def test_heartbeat_seconds_histogram_observes_failed_calls_too():
+    """Exception path must STILL observe the duration — the time spent
+    inside an erroring DB call is itself a useful signal (e.g. a slow
+    connection-pool timeout) and skipping it would bias the
+    distribution towards the happy path only."""
+    stop = asyncio.Event()
+    before_count, _ = _heartbeat_seconds_count_and_sum()
+    side_effects = [RuntimeError("blip"), True]
+
+    async def _hb(*_a, **_kw):
+        v = side_effects.pop(0)
+        if isinstance(v, Exception):
+            raise v
+        stop.set()
+        return v
+
+    with patch.object(rl_db, "heartbeat", side_effect=_hb), patch(
+        "services.runtime.os._exit",
+    ):
+        await runtime.run_heartbeat_loop(stop, interval_seconds=0)
+
+    after_count, _ = _heartbeat_seconds_count_and_sum()
+    # Two observations: one for the failed call, one for the recovery.
+    assert after_count == before_count + 2

@@ -179,6 +179,17 @@ lifecycle_close_duration_seconds = Histogram(
     buckets=(0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0),
 )
 
+# Duration of each ``runtime_lock.heartbeat`` UPDATE call.  Observed on
+# every attempt — success and exception alike — so operators can graph
+# DB latency trends without being blinded by exception-path samples
+# being skipped.  Buckets stop at 30 s (the heartbeat interval) since a
+# single heartbeat exceeding the interval is already pathological.
+runtime_lock_heartbeat_seconds = Histogram(
+    "runtime_lock_heartbeat_seconds",
+    "Duration of the runtime-lock heartbeat UPDATE call (success or error).",
+    buckets=(0.005, 0.025, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0),
+)
+
 governance_fail_open_total = Counter(
     "governance_fail_open_total",
     "Interaction-router governance gate fell open due to resolver error. "
