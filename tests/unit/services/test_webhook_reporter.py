@@ -103,6 +103,73 @@ async def test_send_no_session_returns_early_without_redaction_or_dispatch() -> 
     assert embed.description == "postgres://u:p@h/db"
 
 
+def _webhook_dispatch_counter(outcome: str) -> float:
+    from services import metrics as _metrics
+
+    return _metrics.webhook_dispatch_total.labels(outcome=outcome)._value.get()
+
+
+@pytest.mark.asyncio
+async def test_send_records_success_outcome_in_metric() -> None:
+    """Successful dispatch increments ``webhook_dispatch_total{outcome=success}``
+    so operators can graph healthy posts."""
+    reporter = WebhookReporter("https://discord.com/api/webhooks/123/abc")
+    reporter._session = MagicMock()
+
+    before = _webhook_dispatch_counter("success")
+
+    wh_mock = MagicMock()
+    wh_mock.send = AsyncMock()
+    with patch(
+        "services.webhook_reporter.discord.Webhook.from_url",
+        return_value=wh_mock,
+    ):
+        await reporter._send(discord.Embed(title="ok"))
+
+    assert _webhook_dispatch_counter("success") == before + 1
+
+
+@pytest.mark.asyncio
+async def test_send_records_error_outcome_when_send_raises() -> None:
+    """A network failure / 4xx / 5xx raises out of ``wh.send`` and is
+    caught + logged at DEBUG.  Without this metric, webhook outages
+    were silent — only visible as the absence of expected embeds.
+    Now operators can alert on
+    ``rate(webhook_dispatch_total{outcome="error"}[5m]) > 0``."""
+    reporter = WebhookReporter("https://discord.com/api/webhooks/123/abc")
+    reporter._session = MagicMock()
+
+    before = _webhook_dispatch_counter("error")
+
+    wh_mock = MagicMock()
+    wh_mock.send = AsyncMock(side_effect=RuntimeError("network down"))
+    with patch(
+        "services.webhook_reporter.discord.Webhook.from_url",
+        return_value=wh_mock,
+    ):
+        # _send swallows the exception (best-effort observability).
+        await reporter._send(discord.Embed(title="ok"))
+
+    assert _webhook_dispatch_counter("error") == before + 1
+
+
+@pytest.mark.asyncio
+async def test_send_no_dispatch_outcome_when_session_missing() -> None:
+    """The early-return guard (no URL or no session) must NOT increment
+    either outcome — those are "no attempt made" not "attempt
+    succeeded/failed"."""
+    reporter = WebhookReporter("https://discord.com/api/webhooks/123/abc")
+    # No _session set — _send bails before reaching dispatch.
+
+    before_success = _webhook_dispatch_counter("success")
+    before_error = _webhook_dispatch_counter("error")
+
+    await reporter._send(discord.Embed(title="ok"))
+
+    assert _webhook_dispatch_counter("success") == before_success
+    assert _webhook_dispatch_counter("error") == before_error
+
+
 @pytest.mark.asyncio
 async def test_on_command_error_redacts_traceback_secret_end_to_end() -> None:
     """Construct a real exception whose message contains a Postgres URL,
