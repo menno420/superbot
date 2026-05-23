@@ -324,6 +324,33 @@ def test_bot1_finally_block_transitions_to_restarting_when_restart_pending() -> 
     )
 
 
+def test_bot1_finally_block_posts_close_completed_webhook_before_reporter_close() -> (
+    None
+):
+    """Companion to the close-beginning webhook posted by the close-driver:
+    the finalizer must post on_lifecycle_close_completed BEFORE
+    reporter.close() tears down the HTTP session, otherwise the embed
+    cannot reach the operator channel.  The two operator-visible signals
+    bracket the shutdown / restart window so the gap between them is the
+    close + cleanup duration."""
+    src = _src()
+    finally_block = src.split("finally:", 1)[-1]
+    assert "on_lifecycle_close_completed" in finally_block, (
+        "bot1.py finally block must invoke "
+        "reporter.on_lifecycle_close_completed so the close-complete "
+        "embed reaches the operator channel before reporter teardown."
+    )
+    # Ordering: the close-completed call must appear before
+    # ``reporter.close()`` so the HTTP session is still alive.
+    webhook_idx = finally_block.index("on_lifecycle_close_completed")
+    reporter_close_idx = finally_block.index("reporter.close()")
+    assert webhook_idx < reporter_close_idx, (
+        "on_lifecycle_close_completed must be posted BEFORE "
+        "reporter.close() — otherwise the webhook is dispatched on a "
+        "torn-down aiohttp session and silently dropped."
+    )
+
+
 def test_bot1_shutdown_drain_logs_timeout() -> None:
     """PR-02b (revised): when the 5 s drain budget elapses with tasks
     still pending, a WARNING log must surface so operators see the

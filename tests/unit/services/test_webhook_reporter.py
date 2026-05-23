@@ -141,3 +141,63 @@ async def test_on_command_error_redacts_traceback_secret_end_to_end() -> None:
     )
     assert "postgres://u:p@host" not in body
     assert "[database_url:redacted]" in body
+
+
+# ---------------------------------------------------------------------------
+# on_lifecycle_close_completed — companion to on_lifecycle_close_beginning,
+# posted from main()'s finalizer right before reporter.close().
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_completed_renders_shutdown_embed():
+    """Shutdown intent → red embed titled 'Shutdown Complete' with
+    kind/reason/actor fields populated from the pending request."""
+    from core.runtime.lifecycle import PendingShutdown
+
+    reporter = WebhookReporter(url="https://example/wh")
+    reporter._send = AsyncMock()  # type: ignore[method-assign]
+    pending = PendingShutdown(
+        kind="shutdown",
+        reason="sigterm",
+        actor="signal_handler",
+        requested_at=0.0,
+        grace_seconds=None,
+    )
+
+    await reporter.on_lifecycle_close_completed(pending, duration_seconds=1.42)
+
+    reporter._send.assert_awaited_once()
+    embed = reporter._send.await_args.args[0]
+    assert "Shutdown Complete" in embed.title
+    assert embed.color == discord.Color.dark_red()
+    field_names = {f.name for f in embed.fields}
+    assert {"Kind", "Reason", "Actor", "Close duration"} <= field_names
+    duration_field = next(f for f in embed.fields if f.name == "Close duration")
+    assert duration_field.value == "1.42s"
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_completed_renders_restart_embed_without_duration():
+    """Restart intent → gold embed titled 'Restart Complete'.  When the
+    caller cannot compute duration (e.g. no close_executing event found),
+    the Close duration field is omitted rather than rendered as 'None'."""
+    from core.runtime.lifecycle import PendingShutdown
+
+    reporter = WebhookReporter(url="https://example/wh")
+    reporter._send = AsyncMock()  # type: ignore[method-assign]
+    pending = PendingShutdown(
+        kind="restart",
+        reason="!restart",
+        actor="operator#0001",
+        requested_at=0.0,
+        grace_seconds=None,
+    )
+
+    await reporter.on_lifecycle_close_completed(pending, duration_seconds=None)
+
+    embed = reporter._send.await_args.args[0]
+    assert "Restart Complete" in embed.title
+    assert embed.color == discord.Color.gold()
+    field_names = {f.name for f in embed.fields}
+    assert "Close duration" not in field_names

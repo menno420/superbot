@@ -1006,6 +1006,40 @@ async def main() -> None:
             pass
         await db.close()
         if reporter:
+            # Post the close-complete webhook BEFORE tearing down the
+            # reporter's HTTP session.  Operators see a paired
+            # "beginning" / "complete" lifecycle signal in the operator
+            # channel; the gap between the two embeds is the close +
+            # cleanup duration as observed end-to-end.  Wrapped in
+            # wait_for so a stalled webhook cannot delay process exit.
+            pending_for_webhook = _lifecycle.get_pending()
+            if pending_for_webhook is not None:
+                close_event = next(
+                    (
+                        event
+                        for event in _lifecycle.get_recent_events()
+                        if event.name == "close_executing"
+                    ),
+                    None,
+                )
+                duration_s = (
+                    time.monotonic() - close_event.at
+                    if close_event is not None
+                    else None
+                )
+                try:
+                    await asyncio.wait_for(
+                        reporter.on_lifecycle_close_completed(
+                            pending_for_webhook,
+                            duration_seconds=duration_s,
+                        ),
+                        timeout=2.0,
+                    )
+                except Exception as report_err:
+                    logger.debug(
+                        "Lifecycle close-completed webhook skipped: %s",
+                        report_err,
+                    )
             await reporter.close()
         # LP-2 + LP-3: surface the terminal phase. A pending restart
         # request promotes the transition to RESTARTING so observers
