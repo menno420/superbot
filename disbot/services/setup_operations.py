@@ -239,14 +239,17 @@ _PREFLIGHT_FLAG_ENV = "SETUP_PREFLIGHT_DIFF"
 def is_preflight_enabled() -> bool:
     """Return ``True`` when the preflight diff feature is enabled.
 
-    Reads the ``SETUP_PREFLIGHT_DIFF`` env var.  Default: off in
-    PR-04a; PR-04b flips the default after a clean canary.  Final
-    Review consults this helper to decide whether to invoke
-    :func:`preflight_operations` or fall back to the validation-only
-    :func:`preview_operations` path.
+    Reads the ``SETUP_PREFLIGHT_DIFF`` env var.  **PR-04b: default is
+    now on** after the PR-04a canary.  Set ``SETUP_PREFLIGHT_DIFF=0``
+    (or ``false`` / ``no`` / ``off``) to opt out and fall back to the
+    validation-only :func:`preview_operations` path.
+
+    Consumers like the Final Review embed call this helper to decide
+    whether to invoke :func:`preflight_operations` for the
+    current/proposed diff.
     """
     val = os.getenv(_PREFLIGHT_FLAG_ENV, "").strip().lower()
-    return val in ("1", "true", "yes", "on")
+    return val not in ("0", "false", "no", "off")
 
 
 async def preflight_operations(

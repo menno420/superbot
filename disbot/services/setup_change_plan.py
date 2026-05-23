@@ -195,6 +195,61 @@ class ChangePlanEntry:
     preflight_skipped_reason: str | None = None
 
 
+# ---------------------------------------------------------------------------
+# PR-04b — Rendering helper (text only; embed-agnostic)
+# ---------------------------------------------------------------------------
+
+
+def format_change_plan_lines(
+    entries: list[ChangePlanEntry],
+    *,
+    max_lines: int = 10,
+) -> list[str]:
+    """Render a preflight diff as plain-text lines for an embed field.
+
+    Output shape per entry (one line):
+
+    * ``✏ <label> · current=<current> → <proposed>   [risk=<risk>]``
+    * ``⚠ <label> · preflight unavailable (<reason>)``
+    * ``⚠ <label> · read error: <type:message>``
+    * ``✅ <label> · no change (current matches proposed)``
+
+    Lines suitable for a Final Review embed field (Discord caps the
+    field value at 1024 chars) are returned up to ``max_lines``;
+    callers append a ``"_+N more_"`` line themselves if they
+    truncate.
+
+    Sentinels render as ``ABSENT`` / ``UNKNOWN`` (uppercase) via
+    ``repr(ChangeValue)`` so the diff stays readable even when one
+    side of the comparison has no concrete value.
+    """
+    out: list[str] = []
+    for entry in entries[:max_lines]:
+        if entry.preflight_skipped_reason:
+            out.append(
+                f"⚠ {entry.label} · preflight unavailable "
+                f"({entry.preflight_skipped_reason})",
+            )
+            continue
+        if entry.read_error:
+            out.append(f"⚠ {entry.label} · read error: {entry.read_error}")
+            continue
+        if not entry.would_change:
+            out.append(f"✅ {entry.label} · no change (current matches proposed)")
+            continue
+        marker = "✏"
+        if entry.risk in ("medium", "high"):
+            marker = "⚠"
+        risk_suffix = (
+            f"   [risk={entry.risk}]" if entry.risk and entry.risk != "unknown" else ""
+        )
+        out.append(
+            f"{marker} {entry.label} · current={entry.current!r} → "
+            f"{entry.proposed!r}{risk_suffix}",
+        )
+    return out
+
+
 __all__ = [
     "ABSENT",
     "UNKNOWN",
@@ -202,5 +257,6 @@ __all__ = [
     "ChangeValue",
     "ChangeValueKind",
     "RiskLevel",
+    "format_change_plan_lines",
     "values_equivalent",
 ]

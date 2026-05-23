@@ -51,23 +51,12 @@ class TestChangeValue:
 
 
 class TestPreflightFlag:
-    def test_disabled_by_default(self):
-        with patch.dict("os.environ", {}, clear=False):
-            # Ensure the env var is not set in this test.
-            import os
-
-            os.environ.pop("SETUP_PREFLIGHT_DIFF", None)
-            assert is_preflight_enabled() is False
+    """PR-04b: default flipped to on; explicit off-values opt out."""
 
     @pytest.mark.parametrize("val", ["1", "true", "TRUE", "yes", "on"])
     def test_truthy_values_enable(self, val: str):
         with patch.dict("os.environ", {"SETUP_PREFLIGHT_DIFF": val}):
             assert is_preflight_enabled() is True
-
-    @pytest.mark.parametrize("val", ["", "0", "no", "off", "garbage"])
-    def test_other_values_keep_disabled(self, val: str):
-        with patch.dict("os.environ", {"SETUP_PREFLIGHT_DIFF": val}):
-            assert is_preflight_enabled() is False
 
 
 # ---------------------------------------------------------------------------
@@ -506,3 +495,118 @@ class TestPreflightSetSettingNormalized:
             entries = await preflight_operations([noop, change], guild=_guild())
         assert entries[0].would_change is False
         assert entries[1].would_change is True
+
+
+# ---------------------------------------------------------------------------
+# PR-04b — default-on + format_change_plan_lines
+# ---------------------------------------------------------------------------
+
+
+class TestPreflightDefaultOn:
+    def test_default_when_env_unset_is_on(self):
+        import os
+
+        os.environ.pop("SETUP_PREFLIGHT_DIFF", None)
+        assert is_preflight_enabled() is True
+
+    @pytest.mark.parametrize("val", ["0", "false", "no", "off", "FALSE"])
+    def test_explicit_off_disables(self, val: str):
+        with patch.dict("os.environ", {"SETUP_PREFLIGHT_DIFF": val}):
+            assert is_preflight_enabled() is False
+
+    @pytest.mark.parametrize("val", ["", "1", "true", "garbage"])
+    def test_truthy_or_unrecognised_values_remain_on(self, val: str):
+        with patch.dict("os.environ", {"SETUP_PREFLIGHT_DIFF": val}):
+            assert is_preflight_enabled() is True
+
+
+class TestFormatChangePlanLines:
+    def test_no_change_renders_check_mark(self):
+        from services.setup_change_plan import format_change_plan_lines
+
+        entry = ChangePlanEntry(
+            op=SetupOperation(kind="set_setting", subsystem="xp"),
+            label="set xp.threshold",
+            current=ChangeValue(kind="value", value="100"),
+            proposed=ChangeValue(kind="value", value="100"),
+            would_change=False,
+        )
+        lines = format_change_plan_lines([entry])
+        assert lines == ["✅ set xp.threshold · no change (current matches proposed)"]
+
+    def test_changed_low_risk_renders_pencil(self):
+        from services.setup_change_plan import format_change_plan_lines
+
+        entry = ChangePlanEntry(
+            op=SetupOperation(kind="set_setting", subsystem="xp"),
+            label="set xp.threshold",
+            current=ChangeValue(kind="value", value="100"),
+            proposed=ChangeValue(kind="value", value="200"),
+            would_change=True,
+            risk="low",
+        )
+        lines = format_change_plan_lines([entry])
+        assert lines[0].startswith("✏")
+        assert "current='100' → '200'" in lines[0]
+        assert "[risk=low]" in lines[0]
+
+    def test_high_risk_renders_warning(self):
+        from services.setup_change_plan import format_change_plan_lines
+
+        entry = ChangePlanEntry(
+            op=SetupOperation(kind="set_setting", subsystem="xp"),
+            label="set xp.threshold",
+            current=ChangeValue(kind="value", value="100"),
+            proposed=ChangeValue(kind="value", value="200"),
+            would_change=True,
+            risk="high",
+        )
+        lines = format_change_plan_lines([entry])
+        assert lines[0].startswith("⚠")
+        assert "[risk=high]" in lines[0]
+
+    def test_read_error_rendered_first(self):
+        from services.setup_change_plan import format_change_plan_lines
+
+        entry = ChangePlanEntry(
+            op=SetupOperation(kind="set_setting", subsystem="xp"),
+            label="set xp.threshold",
+            current=UNKNOWN,
+            proposed=ChangeValue(kind="value", value="200"),
+            would_change=True,
+            read_error="RuntimeError: db down",
+        )
+        lines = format_change_plan_lines([entry])
+        assert lines == ["⚠ set xp.threshold · read error: RuntimeError: db down"]
+
+    def test_no_adapter_rendered_first(self):
+        from services.setup_change_plan import format_change_plan_lines
+
+        entry = ChangePlanEntry(
+            op=SetupOperation(kind="create_channel", subsystem="logging"),
+            label="create channel #mod-log",
+            current=ABSENT,
+            proposed=ChangeValue(kind="value", value="mod-log"),
+            would_change=True,
+            preflight_skipped_reason="no_adapter",
+        )
+        lines = format_change_plan_lines([entry])
+        assert lines == [
+            "⚠ create channel #mod-log · preflight unavailable (no_adapter)",
+        ]
+
+    def test_max_lines_truncates(self):
+        from services.setup_change_plan import format_change_plan_lines
+
+        entries = [
+            ChangePlanEntry(
+                op=SetupOperation(kind="set_setting", subsystem="xp"),
+                label=f"line {i}",
+                current=ChangeValue(kind="value", value="a"),
+                proposed=ChangeValue(kind="value", value="b"),
+                would_change=True,
+            )
+            for i in range(20)
+        ]
+        lines = format_change_plan_lines(entries, max_lines=3)
+        assert len(lines) == 3
