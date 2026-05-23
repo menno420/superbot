@@ -128,6 +128,17 @@ runtime_lock_boot_wait_seconds = Histogram(
     buckets=(0.1, 0.5, 1.0, 5.0, 15.0, 30.0, 60.0, 120.0, 300.0),
 )
 
+# Lifecycle close-driver invocations: increments once each time the watchdog
+# in bot1 drives bot.close() from a pending lifecycle request.  ``shutdown``
+# is SIGTERM-driven; ``restart`` is !restart-driven.  Use this to alert on
+# unexpected close rates (e.g. a sustained non-zero ``restart`` rate without
+# operator action indicates a restart loop).
+lifecycle_close_driver_total = Counter(
+    "lifecycle_close_driver_total",
+    "Lifecycle close-driver invocations by pending request kind.",
+    ["kind"],  # shutdown | restart
+)
+
 governance_fail_open_total = Counter(
     "governance_fail_open_total",
     "Interaction-router governance gate fell open due to resolver error. "
