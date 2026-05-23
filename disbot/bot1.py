@@ -762,18 +762,26 @@ async def main() -> None:
             # boots without the ledger and `!platform consistency`
             # reports the section as not-built.
             try:
-                from core.runtime import command_surface_ledger
+                from core.runtime import command_surface_ledger, startup_outcome
 
                 command_surface_ledger.build_ledger(bot)
+                startup_outcome.record_success("command_surface_ledger")
             except Exception as exc:
                 logger.warning("Command-surface ledger build skipped: %s", exc)
+                from core.runtime import startup_outcome
+
+                startup_outcome.record_failure("command_surface_ledger", exc)
 
             try:
-                from core.runtime import settings_registry
+                from core.runtime import settings_registry, startup_outcome
 
                 settings_registry.build_registry()
+                startup_outcome.record_success("settings_registry")
             except Exception as exc:
                 logger.warning("Settings registry build skipped: %s", exc)
+                from core.runtime import startup_outcome
+
+                startup_outcome.record_failure("settings_registry", exc)
 
             # S2 — Customization catalogue. Composes the command surface
             # ledger, settings registry, subsystem schemas, and live cog
@@ -781,11 +789,16 @@ async def main() -> None:
             # Failure is non-fatal: the bot boots without the catalogue
             # and `!platform customization` reports it as not-built.
             try:
+                from core.runtime import startup_outcome
                 from services import customization_catalogue
 
                 customization_catalogue.build_catalogue(bot)
+                startup_outcome.record_success("customization_catalogue")
             except Exception as exc:
                 logger.warning("Customization catalogue build skipped: %s", exc)
+                from core.runtime import startup_outcome
+
+                startup_outcome.record_failure("customization_catalogue", exc)
 
             # S2.5 — Resource provisioning catalogue. Frozen, read-only
             # cross-link of every ResourceRequirement with its
@@ -793,12 +806,20 @@ async def main() -> None:
             # Failure is non-fatal: the bot boots without the catalogue
             # and `!platform provisioning` reports it as not-built.
             try:
+                from core.runtime import startup_outcome
                 from services import resource_provisioning_catalogue
 
                 resource_provisioning_catalogue.build_provisioning_catalogue()
+                startup_outcome.record_success("resource_provisioning_catalogue")
             except Exception as exc:
                 logger.warning(
                     "Resource provisioning catalogue build skipped: %s",
+                    exc,
+                )
+                from core.runtime import startup_outcome
+
+                startup_outcome.record_failure(
+                    "resource_provisioning_catalogue",
                     exc,
                 )
 

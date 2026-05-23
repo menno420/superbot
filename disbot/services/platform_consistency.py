@@ -56,6 +56,7 @@ import re
 from collections.abc import Awaitable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger("bot.platform_consistency")
 
@@ -256,10 +257,34 @@ async def collect_report(
         if result.kind is None:
             result = dataclasses.replace(result, kind=_LABEL_TO_KIND[label])
         sections.append(result)
-    return ConsistencyReport(
+    report = ConsistencyReport(
         sections=tuple(sections),
         generated_at=datetime.datetime.now(tz=datetime.timezone.utc),
     )
+    # PR-01b: cache the most recent report so the sync readiness
+    # snapshot can include its overall status + blocking section
+    # summary without re-entering this async collector.  Consumers
+    # that need a fresh report still call ``collect_report`` directly.
+    global _LAST_REPORT
+    _LAST_REPORT = report
+    return report
+
+
+# PR-01b: in-process cache of the most recent ``ConsistencyReport``.
+# Populated at the end of every ``collect_report`` call so the sync
+# ``build_readiness_snapshot`` can read it without awaiting.  ``None``
+# until the first call.
+_LAST_REPORT: ConsistencyReport | None = None
+
+
+def get_last_report() -> ConsistencyReport | None:
+    """Return the most recent ``ConsistencyReport`` or ``None``.
+
+    Sync accessor used by the readiness snapshot.  Does not trigger a
+    new collection — consumers that want fresh data must call
+    ``collect_report`` themselves.
+    """
+    return _LAST_REPORT
 
 
 def iter_blocking_sections(
@@ -900,13 +925,188 @@ async def _collect_setup_readiness() -> SectionResult:
     )
 
 
+# ---------------------------------------------------------------------------
+# PR-01b — Platform readiness snapshot (sync)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ReadinessSnapshot:
+    """A composite sync view of the bot's "safe to restart/deploy?" state.
+
+    Built from already-cached signals: the most recent
+    ``ConsistencyReport`` (populated by ``collect_report``), the
+    canonical task supervisor, the catalogue/registry build outcomes
+    recorded by ``core.runtime.startup_outcome``, and the cached
+    ledger/registry/customization/provisioning state.
+
+    Sync-only by design so it fits the existing sync
+    ``diagnostics_service.register`` contract.  Consumers that want a
+    fresh consistency report must call ``collect_report`` separately
+    via the existing async path.
+    """
+
+    generated_at: datetime.datetime
+    # Consistency report summary — None if collect_report has never
+    # been called this process.
+    consistency_overall_status: SectionStatus | None
+    consistency_report_at: datetime.datetime | None
+    consistency_blocking_sections: tuple[SectionResult, ...]
+    # Catalogue/registry build outcomes (PR-01b recorder).  One per
+    # KNOWN_PHASES entry; missing names indicate the phase did not
+    # reach its try/except yet (e.g. crash earlier in startup).
+    startup_outcomes: tuple[Any, ...]  # tuple[StartupOutcome, ...]
+    # Cached state booleans — set by the corresponding build_*
+    # function on success.  ``False`` means either "not built yet" or
+    # "build failed"; consult ``startup_outcomes`` for the cause.
+    ledger_built: bool
+    settings_registry_built: bool
+    customization_catalogue_built: bool
+    provisioning_catalogue_built: bool
+    # Canonical task supervisor snapshot.
+    tasks_active_count: int
+    tasks_active_names: tuple[str, ...]
+
+
+def build_readiness_snapshot() -> ReadinessSnapshot:
+    """Compose the readiness snapshot from cached signals.
+
+    Pure sync — every input comes from a process-local cache or an
+    in-memory state machine.  Safe to call from a diagnostics provider
+    or any sync render path.
+
+    Imports are function-local because ``core.runtime`` is
+    cycle-sensitive in this codebase; the companion
+    ``test_consistency_import_cycle.py`` pins the discipline.
+    """
+    from core.runtime import (
+        command_surface_ledger,
+        settings_registry,
+        startup_outcome,
+        tasks,
+    )
+    from services import customization_catalogue, resource_provisioning_catalogue
+
+    last = _LAST_REPORT
+    overall = last.overall_status if last is not None else None
+    report_at = last.generated_at if last is not None else None
+    blocking = iter_blocking_sections(last) if last is not None else ()
+
+    active = tasks.active()
+    active_names = tuple(sorted(t.get_name() for t in active))
+
+    return ReadinessSnapshot(
+        generated_at=datetime.datetime.now(tz=datetime.timezone.utc),
+        consistency_overall_status=overall,
+        consistency_report_at=report_at,
+        consistency_blocking_sections=blocking,
+        startup_outcomes=startup_outcome.all_outcomes(),
+        ledger_built=command_surface_ledger.get_cached_ledger() is not None,
+        settings_registry_built=(settings_registry.get_cached_registry() is not None),
+        customization_catalogue_built=(
+            customization_catalogue.get_cached_catalogue() is not None
+        ),
+        provisioning_catalogue_built=(
+            resource_provisioning_catalogue.get_cached_provisioning_catalogue()
+            is not None
+        ),
+        tasks_active_count=len(active),
+        tasks_active_names=active_names,
+    )
+
+
+def _readiness_snapshot_dict() -> dict[str, Any]:
+    """Diagnostics provider — dict view of the readiness snapshot.
+
+    Sync; safe to register with ``services.diagnostics_service``.
+    Errors during composition surface as ``{"_error": "..."}`` so a
+    broken provider does not crash the diagnostics dump.
+    """
+    try:
+        snap = build_readiness_snapshot()
+    except Exception as exc:  # noqa: BLE001 — diagnostics is fail-safe
+        return {"_error": f"{type(exc).__name__}: {exc}"}
+    return {
+        "generated_at": snap.generated_at.isoformat(),
+        "consistency": {
+            "overall_status": (
+                snap.consistency_overall_status.value
+                if snap.consistency_overall_status is not None
+                else None
+            ),
+            "report_at": (
+                snap.consistency_report_at.isoformat()
+                if snap.consistency_report_at is not None
+                else None
+            ),
+            "blocking_section_count": len(snap.consistency_blocking_sections),
+            "blocking_sections": [
+                {
+                    "name": s.name,
+                    "status": s.status.value,
+                    "kind": s.kind.value if s.kind is not None else None,
+                }
+                for s in snap.consistency_blocking_sections
+            ],
+        },
+        "startup": {
+            "outcomes": [
+                {
+                    "name": o.name,
+                    "success": o.success,
+                    "error": o.error,
+                    "recorded_at": o.recorded_at.isoformat(),
+                }
+                for o in snap.startup_outcomes
+            ],
+        },
+        "catalogues": {
+            "ledger_built": snap.ledger_built,
+            "settings_registry_built": snap.settings_registry_built,
+            "customization_catalogue_built": snap.customization_catalogue_built,
+            "provisioning_catalogue_built": snap.provisioning_catalogue_built,
+        },
+        "tasks": {
+            "active_count": snap.tasks_active_count,
+            "active_names": list(snap.tasks_active_names),
+        },
+    }
+
+
+def _register_diagnostics() -> None:
+    """Register the sync readiness provider.
+
+    Best-effort: if the diagnostics service is unavailable for some
+    reason, the snapshot still works — only the discoverability via
+    ``!platform diagnostics`` is lost.
+    """
+    try:
+        from services import diagnostics_service
+
+        diagnostics_service.register(
+            "platform_readiness",
+            _readiness_snapshot_dict,
+        )
+    except Exception as exc:  # noqa: BLE001 — registration is best-effort
+        logger.warning(
+            "platform_readiness diagnostics provider registration failed: %s",
+            exc,
+        )
+
+
+_register_diagnostics()
+
+
 __all__ = [
     "ConsistencyReport",
     "READINESS_KINDS",
     "ReadinessKind",
+    "ReadinessSnapshot",
     "SETUP_READINESS_BLOCKERS",
     "SectionResult",
     "SectionStatus",
+    "build_readiness_snapshot",
     "collect_report",
+    "get_last_report",
     "iter_blocking_sections",
 ]

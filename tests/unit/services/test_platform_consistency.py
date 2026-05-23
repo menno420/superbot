@@ -719,3 +719,128 @@ def test_setup_readiness_section_remains_informational():
     assert result.informational is True
     # Canonical section name matches the orchestrator's label mapping.
     assert result.name == "Setup readiness"
+
+
+# ---------------------------------------------------------------------------
+# PR-01b: readiness snapshot + diagnostics provider
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def _reset_pc_state():
+    """Clear platform_consistency module state for snapshot tests."""
+    from core.runtime import startup_outcome
+
+    pc._LAST_REPORT = None
+    startup_outcome.reset_for_tests()
+    yield
+    pc._LAST_REPORT = None
+    startup_outcome.reset_for_tests()
+
+
+def test_get_last_report_returns_none_before_first_collect(_reset_pc_state):
+    assert pc.get_last_report() is None
+
+
+def test_collect_report_populates_last_report_cache(_reset_pc_state):
+    """The orchestrator caches the most recent report so the sync
+    snapshot can read it without awaiting."""
+
+    async def trivial(*args, **kwargs) -> pc.SectionResult:
+        return pc.SectionResult(name="x", status=pc.SectionStatus.SKIPPED, summary="x")
+
+    with patch.multiple(
+        pc,
+        _collect_identity_contract=trivial,
+        _collect_feature_flags=trivial,
+        _collect_rollout_audit=trivial,
+        _collect_bindings=trivial,
+        _collect_binding_backfill=trivial,
+        _collect_config_arbitration=trivial,
+        _collect_participation=trivial,
+        _collect_migrations=trivial,
+        _collect_runtime_providers=trivial,
+        _collect_setup_readiness=trivial,
+    ):
+        report = asyncio.run(pc.collect_report(bot=object(), guild=None))
+
+    cached = pc.get_last_report()
+    assert cached is report
+
+
+def test_build_readiness_snapshot_with_no_report_returns_none_overall(
+    _reset_pc_state,
+):
+    snap = pc.build_readiness_snapshot()
+    assert snap.consistency_overall_status is None
+    assert snap.consistency_report_at is None
+    assert snap.consistency_blocking_sections == ()
+    assert snap.startup_outcomes == ()
+
+
+def test_build_readiness_snapshot_after_collect_includes_status(
+    _reset_pc_state,
+):
+    """A fresh collect_report populates the snapshot fields."""
+
+    async def trivial(*args, **kwargs) -> pc.SectionResult:
+        return pc.SectionResult(name="x", status=pc.SectionStatus.CLEAN, summary="x")
+
+    with patch.multiple(
+        pc,
+        _collect_identity_contract=trivial,
+        _collect_feature_flags=trivial,
+        _collect_rollout_audit=trivial,
+        _collect_bindings=trivial,
+        _collect_binding_backfill=trivial,
+        _collect_config_arbitration=trivial,
+        _collect_participation=trivial,
+        _collect_migrations=trivial,
+        _collect_runtime_providers=trivial,
+        _collect_setup_readiness=trivial,
+    ):
+        asyncio.run(pc.collect_report(bot=object(), guild=None))
+
+    snap = pc.build_readiness_snapshot()
+    assert snap.consistency_overall_status == pc.SectionStatus.CLEAN
+    assert snap.consistency_report_at is not None
+    assert snap.consistency_blocking_sections == ()
+
+
+def test_build_readiness_snapshot_reflects_startup_outcomes(_reset_pc_state):
+    from core.runtime import startup_outcome
+
+    startup_outcome.record_success("command_surface_ledger")
+    try:
+        raise RuntimeError("missing")
+    except RuntimeError as exc:
+        startup_outcome.record_failure("settings_registry", exc)
+
+    snap = pc.build_readiness_snapshot()
+    names = {o.name: o for o in snap.startup_outcomes}
+    assert names["command_surface_ledger"].success is True
+    assert names["settings_registry"].success is False
+    assert "RuntimeError" in names["settings_registry"].error
+
+
+def test_readiness_snapshot_dict_view_for_diagnostics(_reset_pc_state):
+    """The diagnostics provider dict view is JSON-serialisable shape."""
+    snap_dict = pc._readiness_snapshot_dict()
+    # Top-level keys.
+    assert {"generated_at", "consistency", "startup", "catalogues", "tasks"} <= set(
+        snap_dict.keys(),
+    )
+    # Nested catalogue booleans.
+    assert "ledger_built" in snap_dict["catalogues"]
+    # Tasks subsection always present.
+    assert "active_count" in snap_dict["tasks"]
+
+
+def test_readiness_provider_registered_in_diagnostics():
+    """Sync diagnostics service contract preserved — no async provider."""
+    from services import diagnostics_service
+
+    assert "platform_readiness" in diagnostics_service.registered_names()
+    # Calling it must return a dict synchronously (no coroutine).
+    snap = diagnostics_service.snapshot("platform_readiness")
+    assert isinstance(snap, dict)
