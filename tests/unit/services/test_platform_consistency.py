@@ -597,3 +597,125 @@ def test_collect_report_returns_ten_sections_in_order():
     # Last section must be Setup readiness, marked informational.
     assert report.sections[-1].name == "Setup readiness"
     assert report.sections[-1].informational is True
+
+
+# ---------------------------------------------------------------------------
+# PR-01a: typed readiness kind + iter_blocking_sections
+# ---------------------------------------------------------------------------
+
+
+def test_readiness_kinds_canonical_ordering():
+    """``READINESS_KINDS`` pins the canonical section order.
+
+    The diagnostic embed and the upcoming readiness snapshot rely on
+    this ordering being stable; adding a new collector requires
+    appending its kind and updating ``_LABEL_TO_KIND`` together.
+    """
+    assert pc.READINESS_KINDS == (
+        pc.ReadinessKind.IDENTITY_CONTRACT,
+        pc.ReadinessKind.FEATURE_FLAGS,
+        pc.ReadinessKind.ROLLOUT_AUDIT,
+        pc.ReadinessKind.BINDINGS,
+        pc.ReadinessKind.BINDING_BACKFILL,
+        pc.ReadinessKind.CONFIG_ARBITRATION,
+        pc.ReadinessKind.PARTICIPATION,
+        pc.ReadinessKind.MIGRATIONS,
+        pc.ReadinessKind.RUNTIME_PROVIDERS,
+        pc.ReadinessKind.SETUP_READINESS,
+    )
+    # Every declared kind must appear in the canonical tuple.
+    assert set(pc.READINESS_KINDS) == set(pc.ReadinessKind)
+
+
+def test_collect_report_stamps_typed_kind_on_every_section():
+    """Every section in the collected report has a non-None typed kind
+    matching ``READINESS_KINDS``."""
+
+    async def trivial(*args, **kwargs) -> pc.SectionResult:
+        return pc.SectionResult(name="x", status=pc.SectionStatus.SKIPPED, summary="x")
+
+    with patch.multiple(
+        pc,
+        _collect_identity_contract=trivial,
+        _collect_feature_flags=trivial,
+        _collect_rollout_audit=trivial,
+        _collect_bindings=trivial,
+        _collect_binding_backfill=trivial,
+        _collect_config_arbitration=trivial,
+        _collect_participation=trivial,
+        _collect_migrations=trivial,
+        _collect_runtime_providers=trivial,
+        _collect_setup_readiness=trivial,
+    ):
+        report = asyncio.run(pc.collect_report(bot=object(), guild=None))
+
+    kinds = [s.kind for s in report.sections]
+    assert all(k is not None for k in kinds), f"Untyped section in {kinds}"
+    assert tuple(kinds) == pc.READINESS_KINDS
+
+
+def test_collect_report_stamps_kind_even_when_collector_raises():
+    """A collector exception still produces a typed section."""
+
+    async def bad(*args, **kwargs) -> pc.SectionResult:
+        raise RuntimeError("boom")
+
+    async def trivial(*args, **kwargs) -> pc.SectionResult:
+        return pc.SectionResult(name="x", status=pc.SectionStatus.SKIPPED, summary="x")
+
+    with patch.multiple(
+        pc,
+        _collect_identity_contract=bad,
+        _collect_feature_flags=trivial,
+        _collect_rollout_audit=trivial,
+        _collect_bindings=trivial,
+        _collect_binding_backfill=trivial,
+        _collect_config_arbitration=trivial,
+        _collect_participation=trivial,
+        _collect_migrations=trivial,
+        _collect_runtime_providers=trivial,
+        _collect_setup_readiness=trivial,
+    ):
+        report = asyncio.run(pc.collect_report(bot=object(), guild=None))
+
+    # The FATAL fallback section for identity_contract still gets stamped.
+    assert report.sections[0].status == pc.SectionStatus.FATAL
+    assert report.sections[0].kind == pc.ReadinessKind.IDENTITY_CONTRACT
+
+
+def test_iter_blocking_sections_filters_informational_and_clean():
+    """Non-informational FATAL/WARNING/SKIPPED are returned; CLEAN and
+    informational sections are filtered out."""
+    sections = (
+        pc.SectionResult(name="a", status=pc.SectionStatus.CLEAN, summary=""),
+        pc.SectionResult(name="b", status=pc.SectionStatus.WARNING, summary=""),
+        pc.SectionResult(name="c", status=pc.SectionStatus.FATAL, summary=""),
+        pc.SectionResult(name="d", status=pc.SectionStatus.SKIPPED, summary=""),
+        # Informational warning must be excluded (Setup readiness pattern).
+        pc.SectionResult(
+            name="e", status=pc.SectionStatus.WARNING, summary="", informational=True
+        ),
+    )
+    report = pc.ConsistencyReport(
+        sections=sections,
+        generated_at=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    blocking = pc.iter_blocking_sections(report)
+    names = [s.name for s in blocking]
+    assert names == ["b", "c", "d"]
+
+
+def test_iter_blocking_sections_returns_empty_for_all_clean():
+    report = _report(pc.SectionStatus.CLEAN, pc.SectionStatus.CLEAN)
+    assert pc.iter_blocking_sections(report) == ()
+
+
+def test_setup_readiness_section_remains_informational():
+    """Regression pin: the Setup readiness collector must report
+    ``informational=True`` so the static blocker list cannot promote
+    ``overall_status``.  PR-03 (dynamic blocker registry) preserves
+    this contract."""
+    result = asyncio.run(pc._collect_setup_readiness())
+    assert result.informational is True
+    # Canonical section name matches the orchestrator's label mapping.
+    assert result.name == "Setup readiness"

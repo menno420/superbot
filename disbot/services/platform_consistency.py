@@ -37,14 +37,18 @@ Informational sections never promote ``overall_status``.
 Public surface:
 
     SectionStatus               — enum
+    ReadinessKind               — enum (typed identity per section)
+    READINESS_KINDS             — canonical-order tuple of every kind
     SectionResult               — frozen dataclass per section
     ConsistencyReport           — frozen dataclass: sections + overall_status
     SETUP_READINESS_BLOCKERS    — tuple of roadmap blocker identifiers
     collect_report(*, bot, guild) — async orchestrator
+    iter_blocking_sections(report) — non-informational, non-CLEAN sections
 """
 
 from __future__ import annotations
 
+import dataclasses
 import datetime
 import logging
 import os
@@ -68,6 +72,68 @@ class SectionStatus(str, Enum):
     SKIPPED = "skipped"
 
 
+class ReadinessKind(str, Enum):
+    """Canonical typed identity for each consistency section.
+
+    PR-01a: every section result returned by ``collect_report`` is
+    stamped with one of these kinds by the orchestrator (collectors
+    do not need to know about kinds — the orchestrator maps from
+    the human label to the typed kind).
+
+    ``READINESS_KINDS`` exports the canonical ordering used by the
+    orchestrator and consumers; the invariant test
+    ``tests/unit/invariants/test_platform_consistency_kinds.py`` pins
+    every collector to a known kind.
+    """
+
+    IDENTITY_CONTRACT = "identity_contract"
+    FEATURE_FLAGS = "feature_flags"
+    ROLLOUT_AUDIT = "rollout_audit"
+    BINDINGS = "bindings"
+    BINDING_BACKFILL = "binding_backfill"
+    CONFIG_ARBITRATION = "config_arbitration"
+    PARTICIPATION = "participation"
+    MIGRATIONS = "migrations"
+    RUNTIME_PROVIDERS = "runtime_providers"
+    SETUP_READINESS = "setup_readiness"
+
+
+# Canonical ordering — matches the orchestrator's collector tuple at
+# ``collect_report``.  ``test_readiness_kinds_canonical_ordering`` pins
+# this ordering so the diagnostic embed and the readiness snapshot can
+# rely on a stable section order.
+READINESS_KINDS: tuple[ReadinessKind, ...] = (
+    ReadinessKind.IDENTITY_CONTRACT,
+    ReadinessKind.FEATURE_FLAGS,
+    ReadinessKind.ROLLOUT_AUDIT,
+    ReadinessKind.BINDINGS,
+    ReadinessKind.BINDING_BACKFILL,
+    ReadinessKind.CONFIG_ARBITRATION,
+    ReadinessKind.PARTICIPATION,
+    ReadinessKind.MIGRATIONS,
+    ReadinessKind.RUNTIME_PROVIDERS,
+    ReadinessKind.SETUP_READINESS,
+)
+
+
+# Maps the human-readable label used by the orchestrator's collector
+# tuple to the typed ``ReadinessKind``.  The orchestrator stamps each
+# collector's ``SectionResult.kind`` from this map after the collector
+# returns, so collectors themselves never need to set ``kind``.
+_LABEL_TO_KIND: dict[str, ReadinessKind] = {
+    "Identity contract": ReadinessKind.IDENTITY_CONTRACT,
+    "Feature flags": ReadinessKind.FEATURE_FLAGS,
+    "Rollout / audit": ReadinessKind.ROLLOUT_AUDIT,
+    "Bindings": ReadinessKind.BINDINGS,
+    "Binding backfill": ReadinessKind.BINDING_BACKFILL,
+    "Config arbitration": ReadinessKind.CONFIG_ARBITRATION,
+    "Participation": ReadinessKind.PARTICIPATION,
+    "Migrations": ReadinessKind.MIGRATIONS,
+    "Runtime providers": ReadinessKind.RUNTIME_PROVIDERS,
+    "Setup readiness": ReadinessKind.SETUP_READINESS,
+}
+
+
 @dataclass(frozen=True)
 class SectionResult:
     name: str
@@ -76,6 +142,13 @@ class SectionResult:
     details: tuple[str, ...] = ()
     suggested_actions: tuple[str, ...] = ()
     informational: bool = False
+    # PR-01a: typed identity stamped by the orchestrator after each
+    # collector returns.  Optional only so collectors can construct
+    # ``SectionResult`` without knowing the kind; the orchestrator
+    # guarantees every section in a collected report has a non-None
+    # kind.  Consumers that build sections outside ``collect_report``
+    # (e.g. unit tests) may leave it as ``None``.
+    kind: ReadinessKind | None = None
 
 
 @dataclass(frozen=True)
@@ -176,10 +249,38 @@ async def collect_report(
                 summary=f"collector raised {type(exc).__name__}",
                 details=(str(exc)[:200],),
             )
+        # PR-01a: stamp the canonical readiness kind from the label.
+        # Collectors construct SectionResult without knowing the kind;
+        # the orchestrator is the single place where the human label
+        # is translated into the typed ``ReadinessKind``.
+        if result.kind is None:
+            result = dataclasses.replace(result, kind=_LABEL_TO_KIND[label])
         sections.append(result)
     return ConsistencyReport(
         sections=tuple(sections),
         generated_at=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+
+
+def iter_blocking_sections(
+    report: ConsistencyReport,
+) -> tuple[SectionResult, ...]:
+    """Return only non-informational, non-CLEAN sections.
+
+    PR-01a helper used by the upcoming readiness snapshot (PR-01b) and
+    smoke checklist (PR-05) to surface the subset of sections that
+    represent actionable signal — informational roadmap warnings
+    (e.g. "Setup readiness") and CLEAN sections are filtered out.
+
+    ``SKIPPED`` sections are included because "not applicable" can
+    still be a release-relevant signal (e.g. a migration not yet
+    applied that should be).  Consumers that want to filter further
+    can do so on the returned tuple.
+    """
+    return tuple(
+        s
+        for s in report.sections
+        if not s.informational and s.status is not SectionStatus.CLEAN
     )
 
 
@@ -801,8 +902,11 @@ async def _collect_setup_readiness() -> SectionResult:
 
 __all__ = [
     "ConsistencyReport",
+    "READINESS_KINDS",
+    "ReadinessKind",
     "SETUP_READINESS_BLOCKERS",
     "SectionResult",
     "SectionStatus",
     "collect_report",
+    "iter_blocking_sections",
 ]
