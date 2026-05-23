@@ -481,3 +481,37 @@ async def test_platform_lifecycle_degrades_gracefully_when_provider_unregistered
 
     embed = ctx.send.call_args.kwargs["embed"]
     assert "not registered" in (embed.description or "")
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_shortcut_command_reuses_build_lifecycle_embed():
+    """``!lifecycle`` (alias ``!lc``) is a top-level shortcut for
+    ``!platform lifecycle``.  Operators don't need to remember the
+    ``platform`` prefix during an incident.  Verifies the command
+    produces the same lifecycle embed as the platform subcommand."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "RUNNING",
+        "can_accept_commands": True,
+        "pending": None,
+        "remaining_shutdown_seconds": None,
+        "recent_events": [],
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.lifecycle_shortcut.callback(cog, ctx)
+
+    ctx.send.assert_awaited_once()
+    embed = ctx.send.call_args.kwargs["embed"]
+    assert "RUNNING" in (embed.description or "")
+
+
+def test_lifecycle_shortcut_exposes_lc_alias():
+    """The ``lc`` alias is the expected operator shorthand — assert it
+    explicitly so a future refactor cannot drop it without notice."""
+    from cogs.diagnostic_cog import DiagnosticCog
+
+    cmd = DiagnosticCog.lifecycle_shortcut
+    assert "lc" in cmd.aliases
+    assert cmd.name == "lifecycle"
