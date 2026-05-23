@@ -103,6 +103,75 @@ class WebhookReporter:
         embed.set_footer(text=f"Logged in as {bot.user}")
         await self._send(embed, username="Bot Status")
 
+    async def on_startup_summary(self, outcomes: object) -> None:
+        """Deterministic startup-outcome summary (LP-7).
+
+        Posts a single coloured embed listing every recorded startup
+        phase with its status and duration, derived purely from the
+        in-memory :mod:`core.runtime.startup_outcome` ledger. Called
+        from ``main()`` after the catalogue-build phases run but
+        before ``await bot.start(...)`` — operators see the boot
+        outcome immediately rather than waiting for the Discord
+        handshake + ``on_ready`` (which is what :meth:`on_startup`
+        used to fire from).
+
+        ``outcomes`` is an iterable of
+        :class:`core.runtime.startup_outcome.StartupOutcome`. The
+        signature accepts ``object`` so this reporter has no static
+        import of the recorder module — the caller (``bot1.py``) owns
+        the dependency.
+        """
+        from core.runtime import startup_outcome as _startup_outcome
+
+        items: tuple = tuple(outcomes)  # type: ignore[arg-type]
+        status = _startup_outcome.summary_status(items)
+        if status is _startup_outcome.SummaryStatus.OK:
+            title = "✅ Startup Summary — OK"
+            color = discord.Color.green()
+        elif status is _startup_outcome.SummaryStatus.DEGRADED:
+            title = "⚠️ Startup Summary — DEGRADED"
+            color = discord.Color.gold()
+        elif status is _startup_outcome.SummaryStatus.FAILED:
+            title = "🛑 Startup Summary — FAILED"
+            color = discord.Color.dark_red()
+        else:  # EMPTY
+            title = "ℹ️ Startup Summary — no outcomes recorded"
+            color = discord.Color.greyple()
+
+        if items:
+            lines = []
+            for outcome in items:
+                emoji = "✅" if outcome.success else "❌"
+                duration_part = (
+                    f" ({outcome.duration_ms:.0f} ms)"
+                    if outcome.duration_ms is not None
+                    else ""
+                )
+                error_part = f" — `{outcome.error}`" if outcome.error else ""
+                lines.append(
+                    f"{emoji} `{outcome.name}`{duration_part}{error_part}",
+                )
+            description = "\n".join(lines)[:4000]
+        else:
+            description = (
+                "No startup phases recorded — the orchestrator did "
+                "not reach the outcome-recording stage. Investigate "
+                "the boot logs."
+            )
+
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=color,
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        successes = sum(1 for o in items if o.success)
+        failures = len(items) - successes
+        embed.add_field(name="Total", value=str(len(items)), inline=True)
+        embed.add_field(name="Succeeded", value=str(successes), inline=True)
+        embed.add_field(name="Failed", value=str(failures), inline=True)
+        await self._send(embed, username="Bot Startup")
+
     async def on_identity_findings(
         self,
         summary: dict[str, object],

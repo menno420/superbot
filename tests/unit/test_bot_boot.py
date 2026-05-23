@@ -163,6 +163,28 @@ def test_bot1_channel_guard_admits_via_lifecycle() -> None:
     )
 
 
+def test_bot1_posts_startup_summary_webhook_before_bot_start() -> None:
+    """LP-7: the deterministic startup-summary webhook must be posted
+    AFTER all startup_outcome.record_* calls and BEFORE
+    ``bot.start(...)``, so operators see boot health immediately rather
+    than after the Discord handshake."""
+    src = _src()
+    assert "reporter.on_startup_summary(" in src, (
+        "bot1.py must call reporter.on_startup_summary(...) before "
+        "bot.start() so the deterministic boot health surfaces "
+        "without waiting for on_ready (LP-7)."
+    )
+    # Order: the on_startup_summary call must appear before bot.start.
+    summary_idx = src.find("reporter.on_startup_summary(")
+    bot_start_idx = src.find("await bot.start(config.DISCORD_BOT_TOKEN)")
+    assert summary_idx != -1 and bot_start_idx != -1
+    assert summary_idx < bot_start_idx, (
+        "on_startup_summary must be posted BEFORE bot.start() — "
+        "otherwise it races with on_ready and loses the 'deterministic, "
+        "early' property that's the whole point of LP-7."
+    )
+
+
 def test_bot1_shutdown_drain_logs_timeout() -> None:
     """PR-02b (revised): when the 5 s drain budget elapses with tasks
     still pending, a WARNING log must surface so operators see the

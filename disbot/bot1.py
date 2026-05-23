@@ -830,6 +830,25 @@ async def main() -> None:
                     exc,
                 )
 
+            # LP-7: post the deterministic startup-outcome summary
+            # before bot.start() so operators see boot health
+            # immediately rather than waiting for on_ready (which is
+            # what the legacy reporter.on_startup fires from).
+            if reporter is not None:
+                from core.runtime import startup_outcome as _startup_outcome
+
+                try:
+                    await reporter.on_startup_summary(
+                        _startup_outcome.all_outcomes(),
+                    )
+                except (
+                    Exception
+                ) as report_err:  # noqa: BLE001 — observability never blocks boot
+                    logger.debug(
+                        "Startup summary webhook skipped: %s",
+                        report_err,
+                    )
+
             logger.info("Starting bot...")
             await bot.start(config.DISCORD_BOT_TOKEN)
     finally:
