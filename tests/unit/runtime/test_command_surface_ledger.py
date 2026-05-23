@@ -676,3 +676,135 @@ class TestSlashLedgerIngestion:
             build_ledger(bot)
         snap = _snapshot()
         assert snap["slash_entry_count"] == 2
+
+
+# ---------------------------------------------------------------------------
+# PR-06c — Classification ingestion + help-hidden helper
+# ---------------------------------------------------------------------------
+
+
+class TestClassificationIngestion:
+    def test_walk_commands_reads_classification_from_extras(self):
+        from core.runtime.command_surface_ledger import is_hidden_from_help
+
+        cmd = _make_cmd("legacy_alias", cog_name="EconomyCog")
+        cmd.extras = {"classification": "legacy_duplicate"}
+        bot = _make_bot(cmd)
+        ledger = build_ledger(bot)
+        assert ledger.entries[0].classification == "legacy_duplicate"
+        assert is_hidden_from_help(ledger.entries[0]) is True
+
+    def test_walk_commands_defaults_classification_when_extras_missing(self):
+        cmd = _make_cmd("daily", cog_name="EconomyCog")
+        cmd.extras = None  # missing/non-dict
+        bot = _make_bot(cmd)
+        ledger = build_ledger(bot)
+        assert ledger.entries[0].classification == "primary_entrypoint"
+
+    def test_walk_commands_ignores_invalid_classification(self):
+        cmd = _make_cmd("daily", cog_name="EconomyCog")
+        cmd.extras = {"classification": "garbage"}
+        bot = _make_bot(cmd)
+        ledger = build_ledger(bot)
+        assert ledger.entries[0].classification == "primary_entrypoint"
+
+    def test_walk_slash_commands_reads_classification(self):
+        """A slash command's classification flows through to the entry.
+
+        Note: PR-06c review fix — ``deprecated`` is **visible** by
+        policy (rendered with a deprecation badge); we use ``hidden``
+        here to assert the filter path.
+        """
+        from core.runtime.command_surface_ledger import is_hidden_from_help
+
+        cmd = _make_slash_cmd("admin-only", cog_name="DiagnosticCog")
+        cmd.extras = {"classification": "hidden"}
+        bot = _make_bot_with_tree(slash_cmds=(cmd,))
+        ledger = build_ledger(bot)
+        assert ledger.slash_entries[0].classification == "hidden"
+        assert is_hidden_from_help(ledger.slash_entries[0]) is True
+
+    def test_deprecated_remains_visible_per_classification_contract(self):
+        """The Classification docstring promises deprecated commands are
+        "surfaced with a deprecation warning" — they must NOT be
+        filtered out of help.  Policy lives in the canonical
+        _HELP_HIDDEN_CLASSIFICATIONS set in command_surface_ledger.
+        """
+        from core.runtime.command_surface_ledger import (
+            CommandSurfaceEntry,
+            is_hidden_from_help,
+        )
+
+        entry = CommandSurfaceEntry(
+            name="old_cmd",
+            cog_name="EconomyCog",
+            subsystem="economy",
+            visibility_tier="user",
+            classification="deprecated",
+        )
+        assert is_hidden_from_help(entry) is False
+
+    def test_is_hidden_from_help_filters_hidden_and_legacy_duplicate(self):
+        """PR-06c review fix: only ``hidden`` and ``legacy_duplicate``
+        are filtered from help.  Deprecated is rendered with a badge
+        (see ``test_deprecated_remains_visible_per_classification_contract``)."""
+        from core.runtime.command_surface_ledger import (
+            CommandSurfaceEntry,
+            is_hidden_from_help,
+        )
+
+        common = dict(
+            name="x",
+            cog_name="EconomyCog",
+            subsystem="economy",
+            visibility_tier="user",
+        )
+        for cls in ("hidden", "legacy_duplicate"):
+            entry = CommandSurfaceEntry(**common, classification=cls)
+            assert is_hidden_from_help(entry) is True, f"{cls!r} must be hidden"
+
+    def test_is_command_hidden_from_help_consumes_canonical_policy(self):
+        """The cmd-extras helper (used by help_cog) and the entry-based
+        helper (used by ledger consumers) must apply the SAME policy.
+        Drift here would let help and the ledger disagree about which
+        commands are public."""
+        from unittest.mock import MagicMock
+
+        from core.runtime.command_surface_ledger import (
+            is_command_hidden_from_help,
+        )
+
+        cmd_hidden = MagicMock()
+        cmd_hidden.extras = {"classification": "hidden"}
+        assert is_command_hidden_from_help(cmd_hidden) is True
+
+        cmd_legacy = MagicMock()
+        cmd_legacy.extras = {"classification": "legacy_duplicate"}
+        assert is_command_hidden_from_help(cmd_legacy) is True
+
+        cmd_deprecated = MagicMock()
+        cmd_deprecated.extras = {"classification": "deprecated"}
+        # Deprecated stays visible per contract.
+        assert is_command_hidden_from_help(cmd_deprecated) is False
+
+        cmd_primary = MagicMock()
+        cmd_primary.extras = {"classification": "primary_entrypoint"}
+        assert is_command_hidden_from_help(cmd_primary) is False
+
+        cmd_no_extras = MagicMock()
+        cmd_no_extras.extras = None  # unannotated → default primary
+        assert is_command_hidden_from_help(cmd_no_extras) is False
+
+    def test_is_hidden_from_help_keeps_default_visible(self):
+        from core.runtime.command_surface_ledger import (
+            CommandSurfaceEntry,
+            is_hidden_from_help,
+        )
+
+        entry = CommandSurfaceEntry(
+            name="daily",
+            cog_name="EconomyCog",
+            subsystem="economy",
+            visibility_tier="user",
+        )
+        assert is_hidden_from_help(entry) is False
