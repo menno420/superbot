@@ -259,6 +259,8 @@ async def run_heartbeat_loop(
       ``boot_id``): treat as fatal; another replica won. Exit
       immediately so we don't double-respond.
     """
+    from services import metrics as _metrics
+
     consecutive_failures = 0
     while not stop_event.is_set():
         try:
@@ -268,6 +270,7 @@ async def run_heartbeat_loop(
             )
         except Exception as exc:
             consecutive_failures += 1
+            _metrics.runtime_lock_heartbeat_total.labels(outcome="error").inc()
             logger.warning(
                 "runtime_lock.heartbeat failed (%d/%d): %s",
                 consecutive_failures,
@@ -283,6 +286,7 @@ async def run_heartbeat_loop(
                 os._exit(1)
         else:
             if not owned:
+                _metrics.runtime_lock_heartbeat_total.labels(outcome="lost").inc()
                 logger.critical(
                     "Runtime lock no longer owned by this boot "
                     "(lock_name=%s boot_id=%s). Another replica has "
@@ -291,6 +295,7 @@ async def run_heartbeat_loop(
                     boot_id,
                 )
                 os._exit(1)
+            _metrics.runtime_lock_heartbeat_total.labels(outcome="ok").inc()
             consecutive_failures = 0
         try:
             await asyncio.wait_for(stop_event.wait(), timeout=interval_seconds)
