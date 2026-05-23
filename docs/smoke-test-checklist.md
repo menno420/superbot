@@ -92,13 +92,44 @@ Inspect the snapshot's `tasks` block (or `!platform tasks`):
 
 ## Setup wizard smoke
 
+The 5 setup slash commands are all live; smoke each one to confirm
+the wizard's read-only surfaces respond without raising.  The
+prefix `!setup` opens the wizard hub.
+
 - [ ] **`!setup`** opens the wizard hub without raising.
-- [ ] **`/setup-status`** returns the current draft state.
-- [ ] **`/setup-reset`** clears staged operations (read-only smoke:
-      stage one no-op operation, then run `/setup-reset`).
-- [ ] **Final Review apply** runs through `services.setup_operations.
-      apply_operations` (verify via the audit row: per-op
-      mutation_id present, per-op error empty).
+- [ ] **`/setup-status`** returns the current draft state (read-only).
+- [ ] **`/setup-reset`** clears staged operations.  Verification:
+      stage one no-op operation via the hub, run `/setup-reset`,
+      observe the draft empties.
+- [ ] **`/setup-skip <section>`** marks a section skipped without
+      mutating its underlying state (read-only effect on bindings;
+      writes only `setup_session_skipped_sections`).
+- [ ] **`/setup-unskip <section>`** clears the skip flag.
+- [ ] **`/setup-depth <level>`** updates the wizard depth hint —
+      verify the chosen depth appears in `/setup-status` afterwards.
+
+### Setup readiness + preflight
+
+- [ ] **`!platform setup-readiness`** renders the per-guild
+      readiness inventory and matches the readiness snapshot's
+      setup blocker summary.
+- [ ] **Setup preflight diff** appears in Final Review when
+      `SETUP_PREFLIGHT_DIFF` is on (default).  Each staged op shows
+      a current → proposed line OR a "preflight unavailable" badge
+      for op kinds without a read adapter.  Type-equivalent values
+      (e.g. boolean `True` vs string `"true"`) must NOT show as a
+      diff — see `services.setup_change_plan.values_equivalent`.
+- [ ] **Setup blocker output** in `!platform consistency` matches
+      the dynamic `services.setup_blockers.BLOCKERS` registry
+      (resolved blockers drop out; pending blockers retain their
+      `doc_anchor` link).
+
+### Apply path
+
+- [ ] **Final Review apply** runs through
+      `services.setup_operations.apply_operations` (verify via the
+      audit row: per-op `mutation_id` present, per-op `error`
+      empty).
 
 ## Help / navigation
 

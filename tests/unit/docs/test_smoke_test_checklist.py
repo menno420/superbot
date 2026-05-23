@@ -104,15 +104,58 @@ def test_doc_mentions_canonical_startup_phases(doc_text: str):
     )
 
 
-def test_doc_mentions_setup_slash_commands(doc_text: str):
-    """The 5 live setup slash commands are part of the wizard smoke
-    block.  Adding a new setup slash command without updating this
-    bullet fails the doc-test."""
-    for cmd in ("/setup-status", "/setup-reset"):
+def test_doc_mentions_every_setup_slash_command(doc_text: str):
+    """Every live setup slash command must appear in the wizard smoke
+    block.  The five commands are pinned by source — adding a sixth
+    requires updating both ``cogs/setup_cog.py`` and this checklist
+    so operators have a verification step for the new surface."""
+    for cmd in (
+        "/setup-status",
+        "/setup-reset",
+        "/setup-skip",
+        "/setup-unskip",
+        "/setup-depth",
+    ):
         assert cmd.lower() in doc_text, (
             f"Smoke checklist must mention {cmd} so operators can "
-            "tick the wizard smoke bullet."
+            "tick the wizard smoke bullet for it."
         )
+
+
+def test_doc_mentions_setup_preflight_diff(doc_text: str):
+    """PR-04a/04b: the setup preflight diff is a smoke-relevant
+    surface.  Operators verify both:
+    * preflight shows when SETUP_PREFLIGHT_DIFF is on (the default).
+    * the normalized comparison does not flag type-equivalent values
+      (bool True vs string "true") as a diff.
+    """
+    lowered = doc_text  # already lowered by the fixture
+    assert "preflight" in lowered, (
+        "Smoke checklist must mention the setup preflight diff."
+    )
+    assert "values_equivalent" in lowered or "type-equivalent" in lowered, (
+        "Smoke checklist must call out the normalized comparison so "
+        "operators check for type-mismatch false positives."
+    )
+
+
+def test_doc_mentions_setup_blocker_output(doc_text: str):
+    """PR-03: setup blockers come from the dynamic
+    ``services.setup_blockers.BLOCKERS`` registry.  The checklist
+    must remind operators to verify the live state matches the
+    registry rather than the stale static list."""
+    assert "setup_blockers" in doc_text or "setup blocker output" in doc_text, (
+        "Smoke checklist must mention the setup blocker output and "
+        "its source-of-truth (services.setup_blockers.BLOCKERS)."
+    )
+
+
+def test_doc_mentions_setup_readiness_command(doc_text: str):
+    """``!platform setup-readiness`` is the operator-facing surface
+    for the per-guild readiness inventory.  Smoke must include it."""
+    assert "setup-readiness" in doc_text, (
+        "Smoke checklist must mention !platform setup-readiness."
+    )
 
 
 def test_doc_pins_shutdown_drain_budget(doc_text: str):
