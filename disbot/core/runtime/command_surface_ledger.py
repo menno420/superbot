@@ -219,6 +219,25 @@ def _reset_for_tests() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _classification_from_command(cmd: object) -> Classification:
+    """Read ``cmd.extras["classification"]`` if present.
+
+    PR-06c: cogs declare a classification by passing
+    ``extras={"classification": "panel_action"}`` to the
+    ``@commands.command`` / ``@app_commands.command`` decorator.  An
+    unknown or absent value falls back to ``"primary_entrypoint"``
+    so PR-06c is purely additive — every existing command keeps its
+    default identity unless its cog opts in.
+    """
+    extras = getattr(cmd, "extras", None)
+    if not isinstance(extras, dict):
+        return "primary_entrypoint"
+    raw = extras.get("classification")
+    if raw in CLASSIFICATIONS:
+        return raw  # type: ignore[return-value]
+    return "primary_entrypoint"
+
+
 def _walk_commands(bot: object) -> list[CommandSurfaceEntry]:
     """Walk ``bot.commands`` and build one entry per command + alias.
 
@@ -257,6 +276,7 @@ def _walk_commands(bot: object) -> list[CommandSurfaceEntry]:
                 parent_group=parent_name,
                 is_declared=is_declared,
                 kind="prefix",
+                classification=_classification_from_command(cmd),
             ),
         )
     return entries
@@ -332,9 +352,35 @@ def _walk_slash_commands(bot: object) -> list[CommandSurfaceEntry]:
                 parent_group=parent_name,
                 is_declared=is_declared,
                 kind="slash",
+                classification=_classification_from_command(cmd),
             ),
         )
     return entries
+
+
+# PR-06c: classifications that the help renderer must exclude from
+# command listings and dropdowns.  ``primary_entrypoint`` and
+# ``power_user_shortcut`` always render; ``panel_action`` and
+# ``internal_admin`` render only inside their specific surfaces;
+# ``hidden`` / ``deprecated`` / ``legacy_duplicate`` are filtered.
+_HELP_HIDDEN_CLASSIFICATIONS: frozenset[Classification] = frozenset(
+    {"hidden", "deprecated", "legacy_duplicate"},
+)
+
+
+def is_hidden_from_help(entry: CommandSurfaceEntry) -> bool:
+    """Return ``True`` if the help renderer should omit ``entry``.
+
+    PR-06c filtering helper consumed by ``cogs.help_cog`` and any
+    future panel surface.  ``hidden`` / ``deprecated`` /
+    ``legacy_duplicate`` commands are filtered out of the dropdown
+    and the per-cog command listing; they remain callable directly.
+
+    Used downstream by ``cogs.help_cog._get_visible_commands`` to
+    layer classification-aware filtering on top of the existing
+    ``cmd.hidden`` / ``cmd.enabled`` flags.
+    """
+    return entry.classification in _HELP_HIDDEN_CLASSIFICATIONS
 
 
 def _visibility_for(subsystem: str | None) -> str | None:
@@ -553,4 +599,5 @@ __all__ = [
     "build_ledger",
     "cog_name_to_subsystem",
     "get_cached_ledger",
+    "is_hidden_from_help",
 ]

@@ -676,3 +676,74 @@ class TestSlashLedgerIngestion:
             build_ledger(bot)
         snap = _snapshot()
         assert snap["slash_entry_count"] == 2
+
+
+# ---------------------------------------------------------------------------
+# PR-06c — Classification ingestion + help-hidden helper
+# ---------------------------------------------------------------------------
+
+
+class TestClassificationIngestion:
+    def test_walk_commands_reads_classification_from_extras(self):
+        from core.runtime.command_surface_ledger import is_hidden_from_help
+
+        cmd = _make_cmd("legacy_alias", cog_name="EconomyCog")
+        cmd.extras = {"classification": "legacy_duplicate"}
+        bot = _make_bot(cmd)
+        ledger = build_ledger(bot)
+        assert ledger.entries[0].classification == "legacy_duplicate"
+        assert is_hidden_from_help(ledger.entries[0]) is True
+
+    def test_walk_commands_defaults_classification_when_extras_missing(self):
+        cmd = _make_cmd("daily", cog_name="EconomyCog")
+        cmd.extras = None  # missing/non-dict
+        bot = _make_bot(cmd)
+        ledger = build_ledger(bot)
+        assert ledger.entries[0].classification == "primary_entrypoint"
+
+    def test_walk_commands_ignores_invalid_classification(self):
+        cmd = _make_cmd("daily", cog_name="EconomyCog")
+        cmd.extras = {"classification": "garbage"}
+        bot = _make_bot(cmd)
+        ledger = build_ledger(bot)
+        assert ledger.entries[0].classification == "primary_entrypoint"
+
+    def test_walk_slash_commands_reads_classification(self):
+        from core.runtime.command_surface_ledger import is_hidden_from_help
+
+        cmd = _make_slash_cmd("legacy-alias", cog_name="DiagnosticCog")
+        cmd.extras = {"classification": "deprecated"}
+        bot = _make_bot_with_tree(slash_cmds=(cmd,))
+        ledger = build_ledger(bot)
+        assert ledger.slash_entries[0].classification == "deprecated"
+        assert is_hidden_from_help(ledger.slash_entries[0]) is True
+
+    def test_is_hidden_from_help_filters_three_classifications(self):
+        from core.runtime.command_surface_ledger import (
+            CommandSurfaceEntry,
+            is_hidden_from_help,
+        )
+
+        common = dict(
+            name="x",
+            cog_name="EconomyCog",
+            subsystem="economy",
+            visibility_tier="user",
+        )
+        for cls in ("hidden", "deprecated", "legacy_duplicate"):
+            entry = CommandSurfaceEntry(**common, classification=cls)
+            assert is_hidden_from_help(entry) is True, f"{cls!r} must be hidden"
+
+    def test_is_hidden_from_help_keeps_default_visible(self):
+        from core.runtime.command_surface_ledger import (
+            CommandSurfaceEntry,
+            is_hidden_from_help,
+        )
+
+        entry = CommandSurfaceEntry(
+            name="daily",
+            cog_name="EconomyCog",
+            subsystem="economy",
+            visibility_tier="user",
+        )
+        assert is_hidden_from_help(entry) is False
