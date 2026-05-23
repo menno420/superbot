@@ -325,11 +325,37 @@ async def release_lock_best_effort(
         )
 
 
+def diagnostics_snapshot() -> dict[str, str]:
+    """LP-6: sync snapshot of the runtime-lock state for the
+    :mod:`services.diagnostics_service` registry.
+
+    Exposes only what is already known in-process — boot identity and
+    lock name. DB-backed introspection (live holder, heartbeat age)
+    requires an async query and is intentionally out of scope here; a
+    future provider may surface it via a cached value updated by the
+    heartbeat loop.
+    """
+    return {
+        "boot_id": str(BOOT_ID),
+        "lock_name": runtime_lock.DEFAULT_LOCK_NAME,
+    }
+
+
+# Self-register at import time (see lifecycle.py for the pattern).
+try:
+    from services import diagnostics_service as _diagnostics_service
+
+    _diagnostics_service.register("runtime_lock", diagnostics_snapshot)
+except Exception:  # noqa: BLE001 — diagnostics is observability only
+    pass
+
+
 __all__ = [
     "BOOT_ID",
     "DEFAULT_HEARTBEAT_SECONDS",
     "BootIdFilter",
     "acquire_lock_or_exit",
+    "diagnostics_snapshot",
     "install_boot_id_logging",
     "release_lock_best_effort",
     "run_heartbeat_loop",

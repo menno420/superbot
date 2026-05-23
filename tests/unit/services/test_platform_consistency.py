@@ -108,11 +108,12 @@ def test_collect_report_isolates_collector_exception():
         _collect_participation=lambda: good_collector(),
         _collect_migrations=lambda: good_collector(),
         _collect_runtime_providers=lambda: good_collector(),
+        _collect_lifecycle=lambda: good_collector(),
         _collect_setup_readiness=lambda: good_collector(),
     ):
         report = asyncio.run(pc.collect_report(bot=object(), guild=None))
 
-    assert len(report.sections) == 10
+    assert len(report.sections) == 11
     identity = report.sections[0]
     assert identity.status == pc.SectionStatus.FATAL
     assert "RuntimeError" in identity.summary
@@ -582,7 +583,7 @@ def test_setup_readiness_constant_is_nonempty_tuple():
 # ---------------------------------------------------------------------------
 
 
-def test_collect_report_returns_ten_sections_in_order():
+def test_collect_report_returns_eleven_sections_in_order():
     async def trivial(*args, **kwargs) -> pc.SectionResult:
         return pc.SectionResult(name="x", status=pc.SectionStatus.SKIPPED, summary="x")
 
@@ -597,10 +598,11 @@ def test_collect_report_returns_ten_sections_in_order():
         _collect_participation=trivial,
         _collect_migrations=trivial,
         _collect_runtime_providers=trivial,
+        _collect_lifecycle=trivial,
         # Real setup-readiness collector so we get the informational tag.
     ):
         report = asyncio.run(pc.collect_report(bot=object(), guild=None))
-    assert len(report.sections) == 10
+    assert len(report.sections) == 11
     # Last section must be Setup readiness, marked informational.
     assert report.sections[-1].name == "Setup readiness"
     assert report.sections[-1].informational is True
@@ -628,6 +630,7 @@ def test_readiness_kinds_canonical_ordering():
         pc.ReadinessKind.PARTICIPATION,
         pc.ReadinessKind.MIGRATIONS,
         pc.ReadinessKind.RUNTIME_PROVIDERS,
+        pc.ReadinessKind.LIFECYCLE,
         pc.ReadinessKind.SETUP_READINESS,
     )
     # Every declared kind must appear in the canonical tuple.
