@@ -121,15 +121,33 @@ def count() -> int:
     return len(active())
 
 
-def cancel_all() -> None:
-    """Cancel every still-running spawned task.
+def cancel_all() -> set[asyncio.Task[Any]]:
+    """Cancel every still-running spawned task; return the cancelled snapshot.
+
+    Captures the snapshot of still-running tasks **before** issuing the
+    cancellation requests so the caller has a stable set to await on.
+    Returning the snapshot avoids the fragile "cancel, then re-snapshot"
+    pattern: a second call to ``active()`` after cancellation would
+    technically race against any done-callbacks (none of which run
+    between the two sync calls today, but the pattern breaks the
+    moment a contributor inserts an ``await`` between them).
+
+    Already-completed tasks are excluded from the returned set so a
+    caller doing ``asyncio.wait(returned)`` does not block on tasks
+    that finished before shutdown started.
 
     Intended for cooperative shutdown (called from the bot's main()
-    ``finally`` clause).  Already-completed tasks are ignored.
+    ``finally`` clause).  Returning the snapshot also makes the
+    "what did I just cancel?" question testable without inspecting
+    module-private state.
     """
+    cancelled: set[asyncio.Task[Any]] = set()
     for t in list(_TASKS):
-        if not t.done():
-            t.cancel()
+        if t.done():
+            continue
+        t.cancel()
+        cancelled.add(t)
+    return cancelled
 
 
 def cancel_by_prefix(prefix: str) -> int:

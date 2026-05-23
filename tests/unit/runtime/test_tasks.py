@@ -134,12 +134,62 @@ class TestCancelAll:
         short = tasks.spawn("test:short", done())
         await short  # finished naturally
 
-        tasks.cancel_all()
+        cancelled = tasks.cancel_all()
         # Give the event loop a tick to process cancellations.
         await asyncio.gather(long1, long2, return_exceptions=True)
         assert long1.cancelled()
         assert long2.cancelled()
         assert not short.cancelled()
+        # PR-02b revised contract: the completed `short` task must NOT
+        # be in the returned snapshot — the caller would otherwise await
+        # on a task that already finished.
+        assert long1 in cancelled
+        assert long2 in cancelled
+        assert short not in cancelled
+
+    @pytest.mark.asyncio
+    async def test_returned_snapshot_is_stable_for_drain(self):
+        """PR-02b: ``cancel_all`` must return the *exact* tasks it
+        cancelled so the caller can ``asyncio.wait`` on the snapshot
+        rather than re-snapshotting via ``active()`` (which would race
+        against done-callbacks)."""
+        async def waiter():
+            await asyncio.sleep(60)
+
+        a = tasks.spawn("test:drain_a", waiter())
+        b = tasks.spawn("test:drain_b", waiter())
+
+        cancelled = tasks.cancel_all()
+        assert cancelled == {a, b}
+
+        # The classic drain pattern from bot1.py: await on the
+        # returned snapshot, with timeout, and assert every task
+        # completes cancellation.
+        done, still_pending = await asyncio.wait(cancelled, timeout=5.0)
+        assert still_pending == set()
+        assert done == cancelled
+        for t in done:
+            assert t.cancelled()
+
+    @pytest.mark.asyncio
+    async def test_empty_when_no_tasks_running(self):
+        """No tasks → empty set; caller's drain block is a no-op."""
+        cancelled = tasks.cancel_all()
+        assert cancelled == set()
+
+    @pytest.mark.asyncio
+    async def test_idempotent_second_call_returns_empty(self):
+        """A second cancel_all after the loop has yielded should
+        return empty — every previously cancelled task is now done."""
+        async def waiter():
+            await asyncio.sleep(60)
+
+        a = tasks.spawn("test:idem", waiter())
+        first = tasks.cancel_all()
+        assert first == {a}
+        await asyncio.gather(a, return_exceptions=True)
+        second = tasks.cancel_all()
+        assert second == set()
 
 
 class TestCancelByPrefix:

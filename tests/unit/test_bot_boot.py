@@ -81,19 +81,52 @@ def test_bot1_does_not_double_supervise_scheduler_task() -> None:
 
 
 def test_bot1_shutdown_drains_via_core_runtime_tasks() -> None:
-    """PR-02b: shutdown drain calls ``tasks.cancel_all()`` and awaits
-    ``tasks.active()`` instead of iterating ``_APP_TASKS``.  The 5 s
-    drain budget is preserved."""
+    """PR-02b (revised): shutdown drain calls ``tasks.cancel_all()``
+    and awaits the **returned snapshot** — not a re-snapshot via
+    ``active()``.  The 5 s drain budget is preserved and timeout is
+    observable via a WARNING log."""
     src = _src()
     # Heartbeat stop must precede the cancellation request.
     assert "_heartbeat_stop.set()" in src
-    assert re.search(r"_runtime_tasks\.cancel_all\(\s*\)", src), (
-        "bot1.py shutdown must call core.runtime.tasks.cancel_all()."
+    # Drain captures the cancellation snapshot.
+    assert re.search(r"cancelled\s*=\s*_runtime_tasks\.cancel_all\(\s*\)", src), (
+        "bot1.py shutdown must assign the cancel_all() return value to "
+        "the drain snapshot so done-callbacks cannot race the await."
     )
-    assert re.search(r"_runtime_tasks\.active\(\s*\)", src), (
-        "bot1.py shutdown must snapshot core.runtime.tasks.active() "
-        "to await the in-flight tasks."
+    # The await must be on the captured snapshot, not on active().
+    assert re.search(r"asyncio\.wait\(\s*cancelled\s*,\s*timeout=5\.0\s*\)", src), (
+        "bot1.py shutdown must await asyncio.wait(cancelled, timeout=5.0) "
+        "on the snapshot returned by cancel_all()."
     )
-    assert "timeout=5.0" in src, (
-        "bot1.py shutdown must preserve the 5 s drain budget."
+    # Active() must NOT be called in the shutdown finally-block — the
+    # re-snapshot pattern is the bug we just fixed.
+    finally_block = src.split("finally:", 1)[-1]
+    assert "_runtime_tasks.active(" not in finally_block, (
+        "Shutdown finally-block must not re-snapshot via active() — "
+        "use the snapshot returned by cancel_all() instead."
+    )
+    # Drain must run on every exit, not just SIGTERM.  The legacy
+    # ``if _shutting_down:`` guard around the drain was a real bug:
+    # normal exits would cancel without awaiting.
+    assert not re.search(
+        r"if\s+_shutting_down\s*:\s*\n\s+(?:pending|cancelled|_,)\s*=",
+        src,
+    ), (
+        "Shutdown drain must run on every exit, not gated on _shutting_down."
+    )
+
+
+def test_bot1_shutdown_drain_logs_timeout() -> None:
+    """PR-02b (revised): when the 5 s drain budget elapses with tasks
+    still pending, a WARNING log must surface so operators see the
+    timeout rather than discovering it only via event-loop close-time
+    noise."""
+    src = _src()
+    finally_block = src.split("finally:", 1)[-1]
+    assert "still_pending" in finally_block, (
+        "Shutdown drain must capture still_pending tasks after timeout."
+    )
+    assert re.search(r"logger\.warning\([^)]*Shutdown drain", finally_block, re.DOTALL), (
+        "Shutdown drain timeout must emit a WARNING log line so "
+        "operators can detect the slow drain."
     )

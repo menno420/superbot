@@ -813,19 +813,29 @@ async def main() -> None:
         # when the event is set, which lets the lock release happen
         # before we tear down the DB pool.
         _heartbeat_stop.set()
-        # PR-02b: drain through the canonical task supervisor instead
-        # of iterating ``_APP_TASKS``.  Every supervised app task is
-        # already in ``tasks._TASKS`` (the local ``_APP_TASKS`` list
-        # is kept populated for one release until PR-02c removes it
-        # entirely).  ``tasks.cancel_all`` cancels every still-running
-        # spawned task and ``tasks.active()`` returns the snapshot to
-        # await with the 5-second drain budget preserved from the
-        # previous implementation.
-        _runtime_tasks.cancel_all()
-        if _shutting_down:
-            pending = _runtime_tasks.active()
-            if pending:
-                _, still_pending = await asyncio.wait(pending, timeout=5.0)
+        # PR-02b (revised): drain through the canonical task supervisor.
+        # ``cancel_all`` returns the stable snapshot of tasks that were
+        # still running at cancellation time, so we await *exactly that
+        # set* rather than re-snapshotting after the cancellation (which
+        # would race against done-callbacks).
+        #
+        # The drain runs on **every** exit path — normal return, SIGTERM,
+        # uncaught exception — not just SIGTERM.  An app task that
+        # ignores cancellation must still see ``CancelledError`` raised
+        # before the loop closes, otherwise we'd leak a task into the
+        # event-loop shutdown warning surface.
+        cancelled = _runtime_tasks.cancel_all()
+        if cancelled:
+            _, still_pending = await asyncio.wait(cancelled, timeout=5.0)
+            if still_pending:
+                names = sorted(t.get_name() for t in still_pending)
+                logger.warning(
+                    "Shutdown drain timeout (%.1fs): %d task(s) did not "
+                    "complete cancellation: %s",
+                    5.0,
+                    len(still_pending),
+                    names,
+                )
                 for t in still_pending:
                     t.cancel()
         # Drop the lock row so the next replica reclaims immediately
