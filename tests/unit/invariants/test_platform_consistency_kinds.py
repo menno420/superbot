@@ -66,7 +66,7 @@ def _extract_collector_labels() -> tuple[str, ...]:
 
 def test_label_to_kind_covers_every_collector_label():
     labels = _extract_collector_labels()
-    assert len(labels) == 10, f"Expected 10 collectors; found {len(labels)}"
+    assert len(labels) == 11, f"Expected 11 collectors; found {len(labels)}"
     missing = [label for label in labels if label not in pc._LABEL_TO_KIND]
     assert not missing, (
         f"_LABEL_TO_KIND missing entries for: {missing}.  "

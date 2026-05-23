@@ -96,6 +96,7 @@ class ReadinessKind(str, Enum):
     PARTICIPATION = "participation"
     MIGRATIONS = "migrations"
     RUNTIME_PROVIDERS = "runtime_providers"
+    LIFECYCLE = "lifecycle"
     SETUP_READINESS = "setup_readiness"
 
 
@@ -113,6 +114,7 @@ READINESS_KINDS: tuple[ReadinessKind, ...] = (
     ReadinessKind.PARTICIPATION,
     ReadinessKind.MIGRATIONS,
     ReadinessKind.RUNTIME_PROVIDERS,
+    ReadinessKind.LIFECYCLE,
     ReadinessKind.SETUP_READINESS,
 )
 
@@ -131,6 +133,7 @@ _LABEL_TO_KIND: dict[str, ReadinessKind] = {
     "Participation": ReadinessKind.PARTICIPATION,
     "Migrations": ReadinessKind.MIGRATIONS,
     "Runtime providers": ReadinessKind.RUNTIME_PROVIDERS,
+    "Lifecycle": ReadinessKind.LIFECYCLE,
     "Setup readiness": ReadinessKind.SETUP_READINESS,
 }
 
@@ -235,6 +238,7 @@ async def collect_report(
         ("Participation", _collect_participation()),
         ("Migrations", _collect_migrations()),
         ("Runtime providers", _collect_runtime_providers()),
+        ("Lifecycle", _collect_lifecycle()),
         ("Setup readiness", _collect_setup_readiness()),
     )
     sections: list[SectionResult] = []
@@ -894,6 +898,88 @@ async def _collect_runtime_providers() -> SectionResult:
         name=name,
         status=SectionStatus.CLEAN,
         summary=f"{len(names)} provider(s) registered; all returned OK.",
+    )
+
+
+async def _collect_lifecycle() -> SectionResult:
+    """Section 10: process lifecycle phase + pending request snapshot (LP-6).
+
+    Sync read of the in-memory :mod:`core.runtime.lifecycle` state.
+    Severity map:
+
+    * ``RUNNING``                                 → CLEAN.
+    * ``STARTING``                                → CLEAN (boot in
+      progress; benign).
+    * ``DRAINING`` / ``SHUTTING_DOWN`` /
+      ``RESTARTING`` / ``STOPPED``                → WARNING (winding
+      down; commands are being rejected).
+    * ``FAILED_STARTUP``                          → FATAL (startup
+      raised before RUNNING; no traffic should be routed here).
+    """
+    name = "Lifecycle"
+    try:
+        from core.runtime import lifecycle
+    except Exception as exc:  # noqa: BLE001 — collector is fail-safe
+        return SectionResult(
+            name=name,
+            status=SectionStatus.WARNING,
+            summary=f"lifecycle import raised {type(exc).__name__}",
+            details=(str(exc)[:200],),
+        )
+
+    snapshot = lifecycle.diagnostics_snapshot()
+    phase_value = str(snapshot.get("phase", "UNKNOWN"))
+    pending = snapshot.get("pending")
+
+    details_list: list[str] = [f"phase: {phase_value}"]
+    if pending:
+        details_list.append(
+            f"pending: kind={pending['kind']!r} reason={pending['reason']!r} "
+            f"actor={pending['actor']!r}",
+        )
+    remaining = snapshot.get("remaining_shutdown_seconds")
+    if isinstance(remaining, (int, float)):
+        details_list.append(f"remaining_grace_seconds: {float(remaining):.1f}")
+    recent = snapshot.get("recent_events") or []
+    if recent:
+        details_list.append(
+            f"recent_events: {len(recent)} (latest: {recent[-1]['name']!r})",
+        )
+
+    if phase_value == lifecycle.Phase.RUNNING.value:
+        return SectionResult(
+            name=name,
+            status=SectionStatus.CLEAN,
+            summary="bot is RUNNING; commands are being admitted.",
+            details=tuple(details_list),
+        )
+    if phase_value == lifecycle.Phase.STARTING.value:
+        return SectionResult(
+            name=name,
+            status=SectionStatus.CLEAN,
+            summary="bot is STARTING; on_ready has not fired yet.",
+            details=tuple(details_list),
+        )
+    if phase_value == lifecycle.Phase.FAILED_STARTUP.value:
+        return SectionResult(
+            name=name,
+            status=SectionStatus.FATAL,
+            summary="bot is in FAILED_STARTUP; do not route traffic here.",
+            details=tuple(details_list),
+            suggested_actions=(
+                "Inspect startup logs for the cause; the bot must be "
+                "rebooted to clear this terminal state.",
+            ),
+        )
+    # DRAINING / SHUTTING_DOWN / RESTARTING / STOPPED — bot is winding down.
+    return SectionResult(
+        name=name,
+        status=SectionStatus.WARNING,
+        summary=(
+            f"bot is {phase_value}; new commands are being rejected "
+            f"by the channel guard."
+        ),
+        details=tuple(details_list),
     )
 
 

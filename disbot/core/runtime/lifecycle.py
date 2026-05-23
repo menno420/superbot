@@ -260,11 +260,64 @@ def reset_for_tests() -> None:
     _events.clear()
 
 
+def diagnostics_snapshot() -> dict[str, Any]:
+    """LP-6: sync snapshot of current lifecycle state for the
+    :mod:`services.diagnostics_service` registry.
+
+    Surfaced via ``!platform lifecycle`` and the
+    :func:`services.platform_consistency.collect_report` ``Lifecycle``
+    section. Sync by design — no DB or I/O.
+    """
+    pending = get_pending()
+    events = get_recent_events(limit=20)
+    return {
+        "phase": _phase.value,
+        "is_shutting_down": is_shutting_down(),
+        "can_accept_commands": can_accept_commands(),
+        "restart_requested": restart_requested(),
+        "remaining_shutdown_seconds": remaining_shutdown_seconds(),
+        "pending": (
+            {
+                "kind": pending.kind,
+                "reason": pending.reason,
+                "actor": pending.actor,
+                "requested_at_monotonic": pending.requested_at,
+                "grace_seconds": pending.grace_seconds,
+            }
+            if pending
+            else None
+        ),
+        "recent_events": [
+            {
+                "name": event.name,
+                "phase": event.phase.value,
+                "at_monotonic": event.at,
+                "actor": event.actor,
+                "reason": event.reason,
+            }
+            for event in events
+        ],
+    }
+
+
+# Self-register at import time, mirroring the persistent_views and
+# core.runtime.tasks registration pattern. Wrapped in try/except so an
+# unavailable diagnostics_service (e.g. import order during early test
+# bootstrap) never blocks lifecycle import.
+try:
+    from services import diagnostics_service as _diagnostics_service
+
+    _diagnostics_service.register("lifecycle", diagnostics_snapshot)
+except Exception:  # noqa: BLE001 — diagnostics is observability only
+    pass
+
+
 __all__ = [
     "LifecycleEvent",
     "PendingShutdown",
     "Phase",
     "can_accept_commands",
+    "diagnostics_snapshot",
     "get_pending",
     "get_phase",
     "get_recent_events",
