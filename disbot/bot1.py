@@ -627,6 +627,8 @@ async def _drive_close_on_lifecycle_request() -> None:
                     "Lifecycle close-beginning webhook skipped: %s",
                     report_err,
                 )
+        if pending is not None:
+            _lifecycle.record_close_executing(pending)
         try:
             await asyncio.wait_for(
                 bot.close(),

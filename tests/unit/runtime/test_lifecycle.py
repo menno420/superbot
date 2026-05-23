@@ -200,3 +200,57 @@ def test_reset_for_tests_clears_phase_pending_and_events() -> None:
     assert lifecycle.get_phase() is lifecycle.Phase.STARTING
     assert lifecycle.get_pending() is None
     assert lifecycle.get_recent_events() == []
+
+
+def test_record_close_executing_appends_event_with_kind_metadata() -> None:
+    """The close-driver records this event right before bot.close() so
+    operators can distinguish "intent recorded" from "executor ran".
+
+    Kind goes into metadata because LifecycleEvent does not surface a
+    top-level ``kind`` field — metadata is the documented payload slot.
+    """
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("sigterm", actor="signal_handler")
+    pending = lifecycle.get_pending()
+    assert pending is not None
+
+    lifecycle.record_close_executing(pending)
+
+    names = [event.name for event in lifecycle.get_recent_events()]
+    assert names[-1] == "close_executing"
+
+    event = lifecycle.get_recent_events()[-1]
+    assert event.phase is lifecycle.Phase.DRAINING
+    assert event.actor == "signal_handler"
+    assert event.reason == "sigterm"
+    assert event.metadata == {"kind": "shutdown"}
+
+
+def test_record_close_executing_carries_restart_kind_for_restart_intent() -> None:
+    """Restart intent surfaces with ``kind="restart"`` so the event
+    distinguishes restart-driven close from shutdown-driven close."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_restart("!restart", actor="operator#0001")
+    pending = lifecycle.get_pending()
+    assert pending is not None
+
+    lifecycle.record_close_executing(pending)
+
+    event = lifecycle.get_recent_events()[-1]
+    assert event.name == "close_executing"
+    assert event.metadata == {"kind": "restart"}
+
+
+def test_close_executing_event_appears_in_diagnostics_snapshot() -> None:
+    """The diagnostics snapshot exposes recent events to !platform
+    runtime; close_executing must be visible there without any extra
+    plumbing."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("sigterm")
+    pending = lifecycle.get_pending()
+    assert pending is not None
+    lifecycle.record_close_executing(pending)
+
+    snapshot = lifecycle.diagnostics_snapshot()
+    event_names = [event["name"] for event in snapshot["recent_events"]]
+    assert "close_executing" in event_names

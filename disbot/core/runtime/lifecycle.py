@@ -203,6 +203,27 @@ def request_restart(
     return True
 
 
+def record_close_executing(pending: PendingShutdown) -> None:
+    """Record that the close-driver has reached ``bot.close()``.
+
+    Surfaces in :func:`get_recent_events` / :func:`diagnostics_snapshot`
+    so operators can distinguish "the lifecycle request was recorded but
+    nothing executed it" from "the close-driver actually ran".  The
+    pre-existing ``shutdown_requested`` / ``restart_requested`` events
+    capture intent; this captures execution.
+
+    ``pending.kind`` is stored under ``metadata`` because
+    :class:`LifecycleEvent` does not expose a top-level ``kind`` field —
+    metadata is the documented extension point for per-event payload.
+    """
+    _record_event(
+        "close_executing",
+        reason=pending.reason,
+        actor=pending.actor,
+        metadata={"kind": pending.kind},
+    )
+
+
 def get_pending() -> PendingShutdown | None:
     """Return the current pending request, or ``None`` if none."""
     return _pending
@@ -322,6 +343,7 @@ __all__ = [
     "get_phase",
     "get_recent_events",
     "is_shutting_down",
+    "record_close_executing",
     "remaining_shutdown_seconds",
     "request_restart",
     "request_shutdown",
