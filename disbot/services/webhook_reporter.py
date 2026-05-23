@@ -2,6 +2,11 @@
 
 Extracted from bot1.py so bot startup logic stays lean and this service can
 be tested, replaced, or disabled without touching the entry point.
+
+Every embed is run through :func:`_redact_embed` immediately before
+``wh.send`` so secret-looking substrings (Discord tokens, API keys,
+``postgres://`` URLs, bearer tokens, emails, secret-bearing URL query
+params) are scrubbed before they reach the operator channel.
 """
 
 from __future__ import annotations
@@ -13,7 +18,49 @@ import traceback
 import aiohttp
 import discord
 
+from core.runtime.ai.redaction import redact_text
+
 logger = logging.getLogger("bot.webhook")
+
+
+def _redact_embed(embed: discord.Embed) -> dict[str, int]:
+    """Scrub sensitive substrings from text fields of ``embed`` in place.
+
+    Operates on title, description, every field name + value, footer
+    text, and author name. Returns aggregate replacement counts so
+    callers can observe redactions without re-walking the embed.
+    """
+    counts: dict[str, int] = {}
+
+    def _scrub(text: str) -> str:
+        result = redact_text(text)
+        for key, n in result.replacements.items():
+            counts[key] = counts.get(key, 0) + n
+        return result.value
+
+    if embed.title:
+        embed.title = _scrub(embed.title)
+    if embed.description:
+        embed.description = _scrub(embed.description)
+    for index, field in enumerate(embed.fields):
+        embed.set_field_at(
+            index,
+            name=_scrub(field.name) if field.name else field.name,
+            value=_scrub(field.value) if field.value else field.value,
+            inline=field.inline,
+        )
+    if embed.footer and embed.footer.text:
+        embed.set_footer(
+            text=_scrub(embed.footer.text),
+            icon_url=embed.footer.icon_url,
+        )
+    if embed.author and embed.author.name:
+        embed.set_author(
+            name=_scrub(embed.author.name),
+            url=embed.author.url,
+            icon_url=embed.author.icon_url,
+        )
+    return counts
 
 
 class WebhookReporter:
@@ -34,6 +81,9 @@ class WebhookReporter:
     async def _send(self, embed: discord.Embed, username: str = "Bot Logger") -> None:
         if not self.url or not self._session:
             return
+        counts = _redact_embed(embed)
+        if counts:
+            logger.debug("Webhook embed redacted: %s", counts)
         try:
             wh = discord.Webhook.from_url(self.url, session=self._session)
             await wh.send(embed=embed, username=username)
