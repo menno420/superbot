@@ -1,4 +1,4 @@
-"""PR-02a invariant: no unmanaged ``asyncio.create_task`` outside an allowlist.
+"""PR-02a/b invariant: no unmanaged ``asyncio.create_task`` outside an allowlist.
 
 Every entry-point/cog/service background task must go through
 ``core.runtime.tasks.spawn`` so the canonical supervisor can hold a
@@ -15,8 +15,8 @@ Bare ``asyncio.create_task`` is allowed only at two locations:
    health-server bind-ready event against a supervised task.  This is
    not a long-lived background task; it's a transient join helper.
 
-``disbot/core/runtime/session_gc.py`` is allowlisted transitionally —
-PR-02b migrates ``session_gc.start()`` to ``tasks.spawn``.
+PR-02b migrated ``session_gc.start()`` to ``tasks.spawn``; the
+allowlist entry for ``core/runtime/session_gc.py`` has been removed.
 
 Any new occurrence of ``asyncio.create_task`` outside the allowlist
 fails CI; add the callsite to the allowlist (with rationale) or
@@ -42,8 +42,6 @@ _ALLOWED_CREATE_TASK_SITES: dict[str, int] = {
     # One-shot coordination primitive racing health-bind vs supervised
     # task inside asyncio.wait.  Not a background root.
     "bot1.py": 1,
-    # Transitional: PR-02b migrates session_gc.start() to tasks.spawn.
-    "core/runtime/session_gc.py": 1,
 }
 
 

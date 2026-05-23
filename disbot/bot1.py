@@ -664,14 +664,17 @@ async def main() -> None:
             # Automation scheduler (Track 6 PR 18 / #211): gated behind
             # ``AUTOMATION_SCHEDULER_ENABLED=true``. ``spawn_scheduler``
             # returns ``None`` when the flag is off (default), so the
-            # bot boots inert by default. The returned task is already
-            # supervised by ``core.runtime.tasks.spawn``; we still
-            # append it to ``_APP_TASKS`` so shutdown cancels it.
+            # bot boots inert by default.
+            #
+            # PR-02b: the returned task is already supervised by
+            # ``core.runtime.tasks.spawn`` inside ``spawn_scheduler`` —
+            # the previous ``_APP_TASKS.append(scheduler_task)`` was a
+            # double-supervision artifact.  Shutdown drain now runs
+            # ``tasks.cancel_all()`` so the canonical supervisor is the
+            # single owner of the scheduler's cancellation.
             from services.automation_scheduler import spawn_scheduler
 
-            scheduler_task = spawn_scheduler(bot)
-            if scheduler_task is not None:
-                _APP_TASKS.append(scheduler_task)
+            spawn_scheduler(bot)
 
             await _load_cogs()
 
@@ -831,15 +834,29 @@ async def main() -> None:
         # when the event is set, which lets the lock release happen
         # before we tear down the DB pool.
         _heartbeat_stop.set()
-        # Cancel only application-owned tasks — never asyncio.all_tasks().
-        for task in _APP_TASKS:
-            if not task.done():
-                task.cancel()
-        # Graceful drain: give in-flight app coroutines up to 5 s to finish.
-        if _shutting_down and _APP_TASKS:
-            pending = {t for t in _APP_TASKS if not t.done()}
-            if pending:
-                _, still_pending = await asyncio.wait(pending, timeout=5.0)
+        # PR-02b (revised): drain through the canonical task supervisor.
+        # ``cancel_all`` returns the stable snapshot of tasks that were
+        # still running at cancellation time, so we await *exactly that
+        # set* rather than re-snapshotting after the cancellation (which
+        # would race against done-callbacks).
+        #
+        # The drain runs on **every** exit path — normal return, SIGTERM,
+        # uncaught exception — not just SIGTERM.  An app task that
+        # ignores cancellation must still see ``CancelledError`` raised
+        # before the loop closes, otherwise we'd leak a task into the
+        # event-loop shutdown warning surface.
+        cancelled = _runtime_tasks.cancel_all()
+        if cancelled:
+            _, still_pending = await asyncio.wait(cancelled, timeout=5.0)
+            if still_pending:
+                names = sorted(t.get_name() for t in still_pending)
+                logger.warning(
+                    "Shutdown drain timeout (%.1fs): %d task(s) did not "
+                    "complete cancellation: %s",
+                    5.0,
+                    len(still_pending),
+                    names,
+                )
                 for t in still_pending:
                     t.cancel()
         # Drop the lock row so the next replica reclaims immediately
