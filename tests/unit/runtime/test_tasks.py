@@ -190,3 +190,95 @@ class TestCancelByPrefix:
         finally:
             t.cancel()
             await asyncio.gather(t, return_exceptions=True)
+
+
+# ---------------------------------------------------------------------------
+# PR-02a — on_error hook
+# ---------------------------------------------------------------------------
+
+
+class TestOnErrorHook:
+    @pytest.mark.asyncio
+    async def test_on_error_invoked_on_exception(self):
+        async def boom():
+            raise RuntimeError("kaboom")
+
+        captured: list[tuple[str, str]] = []
+
+        def hook(task: asyncio.Task, exc: BaseException) -> None:
+            captured.append((task.get_name(), type(exc).__name__))
+
+        t = tasks.spawn("test:on_error", boom(), on_error=hook)
+        with pytest.raises(RuntimeError):
+            await t
+        await asyncio.sleep(0)  # let done callback run
+        assert captured == [("test:on_error", "RuntimeError")]
+
+    @pytest.mark.asyncio
+    async def test_on_error_not_invoked_on_clean_exit(self):
+        captured: list[object] = []
+
+        def hook(task: asyncio.Task, exc: BaseException) -> None:
+            captured.append(exc)
+
+        async def ok():
+            return None
+
+        t = tasks.spawn("test:clean", ok(), on_error=hook)
+        await t
+        await asyncio.sleep(0)
+        assert captured == []
+
+    @pytest.mark.asyncio
+    async def test_on_error_not_invoked_on_cancellation(self):
+        captured: list[object] = []
+
+        def hook(task: asyncio.Task, exc: BaseException) -> None:
+            captured.append(exc)
+
+        async def waiter():
+            await asyncio.sleep(60)
+
+        t = tasks.spawn("test:cancel", waiter(), on_error=hook)
+        t.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await t
+        await asyncio.sleep(0)
+        assert captured == []
+
+    @pytest.mark.asyncio
+    async def test_on_error_exception_is_isolated(self, caplog):
+        """A raising on_error hook must not propagate or mask the metric."""
+
+        async def boom():
+            raise RuntimeError("original")
+
+        def bad_hook(task: asyncio.Task, exc: BaseException) -> None:
+            raise ValueError("hook raised")
+
+        with (
+            patch("core.runtime.tasks.metrics.task_outcome_total") as m,
+            caplog.at_level(logging.ERROR, logger="bot.runtime.tasks"),
+        ):
+            t = tasks.spawn("test:bad_hook", boom(), on_error=bad_hook)
+            with pytest.raises(RuntimeError):
+                await t
+            await asyncio.sleep(0)
+
+        m.labels.assert_called_with(name="test:bad_hook", outcome="error")
+        # The hook's exception is logged but does not crash the loop.
+        assert any("hook" in r.message.lower() for r in caplog.records)
+
+    @pytest.mark.asyncio
+    async def test_on_error_hook_dict_cleared_after_done(self):
+        async def boom():
+            raise RuntimeError("kaboom")
+
+        def hook(task: asyncio.Task, exc: BaseException) -> None:
+            pass
+
+        t = tasks.spawn("test:cleanup", boom(), on_error=hook)
+        with pytest.raises(RuntimeError):
+            await t
+        await asyncio.sleep(0)
+        assert t not in tasks._ON_ERROR_HOOKS
