@@ -94,48 +94,58 @@ def _begin_shutdown(*_) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Supervised app-task helper — Phase S2.4 / C-2
+# Supervised app-task helper — Phase S2.4 / C-2 (PR-02a compat wrapper)
 # Every entry-point-layer asyncio.create_task call should go through this
 # helper so unhandled exceptions are loud (critical log + webhook alert)
 # instead of escaping the event loop silently.
+#
+# PR-02a: _supervised_task now delegates to core.runtime.tasks.spawn,
+# passing the existing webhook-alert behaviour as an ``on_error`` hook.
+# The canonical task supervisor handles strong refs, metrics, the
+# cancellation/clean-exit filter, and ERROR-level logging; this module's
+# hook layers the CRITICAL log + webhook follow-up on top.  _APP_TASKS
+# stays as the entry-point-level mirror used by shutdown drain (the
+# drain migration to ``tasks.cancel_all`` is PR-02b).
 # ---------------------------------------------------------------------------
+
+from core.runtime import tasks as _runtime_tasks  # noqa: E402
 
 
 def _supervised_task(coro, *, name: str) -> asyncio.Task:
     """Spawn an app-owned background task with a death-detecting callback."""
-    task = asyncio.create_task(coro, name=name)
-    task.add_done_callback(_on_app_task_done)
-    return task
+    return _runtime_tasks.spawn(name, coro, on_error=_on_app_task_died_webhook)
 
 
-def _on_app_task_done(task: asyncio.Task) -> None:
-    """Done-callback: surface unhandled task exceptions instead of swallowing.
+def _on_app_task_died_webhook(
+    task: asyncio.Task,
+    exc: BaseException,
+) -> None:
+    """``tasks.spawn`` on_error hook: CRITICAL log + webhook follow-up.
 
-    Cancellations are normal during shutdown and ignored.  Real
-    exceptions get a critical log + a webhook alert via the supervisor
-    channel.  The webhook is scheduled in a new task because
-    done_callback runs in the loop but cannot be ``await``-ed in.
+    Invoked by ``core.runtime.tasks._on_done`` only for tasks that
+    raised a non-cancellation exception (cancellations and clean exits
+    are filtered there).  The webhook follow-up is itself scheduled
+    through ``tasks.spawn`` so it inherits managed-task lifecycle —
+    no bare ``asyncio.create_task`` callsites in this module other
+    than the one-shot health-bind coordination at the
+    ``asyncio.wait`` callsite below.
     """
-    if task.cancelled():
-        return
-    exc = task.exception()
-    if exc is None:
-        return
     logger.critical(
         "App task %r died: %s",
         task.get_name(),
         exc,
         exc_info=exc,
     )
-    if reporter is not None:
-        try:
-            asyncio.create_task(
-                reporter.on_app_task_died(task.get_name(), exc),
-                name=f"_on_app_task_died:{task.get_name()}",
-            )
-        except RuntimeError:
-            # No running loop (e.g., during shutdown) — log only.
-            logger.debug("Could not schedule app-task webhook (no loop).")
+    if reporter is None:
+        return
+    try:
+        _runtime_tasks.spawn(
+            f"on_app_task_died:{task.get_name()}",
+            reporter.on_app_task_died(task.get_name(), exc),
+        )
+    except RuntimeError:
+        # No running loop (e.g., during shutdown) — log only.
+        logger.debug("Could not schedule app-task webhook (no loop).")
 
 
 def _identity_contract_strict() -> bool:

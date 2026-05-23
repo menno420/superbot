@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from typing import Any
 
 from services import metrics
@@ -43,8 +43,21 @@ logger = logging.getLogger("bot.runtime.tasks")
 # may discard the return value of spawn() without risking GC.
 _TASKS: set[asyncio.Task[Any]] = set()
 
+# Per-task on_error hooks (PR-02a).  Populated by ``spawn`` when an
+# ``on_error`` argument is supplied and consumed (popped) by
+# ``_on_done`` once the task completes.  Keyed by task identity rather
+# than by name because two short-lived tasks may transiently share a
+# name across the metric label.
+OnErrorHook = Callable[[asyncio.Task[Any], BaseException], None]
+_ON_ERROR_HOOKS: dict[asyncio.Task[Any], OnErrorHook] = {}
 
-def spawn(name: str, coro: Coroutine[Any, Any, Any]) -> asyncio.Task[Any]:
+
+def spawn(
+    name: str,
+    coro: Coroutine[Any, Any, Any],
+    *,
+    on_error: OnErrorHook | None = None,
+) -> asyncio.Task[Any]:
     """Spawn a managed background task and return the ``asyncio.Task``.
 
     The task is held in a module-level set until it completes; callers do
@@ -54,6 +67,13 @@ def spawn(name: str, coro: Coroutine[Any, Any, Any]) -> asyncio.Task[Any]:
         name: Identifier used for logging and the ``task_outcome_total``
             metric label.  Convention: ``<subsystem>:<short-purpose>``.
         coro: The coroutine to run.
+        on_error: Optional sync callback invoked from the done-callback
+            when the task raises a non-``CancelledError`` exception.
+            Receives ``(task, exception)``.  Used by ``bot1.py``'s
+            supervised-task wrapper (PR-02a) to surface CRITICAL logs
+            plus webhook alerts without bot1 maintaining its own
+            done-callback.  The hook must not raise; any exception it
+            raises is logged and swallowed.
 
     Returns:
         The created ``asyncio.Task``.  Callers may await or cancel it,
@@ -61,6 +81,8 @@ def spawn(name: str, coro: Coroutine[Any, Any, Any]) -> asyncio.Task[Any]:
     """
     task = asyncio.create_task(coro, name=name)
     _TASKS.add(task)
+    if on_error is not None:
+        _ON_ERROR_HOOKS[task] = on_error
     task.add_done_callback(_on_done)
     return task
 
@@ -68,6 +90,7 @@ def spawn(name: str, coro: Coroutine[Any, Any, Any]) -> asyncio.Task[Any]:
 def _on_done(task: asyncio.Task[Any]) -> None:
     """Done-callback: drop strong ref, log exceptions, increment metric."""
     _TASKS.discard(task)
+    on_error = _ON_ERROR_HOOKS.pop(task, None)
     name = task.get_name()
     if task.cancelled():
         metrics.task_outcome_total.labels(name=name, outcome="cancelled").inc()
@@ -76,6 +99,14 @@ def _on_done(task: asyncio.Task[Any]) -> None:
     if exc is not None:
         metrics.task_outcome_total.labels(name=name, outcome="error").inc()
         logger.error("Managed task %r failed", name, exc_info=exc)
+        if on_error is not None:
+            try:
+                on_error(task, exc)
+            except Exception:  # noqa: BLE001 — hook isolation
+                logger.exception(
+                    "on_error hook for managed task %r raised",
+                    name,
+                )
         return
     metrics.task_outcome_total.labels(name=name, outcome="ok").inc()
 
