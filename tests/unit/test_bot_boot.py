@@ -185,35 +185,61 @@ def test_bot1_posts_startup_summary_webhook_before_bot_start() -> None:
     )
 
 
-def test_bot1_spawns_restart_close_driver() -> None:
-    """LP-3: the restart watchdog must be supervised at boot so a
-    ``lifecycle.request_restart`` call turns into ``bot.close()``."""
+def test_bot1_spawns_lifecycle_close_driver() -> None:
+    """LP-3 + LP-5: the close-driver watchdog must be supervised at
+    boot so any lifecycle request (shutdown or restart) turns into
+    ``bot.close()``."""
     src = _src()
-    assert "restart_close_driver" in src, (
+    assert "lifecycle_close_driver" in src, (
         "bot1.py must spawn a supervised task named "
-        "'restart_close_driver' to drive bot.close() on restart (LP-3)."
+        "'lifecycle_close_driver' to drive bot.close() on a "
+        "lifecycle request (LP-3 + LP-5)."
     )
-    assert "_drive_close_on_restart_request" in src, (
-        "bot1.py must define and spawn _drive_close_on_restart_request "
-        "(LP-3)."
+    assert "_drive_close_on_lifecycle_request" in src, (
+        "bot1.py must define and spawn _drive_close_on_lifecycle_request "
+        "(LP-3 + LP-5)."
     )
 
 
-def test_bot1_restart_watchdog_uses_bounded_close_timeout() -> None:
-    """LP-3: the watchdog must wrap ``bot.close()`` in
-    ``asyncio.wait_for`` with a timeout so a wedged close cannot hold
-    the runtime lock past its TTL."""
+def test_bot1_lifecycle_close_driver_uses_bounded_close_timeout() -> None:
+    """LP-3 + LP-5: the watchdog must wrap ``bot.close()`` in
+    ``asyncio.wait_for`` with a named timeout so a wedged close
+    cannot hold the runtime lock past its TTL."""
     src = _src()
-    assert "RESTART_CLOSE_TIMEOUT_SECONDS" in src, (
-        "bot1.py must declare RESTART_CLOSE_TIMEOUT_SECONDS as the "
-        "named bound for the restart close (LP-3)."
+    assert "LIFECYCLE_CLOSE_TIMEOUT_SECONDS" in src, (
+        "bot1.py must declare LIFECYCLE_CLOSE_TIMEOUT_SECONDS as the "
+        "named bound for the lifecycle close (LP-3 + LP-5)."
     )
     assert re.search(
         r"asyncio\.wait_for\(\s*bot\.close\(\)\s*,",
         src,
     ), (
         "bot1.py must wrap bot.close() in asyncio.wait_for with a "
-        "bounded timeout (LP-3)."
+        "bounded timeout (LP-3 + LP-5)."
+    )
+
+
+def test_bot1_close_driver_handles_both_shutdown_and_restart() -> None:
+    """LP-5: the close-driver reads ``lifecycle.get_pending()`` (which
+    covers both shutdown and restart) rather than only
+    ``restart_requested()``, so SIGTERM-driven shutdown also triggers
+    a clean ``bot.close()``."""
+    src = _src()
+    # Find the driver function and check its body references
+    # get_pending() — the generalised pending read — not only
+    # restart_requested().
+    match = re.search(
+        r"async def _drive_close_on_lifecycle_request.*?(?=\nasync def |\ndef |\Z)",
+        src,
+        re.DOTALL,
+    )
+    assert match is not None, (
+        "bot1.py must define _drive_close_on_lifecycle_request (LP-5)."
+    )
+    body = match.group(0)
+    assert "_lifecycle.get_pending()" in body, (
+        "Close driver body must check lifecycle.get_pending() so both "
+        "shutdown and restart intents drive bot.close() (LP-5)."
     )
 
 

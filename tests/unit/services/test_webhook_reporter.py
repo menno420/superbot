@@ -141,3 +141,85 @@ async def test_on_command_error_redacts_traceback_secret_end_to_end() -> None:
     )
     assert "postgres://u:p@host" not in body
     assert "[database_url:redacted]" in body
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_beginning_renders_shutdown_embed() -> None:
+    """LP-5: shutdown intent renders the orange ``🛑 Shutdown Closing``
+    embed with the actor + reason fields populated and the redaction
+    wrapper applied (no raw secrets leak even if a reason contained
+    one)."""
+    reporter = WebhookReporter("https://example.com/webhook")
+    reporter._session = MagicMock()
+
+    pending = MagicMock()
+    pending.kind = "shutdown"
+    pending.reason = "sigterm"
+    pending.actor = "signal_handler"
+
+    wh_mock = MagicMock()
+    wh_mock.send = AsyncMock()
+
+    with patch(
+        "services.webhook_reporter.discord.Webhook.from_url",
+        return_value=wh_mock,
+    ):
+        await reporter.on_lifecycle_close_beginning(pending)
+
+    wh_mock.send.assert_awaited_once()
+    sent_embed = wh_mock.send.call_args.kwargs["embed"]
+    assert sent_embed.title == "🛑 Shutdown Closing"
+    field_values = {f.name: f.value for f in sent_embed.fields}
+    assert "`shutdown`" in field_values["Kind"]
+    assert "`sigterm`" in field_values["Reason"]
+    assert "`signal_handler`" in field_values["Actor"]
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_beginning_renders_restart_embed() -> None:
+    """LP-5: restart intent renders the blue ``♻️ Restart Closing`` embed."""
+    reporter = WebhookReporter("https://example.com/webhook")
+    reporter._session = MagicMock()
+
+    pending = MagicMock()
+    pending.kind = "restart"
+    pending.reason = "!restart"
+    pending.actor = "alice#0001"
+
+    wh_mock = MagicMock()
+    wh_mock.send = AsyncMock()
+
+    with patch(
+        "services.webhook_reporter.discord.Webhook.from_url",
+        return_value=wh_mock,
+    ):
+        await reporter.on_lifecycle_close_beginning(pending)
+
+    sent_embed = wh_mock.send.call_args.kwargs["embed"]
+    assert sent_embed.title == "♻️ Restart Closing"
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_beginning_handles_missing_actor() -> None:
+    """A pending without an actor renders ``<unknown>`` in the Actor field
+    rather than the literal ``None``."""
+    reporter = WebhookReporter("https://example.com/webhook")
+    reporter._session = MagicMock()
+
+    pending = MagicMock()
+    pending.kind = "shutdown"
+    pending.reason = "sigterm"
+    pending.actor = None
+
+    wh_mock = MagicMock()
+    wh_mock.send = AsyncMock()
+
+    with patch(
+        "services.webhook_reporter.discord.Webhook.from_url",
+        return_value=wh_mock,
+    ):
+        await reporter.on_lifecycle_close_beginning(pending)
+
+    sent_embed = wh_mock.send.call_args.kwargs["embed"]
+    actor_field = next(f for f in sent_embed.fields if f.name == "Actor")
+    assert "unknown" in actor_field.value.lower()

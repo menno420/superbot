@@ -551,59 +551,76 @@ async def _sample_process_memory() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Restart close-driver — LP-3
+# Lifecycle close-driver — LP-3 (restart) + LP-5 (SIGTERM-driven shutdown)
 # ---------------------------------------------------------------------------
 
-RESTART_CLOSE_TIMEOUT_SECONDS: float = 20.0
-_RESTART_CLOSE_POLL_INTERVAL: float = 0.5
+LIFECYCLE_CLOSE_TIMEOUT_SECONDS: float = 20.0
+_LIFECYCLE_CLOSE_POLL_INTERVAL: float = 0.5
 
 
-async def _drive_close_on_restart_request() -> None:
-    """Turn a lifecycle restart request into ``bot.close()``.
+async def _drive_close_on_lifecycle_request() -> None:
+    """Turn a lifecycle shutdown OR restart request into ``bot.close()``.
 
-    LP-3: cog commands (``!restart``) record intent via
-    :func:`core.runtime.lifecycle.request_restart` but never touch
-    process control directly.  This watchdog polls the lifecycle
-    pending state and, when a restart is pending, closes the bot with
-    a bounded timeout.  ``main()`` then unwinds through the finally
-    block (heartbeat stop → task drain → lock release → DB close) and
-    the process exits cleanly, so the orchestration platform respawns
-    the container.
+    LP-3 (restart): cog commands (``!restart``) record intent via
+    :func:`core.runtime.lifecycle.request_restart`; this watchdog
+    closes the bot, ``main()`` unwinds through the finally block, the
+    process exits cleanly, and the orchestration platform respawns.
 
-    On timeout the close is force-completed via ``os._exit(1)`` rather
-    than left hanging — Railway will respawn after a non-zero exit and
-    that is preferable to a wedged process holding the runtime lock
-    until the 90 s TTL.
+    LP-5 (shutdown): the SIGTERM handler records intent via
+    :func:`core.runtime.lifecycle.request_shutdown`; this watchdog
+    drives the same close path so the bot exits cleanly during a
+    container termination instead of waiting for the platform's
+    SIGKILL grace expiry. The runtime-lock release happens in the
+    finally block, so the next replica reclaims immediately rather
+    than waiting the 90 s heartbeat TTL.
 
-    Shutdown intent (``request_shutdown`` without restart) is owned by
-    LP-5; this task only acts on restart-flavoured intent.
+    The close is wrapped in ``asyncio.wait_for`` with a 20 s timeout.
+    On timeout the close is force-completed via ``os._exit(1)`` — the
+    orchestration platform respawns after a non-zero exit, which is
+    preferable to a wedged process holding the runtime lock.
     """
     while True:
         try:
-            await asyncio.sleep(_RESTART_CLOSE_POLL_INTERVAL)
+            await asyncio.sleep(_LIFECYCLE_CLOSE_POLL_INTERVAL)
         except asyncio.CancelledError:
             return
-        if not _lifecycle.restart_requested():
-            continue
         pending = _lifecycle.get_pending()
-        actor = pending.actor if pending and pending.actor else "<unknown>"
-        reason = pending.reason if pending else "<unknown>"
+        if pending is None:
+            continue
+        # Only drive bot.close() once: bail if the finally block is
+        # already running (SHUTTING_DOWN / RESTARTING / STOPPED). The
+        # watchdog acts during DRAINING — the brief window between
+        # request and cleanup-start.
+        if _lifecycle.get_phase() is not _lifecycle.Phase.DRAINING:
+            return
+        actor = pending.actor if pending.actor else "<unknown>"
         logger.info(
-            "Restart requested by %s (reason=%r); closing bot (timeout %.1fs).",
+            "Lifecycle %s requested by %s (reason=%r); closing bot (timeout %.1fs).",
+            pending.kind,
             actor,
-            reason,
-            RESTART_CLOSE_TIMEOUT_SECONDS,
+            pending.reason,
+            LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
         )
+        if reporter is not None:
+            try:
+                await reporter.on_lifecycle_close_beginning(pending)
+            except (
+                Exception
+            ) as report_err:  # noqa: BLE001 — webhook is observability, never block close
+                logger.debug(
+                    "Lifecycle close webhook post skipped: %s",
+                    report_err,
+                )
         try:
             await asyncio.wait_for(
                 bot.close(),
-                timeout=RESTART_CLOSE_TIMEOUT_SECONDS,
+                timeout=LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
             )
         except asyncio.TimeoutError:
             logger.critical(
                 "bot.close() exceeded %.1fs timeout — force-exiting "
                 "so the orchestration platform respawns.",
-                RESTART_CLOSE_TIMEOUT_SECONDS,
+                LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
             )
             os._exit(1)
         return
@@ -724,13 +741,14 @@ async def main() -> None:
                 on_error=_on_app_task_died_webhook,
             )
 
-            # LP-3: turn lifecycle.request_restart into bot.close(). The
-            # cog only records intent; this watchdog is the single
+            # LP-3 + LP-5: turn any lifecycle close request (shutdown
+            # OR restart) into bot.close(). The cog / signal handler
+            # only records intent; this watchdog is the single
             # executor. Bounded timeout falls back to os._exit so a
             # wedged close cannot hold the runtime lock past its TTL.
             _runtime_tasks.spawn(
-                "restart_close_driver",
-                _drive_close_on_restart_request(),
+                "lifecycle_close_driver",
+                _drive_close_on_lifecycle_request(),
                 on_error=_on_app_task_died_webhook,
             )
 

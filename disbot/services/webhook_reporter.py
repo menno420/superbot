@@ -172,6 +172,52 @@ class WebhookReporter:
         embed.add_field(name="Failed", value=str(failures), inline=True)
         await self._send(embed, username="Bot Startup")
 
+    async def on_lifecycle_close_beginning(self, pending: object) -> None:
+        """Operator alert: the lifecycle close driver is about to call
+        ``bot.close()``.
+
+        Fired from ``bot1._drive_close_on_lifecycle_request`` after a
+        SIGTERM-driven ``lifecycle.request_shutdown`` or a cog-driven
+        ``lifecycle.request_restart`` has flipped the phase to
+        ``DRAINING``. Surfaces who requested the close and why, so
+        operators distinguish a cog-initiated restart from a
+        platform-initiated SIGTERM in the operator feed.
+
+        ``pending`` is expected to expose ``kind`` (``"shutdown"`` /
+        ``"restart"``), ``reason``, and ``actor`` attributes — the
+        shape of :class:`core.runtime.lifecycle.PendingShutdown`. The
+        signature accepts ``object`` so this module stays free of a
+        lifecycle import (the close driver lives in bot1.py which owns
+        the lifecycle dependency).
+        """
+        kind = str(getattr(pending, "kind", "lifecycle"))
+        reason = str(getattr(pending, "reason", "") or "")
+        actor = getattr(pending, "actor", None)
+        if kind == "restart":
+            title = "♻️ Restart Closing"
+            color = discord.Color.blue()
+        else:
+            title = "🛑 Shutdown Closing"
+            color = discord.Color.orange()
+        embed = discord.Embed(
+            title=title,
+            description=(
+                f"Bot is closing in response to a `{kind}` request. "
+                f"Cleanup is about to run; the process will exit cleanly "
+                f"once the finally block completes."
+            ),
+            color=color,
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        embed.add_field(name="Kind", value=f"`{kind}`", inline=True)
+        embed.add_field(name="Reason", value=f"`{reason or '—'}`", inline=True)
+        embed.add_field(
+            name="Actor",
+            value=f"`{actor}`" if actor else "`<unknown>`",
+            inline=True,
+        )
+        await self._send(embed, username="Bot Lifecycle")
+
     async def on_identity_findings(
         self,
         summary: dict[str, object],
