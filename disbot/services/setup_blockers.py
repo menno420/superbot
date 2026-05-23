@@ -110,6 +110,7 @@ def _settings_mutation_pipeline_status() -> BlockerStatus:
     that is the contract setup_operations depends on.
     """
     import importlib
+    import importlib.util
 
     spec = importlib.util.find_spec("services.settings_mutation")
     if spec is None:
@@ -127,6 +128,7 @@ def _setup_wizard_status() -> BlockerStatus:
     customization catalogue has not been built yet.
     """
     import importlib
+    import importlib.util
 
     spec = importlib.util.find_spec("cogs.setup_cog")
     if spec is None:
@@ -174,6 +176,7 @@ def _panel_registry_status() -> BlockerStatus:
     signal; absence is ``pending``.
     """
     import importlib
+    import importlib.util
 
     spec = importlib.util.find_spec("core.runtime.panel_manager")
     if spec is None:
