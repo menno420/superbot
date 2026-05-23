@@ -174,3 +174,136 @@ async def test_on_health_startup_failed_posts_embed():
     embed = reporter._send.await_args.args[0]
     assert "Aborting" in embed.description
     assert "port in use" in embed.description
+
+
+# ---------------------------------------------------------------------------
+# /ready lifecycle-awareness
+#
+# /ready must consult lifecycle.can_accept_commands() in addition to
+# bot.is_ready() so the orchestrator stops routing traffic to a replica
+# that is draining for SIGTERM / restart.  Without this, bot.is_ready()
+# stays True for the early part of the DRAINING window and the load
+# balancer keeps sending requests at a replica that has stopped
+# admitting commands.
+# ---------------------------------------------------------------------------
+
+
+def _ready_request_for(bot) -> MagicMock:
+    """Build a minimal aiohttp Request mock for ``_ready_handler``."""
+    request = MagicMock()
+    request.app = {"bot": bot}
+    return request
+
+
+@pytest.fixture(autouse=False)
+def _reset_lifecycle():
+    """Reset lifecycle state around lifecycle-aware /ready tests so they
+    cannot leak phase or pending state into one another."""
+    from core.runtime import lifecycle
+
+    lifecycle.reset_for_tests()
+    yield
+    lifecycle.reset_for_tests()
+
+
+@pytest.mark.asyncio
+async def test_ready_returns_200_when_ready_and_lifecycle_accepts_commands(
+    _reset_lifecycle,
+):
+    """Happy path: gateway up + lifecycle RUNNING → 200 with phase
+    and ``accepting_commands: True`` in the payload."""
+    import json as _json
+
+    from core.runtime import lifecycle
+    from healthserver import _ready_handler
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    bot = _make_bot()  # is_ready=True
+
+    response = await _ready_handler(_ready_request_for(bot))
+
+    assert response.status == 200
+    body = _json.loads(response.text)
+    assert body["status"] == "ready"
+    assert body["phase"] == "RUNNING"
+    assert body["accepting_commands"] is True
+
+
+@pytest.mark.asyncio
+async def test_ready_returns_503_when_gateway_not_ready(_reset_lifecycle):
+    """Existing behavior preserved: bot.is_ready() False → 503 with
+    ``gateway_not_ready`` reason regardless of lifecycle state."""
+    import json as _json
+
+    from core.runtime import lifecycle
+    from healthserver import _ready_handler
+
+    lifecycle.set_phase(lifecycle.Phase.STARTING)
+    bot = _make_bot()
+    bot.is_ready = MagicMock(return_value=False)
+
+    response = await _ready_handler(_ready_request_for(bot))
+
+    assert response.status == 503
+    body = _json.loads(response.text)
+    assert body["status"] == "not_ready"
+    assert body["reason"] == "gateway_not_ready"
+    assert body["phase"] == "STARTING"
+    assert body["accepting_commands"] is True  # STARTING still admits
+
+
+@pytest.mark.asyncio
+async def test_ready_returns_503_when_lifecycle_draining(_reset_lifecycle):
+    """The regression this PR is preventing: SIGTERM moves lifecycle into
+    DRAINING but bot.is_ready() can still be True for part of the window.
+    /ready must return 503 in that window so the load balancer stops
+    routing traffic."""
+    import json as _json
+
+    from core.runtime import lifecycle
+    from healthserver import _ready_handler
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+    assert lifecycle.get_phase() is lifecycle.Phase.DRAINING
+
+    bot = _make_bot()  # is_ready still True
+    response = await _ready_handler(_ready_request_for(bot))
+
+    assert response.status == 503
+    body = _json.loads(response.text)
+    assert body["status"] == "not_ready"
+    assert body["phase"] == "DRAINING"
+    assert body["accepting_commands"] is False
+    assert body["reason"] == "lifecycle_DRAINING"
+
+
+@pytest.mark.parametrize(
+    "phase",
+    [
+        "SHUTTING_DOWN",
+        "RESTARTING",
+        "STOPPED",
+    ],
+)
+@pytest.mark.asyncio
+async def test_ready_returns_503_in_every_terminal_phase(
+    _reset_lifecycle, phase: str
+):
+    """All non-admitting phases past DRAINING must also produce 503.
+    Belt-and-suspenders parametrization so a future lifecycle-state
+    addition does not silently re-enable 200 in a draining phase."""
+    import json as _json
+
+    from core.runtime import lifecycle
+    from healthserver import _ready_handler
+
+    lifecycle.set_phase(getattr(lifecycle.Phase, phase))
+    bot = _make_bot()
+    response = await _ready_handler(_ready_request_for(bot))
+
+    assert response.status == 503
+    body = _json.loads(response.text)
+    assert body["accepting_commands"] is False
+    assert body["phase"] == phase
+    assert body["reason"] == f"lifecycle_{phase}"

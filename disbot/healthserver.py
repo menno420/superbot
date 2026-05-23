@@ -3,8 +3,12 @@
 Exposes two endpoints on 0.0.0.0:8080 (configurable via HEALTH_PORT env var):
 
   GET /health  — liveness probe; returns 200 while the event loop is running
-  GET /ready   — readiness probe; returns 200 once the bot is logged in to Discord,
-                 503 while still connecting
+  GET /ready   — readiness probe; returns 200 only when the bot is logged in
+                 to Discord AND the lifecycle service is admitting commands.
+                 Returns 503 during STARTING (gateway not connected yet) or
+                 any draining/terminal phase (DRAINING, SHUTTING_DOWN,
+                 RESTARTING, STOPPED) so the orchestrator routes traffic
+                 away during graceful shutdown / restart.
 
 The server runs as a background asyncio task alongside the bot, sharing the
 same event loop. It adds no threads and has negligible overhead.
@@ -34,6 +38,8 @@ import os
 
 from aiohttp import web
 from discord.ext import commands
+
+from core.runtime import lifecycle
 
 try:
     from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -72,13 +78,50 @@ async def _health_handler(request: web.Request) -> web.Response:
 
 
 async def _ready_handler(request: web.Request) -> web.Response:
-    """Readiness probe — 503 until Discord gateway connection is established."""
+    """Readiness probe — 200 only when the bot is fully serving traffic.
+
+    Returns 200 when both:
+      - ``bot.is_ready()`` — Discord gateway handshake is complete
+      - ``lifecycle.can_accept_commands()`` — the lifecycle service is
+        in ``STARTING`` or ``RUNNING`` (i.e., not draining)
+
+    Returns 503 in every other case.  The payload always includes the
+    lifecycle ``phase`` and ``accepting_commands`` so the orchestrator
+    can distinguish "still connecting" from "draining for shutdown"
+    when alerting or routing traffic.
+
+    The lifecycle gate matters during graceful shutdown: SIGTERM moves
+    the bot into ``DRAINING`` before ``bot.close()`` is awaited, and
+    ``bot.is_ready()`` stays True for some of that window.  Without
+    the lifecycle check, the orchestrator would keep routing traffic
+    to a draining replica.
+    """
     bot: commands.Bot = request.app["bot"]
-    if bot.is_ready():
-        body = json.dumps({"status": "ready", "user": str(bot.user)})
+    phase = lifecycle.get_phase()
+    accepting = lifecycle.can_accept_commands()
+    is_ready = bot.is_ready()
+
+    if is_ready and accepting:
+        body = json.dumps(
+            {
+                "status": "ready",
+                "phase": phase.value,
+                "accepting_commands": True,
+                "user": str(bot.user),
+            },
+        )
         return web.Response(text=body, content_type="application/json")
+
+    reason = "gateway_not_ready" if not is_ready else f"lifecycle_{phase.value}"
     return web.Response(
-        text=json.dumps({"status": "not_ready"}),
+        text=json.dumps(
+            {
+                "status": "not_ready",
+                "phase": phase.value,
+                "accepting_commands": accepting,
+                "reason": reason,
+            },
+        ),
         status=503,
         content_type="application/json",
     )
