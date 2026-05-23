@@ -548,3 +548,131 @@ class TestClassification:
         assert snap["findings"]["unclassified_entry_points"] == 0
 
 
+# ---------------------------------------------------------------------------
+# PR-06b — Slash command ledger ingestion
+# ---------------------------------------------------------------------------
+
+
+def _make_slash_cmd(
+    name: str,
+    cog_name: str = "DiagnosticCog",
+    parent_name: str | None = None,
+) -> MagicMock:
+    """Build a discord.py ``app_commands.Command`` look-alike.
+
+    Leaf commands have a ``callback``; groups don't, so the walker
+    can filter groups out.  ``binding`` is the cog instance.
+    """
+    cmd = MagicMock()
+    cmd.name = name
+    cmd.qualified_name = f"{parent_name} {name}" if parent_name else name
+    cmd.callback = MagicMock()  # marks this as a leaf, not a group
+    if cog_name:
+        cmd.binding = MagicMock()
+        cmd.binding.__class__ = type(cog_name, (), {})
+    else:
+        cmd.binding = None
+    if parent_name:
+        parent = MagicMock()
+        parent.qualified_name = parent_name
+        cmd.parent = parent
+    else:
+        cmd.parent = None
+    return cmd
+
+
+def _make_bot_with_tree(*prefix_cmds, slash_cmds=()) -> MagicMock:
+    bot = MagicMock()
+    bot.walk_commands = MagicMock(return_value=list(prefix_cmds))
+    bot.tree = MagicMock()
+    bot.tree.walk_commands = MagicMock(return_value=list(slash_cmds))
+    return bot
+
+
+class TestSlashLedgerIngestion:
+    def test_build_ledger_walks_slash_tree(self):
+        cmd = _make_slash_cmd("setup-status", cog_name="DiagnosticCog")
+        bot = _make_bot_with_tree(slash_cmds=(cmd,))
+        ledger = build_ledger(bot)
+        assert len(ledger.slash_entries) == 1
+        slash = ledger.slash_entries[0]
+        assert slash.name == "setup-status"
+        assert slash.cog_name == "DiagnosticCog"
+        assert slash.subsystem == "diagnostic"
+        assert slash.kind == "slash"
+
+    def test_build_ledger_captures_five_setup_slash_commands(self):
+        """The 5 live setup slash commands appear in slash_entries when
+        the bot tree contains them.  PR-06b's primary regression."""
+        names = (
+            "setup-status",
+            "setup-reset",
+            "setup-skip",
+            "setup-unskip",
+            "setup-depth",
+        )
+        cmds = [_make_slash_cmd(n, cog_name="DiagnosticCog") for n in names]
+        bot = _make_bot_with_tree(slash_cmds=cmds)
+        ledger = build_ledger(bot)
+        captured = {e.name for e in ledger.slash_entries}
+        assert captured == set(names)
+        for entry in ledger.slash_entries:
+            assert entry.kind == "slash"
+            assert entry.classification == "primary_entrypoint"
+
+    def test_slash_groups_filtered_out(self):
+        """``app_commands.Group`` instances have no ``callback`` and
+        must not appear as slash entries — only leaf commands do."""
+        leaf = _make_slash_cmd("setup-status", cog_name="DiagnosticCog")
+        group = MagicMock(spec=["name"])
+        group.name = "setup"
+        bot = _make_bot_with_tree(slash_cmds=(group, leaf))
+        ledger = build_ledger(bot)
+        names = [e.name for e in ledger.slash_entries]
+        assert "setup-status" in names
+        assert "setup" not in names
+
+    def test_build_ledger_handles_bot_without_tree(self):
+        """Bots without an ``app_commands`` surface (older fixtures)
+        still build a ledger; slash_entries is empty."""
+        bot = MagicMock(spec=["walk_commands"])
+        bot.walk_commands = MagicMock(return_value=[])
+        ledger = build_ledger(bot)
+        assert ledger.slash_entries == ()
+
+    def test_build_ledger_handles_tree_walk_raise(self):
+        """Defensive: if tree.walk_commands raises, slash ingestion
+        returns an empty list rather than crashing the builder."""
+        bot = MagicMock()
+        bot.walk_commands = MagicMock(return_value=[])
+        bot.tree = MagicMock()
+        bot.tree.walk_commands = MagicMock(side_effect=RuntimeError("boom"))
+        ledger = build_ledger(bot)
+        assert ledger.slash_entries == ()
+
+    def test_slash_entry_records_parent_group(self):
+        sub = _make_slash_cmd(
+            "status",
+            cog_name="DiagnosticCog",
+            parent_name="setup",
+        )
+        bot = _make_bot_with_tree(slash_cmds=(sub,))
+        ledger = build_ledger(bot)
+        assert ledger.slash_entries[0].name == "setup status"
+        assert ledger.slash_entries[0].parent_group == "setup"
+
+    def test_diagnostics_snapshot_reflects_slash_entry_count(self):
+        from core.runtime.command_surface_ledger import _snapshot
+
+        cmds = [
+            _make_slash_cmd(n, cog_name="DiagnosticCog")
+            for n in ("setup-status", "setup-reset")
+        ]
+        bot = _make_bot_with_tree(slash_cmds=cmds)
+        with patch(
+            "core.runtime.command_surface_ledger._walk_router_prefixes",
+            return_value=[],
+        ):
+            build_ledger(bot)
+        snap = _snapshot()
+        assert snap["slash_entry_count"] == 2
