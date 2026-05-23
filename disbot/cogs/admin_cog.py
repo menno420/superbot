@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
-import sys
 
 import discord
 from discord import app_commands
@@ -17,12 +15,10 @@ from cogs.admin.cog_manager import (  # noqa: F401 — re-exported for back-comp
     _do_unload,
     _find_module,
 )
-from core.runtime import resources
+from core.runtime import lifecycle, resources
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR  # noqa: F401
 from views.base import HubView, send_panel
-
-PID_FILE = os.path.join(os.path.dirname(COGS_DIR), "bot.pid")
 
 
 class AdminCog(commands.Cog):
@@ -309,13 +305,27 @@ class AdminCog(commands.Cog):
     @commands.command(name="restart")
     @commands.is_owner()
     async def reload_main_script(self, ctx):
-        """Restart the bot process."""
-        await ctx.send("♻️ Restarting bot...")
-        logging.info("Restarting bot...")
-        if os.path.exists(PID_FILE):
-            os.remove(PID_FILE)
-        await self.bot.close()
-        os.execv(sys.executable, [sys.executable] + sys.argv)
+        """Request a graceful restart through the lifecycle service.
+
+        LP-3: the cog no longer owns process control. It records intent
+        via :func:`core.runtime.lifecycle.request_restart`; a watchdog in
+        ``bot1.py`` turns the request into ``bot.close()`` with a bounded
+        timeout, the ``main()`` finally block runs cleanup, and the
+        process exits cleanly so the orchestration platform respawns it.
+        Repeated ``!restart`` calls during drain coalesce — only the
+        first caller wins.
+        """
+        accepted = lifecycle.request_restart(
+            reason="!restart",
+            actor=str(ctx.author),
+        )
+        if accepted:
+            await ctx.send("♻️ Restart requested. Bot is closing for restart.")
+            logging.info("Restart requested by %s", ctx.author)
+        else:
+            await ctx.send(
+                "⚠️ A shutdown or restart is already in progress — request coalesced.",
+            )
 
     # ------------------------------------------------------------------
     # Webhook log level
