@@ -1,9 +1,9 @@
 """Command surface ledger — Phase 2 PR-12.
 
 An immutable, in-memory catalogue of every command entrypoint the bot
-exposes — prefix commands today, slash commands reserved for a future
-PR — together with their owner subsystem, visibility tier, and any
-group/alias relationships.
+exposes — prefix commands AND slash commands (PR-06b) — together
+with their owner subsystem, visibility tier, and any group/alias
+relationships.
 
 The ledger is **read-only** and **builder-driven**: ``build_ledger(bot)``
 walks the live ``bot.commands`` surface and the interaction router's
@@ -262,6 +262,81 @@ def _walk_commands(bot: object) -> list[CommandSurfaceEntry]:
     return entries
 
 
+def _walk_slash_commands(bot: object) -> list[CommandSurfaceEntry]:
+    """Walk ``bot.tree`` and build one entry per registered slash command.
+
+    PR-06b: 5 setup slash commands (``/setup-status``, ``/setup-reset``,
+    ``/setup-skip``, ``/setup-unskip``, ``/setup-depth``) are
+    registered today but were previously invisible to the ledger
+    because the walker only enumerated prefix commands.  This walk
+    runs over ``bot.tree.walk_commands()`` (discord.py
+    ``CommandTree.walk_commands``) and emits one
+    ``CommandSurfaceEntry`` per slash command with ``kind="slash"``.
+
+    Groups (``app_commands.Group``) are flattened — only leaf
+    commands are emitted, with ``parent_group`` set to the group's
+    qualified name.  ``binding`` (the cog instance) is read via
+    ``getattr`` so a missing attribute (e.g. unbound) yields
+    ``cog_name=""`` rather than raising.
+
+    The default ``classification`` is left at ``"primary_entrypoint"``;
+    PR-06c will annotate the setup slash commands as panel actions
+    where appropriate.
+    """
+    entries: list[CommandSurfaceEntry] = []
+    tree = getattr(bot, "tree", None)
+    if tree is None:
+        return entries
+    walk = getattr(tree, "walk_commands", None)
+    if walk is None:
+        return entries
+    try:
+        iter_cmds = walk()
+    except Exception as exc:  # noqa: BLE001 — best-effort walk
+        logger.warning(
+            "command_surface_ledger: slash walk_commands raised %s",
+            exc,
+        )
+        return entries
+    for cmd in iter_cmds:
+        # Skip groups; only leaf commands carry a callable binding.
+        # discord.py's ``app_commands.Group`` does not have a
+        # ``callback`` attribute — leaf ``Command`` instances do.
+        if not hasattr(cmd, "callback"):
+            continue
+        binding = getattr(cmd, "binding", None)
+        cog_name = binding.__class__.__name__ if binding is not None else ""
+        subsystem = cog_name_to_subsystem(cog_name) if cog_name else None
+        visibility_tier = _visibility_for(subsystem)
+        parent = getattr(cmd, "parent", None)
+        parent_name = (
+            getattr(parent, "qualified_name", None) if parent is not None else None
+        )
+        qualified_name = getattr(cmd, "qualified_name", None) or getattr(
+            cmd,
+            "name",
+            "",
+        )
+        is_declared = _is_declared_entry_point(
+            getattr(cmd, "name", ""),
+            qualified_name,
+            subsystem,
+        )
+        entries.append(
+            CommandSurfaceEntry(
+                name=qualified_name,
+                cog_name=cog_name,
+                subsystem=subsystem,
+                visibility_tier=visibility_tier,
+                aliases=(),
+                parent_group=parent_name,
+                is_declared=is_declared,
+                kind="slash",
+            ),
+        )
+    return entries
+
+
 def _visibility_for(subsystem: str | None) -> str | None:
     if subsystem is None:
         return None
@@ -380,8 +455,15 @@ def build_ledger(bot: object) -> CommandSurfaceLedger:
     Caches the result for later diagnostics access; call again to
     refresh after a hot-reload.  The function is sync-safe: it does
     not perform I/O.
+
+    PR-06b: in addition to prefix commands (``bot.walk_commands``),
+    the builder now walks ``bot.tree.walk_commands`` to populate
+    ``slash_entries``.  Missing trees or older bots without an
+    ``app_commands`` surface gracefully degrade to an empty
+    ``slash_entries`` tuple.
     """
     entries = _walk_commands(bot)
+    slash_entries = _walk_slash_commands(bot)
     router_prefixes = _walk_router_prefixes()
     findings = _compute_findings(entries, router_prefixes)
     ledger = CommandSurfaceLedger(
@@ -390,14 +472,16 @@ def build_ledger(bot: object) -> CommandSurfaceLedger:
         entries=tuple(entries),
         router_prefixes=tuple(router_prefixes),
         findings=findings,
+        slash_entries=tuple(slash_entries),
     )
     global _CACHED
     _CACHED = ledger
     logger.info(
-        "command_surface_ledger: built v%d — %d commands, %d router prefixes, "
-        "%d findings",
+        "command_surface_ledger: built v%d — %d prefix command(s), "
+        "%d slash command(s), %d router prefix(es), %d finding(s)",
         ledger.version,
         len(ledger.entries),
+        len(ledger.slash_entries),
         len(ledger.router_prefixes),
         findings.total,
     )
