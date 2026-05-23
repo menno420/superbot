@@ -22,6 +22,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import time
 import uuid
 
 from utils.db import runtime_lock
@@ -32,6 +33,43 @@ BOOT_ID: uuid.UUID = uuid.uuid4()
 
 DEFAULT_HEARTBEAT_SECONDS: int = 30
 _HEARTBEAT_FAILURE_LIMIT: int = 3
+
+# LP-4: rolling-deploy handoff. When another fresh replica still holds
+# the runtime lock at boot, poll for up to ``DEFAULT_BOOT_WAIT_SECONDS``
+# rather than exit-zeroing immediately. 150 s comfortably covers a
+# graceful old-replica drain (heartbeat 30 s + drain budget 5 s + DB
+# close) plus margin for slow networks. Operators override per
+# environment via the env knobs below; Railway's default healthcheck
+# window must be at least the wait budget or new replicas will be
+# rotated out as unhealthy before they can claim the lock.
+DEFAULT_BOOT_WAIT_SECONDS: float = 150.0
+DEFAULT_BOOT_POLL_SECONDS: float = 5.0
+
+
+def _env_float(name: str, default: float) -> float:
+    """Read a positive float from an env var, falling back on parse error."""
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        logger.warning(
+            "Invalid %s=%r; using default %.1fs.",
+            name,
+            raw,
+            default,
+        )
+        return default
+    if value < 0:
+        logger.warning(
+            "%s=%.1f is negative; using default %.1fs.",
+            name,
+            value,
+            default,
+        )
+        return default
+    return value
 
 
 class BootIdFilter(logging.Filter):
@@ -74,51 +112,131 @@ async def acquire_lock_or_exit(
     boot_id: uuid.UUID = BOOT_ID,
     lock_name: str = runtime_lock.DEFAULT_LOCK_NAME,
     stale_after_seconds: int = runtime_lock.DEFAULT_STALE_AFTER_SECONDS,
+    boot_wait_seconds: float | None = None,
+    boot_poll_seconds: float | None = None,
 ) -> None:
     """Claim the runtime lock or exit the process cleanly.
 
-    Exit code 0 (not 1) when the lock is held by a fresh peer — this is
-    a normal multi-replica scenario, not a crash, so Railway should not
-    restart the loser.
+    LP-4: when another fresh replica holds the lock at boot, poll up
+    to ``boot_wait_seconds`` (env ``RUNTIME_LOCK_BOOT_WAIT_SECONDS``,
+    default 150 s) for it to release, rather than exit-zeroing on the
+    first attempt. This smooths rolling-deploy handoffs where the new
+    replica boots before the old one has finished draining. On
+    timeout we still exit 0 so the orchestration platform leaves this
+    replica idle.
 
-    Exit code 1 when the underlying DB call fails — we want Railway to
-    restart and retry. The DB failure is logged before exit.
+    Exit code 0 when the lock is held by a fresh peer after the wait
+    budget elapses — normal multi-replica handoff, not a crash.
+
+    Exit code 1 when the underlying DB call fails — we want the
+    orchestration platform to restart and retry. The DB failure is
+    logged before exit.
+    """
+    if boot_wait_seconds is None:
+        boot_wait_seconds = _env_float(
+            "RUNTIME_LOCK_BOOT_WAIT_SECONDS",
+            DEFAULT_BOOT_WAIT_SECONDS,
+        )
+    if boot_poll_seconds is None:
+        boot_poll_seconds = _env_float(
+            "RUNTIME_LOCK_BOOT_POLL_SECONDS",
+            DEFAULT_BOOT_POLL_SECONDS,
+        )
+    # Sanity: poll must be > 0 and strictly less than wait so the loop
+    # makes progress. If misconfigured, fall back to safe values.
+    if boot_wait_seconds > 0 and (
+        boot_poll_seconds <= 0 or boot_poll_seconds >= boot_wait_seconds
+    ):
+        logger.warning(
+            "RUNTIME_LOCK_BOOT_POLL_SECONDS=%.1f vs "
+            "RUNTIME_LOCK_BOOT_WAIT_SECONDS=%.1f — using min(1s, wait) "
+            "for poll.",
+            boot_poll_seconds,
+            boot_wait_seconds,
+        )
+        boot_poll_seconds = min(1.0, boot_wait_seconds)
+
+    started_at = time.monotonic()
+    deadline = started_at + boot_wait_seconds
+    attempts = 0
+    while True:
+        attempts += 1
+        try:
+            result = await runtime_lock.try_acquire(
+                boot_id,
+                lock_name=lock_name,
+                stale_after_seconds=stale_after_seconds,
+            )
+        except Exception as exc:
+            logger.critical(
+                "runtime_lock.try_acquire failed: %s — exiting so the "
+                "orchestration platform restarts this replica.",
+                exc,
+                exc_info=True,
+            )
+            raise SystemExit(1) from exc
+
+        elapsed = time.monotonic() - started_at
+        if result.acquired:
+            logger.info(
+                "Runtime lock acquired (lock_name=%s boot_id=%s "
+                "attempts=%d wait=%.1fs).",
+                lock_name,
+                boot_id,
+                attempts,
+                elapsed,
+            )
+            _record_handoff_outcome(
+                "acquired_after_wait" if attempts > 1 else "acquired_immediate",
+                elapsed,
+            )
+            return
+
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            logger.warning(
+                "Runtime lock held by another live replica after "
+                "%.1fs of waiting (lock_name=%s holder_boot_id=%s "
+                "last_heartbeat=%s reason=%s attempts=%d). Exiting "
+                "cleanly so the orchestration platform leaves this "
+                "replica idle.",
+                elapsed,
+                lock_name,
+                result.holder_boot_id,
+                result.holder_heartbeat_at,
+                result.reason,
+                attempts,
+            )
+            _record_handoff_outcome("timeout", elapsed)
+            raise SystemExit(0)
+
+        sleep_for = min(boot_poll_seconds, remaining)
+        logger.info(
+            "Runtime lock held by peer (holder=%s heartbeat=%s "
+            "reason=%s attempt=%d); retrying in %.1fs "
+            "(remaining=%.1fs of %.1fs budget).",
+            result.holder_boot_id,
+            result.holder_heartbeat_at,
+            result.reason,
+            attempts,
+            sleep_for,
+            remaining,
+            boot_wait_seconds,
+        )
+        await asyncio.sleep(sleep_for)
+
+
+def _record_handoff_outcome(outcome: str, elapsed_seconds: float) -> None:
+    """Update boot-handoff metrics, swallowing import errors so the
+    runtime path never depends on prometheus_client being installed.
     """
     try:
-        result = await runtime_lock.try_acquire(
-            boot_id,
-            lock_name=lock_name,
-            stale_after_seconds=stale_after_seconds,
-        )
-    except Exception as exc:
-        logger.critical(
-            "runtime_lock.try_acquire failed: %s — exiting so Railway "
-            "restarts this replica.",
-            exc,
-            exc_info=True,
-        )
-        raise SystemExit(1) from exc
+        from services import metrics as _metrics
 
-    if result.acquired:
-        logger.info(
-            "Runtime lock acquired (lock_name=%s boot_id=%s).",
-            lock_name,
-            boot_id,
-        )
-        return
-
-    holder = result.holder_boot_id
-    heartbeat = result.holder_heartbeat_at
-    logger.warning(
-        "Runtime lock held by another live replica "
-        "(lock_name=%s holder_boot_id=%s last_heartbeat=%s reason=%s). "
-        "Exiting cleanly so Railway leaves this replica idle.",
-        lock_name,
-        holder,
-        heartbeat,
-        result.reason,
-    )
-    raise SystemExit(0)
+        _metrics.runtime_lock_boot_handoff_total.labels(outcome=outcome).inc()
+        _metrics.runtime_lock_boot_wait_seconds.observe(elapsed_seconds)
+    except Exception:
+        logger.debug("Boot-handoff metric not recorded (metrics unavailable).")
 
 
 async def run_heartbeat_loop(

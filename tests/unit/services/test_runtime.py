@@ -63,6 +63,8 @@ async def test_acquire_lock_or_exit_returns_when_acquired():
 
 @pytest.mark.asyncio
 async def test_acquire_lock_or_exit_exits_zero_when_held_by_peer():
+    """LP-4: with ``boot_wait_seconds=0`` the loop short-circuits to
+    the pre-LP-4 single-shot semantics — peer held → SystemExit(0)."""
     fake_result = rl_db.AcquireResult(
         acquired=False,
         holder_boot_id=uuid.uuid4(),
@@ -71,7 +73,7 @@ async def test_acquire_lock_or_exit_exits_zero_when_held_by_peer():
     )
     with patch.object(rl_db, "try_acquire", AsyncMock(return_value=fake_result)):
         with pytest.raises(SystemExit) as exc_info:
-            await runtime.acquire_lock_or_exit()
+            await runtime.acquire_lock_or_exit(boot_wait_seconds=0)
         assert exc_info.value.code == 0
 
 
@@ -83,8 +85,123 @@ async def test_acquire_lock_or_exit_exits_one_when_db_fails():
         AsyncMock(side_effect=RuntimeError("db down")),
     ):
         with pytest.raises(SystemExit) as exc_info:
-            await runtime.acquire_lock_or_exit()
+            await runtime.acquire_lock_or_exit(boot_wait_seconds=0)
         assert exc_info.value.code == 1
+
+
+@pytest.mark.asyncio
+async def test_acquire_lock_or_exit_polls_until_peer_releases():
+    """LP-4: when a fresh peer holds the lock, the loop should retry
+    on each tick until the peer releases (acquired=True). The total
+    wait is bounded by ``boot_wait_seconds`` but the loop exits as
+    soon as acquisition succeeds."""
+    held = rl_db.AcquireResult(
+        acquired=False,
+        holder_boot_id=uuid.uuid4(),
+        holder_heartbeat_at=None,
+        reason="row_fresh",
+    )
+    acquired = rl_db.AcquireResult(
+        acquired=True,
+        holder_boot_id=runtime.BOOT_ID,
+        holder_heartbeat_at=None,
+        reason="acquired",
+    )
+    # First two attempts: peer holds. Third: peer released, we acquire.
+    try_acquire = AsyncMock(side_effect=[held, held, acquired])
+    sleep_mock = AsyncMock()
+
+    with (
+        patch.object(rl_db, "try_acquire", try_acquire),
+        patch("services.runtime.asyncio.sleep", sleep_mock),
+    ):
+        await runtime.acquire_lock_or_exit(
+            boot_wait_seconds=60.0,
+            boot_poll_seconds=0.01,
+        )
+
+    assert try_acquire.await_count == 3
+    # Two retries → two sleeps.
+    assert sleep_mock.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_acquire_lock_or_exit_exits_zero_after_wait_timeout():
+    """LP-4: a peer that never releases causes the loop to give up
+    after ``boot_wait_seconds`` and exit with code 0 (idle, not crash)."""
+    fake_result = rl_db.AcquireResult(
+        acquired=False,
+        holder_boot_id=uuid.uuid4(),
+        holder_heartbeat_at=None,
+        reason="row_fresh",
+    )
+    try_acquire = AsyncMock(return_value=fake_result)
+    sleep_mock = AsyncMock()
+
+    with (
+        patch.object(rl_db, "try_acquire", try_acquire),
+        patch("services.runtime.asyncio.sleep", sleep_mock),
+    ):
+        with pytest.raises(SystemExit) as exc_info:
+            # Use a tiny budget so the test finishes quickly without
+            # mocking ``time.monotonic``.
+            await runtime.acquire_lock_or_exit(
+                boot_wait_seconds=0.05,
+                boot_poll_seconds=0.01,
+            )
+        assert exc_info.value.code == 0
+    # At least two attempts: one immediate + one after a sleep before
+    # the deadline elapses.
+    assert try_acquire.await_count >= 2
+
+
+@pytest.mark.asyncio
+async def test_acquire_lock_or_exit_reads_env_knobs_when_args_omitted(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """Env vars supply the defaults when the caller doesn't pass
+    explicit ``boot_wait_seconds`` / ``boot_poll_seconds``."""
+    fake_result = rl_db.AcquireResult(
+        acquired=False,
+        holder_boot_id=uuid.uuid4(),
+        holder_heartbeat_at=None,
+        reason="row_fresh",
+    )
+    monkeypatch.setenv("RUNTIME_LOCK_BOOT_WAIT_SECONDS", "0")
+    monkeypatch.setenv("RUNTIME_LOCK_BOOT_POLL_SECONDS", "0")
+
+    with patch.object(rl_db, "try_acquire", AsyncMock(return_value=fake_result)):
+        with pytest.raises(SystemExit) as exc_info:
+            await runtime.acquire_lock_or_exit()
+        assert exc_info.value.code == 0
+
+
+@pytest.mark.asyncio
+async def test_acquire_lock_or_exit_falls_back_to_safe_defaults_on_bad_poll(
+    caplog: pytest.LogCaptureFixture,
+):
+    """If poll >= wait, fall back to a safe poll value and warn so the
+    operator sees the misconfiguration in logs."""
+    fake_result = rl_db.AcquireResult(
+        acquired=False,
+        holder_boot_id=uuid.uuid4(),
+        holder_heartbeat_at=None,
+        reason="row_fresh",
+    )
+    sleep_mock = AsyncMock()
+    with (
+        patch.object(rl_db, "try_acquire", AsyncMock(return_value=fake_result)),
+        patch("services.runtime.asyncio.sleep", sleep_mock),
+        caplog.at_level(logging.WARNING, logger="bot.services.runtime"),
+    ):
+        with pytest.raises(SystemExit):
+            await runtime.acquire_lock_or_exit(
+                boot_wait_seconds=0.05,
+                boot_poll_seconds=10.0,  # poll > wait
+            )
+    assert any(
+        "BOOT_POLL_SECONDS" in record.message for record in caplog.records
+    )
 
 
 @pytest.mark.asyncio
