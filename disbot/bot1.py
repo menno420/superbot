@@ -550,6 +550,65 @@ async def _sample_process_memory() -> None:
         await asyncio.sleep(PROCESS_MEMORY_SAMPLE_INTERVAL)
 
 
+# ---------------------------------------------------------------------------
+# Restart close-driver — LP-3
+# ---------------------------------------------------------------------------
+
+RESTART_CLOSE_TIMEOUT_SECONDS: float = 20.0
+_RESTART_CLOSE_POLL_INTERVAL: float = 0.5
+
+
+async def _drive_close_on_restart_request() -> None:
+    """Turn a lifecycle restart request into ``bot.close()``.
+
+    LP-3: cog commands (``!restart``) record intent via
+    :func:`core.runtime.lifecycle.request_restart` but never touch
+    process control directly.  This watchdog polls the lifecycle
+    pending state and, when a restart is pending, closes the bot with
+    a bounded timeout.  ``main()`` then unwinds through the finally
+    block (heartbeat stop → task drain → lock release → DB close) and
+    the process exits cleanly, so the orchestration platform respawns
+    the container.
+
+    On timeout the close is force-completed via ``os._exit(1)`` rather
+    than left hanging — Railway will respawn after a non-zero exit and
+    that is preferable to a wedged process holding the runtime lock
+    until the 90 s TTL.
+
+    Shutdown intent (``request_shutdown`` without restart) is owned by
+    LP-5; this task only acts on restart-flavoured intent.
+    """
+    while True:
+        try:
+            await asyncio.sleep(_RESTART_CLOSE_POLL_INTERVAL)
+        except asyncio.CancelledError:
+            return
+        if not _lifecycle.restart_requested():
+            continue
+        pending = _lifecycle.get_pending()
+        actor = pending.actor if pending and pending.actor else "<unknown>"
+        reason = pending.reason if pending else "<unknown>"
+        logger.info(
+            "Restart requested by %s (reason=%r); closing bot (timeout %.1fs).",
+            actor,
+            reason,
+            RESTART_CLOSE_TIMEOUT_SECONDS,
+        )
+        try:
+            await asyncio.wait_for(
+                bot.close(),
+                timeout=RESTART_CLOSE_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.critical(
+                "bot.close() exceeded %.1fs timeout — force-exiting "
+                "so the orchestration platform respawns.",
+                RESTART_CLOSE_TIMEOUT_SECONDS,
+            )
+            os._exit(1)
+        return
+
+
 async def main() -> None:
     from services.governance_exceptions import GovernanceError
     from utils.subsystem_registry import validate_registry
@@ -662,6 +721,16 @@ async def main() -> None:
             _runtime_tasks.spawn(
                 "process_memory_sampler",
                 _sample_process_memory(),
+                on_error=_on_app_task_died_webhook,
+            )
+
+            # LP-3: turn lifecycle.request_restart into bot.close(). The
+            # cog only records intent; this watchdog is the single
+            # executor. Bounded timeout falls back to os._exit so a
+            # wedged close cannot hold the runtime lock past its TTL.
+            _runtime_tasks.spawn(
+                "restart_close_driver",
+                _drive_close_on_restart_request(),
                 on_error=_on_app_task_died_webhook,
             )
 
@@ -901,8 +970,20 @@ async def main() -> None:
         await db.close()
         if reporter:
             await reporter.close()
-        # LP-2: cleanup is done; surface the terminal phase.
-        _lifecycle.set_phase(_lifecycle.Phase.STOPPED, reason="cleanup_complete")
+        # LP-2 + LP-3: surface the terminal phase. A pending restart
+        # request promotes the transition to RESTARTING so observers
+        # (and the recent-event buffer) see that the process is exiting
+        # specifically for a restart rather than a plain shutdown.
+        if _lifecycle.restart_requested():
+            _lifecycle.set_phase(
+                _lifecycle.Phase.RESTARTING,
+                reason="cleanup_complete_restart_pending",
+            )
+        else:
+            _lifecycle.set_phase(
+                _lifecycle.Phase.STOPPED,
+                reason="cleanup_complete",
+            )
 
 
 if __name__ == "__main__":
