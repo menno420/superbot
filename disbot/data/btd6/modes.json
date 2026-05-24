@@ -1,0 +1,31 @@
+{
+  "data_version": "1.0",
+  "game_version": "41.3",
+  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "modes": [
+    {
+      "id": "standard",
+      "canonical": "Standard",
+      "aliases": ["easy_standard", "medium_standard", "hard_standard"],
+      "starting_cash": 650,
+      "starting_lives": 100,
+      "description": "Default progression. Rounds 1-40 (Easy), 3-60 (Medium), 3-80 (Hard).",
+      "restrictions": []
+    },
+    {
+      "id": "chimps",
+      "canonical": "CHIMPS",
+      "aliases": ["chimp", "chimp mode"],
+      "starting_cash": 650,
+      "starting_lives": 1,
+      "description": "Hard-mode endgame challenge. 1 life, no continues, no income towers, no powers.",
+      "restrictions": [
+        "No income (no banana farms or city)",
+        "No abilities outside what towers already provide",
+        "No powers / monkey knowledge bonuses",
+        "No continues",
+        "No selling towers"
+      ]
+    }
+  ]
+}

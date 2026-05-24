@@ -1,0 +1,67 @@
+{
+  "data_version": "1.0",
+  "game_version": "41.3",
+  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "rounds": [
+    {
+      "round": 1,
+      "summary": "20 Reds. Very easy.",
+      "danger": "trivial",
+      "common_threats": []
+    },
+    {
+      "round": 5,
+      "summary": "Mix of Reds and Blues.",
+      "danger": "trivial",
+      "common_threats": []
+    },
+    {
+      "round": 10,
+      "summary": "First Pinks. Pinks are fast — make sure you have something with reach.",
+      "danger": "low",
+      "common_threats": ["Pink"]
+    },
+    {
+      "round": 21,
+      "summary": "First Lead bloons in a fast wave. Need sharp-piercing damage or explosive.",
+      "danger": "medium",
+      "common_threats": ["Lead"]
+    },
+    {
+      "round": 28,
+      "summary": "First Ceramic rush. Need consistent ceramic damage.",
+      "danger": "medium",
+      "common_threats": ["Ceramic"]
+    },
+    {
+      "round": 40,
+      "summary": "First BAD-class threat in Standard Easy ending — first BFB on Medium/Hard. Bring serious DPS.",
+      "danger": "high",
+      "common_threats": ["BFB"]
+    },
+    {
+      "round": 63,
+      "summary": "Long Ceramic-Lead wave with Camo Lead mixed in. Pierce-heavy ceramic answers AND camo detection both required.",
+      "danger": "high",
+      "common_threats": ["Ceramic", "Camo Lead"]
+    },
+    {
+      "round": 78,
+      "summary": "Two BADs back-to-back. Need at least one tower or hero capable of high DPS to BAD-class bloons.",
+      "danger": "very_high",
+      "common_threats": ["BAD"]
+    },
+    {
+      "round": 95,
+      "summary": "Lots of DDTs in waves. Camo lead detection essential; sharp/shatter damage helpful.",
+      "danger": "very_high",
+      "common_threats": ["DDT"]
+    },
+    {
+      "round": 100,
+      "summary": "BAD + heavy support. The hardest standard freeplay round most players reach.",
+      "danger": "extreme",
+      "common_threats": ["BAD", "DDT"]
+    }
+  ]
+}

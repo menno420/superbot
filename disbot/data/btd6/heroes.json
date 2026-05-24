@@ -1,0 +1,47 @@
+{
+  "data_version": "1.0",
+  "game_version": "41.3",
+  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "heroes": [
+    {
+      "id": "quincy",
+      "canonical": "Quincy",
+      "aliases": ["q", "default hero"],
+      "base_cost": 540,
+      "description": "Free starter hero. Reliable single-target archer.",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Rapid Shot",
+          "summary": "Briefly increased attack speed."
+        },
+        {
+          "level": 10,
+          "name": "Storm of Arrows",
+          "summary": "Massive AoE arrow rain."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Quincy"
+    },
+    {
+      "id": "sauda",
+      "canonical": "Sauda",
+      "aliases": ["saud", "blade master"],
+      "base_cost": 800,
+      "description": "Melee swordmaster, strong vs leads and ceramics in the early-to-mid game.",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Sword Charge",
+          "summary": "Dashes through bloons in a line."
+        },
+        {
+          "level": 10,
+          "name": "Leaping Sword",
+          "summary": "Spinning leap with high damage AoE."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Sauda"
+    }
+  ]
+}

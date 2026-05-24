@@ -1,0 +1,135 @@
+{
+  "data_version": "1.0",
+  "game_version": "41.3",
+  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "towers": [
+    {
+      "id": "dart_monkey",
+      "canonical": "Dart Monkey",
+      "aliases": ["dart", "darts", "darty"],
+      "category": "primary",
+      "base_cost": 200,
+      "description": "Throws a single dart at the nearest bloon.",
+      "upgrade_paths": {
+        "top": [
+          "Sharp Shots",
+          "Razor Sharp Shots",
+          "Spike-O-Pult",
+          "Juggernaut",
+          "Ultra-Juggernaut"
+        ],
+        "mid": [
+          "Quick Shots",
+          "Very Quick Shots",
+          "Triple Shot",
+          "Super Monkey Fan Club",
+          "Plasma Monkey Fan Club"
+        ],
+        "bot": [
+          "Long Range Darts",
+          "Enhanced Eyesight",
+          "Crossbow",
+          "Sharp Shooter",
+          "Crossbow Master"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Dart_Monkey"
+    },
+    {
+      "id": "boomerang_monkey",
+      "canonical": "Boomerang Monkey",
+      "aliases": ["boomer", "boomerang", "boomy"],
+      "category": "primary",
+      "base_cost": 325,
+      "description": "Throws boomerangs that curve through tracks.",
+      "upgrade_paths": {
+        "top": [
+          "Improved Rangs",
+          "Glaives",
+          "Glaive Ricochet",
+          "M.O.A.R Glaives",
+          "Glaive Lord"
+        ],
+        "mid": [
+          "Faster Throwing",
+          "Faster Rangs",
+          "Bionic Boomerang",
+          "Turbo Charge",
+          "Perma Charge"
+        ],
+        "bot": [
+          "Long Range Rangs",
+          "Red Hot Rangs",
+          "Kylie Boomerang",
+          "MOAB Press",
+          "MOAB Domination"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Boomerang_Monkey"
+    },
+    {
+      "id": "tack_shooter",
+      "canonical": "Tack Shooter",
+      "aliases": ["tack", "tacks", "tackshooter"],
+      "category": "primary",
+      "base_cost": 280,
+      "description": "Shoots eight tacks outward in a radial burst.",
+      "upgrade_paths": {
+        "top": [
+          "Faster Shooting",
+          "Even Faster Shooting",
+          "Hot Shots",
+          "Ring of Fire",
+          "Inferno Ring"
+        ],
+        "mid": [
+          "Long Range Tacks",
+          "Super Range Tacks",
+          "Blade Shooter",
+          "Blade Maelstrom",
+          "Super Maelstrom"
+        ],
+        "bot": [
+          "More Tacks",
+          "Even More Tacks",
+          "Tack Sprayer",
+          "Overdrive",
+          "The Tack Zone"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Tack_Shooter"
+    },
+    {
+      "id": "bomb_shooter",
+      "canonical": "Bomb Shooter",
+      "aliases": ["bomb", "bombs", "bombshooter"],
+      "category": "military",
+      "base_cost": 525,
+      "description": "Lobs slow bombs that explode and damage groups of bloons.",
+      "upgrade_paths": {
+        "top": [
+          "Bigger Bombs",
+          "Heavy Bombs",
+          "Really Big Bombs",
+          "Bloon Impact",
+          "Bloon Crush"
+        ],
+        "mid": [
+          "Faster Reload",
+          "Missile Launcher",
+          "MOAB Mauler",
+          "MOAB Assassin",
+          "MOAB Eliminator"
+        ],
+        "bot": [
+          "Extra Range",
+          "Frag Bombs",
+          "Cluster Bombs",
+          "Recursive Cluster",
+          "Bomb Blitz"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Bomb_Shooter"
+    }
+  ]
+}

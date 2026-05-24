@@ -351,6 +351,36 @@ SUBSYSTEMS: dict[str, dict] = {
             "blackjack.tournament.manage",
         ],
     },
+    "btd6": {
+        "display_name": "BTD6 Assistant",
+        "description": (
+            "Deterministic Bloons Tower Defense 6 assistant — tower/hero/map "
+            "lookups, round threat summaries, and CHIMPS-mode guidance. "
+            "Built on validated fixtures; consumes the AI gateway only when "
+            "explicitly enabled (Module 5)."
+        ),
+        "emoji": "🐵",
+        "color": GAME_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "games",
+        "tags": ["games", "btd6", "bloons", "tower defense"],
+        "entry_points": ["btd6", "btd6menu"],
+        "default_channels": ["games", "bot-commands"],
+        "related_subsystems": ["ai"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 35,
+        "parent_hub": "games",
+        "hub_group": "activities",
+        "capabilities": [
+            "btd6.query.ask",
+            "btd6.strategy.view",
+            "btd6.diagnostics.view",
+        ],
+    },
     "deathmatch": {
         "display_name": "Deathmatch",
         "description": "1v1 duel battles",
@@ -581,6 +611,35 @@ SUBSYSTEMS: dict[str, dict] = {
         "capabilities": [
             "diagnostic.health.view",
             "diagnostic.latency.check",
+        ],
+    },
+    "ai": {
+        "display_name": "AI Platform",
+        "description": (
+            "Read-only AI gateway diagnostics: provider state, feature "
+            "flags, task routing, and request/failure counters. "
+            "Does not own AI provider logic — that lives in "
+            "core/runtime/ai/."
+        ),
+        "emoji": "🤖",
+        "color": ADMIN_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "admin",
+        "tags": ["ai", "platform", "diagnostics", "providers"],
+        "entry_points": ["ai", "aimenu"],
+        "default_channels": ["staff", "bot-spam"],
+        "related_subsystems": ["diagnostic", "admin"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 88,
+        "capabilities": [
+            "ai.platform.view",
+            "ai.diagnostics.view",
+            "ai.provider.view",
+            "ai.routing.view",
         ],
     },
     "settings": {

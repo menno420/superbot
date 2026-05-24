@@ -54,6 +54,8 @@ INITIAL_EXTENSIONS = [
     "cogs.proof_channel_cog",
     "cogs.mining_cog",
     "cogs.diagnostic_cog",
+    "cogs.ai_cog",
+    "cogs.btd6_cog",
     "cogs.chain_cog",
     "cogs.general_cog",
     "cogs.leaderboard_cog",
@@ -118,3 +120,20 @@ SETUP_ADVISOR_PROVIDER = os.getenv("SETUP_ADVISOR_PROVIDER", "deterministic").lo
 SETUP_ADVISOR_OPENAI_MODEL = os.getenv("SETUP_ADVISOR_OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+
+# ==========================
+# AI platform (core/runtime/ai/gateway.py)
+# ==========================
+# ``AI_ENABLED``           — global on/off switch. Default off so the
+#                            gateway is boot-safe in dev/CI and
+#                            never makes external calls by accident.
+# ``AI_DEFAULT_PROVIDER``  — provider name for tasks that do not
+#                            override it. One of ``deterministic`` /
+#                            ``openai``. Default ``deterministic``.
+# Per-task overrides use ``AI_TASK_<NAME>_ENABLED`` and
+# ``AI_ROUTING_<NAME>=<provider>:<model>``; consult
+# ``core.runtime.ai.feature_flags`` / ``core.runtime.ai.routing``.
+# ``SETUP_ADVISOR_PROVIDER`` remains the authoritative env var for
+# the setup advisor's provider choice (back-compat).
+AI_ENABLED = os.getenv("AI_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
+AI_DEFAULT_PROVIDER = os.getenv("AI_DEFAULT_PROVIDER", "deterministic").lower()

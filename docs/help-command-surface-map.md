@@ -43,7 +43,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 2. Subsystem inventory
 
-24 cogs in `disbot/config.py:33-58`. 23 of 24 expose
+26 cogs in `disbot/config.py:33-58`. 25 of 26 expose
 `build_help_menu_view`; only `help_cog` itself does not. The Help route
 resolver therefore opens a real panel for every subsystem except `help`,
 and only falls back to the command-list embed when the hook is missing
@@ -52,6 +52,8 @@ or raises.
 | subsystem | owner | public commands (sample) | hidden / legacy | panel hook | Help route today | Hub route today | Recommendation |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `admin` | `admin_cog.py` | `adminmenu`, `serverstats`, `cog`, `loadall`, `unloadall`, `restart`, `loglevel` | — | `_AdminPanelView` | `!help admin` → opens Admin panel (shared resolver) | dropdown Admin → panel | hub top-level (Admin) |
+| `ai` | `ai_cog.py` | `ai`, `aimenu`, `ai status`, `ai diagnostics`, `ai providers`, `ai routing` | — | `AIPanelView` | `!help ai` → opens AI Platform panel (shared resolver) | reached via Admin / Diagnostics | hub child (Admin / Platform) |
+| `btd6` | `btd6_cog.py` | `btd6`, `btd6menu`, `btd6 ask`, `btd6 tower`, `btd6 round`, `btd6 status`, `btd6 diagnostics`, `btd6 test-intent` | — | `BTD6PanelView` | `!help btd6` → opens BTD6 panel (shared resolver) | reached via Games (`parent_hub="games"`) | hub child (Games) |
 | `blackjack` | `blackjack_cog.py:95` | `blackjack`, `bj`, `bjtournament`, `bjstart`, `bjstatus` | — | `BlackjackPanelView` | `!help blackjack` → opens Blackjack panel (shared resolver) | reached via Games | hub child (Games) |
 | `chain` | `chain_cog.py` | `chain`, `chainmenu` | — | `_ChainMenuView` | `!help chain` → opens Chain panel (shared resolver) | reached via Games / Community | hub child |
 | `channel` | `channel_cog.py:144` | `lock`, `unlock` | several `*_channel`-family commands | `_ChannelManagerView` | `!help channel` → opens Channel panel (shared resolver) | reached via Admin | hub child (Admin) |

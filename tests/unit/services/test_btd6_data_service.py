@@ -1,0 +1,143 @@
+"""Validation tests for the BTD6 deterministic dataset."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from services.btd6_data_service import (
+    DATA_ROOT,
+    BTD6DataValidationError,
+    get_dataset,
+    reset_cache,
+)
+
+
+@pytest.fixture(autouse=True)
+def _reset_dataset_cache():
+    """Each test starts from a fresh dataset load."""
+    reset_cache()
+    yield
+    reset_cache()
+
+
+def test_dataset_loads_with_metadata():
+    dataset = get_dataset()
+    assert dataset.data_version
+    assert dataset.game_version
+    for category in ("towers", "heroes", "maps", "modes", "rounds"):
+        assert category in dataset.sources, f"missing source for {category}"
+
+
+def test_dataset_has_representative_entries():
+    dataset = get_dataset()
+    assert len(dataset.towers) >= 4
+    assert len(dataset.heroes) >= 2
+    assert len(dataset.maps) >= 3
+    assert len(dataset.modes) >= 2
+    assert len(dataset.rounds) >= 5
+
+
+def test_tower_upgrade_paths_have_five_tiers():
+    dataset = get_dataset()
+    for tower in dataset.towers:
+        for path_name, tiers in tower.upgrade_paths.items():
+            assert len(tiers) == 5, (
+                f"{tower.id}.{path_name} should have 5 tiers, got {len(tiers)}"
+            )
+
+
+def test_chimps_mode_has_no_income_restriction():
+    dataset = get_dataset()
+    chimps = next((m for m in dataset.modes if m.id == "chimps"), None)
+    assert chimps is not None, "CHIMPS mode must be in the fixture"
+    assert any("income" in r.lower() or "farm" in r.lower() for r in chimps.restrictions)
+
+
+def test_alias_collision_fails_loudly(tmp_path):
+    """A duplicate alias across categories must abort dataset loading."""
+    bad_root = tmp_path / "btd6"
+    bad_root.mkdir()
+    for filename in ("towers", "heroes", "maps", "modes", "rounds"):
+        source = DATA_ROOT / f"{filename}.json"
+        target = bad_root / f"{filename}.json"
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    # Inject a colliding alias: make a hero alias collide with a tower alias.
+    heroes_path = bad_root / "heroes.json"
+    heroes = json.loads(heroes_path.read_text(encoding="utf-8"))
+    heroes["heroes"][0]["aliases"].append("dart")  # collides with Dart Monkey
+    heroes_path.write_text(json.dumps(heroes), encoding="utf-8")
+
+    # Point the loader at the broken copy by patching DATA_ROOT.
+    import services.btd6_data_service as data_service
+
+    original = data_service.DATA_ROOT
+    data_service.DATA_ROOT = bad_root
+    try:
+        reset_cache()
+        with pytest.raises(BTD6DataValidationError, match="alias collision"):
+            get_dataset()
+    finally:
+        data_service.DATA_ROOT = original
+        reset_cache()
+
+
+def test_duplicate_canonical_name_fails_loudly(tmp_path):
+    """Two towers with the same canonical name must fail validation."""
+    bad_root = tmp_path / "btd6"
+    bad_root.mkdir()
+    for filename in ("towers", "heroes", "maps", "modes", "rounds"):
+        source = DATA_ROOT / f"{filename}.json"
+        target = bad_root / f"{filename}.json"
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    # Duplicate canonical name with a different id.
+    clone = dict(towers["towers"][0])
+    clone["id"] = "dart_monkey_copy"
+    clone["aliases"] = ["dart-monkey-copy-alias"]
+    towers["towers"].append(clone)
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+
+    import services.btd6_data_service as data_service
+
+    original = data_service.DATA_ROOT
+    data_service.DATA_ROOT = bad_root
+    try:
+        reset_cache()
+        with pytest.raises(BTD6DataValidationError, match="duplicate"):
+            get_dataset()
+    finally:
+        data_service.DATA_ROOT = original
+        reset_cache()
+
+
+def test_missing_required_field_fails_loudly(tmp_path):
+    """A tower entry missing required fields must fail validation."""
+    bad_root = tmp_path / "btd6"
+    bad_root.mkdir()
+    for filename in ("towers", "heroes", "maps", "modes", "rounds"):
+        source = DATA_ROOT / f"{filename}.json"
+        target = bad_root / f"{filename}.json"
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    del towers["towers"][0]["base_cost"]
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+
+    import services.btd6_data_service as data_service
+
+    original = data_service.DATA_ROOT
+    data_service.DATA_ROOT = bad_root
+    try:
+        reset_cache()
+        with pytest.raises(BTD6DataValidationError, match="missing required"):
+            get_dataset()
+    finally:
+        data_service.DATA_ROOT = original
+        reset_cache()

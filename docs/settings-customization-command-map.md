@@ -960,6 +960,98 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     (`!platform resources`).
 
 
+### ai
+
+1. **cog_module**: `disbot/cogs/ai_cog.py`
+2. **subsystem**: `ai`
+3. **current_commands**: `!ai` (group), `!ai status`, `!ai diagnostics`,
+   `!ai providers`, `!ai routing`, `!aimenu`. Slash equivalents
+   (`/ai status`, `/ai diagnostics`, `/ai providers`, `/ai routing`,
+   `/aimenu`) mirror the prefix surface.
+4. **current_command_groups**: `!ai` group (administrator-only).
+5. **current_command_panel_or_menu**: `!aimenu` (alias of `!ai`) opens the
+   persistent panel `AIPanelView`.
+6. **help_menu_discoverable**: Yes — `AICog.build_help_menu_view`
+   returns the panel embed + view.
+7. **dedicated_panel_command**: `!aimenu`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` →
+   `AIPanelView` (read-only).
+9. **existing_SettingSpec_declarations**: none. AI configuration is
+   driven by process env vars (`AI_ENABLED`, `AI_DEFAULT_PROVIDER`,
+   `SETUP_ADVISOR_PROVIDER`), not per-guild settings — see
+   `core.runtime.ai.feature_flags`.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capabilities `ai.platform.view`, `ai.diagnostics.view`,
+    `ai.provider.view`, `ai.routing.view` (all read-only).
+14. **hardcoded_or_env_only_behavior**: provider/model resolution lives
+    in `core.runtime.ai.routing` (env-overridable via
+    `AI_ROUTING_<TASK>=<provider>:<model>`); request budgets and
+    timeouts default in `core.runtime.ai.routing`/`safety`.
+15. **missing_customization_commands**: per-task enable/disable surface
+    (currently env-only via `AI_TASK_<NAME>_ENABLED`).
+16. **missing_settings_pages**: none for the read-only MVP.
+17. **missing_menu_buttons_selects_modals**: none (panel is read-only).
+18. **setting_class_per_value**: n/a (process-level platform settings).
+19. **target_Settings_Manager_page**: optional future page that mirrors
+    the AI diagnostics snapshot read-only.
+20. **target_mutation_path**: none (read-only).
+21. **target_help_or_menu_route**: existing; AI Platform reachable via
+    Admin / Diagnostics hubs (`related_subsystems`).
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — surfaces platform AI state for operators.
+24. **recommended_PR_phase**: lands with Module 2 of the AI/BTD6
+    plan.
+
+
+### btd6
+
+1. **cog_module**: `disbot/cogs/btd6_cog.py`
+2. **subsystem**: `btd6`
+3. **current_commands**: `!btd6` (group), `!btd6 status`,
+   `!btd6 diagnostics`, `!btd6 ask <question>`, `!btd6 tower <name>`,
+   `!btd6 hero <name>`, `!btd6 round <N>`, `!btd6 test-intent <text>`,
+   `!btd6menu`. Slash equivalents (`/btd6 ...`, `/btd6menu`) mirror
+   the prefix surface.
+4. **current_command_groups**: `!btd6` group (user-tier).
+5. **current_command_panel_or_menu**: `!btd6menu` (alias for `!btd6`)
+   opens the persistent panel `BTD6PanelView`.
+6. **help_menu_discoverable**: Yes — `BTD6Cog.build_help_menu_view`
+   returns the panel embed + view.
+7. **dedicated_panel_command**: `!btd6menu`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` →
+   `BTD6PanelView`.
+9. **existing_SettingSpec_declarations**: none yet. Module 6 of the
+   AI/BTD6 plan will add per-guild settings (channel list, mention
+   behaviour, AI augmentation toggle).
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`;
+    capabilities `btd6.query.ask`, `btd6.strategy.view`,
+    `btd6.diagnostics.view`.
+14. **hardcoded_or_env_only_behavior**: game-data fixtures pinned in
+    `disbot/data/btd6/*.json` (version metadata in each file).
+15. **missing_customization_commands**: `!btd6 settings` lands with
+    Module 6 once channels/mention behaviour are persisted.
+16. **missing_settings_pages**: per-guild BTD6 settings page —
+    deferred to Module 6.
+17. **missing_menu_buttons_selects_modals**: AI-augmentation toggle
+    button (Module 5/6).
+18. **setting_class_per_value**: n/a in Module 4 (no settings yet).
+19. **target_Settings_Manager_page**: Module 6.
+20. **target_mutation_path**: Module 6 — guild settings mutation via
+    existing settings infrastructure.
+21. **target_help_or_menu_route**: existing; BTD6 reachable via Games
+    hub (`parent_hub="games"`).
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — Module 4 of the AI/BTD6 plan.
+24. **recommended_PR_phase**: lands with Module 4; settings expand in
+    Module 6.
+
+
 ### settings
 
 1. **cog_module**: `disbot/cogs/settings_cog.py` (added in S5).

@@ -98,6 +98,7 @@ HUBS: tuple[HubEntry, ...] = (
         entry_command="!games",
         primary_children=(
             "blackjack",
+            "btd6",
             "deathmatch",
             "rps_tournament",
             "mining",
