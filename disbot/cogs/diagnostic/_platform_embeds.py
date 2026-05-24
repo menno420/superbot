@@ -545,6 +545,35 @@ _LIFECYCLE_PHASE_COLORS: dict[str, discord.Color] = {
 }
 
 
+def _fmt_lifecycle_event_metadata(event: dict[str, object]) -> str:
+    """Render the close_executing / close_completed / close_timeout
+    metadata payload as a compact ``[k=v k=v]`` suffix, or "" for
+    events without renderable metadata.
+
+    Kept here (not in :mod:`core.runtime.lifecycle`) because the
+    formatting is presentation, not state.  Discord's per-field 1024
+    char limit means we cannot afford full JSON dumps; this picks the
+    keys operators actually care about during an incident.
+    """
+    name = str(event.get("name", ""))
+    metadata = event.get("metadata") or {}
+    if not isinstance(metadata, dict) or not metadata:
+        return ""
+    parts: list[str] = []
+    kind = metadata.get("kind")
+    if kind and name in {"close_executing", "close_completed", "close_timeout"}:
+        parts.append(f"kind={kind}")
+    if name == "close_completed":
+        duration = metadata.get("duration_seconds")
+        if isinstance(duration, (int, float)):
+            parts.append(f"dur={float(duration):.2f}s")
+    if name == "close_timeout":
+        timeout = metadata.get("timeout_seconds")
+        if isinstance(timeout, (int, float)):
+            parts.append(f"timeout={float(timeout):.2f}s")
+    return f" [{' '.join(parts)}]" if parts else ""
+
+
 def build_lifecycle_embed() -> discord.Embed:
     """Build the embed for ``!platform lifecycle``.
 
@@ -552,9 +581,11 @@ def build_lifecycle_embed() -> discord.Embed:
     pending shutdown/restart request if any (with grace remaining),
     and the most recent events from the ring buffer, newest first.
     The events include ``shutdown_requested`` / ``restart_requested``
-    (intent), ``close_executing`` (close-driver invocation), and the
-    ``phase:<NAME>`` transitions, so operators get a one-screen view
-    of what the lifecycle has done lately.
+    (intent), ``close_executing`` / ``close_completed`` /
+    ``close_timeout`` (close-driver outcomes), and the ``phase:<NAME>``
+    transitions, so operators get a one-screen view of what the
+    lifecycle has done lately.  Metadata on the close outcomes (kind,
+    close duration, timeout value) is rendered compactly inline.
 
     Falls back to a degraded embed if the ``lifecycle`` provider is
     not registered, matching the ``build_caches_embed`` pattern.
@@ -572,9 +603,17 @@ def build_lifecycle_embed() -> discord.Embed:
 
     phase = str(snap.get("phase", "unknown"))
     can_accept = bool(snap.get("can_accept_commands", False))
+    description_parts = [
+        f"Phase: **{phase}** · Accepting commands: **{can_accept}**",
+    ]
+    startup_observed = snap.get("startup_duration_observed")
+    if isinstance(startup_observed, bool):
+        description_parts.append(
+            f"Startup observed: **{'yes' if startup_observed else 'no'}**",
+        )
     embed = discord.Embed(
         title="🔄 Lifecycle",
-        description=(f"Phase: **{phase}** · Accepting commands: **{can_accept}**"),
+        description=" · ".join(description_parts),
         color=_LIFECYCLE_PHASE_COLORS.get(phase, discord.Color.greyple()),
     )
 
@@ -606,9 +645,10 @@ def build_lifecycle_embed() -> discord.Embed:
         for event in reversed(events[-10:]):
             actor_part = f" by `{event['actor']}`" if event.get("actor") else ""
             reason_part = f" — {event['reason']}" if event.get("reason") else ""
+            meta_part = _fmt_lifecycle_event_metadata(event)
             lines.append(
                 f"• `{event.get('name', '?')}` @ "
-                f"{event.get('phase', '?')}{actor_part}{reason_part}",
+                f"{event.get('phase', '?')}{actor_part}{reason_part}{meta_part}",
             )
         embed.add_field(
             name=f"Recent events ({len(events)})",
