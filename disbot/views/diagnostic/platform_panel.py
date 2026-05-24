@@ -1,10 +1,11 @@
-"""Interactive ``!platform`` admin panel (read-only).
+"""Interactive ``!platform`` admin panel.
 
 ``_PlatformHubView`` is the ephemeral hub opened by ``!platform`` with
 no subcommand. It groups every existing ``!platform <subcommand>``
 into four category Selects (Runtime/status, Catalogues,
-Resources/rollout, Validation), plus an Overview button that returns
-to the category listing.
+Resources/rollout, Validation), an Overview button that returns
+to the category listing, and a Flag manager button that opens the
+editable per-guild flag manager.
 
 Selects update the panel in place via ``safe_defer`` +
 ``safe_edit``, identical to ``_DiagnosticsHubView`` and
@@ -13,8 +14,12 @@ produced by the existing builders in
 ``cogs.diagnostic._platform_embeds`` so the panel and the typed
 commands render byte-identical embeds.
 
-The panel is strictly read-only: no mutation, no resource creation,
-no setting writes. Typed ``!platform <subcommand>`` commands are
+The four category Selects remain strictly read-only. The
+"Mutations / managers" row (currently the Flag manager button) is
+the single segregated write surface — every click still routes
+through the canonical mutation pipeline (e.g.
+``services.rollout_mutation.RolloutMutationPipeline`` for flag
+state changes). Typed ``!platform <subcommand>`` commands are
 preserved and continue to support their existing filter/limit
 arguments which the panel does not expose (those remain text-only
 power-user paths).
@@ -32,6 +37,7 @@ from cogs.diagnostic._platform_embeds import (
     build_customization_embed,
     build_flags_embed,
     build_identity_embed,
+    build_lifecycle_embed,
     build_locks_embed,
     build_migrations_embed,
     build_participation_schemas_embed,
@@ -42,6 +48,7 @@ from cogs.diagnostic._platform_embeds import (
     build_schemas_embed,
     build_sessions_embed,
     build_settings_registry_embed,
+    build_setup_readiness_embed,
     build_slow_embed,
     build_status_embed,
     build_tasks_embed,
@@ -53,6 +60,7 @@ from views.base import HubView
 _RUNTIME_OPTIONS = (
     ("status", "🛠", "Uptime, cogs, guilds, scheduler, failed subsystems"),
     ("runtime", "🛰", "snapshot_all roll-up across every provider"),
+    ("lifecycle", "♻️", "Lifecycle phase, pending requests, recent events"),
     ("caches", "🧠", "F-1 guild_config + governance cache state"),
     ("locks", "🔒", "scope_locks snapshot (no filter)"),
     ("tasks", "🔁", "Managed background-task snapshot"),
@@ -82,6 +90,15 @@ _VALIDATION_OPTIONS = (
     ("identity", "🪪", "Identity-contract validator findings"),
     ("consistency", "🛡", "Unified platform readiness diagnostic"),
     ("anchors", "📌", "Panel anchor restoration + active counts"),
+    ("setup-readiness", "✅", "Per-guild setup-readiness inventory"),
+)
+
+
+# Mutations / managers — write surfaces, rendered as buttons rather than
+# folded into the read-only category Selects. Each entry maps a button
+# label to the panel-opening dispatch key handled by ``_open_manager``.
+_MUTATION_BUTTONS = (
+    ("flag-manager", "🚩 Flag manager", "Open the editable per-guild flag manager"),
 )
 
 
@@ -90,9 +107,11 @@ def build_platform_hub_embed() -> discord.Embed:
     embed = discord.Embed(
         title="🛰 Platform hub",
         description=(
-            "Read-only diagnostics. Pick a surface from one of the "
+            "Diagnostics + managers. Pick a surface from one of the "
             "category dropdowns below — every entry maps to an "
-            "existing `!platform <subcommand>`."
+            "existing `!platform <subcommand>`. The four category "
+            "dropdowns are **read-only**; mutation surfaces live under "
+            "Mutations / managers."
         ),
         color=discord.Color.blurple(),
     )
@@ -124,6 +143,13 @@ def build_platform_hub_embed() -> discord.Embed:
         ),
         inline=False,
     )
+    embed.add_field(
+        name="Mutations / managers",
+        value="\n".join(
+            f"{label} — {desc}" for _name, label, desc in _MUTATION_BUTTONS
+        ),
+        inline=False,
+    )
     embed.set_footer(
         text=(
             "Typed `!platform <name>` commands keep working with their "
@@ -141,6 +167,8 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
         return build_status_embed(bot)  # type: ignore[arg-type]
     if name == "runtime":
         return build_runtime_embed()
+    if name == "lifecycle":
+        return build_lifecycle_embed()
     if name == "caches":
         return build_caches_embed()
     if name == "locks":
@@ -193,6 +221,9 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
         return build_consistency_embed(report)
     if name == "anchors":
         return await build_anchors_embed()
+    if name == "setup-readiness":
+        guild_id = guild.id if guild is not None else 0
+        return await build_setup_readiness_embed(guild_id, guild=guild)
     return discord.Embed(
         title="Unknown surface",
         description=f"`{name}` is not a known platform surface.",
@@ -289,8 +320,38 @@ class _PlatformHubView(HubView):
             return
         await safe_edit(interaction, embed=build_platform_hub_embed(), view=self)
 
+    @discord.ui.button(
+        label="🚩 Flag manager",
+        style=discord.ButtonStyle.primary,
+        row=4,
+        custom_id="platform_hub.flag_manager",
+    )
+    async def btn_flag_manager(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # Mutation surface: opens the editable per-guild flag manager.
+        # Every write inside FlagManagerView still routes through the
+        # RolloutMutationPipeline (audit + cache invalidation + event).
+        if not await safe_defer(interaction):
+            return
+        from views.diagnostic.flag_manager import (
+            FlagManagerView,
+            build_flag_manager_overview_embed,
+        )
+
+        guild_id = interaction.guild.id if interaction.guild else None
+        manager = FlagManagerView(self._author, guild_id=guild_id)
+        await safe_edit(
+            interaction,
+            embed=build_flag_manager_overview_embed(),
+            view=manager,
+        )
+
 
 __all__ = [
+    "_MUTATION_BUTTONS",
     "_PlatformHubView",
     "build_platform_hub_embed",
 ]
