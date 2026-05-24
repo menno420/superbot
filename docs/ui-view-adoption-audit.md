@@ -212,3 +212,108 @@ highest-impact behaviour fixes (real token-expiry race exposure).
   `helper-debt-inventory.md` — it references those documents.
 - It does **not** propose new view primitives. The canonical
   primitives are already adequate; the gap is adoption uniformity.
+
+---
+
+## 9. Back-button coverage per view (Smooth Interaction Pass)
+
+> **Added:** 2026-05-24. Companion to the original audit, focused on
+> *per-view* coverage rather than per-helper duplication. PR #297
+> finished the back-button **helper consolidation**; this section
+> finishes the back-button **adoption** sweep — every user-facing
+> subpanel either routes through `views/navigation.attach_back_button`
+> or is explicitly classed as not needing one.
+
+### 9.1 Classification
+
+Each view file in `disbot/views/` is one of:
+
+- **root-hub** — top-of-stack panel opened by `!<sub>menu`. No back
+  button required; closing the panel is exit.
+- **subpanel** — opened from a hub. Back required.
+- **terminal-result** — game/result view where the user expects
+  replay/back controls, not a normal parent back button. Tracked
+  separately (PRs 6-7 in the Smooth Interaction Pass).
+- **modal-only** — a `discord.ui.Modal` subclass; back navigation
+  is impossible by Discord's modal contract.
+- **game-state** — custom-timeout view with its own lifecycle
+  (e.g. `BlackjackView`, `_TournBlackjackView`); excluded from
+  standard back-button rules.
+- **persistent-root** — `PersistentView` registered for cross-restart
+  use; no parent.
+
+Back-button status:
+
+- **canonical** — uses `views/navigation.attach_back_button`.
+- **hand-rolled** — has its own `@discord.ui.button(label="↩ Back" …)`
+  that calls `interaction.response.edit_message` directly. Migrate.
+- **none-needed** — root-hub / persistent-root / modal-only / leaf
+  game-state.
+- **missing** — should have a back path but doesn't. Add one.
+
+### 9.2 Coverage table
+
+| File | Class | Role | Back status | Parent surface | Priority |
+|---|---|---|---|---|---|
+| `views/economy/main_panel.py:288` | `EconomyPanelView` | root-hub | canonical (back-to-Help via `attach_back_button`) | Help | — |
+| `views/economy/shop_panel.py:142` | `_ShopSubView` | subpanel | **hand-rolled** | `EconomyPanelView` | P1 (PR 4) |
+| `views/economy/work_panel.py:182` | `_WorkSubView` | subpanel | **hand-rolled** | `EconomyPanelView` | P1 (PR 4) |
+| `views/economy/work_panel.py:224` | `_WorkResultView` | subpanel | **hand-rolled** | `EconomyPanelView` | P1 (PR 4) |
+| `views/channels/create_panel.py:224` | `_CreateSubView` | subpanel | **hand-rolled** | `_ChannelManagerView` | P1 (PR 4) |
+| `views/channels/delete_panel.py:117` | `_DeleteSubView` | subpanel | **hand-rolled** | `_ChannelManagerView` | P1 (PR 4) |
+| `views/channels/restrict_panel.py:191` | `_RestrictSubView` | subpanel | **hand-rolled** | `_ChannelManagerView` | P1 (PR 4) |
+| `views/channels/visibility_panel.py:93` | `_VisibilitySubView` | subpanel | **hand-rolled** | `_ChannelManagerView` | P1 (PR 4) |
+| `views/roles/reaction_panel.py:50` | `ReactionRolesPanel` | subpanel | **hand-rolled** | `RoleHubView` | P1 (PR 4) |
+| `views/roles/management_panel.py:81` | `ManagementPanel` | subpanel | **hand-rolled** | `RoleHubView` | P1 (PR 4) |
+| `views/roles/diagnostics_panel.py:79` | `DiagnosticsPanel` | subpanel | **hand-rolled** | `RoleHubView` | P1 (PR 4) |
+| `views/roles/xp_roles_panel.py:79` | `XpRolesPanel` | subpanel | **hand-rolled** | `RoleHubView` | P1 (PR 4) |
+| `views/roles/time_roles_panel.py:97` | `TimeRolesPanel` | subpanel | **hand-rolled** | `RoleHubView` | P1 (PR 4) |
+| `views/xp/config_panel.py:22` | `XpConfigView` | subpanel | **missing** | `_XpHubView` | **P0 (PR 5)** |
+| `views/counting/hub_panel.py:21` | `_CountingHubView` | root-hub¹ | none-needed (sub-hub opened only from Help) | Help | — |
+| `views/setup/section_card.py:207` | `SectionCardView` back btn | subpanel | hand-rolled but custom (multi-step wizard with own lifecycle) | `SetupHubView` | P2 (PR 5 if simple) |
+| `views/setup/ai_review/per_recommendation.py:186` | `PerRecommendationView` | subpanel | hand-rolled (one-at-a-time walker — keep custom) | overview view | — |
+| `views/games/hub.py:237` | `GamesHubView` | root-hub | canonical | Help | — |
+| `views/games/blackjack_panel.py:414` | `BlackjackPanelView` | subpanel | canonical (`BackToPanelButton` factory) | `GamesHubView` | — |
+| `views/games/rps_panel.py` | `RPSPanelView` | subpanel | canonical (`BackToPanelButton` factory) | `GamesHubView` | — |
+| `views/games/deathmatch_panel.py` | `DeathmatchPanelView` | subpanel | canonical | `GamesHubView` | — |
+| `views/community/hub.py:189` | `CommunityHubView` | root-hub | canonical (back-to-Help) | Help | — |
+| `views/settings/subsystem_view.py:244` | `SubsystemSettingsView` | subpanel | canonical | `SettingsHubView` | — |
+| `views/mining/main_panel.py` | `MiningHubView` | persistent-root | none-needed | — | — |
+| `views/mining/mine_view.py:176` | `_MineResultsView` | terminal-result | hand-rolled (game-flow multi-target) | game-state | — |
+| `views/moderation/main_panel.py` | `ModPanelView` | persistent-root | none-needed | — | — |
+| `views/diagnostic/platform_panel.py:239` | `_PlatformHubView` | root-hub | none-needed (Overview button is in-panel reset) | Help | — |
+| `views/diagnostic/flag_manager.py` | `FlagManagerView` | subpanel | (verify in audit; opened by `!platform flag` and from Platform hub mutation button after PR 1) | `_PlatformHubView` | P2 (PR 5) |
+| `views/rps/solo_play.py:24` | `_RpsView` | terminal-result | none currently — gains replay+back in PR 6 | `RPSPanelView` | P0 (PR 6) |
+| `views/blackjack/solo_view.py:26` | `BlackjackView` | terminal-result | none currently — gains replay+back in PR 7 | `BlackjackPanelView` | P0 (PR 7) |
+| `views/rps/pvp_play.py:27` | `_RpsPvpPlayView` | game-state | none-needed (PvP terminal) | — | — |
+| `views/rps/pvp_challenge.py` | `_RpsPvpChallengeView` | game-state | none-needed (accept/decline modal-ish) | — | — |
+| `views/blackjack/pvp_view.py` | `_ChallengeView` | game-state | none-needed | — | — |
+| `views/blackjack/tournament_views.py` | `_TournBlackjackView` | game-state | none-needed | — | — |
+| `views/access/explorer.py` | `AccessExplorerView` | root-hub | none-needed (top-level) | — | — |
+
+¹ `_CountingHubView` is opened from the Help route and acts as the
+top of its own sub-tree; it has no parent above Help. If a future
+binding wires it under a wider community hub, add a back button at
+that time.
+
+### 9.3 Follow-up PRs driven by this section
+
+| PR | Scope | Targets |
+|---|---|---|
+| PR 4 (Smooth Interaction Pass) | Migrate 12 hand-rolled subpanel back buttons to `attach_back_button` | channels (4) + roles (5) + economy (3) |
+| PR 5 (Smooth Interaction Pass) | Add `attach_back_button` to the one **missing** subpanel; consider for setup `SectionCardView` and `FlagManagerView` after verifying parent surfaces | `XpConfigView` (P0); setup/flag (P2) |
+| PR 6 (Smooth Interaction Pass) | RPS solo result view → `Play again` + `↩ Back to RPS menu` | `_RpsView` |
+| PR 7 (Smooth Interaction Pass) | Blackjack solo result view → `Play again` + `↩ Back to Blackjack menu` | `BlackjackView` (solo gate only) |
+
+### 9.4 Rules locked by this section
+
+- **No new back-button helper.** `views/navigation.attach_back_button`
+  is the only sanctioned entry point. PR 4-5 migrate to it; no
+  parallel "back" abstraction may be introduced.
+- **Parent-builder closures must re-resolve.** The wrapper that PR 4
+  generates per file should call the parent hub's existing
+  build-from-state path rather than caching a stale embed.
+- **Terminal game-result views are excluded.** They follow PR 6-7's
+  replay/back-to-menu pattern, not the standard subpanel back rule.
+- **Modal `discord.ui.Modal` subclasses are excluded.** Discord's
+  modal protocol allows no return path other than dismiss.
