@@ -151,6 +151,76 @@ Trigger `SIGTERM` (or run `kill -TERM $PID`) and observe:
 - [ ] **DB pool closed** — final log line "Bot exiting cleanly" or
       no `asyncpg` warnings on stderr.
 
+## Smooth Interaction Pass — UX guarantees
+
+These bullets pin the user-facing guarantees of the Smooth Pass
+PRs (Platform hub completeness, back-button coverage, solo-game
+instant replay). Smoke any UI-touching PR against them.
+
+### Platform hub completeness
+
+- [ ] **`!platform` overview** shows five sections: Runtime/status,
+      Catalogues, Resources/rollout, Validation, Mutations/managers.
+- [ ] **`lifecycle`** appears in the Runtime/status dropdown and
+      renders the same embed as typed `!platform lifecycle`.
+- [ ] **`setup-readiness`** appears in the Validation dropdown and
+      renders the same embed as typed `!platform setup-readiness`.
+- [ ] **`🚩 Flag manager` button** on row 4 opens the editable
+      `FlagManagerView`, identical to typed `!platform flag`.
+- [ ] **Overview** button on row 4 returns to the platform hub
+      overview embed.
+
+### Back-button coverage
+
+Pinned by `docs/ui-view-adoption-audit.md` §9 — every user-facing
+subpanel has either an `attach_back_button`-driven Back or is
+classified as none-needed.
+
+- [ ] **Channels subpanels** (`Create / Delete / Restrict /
+      Visibility`) all return to `_ChannelManagerView` via Back.
+- [ ] **Roles subpanels** (`Management / Diagnostics / XpRoles /
+      TimeRoles / ReactionRoles`) all return to `RoleHubView` via
+      Back when opened from the hub.
+- [ ] **Economy subpanels** (`Shop / Work / Work-result`) all
+      return to `EconomyPanelView` via Back; `_ShopSubView`
+      preserves the AB2 back-target chain to Help when present.
+- [ ] **`XpConfigView`** opened from `!xpmenu` → ⚙️ Configure
+      returns to `_XpHubView` via Back; typed `!xpconfig`
+      intentionally has no Back (no parent).
+
+### Solo-game instant replay
+
+- [ ] **Solo RPS result view** (`!rps 0` or `!rps <bet>`) shows
+      `🔁 Play again` + `◀ Back to RPS` on row 1. Move buttons on
+      row 0 remain visible-but-disabled.
+- [ ] **Solo RPS replay** spawns a fresh playable round at the
+      same bet. Insufficient balance → ephemeral nudge, no view
+      swap.
+- [ ] **Solo Blackjack result view** (`!blackjack 0` or
+      `!blackjack <bet>`) shows `🔁 Play again` + `◀ Back to
+      Blackjack` on row 1. Hit/Stand/Double buttons remain
+      visible-but-disabled.
+- [ ] **Solo Blackjack replay** routes through
+      `cogs.blackjack.actions.start_solo_blackjack` — `_active`
+      map is cleared first, persistence (`_save_game_state`) lands
+      on the new hand. Insufficient balance / "already playing" /
+      natural-blackjack auto-payout all surface correctly.
+- [ ] **PvP / tournament** Blackjack and RPS hands finish with no
+      replay row attached (gate is solo-only:
+      `tournament_chips is None AND on_finish is None`).
+
+### Interaction-safety wrappers
+
+Pinned by `docs/ui-view-adoption-audit.md` §3 — hotspots converted
+to `safe_defer` + `safe_edit`.
+
+- [ ] **`_RpsView._play`** defers up front and uses `safe_edit`
+      (no raw `response.edit_message` after the
+      `economy_service.{credit,debit}` writes).
+- [ ] **`BlackjackView.hit_btn`** defers up front and uses
+      `safe_edit` (no raw `response.edit_message` after
+      `_save_game_state`).
+
 ---
 
 ## Updating this checklist
