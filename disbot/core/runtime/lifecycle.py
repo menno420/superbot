@@ -277,6 +277,16 @@ def _record_event(
     actor: str | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> None:
+    # Mirror the ring-buffer append into Prometheus so operators can
+    # graph event rates by name.  Wrapped in try/except so a missing
+    # or partially-initialized metrics module never blocks event
+    # recording (observability, not control plane).
+    try:
+        from services import metrics as _metrics
+
+        _metrics.lifecycle_event_total.labels(event=name).inc()
+    except Exception:  # noqa: BLE001 — metrics are observability only
+        pass
     _events.append(
         LifecycleEvent(
             name=name,

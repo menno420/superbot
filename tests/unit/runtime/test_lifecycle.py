@@ -310,3 +310,44 @@ def test_lifecycle_phase_gauge_terminal_state_reflects_stopped() -> None:
     # SHUTTING_DOWN, must be 0.
     nonzero = {phase for phase, value in values.items() if value > 0}
     assert nonzero == {"STOPPED"}
+
+
+def _lifecycle_event_counter(event: str) -> float:
+    """Return the current value of ``lifecycle_event_total{event=...}``."""
+    from services import metrics as _metrics
+
+    return _metrics.lifecycle_event_total.labels(event=event)._value.get()
+
+
+def test_lifecycle_event_counter_increments_on_phase_transition() -> None:
+    """Every ``set_phase`` to a new phase records a ring-buffer event
+    AND increments the Prometheus counter for that event name."""
+    before = _lifecycle_event_counter("phase:RUNNING")
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    assert _lifecycle_event_counter("phase:RUNNING") == before + 1
+
+
+def test_lifecycle_event_counter_increments_on_shutdown_request() -> None:
+    """``request_shutdown`` increments shutdown_requested AND the phase
+    transition counter for DRAINING."""
+    before_req = _lifecycle_event_counter("shutdown_requested")
+    before_drain = _lifecycle_event_counter("phase:DRAINING")
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("sigterm")
+    assert _lifecycle_event_counter("shutdown_requested") == before_req + 1
+    assert _lifecycle_event_counter("phase:DRAINING") == before_drain + 1
+
+
+def test_lifecycle_event_counter_increments_on_coalesced_shutdown() -> None:
+    """The MOST valuable series: multiple SIGTERMs in quick succession
+    surface as shutdown_requested_coalesced.  Operators alerting on
+    rate(lifecycle_event_total{event="shutdown_requested_coalesced"}[5m])
+    catch SIGTERM-storm misconfigurations (e.g. an orchestrator sending
+    SIGTERM faster than the bot drains)."""
+    before = _lifecycle_event_counter("shutdown_requested_coalesced")
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("first")
+    # Second and third requests coalesce.
+    lifecycle.request_shutdown("second")
+    lifecycle.request_shutdown("third")
+    assert _lifecycle_event_counter("shutdown_requested_coalesced") == before + 2
