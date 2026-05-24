@@ -30,7 +30,6 @@ from core.runtime.ai.diagnostics import DiagnosticsCollector
 from core.runtime.ai.gateway import AIGateway
 from core.runtime.ai.providers.base import ProviderUnavailableError
 
-
 _DEFAULT_PAYLOAD = {"hello": "world"}
 
 

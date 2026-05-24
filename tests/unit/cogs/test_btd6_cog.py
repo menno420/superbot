@@ -23,7 +23,6 @@ import pytest
 # Force the setup-sections package to import every section module so the
 # REGISTRY contains the production set during the test run.
 import views.setup.sections  # noqa: F401 — import side-effect
-
 from cogs.btd6_cog import (
     BTD6Cog,
     build_diagnostics_embed,

@@ -24,7 +24,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from cogs.btd6.stage import BTD6AssistantMessageStage, STAGE_NAME as BTD6_STAGE_NAME
+from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
+from cogs.btd6.stage import BTD6AssistantMessageStage
 from core.runtime import message_pipeline
 from services import btd6_ai_service, btd6_knowledge_service
 from services.btd6_resolver_service import resolve

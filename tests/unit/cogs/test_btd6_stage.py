@@ -25,9 +25,9 @@ from cogs.btd6.stage import (
     REASON_LOW_CONFIDENCE,
     REASON_SYSTEM_MESSAGE,
     REASON_WEBHOOK,
-    BTD6AssistantMessageStage,
     STAGE_NAME,
     STAGE_ORDER,
+    BTD6AssistantMessageStage,
 )
 from core.runtime.message_pipeline import MessagePipelineContext
 

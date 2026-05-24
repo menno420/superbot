@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 
 from services.btd6_data_service import (
-    BTD6DataValidationError,
     DATA_ROOT,
+    BTD6DataValidationError,
     get_dataset,
     reset_cache,
 )
