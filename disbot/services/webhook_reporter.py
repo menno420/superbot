@@ -313,6 +313,49 @@ class WebhookReporter:
         )
         await self._send(embed, username="Bot Lifecycle")
 
+    async def on_lifecycle_close_completed(
+        self,
+        pending: PendingShutdown,
+        *,
+        duration_seconds: float | None = None,
+    ) -> None:
+        """Posted by ``main()``'s finalizer after cleanup completes but
+        before ``reporter.close()`` tears down the HTTP session.
+
+        Companion to :meth:`on_lifecycle_close_beginning`: operators see
+        a paired "starting" / "complete" signal so the gap between them
+        — close + finalizer cleanup duration — is visible end-to-end in
+        the operator channel without parsing Prometheus.  Caller wraps
+        this in ``asyncio.wait_for`` with a small timeout so a stalled
+        webhook cannot delay process exit.
+        """
+        is_restart = pending.kind == "restart"
+        title = "♻️ Bot Restart Complete" if is_restart else "🛑 Bot Shutdown Complete"
+        color = discord.Color.gold() if is_restart else discord.Color.dark_red()
+        embed = discord.Embed(
+            title=title,
+            color=color,
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        embed.add_field(name="Kind", value=pending.kind, inline=True)
+        embed.add_field(
+            name="Reason",
+            value=pending.reason or "<unknown>",
+            inline=True,
+        )
+        embed.add_field(
+            name="Actor",
+            value=pending.actor or "<unknown>",
+            inline=True,
+        )
+        if duration_seconds is not None:
+            embed.add_field(
+                name="Close duration",
+                value=f"{duration_seconds:.2f}s",
+                inline=True,
+            )
+        await self._send(embed, username="Bot Lifecycle")
+
     async def on_app_task_died(self, name: str, error: BaseException) -> None:
         """A supervised application task raised after startup.
 
