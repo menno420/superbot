@@ -7,6 +7,13 @@ The bet is not pre-escrowed (the user can play with zero balance and
 lose nothing more than they already have).  Win credits, loss debits
 with overdraft allowed to preserve the original floor-at-zero
 behaviour.
+
+After resolution the move buttons stay visible-but-disabled and a
+``Play again`` / ``↩ Back to RPS`` row is appended. ``Play again``
+spawns a fresh :class:`_RpsView` with the same user/guild/bet
+(after a balance pre-check when ``bet > 0``); ``Back to RPS``
+returns to :class:`views.games.rps_panel.RPSPanelView` via the
+shared :class:`views.games.common.BackToPanelButton`.
 """
 
 from __future__ import annotations
@@ -15,6 +22,7 @@ import random
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import economy_service
 from utils import db as global_db
 from utils.ui_constants import ERROR_COLOR, GAME_COLOR, SUCCESS_COLOR
@@ -39,6 +47,11 @@ class _RpsView(discord.ui.View):
         return True
 
     async def _play(self, interaction: discord.Interaction, player_move: str):
+        # Defer up front — the economy write below races the 3 s
+        # interaction token under load.
+        if not await safe_defer(interaction):
+            return
+
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
 
@@ -91,8 +104,72 @@ class _RpsView(discord.ui.View):
             ),
             color=color,
         )
-        await interaction.response.edit_message(embed=embed, view=self)
+
+        self._attach_result_actions()
+
+        await safe_edit(interaction, embed=embed, view=self)
+        # Stop the original game's timeout. The newly-added result-action
+        # buttons remain clickable indefinitely (they have their own
+        # ownership check via interaction_check above).
         self.stop()
+
+    def _attach_result_actions(self) -> None:
+        """Append Play again + Back to RPS buttons on row 1.
+
+        Called once at end-of-game, after the move buttons on row 0 are
+        disabled.
+        """
+        replay_btn = discord.ui.Button(  # type: ignore[var-annotated]
+            label="🔁 Play again",
+            style=discord.ButtonStyle.success,
+            custom_id="rps:solo:replay",
+            row=1,
+        )
+        replay_btn.callback = self._replay  # type: ignore[method-assign]
+        self.add_item(replay_btn)
+
+        # Late import: rps_panel imports _RpsView, so importing it at
+        # module level would create a cycle.
+        from views.games.rps_panel import _make_rps_back_button
+
+        back_btn = _make_rps_back_button()
+        back_btn.row = 1
+        self.add_item(back_btn)
+
+    async def _replay(self, interaction: discord.Interaction) -> None:
+        """Spawn a fresh ``_RpsView`` with the same user/guild/bet.
+
+        If ``self.bet > 0`` the user's balance is pre-checked; if it
+        cannot cover the bet, an ephemeral nudge is sent and the
+        current result view is left in place so the user can use
+        Back to RPS instead.
+        """
+        if not await safe_defer(interaction):
+            return
+
+        if self.bet > 0:
+            bal = await global_db.get_coins(self.user.id, self.guild_id)
+            if bal < self.bet:
+                await safe_followup(
+                    interaction,
+                    (
+                        f"❌ Need **{self.bet}** 🪙 to replay at the same bet "
+                        f"(you have **{bal}**). Use **↩ Back to RPS** to pick "
+                        "a new bet or play free."
+                    ),
+                    ephemeral=True,
+                )
+                return
+
+        from views.games.rps_panel import build_rps_solo_embed
+
+        new_view = _RpsView(self.user, self.guild_id, self.bet)
+        await safe_edit(
+            interaction,
+            embed=build_rps_solo_embed(self.bet),
+            view=new_view,
+        )
+        new_view.message = interaction.message
 
     @discord.ui.button(label="Rock", emoji="🪨", style=discord.ButtonStyle.grey)
     async def rock(self, i: discord.Interaction, _: discord.ui.Button):
