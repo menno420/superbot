@@ -183,6 +183,18 @@ identity_contract_findings_total = Counter(
     # view_subsystem_unknown | db_anchor_subsystem_unknown
 )
 
+# Webhook reporter dispatch outcomes.  ``success`` = embed posted to
+# discord.Webhook.send without exception; ``error`` = the send raised
+# (network failure, 4xx/5xx, malformed payload, etc.) and was caught
+# and logged at DEBUG.  Without this metric, webhook outages are silent
+# — operators only notice when expected operator-channel embeds stop
+# appearing in Discord.
+webhook_dispatch_total = Counter(
+    "webhook_dispatch_total",
+    "WebhookReporter dispatch outcomes (success or caught exception).",
+    ["outcome"],  # success | error
+)
+
 # ---------------------------------------------------------------------------
 # F-1 guild_config cache (core/runtime/guild_config.py) — Phase S1.1
 # ---------------------------------------------------------------------------

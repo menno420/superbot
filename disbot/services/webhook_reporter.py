@@ -88,11 +88,16 @@ class WebhookReporter:
         counts = _redact_embed(embed)
         if counts:
             logger.debug("Webhook embed redacted: %s", counts)
+        from services import metrics as _metrics
+
         try:
             wh = discord.Webhook.from_url(self.url, session=self._session)
             await wh.send(embed=embed, username=username)
         except Exception as exc:
+            _metrics.webhook_dispatch_total.labels(outcome="error").inc()
             logger.debug("Webhook send failed: %s", exc)
+        else:
+            _metrics.webhook_dispatch_total.labels(outcome="success").inc()
 
     async def on_startup(self, bot) -> None:
         embed = discord.Embed(
