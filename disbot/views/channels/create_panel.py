@@ -20,6 +20,7 @@ from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import SUCCESS_COLOR
 from views.base import BaseView
 from views.channels._helpers import _CATEGORY_PRESETS, _NAME_PRESETS
+from views.navigation import attach_back_button
 
 logger = logging.getLogger("bot")
 
@@ -57,6 +58,23 @@ class _CreateSubView(BaseView):
         self.cat_select = _CategorySelect(cat_options, self)
         self.add_item(self.name_select)
         self.add_item(self.cat_select)
+
+        async def _build_parent(
+            _interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            from views.channels.main_panel import _ChannelManagerView
+
+            manager = _ChannelManagerView(self.ctx)
+            manager.message = self.manager_message
+            return manager.build_embed(), manager
+
+        attach_back_button(
+            self,
+            label="↩️ Back",
+            custom_id="channels:create:back",
+            parent_builder=_build_parent,
+            row=2,
+        )
 
     async def on_error(
         self,
@@ -211,18 +229,6 @@ class _CreateSubView(BaseView):
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, emoji="❌", row=2)
     async def cancel_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        from views.channels.main_panel import _ChannelManagerView
-
-        manager = _ChannelManagerView(self.ctx)
-        manager.message = self.manager_message
-        await interaction.response.edit_message(
-            embed=manager.build_embed(),
-            view=manager,
-        )
-        self.stop()
-
-    @discord.ui.button(label="↩️ Back", style=discord.ButtonStyle.grey, row=2)
-    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         from views.channels.main_panel import _ChannelManagerView
 
         manager = _ChannelManagerView(self.ctx)

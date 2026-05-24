@@ -7,6 +7,7 @@ from core.runtime import resources
 from utils import db
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
+from views.navigation import attach_back_button
 
 
 class ReactionRolesPanel(BaseView):
@@ -16,6 +17,21 @@ class ReactionRolesPanel(BaseView):
         super().__init__(ctx.author, timeout=300)
         self.ctx = ctx
         self.parent = parent
+
+        if parent is not None:
+
+            async def _build_parent(
+                _interaction: discord.Interaction,
+            ) -> tuple[discord.Embed, discord.ui.View]:
+                return parent.build_embed(), parent
+
+            attach_back_button(
+                self,
+                label="↩ Back",
+                custom_id="role:reaction:back",
+                parent_builder=_build_parent,
+                row=0,
+            )
 
     async def build_embed(self) -> discord.Embed:
         rows = await db.get_all_reaction_roles(self.ctx.guild.id)
@@ -46,18 +62,3 @@ class ReactionRolesPanel(BaseView):
             embed=await self.build_embed(),
             view=self,
         )
-
-    @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.secondary, row=0)
-    async def back_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        if self.parent:
-            await interaction.response.edit_message(
-                embed=self.parent.build_embed(),
-                view=self.parent,
-            )
-        else:
-            await interaction.response.edit_message(view=None)
-        self.stop()

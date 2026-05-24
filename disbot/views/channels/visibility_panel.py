@@ -22,6 +22,7 @@ from services.governance_service import GovernanceContext
 from utils.subsystem_registry import all_subsystems_sorted
 from utils.ui_constants import CHANNEL_COLOR
 from views.base import BaseView
+from views.navigation import attach_back_button
 
 logger = logging.getLogger("bot")
 
@@ -79,6 +80,23 @@ class _VisibilitySubView(BaseView):
         self.manager_message = manager_message
         self.add_item(_ChannelSelectForVisibility(ctx.guild))
 
+        async def _build_parent(
+            _interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            from views.channels.main_panel import _ChannelManagerView
+
+            manager = _ChannelManagerView(self.ctx)
+            manager.message = self.manager_message
+            return manager.build_embed(), manager
+
+        attach_back_button(
+            self,
+            label="↩ Back",
+            custom_id="channels:visibility:back",
+            parent_builder=_build_parent,
+            row=1,
+        )
+
     def build_embed(self) -> discord.Embed:
         return discord.Embed(
             title="🔍 Subsystem Visibility",
@@ -89,14 +107,6 @@ class _VisibilitySubView(BaseView):
             ),
             color=CHANNEL_COLOR,
         )
-
-    @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
-    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        from views.channels.main_panel import _ChannelManagerView
-
-        view = _ChannelManagerView(self.ctx)
-        view.message = self.manager_message
-        await interaction.response.edit_message(embed=view.build_embed(), view=view)
 
 
 class _SubsystemToggleView(BaseView):
