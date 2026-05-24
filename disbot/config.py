@@ -54,6 +54,7 @@ INITIAL_EXTENSIONS = [
     "cogs.proof_channel_cog",
     "cogs.mining_cog",
     "cogs.diagnostic_cog",
+    "cogs.ai_cog",
     "cogs.chain_cog",
     "cogs.general_cog",
     "cogs.leaderboard_cog",

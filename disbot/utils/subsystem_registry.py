@@ -583,6 +583,35 @@ SUBSYSTEMS: dict[str, dict] = {
             "diagnostic.latency.check",
         ],
     },
+    "ai": {
+        "display_name": "AI Platform",
+        "description": (
+            "Read-only AI gateway diagnostics: provider state, feature "
+            "flags, task routing, and request/failure counters. "
+            "Does not own AI provider logic — that lives in "
+            "core/runtime/ai/."
+        ),
+        "emoji": "🤖",
+        "color": ADMIN_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "admin",
+        "tags": ["ai", "platform", "diagnostics", "providers"],
+        "entry_points": ["ai", "aimenu"],
+        "default_channels": ["staff", "bot-spam"],
+        "related_subsystems": ["diagnostic", "admin"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 88,
+        "capabilities": [
+            "ai.platform.view",
+            "ai.diagnostics.view",
+            "ai.provider.view",
+            "ai.routing.view",
+        ],
+    },
     "settings": {
         "display_name": "Settings Manager",
         "description": (
