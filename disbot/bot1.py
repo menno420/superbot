@@ -647,15 +647,40 @@ async def _drive_close_on_lifecycle_request() -> None:
             _metrics.lifecycle_close_duration_seconds.labels(
                 kind=kind_label,
             ).observe(LIFECYCLE_CLOSE_TIMEOUT_SECONDS)
+            if pending is not None:
+                _lifecycle.record_close_timeout(
+                    pending,
+                    timeout_seconds=LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
+                )
+            if reporter is not None and pending is not None:
+                try:
+                    await asyncio.wait_for(
+                        reporter.on_lifecycle_close_timeout(
+                            pending,
+                            timeout_seconds=LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
+                        ),
+                        timeout=1.0,
+                    )
+                except Exception as report_err:
+                    logger.debug(
+                        "Lifecycle close-timeout webhook skipped: %s",
+                        report_err,
+                    )
             logger.critical(
                 "bot.close() exceeded %.1fs timeout — force-exiting "
                 "so the orchestration platform respawns.",
                 LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
             )
             os._exit(1)
+        close_duration = time.monotonic() - close_started_at
         _metrics.lifecycle_close_duration_seconds.labels(
             kind=kind_label,
-        ).observe(time.monotonic() - close_started_at)
+        ).observe(close_duration)
+        if pending is not None:
+            _lifecycle.record_close_completed(
+                pending,
+                duration_seconds=close_duration,
+            )
         return
 
 
