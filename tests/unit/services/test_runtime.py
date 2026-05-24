@@ -273,3 +273,78 @@ async def test_release_lock_best_effort_swallows_exceptions():
     ):
         # Must not raise.
         await runtime.release_lock_best_effort()
+
+
+# ---------------------------------------------------------------------------
+# runtime_lock_heartbeat_total metric — increments on every loop iteration
+# with one of three outcomes: ok / error / lost.  Operators alert on a
+# sustained non-zero ``error`` rate (DB issues) or any ``lost`` observation
+# (split-brain).
+# ---------------------------------------------------------------------------
+
+
+def _heartbeat_counter_value(outcome: str) -> float:
+    from services import metrics as _metrics
+
+    return _metrics.runtime_lock_heartbeat_total.labels(outcome=outcome)._value.get()
+
+
+@pytest.mark.asyncio
+async def test_heartbeat_metric_increments_ok_on_successful_refresh():
+    stop = asyncio.Event()
+    before = _heartbeat_counter_value("ok")
+
+    async def _hb(*_a, **_kw):
+        stop.set()
+        return True
+
+    with patch.object(rl_db, "heartbeat", side_effect=_hb):
+        await runtime.run_heartbeat_loop(stop, interval_seconds=0)
+
+    assert _heartbeat_counter_value("ok") == before + 1
+
+
+@pytest.mark.asyncio
+async def test_heartbeat_metric_increments_error_on_exception():
+    """Transient DB exception must surface as outcome=error so operators
+    can graph DB connectivity issues separately from healthy refreshes."""
+    stop = asyncio.Event()
+    before_error = _heartbeat_counter_value("error")
+    before_ok = _heartbeat_counter_value("ok")
+    side_effects = [RuntimeError("blip"), True]
+
+    async def _hb(*_a, **_kw):
+        v = side_effects.pop(0)
+        if isinstance(v, Exception):
+            raise v
+        # Stop the loop on the successful recovery so the test's
+        # observation count is precise (no extra iterations).
+        stop.set()
+        return v
+
+    with patch.object(rl_db, "heartbeat", side_effect=_hb), patch(
+        "services.runtime.os._exit",
+    ):
+        await runtime.run_heartbeat_loop(stop, interval_seconds=0)
+
+    assert _heartbeat_counter_value("error") == before_error + 1
+    # The retry succeeded, so ok also incremented exactly once.
+    assert _heartbeat_counter_value("ok") == before_ok + 1
+
+
+@pytest.mark.asyncio
+async def test_heartbeat_metric_increments_lost_when_peer_reclaims():
+    """``UPDATE 0`` (peer reclaimed the lock) must surface as outcome=lost
+    immediately before os._exit so the metric captures the split-brain
+    moment even if the next Prometheus scrape happens after exit."""
+    stop = asyncio.Event()
+    before = _heartbeat_counter_value("lost")
+
+    with patch.object(rl_db, "heartbeat", AsyncMock(return_value=False)), patch(
+        "services.runtime.os._exit",
+    ) as exit_mock:
+        exit_mock.side_effect = lambda code: stop.set()
+        await runtime.run_heartbeat_loop(stop, interval_seconds=0)
+
+    assert _heartbeat_counter_value("lost") == before + 1
+    exit_mock.assert_called_with(1)

@@ -128,6 +128,18 @@ runtime_lock_boot_wait_seconds = Histogram(
     buckets=(0.1, 0.5, 1.0, 5.0, 15.0, 30.0, 60.0, 120.0, 300.0),
 )
 
+# Runtime-lock heartbeat refresh attempts.  ``ok`` = lock still owned by
+# this boot; ``error`` = transient DB exception (retried up to
+# _HEARTBEAT_FAILURE_LIMIT before force-exit); ``lost`` = a peer reclaimed
+# the lock (single observation followed immediately by os._exit).
+# A sustained non-zero ``error`` rate indicates DB connectivity issues;
+# any ``lost`` observation indicates a split-brain that was just resolved.
+runtime_lock_heartbeat_total = Counter(
+    "runtime_lock_heartbeat_total",
+    "Runtime-lock heartbeat refresh attempts by outcome.",
+    ["outcome"],  # ok | error | lost
+)
+
 governance_fail_open_total = Counter(
     "governance_fail_open_total",
     "Interaction-router governance gate fell open due to resolver error. "
