@@ -297,21 +297,21 @@ class BTD6Cog(commands.Cog):
         """Open the BTD6 panel."""
         await ctx.send(embed=build_btd6_panel_embed(), view=BTD6PanelView())
 
-    @btd6_group.command(name="status")
+    @btd6_group.command(name="status")  # type: ignore[arg-type]
     async def btd6_status(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_status_embed())
 
-    @btd6_group.command(name="diagnostics")
+    @btd6_group.command(name="diagnostics")  # type: ignore[arg-type]
     async def btd6_diagnostics(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_diagnostics_embed())
 
-    @btd6_group.command(name="ask")
+    @btd6_group.command(name="ask")  # type: ignore[arg-type]
     async def btd6_ask(self, ctx: commands.Context, *, question: str) -> None:
         """Deterministic Q&A. Module 5 adds optional AI augmentation."""
         response = await btd6_ai_service.answer_question(question)
         await ctx.send(embed=_response_to_embed(response))
 
-    @btd6_group.command(name="tower")
+    @btd6_group.command(name="tower")  # type: ignore[arg-type]
     async def btd6_tower(self, ctx: commands.Context, *, name: str) -> None:
         intent = resolve(name)
         if not intent.towers:
@@ -330,7 +330,7 @@ class BTD6Cog(commands.Cog):
             return
         await ctx.send(embed=_response_to_embed(for_tower(fact)))
 
-    @btd6_group.command(name="hero")
+    @btd6_group.command(name="hero")  # type: ignore[arg-type]
     async def btd6_hero(self, ctx: commands.Context, *, name: str) -> None:
         intent = resolve(name)
         if not intent.heroes:
@@ -344,7 +344,7 @@ class BTD6Cog(commands.Cog):
 
         await ctx.send(embed=_response_to_embed(for_hero(intent.heroes[0])))
 
-    @btd6_group.command(name="round")
+    @btd6_group.command(name="round")  # type: ignore[arg-type]
     async def btd6_round(self, ctx: commands.Context, number: int) -> None:
         from services.btd6_knowledge_service import round_fact
         from services.btd6_response_builder import for_round, for_unresolved
@@ -356,11 +356,11 @@ class BTD6Cog(commands.Cog):
             return
         await ctx.send(embed=_response_to_embed(for_round(fact)))
 
-    @btd6_group.command(name="test-intent")
+    @btd6_group.command(name="test-intent")  # type: ignore[arg-type]
     async def btd6_test_intent(self, ctx: commands.Context, *, text: str) -> None:
         await ctx.send(embed=build_test_intent_embed(text))
 
-    @btd6_group.command(name="why-no-response")
+    @btd6_group.command(name="why-no-response")  # type: ignore[arg-type]
     async def btd6_why_no_response(self, ctx: commands.Context) -> None:
         """Show the latest passive-stage skip reasons for this channel."""
         await ctx.send(

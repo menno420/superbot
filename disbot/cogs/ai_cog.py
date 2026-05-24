@@ -139,22 +139,22 @@ class AICog(commands.Cog):
         """Open the AI Platform panel."""
         await ctx.send(embed=build_ai_panel_embed(), view=AIPanelView())
 
-    @ai_group.command(name="status")
+    @ai_group.command(name="status")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_status(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_status_embed())
 
-    @ai_group.command(name="diagnostics")
+    @ai_group.command(name="diagnostics")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_diagnostics(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_diagnostics_embed())
 
-    @ai_group.command(name="providers")
+    @ai_group.command(name="providers")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_providers(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_providers_embed())
 
-    @ai_group.command(name="routing")
+    @ai_group.command(name="routing")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_routing(
         self,

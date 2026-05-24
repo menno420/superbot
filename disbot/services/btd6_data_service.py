@@ -167,9 +167,9 @@ def _require_keys(entry: dict[str, Any], keys: tuple[str, ...], where: str) -> N
         )
 
 
-def _check_unique(items: list[str], where: str) -> None:
-    seen: set[str] = set()
-    dupes: set[str] = set()
+def _check_unique(items: list, where: str) -> None:
+    seen: set = set()
+    dupes: set = set()
     for item in items:
         if item in seen:
             dupes.add(item)

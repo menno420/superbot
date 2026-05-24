@@ -26,7 +26,7 @@ _PANEL_COLOR = discord.Color.green()
 class BTD6AskModal(discord.ui.Modal, title="Ask BTD6 Assistant"):
     """Modal that takes a free-form BTD6 question and renders a deterministic answer."""
 
-    question = discord.ui.TextInput(
+    question: discord.ui.TextInput = discord.ui.TextInput(
         label="Your question",
         placeholder="e.g. how do I survive round 63?",
         max_length=300,
