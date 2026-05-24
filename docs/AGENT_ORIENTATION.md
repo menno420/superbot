@@ -134,6 +134,7 @@ top before trusting the contents.
 - `docs/operator-settings-presets.md`
 - `docs/games-actionability-roadmap.md` (status: complete — historical now)
 - `docs/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
+- `docs/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)
 
 ### Standards / reference guides
 
