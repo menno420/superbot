@@ -26,6 +26,7 @@ from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
 from utils.ui_constants import SUCCESS_COLOR
+from views.navigation import attach_back_button
 
 
 class _WorkView(discord.ui.View):
@@ -179,14 +180,22 @@ class _WorkSubView(_WorkView):
     def __init__(self, user_id: int, guild_id: int, available: list[str]):
         super().__init__(user_id, guild_id, available)
 
-    @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
-    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        # Late import — main_panel imports from this module.
-        from views.economy.main_panel import EconomyPanelView
+        async def _build_parent(
+            interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            # Late import — main_panel imports from this module.
+            from views.economy.main_panel import EconomyPanelView
 
-        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
-        await interaction.response.edit_message(embed=embed, view=EconomyPanelView())
-        self.stop()
+            embed = await _build_economy_embed(interaction.user, interaction.guild_id)
+            return embed, EconomyPanelView()
+
+        attach_back_button(
+            self,
+            label="↩ Back",
+            custom_id="economy:work:back",
+            parent_builder=_build_parent,
+            row=1,
+        )
 
 
 class _WorkResultView(discord.ui.View):
@@ -201,6 +210,23 @@ class _WorkResultView(discord.ui.View):
         super().__init__(timeout=60)
         self._author = author
         self.message: discord.Message | None = None
+
+        async def _build_parent(
+            interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            # Late import — main_panel imports from this module.
+            from views.economy.main_panel import EconomyPanelView
+
+            embed = await _build_economy_embed(interaction.user, interaction.guild_id)
+            return embed, EconomyPanelView()
+
+        attach_back_button(
+            self,
+            label="↩ Back to Economy",
+            custom_id="economy:back",
+            parent_builder=_build_parent,
+            row=0,
+        )
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self._author.id:
@@ -219,17 +245,3 @@ class _WorkResultView(discord.ui.View):
                 await self.message.edit(view=self)
         except Exception:
             pass
-
-    @discord.ui.button(
-        label="↩ Back to Economy",
-        style=discord.ButtonStyle.secondary,
-        custom_id="economy:back",
-        row=0,
-    )
-    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        # Late import — main_panel imports from this module.
-        from views.economy.main_panel import EconomyPanelView
-
-        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
-        await interaction.response.edit_message(embed=embed, view=EconomyPanelView())
-        self.stop()

@@ -10,6 +10,7 @@ from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ECONOMY_COLOR
 from views.base import BaseView
+from views.navigation import attach_back_button
 from views.roles._helpers import _find_role_normalized
 
 logger = logging.getLogger("bot")
@@ -22,6 +23,21 @@ class XpRolesPanel(BaseView):
         super().__init__(ctx.author, timeout=300)
         self.ctx = ctx
         self.parent = parent
+
+        if parent is not None:
+
+            async def _build_parent(
+                _interaction: discord.Interaction,
+            ) -> tuple[discord.Embed, discord.ui.View]:
+                return parent.build_embed(), parent
+
+            attach_back_button(
+                self,
+                label="↩ Back",
+                custom_id="role:xp:back",
+                parent_builder=_build_parent,
+                row=1,
+            )
 
     async def build_embed(self) -> discord.Embed:
         all_rows = await db.get_role_thresholds(self.ctx.guild.id)
@@ -75,21 +91,6 @@ class XpRolesPanel(BaseView):
             view=view,
             ephemeral=True,
         )
-
-    @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.secondary, row=1)
-    async def back_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ) -> None:
-        if self.parent:
-            await interaction.response.edit_message(
-                embed=self.parent.build_embed(),
-                view=self.parent,
-            )
-        else:
-            await interaction.response.edit_message(view=None)
-        self.stop()
 
 
 class XpThresholdModal(

@@ -19,6 +19,7 @@ from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.channels._helpers import _build_channel_options, _ChannelSelect
+from views.navigation import attach_back_button
 
 logger = logging.getLogger("bot")
 
@@ -45,6 +46,23 @@ class _DeleteSubView(BaseView):
             placeholder="Select a channel to delete…",
         )
         self.add_item(self.channel_select)
+
+        async def _build_parent(
+            _interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            from views.channels.main_panel import _ChannelManagerView
+
+            manager = _ChannelManagerView(self.ctx)
+            manager.message = self.manager_message
+            return manager.build_embed(), manager
+
+        attach_back_button(
+            self,
+            label="↩️ Back",
+            custom_id="channels:delete:back",
+            parent_builder=_build_parent,
+            row=1,
+        )
 
     async def on_error(
         self,
@@ -111,18 +129,6 @@ class _DeleteSubView(BaseView):
         await interaction.response.edit_message(
             embed=self._confirm_embed(),
             view=confirm_view,
-        )
-        self.stop()
-
-    @discord.ui.button(label="↩️ Back", style=discord.ButtonStyle.grey, row=1)
-    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        from views.channels.main_panel import _ChannelManagerView
-
-        manager = _ChannelManagerView(self.ctx)
-        manager.message = self.manager_message
-        await interaction.response.edit_message(
-            embed=manager.build_embed(),
-            view=manager,
         )
         self.stop()
 

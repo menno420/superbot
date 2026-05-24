@@ -80,38 +80,48 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
     xp_result.new_level = 1
     xp_result.leveled_up = False
 
-    with patch(
-        "views.economy.work_panel.db.get_economy",
-        new_callable=AsyncMock,
-        return_value=eco_row,
-    ), patch(
-        "views.economy.work_panel.check_cooldown",
-        return_value=(False, 0),
-    ), patch(
-        "views.economy.work_panel.db.get_job_times",
-        new_callable=AsyncMock,
-        return_value=0,
-    ), patch(
-        "views.economy.work_panel._job_pay",
-        return_value=100,
-    ), patch(
-        "views.economy.work_panel.db.increment_job",
-        new_callable=AsyncMock,
-        return_value=1,
-    ), patch(
-        "views.economy.work_panel.economy_service.credit",
-        new_callable=AsyncMock,
-        return_value=500,
-    ), patch(
-        "views.economy.work_panel.xp_service.award",
-        new_callable=AsyncMock,
-        return_value=xp_result,
-    ), patch(
-        "views.economy.work_panel.db.set_last_worked",
-        new_callable=AsyncMock,
-    ), patch(
-        "views.economy.work_panel.post_log_embed",
-        new_callable=AsyncMock,
+    with (
+        patch(
+            "views.economy.work_panel.db.get_economy",
+            new_callable=AsyncMock,
+            return_value=eco_row,
+        ),
+        patch(
+            "views.economy.work_panel.check_cooldown",
+            return_value=(False, 0),
+        ),
+        patch(
+            "views.economy.work_panel.db.get_job_times",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "views.economy.work_panel._job_pay",
+            return_value=100,
+        ),
+        patch(
+            "views.economy.work_panel.db.increment_job",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "views.economy.work_panel.economy_service.credit",
+            new_callable=AsyncMock,
+            return_value=500,
+        ),
+        patch(
+            "views.economy.work_panel.xp_service.award",
+            new_callable=AsyncMock,
+            return_value=xp_result,
+        ),
+        patch(
+            "views.economy.work_panel.db.set_last_worked",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.economy.work_panel.post_log_embed",
+            new_callable=AsyncMock,
+        ),
     ):
         await select.callback(interaction)
 
@@ -119,9 +129,9 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
     interaction.followup.edit_message.assert_awaited_once()
     kwargs = interaction.followup.edit_message.await_args.kwargs
     rendered_view = kwargs["view"]
-    assert isinstance(rendered_view, _WorkResultView), (
-        f"Expected _WorkResultView after job completion, got {type(rendered_view).__name__}"
-    )
+    assert isinstance(
+        rendered_view, _WorkResultView
+    ), f"Expected _WorkResultView after job completion, got {type(rendered_view).__name__}"
     assert kwargs["message_id"] == 1234
 
 
@@ -169,6 +179,13 @@ async def test_work_result_view_rejects_other_user_ephemerally():
 async def test_work_result_back_button_returns_to_economy_panel():
     """Clicking Back returns to a fresh ``EconomyPanelView`` with the
     economy overview embed.
+
+    The back button is constructed via
+    ``views.navigation.attach_back_button``, which calls the
+    parent-builder closure and then routes the edit through
+    ``response.edit_message`` (when the interaction is not yet
+    deferred) or ``edit_original_response`` (when deferred). This
+    test pins the not-yet-deferred path.
     """
     from views.economy.main_panel import EconomyPanelView
 
@@ -178,6 +195,7 @@ async def test_work_result_back_button_returns_to_economy_panel():
     interaction = MagicMock()
     interaction.user = _author(id_=1)
     interaction.guild_id = 2
+    interaction.response.is_done = MagicMock(return_value=False)
     interaction.response.edit_message = AsyncMock()
 
     with patch(

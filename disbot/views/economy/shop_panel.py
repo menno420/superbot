@@ -16,6 +16,7 @@ from services import economy_service
 from utils import db
 from utils.helpers import post_log_embed
 from utils.ui_constants import SUCCESS_COLOR, WARNING_COLOR
+from views.navigation import attach_back_button, attach_back_target
 
 
 class _ShopView(discord.ui.View):
@@ -130,6 +131,28 @@ class _ShopSubView(discord.ui.View):
         ]
         self.add_item(_ShopPanelSelect(user_id, guild_id, options, self))
 
+        async def _build_parent(
+            interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            from views.economy.main_panel import EconomyPanelView
+
+            embed = await _build_economy_embed(interaction.user, interaction.guild_id)
+            view = EconomyPanelView()
+            # AB2: re-attach any propagated grandparent (typically Help)
+            # so the rebuilt Economy panel keeps the back-to-Help chain.
+            origin = getattr(self, "_back_target", None)
+            if origin is not None:
+                attach_back_target(view, origin)
+            return embed, view
+
+        attach_back_button(
+            self,
+            label="↩ Back",
+            custom_id="economy:shop:back",
+            parent_builder=_build_parent,
+            row=1,
+        )
+
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
             await interaction.response.send_message(
@@ -138,22 +161,6 @@ class _ShopSubView(discord.ui.View):
             )
             return False
         return True
-
-    @discord.ui.button(label="↩ Back", style=discord.ButtonStyle.grey, row=1)
-    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        from views.economy.main_panel import EconomyPanelView
-        from views.navigation import attach_back_target
-
-        embed = await _build_economy_embed(interaction.user, interaction.guild_id)
-        view = EconomyPanelView()
-        # AB2: if a grandparent was propagated from the opener
-        # (typically Help's back target), re-attach it so the rebuilt
-        # Economy panel keeps the back-to-Help chain.
-        origin = getattr(self, "_back_target", None)
-        if origin is not None:
-            attach_back_target(view, origin)
-        await interaction.response.edit_message(embed=embed, view=view)
-        self.stop()
 
     async def on_timeout(self):
         for item in self.children:
