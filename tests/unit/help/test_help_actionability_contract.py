@@ -332,6 +332,10 @@ async def _build_panel_for(
         from cogs.chain_cog import ChainCog
 
         cog = ChainCog(MagicMock())
+    elif subsystem == "btd6":
+        from cogs.btd6_cog import BTD6Cog
+
+        cog = BTD6Cog(MagicMock())
     else:
         raise NotImplementedError(
             f"No cog mapping for actionability target {subsystem!r}. "
@@ -358,6 +362,7 @@ async def _build_panel_for(
         pytest.param("mining"),
         pytest.param("counting"),
         pytest.param("chain"),
+        pytest.param("btd6"),
     ],
 )
 async def test_games_subsystem_panel_is_actionable(subsystem: str) -> None:
@@ -545,6 +550,7 @@ def test_actionability_targets_match_registry_games_children() -> None:
         "mining",
         "counting",
         "chain",
+        "btd6",
     }
     new_in_registry = registry_games - expected
     removed_from_registry = expected - registry_games

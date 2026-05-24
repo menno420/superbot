@@ -14,6 +14,7 @@ from __future__ import annotations
 # each section's `order` field, not import order — but keep this list stable
 # so it doubles as a manifest of which sections ship today.
 from views.setup.sections import (  # noqa: F401 — import side-effect
+    btd6,
     channels,
     cleanup,
     cog_routing,
@@ -26,6 +27,7 @@ from views.setup.sections import (  # noqa: F401 — import side-effect
 )
 
 __all__ = [
+    "btd6",
     "channels",
     "cleanup",
     "cog_routing",
