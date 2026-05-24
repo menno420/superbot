@@ -20,6 +20,7 @@ import time
 import discord
 
 from cogs.economy._helpers import _WORK_COOLDOWN, JOBS, _build_economy_embed, _job_pay
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import economy_service, xp_service
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
@@ -88,10 +89,18 @@ class _JobSelect(discord.ui.Select):
         uid, gid = self._user_id, self._guild_id
         now = int(time.time())
 
+        # Defer before any I/O: this handler does 4 DB ops + 2 service
+        # calls (credit, award) + a webhook post before the final edit.
+        # The cumulative work blows past the 3s interaction-token window
+        # on a normal day.
+        if not await safe_defer(interaction):
+            return
+
         eco = await db.get_economy(uid, gid)
         on_cd, secs = check_cooldown(eco["last_worked"], _WORK_COOLDOWN)
         if on_cd:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"⏰ Still on cooldown! {format_remaining(secs)} left.",
                 ephemeral=True,
             )
@@ -147,7 +156,7 @@ class _JobSelect(discord.ui.Select):
         # disabled every child on ``_work_view`` (including Back),
         # leaving the user on a dead-end result screen.
         result_view = _WorkResultView(interaction.user)
-        await interaction.response.edit_message(embed=embed, view=result_view)
+        await safe_edit(interaction, embed=embed, view=result_view)
         result_view.message = interaction.message
         self._work_view.stop()
 

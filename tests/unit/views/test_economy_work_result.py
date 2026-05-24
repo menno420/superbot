@@ -46,6 +46,11 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
     """After a successful work transaction the response view must be a
     fresh ``_WorkResultView`` — not the dropdown sub-view with every
     child disabled. This pins the dead-end fix from Bug #2.
+
+    The callback defers immediately (handler does 4 DB ops + 2 service
+    calls before the final edit), so the response edit lands via
+    ``followup.edit_message`` rather than the inline
+    ``response.edit_message``.
     """
     # ``janitor`` is a real job in cogs.economy._helpers.JOBS so the
     # _WorkSubView constructor (which looks up each available job in
@@ -61,7 +66,12 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
     interaction.user = _author(id_=1)
     interaction.guild_id = 2
     interaction.message = MagicMock()
-    interaction.response.edit_message = AsyncMock()
+    interaction.message.id = 1234
+    # safe_defer: is_done() == False on first check → defer is called.
+    # safe_edit: is_done() == True on the next check → followup path.
+    interaction.response.is_done = MagicMock(side_effect=[False, True])
+    interaction.response.defer = AsyncMock()
+    interaction.followup.edit_message = AsyncMock()
     interaction.client = MagicMock()
 
     eco_row = {"last_worked": 0}
@@ -105,12 +115,14 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
     ):
         await select.callback(interaction)
 
-    interaction.response.edit_message.assert_awaited_once()
-    kwargs = interaction.response.edit_message.await_args.kwargs
+    interaction.response.defer.assert_awaited_once()
+    interaction.followup.edit_message.assert_awaited_once()
+    kwargs = interaction.followup.edit_message.await_args.kwargs
     rendered_view = kwargs["view"]
     assert isinstance(rendered_view, _WorkResultView), (
         f"Expected _WorkResultView after job completion, got {type(rendered_view).__name__}"
     )
+    assert kwargs["message_id"] == 1234
 
 
 # ---------------------------------------------------------------------------
