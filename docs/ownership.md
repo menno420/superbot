@@ -162,10 +162,52 @@ These calls are **forbidden** outside their owning module:
 | Raw SQL `UPDATE xp ... coins` / `INSERT INTO xp (..., coins ...)` | `services/economy_service.py` + `utils/db/economy.py` | every other production file. |
 | `db.set_subsystem_visibility` / raw writes to `subsystem_visibility` | `GovernanceMutationPipeline` | every cog, every other service. |
 | `db.set_cleanup_policy` / raw writes to `cleanup_policies` | `GovernanceMutationPipeline` | every cog, every other service. |
-| `db.write_governance_audit` | `GovernanceMutationPipeline` | direct write only inside the pipeline. |
+| `db.write_governance_audit` | `GovernanceMutationPipeline` + `governance/execution._audit_internal_bypass` | every other module.  See "Audit-write carve-out" below. |
 
-The first row is enforced by INV-F (AST test).  Add to that test
-when introducing future forbid-lists.
+The first two row-pairs are enforced by INV-F (AST test) for economy
+and INV-E (`test_apply_template_uses_pipeline`) for visibility /
+cleanup pipeline writes.  Add to those tests when introducing future
+forbid-lists.
+
+### Audit-write carve-out
+
+`db.write_governance_audit` has **one** allowed caller outside the
+pipeline: `governance.execution._audit_internal_bypass`
+(`disbot/governance/execution.py:111`), invoked from
+`resolve_execution()` only when `check_visibility=False`
+(`disbot/governance/execution.py:249` — the internal / AI-triggered
+bypass path).
+
+Why it exists:
+
+- Internal bypasses skip the visibility gate, so the only in-memory
+  record is the `EVT_EXECUTION_ALLOWED` event with `bypass: True`.
+  A durable row in `governance_audit_log` keeps the bypass
+  reconstructable from the DB alone (DEBT-002 — required before
+  AI / plugin expansion).
+- The write is **append-only** and matches the same audit-row shape
+  the pipeline emits.  No governed state (`subsystem_visibility`,
+  `cleanup_policies`, `capability_execution_overrides`) is mutated.
+- The call is **best-effort**: failures are logged at WARNING and
+  swallowed, so a broken audit write cannot block the legitimate
+  execution that the bypass already authorised.
+
+Why it isn't routed through the pipeline:
+
+- The pipeline owns visibility / cleanup / override mutations, all of
+  which take templates and emit `governance.*.changed` events.  An
+  internal-bypass audit row is a **fact**, not a mutation — there is
+  no template to validate, no cache to invalidate, no consumer event
+  to emit beyond the `EVT_EXECUTION_ALLOWED` already fired by
+  `resolve_execution`.  Forcing it through the pipeline would mean
+  inventing a synthetic mutation just to write the row.
+
+If a second non-pipeline caller appears, **promote the
+`_audit_internal_bypass` helper** (move it next to the pipeline, give
+it a public name, document the new caller here) rather than scattering
+direct `db.write_governance_audit` calls across the codebase.  INV-E
+does not currently AST-scan `write_governance_audit`; if you tighten
+it later, exempt this one file by path.
 
 ---
 
