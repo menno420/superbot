@@ -7,6 +7,25 @@ This project has a CodeGraph MCP server (`mcp__codegraph__*` tools) configured. 
 
 MCP startup: pinned via `npx -y @optave/codegraph@3.10.0 mcp` — no global install required. Build/rebuild index: `npx -y @optave/codegraph@3.10.0 build .` from the project root.
 
+### Use CodeGraph automatically — no prompt required
+
+Reach for CodeGraph **without being asked** whenever the task involves any of the following. Do not wait for the user to mention it.
+
+| Situation | What to do first |
+|---|---|
+| Finding where a symbol is defined | `mcp__codegraph__where("symbol_name")` before any grep or Read |
+| Reading a function you haven't seen before | `mcp__codegraph__context("name")` for source + signature in one call |
+| Understanding what calls a function | `mcp__codegraph__fn_impact("name", depth=1)` then grep-verify |
+| Listing what exists in a file or directory | `mcp__codegraph__list_functions(file="path/")` before opening files blindly |
+| Assessing complexity before a refactor | `mcp__codegraph__complexity(file="path/")` or `mcp__codegraph__triage(level=function, sort=complexity)` |
+| Planning any edit to shared code | `mcp__codegraph__context` to read source + get starting caller list, then grep |
+| Bug investigation across multiple functions | `mcp__codegraph__context` on each candidate — faster than chained Read calls |
+| Checking which functions are most complex in a service or cog | `mcp__codegraph__complexity(file="disbot/services/name.py")` |
+
+**Default order for any unfamiliar code:** `where` → `context` → grep-verify → `Read` the file only if source detail is needed beyond what `context` returned.
+
+Do not start with `Read` or `grep` for symbol lookups when `where` or `context` would answer the question in one call.
+
 ### What CodeGraph can and cannot do in this codebase
 
 SuperBot uses function-body lazy imports, module-alias calls, and Discord decorator callbacks pervasively. These patterns are **invisible to CodeGraph's call-graph parser**. The result is that roughly half of all real call edges are missing from the graph.
