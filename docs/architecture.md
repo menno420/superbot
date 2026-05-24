@@ -3,6 +3,12 @@
 > **Status:** binding. This document defines the platform's layering
 > and dependency rules.  CI invariants (`tests/unit/invariants/`) +
 > ruff config enforce a subset; everything else is enforced by review.
+>
+> **Orientation:** new agent? Read `docs/AGENT_ORIENTATION.md` first
+> — it indexes the binding docs and distinguishes them from the
+> historical roadmap material. Looking for "where does this code
+> live"? See `docs/repo-navigation-map.md`. Adding or moving a
+> helper? See `docs/helper-policy.md`.
 
 SuperBot is a Discord-native application platform built on a single
 Python process running `discord.py` + `asyncpg`.  The codebase is

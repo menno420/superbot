@@ -1,3 +1,30 @@
+<!-- READ_FIRST_START -->
+## Read first — agent orientation
+
+Before proposing or implementing **any** non-trivial change, open
+**`docs/AGENT_ORIENTATION.md`** and follow the "Reading order by
+task" section that matches what you are doing. It is short, points
+you at the binding contracts, and distinguishes them from the
+historical roadmap docs.
+
+Three binding docs underlie almost every decision in this codebase:
+
+1. **`docs/architecture.md`** — layering, invariants, decomposition rules.
+2. **`docs/ownership.md`** — which service / pipeline owns each table, event, and write.
+3. **`docs/runtime_contracts.md`** — lifecycle guarantees and failure modes.
+
+Two more bind common operations:
+
+- **`docs/repo-navigation-map.md`** — where things live; where new code goes.
+- **`docs/helper-policy.md`** — when to create / move / promote a helper. Read this **before** putting a function in `utils/`, `services/`, or `views/base.py`.
+
+When a doc and a source file disagree, the source file wins (see
+"Source files win" below). Documents are pinned to the registry where
+practical (`tests/unit/docs/`), but the layering rules are enforced
+by review, not by CI.
+
+<!-- READ_FIRST_END -->
+
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 

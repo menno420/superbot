@@ -4,6 +4,12 @@
 > single owner that decides what is or isn't legal to do with it.
 > Touching state owned by another subsystem requires going through
 > that subsystem's service layer (or proposing a contract change).
+>
+> **Companions:** `docs/architecture.md` (layering + invariants),
+> `docs/runtime_contracts.md` (lifecycle guarantees),
+> `docs/helper-policy.md` (placement / promotion rules for any new
+> helper introduced while applying these ownership rules),
+> `docs/AGENT_ORIENTATION.md` (which doc to read for which task).
 
 ---
 
