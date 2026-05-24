@@ -64,7 +64,9 @@ def test_redact_embed_no_secrets_means_no_changes() -> None:
 @pytest.mark.asyncio
 async def test_send_scrubs_embed_before_dispatch_to_webhook() -> None:
     reporter = WebhookReporter("https://discord.com/api/webhooks/123/abc")
-    reporter._session = MagicMock()  # truthy so _send proceeds past the early-return guard
+    reporter._session = (
+        MagicMock()
+    )  # truthy so _send proceeds past the early-return guard
 
     embed = discord.Embed(
         title="Crash",

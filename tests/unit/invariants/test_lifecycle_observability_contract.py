@@ -64,9 +64,9 @@ def test_webhook_reporter_exposes_required_lifecycle_method(
         f"point.  Restore it or this invariant will fail CI."
     )
     method = getattr(webhook_reporter.WebhookReporter, method_name)
-    assert inspect.iscoroutinefunction(method), (
-        f"WebhookReporter.{method_name} must be an async method."
-    )
+    assert inspect.iscoroutinefunction(
+        method
+    ), f"WebhookReporter.{method_name} must be an async method."
 
 
 # ---------------------------------------------------------------------------
@@ -192,12 +192,12 @@ def test_close_driver_calls_close_timeout_webhook_before_os_exit() -> None:
     # call in the function body.  Use lineno because both live in the
     # same try/except branch.
     timeout_calls = [
-        c for c in _calls_in(fn)
+        c
+        for c in _calls_in(fn)
         if _call_dotted_name(c).endswith("on_lifecycle_close_timeout")
     ]
     exit_calls = [
-        c for c in _calls_in(fn)
-        if _call_dotted_name(c) in {"os._exit", "_exit"}
+        c for c in _calls_in(fn) if _call_dotted_name(c) in {"os._exit", "_exit"}
     ]
     assert timeout_calls, "expected on_lifecycle_close_timeout call"
     assert exit_calls, "expected os._exit call"
@@ -265,9 +265,9 @@ def test_lifecycle_observes_startup_duration_one_shot() -> None:
     lifecycle.set_phase(lifecycle.Phase.RUNNING, reason="on_ready")
     samples = list(metrics.lifecycle_startup_seconds.collect())[0].samples
     after_first = next(s.value for s in samples if s.name.endswith("_count"))
-    assert after_first == before_count + 1, (
-        "First STARTING → RUNNING must observe lifecycle_startup_seconds"
-    )
+    assert (
+        after_first == before_count + 1
+    ), "First STARTING → RUNNING must observe lifecycle_startup_seconds"
 
     # Simulate a second on_ready: go DRAINING and back to RUNNING; the
     # observation must NOT increment again.
@@ -302,9 +302,7 @@ def test_diagnostics_snapshot_includes_event_metadata_and_startup_state() -> Non
     assert "startup_duration_observed" in snap
     assert snap["startup_duration_observed"] is True
     assert isinstance(snap.get("module_load_age_seconds"), float)
-    completed = next(
-        e for e in snap["recent_events"] if e["name"] == "close_completed"
-    )
+    completed = next(e for e in snap["recent_events"] if e["name"] == "close_completed")
     assert completed["metadata"]["kind"] == "shutdown"
     assert completed["metadata"]["duration_seconds"] == pytest.approx(1.25)
 

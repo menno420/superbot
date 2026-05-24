@@ -377,7 +377,10 @@ async def test_platform_lifecycle_renders_running_phase_with_no_pending():
     field_names = {f.name for f in embed.fields}
     assert field_names == {"Pending request", "Recent events"}
     pending_field = next(f for f in embed.fields if f.name == "Pending request")
-    assert pending_field.value.strip().startswith("_none_") or "none" in pending_field.value
+    assert (
+        pending_field.value.strip().startswith("_none_")
+        or "none" in pending_field.value
+    )
 
 
 @pytest.mark.asyncio

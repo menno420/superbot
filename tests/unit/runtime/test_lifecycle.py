@@ -140,7 +140,8 @@ def test_event_buffer_records_coalesce_attempts_separately() -> None:
     assert "shutdown_requested" in names
     assert "shutdown_requested_coalesced" in names
     coalesced = [
-        event for event in lifecycle.get_recent_events()
+        event
+        for event in lifecycle.get_recent_events()
         if event.name == "shutdown_requested_coalesced"
     ]
     assert coalesced[0].reason == "second"
