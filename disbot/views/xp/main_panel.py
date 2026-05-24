@@ -63,7 +63,7 @@ class _XpHubView(HubView):
             return
         from views.xp.config_panel import XpConfigView
 
-        config_view = XpConfigView(self.ctx)
+        config_view = XpConfigView(self.ctx, parent=self)
         config_view.message = self.message
         await interaction.response.edit_message(
             embed=await config_view.build_embed(),

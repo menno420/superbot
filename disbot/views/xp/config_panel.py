@@ -17,12 +17,35 @@ from utils import db
 from utils.settings_keys import XP_ANNOUNCE_CHANNEL
 from utils.ui_constants import UTILITY_COLOR
 from views.base import BaseView
+from views.navigation import attach_back_button
 
 
 class XpConfigView(BaseView):
-    def __init__(self, ctx: commands.Context):
+    def __init__(
+        self,
+        ctx: commands.Context,
+        parent: BaseView | None = None,
+    ) -> None:
         super().__init__(ctx.author, timeout=300)
         self.ctx = ctx
+        self.parent = parent
+
+        if parent is not None:
+
+            async def _build_parent(
+                _interaction: discord.Interaction,
+            ) -> tuple[discord.Embed, discord.ui.View]:
+                # Parent (XP hub) has an async build_embed.
+                embed = await parent.build_embed()  # type: ignore[attr-defined]
+                return embed, parent
+
+            attach_back_button(
+                self,
+                label="↩ Back",
+                custom_id="xp:config:back",
+                parent_builder=_build_parent,
+                row=1,
+            )
 
     async def build_embed(self) -> discord.Embed:
         gid = self.ctx.guild.id
