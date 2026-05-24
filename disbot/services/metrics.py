@@ -140,6 +140,20 @@ runtime_lock_heartbeat_total = Counter(
     ["outcome"],  # ok | error | lost
 )
 
+# Current lifecycle phase, encoded as a multi-series gauge: exactly one
+# ``phase`` label has value 1.0 at any moment; the rest are 0.0.  This
+# is the canonical Prometheus state-machine encoding (cf.
+# ``node_systemd_unit_state``).  In Grafana, ``max by (phase)
+# (lifecycle_phase)`` renders the current phase as a single-stat panel;
+# ``max_over_time(lifecycle_phase[5m])`` surfaces any phase the bot
+# passed through in the last 5 minutes.
+lifecycle_phase = Gauge(
+    "lifecycle_phase",
+    "Current lifecycle phase as a multi-series gauge (1=current, 0=other).",
+    ["phase"],  # STARTING | RUNNING | DRAINING | SHUTTING_DOWN |
+    #             RESTARTING | STOPPED | FAILED_STARTUP
+)
+
 governance_fail_open_total = Counter(
     "governance_fail_open_total",
     "Interaction-router governance gate fell open due to resolver error. "

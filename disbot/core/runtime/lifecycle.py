@@ -99,6 +99,24 @@ def get_phase() -> Phase:
     return _phase
 
 
+def _publish_phase_gauge(phase: Phase) -> None:
+    """Update ``lifecycle_phase`` so exactly one ``phase`` label is 1.0.
+
+    Wrapped in try/except so a missing or partially-initialized metrics
+    module never blocks a phase transition — metrics are observability,
+    not control plane.
+    """
+    try:
+        from services import metrics as _metrics
+
+        for p in Phase:
+            _metrics.lifecycle_phase.labels(phase=p.value).set(
+                1.0 if p is phase else 0.0,
+            )
+    except Exception:  # noqa: BLE001 — metrics are observability only
+        pass
+
+
 def set_phase(phase: Phase, *, reason: str | None = None) -> None:
     """Record a phase transition.
 
@@ -111,6 +129,7 @@ def set_phase(phase: Phase, *, reason: str | None = None) -> None:
         return
     _phase = phase
     _record_event(f"phase:{phase.value}", reason=reason)
+    _publish_phase_gauge(phase)
 
 
 def is_shutting_down() -> bool:
@@ -279,6 +298,7 @@ def reset_for_tests() -> None:
     _phase = Phase.STARTING
     _pending = None
     _events.clear()
+    _publish_phase_gauge(_phase)
 
 
 def diagnostics_snapshot() -> dict[str, Any]:
@@ -331,6 +351,12 @@ try:
     _diagnostics_service.register("lifecycle", diagnostics_snapshot)
 except Exception:  # noqa: BLE001 — diagnostics is observability only
     pass
+
+# Initialise the lifecycle_phase gauge so STARTING reads as the current
+# phase from process start, before any explicit set_phase() call.
+# Without this, Grafana would show "no data" for the gauge until the
+# first phase transition (typically the STARTING → RUNNING on_ready).
+_publish_phase_gauge(_phase)
 
 
 __all__ = [

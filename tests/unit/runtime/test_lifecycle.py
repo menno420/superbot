@@ -254,3 +254,59 @@ def test_close_executing_event_appears_in_diagnostics_snapshot() -> None:
     snapshot = lifecycle.diagnostics_snapshot()
     event_names = [event["name"] for event in snapshot["recent_events"]]
     assert "close_executing" in event_names
+
+
+def _read_phase_gauge() -> dict[str, float]:
+    """Return ``{phase_value: gauge_value}`` for ``lifecycle_phase``."""
+    from services import metrics as _metrics
+
+    samples = next(iter(_metrics.lifecycle_phase.collect())).samples
+    return {
+        sample.labels["phase"]: sample.value
+        for sample in samples
+        if sample.name == "lifecycle_phase"
+    }
+
+
+def test_lifecycle_phase_gauge_reflects_current_phase_after_reset() -> None:
+    """The autouse reset_for_tests fixture must re-publish the gauge so
+    every test sees STARTING=1 and the other phases=0; without this the
+    gauge would leak stale values across tests."""
+    values = _read_phase_gauge()
+    assert values.get("STARTING") == 1.0
+    for other in ("RUNNING", "DRAINING", "SHUTTING_DOWN", "RESTARTING", "STOPPED"):
+        assert values.get(other) == 0.0
+
+
+def test_lifecycle_phase_gauge_updates_on_each_transition() -> None:
+    """After set_phase, exactly one series is 1.0 (the new phase) and
+    the previously-current series resets to 0.0.  This is the canonical
+    Prometheus state-machine encoding so Grafana panels using
+    ``max by (phase) (lifecycle_phase)`` always render a single point."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    values = _read_phase_gauge()
+    assert values["RUNNING"] == 1.0
+    assert values["STARTING"] == 0.0
+
+    lifecycle.request_shutdown("sigterm")
+    values = _read_phase_gauge()
+    assert values["DRAINING"] == 1.0
+    assert values["RUNNING"] == 0.0
+    assert values["STARTING"] == 0.0
+
+
+def test_lifecycle_phase_gauge_terminal_state_reflects_stopped() -> None:
+    """Terminal phases (STOPPED, RESTARTING) must also surface — the
+    bot may stop emitting metrics shortly after but the last scrape
+    before exit should show the terminal state."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("sigterm")
+    lifecycle.set_phase(lifecycle.Phase.SHUTTING_DOWN)
+    lifecycle.set_phase(lifecycle.Phase.STOPPED)
+
+    values = _read_phase_gauge()
+    assert values["STOPPED"] == 1.0
+    # Only the terminal phase is 1; all others, including the prior
+    # SHUTTING_DOWN, must be 0.
+    nonzero = {phase for phase, value in values.items() if value > 0}
+    assert nonzero == {"STOPPED"}
