@@ -14,7 +14,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
-from core.runtime.interaction_helpers import safe_followup
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR
 from views.base import BaseView
@@ -111,19 +111,27 @@ class _RestrictSubView(BaseView):
             )
             return
 
+        # Defer before the Discord permission write: set_permissions is
+        # not instant under load and the subsequent edit_message would
+        # race the 3 s interaction token.
+        if not await safe_defer(interaction):
+            return
+
         try:
             await channel.set_permissions(
                 interaction.guild.default_role,
                 send_messages=send_messages,
             )
         except discord.Forbidden:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "❌ I don't have permission to change that channel's permissions.",
                 ephemeral=True,
             )
             return
         except discord.HTTPException as exc:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"❌ Failed to update permissions: {exc}",
                 ephemeral=True,
             )
@@ -139,7 +147,7 @@ class _RestrictSubView(BaseView):
         for item in self.children:
             item.disabled = True
 
-        await interaction.response.edit_message(embed=result_embed, view=self)
+        await safe_edit(interaction, embed=result_embed, view=self)
         self.stop()
 
         await asyncio.sleep(2)
