@@ -391,3 +391,28 @@ process_memory_rss_bytes = Gauge(
     "process_memory_rss_bytes",
     "Resident set size of the bot process in bytes, sampled periodically.",
 )
+
+# ---------------------------------------------------------------------------
+# AI gateway — core/runtime/ai/gateway.py
+# Every request that reaches the gateway lands one observation on the
+# histogram (success and failure alike) and increments the counter with
+# the outcome label.  ``outcome`` values: success | timeout | error |
+# unavailable | deterministic.  Sustained non-zero ``timeout``/``error``
+# rates indicate provider-side instability; sustained ``deterministic``
+# is expected when ``AI_DEFAULT_PROVIDER=deterministic`` (the safe
+# default for CI and operators who have not opted in).
+# ---------------------------------------------------------------------------
+
+ai_request_seconds = Histogram(
+    "ai_request_seconds",
+    "Duration of AI provider calls dispatched through the gateway "
+    "(measured around asyncio.wait_for, includes timeout cases).",
+    ["task", "provider"],
+    buckets=(0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 20.0, 60.0),
+)
+
+ai_request_total = Counter(
+    "ai_request_total",
+    "AI gateway requests by task and outcome.",
+    ["task", "outcome"],
+)

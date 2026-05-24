@@ -20,7 +20,10 @@ _TOKEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
     (
         "api_key_like",
-        re.compile(r"\b(?:sk|pk|rk|xoxb|ghp)_[A-Za-z0-9_\-]{12,}\b"),
+        # Matches both underscore (legacy: ``sk_secret``) and hyphen
+        # (OpenAI-style: ``sk-proj-...``) prefixes, plus the common
+        # GitHub / Slack token prefixes.
+        re.compile(r"\b(?:sk|pk|rk|xoxb|ghp)[_-][A-Za-z0-9_\-]{12,}\b"),
     ),
     (
         "database_url",

@@ -38,13 +38,11 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _DISBOT = _REPO_ROOT / "disbot"
 
-# Paths permitted to import the OpenAI or Anthropic SDK. The plan
-# eventually narrows this to ``providers/`` only; the setup-advisor
-# entry is a transitional exception removed by Module 1.
+# Paths permitted to import the OpenAI or Anthropic SDK. After
+# Module 1 of the AI/BTD6 plan migrates the setup advisor behind the
+# gateway, ``providers/`` is the only allowed location.
 _PROVIDER_DIR = _DISBOT / "core" / "runtime" / "ai" / "providers"
-_OPENAI_ALLOWLIST_TRANSITIONAL = {
-    _DISBOT / "services" / "setup_ai_advisor.py",
-}
+_OPENAI_ALLOWLIST_TRANSITIONAL: set[Path] = set()
 
 _PROVIDER_SDKS = ("openai", "anthropic")
 

@@ -32,15 +32,39 @@ The OpenAI implementation uses strict JSON Schema response format
 then re-validate the parsed objects against our local schema
 catalogue. Both layers run; CI does not have an OPENAI_API_KEY so
 the path is exercised through mock objects.
+
+Gateway migration (Module 1, AI/BTD6 plan)
+------------------------------------------
+The OpenAI provider call no longer happens in this module. It is
+routed through :class:`core.runtime.ai.gateway.AIGateway` so:
+
+* The ``openai`` SDK import lives only in
+  :mod:`core.runtime.ai.providers.openai_provider`.
+* Redaction, timeout, metrics, and failure handling are uniform
+  across every AI consumer.
+* The advisor's public API is unchanged: ``OpenAISetupAdvisor``
+  still accepts an injected ``client`` for tests, and
+  ``build_advisor`` still resolves the provider via
+  ``SETUP_ADVISOR_PROVIDER``. When a test injects a ``client``, the
+  advisor wraps it in an ``OpenAIProvider`` and feeds the gateway,
+  so the legacy injection contract continues to work end-to-end.
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
+from core.runtime.ai.contracts import (
+    AIRequest,
+    AIRequestContext,
+    AIResponseMode,
+    AIScope,
+    AITask,
+)
+from core.runtime.ai.providers import OpenAIProvider
+from services import ai_gateway as _ai_gateway_service
 from services.guild_snapshot import GuildSnapshot
 from services.setup_plan import (
     CONFIDENCES,
@@ -129,9 +153,13 @@ _SYSTEM_PROMPT = (
 class OpenAISetupAdvisor:
     """OpenAI structured-output adapter.
 
-    Construction is lazy: the SDK + API key are resolved on first
-    use so a session that never invokes the advisor never pulls in
-    the dependency.
+    The adapter is a thin wrapper around the AI gateway. The
+    ``client`` constructor argument is preserved for test injection:
+    when set, the advisor builds a one-off :class:`OpenAIProvider`
+    bound to the injected client and feeds it to the gateway via
+    ``provider_override`` — every other test path stays identical.
+    Without an injected client, the advisor uses the gateway's
+    default OpenAI provider.
     """
 
     def __init__(
@@ -144,69 +172,68 @@ class OpenAISetupAdvisor:
         self._client = client
         self._model = model or os.getenv("SETUP_ADVISOR_OPENAI_MODEL", "gpt-4o-mini")
         self._api_key = api_key
-
-    def _ensure_client(self) -> Any:
-        if self._client is not None:
-            return self._client
-        try:
-            from openai import AsyncOpenAI
-        except Exception as exc:  # noqa: BLE001 — import boundary
-            raise RuntimeError(
-                "openai package not installed; install ``openai>=1.40.0`` or "
-                "set SETUP_ADVISOR_PROVIDER=deterministic.",
-            ) from exc
-        api_key = self._api_key or os.getenv("OPENAI_API_KEY", "")
-        if not api_key:
+        if client is None and not (api_key or os.getenv("OPENAI_API_KEY", "")):
+            # Preserve the legacy constructor contract: build_advisor()
+            # only reaches this branch when api_key is present, and
+            # tests always inject either ``client`` or ``api_key``.
+            # Raising here keeps backwards compatibility with code that
+            # introspected the failure mode.
             raise RuntimeError(
                 "OPENAI_API_KEY is not set; cannot build OpenAISetupAdvisor.",
             )
-        self._client = AsyncOpenAI(api_key=api_key)
-        return self._client
 
     async def suggest(self, snapshot: GuildSnapshot) -> SetupPlanDraft:
-        client = self._ensure_client()
-        user_payload = json.dumps(_snapshot_to_prompt(snapshot), default=str)
-        try:
-            response = await client.chat.completions.create(
-                model=self._model,
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": user_payload},
-                ],
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": _RECOMMENDATION_JSON_SCHEMA,
-                },
-            )
-        except Exception as exc:  # noqa: BLE001 — network boundary
-            logger.exception(
-                "OpenAISetupAdvisor.suggest: chat.completions.create failed; "
-                "falling back to empty draft.",
-            )
+        provider_override = None
+        if self._client is not None:
+            provider_override = OpenAIProvider(client=self._client)
+
+        request = AIRequest(
+            context=AIRequestContext(
+                task=AITask.SETUP_SUGGEST,
+                scope=AIScope.ADMIN,
+                guild_id=snapshot.guild_id,
+                source="setup_ai_advisor",
+            ),
+            system_prompt=_SYSTEM_PROMPT,
+            payload=_snapshot_to_prompt(snapshot),
+            mode=AIResponseMode.JSON,
+            response_schema=_RECOMMENDATION_JSON_SCHEMA,
+        )
+
+        gateway = _ai_gateway_service.get_default_gateway()
+        response = await gateway.execute(
+            request,
+            provider_override=provider_override,
+        )
+
+        if response.degraded:
+            reason = response.fallback_reason or "openai: degraded response"
+            if "invalid_json" in reason:
+                return SetupPlanDraft(
+                    recommendations=(),
+                    dropped=(f"openai: invalid JSON ({reason})",),
+                    source=OPENAI,
+                )
+            if "empty response" in reason or "no choices" in reason:
+                return SetupPlanDraft(
+                    recommendations=(),
+                    dropped=("openai: empty response",),
+                    source=OPENAI,
+                )
             return SetupPlanDraft(
                 recommendations=(),
-                dropped=(f"openai: {type(exc).__name__}: {exc}",),
+                dropped=(f"openai: {reason}",),
                 source=OPENAI,
             )
 
-        raw = _extract_response_text(response)
-        if raw is None:
+        if response.data is None:
             return SetupPlanDraft(
                 recommendations=(),
                 dropped=("openai: empty response",),
                 source=OPENAI,
             )
 
-        try:
-            parsed = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            return SetupPlanDraft(
-                recommendations=(),
-                dropped=(f"openai: invalid JSON ({exc})",),
-                source=OPENAI,
-            )
-
-        return _validate_ai_payload(parsed)
+        return _validate_ai_payload(response.data)
 
 
 def _snapshot_to_prompt(snapshot: GuildSnapshot) -> dict[str, Any]:
@@ -238,21 +265,6 @@ def _snapshot_to_prompt(snapshot: GuildSnapshot) -> dict[str, Any]:
         "settings_snapshot": snapshot.settings_snapshot,
         "bindings_snapshot": snapshot.bindings_snapshot,
     }
-
-
-def _extract_response_text(response: Any) -> str | None:
-    """Pull the assistant message text out of an OpenAI ChatCompletion."""
-    choices = getattr(response, "choices", None)
-    if not choices:
-        return None
-    first = choices[0]
-    message = getattr(first, "message", None)
-    if message is None:
-        return None
-    content = getattr(message, "content", None)
-    if not content:
-        return None
-    return content
 
 
 def _validate_ai_payload(parsed: Any) -> SetupPlanDraft:
