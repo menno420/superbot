@@ -179,6 +179,22 @@ lifecycle_close_duration_seconds = Histogram(
     buckets=(0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0),
 )
 
+# Wall-clock seconds between Python interpreter handing control to
+# ``core.runtime.lifecycle`` (module import) and the first
+# STARTING → RUNNING transition (``on_ready`` returning success).
+# Observed exactly once per process: a second on_ready (e.g. after a
+# Discord gateway reconnect) does NOT re-observe, so the histogram
+# represents cold-boot health, not connection churn.  Buckets span
+# sub-second (cached cog graph, no DB migrations) to 60 s (cold pool +
+# many migrations + slow gateway handshake); anything past 30 s is a
+# leading indicator the next deploy may breach the orchestrator's boot
+# deadline.
+lifecycle_startup_seconds = Histogram(
+    "lifecycle_startup_seconds",
+    "Time from process import to first STARTING → RUNNING transition.",
+    buckets=(0.5, 1.0, 2.5, 5.0, 10.0, 20.0, 30.0, 60.0),
+)
+
 # Duration of each ``runtime_lock.heartbeat`` UPDATE call.  Observed on
 # every attempt — success and exception alike — so operators can graph
 # DB latency trends without being blinded by exception-path samples
