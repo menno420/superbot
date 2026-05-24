@@ -377,7 +377,10 @@ async def test_platform_lifecycle_renders_running_phase_with_no_pending():
     field_names = {f.name for f in embed.fields}
     assert field_names == {"Pending request", "Recent events"}
     pending_field = next(f for f in embed.fields if f.name == "Pending request")
-    assert pending_field.value.strip().startswith("_none_") or "none" in pending_field.value
+    assert (
+        pending_field.value.strip().startswith("_none_")
+        or "none" in pending_field.value
+    )
 
 
 @pytest.mark.asyncio
@@ -515,3 +518,167 @@ def test_lifecycle_shortcut_exposes_lc_alias():
     cmd = DiagnosticCog.lifecycle_shortcut
     assert "lc" in cmd.aliases
     assert cmd.name == "lifecycle"
+
+
+# ---------------------------------------------------------------------------
+# build_lifecycle_embed — close-outcome metadata rendering.
+#
+# The diagnostics_snapshot now carries per-event ``metadata`` so the
+# embed can summarize kind / duration / timeout inline.  These tests
+# pin the rendering so dashboards built on the operator-channel embeds
+# do not silently drop the close-outcome detail.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_renders_close_completed_duration_metadata():
+    """A ``close_completed`` event with ``duration_seconds`` metadata
+    must surface the duration in the Recent events field so the embed
+    is self-contained — no Prometheus lookup required for normal
+    shutdown / restart sequences."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "STOPPED",
+        "can_accept_commands": False,
+        "startup_duration_observed": True,
+        "pending": {
+            "kind": "shutdown",
+            "reason": "sigterm",
+            "actor": "signal_handler",
+        },
+        "remaining_shutdown_seconds": None,
+        "recent_events": [
+            {
+                "name": "close_executing",
+                "phase": "DRAINING",
+                "actor": "signal_handler",
+                "reason": "sigterm",
+                "metadata": {"kind": "shutdown"},
+            },
+            {
+                "name": "close_completed",
+                "phase": "DRAINING",
+                "actor": "signal_handler",
+                "reason": "sigterm",
+                "metadata": {
+                    "kind": "shutdown",
+                    "duration_seconds": 1.234,
+                },
+            },
+        ],
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    events_field = next(f for f in embed.fields if f.name.startswith("Recent events"))
+    body = events_field.value
+    assert "close_completed" in body
+    # Duration rendered compactly so it fits the 1024-char field.
+    assert "dur=1.23s" in body
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_renders_close_timeout_metadata():
+    """A ``close_timeout`` event surfaces ``timeout_seconds`` so
+    operators see what budget the driver actually used — useful when
+    the constant has been tuned away from the default 20 s."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "DRAINING",
+        "can_accept_commands": False,
+        "startup_duration_observed": True,
+        "pending": {
+            "kind": "restart",
+            "reason": "!restart",
+            "actor": "op",
+        },
+        "remaining_shutdown_seconds": None,
+        "recent_events": [
+            {
+                "name": "close_timeout",
+                "phase": "DRAINING",
+                "actor": "op",
+                "reason": "!restart",
+                "metadata": {
+                    "kind": "restart",
+                    "timeout_seconds": 20.0,
+                },
+            },
+        ],
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    events_field = next(f for f in embed.fields if f.name.startswith("Recent events"))
+    body = events_field.value
+    assert "close_timeout" in body
+    assert "kind=restart" in body
+    assert "timeout=20.00s" in body
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_renders_startup_observed_flag():
+    """The embed description surfaces the one-shot
+    ``startup_duration_observed`` flag so operators can confirm
+    cold-boot timing was captured without scrolling to Prometheus."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "RUNNING",
+        "can_accept_commands": True,
+        "startup_duration_observed": True,
+        "pending": None,
+        "remaining_shutdown_seconds": None,
+        "recent_events": [],
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    description = embed.description or ""
+    assert "Startup observed" in description
+    assert "yes" in description
+
+
+@pytest.mark.asyncio
+async def test_platform_lifecycle_events_field_stays_under_discord_limit():
+    """Discord caps embed field values at 1024 chars.  The lifecycle
+    embed must respect that limit even when every event carries
+    metadata (which can balloon the rendered line length)."""
+    cog = _make_cog()
+    ctx = _make_ctx()
+
+    snap = {
+        "phase": "DRAINING",
+        "can_accept_commands": False,
+        "startup_duration_observed": True,
+        "pending": {
+            "kind": "shutdown",
+            "reason": "sigterm",
+            "actor": "signal_handler",
+        },
+        "remaining_shutdown_seconds": None,
+        "recent_events": [
+            {
+                "name": "close_completed",
+                "phase": "DRAINING",
+                "actor": "signal_handler",
+                "reason": "sigterm" * 20,  # long reason
+                "metadata": {"kind": "shutdown", "duration_seconds": 1.0},
+            }
+        ]
+        * 20,  # 20 chunky events
+    }
+    with patch("services.diagnostics_service.snapshot", return_value=snap):
+        await cog.platform_lifecycle.callback(cog, ctx)
+
+    embed = ctx.send.call_args.kwargs["embed"]
+    events_field = next(f for f in embed.fields if f.name.startswith("Recent events"))
+    assert len(events_field.value) <= 1024

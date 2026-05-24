@@ -93,6 +93,14 @@ _phase: Phase = Phase.STARTING
 _pending: PendingShutdown | None = None
 _events: deque[LifecycleEvent] = deque(maxlen=_EVENT_BUFFER_SIZE)
 
+# Wall-clock anchor for the lifecycle_startup_seconds histogram: stamped
+# at module import (before any phase transition) and observed exactly
+# once when the bot first reaches RUNNING.  A second on_ready (e.g. a
+# Discord gateway reconnect) must not re-observe; the flag below guards
+# the one-shot behaviour.  ``reset_for_tests`` re-stamps both.
+_module_loaded_at: float = time.monotonic()
+_startup_duration_observed: bool = False
+
 
 def get_phase() -> Phase:
     """Return the current lifecycle phase."""
@@ -130,6 +138,30 @@ def set_phase(phase: Phase, *, reason: str | None = None) -> None:
     _phase = phase
     _record_event(f"phase:{phase.value}", reason=reason)
     _publish_phase_gauge(phase)
+    if phase is Phase.RUNNING:
+        _maybe_observe_startup_duration()
+
+
+def _maybe_observe_startup_duration() -> None:
+    """Observe ``lifecycle_startup_seconds`` exactly once per process.
+
+    Called from :func:`set_phase` on every transition to ``RUNNING``;
+    the module-level flag enforces the one-shot semantic so a Discord
+    gateway reconnect (which re-fires ``on_ready``) cannot double-count.
+    Wrapped in try/except — observability never blocks a transition.
+    """
+    global _startup_duration_observed
+    if _startup_duration_observed:
+        return
+    _startup_duration_observed = True
+    try:
+        from services import metrics as _metrics
+
+        _metrics.lifecycle_startup_seconds.observe(
+            time.monotonic() - _module_loaded_at,
+        )
+    except Exception:  # noqa: BLE001 — metrics are observability only
+        pass
 
 
 def is_shutting_down() -> bool:
@@ -243,6 +275,55 @@ def record_close_executing(pending: PendingShutdown) -> None:
     )
 
 
+def record_close_completed(
+    pending: PendingShutdown,
+    *,
+    duration_seconds: float,
+) -> None:
+    """Record that ``bot.close()`` returned successfully.
+
+    Companion to :func:`record_close_executing`: if ``close_executing``
+    is present but ``close_completed`` is not, the close-driver started
+    teardown but did not return within the timeout window (the timeout
+    branch records :func:`record_close_timeout` instead).  Operators
+    reading the ring buffer can confirm a clean handoff to the finalizer
+    without inspecting Prometheus.
+    """
+    _record_event(
+        "close_completed",
+        reason=pending.reason,
+        actor=pending.actor,
+        metadata={
+            "kind": pending.kind,
+            "duration_seconds": float(duration_seconds),
+        },
+    )
+
+
+def record_close_timeout(
+    pending: PendingShutdown,
+    *,
+    timeout_seconds: float,
+) -> None:
+    """Record that ``bot.close()`` exceeded the close-driver timeout.
+
+    Emitted in the wedged-close branch immediately before the driver
+    posts the timeout webhook and force-exits via ``os._exit(1)``.  The
+    timeout value is preserved in metadata so post-mortem operators can
+    distinguish "we used the default 20s budget" from "the timeout was
+    tuned" without crossing back to the close-driver constant.
+    """
+    _record_event(
+        "close_timeout",
+        reason=pending.reason,
+        actor=pending.actor,
+        metadata={
+            "kind": pending.kind,
+            "timeout_seconds": float(timeout_seconds),
+        },
+    )
+
+
 def get_pending() -> PendingShutdown | None:
     """Return the current pending request, or ``None`` if none."""
     return _pending
@@ -304,10 +385,12 @@ def reset_for_tests() -> None:
 
     Test-only entry point — production code must not call this.
     """
-    global _phase, _pending
+    global _phase, _pending, _module_loaded_at, _startup_duration_observed
     _phase = Phase.STARTING
     _pending = None
     _events.clear()
+    _module_loaded_at = time.monotonic()
+    _startup_duration_observed = False
     _publish_phase_gauge(_phase)
 
 
@@ -327,6 +410,8 @@ def diagnostics_snapshot() -> dict[str, Any]:
         "can_accept_commands": can_accept_commands(),
         "restart_requested": restart_requested(),
         "remaining_shutdown_seconds": remaining_shutdown_seconds(),
+        "startup_duration_observed": _startup_duration_observed,
+        "module_load_age_seconds": time.monotonic() - _module_loaded_at,
         "pending": (
             {
                 "kind": pending.kind,
@@ -345,6 +430,7 @@ def diagnostics_snapshot() -> dict[str, Any]:
                 "at_monotonic": event.at,
                 "actor": event.actor,
                 "reason": event.reason,
+                "metadata": dict(event.metadata),
             }
             for event in events
         ],
@@ -379,7 +465,9 @@ __all__ = [
     "get_phase",
     "get_recent_events",
     "is_shutting_down",
+    "record_close_completed",
     "record_close_executing",
+    "record_close_timeout",
     "remaining_shutdown_seconds",
     "request_restart",
     "request_shutdown",
