@@ -11,6 +11,7 @@ import logging
 
 import discord
 
+from core.runtime.interaction_helpers import safe_edit
 from services import game_state_service
 from views.rps._helpers import (
     RPS_PVP_PENDING_SUBSYSTEM,
@@ -54,10 +55,16 @@ class _RpsPvpChallengeView(discord.ui.View):
 
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
-        await interaction.response.edit_message(
+        # Bail if the edit fails: the rest of this handler persists the
+        # pending match and spawns the play view in the channel, and
+        # an already-failed interaction means the players won't see the
+        # accepted state.
+        if not await safe_edit(
+            interaction,
             content="✅ Challenge accepted — both players, choose your move!",
             view=self,
-        )
+        ):
+            return
         key = frozenset({self.challenger.id, self.opponent.id})
         _rps_pvp_pending[key] = {
             "choices": {},
@@ -112,7 +119,8 @@ class _RpsPvpChallengeView(discord.ui.View):
     async def decline(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
-        await interaction.response.edit_message(
+        await safe_edit(
+            interaction,
             content=f"❌ {self.opponent.display_name} declined the challenge.",
             view=self,
         )
