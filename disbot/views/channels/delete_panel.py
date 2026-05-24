@@ -14,7 +14,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
-from core.runtime.interaction_helpers import safe_followup
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
@@ -162,6 +162,12 @@ class _DeleteConfirmView(BaseView):
         row=0,
     )
     async def confirm_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        # Defer before the Discord delete: channel.delete() is not
+        # instant and the subsequent edit_message would race the 3 s
+        # interaction token.
+        if not await safe_defer(interaction):
+            return
+
         channel = resources.resolve_channel(
             interaction.guild,
             channel_id=self.channel_id,
@@ -197,7 +203,7 @@ class _DeleteConfirmView(BaseView):
         for item in self.children:
             item.disabled = True
         result_embed.set_footer(text="Returning to the management panel…")
-        await interaction.response.edit_message(embed=result_embed, view=self)
+        await safe_edit(interaction, embed=result_embed, view=self)
         self.stop()
 
         await asyncio.sleep(2)
