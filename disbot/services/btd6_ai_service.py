@@ -1,20 +1,42 @@
 """BTD6 AI orchestrator — deterministic-first.
 
-Brings resolver, knowledge, and response-builder together. Module 4
-(BTD6 Cog command MVP) only uses the deterministic path. Module 5
-(optional AI augmentation) is opt-in via :func:`answer_question`'s
-``augment_with_ai`` parameter and ``services.ai_gateway``.
+Brings resolver, knowledge, and response-builder together.
 
-The orchestrator never invents BTD6 facts. Deterministic services
-own canonical names, costs, upgrade-path tier names, round
-contents, and source labels. When AI augmentation is enabled it
-adds explanatory prose only — the deterministic fields stay as-is.
+* Module 3+4 use deterministic-only mode.
+* Module 5 (this module) adds optional AI augmentation through
+  ``services.ai_gateway``. AI receives structured deterministic
+  context, NEVER a raw user prompt, and only contributes
+  explanation prose. Deterministic facts (cost, stats, sources,
+  version label) remain owned by deterministic services.
+
+Gate stack (all must be true to call the gateway):
+
+1. Caller passes ``augment_with_ai=True``.
+2. ``BTD6_AI_ENABLED`` env var is truthy.
+3. The AI platform itself is enabled (``AI_ENABLED``) and the
+   ``HELP_ANSWER`` task is allowed.
+
+Any failure mode — gateway disabled, provider unavailable, timeout,
+invalid output, exception — yields the deterministic baseline
+without raising. The orchestrator is provably safe to call from
+the cog regardless of provider state.
 """
 
 from __future__ import annotations
 
+import logging
+import os
 from dataclasses import replace
 
+from core.runtime.ai.contracts import (
+    AIRequest,
+    AIRequestContext,
+    AIResponseMode,
+    AIScope,
+    AITask,
+)
+from core.runtime.ai.feature_flags import task_enabled
+from services import ai_gateway
 from services.btd6_knowledge_service import (
     hero_fact,
     map_fact,
@@ -32,6 +54,46 @@ from services.btd6_response_builder import (
     for_tower,
     for_unresolved,
 )
+
+logger = logging.getLogger("bot.services.btd6_ai_service")
+
+_TRUTHY = frozenset({"1", "true", "yes", "on"})
+
+
+def btd6_ai_enabled() -> bool:
+    """Return True if BTD6 AI augmentation is enabled in the env.
+
+    The Module 5 implementation gates on a process-level env var.
+    Module 6 of the AI/BTD6 plan adds per-guild gating on top of
+    this once guild settings infrastructure ships.
+    """
+    return os.getenv("BTD6_AI_ENABLED", "").strip().lower() in _TRUTHY
+
+
+_AUGMENT_SYSTEM_PROMPT = (
+    "You are a Bloons Tower Defense 6 assistant. The user has asked a "
+    "question and a deterministic SuperBot service has already produced "
+    "a factually-grounded answer from validated game data. Your job is "
+    "to add a SHORT explanatory paragraph (under 80 words) that helps "
+    "the player understand WHY the deterministic answer is correct or "
+    "what to look out for. Never invent stats, costs, or tier names — "
+    "rely only on the deterministic fields supplied in the payload. "
+    "Reply with strict JSON of the form "
+    '{"explanation": "<your paragraph>"}.'
+)
+
+_AUGMENT_SCHEMA: dict = {
+    "name": "BTD6Augmentation",
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "explanation": {"type": "string"},
+        },
+        "required": ["explanation"],
+    },
+    "strict": True,
+}
 
 
 def deterministic_answer(intent: ResolvedIntent) -> BTD6Response:
@@ -68,30 +130,99 @@ async def answer_question(
     text: str,
     *,
     augment_with_ai: bool = False,
+    guild_id: int | None = None,
 ) -> BTD6Response:
     """Resolve free-form ``text`` and return a typed response.
 
-    ``augment_with_ai`` is wired in Module 5. In Module 3/4 it is
-    forced to ``False`` so this service is provably deterministic.
+    Augmentation is opt-in AND gated by env: ``BTD6_AI_ENABLED`` and
+    the AI platform's ``HELP_ANSWER`` task flag both have to be on
+    for any provider call to happen. The deterministic baseline is
+    always produced first.
     """
     intent = resolve(text)
     response = deterministic_answer(intent)
-    if augment_with_ai:
-        return await _augment_with_ai(intent, response)
+    if augment_with_ai and btd6_ai_enabled() and task_enabled(AITask.HELP_ANSWER):
+        return await _augment_with_ai(intent, response, guild_id=guild_id)
     return response
+
+
+def _augmentation_payload(
+    intent: ResolvedIntent,
+    response: BTD6Response,
+) -> dict[str, object]:
+    """Structured deterministic context for the LLM.
+
+    The provider never sees raw user prose. It receives the resolved
+    intent (canonical entity ids only) and the deterministic response
+    fields. This guarantees AI output cannot drift outside the
+    grounded set.
+    """
+    return {
+        "query_summary": {
+            "resolved_towers": [t.id for t in intent.towers],
+            "resolved_heroes": [h.id for h in intent.heroes],
+            "resolved_maps": [m.id for m in intent.maps],
+            "resolved_modes": [m.id for m in intent.modes],
+            "resolved_rounds": list(intent.candidate_round_numbers),
+            "resolver_confidence": intent.confidence,
+        },
+        "deterministic_answer": {
+            "title": response.title,
+            "short_answer": response.short_answer,
+            "why_it_matters": response.why_it_matters,
+            "recommended_options": list(response.recommended_options),
+            "common_mistakes": list(response.common_mistakes),
+            "version_sensitivity": response.version_sensitivity,
+            "confidence": response.confidence,
+        },
+    }
 
 
 async def _augment_with_ai(
     intent: ResolvedIntent,
     response: BTD6Response,
+    *,
+    guild_id: int | None,
 ) -> BTD6Response:
-    """Stub for Module 5. Returns the deterministic response unchanged.
+    """Try to add an AI-authored explanation paragraph.
 
-    Module 5 will replace this with a guarded ``services.ai_gateway``
-    call that adds explanatory prose to ``response.why_it_matters``
-    or appends an AI-sourced ``follow_up``. Deterministic fields
-    (cost, stats, sources, version label) remain unmodified.
+    Returns the deterministic ``response`` unchanged on any failure:
+    gateway degraded, invalid JSON, missing ``explanation`` key,
+    empty explanation, or exception. Deterministic fields are never
+    mutated; only ``follow_up`` is appended (if it would otherwise
+    be empty) or replaced with the AI prose.
     """
-    # Module 5 hook: keep the contract stable so swapping the body
-    # in does not change ``answer_question``'s call sites.
-    return replace(response)
+    request = AIRequest(
+        context=AIRequestContext(
+            task=AITask.HELP_ANSWER,
+            scope=AIScope.USER,
+            guild_id=guild_id,
+            source="btd6_ai_service",
+        ),
+        system_prompt=_AUGMENT_SYSTEM_PROMPT,
+        payload=_augmentation_payload(intent, response),
+        mode=AIResponseMode.JSON,
+        response_schema=_AUGMENT_SCHEMA,
+    )
+    try:
+        ai_response = await ai_gateway.execute(request)
+    except Exception:  # noqa: BLE001 — defensive boundary
+        logger.exception("btd6_ai_service: gateway raised; using deterministic")
+        return replace(response)
+
+    if ai_response.degraded or not ai_response.data:
+        return replace(response)
+
+    explanation = ai_response.data.get("explanation") if ai_response.data else None
+    if not isinstance(explanation, str) or not explanation.strip():
+        return replace(response)
+
+    # Compose: append the AI prose into follow_up. The deterministic
+    # follow_up (if any) wins over AI prose to preserve operator-
+    # authored navigation hints.
+    new_follow_up = response.follow_up if response.follow_up else explanation.strip()
+    if response.follow_up:
+        # Append AI prose after the deterministic hint so callers see both.
+        new_follow_up = f"{response.follow_up}\n\n{explanation.strip()}"
+
+    return replace(response, follow_up=new_follow_up)
