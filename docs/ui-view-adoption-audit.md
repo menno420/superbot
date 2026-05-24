@@ -22,7 +22,7 @@
 |---|---|---|---|
 | Panel command dispatch | `views/base.py:send_panel` | 18 cogs, ~5 ad-hoc holdouts in one-off confirmation dialogs | **healthy** |
 | Hub view base | `views/base.py:HubView` (extends `BaseView`) | 51 view files inherit `BaseView` / `HubView`; ~6 game-state views extend `discord.ui.View` directly with justified custom timeout | **healthy** |
-| Back-button factory | `views/navigation.py:attach_back_button` | 1 of 5 wrappers migrated (`views/games/hub.py`); 4 legacy `attach_back_to_*` factories remain | **drift** — see § 4 |
+| Back-button factory | `views/navigation.py:attach_back_button` | **complete** as of PR #297 — all 6 known wrappers (`games`, `community`, `cleanup`, `help`, `admin`, `settings`) now delegate to the canonical helper. See § 4 for the correction history. | clean |
 | Interaction safety wrappers | `core/runtime/interaction_helpers.py:safe_defer/safe_edit/safe_followup` | 146 call sites across 14 files; ~60% of inspected I/O callbacks adopted, ~25% partial, ~15% bare | **drift** — see § 5 |
 | Help-route panel class names | `cogs/help/route.py` + `docs/help-command-surface-map.md` § 2 | Structural routing correct; 4 panel class names in the surface map drifted from code | **fixed in this PR** — see § 6 |
 
@@ -124,19 +124,21 @@ intentionally subsystem-diverse.
 
 See `docs/helper-debt-inventory.md` § 3 for the full list. Summary:
 
-| Location | Status |
+| Location | Status (post-PR-#297) |
 |---|---|
 | `views/games/hub.py:212-245` `attach_back_to_games_button` | already migrated |
-| `cogs/admin_cog.py:367-410` `attach_back_to_admin_button` | **active duplicate** |
-| `views/settings/subsystem_view.py:244-277` `attach_back_to_settings_button` | **active duplicate** |
-| `views/community/hub.py:189-210` `attach_back_to_community_button` | **active duplicate** |
-| `cogs/cleanup/panel.py:100-127` `_attach_back_to_cleanup_button` | active duplicate (private) |
-| `cogs/help_cog.py:190-240` `_attach_back_to_help_button` | active duplicate (private) |
+| `cogs/admin_cog.py:367-410` `attach_back_to_admin_button` | migrated in PR #297 |
+| `views/settings/subsystem_view.py:244-277` `attach_back_to_settings_button` | migrated in PR #297 |
+| `views/community/hub.py:189-214` `attach_back_to_community_button` | already migrated (original audit mis-classified) |
+| `cogs/cleanup/panel.py:100-130` `_attach_back_to_cleanup_button` | already migrated (original audit mis-classified) |
+| `cogs/help_cog.py:190-243` `_attach_back_to_help_button` | already migrated (original audit mis-classified) |
 
-The public three should be migrated to thin wrappers around
-`views/navigation.py:attach_back_button` with a `parent_builder`
-closure. The private two can stay until the public ones land
-(§ 4 demotion rule from `docs/helper-policy.md`).
+**Correction:** the original audit assumed every `attach_back_to_*`
+factory was a hand-rolled duplicate without opening each source
+file. Three (community, cleanup, help) were already wrappers around
+`attach_back_button` with parent-builder closures. PR #297 closed
+the two real duplicates (admin, settings). Phase 3.5 is now
+complete; no further migration is queued for this area.
 
 ---
 
@@ -191,9 +193,9 @@ reward / risk, smallest first.
 | 2 | **Fix `views/economy/work_panel.py:86`** | Wrap `_JobSelect.callback` with `safe_defer` → `safe_edit`. Single-file change. | S |
 | 3 | **Fix RPS / blackjack PvP accept callbacks** | `views/rps/pvp_challenge.py:49` and `views/blackjack/pvp_view.py:47`. Two-file change. | S |
 | 4 | **Fix `channels/{delete,restrict}_panel.py`** | Add `safe_defer` before the Discord permission API call; route the edit through `safe_edit`. Two-file change. | S |
-| 5 | **Phase 3.5 back-button finish — public three** | Migrate `attach_back_to_admin_button`, `attach_back_to_settings_button`, `attach_back_to_community_button` to wrap `views/navigation.py:attach_back_button`. Each is one file with a small closure. | S–M |
+| 5 | ~~**Phase 3.5 back-button finish — public three**~~ | **Complete** as of PR #297 (admin + settings migrated; community / cleanup / help were already migrated and only mis-classified by this audit). |
 | 6 | **Standardise view `on_error` paths** | Replace the custom `is_done()` ladders in `channels/{delete,restrict}_panel.py:48-62` (and any similar) with `handle_view_error` + `safe_followup`. | M |
-| 7 | **Phase 3.5 back-button finish — private two** | Migrate `cogs/cleanup/panel.py:100-127` and `cogs/help_cog.py:190-240` after the public three land. | S |
+| 7 | ~~**Phase 3.5 back-button finish — private two**~~ | **Withdrawn** — both private factories were already migrated before this audit was written; the audit mis-classified them. |
 
 PR 1 is recommended **first**: it's a one-line test addition that
 prevents the same drift from happening again. PR 2–4 are the

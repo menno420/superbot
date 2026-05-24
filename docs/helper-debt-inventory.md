@@ -69,24 +69,28 @@ Canonical § 3.5 module. All 7 exports are correctly placed:
 `attach_back_target`, `chain_back`, `transition_to`. **No debt inside
 this file.**
 
-The debt is **outside it** — 4 legacy `attach_back_to_*` factories
-still exist after Phase 3.5 consolidation. The helper-policy preamble
-specifically cites this duplication as the reason the policy was
-written:
+The debt is **outside it** — two `attach_back_to_*` factories
+duplicated the canonical helper at the time of audit (admin and
+settings). The other four cited in the original table turned out to
+be already-migrated and were mis-classified — see the "Correction"
+note below the table.
 
-| Location | Lines | Status |
+| Location | Lines | Status (as of 2026-05-24, post-PR-#297) |
 |---|---|---|
 | `disbot/views/games/hub.py:212-245` (`attach_back_to_games_button`) | thin wrapper | **already migrated** — calls `attach_back_button` internally. |
-| `disbot/cogs/admin_cog.py:367-410` (`attach_back_to_admin_button`) | ~44 lines | **active duplicate**. Used by 3 cleanup-panel call sites. |
-| `disbot/views/settings/subsystem_view.py:244-277` (`attach_back_to_settings_button`) | ~34 lines | **active duplicate**. One internal call site. |
-| `disbot/views/community/hub.py:189-210` (`attach_back_to_community_button`) | ~22 lines | **active duplicate**. One internal call site. |
-| `disbot/cogs/cleanup/panel.py:100-127` (`_attach_back_to_cleanup_button`) | private | **active duplicate**. Subsystem-private; lowest priority. |
-| `disbot/cogs/help_cog.py:190-240` (`_attach_back_to_help_button`) | private | **active duplicate**. Subsystem-private; lowest priority. |
+| `disbot/cogs/admin_cog.py:367-410` (`attach_back_to_admin_button`) | thin wrapper | **migrated in PR #297** — calls `attach_back_button` internally. |
+| `disbot/views/settings/subsystem_view.py:244-277` (`attach_back_to_settings_button`) | thin wrapper | **migrated in PR #297** — calls `attach_back_button` internally. |
+| `disbot/views/community/hub.py:189-214` (`attach_back_to_community_button`) | thin wrapper | **already migrated** — calls `attach_back_button` internally (the original audit listed this as a duplicate; it was not). |
+| `disbot/cogs/cleanup/panel.py:100-130` (`_attach_back_to_cleanup_button`) | thin wrapper | **already migrated** — calls `attach_back_button` internally (the original audit listed this as a duplicate; it was not). |
+| `disbot/cogs/help_cog.py:190-243` (`_attach_back_to_help_button`) | thin wrapper | **already migrated** — calls `attach_back_button` internally (the original audit listed this as a duplicate; it was not). |
 
-Recommendation: open a follow-up PR that migrates the four public
-duplicates to call `attach_back_button` with a `parent_builder`
-closure. The two private duplicates can stay until the public ones
-land; demoting them is § 4 demotion territory.
+**Correction:** the original audit treated every file whose name
+contained `attach_back_to_*` as a duplicate without opening each
+source file. Three of those (community/hub, cleanup/panel, help_cog)
+had already been migrated when the audit was written — each is a
+small wrapper around `attach_back_button` with a parent-builder
+closure, not a hand-rolled button. Phase 3.5 is now complete; no
+further migration is needed.
 
 ---
 
