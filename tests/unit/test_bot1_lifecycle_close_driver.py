@@ -277,6 +277,110 @@ async def test_close_timeout_observes_full_timeout_in_duration_histogram(
 
 
 @pytest.mark.asyncio
+async def test_close_timeout_posts_webhook_before_os_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The highest-severity lifecycle webhook fires from the timeout
+    branch BEFORE os._exit so operators get a Discord alert for every
+    wedged close.  The webhook is wrapped in a tight asyncio.wait_for
+    so a stalled reporter cannot meaningfully delay the already-elapsed
+    shutdown."""
+    timeout_calls: list[dict[str, object]] = []
+
+    class TimeoutReporter:
+        async def on_lifecycle_close_timeout(
+            self,
+            pending: Any,
+            *,
+            timeout_seconds: float,
+        ) -> None:
+            timeout_calls.append(
+                {
+                    "kind": pending.kind,
+                    "reason": pending.reason,
+                    "actor": pending.actor,
+                    "timeout_seconds": timeout_seconds,
+                },
+            )
+
+    class HangingBot:
+        async def close(self) -> None:
+            await asyncio.sleep(60.0)
+
+    monkeypatch.setattr(bot1, "bot", HangingBot())
+    monkeypatch.setattr(bot1, "reporter", TimeoutReporter())
+    monkeypatch.setattr(bot1, "LIFECYCLE_CLOSE_TIMEOUT_SECONDS", 0.05)
+    _install_fast_poll(monkeypatch)
+
+    class _ForceExit(BaseException):
+        pass
+
+    def _fake_exit(_code: int) -> None:
+        raise _ForceExit
+
+    monkeypatch.setattr(bot1.os, "_exit", _fake_exit)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm", actor="signal_handler")
+
+    with pytest.raises(_ForceExit):
+        await asyncio.wait_for(
+            bot1._drive_close_on_lifecycle_request(),
+            timeout=2.0,
+        )
+
+    # The webhook was invoked before the force-exit.
+    assert len(timeout_calls) == 1
+    call = timeout_calls[0]
+    assert call["kind"] == "shutdown"
+    assert call["reason"] == "sigterm"
+    assert call["actor"] == "signal_handler"
+    assert call["timeout_seconds"] == 0.05
+
+
+@pytest.mark.asyncio
+async def test_close_timeout_webhook_error_does_not_block_os_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A reporter exception in the timeout branch must be swallowed —
+    the process is mid-force-exit; a webhook failure cannot be allowed
+    to derail the exit path."""
+
+    class BrokenReporter:
+        async def on_lifecycle_close_timeout(self, _pending: Any, **_kw) -> None:
+            raise RuntimeError("webhook session already torn down")
+
+    class HangingBot:
+        async def close(self) -> None:
+            await asyncio.sleep(60.0)
+
+    monkeypatch.setattr(bot1, "bot", HangingBot())
+    monkeypatch.setattr(bot1, "reporter", BrokenReporter())
+    monkeypatch.setattr(bot1, "LIFECYCLE_CLOSE_TIMEOUT_SECONDS", 0.05)
+    _install_fast_poll(monkeypatch)
+
+    class _ForceExit(BaseException):
+        pass
+
+    monkeypatch.setattr(
+        bot1.os,
+        "_exit",
+        lambda _code: (_ for _ in ()).throw(_ForceExit()),
+    )
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+
+    # The reporter exception is swallowed (logged at DEBUG); the
+    # force-exit still happens.
+    with pytest.raises(_ForceExit):
+        await asyncio.wait_for(
+            bot1._drive_close_on_lifecycle_request(),
+            timeout=2.0,
+        )
+
+
+@pytest.mark.asyncio
 async def test_close_driver_metric_uses_restart_kind_for_restart_intent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

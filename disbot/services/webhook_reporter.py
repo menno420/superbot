@@ -361,6 +361,56 @@ class WebhookReporter:
             )
         await self._send(embed, username="Bot Lifecycle")
 
+    async def on_lifecycle_close_timeout(
+        self,
+        pending: PendingShutdown,
+        *,
+        timeout_seconds: float,
+    ) -> None:
+        """Posted by the close-driver right before ``os._exit(1)`` when
+        ``bot.close()`` exceeds the bounded timeout.
+
+        This is the rarest and highest-severity lifecycle webhook: the
+        bot has hung during teardown and the close-driver is force-
+        exiting so the orchestrator respawns.  Operators alerting on
+        this embed get a Discord notification of every wedged close —
+        otherwise visible only via the critical log line and the
+        absence of a paired close-complete embed.
+
+        Caller wraps this in ``asyncio.wait_for`` with a tight
+        timeout (1 s) so a stalled webhook cannot meaningfully delay
+        the already-elapsed shutdown.
+        """
+        kind_word = "Restart" if pending.kind == "restart" else "Shutdown"
+        embed = discord.Embed(
+            title=f"🚨 Bot Close Timeout ({kind_word})",
+            description=(
+                f"`bot.close()` exceeded **{timeout_seconds:.1f}s** during "
+                f"a {pending.kind} request.  The close-driver is "
+                f"force-exiting; the orchestration platform will "
+                f"respawn this replica."
+            ),
+            color=discord.Color.dark_red(),
+            timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+        )
+        embed.add_field(name="Kind", value=pending.kind, inline=True)
+        embed.add_field(
+            name="Reason",
+            value=pending.reason or "<unknown>",
+            inline=True,
+        )
+        embed.add_field(
+            name="Actor",
+            value=pending.actor or "<unknown>",
+            inline=True,
+        )
+        embed.add_field(
+            name="Timeout",
+            value=f"{timeout_seconds:.1f}s",
+            inline=True,
+        )
+        await self._send(embed, username="Bot Lifecycle")
+
     async def on_app_task_died(self, name: str, error: BaseException) -> None:
         """A supervised application task raised after startup.
 

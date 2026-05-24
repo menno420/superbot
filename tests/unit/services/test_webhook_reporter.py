@@ -268,3 +268,62 @@ async def test_on_lifecycle_close_completed_renders_restart_embed_without_durati
     assert embed.color == discord.Color.gold()
     field_names = {f.name for f in embed.fields}
     assert "Close duration" not in field_names
+
+
+# ---------------------------------------------------------------------------
+# on_lifecycle_close_timeout — highest-severity lifecycle webhook, posted
+# right before os._exit when bot.close() exceeds the bounded timeout.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_timeout_renders_shutdown_alert():
+    """Shutdown timeout → dark-red 'Bot Close Timeout (Shutdown)' embed
+    with kind/reason/actor/timeout fields populated."""
+    from core.runtime.lifecycle import PendingShutdown
+
+    reporter = WebhookReporter(url="https://example/wh")
+    reporter._send = AsyncMock()  # type: ignore[method-assign]
+    pending = PendingShutdown(
+        kind="shutdown",
+        reason="sigterm",
+        actor="signal_handler",
+        requested_at=0.0,
+        grace_seconds=None,
+    )
+
+    await reporter.on_lifecycle_close_timeout(pending, timeout_seconds=20.0)
+
+    reporter._send.assert_awaited_once()
+    embed = reporter._send.await_args.args[0]
+    assert "Close Timeout" in embed.title
+    assert "Shutdown" in embed.title
+    assert embed.color == discord.Color.dark_red()
+    assert "20.0" in (embed.description or "")
+    field_names = {f.name for f in embed.fields}
+    assert {"Kind", "Reason", "Actor", "Timeout"} <= field_names
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_timeout_renders_restart_alert():
+    """Restart timeout → same severity, restart-flavoured title."""
+    from core.runtime.lifecycle import PendingShutdown
+
+    reporter = WebhookReporter(url="https://example/wh")
+    reporter._send = AsyncMock()  # type: ignore[method-assign]
+    pending = PendingShutdown(
+        kind="restart",
+        reason="!restart",
+        actor="op",
+        requested_at=0.0,
+        grace_seconds=None,
+    )
+
+    await reporter.on_lifecycle_close_timeout(pending, timeout_seconds=20.0)
+
+    embed = reporter._send.await_args.args[0]
+    assert "Close Timeout" in embed.title
+    assert "Restart" in embed.title
+    # Severity is dark-red regardless of kind — timeout is always
+    # high-severity (force-exit).
+    assert embed.color == discord.Color.dark_red()
