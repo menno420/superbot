@@ -422,6 +422,8 @@ satisfied):
 | `docs/roadmap_setup_platform.md` | ✅ current high-level | this ledger is the operational truth map; the roadmap remains the strategic plan |
 | `docs/phase_2b_bindings_plan.md` | 🟡 **historical** — shipped in PR #73 (see banner) | preserved for context; do not extend |
 | `docs/decisions/*` | ✅ current | add ADR per architectural decision (e.g. `003-binding-audit-preserve.md` would be the next) |
+| `docs/architecture/service_ownership.md` | ✅ created 2026-05-24 | quick-lookup companion to `ownership.md`; update when `ownership.md` changes |
+| `docs/audits/mutation_boundary_audit.md` | ✅ created 2026-05-24 | first formal mutation audit; update as new mutation paths land |
 
 ---
 

@@ -135,6 +135,8 @@ top before trusting the contents.
 - `docs/games-actionability-roadmap.md` (status: complete — historical now)
 - `docs/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
 - `docs/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)
+- `docs/audits/mutation_boundary_audit.md` — mutation boundary audit results.
+  Run against the codebase post-hardening session (2026-05-24).
 
 ### Standards / reference guides
 
@@ -147,6 +149,9 @@ has already been done.
 - `docs/building-roadmap/mother-hub-map.md`
 - `docs/settings-customization-roadmap.md`
 - `docs/resource-provisioning-overview.md`
+- `docs/architecture/service_ownership.md` — enriched "at a glance" ownership lookup.
+  Quick-reference companion to `docs/ownership.md`; `ownership.md` is authoritative
+  when the two disagree.
 
 ### Plans / roadmaps (read for context only)
 
