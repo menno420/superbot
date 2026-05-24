@@ -19,6 +19,7 @@ from core.runtime import lifecycle, resources
 from core.runtime.interaction_helpers import help_ctx_shim, safe_defer, safe_edit
 from utils.ui_constants import ADMIN_COLOR, INFO_COLOR, SUCCESS_COLOR  # noqa: F401
 from views.base import HubView, send_panel
+from views.navigation import attach_back_button
 
 
 class AdminCog(commands.Cog):
@@ -370,45 +371,33 @@ def attach_back_to_admin_button(
 ) -> None:
     """Append a "↩ Back to Admin" control to a sub-view opened from the panel.
 
-    Mirrors :func:`cogs.help_cog._attach_back_to_help_button`: the
-    cog's panel class is not mutated — only the live view instance
-    receives the extra button.  No-op if the view already has 25
-    components (Discord cap).  When the back button is clicked a
-    fresh ``_AdminPanelView`` is constructed so the embed reflects
-    current cog load state.
+    Thin wrapper around
+    :func:`disbot.views.navigation.attach_back_button` — the parent
+    builder constructs a fresh ``_AdminPanelView`` at click time so
+    the embed reflects current cog-load state.  No-op if the view is
+    already at the 25-component Discord cap (``attach_back_button``
+    logs and returns False in that case).
     """
-    if len(view.children) >= 25:
-        logging.getLogger("bot.cogs.admin").warning(
-            "Back-to-admin button skipped — %s already has 25 children.",
-            type(view).__name__,
-        )
-        return
 
-    back_btn = discord.ui.Button(  # type: ignore[var-annotated]
-        label="↩ Back to Admin",
-        custom_id="admin:back",
-        style=discord.ButtonStyle.secondary,
-        row=4,
-    )
-
-    async def _back_callback(interaction: discord.Interaction) -> None:
+    async def _build_admin_parent(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
         cog = interaction.client.get_cog("AdminCog")  # type: ignore[attr-defined]
         if cog is None:
-            await interaction.response.send_message(
-                "Admin cog unavailable.",
-                ephemeral=True,
-            )
-            return
+            raise RuntimeError("Admin cog unavailable.")
         ctx_shim = help_ctx_shim(interaction)
         new_view = _AdminPanelView(ctx_shim, cog)  # type: ignore[arg-type]
         new_view._author = author  # preserve invoker identity
-        await interaction.response.edit_message(
-            embed=new_view.build_embed(),
-            view=new_view,
-        )
+        return new_view.build_embed(), new_view
 
-    back_btn.callback = _back_callback  # type: ignore[method-assign]
-    view.add_item(back_btn)
+    attach_back_button(
+        view,
+        label="↩ Back to Admin",
+        custom_id="admin:back",
+        parent_builder=_build_admin_parent,
+        row=4,
+        error_message="Admin cog unavailable — please try again.",
+    )
 
 
 # ---------------------------------------------------------------------------

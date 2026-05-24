@@ -34,6 +34,7 @@ import discord
 
 from utils.subsystem_registry import SUBSYSTEMS
 from views.base import HubView
+from views.navigation import attach_back_button
 
 logger = logging.getLogger("bot.views.settings.subsystem_view")
 
@@ -248,33 +249,29 @@ def attach_back_to_settings_button(
 ) -> None:
     """Append a "↩ Back to Settings" control to a sub-view opened from this panel.
 
-    Mirrors :func:`cogs.help_cog._attach_back_to_help_button` and
-    :func:`cogs.admin_cog.attach_back_to_admin_button`.  The button
-    rebuilds a fresh :class:`SubsystemSettingsView` on click so the
-    embed reflects current setting / binding state.  No-op if the
-    sub-view already has 25 components (Discord cap).
+    Thin wrapper around
+    :func:`disbot.views.navigation.attach_back_button` — the parent
+    builder constructs a fresh :class:`SubsystemSettingsView` on
+    click so the embed reflects current setting / binding state.
+    No-op if the view is already at the 25-component Discord cap
+    (``attach_back_button`` logs and returns False in that case).
     """
-    if len(view.children) >= 25:
-        logger.warning(
-            "Back-to-settings button skipped — %s already has 25 children.",
-            type(view).__name__,
-        )
-        return
 
-    btn = discord.ui.Button(  # type: ignore[var-annotated]
-        label="↩ Back to Settings",
-        custom_id="settings:back",
-        style=discord.ButtonStyle.secondary,
-        row=4,
-    )
-
-    async def _back_callback(interaction: discord.Interaction) -> None:
+    async def _build_settings_parent(
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
         new_view = SubsystemSettingsView(author, subsystem)
         embed = await build_subsystem_embed(interaction, subsystem)
-        await interaction.response.edit_message(embed=embed, view=new_view)
+        return embed, new_view
 
-    btn.callback = _back_callback  # type: ignore[method-assign]
-    view.add_item(btn)
+    attach_back_button(
+        view,
+        label="↩ Back to Settings",
+        custom_id="settings:back",
+        parent_builder=_build_settings_parent,
+        row=4,
+        error_message="Could not reload Settings — please try again.",
+    )
 
 
 class _OpenRelatedPanelButton(discord.ui.Button):
