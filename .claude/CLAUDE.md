@@ -1,41 +1,92 @@
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 
-This project has a CodeGraph MCP server (`mcp__codegraph__*` tools) configured. CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and file. Reads are sub-millisecond and return structural information grep cannot.
+This project has a CodeGraph MCP server (`mcp__codegraph__*` tools) configured. CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and file.
+
+**Full trust matrix and verification rules: `docs/codegraph-usage.md` — read it before any refactor or dead-code decision.**
 
 MCP startup: pinned via `npx -y @optave/codegraph@3.10.0 mcp` — no global install required. Build/rebuild index: `npx -y @optave/codegraph@3.10.0 build .` from the project root.
 
-### Use CodeGraph first for structural exploration
+### Use CodeGraph automatically — no prompt required
 
-Use CodeGraph for **structural** questions — what calls what, what would break, where is X defined, what is X's signature. Use native grep/Read only for **literal text** queries (string contents, comments, log messages) or after you already have a specific file open.
+Reach for CodeGraph **without being asked** whenever the task involves any of the following. Do not wait for the user to mention it.
+
+| Situation | What to do first |
+|---|---|
+| Finding where a symbol is defined | `mcp__codegraph__where("symbol_name")` before any grep or Read |
+| Reading a function you haven't seen before | `mcp__codegraph__context("name")` for source + signature in one call |
+| Understanding what calls a function | `mcp__codegraph__fn_impact("name", depth=1)` then grep-verify |
+| Listing what exists in a file or directory | `mcp__codegraph__list_functions(file="path/")` before opening files blindly |
+| Assessing complexity before a refactor | `mcp__codegraph__complexity(file="path/")` or `mcp__codegraph__triage(level=function, sort=complexity)` |
+| Planning any edit to shared code | `mcp__codegraph__context` to read source + get starting caller list, then grep |
+| Bug investigation across multiple functions | `mcp__codegraph__context` on each candidate — faster than chained Read calls |
+| Checking which functions are most complex in a service or cog | `mcp__codegraph__complexity(file="disbot/services/name.py")` |
+
+**Default order for any unfamiliar code:** `where` → `context` → grep-verify → `Read` the file only if source detail is needed beyond what `context` returned.
+
+Do not start with `Read` or `grep` for symbol lookups when `where` or `context` would answer the question in one call.
+
+### What CodeGraph can and cannot do in this codebase
+
+SuperBot uses function-body lazy imports, module-alias calls, and Discord decorator callbacks pervasively. These patterns are **invisible to CodeGraph's call-graph parser**. The result is that roughly half of all real call edges are missing from the graph.
+
+**Reliable** — use freely:
 
 | Question | Tool |
 |---|---|
-| "Where is X defined?" / "Find symbol named X" | `mcp__codegraph__where` |
-| "Full source + callers + callees for Y" | `mcp__codegraph__context` |
-| "What calls function Y?" (direct callers) | `mcp__codegraph__fn_impact` Level 1 |
-| "What does Y call?" (callees) | `mcp__codegraph__execution_flow` |
-| "What would break if I changed Z?" | `mcp__codegraph__fn_impact` |
-| "What files/functions exist under path/" | `mcp__codegraph__list_functions` |
-| "What does this file import/export?" | grep (file_deps is broken — see limitations) |
-| "Is the index healthy? / graph stats" | `mcp__codegraph__audit` |
+| "Where is X defined?" | `mcp__codegraph__where` |
+| "Show me the source + signature of Y" | `mcp__codegraph__context` |
+| "List all symbols in this file/directory" | `mcp__codegraph__list_functions` or `mcp__codegraph__where` with `file_mode=true` |
+| "How complex is function Y?" | `mcp__codegraph__complexity` |
+| "Which functions exceed complexity thresholds?" | `mcp__codegraph__check` (manifesto mode) |
+| "What is the risk-ranked list of complex functions?" | `mcp__codegraph__triage` with `level=function` and `sort=complexity` |
+
+**Use as hints only — always grep-verify before acting:**
+
+| Question | Tool | Caveat |
+|---|---|---|
+| "What are the direct callers of Y?" | `mcp__codegraph__fn_impact` depth=1 or `mcp__codegraph__context` | Undercounts — lazy imports and aliased imports are invisible |
+| "What does this file import/export?" | grep only (`file_deps` is broken) | Never use `file_deps`, `module_map`, or `impact_analysis` |
+
+**Do not use — broken or requires unavailable pre-work:**
+
+- `mcp__codegraph__execution_flow` — returns 0 entries regardless of target (confirmed broken)
+- `mcp__codegraph__find_cycles` — always returns 0 cycles (file-level edges broken)
+- `mcp__codegraph__communities` — always returns 0 communities (same root cause)
+- `mcp__codegraph__co_changes` — requires `codegraph co-change --analyze` pre-run; returns nothing without it
+- `mcp__codegraph__module_map` — returns 0 in/out edges for every file
+- `mcp__codegraph__file_deps` — returns 0 imports and 0 imported-by for every file
+- `mcp__codegraph__impact_analysis` — returns 0 file dependents
+- `mcp__codegraph__triage` with `level=directory` — fanIn/fanOut always 0
+- `mcp__codegraph__semantic_search` — requires `codegraph embed` pre-run
+
+### Critical rules — non-negotiable
+
+**1. `dead-unresolved` does not mean dead.**
+The false-positive rate for the `dead-unresolved` role label is ~100% in this codebase. Verified active functions that CodeGraph incorrectly marks dead: `validate_registry`, `apply_operations`, `parse_message`, `request_shutdown`, `dispatch` (interaction_router), `resolve_execution`, `BlackjackCog.blackjack`, all `@bot.event` handlers, all `@commands.command` handlers. **Never delete or remove code based on this label alone.**
+
+**2. Caller lists are lower bounds — always grep.**
+After getting a caller list from `fn_impact` or `context`, run:
+```
+grep -rn "function_name\b" disbot/ --include="*.py"
+```
+Callers that use `from module import func` inside a function body, or call via `module.func()`, or import under an alias (`from base import X as _X`) are all invisible to CodeGraph.
+
+**3. Name-collision false positives are dangerous.**
+When two functions share the same short name in different classes or modules (e.g. `_resolve_channel` exists in both `chain_cog.py` as a module function and `channel_cog.py` as a class method), CodeGraph merges their caller graphs. Verified case: CodeGraph claimed 14 callers for `chain_cog._resolve_channel`; the true count is 3. The other 11 were callers of `ChannelCog._resolve_channel` — a completely separate method. **When caller files look unexpected, check for same-name functions in those files.**
+
+**4. Discord decorators create invisible entry points.**
+`@bot.event`, `@commands.command`, `@commands.group`, `@app_commands.command`, and Cog listener methods are all `dead-unresolved` in CodeGraph regardless of whether they are active. Never treat a command handler or event handler as dead.
+
+**5. `callees` lists are often empty — read the source.**
+Functions that contain `from X import Y` inside their body will show `callees: []` even if they call many things. Always read the source directly to find what a function calls.
 
 ### Rules of thumb
 
-- **Use CodeGraph first** for structural exploration; then verify with source files before editing.
-- **Don't grep first** when looking up a symbol by name. `mcp__codegraph__where` is faster and returns kind + location + signature in one call.
-- **`context` is the workhorse** — it returns source, direct callers, callees, and signature in one call. Prefer it over chaining `where` + `fn_impact`.
-- **Index lag**: after editing a file run `npx -y @optave/codegraph@3.10.0 build .` to rebuild; don't re-query immediately after editing in the same turn without rebuilding.
-
-### Known limitations — do not trust these uncritically
-
-- **`mcp__codegraph__module_map` is broken for this codebase.** It returns 0 in/out edges for every file despite 22 000+ edges existing in the index. Do not use it for connectivity analysis.
-- **`mcp__codegraph__brief` reports transitive impact count, not direct caller count.** The number shown as "callers" equals the total transitive dependent count (same as `fn_impact` total), not just the distinct functions that directly call the symbol. Use `mcp__codegraph__fn_impact` Level 1 or `mcp__codegraph__context` for accurate direct-caller counts.
-- **`mcp__codegraph__file_deps` shows 0 imports and 0 imported-by for every file.** The file-level edge traversal is broken; it returns symbol definitions correctly but import/dependency edges are always empty. Do not use it for import graph analysis.
-- **`mcp__codegraph__impact_analysis` returns 0 file dependents.** File-level transitive impact is broken by the same underlying edge issue. Use `mcp__codegraph__fn_impact` for function-level blast-radius instead.
-- **`mcp__codegraph__structure` shows `<-0 ->0` connectivity for all files.** The per-file in/out edge counts are always zero. The symbol counts and line counts are accurate; the connectivity data is not.
-- **`mcp__codegraph__semantic_search` requires embeddings to be built first.** Run `npx -y @optave/codegraph@3.10.0 embed` from the project root before using it; without embeddings it returns an error. Embeddings are not built by default.
-- **Python lazy/function-body imports are not resolved.** When a function is imported inside a function body (`from services.X import Y` inside a method), CodeGraph cannot trace the call edge. Affected symbols are labelled `dead-unresolved` with 0 callers even when they are widely used. Always grep-verify when a symbol is marked `dead-unresolved`.
+- **Use CodeGraph first for finding and reading code**, not for proving code is safe to delete.
+- **`context` is the workhorse** for source + callers. Treat callers as a starting list, not a complete list.
+- **Grep-verify every caller list** before changing a function signature or moving a function.
+- **Index lag**: after editing, run `npx -y @optave/codegraph@3.10.0 build .` before re-querying.
 
 ### Source files win
 
