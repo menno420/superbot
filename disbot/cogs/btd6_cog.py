@@ -24,6 +24,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from cogs.btd6.stage import BTD6AssistantMessageStage, STAGE_NAME as BTD6_STAGE_NAME
+from core.runtime import message_pipeline
 from services import btd6_ai_service, btd6_knowledge_service
 from services.btd6_resolver_service import resolve
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
@@ -183,6 +185,44 @@ def build_modes_embed() -> discord.Embed:
     return embed
 
 
+def build_why_no_response_embed(
+    stage: BTD6AssistantMessageStage | None,
+    channel_id: int,
+) -> discord.Embed:
+    """Render the latest passive-stage skip reasons for a channel.
+
+    The buffer carries only skip-reason codes + confidence scores —
+    never message content — so this command is safe to run in
+    public channels.
+    """
+    embed = discord.Embed(
+        title="🐵 BTD6 — Why no response?",
+        color=discord.Color.light_grey(),
+    )
+    if stage is None:
+        embed.description = (
+            "Passive stage is not loaded. Reload the BTD6 cog and try again."
+        )
+        return embed
+    skips = stage.latest_skips(channel_id)
+    if not skips:
+        embed.description = (
+            "No recent skip records for this channel. Either the passive "
+            "stage has not seen a message here yet, or it replied to the "
+            "last eligible one."
+        )
+        return embed
+    lines: list[str] = []
+    for record in reversed(skips):  # newest first
+        lines.append(
+            f"`{record.reason}` • confidence={record.confidence:.2f} "
+            f"• <t:{int(record.timestamp)}:R>",
+        )
+    embed.description = "\n".join(lines)
+    embed.set_footer(text="No message content is stored — only skip reasons.")
+    return embed
+
+
 def build_test_intent_embed(text: str) -> discord.Embed:
     """Resolver introspection — useful for operators tuning the cog."""
     intent = resolve(text)
@@ -230,6 +270,22 @@ class BTD6Cog(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self._passive_stage: BTD6AssistantMessageStage | None = None
+
+    async def cog_load(self) -> None:
+        """Register the passive message stage with the platform pipeline.
+
+        Default-off (`BTD6_PASSIVE_ENABLED` controls behaviour). Even
+        when disabled, the stage is registered so `!btd6 why-no-response`
+        has a place to read skip reasons from.
+        """
+        self._passive_stage = BTD6AssistantMessageStage()
+        message_pipeline.register(self._passive_stage)
+
+    async def cog_unload(self) -> None:
+        """Remove the passive stage so reload/test cycles stay clean."""
+        message_pipeline.unregister(BTD6_STAGE_NAME)
+        self._passive_stage = None
 
     # ------------------------------------------------------------------
     # Prefix commands
@@ -302,6 +358,16 @@ class BTD6Cog(commands.Cog):
     @btd6_group.command(name="test-intent")
     async def btd6_test_intent(self, ctx: commands.Context, *, text: str) -> None:
         await ctx.send(embed=build_test_intent_embed(text))
+
+    @btd6_group.command(name="why-no-response")
+    async def btd6_why_no_response(self, ctx: commands.Context) -> None:
+        """Show the latest passive-stage skip reasons for this channel."""
+        await ctx.send(
+            embed=build_why_no_response_embed(
+                self._passive_stage,
+                ctx.channel.id if ctx.channel else 0,
+            ),
+        )
 
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:
