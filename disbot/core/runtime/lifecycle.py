@@ -93,6 +93,14 @@ _phase: Phase = Phase.STARTING
 _pending: PendingShutdown | None = None
 _events: deque[LifecycleEvent] = deque(maxlen=_EVENT_BUFFER_SIZE)
 
+# Captured at module-load time as the "process start" reference for the
+# ``lifecycle_startup_seconds`` histogram.  This module is imported very
+# early in bot1's import chain, so it is a tight approximation of
+# os.getpid() creation time.  Only used for the one-shot observation on
+# STARTING → RUNNING; reset by ``reset_for_tests`` so each test sees a
+# fresh reference.
+_MODULE_LOAD_AT: float = time.monotonic()
+
 
 def get_phase() -> Phase:
     """Return the current lifecycle phase."""
@@ -117,6 +125,36 @@ def _publish_phase_gauge(phase: Phase) -> None:
         pass
 
 
+_startup_duration_observed: bool = False
+
+
+def _observe_startup_duration_once() -> None:
+    """Observe ``lifecycle_startup_seconds`` exactly once per process.
+
+    Fires on the first transition into ``RUNNING``.  Guarded so an
+    erratic RUNNING ↔ DRAINING ↔ RUNNING sequence (theoretical, since
+    the lifecycle doesn't re-enter RUNNING today) cannot double-count.
+
+    Skips negative observations as a defensive guard: tests sometimes
+    monkeypatch :func:`time.monotonic` to a fixed value, which would
+    make ``elapsed`` negative.  In production ``time.monotonic`` is
+    guaranteed non-decreasing so this branch is unreachable.
+    """
+    global _startup_duration_observed
+    if _startup_duration_observed:
+        return
+    try:
+        from services import metrics as _metrics
+
+        elapsed = time.monotonic() - _MODULE_LOAD_AT
+        if elapsed < 0:
+            return
+        _metrics.lifecycle_startup_seconds.observe(elapsed)
+        _startup_duration_observed = True
+    except Exception:  # noqa: BLE001 — metrics are observability only
+        pass
+
+
 def set_phase(phase: Phase, *, reason: str | None = None) -> None:
     """Record a phase transition.
 
@@ -130,6 +168,8 @@ def set_phase(phase: Phase, *, reason: str | None = None) -> None:
     _phase = phase
     _record_event(f"phase:{phase.value}", reason=reason)
     _publish_phase_gauge(phase)
+    if phase is Phase.RUNNING:
+        _observe_startup_duration_once()
 
 
 def is_shutting_down() -> bool:
@@ -294,11 +334,15 @@ def reset_for_tests() -> None:
 
     Test-only entry point — production code must not call this.
     """
-    global _phase, _pending
+    global _phase, _pending, _startup_duration_observed, _MODULE_LOAD_AT
     _phase = Phase.STARTING
     _pending = None
     _events.clear()
     _publish_phase_gauge(_phase)
+    # Reset the once-flag and the reference moment so each test sees a
+    # clean startup-duration observation if it transitions into RUNNING.
+    _startup_duration_observed = False
+    _MODULE_LOAD_AT = time.monotonic()
 
 
 def diagnostics_snapshot() -> dict[str, Any]:

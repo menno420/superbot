@@ -310,3 +310,55 @@ def test_lifecycle_phase_gauge_terminal_state_reflects_stopped() -> None:
     # SHUTTING_DOWN, must be 0.
     nonzero = {phase for phase, value in values.items() if value > 0}
     assert nonzero == {"STOPPED"}
+
+
+def _read_startup_histogram() -> tuple[float, float]:
+    """Return (count, sum) for ``lifecycle_startup_seconds``."""
+    from services import metrics as _metrics
+
+    samples = next(iter(_metrics.lifecycle_startup_seconds.collect())).samples
+    count = next(s.value for s in samples if s.name.endswith("_count"))
+    total = next(s.value for s in samples if s.name.endswith("_sum"))
+    return count, total
+
+
+def test_lifecycle_startup_seconds_observed_on_first_running_transition() -> None:
+    """The STARTING → RUNNING transition observes startup duration
+    exactly once.  ``reset_for_tests`` re-arms the once-flag so each
+    test can verify the observation independently."""
+    before_count, _ = _read_startup_histogram()
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    after_count, after_sum = _read_startup_histogram()
+    assert after_count == before_count + 1
+    # ``_MODULE_LOAD_AT`` is reset in reset_for_tests, so the elapsed
+    # value should be very small but strictly non-negative.
+    assert after_sum >= 0
+
+
+def test_lifecycle_startup_seconds_not_observed_for_non_running_transitions() -> None:
+    """Transitions to DRAINING, SHUTTING_DOWN, STOPPED, etc. must not
+    fire the startup observation — only the canonical "boot complete"
+    moment (first RUNNING) counts."""
+    before_count, _ = _read_startup_histogram()
+    lifecycle.set_phase(lifecycle.Phase.DRAINING)
+    lifecycle.set_phase(lifecycle.Phase.SHUTTING_DOWN)
+    lifecycle.set_phase(lifecycle.Phase.STOPPED)
+    after_count, _ = _read_startup_histogram()
+    assert after_count == before_count
+
+
+def test_lifecycle_startup_seconds_does_not_double_count_on_repeated_running() -> (
+    None
+):
+    """If RUNNING is somehow re-entered (DRAINING → RUNNING is not a
+    legal transition today but the guard exists in case the state
+    machine grows), the observation must NOT fire twice — startup is
+    a one-shot per-process measurement."""
+    before_count, _ = _read_startup_histogram()
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    # Force the phase back, then re-enter RUNNING.  The once-flag must
+    # still suppress the second observation.
+    lifecycle.set_phase(lifecycle.Phase.DRAINING)
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    after_count, _ = _read_startup_histogram()
+    assert after_count == before_count + 1
