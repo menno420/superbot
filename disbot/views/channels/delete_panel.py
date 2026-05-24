@@ -14,6 +14,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
+from core.runtime.interaction_helpers import safe_followup
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
@@ -51,15 +52,15 @@ class _DeleteSubView(BaseView):
         error: Exception,
         item: discord.ui.Item,
     ) -> None:
+        # Channel-management views intentionally surface
+        # ``type(error).__name__`` to admins for diagnosability — see
+        # ``views.base.handle_view_error`` docstring. ``safe_followup``
+        # collapses the legacy ``is_done()`` ladder to a single call
+        # that routes through ``followup.send`` or ``response.send_message``
+        # as appropriate, and swallows the recoverable errors itself.
         logger.error("DeleteSubView error on %s: %s", item, error, exc_info=True)
         msg = f"❌ {type(error).__name__}: {error}"
-        try:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(msg, ephemeral=True)
-            else:
-                await interaction.followup.send(msg, ephemeral=True)
-        except Exception:
-            pass
+        await safe_followup(interaction, msg, ephemeral=True)
 
     def build_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -149,15 +150,10 @@ class _DeleteConfirmView(BaseView):
         error: Exception,
         item: discord.ui.Item,
     ) -> None:
+        # See _DeleteSubView.on_error for the channels-view rationale.
         logger.error("DeleteConfirmView error on %s: %s", item, error, exc_info=True)
         msg = f"❌ {type(error).__name__}: {error}"
-        try:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(msg, ephemeral=True)
-            else:
-                await interaction.followup.send(msg, ephemeral=True)
-        except Exception:
-            pass
+        await safe_followup(interaction, msg, ephemeral=True)
 
     @discord.ui.button(
         label="Confirm Delete",
