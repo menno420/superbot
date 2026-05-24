@@ -12,6 +12,7 @@ import discord
 
 from cogs.blackjack._persistence import _clear_pvp_match, _save_pvp_match
 from cogs.blackjack._state import FREE_WIN_COINS, _active, _Game, _pvp, _PvPState
+from core.runtime.interaction_helpers import safe_edit
 from services import economy_service
 from services.blackjack_engine import is_blackjack as _is_blackjack
 from utils.ui_constants import ECONOMY_COLOR, GAME_COLOR
@@ -48,10 +49,16 @@ class _ChallengeView(discord.ui.View):
     async def accept(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
-        await interaction.response.edit_message(
+        # Bail if the edit fails: _start_pvp deals both hands and sends
+        # per-player messages to the channel — if the accept edit was
+        # rejected by Discord (token expired, channel gone) we'd end up
+        # with two live blackjack hands and no acknowledged challenge.
+        if not await safe_edit(
+            interaction,
             content="✅ Challenge accepted — dealing hands…",
             view=self,
-        )
+        ):
+            return
         self.stop()
         await _start_pvp(
             interaction,
@@ -65,7 +72,8 @@ class _ChallengeView(discord.ui.View):
     async def decline(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
-        await interaction.response.edit_message(
+        await safe_edit(
+            interaction,
             content=f"❌ {self.opponent.display_name} declined the challenge.",
             view=self,
         )
