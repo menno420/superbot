@@ -69,6 +69,17 @@ class DiagnosticCog(commands.Cog):
         view = _DiagnosticsHubView(ctx.author)
         await send_panel(ctx, embed=view.build_embed(), view=view)
 
+    @commands.command(name="lifecycle", aliases=["lc"])
+    @commands.has_permissions(administrator=True)
+    async def lifecycle_shortcut(self, ctx):
+        """Lifecycle state (phase, pending request, recent events).
+
+        Shortcut for ``!platform lifecycle`` — operators don't need to
+        remember the ``platform`` prefix during an incident.  Mirrors
+        the existing ``!diag`` → ``!diagnostics`` shortcut pattern.
+        """
+        await ctx.send(embed=build_lifecycle_embed())
+
     async def build_help_menu_view(
         self,
         interaction: discord.Interaction,
