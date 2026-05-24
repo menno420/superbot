@@ -1,4 +1,5 @@
 {
+  "enabledMcpjsonServers": ["codegraph"],
   "permissions": {
     "allow": [
       "mcp__codegraph__where",
