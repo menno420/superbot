@@ -133,6 +133,7 @@ top before trusting the contents.
 - `docs/settings-customization-command-map.md`
 - `docs/operator-settings-presets.md`
 - `docs/games-actionability-roadmap.md` (status: complete — historical now)
+- `docs/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
 
 ### Standards / reference guides
 
