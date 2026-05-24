@@ -400,6 +400,194 @@ async def test_close_timeout_force_exits(
     assert exit_calls == [1]
 
 
+@pytest.mark.asyncio
+async def test_close_timeout_posts_timeout_webhook_before_os_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The wedged-close branch must call
+    ``reporter.on_lifecycle_close_timeout`` with the configured timeout
+    before ``os._exit(1)``.  Operators see a single dark-red embed in
+    the operator channel instead of an unexplained respawn."""
+
+    class HangingBot:
+        async def close(self) -> None:
+            await asyncio.sleep(60.0)
+
+    order: list[str] = []
+    timeout_calls: list[dict[str, Any]] = []
+
+    class TimeoutReporter:
+        async def on_lifecycle_close_beginning(self, pending: Any) -> None:
+            order.append("beginning")
+
+        async def on_lifecycle_close_timeout(
+            self,
+            pending: Any,
+            *,
+            timeout_seconds: float,
+        ) -> None:
+            order.append("timeout_webhook")
+            timeout_calls.append(
+                {"pending": pending, "timeout_seconds": timeout_seconds},
+            )
+
+    monkeypatch.setattr(bot1, "bot", HangingBot())
+    monkeypatch.setattr(bot1, "reporter", TimeoutReporter())
+    monkeypatch.setattr(bot1, "LIFECYCLE_CLOSE_TIMEOUT_SECONDS", 0.05)
+    _install_fast_poll(monkeypatch)
+
+    class _ForceExit(BaseException):
+        pass
+
+    def _fake_exit(_code: int) -> None:
+        order.append("os._exit")
+        raise _ForceExit
+
+    monkeypatch.setattr(bot1.os, "_exit", _fake_exit)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm", actor="signal_handler")
+
+    with pytest.raises(_ForceExit):
+        await asyncio.wait_for(
+            bot1._drive_close_on_lifecycle_request(),
+            timeout=2.0,
+        )
+
+    assert order == ["beginning", "timeout_webhook", "os._exit"]
+    assert len(timeout_calls) == 1
+    assert timeout_calls[0]["timeout_seconds"] == 0.05
+    pending = timeout_calls[0]["pending"]
+    assert pending.kind == "shutdown"
+    assert pending.actor == "signal_handler"
+
+
+@pytest.mark.asyncio
+async def test_close_timeout_webhook_failure_does_not_block_os_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A stalled / raising timeout webhook must not delay os._exit —
+    the driver wraps the call in asyncio.wait_for + try/except + DEBUG
+    log so the orchestrator handoff is never blocked by the operator
+    channel."""
+
+    class HangingBot:
+        async def close(self) -> None:
+            await asyncio.sleep(60.0)
+
+    class StuckReporter:
+        async def on_lifecycle_close_beginning(self, pending: Any) -> None:
+            return
+
+        async def on_lifecycle_close_timeout(
+            self,
+            pending: Any,
+            *,
+            timeout_seconds: float,
+        ) -> None:
+            await asyncio.sleep(60.0)  # would block forever
+
+    monkeypatch.setattr(bot1, "bot", HangingBot())
+    monkeypatch.setattr(bot1, "reporter", StuckReporter())
+    monkeypatch.setattr(bot1, "LIFECYCLE_CLOSE_TIMEOUT_SECONDS", 0.05)
+    _install_fast_poll(monkeypatch)
+
+    exit_calls: list[int] = []
+
+    class _ForceExit(BaseException):
+        pass
+
+    def _fake_exit(code: int) -> None:
+        exit_calls.append(code)
+        raise _ForceExit
+
+    monkeypatch.setattr(bot1.os, "_exit", _fake_exit)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+
+    with pytest.raises(_ForceExit):
+        await asyncio.wait_for(
+            bot1._drive_close_on_lifecycle_request(),
+            timeout=3.0,
+        )
+
+    assert exit_calls == [1]
+
+
+@pytest.mark.asyncio
+async def test_close_timeout_records_lifecycle_event_with_timeout_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The timeout branch records a ``close_timeout`` event in the
+    ring buffer with ``timeout_seconds`` metadata so the ``!lc`` /
+    /lifecycle dump shows what budget the driver used."""
+
+    class HangingBot:
+        async def close(self) -> None:
+            await asyncio.sleep(60.0)
+
+    monkeypatch.setattr(bot1, "bot", HangingBot())
+    monkeypatch.setattr(bot1, "reporter", None)
+    monkeypatch.setattr(bot1, "LIFECYCLE_CLOSE_TIMEOUT_SECONDS", 0.05)
+    _install_fast_poll(monkeypatch)
+
+    class _ForceExit(BaseException):
+        pass
+
+    def _fake_exit(_code: int) -> None:
+        raise _ForceExit
+
+    monkeypatch.setattr(bot1.os, "_exit", _fake_exit)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm", actor="signal_handler")
+
+    with pytest.raises(_ForceExit):
+        await asyncio.wait_for(
+            bot1._drive_close_on_lifecycle_request(),
+            timeout=2.0,
+        )
+
+    names = [e.name for e in lifecycle.get_recent_events()]
+    assert "close_timeout" in names
+    timeout_event = next(
+        e for e in lifecycle.get_recent_events() if e.name == "close_timeout"
+    )
+    assert timeout_event.metadata == {
+        "kind": "shutdown",
+        "timeout_seconds": 0.05,
+    }
+
+
+@pytest.mark.asyncio
+async def test_close_success_records_close_completed_with_duration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A clean ``bot.close()`` records ``close_completed`` in the ring
+    buffer with the measured duration so an operator can confirm the
+    driver completed without hitting the wedge path."""
+    fake_bot = _FakeBot()
+    monkeypatch.setattr(bot1, "bot", fake_bot)
+    monkeypatch.setattr(bot1, "reporter", None)
+    _install_fast_poll(monkeypatch)
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+
+    await asyncio.wait_for(bot1._drive_close_on_lifecycle_request(), timeout=2.0)
+
+    names = [e.name for e in lifecycle.get_recent_events()]
+    assert names[-1] == "close_completed"
+    completed = lifecycle.get_recent_events()[-1]
+    assert completed.metadata["kind"] == "shutdown"
+    duration = completed.metadata["duration_seconds"]
+    assert isinstance(duration, float)
+    # Fake bot.close returns instantly; observation is near-zero but
+    # bounded by the configured timeout.
+    assert 0.0 <= duration < bot1.LIFECYCLE_CLOSE_TIMEOUT_SECONDS
+
+
 def test_should_drive_lifecycle_close_predicate() -> None:
     """Predicate-level coverage so the eligibility logic is exercised
     independently of the polling loop.  Used by tests and source

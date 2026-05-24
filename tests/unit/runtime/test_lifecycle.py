@@ -351,3 +351,137 @@ def test_lifecycle_event_counter_increments_on_coalesced_shutdown() -> None:
     lifecycle.request_shutdown("second")
     lifecycle.request_shutdown("third")
     assert _lifecycle_event_counter("shutdown_requested_coalesced") == before + 2
+
+
+# ---------------------------------------------------------------------------
+# Startup-duration observation — lifecycle_startup_seconds histogram.
+# ---------------------------------------------------------------------------
+
+
+def _startup_seconds_count() -> float:
+    """Read the +Inf count from lifecycle_startup_seconds."""
+    from services import metrics as _metrics
+
+    samples = next(iter(_metrics.lifecycle_startup_seconds.collect())).samples
+    return next(s.value for s in samples if s.name.endswith("_count"))
+
+
+def test_startup_seconds_observed_on_first_starting_to_running() -> None:
+    """The first STARTING → RUNNING transition observes the histogram
+    exactly once.  Anchored at module import time (or
+    reset_for_tests), so the observation captures cold-boot health."""
+    before = _startup_seconds_count()
+    lifecycle.set_phase(lifecycle.Phase.RUNNING, reason="on_ready")
+    assert _startup_seconds_count() == before + 1
+
+
+def test_startup_seconds_not_re_observed_on_reconnect() -> None:
+    """A second RUNNING transition (e.g. Discord gateway reconnect-
+    driven on_ready) must not re-observe — the histogram tracks
+    cold-boot timing, not connection churn."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    after_first = _startup_seconds_count()
+    # Simulate a drain + reconnect cycle.
+    lifecycle.set_phase(lifecycle.Phase.DRAINING)
+    lifecycle.set_phase(lifecycle.Phase.RUNNING, reason="reconnect")
+    assert _startup_seconds_count() == after_first
+
+
+def test_startup_seconds_anchor_resets_in_reset_for_tests() -> None:
+    """``reset_for_tests`` re-stamps the module-load anchor and clears
+    the one-shot flag so subsequent set_phase(RUNNING) calls observe
+    again. Without this every test in the suite would share one
+    process-wide one-shot and only the first ordered test would see an
+    observation."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    after_first = _startup_seconds_count()
+    lifecycle.reset_for_tests()
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    assert _startup_seconds_count() == after_first + 1
+
+
+def test_diagnostics_snapshot_exposes_startup_observed_flag() -> None:
+    """``startup_duration_observed`` and ``module_load_age_seconds``
+    are operator-visible signals: the boolean tells you whether the
+    one-shot fired this process, the age tells you how long ago the
+    bot imported lifecycle (useful when investigating a late
+    on_ready)."""
+    snap = lifecycle.diagnostics_snapshot()
+    assert snap["startup_duration_observed"] is False
+    assert isinstance(snap["module_load_age_seconds"], float)
+    assert snap["module_load_age_seconds"] >= 0.0
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+
+    snap = lifecycle.diagnostics_snapshot()
+    assert snap["startup_duration_observed"] is True
+
+
+# ---------------------------------------------------------------------------
+# Close outcome recorders — record_close_completed, record_close_timeout.
+# ---------------------------------------------------------------------------
+
+
+def test_record_close_completed_captures_duration_and_kind() -> None:
+    """``close_completed`` is the canonical "clean unwind" signal in
+    the ring buffer.  Kind + duration_seconds metadata lets the embed
+    render the close cost without re-deriving it from monotonic
+    timestamps."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("sigterm", actor="signal_handler")
+    pending = lifecycle.get_pending()
+    assert pending is not None
+
+    lifecycle.record_close_completed(pending, duration_seconds=2.5)
+
+    event = lifecycle.get_recent_events()[-1]
+    assert event.name == "close_completed"
+    assert event.metadata == {
+        "kind": "shutdown",
+        "duration_seconds": 2.5,
+    }
+
+
+def test_record_close_timeout_captures_timeout_and_kind() -> None:
+    """``close_timeout`` is the wedged-close signal.  ``kind`` lets
+    operators tell shutdown-wedge from restart-wedge; ``timeout_seconds``
+    pins the budget the driver actually used (in case the constant is
+    tuned later)."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_restart("!restart", actor="op")
+    pending = lifecycle.get_pending()
+    assert pending is not None
+
+    lifecycle.record_close_timeout(pending, timeout_seconds=20.0)
+
+    event = lifecycle.get_recent_events()[-1]
+    assert event.name == "close_timeout"
+    assert event.metadata == {
+        "kind": "restart",
+        "timeout_seconds": 20.0,
+    }
+
+
+def test_diagnostics_snapshot_exposes_event_metadata() -> None:
+    """Recent events in the snapshot must carry the ``metadata`` dict
+    so embed builders can render kind / duration / timeout without
+    re-importing the lifecycle module."""
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("sigterm")
+    pending = lifecycle.get_pending()
+    assert pending is not None
+    lifecycle.record_close_executing(pending)
+    lifecycle.record_close_completed(pending, duration_seconds=1.0)
+    lifecycle.record_close_timeout(pending, timeout_seconds=20.0)
+
+    snap = lifecycle.diagnostics_snapshot()
+    metas = {e["name"]: e["metadata"] for e in snap["recent_events"]}
+    assert metas["close_executing"] == {"kind": "shutdown"}
+    assert metas["close_completed"] == {
+        "kind": "shutdown",
+        "duration_seconds": 1.0,
+    }
+    assert metas["close_timeout"] == {
+        "kind": "shutdown",
+        "timeout_seconds": 20.0,
+    }

@@ -324,3 +324,68 @@ async def test_on_lifecycle_close_completed_renders_restart_embed_without_durati
     assert embed.color == discord.Color.gold()
     field_names = {f.name for f in embed.fields}
     assert "Close duration" not in field_names
+
+
+# ---------------------------------------------------------------------------
+# on_lifecycle_close_timeout — posted in the wedged-close branch before
+# os._exit(1) so operators see why the container respawned.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_timeout_renders_dark_red_embed_with_timeout():
+    """Timeout intent → dark-red embed titled 'Bot Close Timeout' with
+    kind, reason, actor, and the configured timeout populated.  The
+    title and color make wedge events unambiguous in the operator
+    channel vs the gold 'Restart Complete' / dark-red 'Shutdown
+    Complete' embeds."""
+    from core.runtime.lifecycle import PendingShutdown
+
+    reporter = WebhookReporter(url="https://example/wh")
+    reporter._send = AsyncMock()  # type: ignore[method-assign]
+    pending = PendingShutdown(
+        kind="shutdown",
+        reason="sigterm",
+        actor="signal_handler",
+        requested_at=0.0,
+        grace_seconds=None,
+    )
+
+    await reporter.on_lifecycle_close_timeout(pending, timeout_seconds=20.0)
+
+    reporter._send.assert_awaited_once()
+    embed = reporter._send.await_args.args[0]
+    assert "Close Timeout" in embed.title
+    assert embed.color == discord.Color.dark_red()
+    field_map = {f.name: f.value for f in embed.fields}
+    assert field_map["Kind"] == "shutdown"
+    assert field_map["Reason"] == "sigterm"
+    assert field_map["Actor"] == "signal_handler"
+    assert field_map["Timeout"] == "20.00s"
+
+
+@pytest.mark.asyncio
+async def test_on_lifecycle_close_timeout_falls_back_for_missing_actor_reason():
+    """Missing actor / reason on the pending request must not blow up
+    embed construction — they fall back to ``<unknown>`` consistently
+    with the beginning / completed embeds."""
+    from core.runtime.lifecycle import PendingShutdown
+
+    reporter = WebhookReporter(url="https://example/wh")
+    reporter._send = AsyncMock()  # type: ignore[method-assign]
+    pending = PendingShutdown(
+        kind="restart",
+        reason="",
+        actor=None,
+        requested_at=0.0,
+        grace_seconds=None,
+    )
+
+    await reporter.on_lifecycle_close_timeout(pending, timeout_seconds=5.5)
+
+    embed = reporter._send.await_args.args[0]
+    field_map = {f.name: f.value for f in embed.fields}
+    assert field_map["Actor"] == "<unknown>"
+    assert field_map["Reason"] == "<unknown>"
+    assert field_map["Kind"] == "restart"
+    assert field_map["Timeout"] == "5.50s"
