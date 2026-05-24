@@ -263,12 +263,16 @@ async def run_heartbeat_loop(
 
     consecutive_failures = 0
     while not stop_event.is_set():
+        heartbeat_started_at = time.monotonic()
         try:
             owned = await runtime_lock.heartbeat(
                 boot_id,
                 lock_name=lock_name,
             )
         except Exception as exc:
+            _metrics.runtime_lock_heartbeat_seconds.observe(
+                time.monotonic() - heartbeat_started_at,
+            )
             consecutive_failures += 1
             _metrics.runtime_lock_heartbeat_total.labels(outcome="error").inc()
             logger.warning(
@@ -285,6 +289,9 @@ async def run_heartbeat_loop(
                 )
                 os._exit(1)
         else:
+            _metrics.runtime_lock_heartbeat_seconds.observe(
+                time.monotonic() - heartbeat_started_at,
+            )
             if not owned:
                 _metrics.runtime_lock_heartbeat_total.labels(outcome="lost").inc()
                 logger.critical(
