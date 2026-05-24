@@ -20,7 +20,9 @@ the embed / view orchestration.
 from __future__ import annotations
 
 import logging
+import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any
 
 from utils.db import setup_session as db
@@ -90,6 +92,13 @@ async def start_session(
             f"setup_session.start_session: row for guild_id={guild_id} "
             "missing immediately after upsert.",
         )
+    await _emit_session_audit(
+        guild_id=guild_id,
+        mutation_type="setup.session.started",
+        new_value="pending",
+        actor_id=owner_id,
+        actor_type="user",
+    )
     return SetupSession.from_row(row)
 
 
@@ -121,6 +130,13 @@ async def mark_complete(guild_id: int) -> None:
     await db.set_step(guild_id, None)
     await db.clear_skipped_sections(guild_id)
     await _clear_draft(guild_id)
+    await _emit_session_audit(
+        guild_id=guild_id,
+        mutation_type="setup.session.completed",
+        new_value="complete",
+        actor_id=None,
+        actor_type="system",
+    )
 
 
 async def dismiss(guild_id: int) -> None:
@@ -136,6 +152,50 @@ async def dismiss(guild_id: int) -> None:
     await db.set_step(guild_id, None)
     await db.clear_skipped_sections(guild_id)
     await _clear_draft(guild_id)
+    await _emit_session_audit(
+        guild_id=guild_id,
+        mutation_type="setup.session.dismissed",
+        new_value="dismissed",
+        actor_id=None,
+        actor_type="system",
+    )
+
+
+async def _emit_session_audit(
+    *,
+    guild_id: int,
+    mutation_type: str,
+    new_value: str,
+    actor_id: int | None,
+    actor_type: str,
+) -> None:
+    """Best-effort ``audit.action_recorded`` emission for setup session lifecycle.
+
+    Lazy-imported to avoid a circular dependency (same pattern as _clear_draft).
+    Failure is logged at WARNING and swallowed — the DB transition is authoritative.
+    """
+    try:
+        from services import audit_events
+
+        await audit_events.emit_audit_action(
+            mutation_id=str(uuid.uuid4()),
+            subsystem="setup",
+            mutation_type=mutation_type,
+            target=f"setup_session:{guild_id}",
+            scope="guild",
+            guild_id=guild_id,
+            prev_value=None,
+            new_value=new_value,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=datetime.now(timezone.utc),
+        )
+    except Exception:
+        logger.warning(
+            "setup_session: audit emission failed for guild_id=%s mutation_type=%s",
+            guild_id,
+            mutation_type,
+        )
 
 
 async def _clear_draft(guild_id: int) -> None:
