@@ -135,7 +135,7 @@ for cases where the importer is a *different* subsystem.
 | `cogs/economy/_helpers.py` | 12 (`JOBS`, `SHOP_ITEMS`, `_build_economy_embed`, `_job_pay`, `_available_jobs`, `_pick_daily`, `_shop_embed`, `_WORK_COOLDOWN`, `_DAILY_COOLDOWN`, `_DAILY_TIERS`, `_daily_weights`, …) | 7 symbols → `views/economy/{main,work,shop}_panel.py` | — |
 | `cogs/diagnostic/_helpers.py` | 10 (`build_*_embed`, `build_command_list_pages`, `_fmt_snapshot_value`, …) | 9 builders → `views/diagnostic/{hub_panel,paginator}.py` | — |
 | `cogs/xp/_helpers.py` | 4 (`_STAT_TYPES`, `_guild_xp_settings`, `_progress_bar`, `_build_rank_embed`) | `_guild_xp_settings` → `views/xp/config_panel.py:14`; `_build_rank_embed` → `views/xp/{main_panel,rank_view}.py` | — |
-| `cogs/setup/_helpers.py` | 2 (`resolve_hub_entry`, `build_status_embed`) | — | **`build_status_embed` → `cogs/diagnostic_cog.py:39` + `views/diagnostic/platform_panel.py:141`**. Setup → diagnostic. |
+| `cogs/setup/_helpers.py` | 2 (`resolve_hub_entry`, `build_status_embed`) | — | — (no real leak — see "Correction: name collision" below) |
 | `cogs/rps_tournament/_helpers.py` | 8 | — | — |
 
 ### Recommendations (per file)
@@ -146,8 +146,32 @@ for cases where the importer is a *different* subsystem.
 | economy | **migrate later — extract data to `cogs/economy/data.py`** in a dedicated PR. `JOBS`, `SHOP_ITEMS`, `_DAILY_TIERS` etc. are content constants, not domain helpers; views shouldn't be reaching into a cog's underscored module for them. Embed builders (`_build_economy_embed`, `_shop_embed`) and pure helpers (`_job_pay`, `_pick_daily`, `_daily_weights`) belong either in the data module or a `cogs/economy/embeds.py` per § 3.2. Big surface area — schedule as a standalone PR. |
 | diagnostic | **migrate later — promote builders** in a dedicated PR. All 9 `build_*_embed` functions are consumed equally by `cogs/diagnostic_cog.py` and `views/diagnostic/hub_panel.py`. The natural home is `cogs/diagnostic/embeds.py` (§ 3.2 sibling module) or a re-export from `cogs/diagnostic/__init__.py`. |
 | xp | **keep / freeze** — small surface, intra-subsystem only. |
-| setup | **migrate now — move `build_status_embed`**. This is the one true cross-subsystem leak: setup helpers should not be imported by diagnostic. Move into `cogs/diagnostic/_helpers.py` (where its callers live) or promote to a shared status-embed primitive if the shape is reusable. Smallest, highest-policy-clarity change in this inventory. |
+| setup | **keep** — the apparent leak was a name collision (see § 5.1). `resolve_hub_entry` is only called from `setup_cog.py`, and `build_status_embed` is only called from `setup_cog.py` (the diagnostic callers import a same-named function from `cogs/diagnostic/_platform_embeds.py`, not from here). Separately: `cogs/setup/_helpers.py:99` lazy-imports `build_setup_readiness_embed` from `cogs.diagnostic._platform_embeds` — that's the real setup-touches-diagnostic edge, see § 7. |
 | rps_tournament | **keep** — all callers are inside the cog's own submodules. |
+
+### 5.1 Correction — `build_status_embed` was a name-collision false positive
+
+The original draft of this inventory listed `build_status_embed` as a
+"setup → diagnostic" leak. That was a mis-attribution: **two**
+distinct functions share the name `build_status_embed` in different
+subsystems, and a name-only grep merged their caller graphs (the
+exact pattern `.claude/CLAUDE.md` § "Name-collision false positives"
+warns about):
+
+- `cogs/setup/_helpers.py:115` — signature `(session, *, pending_ops)`;
+  builds the `/setup-status` snapshot. Sole caller:
+  `cogs/setup_cog.py:32` (`build_status_embed as _build_status_embed`).
+- `cogs/diagnostic/_platform_embeds.py:486` — signature `(bot)`;
+  builds the `!platform status` embed. Callers:
+  `cogs/diagnostic_cog.py:39` and `views/diagnostic/platform_panel.py:46`,
+  both via `from cogs.diagnostic._platform_embeds import …`.
+
+Each subsystem imports its own helper. No cross-subsystem import of
+`build_status_embed` exists. No migration is needed — § 9's original
+"`build_status_embed` re-home" item is **withdrawn**.
+
+The real setup ↔ diagnostic edge is documented in § 7 as
+`build_setup_readiness_embed` (setup importing from diagnostic).
 
 ---
 
@@ -183,7 +207,7 @@ break (or stretch) § 3.3's "other cogs; other subsystems'
 
 | Priority | Import | File | Recommendation |
 |---|---|---|---|
-| **HIGH** | `from cogs.setup._helpers import build_status_embed` | `cogs/diagnostic_cog.py:39` | True cross-subsystem leak (setup → diagnostic). Move `build_status_embed` to `cogs/diagnostic/_helpers.py` or promote to a shared primitive. |
+| **HIGH** | `from cogs.diagnostic._platform_embeds import build_setup_readiness_embed` | `cogs/setup/_helpers.py:99`, `views/setup/launcher.py:223`, `views/setup/sections/readiness.py:34` (each is a lazy import inside a function body) | Setup → diagnostic. The embed builder for the per-guild "setup readiness" view lives under diagnostic (it walks `subsystem_schema.all_schemas`), but the setup launcher needs to surface it in the wizard. Three lazy imports avoid a hard module-level cycle. Either promote the builder to `services/setup_readiness.py` (or similar) so both subsystems import a service, or accept the lazy-import seam as the long-term shape. |
 | **HIGH** | `from views.rps._helpers import _FREE_WIN, _rps_pvp_pending, RPS_PVP_PENDING_*` | `cogs/rps_tournament/_persistence.py:166,223`, `views/games/rps_panel.py:63`, `cogs/rps_tournament/_quickplay.py:19` | Cross-subsystem + reverse direction (cog importing from views). Belongs in a service or shared module. |
 | MED | `from cogs.economy._helpers import JOBS, SHOP_ITEMS, …` (7 symbols) | `views/economy/{main,work,shop}_panel.py` | Intra-subsystem leak, but big surface. Extract data + embed builders to dedicated modules in `cogs/economy/`. |
 | MED | `from cogs.diagnostic._helpers import build_*_embed` (9 symbols) | `views/diagnostic/{hub_panel,paginator}.py` | Intra-subsystem leak. Extract to `cogs/diagnostic/embeds.py`. |
@@ -211,9 +235,13 @@ The order below is by reward / risk, smallest first.
 1. **Dead-code removal** — delete `CogMenuView` and the 5 unused
    `utils/embeds.py` builders after one more pass against dynamic-name
    usage. Pure subtraction; no behaviour change.
-2. **`build_status_embed` re-home** — single function, moves
-   `cogs/setup/_helpers.py` → `cogs/diagnostic/_helpers.py`. Closes the
-   one true cross-subsystem cog leak.
+2. **`build_setup_readiness_embed` promotion** — the three lazy imports
+   in `cogs/setup/_helpers.py:99`, `views/setup/launcher.py:223`,
+   and `views/setup/sections/readiness.py:34` reach into
+   `cogs/diagnostic/_platform_embeds.py` to render the readiness
+   embed. Promote the builder to a service (e.g.
+   `services/setup_readiness.py`) so both subsystems import a service
+   instead of one cog importing another.
 3. **Phase 3.5 finish** — migrate `attach_back_to_admin_button`,
    `attach_back_to_settings_button`, `attach_back_to_community_button`
    to thin wrappers around `views/navigation.py:attach_back_button`.
