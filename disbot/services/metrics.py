@@ -262,6 +262,18 @@ lifecycle_event_total = Counter(
     ["event"],
 )
 
+# Duration of each WebhookReporter._send dispatch.  Observed on every
+# attempt (success AND error) so DB-style latency drift is visible
+# even when most posts succeed.  Buckets stop at 10s — Discord's
+# webhook API typically responds well under 1s; anything past 2s
+# indicates either a slow Discord region or a stalled connection
+# pool worth investigating.
+webhook_dispatch_seconds = Histogram(
+    "webhook_dispatch_seconds",
+    "Duration of WebhookReporter._send dispatches (success or caught exception).",
+    buckets=(0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0),
+)
+
 # ---------------------------------------------------------------------------
 # F-1 guild_config cache (core/runtime/guild_config.py) — Phase S1.1
 # ---------------------------------------------------------------------------

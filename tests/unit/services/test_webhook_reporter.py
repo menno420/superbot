@@ -153,6 +153,62 @@ async def test_send_records_error_outcome_when_send_raises() -> None:
     assert _webhook_dispatch_counter("error") == before + 1
 
 
+def _dispatch_seconds_count_and_sum() -> tuple[float, float]:
+    """Return (count, sum) for webhook_dispatch_seconds."""
+    from services import metrics as _metrics
+
+    samples = next(iter(_metrics.webhook_dispatch_seconds.collect())).samples
+    count = next(s.value for s in samples if s.name.endswith("_count"))
+    total = next(s.value for s in samples if s.name.endswith("_sum"))
+    return count, total
+
+
+@pytest.mark.asyncio
+async def test_send_observes_dispatch_duration_on_success() -> None:
+    """Healthy posts observe their duration in the histogram so
+    operators can graph p50/p95 dispatch latency."""
+    reporter = WebhookReporter("https://discord.com/api/webhooks/123/abc")
+    reporter._session = MagicMock()
+
+    before_count, before_sum = _dispatch_seconds_count_and_sum()
+
+    wh_mock = MagicMock()
+    wh_mock.send = AsyncMock()
+    with patch(
+        "services.webhook_reporter.discord.Webhook.from_url",
+        return_value=wh_mock,
+    ):
+        await reporter._send(discord.Embed(title="ok"))
+
+    after_count, after_sum = _dispatch_seconds_count_and_sum()
+    assert after_count == before_count + 1
+    # AsyncMock returns instantly so the observation is near-zero but
+    # non-negative.
+    assert (after_sum - before_sum) >= 0
+
+
+@pytest.mark.asyncio
+async def test_send_observes_dispatch_duration_on_error_too() -> None:
+    """Exception path STILL observes — the time spent in a failing
+    send is itself a useful signal (a slow connection-pool timeout
+    looks different from an instant network error)."""
+    reporter = WebhookReporter("https://discord.com/api/webhooks/123/abc")
+    reporter._session = MagicMock()
+
+    before_count, _ = _dispatch_seconds_count_and_sum()
+
+    wh_mock = MagicMock()
+    wh_mock.send = AsyncMock(side_effect=RuntimeError("network down"))
+    with patch(
+        "services.webhook_reporter.discord.Webhook.from_url",
+        return_value=wh_mock,
+    ):
+        await reporter._send(discord.Embed(title="ok"))
+
+    after_count, _ = _dispatch_seconds_count_and_sum()
+    assert after_count == before_count + 1
+
+
 @pytest.mark.asyncio
 async def test_send_no_dispatch_outcome_when_session_missing() -> None:
     """The early-return guard (no URL or no session) must NOT increment
