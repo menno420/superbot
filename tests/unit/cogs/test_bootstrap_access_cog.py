@@ -186,6 +186,51 @@ async def test_channel_guard_allows_guild_owner_for_bootstrap_command(monkeypatc
     assert await cog._channel_guard(ctx) is True
 
 
+async def test_channel_guard_allows_administrator_for_bootstrap_command(monkeypatch):
+    monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
+    ctx = _ctx(
+        channel_id=999,
+        command_name="setup",
+        author_id=99,
+        owner_id=42,
+        administrator=True,
+    )
+
+    assert await cog._channel_guard(ctx) is True
+
+
+async def test_channel_guard_allows_manage_guild_for_bootstrap_command(monkeypatch):
+    monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
+    ctx = _ctx(
+        channel_id=999,
+        command_name="setup",
+        author_id=99,
+        owner_id=42,
+        manage_guild=True,
+    )
+
+    assert await cog._channel_guard(ctx) is True
+
+
+async def test_channel_guard_allows_bot_owner_for_bootstrap_command(monkeypatch):
+    monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
+    ctx = _ctx(channel_id=999, command_name="setup", author_id=99, owner_id=42)
+    ctx.bot.is_owner = AsyncMock(return_value=True)
+
+    assert await cog._channel_guard(ctx) is True
+
+
+async def test_channel_guard_denies_non_operator_for_bootstrap_command(monkeypatch):
+    monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
+    cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
+    ctx = _ctx(channel_id=999, command_name="setup", author_id=99, owner_id=42)
+
+    assert await cog._channel_guard(ctx) is False
+
+
 async def test_channel_guard_denies_normal_command_outside_allowed_channels(monkeypatch):
     monkeypatch.setattr(config, "ALLOWED_CHANNELS", set())
     cog = BootstrapAccessCog(MagicMock(spec=commands.Bot))
