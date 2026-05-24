@@ -307,3 +307,100 @@ async def test_ready_returns_503_in_every_terminal_phase(
     assert body["accepting_commands"] is False
     assert body["phase"] == phase
     assert body["reason"] == f"lifecycle_{phase}"
+
+
+# ---------------------------------------------------------------------------
+# /lifecycle — diagnostic dump of full lifecycle snapshot
+#
+# Always 200 (not a probe, just a diagnostic).  Operators curl this
+# during incidents when Discord is wedged but HTTP is still serving.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_endpoint_returns_full_snapshot_as_json(_reset_lifecycle):
+    """The endpoint returns 200 with the same payload shape as
+    ``diagnostics_snapshot()`` — phase, pending, recent_events, etc."""
+    import json as _json
+
+    from core.runtime import lifecycle
+    from healthserver import _lifecycle_handler
+
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown("sigterm", actor="signal_handler")
+
+    request = MagicMock()
+    response = await _lifecycle_handler(request)
+
+    assert response.status == 200
+    body = _json.loads(response.text)
+    assert body["phase"] == "DRAINING"
+    assert body["pending"]["kind"] == "shutdown"
+    assert body["pending"]["actor"] == "signal_handler"
+    # Recent events should include the shutdown_requested and DRAINING
+    # transition.
+    event_names = [e["name"] for e in body["recent_events"]]
+    assert "shutdown_requested" in event_names
+    assert "phase:DRAINING" in event_names
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_endpoint_returns_200_even_in_terminal_phase(_reset_lifecycle):
+    """Unlike /ready (which returns 503 in terminal phases), /lifecycle
+    is always 200 — operators need to query it precisely WHEN the bot
+    is in a terminal phase, to understand why."""
+    import json as _json
+
+    from core.runtime import lifecycle
+    from healthserver import _lifecycle_handler
+
+    lifecycle.set_phase(lifecycle.Phase.STOPPED)
+
+    request = MagicMock()
+    response = await _lifecycle_handler(request)
+
+    assert response.status == 200
+    body = _json.loads(response.text)
+    assert body["phase"] == "STOPPED"
+    assert body["can_accept_commands"] is False
+    assert body["is_shutting_down"] is True
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_endpoint_is_registered_on_the_router():
+    """Belt-and-suspenders: assert the route is actually registered so a
+    future refactor doesn't quietly drop the endpoint."""
+    import asyncio
+
+    from healthserver import start_health_server
+
+    runner = MagicMock()
+    runner.setup = AsyncMock()
+    runner.cleanup = AsyncMock()
+    site = MagicMock()
+    site.start = AsyncMock()
+    app_captured: list = []
+
+    real_app_runner_cls = None
+
+    def _capture_app(app, *args, **kwargs):
+        app_captured.append(app)
+        return runner
+
+    with (
+        patch("healthserver.web.AppRunner", side_effect=_capture_app),
+        patch("healthserver.web.TCPSite", return_value=site),
+    ):
+        ready = asyncio.Event()
+        task = asyncio.create_task(
+            start_health_server(_make_bot(), ready_event=ready),
+        )
+        await asyncio.wait_for(ready.wait(), timeout=1.0)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+    assert app_captured, "AppRunner was not constructed"
+    app = app_captured[0]
+    paths = {route.resource.canonical for route in app.router.routes()}
+    assert "/lifecycle" in paths
