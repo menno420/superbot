@@ -31,14 +31,79 @@ Future preset and readiness-repair migration should produce
 
 from __future__ import annotations
 
+import asyncio
 import logging
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, AsyncIterator, Literal
 
 if TYPE_CHECKING:
     from services.setup_change_plan import ChangePlanEntry, ChangeValue
 
 logger = logging.getLogger("bot.services.setup_operations")
+
+
+# ---------------------------------------------------------------------------
+# Single-flight apply lock
+# ---------------------------------------------------------------------------
+#
+# Final Review is the wizard's only mutation gate.  This lock prevents
+# two apply batches from running for the same guild at the same time
+# (double-click on ``Apply staged setup``, or two authorised users
+# pressing apply nearly simultaneously).  It is intentionally
+# in-process — single-shard bot — and never awaits between the check
+# and the add, so it is race-free under asyncio.  A distributed
+# primitive would be needed if SuperBot grew to multiple shards.
+
+
+class SetupApplyInProgress(RuntimeError):
+    """Raised by :func:`acquire_setup_apply_lock` when an apply batch
+    for the same guild is already running.
+
+    Callers (the Final Review view) catch this and surface an ephemeral
+    "Setup apply is already in progress — wait for the result message"
+    reply.
+    """
+
+    def __init__(self, guild_id: int) -> None:
+        super().__init__(
+            f"setup apply already in progress for guild_id={guild_id}",
+        )
+        self.guild_id = guild_id
+
+
+_apply_inflight: set[int] = set()
+
+
+@asynccontextmanager
+async def acquire_setup_apply_lock(guild_id: int) -> AsyncIterator[None]:
+    """Single-flight guard around the Final Review apply path.
+
+    The check + add happen without an intervening ``await``, so under
+    asyncio's cooperative scheduling the operation is atomic — a
+    concurrent ``async with`` either sees the guild in the set and
+    raises :class:`SetupApplyInProgress`, or wins the slot and runs.
+
+    UI button disabling stays as a UX courtesy; this lock is the
+    actual mechanism.
+    """
+    if guild_id in _apply_inflight:
+        raise SetupApplyInProgress(guild_id)
+    _apply_inflight.add(guild_id)
+    try:
+        yield
+    finally:
+        _apply_inflight.discard(guild_id)
+
+
+def _reset_apply_inflight_for_tests() -> None:
+    """Test-only helper: drop every tracked guild lock.
+
+    Tests that share module state across cases must call this in a
+    teardown to avoid one test's leaked guild id failing the next.
+    Not part of the public API; do not call from production code.
+    """
+    _apply_inflight.clear()
 
 # ---------------------------------------------------------------------------
 # Public types
@@ -937,6 +1002,25 @@ async def _apply_resource_create(
     actor_type: str,
     label: str,
 ) -> SetupOperationResult:
+    """Route a ``create_*`` op through :class:`ResourceProvisioningPipeline`.
+
+    The pipeline can return non-success outcomes — most importantly
+    ``"binding_failed"``, where the resource was created or reused
+    but the subsequent binding step failed.  Pre-Phase-0 this method
+    returned ``"applied"`` regardless, which caused Final Review to
+    clear the draft and mark the session complete after a half-done
+    apply.  See ``services.resource_provisioning._ProvisioningOutcome``
+    for the full list.
+
+    Mapping: every ``ProvisioningResult.outcome != "success"`` becomes
+    a ``failed`` :class:`SetupOperationResult`.  The error message
+    carries the outcome name so the recovery embed can render a
+    targeted hint.  This deliberately reuses the existing ``failed``
+    status — adding a new ``OperationStatus`` value would force
+    coordinated updates to :class:`SetupOperationBatchResult`,
+    :class:`~views.setup.final_review.ApplySummary`, every renderer,
+    and every existing test.
+    """
     from services.resource_provisioning import (
         ProvisioningRequest,
         ResourceProvisioningPipeline,
@@ -959,6 +1043,26 @@ async def _apply_resource_create(
         confirmed=True,
         actor_type=actor_type,
     )
+    outcome = getattr(result, "outcome", None)
+    if outcome != "success":
+        # Surface the outcome so the recovery embed can suggest a
+        # targeted next step (e.g. binding_failed → "rebind manually
+        # or re-run setup").
+        mutation_id = getattr(result, "mutation_id", None)
+        logger.warning(
+            "setup_operations: resource_create %s returned outcome=%r "
+            "(mutation_id=%s) — marking failed",
+            label,
+            outcome,
+            mutation_id,
+        )
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            mutation_id=mutation_id,
+            error=f"resource provisioning outcome={outcome!r}",
+        )
     return SetupOperationResult(
         status="applied",
         operation=op,
@@ -1269,9 +1373,11 @@ def _label(op: SetupOperation) -> str:
 __all__ = [
     "OperationKind",
     "OperationStatus",
+    "SetupApplyInProgress",
     "SetupOperation",
     "SetupOperationBatchResult",
     "SetupOperationResult",
+    "acquire_setup_apply_lock",
     "apply_operations",
     "operations_from_recommendations",
     "preview_operations",

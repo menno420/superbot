@@ -343,3 +343,394 @@ def test_default_risk_table_covers_all_operation_kinds():
 
     missing = sorted(draft_db._KNOWN_OP_KINDS - setup_draft._DEFAULT_RISK_BY_KIND.keys())
     assert not missing, f"missing default risk for op kinds: {missing}"
+
+
+# ---------------------------------------------------------------------------
+# Provenance: append rejects recommended; list_rows typed wrapper
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_append_rejects_recommended_staging_kind():
+    """Only :func:`replace_recommended_for_section` may write
+    ``staging_kind='recommended'``.  The general append entry point
+    must refuse it so ad-hoc callers cannot bypass the conflict
+    preflight.
+    """
+    op = SetupOperation(
+        kind="set_setting",
+        subsystem="moderation",
+        setting_name="warn_threshold",
+        value=3,
+    )
+    with patch.object(
+        setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+    ):
+        with pytest.raises(ValueError, match="recommended"):
+            await setup_draft.append(
+                op,
+                guild_id=42,
+                actor_id=99,
+                label="warn_threshold = 3",
+                staging_kind="recommended",
+            )
+
+
+@pytest.mark.asyncio
+async def test_append_rejects_unknown_staging_kind():
+    op = SetupOperation(kind="set_setting", subsystem="x", setting_name="y", value=1)
+    with patch.object(
+        setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+    ):
+        with pytest.raises(ValueError, match="staging_kind"):
+            await setup_draft.append(
+                op,
+                guild_id=1,
+                actor_id=1,
+                label="x.y = 1",
+                staging_kind="bogus",
+            )
+
+
+@pytest.mark.asyncio
+async def test_append_passes_provenance_to_db_layer():
+    op = SetupOperation(
+        kind="set_setting",
+        subsystem="moderation",
+        setting_name="warn_threshold",
+        value=3,
+    )
+    insert_mock = AsyncMock(return_value=1)
+    with (
+        patch.object(setup_draft.db, "insert", new=insert_mock),
+        patch.object(setup_draft.db, "list_rows", new=AsyncMock(return_value=[])),
+    ):
+        await setup_draft.append(
+            op,
+            guild_id=1,
+            actor_id=1,
+            label="x.y = 1",
+            section_slug="moderation",
+            staging_kind="custom",
+            group_id="g1",
+            parent_seq=5,
+        )
+    kwargs = insert_mock.await_args.kwargs
+    assert kwargs["section_slug"] == "moderation"
+    assert kwargs["staging_kind"] == "custom"
+    assert kwargs["group_id"] == "g1"
+    assert kwargs["parent_seq"] == 5
+
+
+@pytest.mark.asyncio
+async def test_list_rows_returns_typed_wrapper_with_provenance():
+    """``list_rows`` exposes provenance via :class:`DraftOperationRow`."""
+    rows = [
+        {
+            "id": 17, "guild_id": 1, "seq": 3, "op_kind": "set_setting",
+            "subsystem": "moderation", "binding_name": None,
+            "setting_name": "warn_threshold", "value_raw": "3",
+            "target_id": None, "target_name": None, "target_kind": None,
+            "resource_mode": None, "resource_name": None, "existing_id": None,
+            "automation_rule_id": None, "automation_rule_name": None,
+            "trigger_kind": None, "action_kind": None,
+            "trigger_config_json": None, "action_config_json": None,
+            "schedule": None, "timezone": None,
+            "metadata_json": {"source": "manual"},
+            "section_slug": "moderation", "staging_kind": "custom",
+            "group_id": None, "parent_seq": None,
+            "label": "warn_threshold = 3",
+        },
+    ]
+    with patch.object(
+        setup_draft.db, "list_rows", new=AsyncMock(return_value=rows),
+    ):
+        wrapped = await setup_draft.list_rows(1)
+    assert len(wrapped) == 1
+    row = wrapped[0]
+    assert isinstance(row, setup_draft.DraftOperationRow)
+    assert row.id == 17
+    assert row.seq == 3
+    assert row.section_slug == "moderation"
+    assert row.staging_kind == "custom"
+    assert row.label == "warn_threshold = 3"
+    assert row.op.kind == "set_setting"
+    assert row.op.setting_name == "warn_threshold"
+    assert row.op.value == "3"
+
+
+@pytest.mark.asyncio
+async def test_list_rows_treats_null_provenance_as_legacy():
+    """Pre-migration-045 rows arrive with NULL provenance; the wrapper
+    surfaces them as None (caller treats null as "manual / preserve").
+    """
+    rows = [
+        {
+            "id": 1, "guild_id": 1, "seq": 1, "op_kind": "set_setting",
+            "subsystem": "moderation", "binding_name": None,
+            "setting_name": "warn_threshold", "value_raw": "3",
+            "target_id": None, "target_name": None, "target_kind": None,
+            "resource_mode": None, "resource_name": None, "existing_id": None,
+            "automation_rule_id": None, "automation_rule_name": None,
+            "trigger_kind": None, "action_kind": None,
+            "trigger_config_json": None, "action_config_json": None,
+            "schedule": None, "timezone": None,
+            "metadata_json": None,
+            "section_slug": None, "staging_kind": None,
+            "group_id": None, "parent_seq": None,
+            "label": "warn_threshold = 3",
+        },
+    ]
+    with patch.object(
+        setup_draft.db, "list_rows", new=AsyncMock(return_value=rows),
+    ):
+        wrapped = await setup_draft.list_rows(1)
+    assert wrapped[0].section_slug is None
+    assert wrapped[0].staging_kind is None
+
+
+@pytest.mark.asyncio
+async def test_delete_by_ids_routes_to_db_layer():
+    with patch.object(
+        setup_draft.db, "delete_by_ids", new=AsyncMock(return_value=2),
+    ) as delete_mock:
+        n = await setup_draft.delete_by_ids(1, [7, 11])
+    assert n == 2
+    delete_mock.assert_awaited_once_with(1, [7, 11])
+
+
+@pytest.mark.asyncio
+async def test_delete_by_ids_noop_on_empty_list():
+    with patch.object(
+        setup_draft.db, "delete_by_ids", new=AsyncMock(return_value=0),
+    ) as delete_mock:
+        n = await setup_draft.delete_by_ids(1, [])
+    assert n == 0
+    delete_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_delete_by_seqs_routes_to_db_layer():
+    with patch.object(
+        setup_draft.db, "delete_by_seqs", new=AsyncMock(return_value=1),
+    ) as delete_mock:
+        n = await setup_draft.delete_by_seqs(1, [5])
+    assert n == 1
+    delete_mock.assert_awaited_once_with(1, [5])
+
+
+# ---------------------------------------------------------------------------
+# replace_recommended_for_section
+# ---------------------------------------------------------------------------
+
+
+def _row(
+    *,
+    id: int,
+    seq: int,
+    op_kind: str,
+    subsystem: str = "logging",
+    binding_name: str | None = None,
+    setting_name: str | None = None,
+    section_slug: str | None = None,
+    staging_kind: str | None = None,
+    target_id: int | None = None,
+    label: str = "x",
+) -> dict:
+    return {
+        "id": id, "guild_id": 1, "seq": seq, "op_kind": op_kind,
+        "subsystem": subsystem, "binding_name": binding_name,
+        "setting_name": setting_name, "value_raw": None,
+        "target_id": target_id, "target_name": None, "target_kind": None,
+        "resource_mode": None, "resource_name": None, "existing_id": None,
+        "automation_rule_id": None, "automation_rule_name": None,
+        "trigger_kind": None, "action_kind": None,
+        "trigger_config_json": None, "action_config_json": None,
+        "schedule": None, "timezone": None,
+        "metadata_json": None,
+        "section_slug": section_slug, "staging_kind": staging_kind,
+        "group_id": None, "parent_seq": None,
+        "label": label,
+        # Required by services.setup_draft._session_started_at, which
+        # also reads through db.list_rows.
+        "session_started_at": datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+    }
+
+
+@pytest.mark.asyncio
+async def test_replace_recommended_inserts_into_empty_draft():
+    """No prior rows: every new op is inserted as recommended."""
+    op = SetupOperation(
+        kind="bind_channel",
+        subsystem="logging",
+        binding_name="mod_channel",
+        target_id=999,
+        target_kind="channel",
+    )
+    insert_mock = AsyncMock(side_effect=[10])
+    with (
+        patch.object(
+            setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+        ),
+        patch.object(setup_draft.db, "insert", new=insert_mock),
+        patch.object(
+            setup_draft.db, "delete_by_ids", new=AsyncMock(return_value=0),
+        ),
+    ):
+        result = await setup_draft.replace_recommended_for_section(
+            1,
+            "logging",
+            [op],
+            actor_id=99,
+            labels={0: "bind mod_channel → #log"},
+        )
+    assert result.inserted_seqs == [10]
+    assert result.conflicts == []
+    insert_mock.assert_awaited_once()
+    kwargs = insert_mock.await_args.kwargs
+    assert kwargs["staging_kind"] == "recommended"
+    assert kwargs["section_slug"] == "logging"
+
+
+@pytest.mark.asyncio
+async def test_replace_recommended_is_idempotent_on_repeat():
+    """Calling twice with the same ops produces one row per slot.
+
+    The helper deletes the prior recommended rows for the section
+    before inserting fresh ones.  This is what the wizard relies on
+    so a double-click on ``Apply recommended`` does not stage
+    duplicates.
+    """
+    op = SetupOperation(
+        kind="bind_channel",
+        subsystem="logging",
+        binding_name="mod_channel",
+        target_id=999,
+        target_kind="channel",
+    )
+    existing = [
+        _row(
+            id=33,
+            seq=2,
+            op_kind="bind_channel",
+            binding_name="mod_channel",
+            section_slug="logging",
+            staging_kind="recommended",
+            target_id=999,
+        ),
+    ]
+    list_mock = AsyncMock(return_value=existing)
+    insert_mock = AsyncMock(side_effect=[20])
+    delete_mock = AsyncMock(return_value=1)
+    with (
+        patch.object(setup_draft.db, "list_rows", new=list_mock),
+        patch.object(setup_draft.db, "insert", new=insert_mock),
+        patch.object(setup_draft.db, "delete_by_ids", new=delete_mock),
+    ):
+        result = await setup_draft.replace_recommended_for_section(
+            1,
+            "logging",
+            [op],
+            actor_id=99,
+        )
+    # The prior recommended row was deleted by id, then the new row
+    # was inserted as the only recommended row for the slot.
+    delete_mock.assert_awaited_once_with(1, [33])
+    assert result.deleted_count == 1
+    assert result.inserted_seqs == [20]
+    assert result.conflicts == []
+
+
+@pytest.mark.asyncio
+async def test_replace_recommended_refuses_to_overwrite_custom_row():
+    """A non-recommended row at the same slot must not be overwritten."""
+    op = SetupOperation(
+        kind="bind_channel",
+        subsystem="logging",
+        binding_name="mod_channel",
+        target_id=999,
+        target_kind="channel",
+    )
+    existing = [
+        _row(
+            id=33,
+            seq=2,
+            op_kind="bind_channel",
+            binding_name="mod_channel",
+            section_slug="logging",
+            staging_kind="custom",
+            target_id=42,
+            label="custom: mod_channel → #custom",
+        ),
+    ]
+    list_mock = AsyncMock(return_value=existing)
+    insert_mock = AsyncMock()
+    delete_mock = AsyncMock(return_value=0)
+    with (
+        patch.object(setup_draft.db, "list_rows", new=list_mock),
+        patch.object(setup_draft.db, "insert", new=insert_mock),
+        patch.object(setup_draft.db, "delete_by_ids", new=delete_mock),
+    ):
+        result = await setup_draft.replace_recommended_for_section(
+            1,
+            "logging",
+            [op],
+            actor_id=99,
+        )
+    # The custom row was preserved: no recommended rows for this
+    # section existed, so the delete short-circuited at the service
+    # layer and never hit the DB primitive.
+    delete_mock.assert_not_called()
+    insert_mock.assert_not_called()  # refused, did not overwrite
+    assert result.inserted_seqs == []
+    assert len(result.conflicts) == 1
+    conflict = result.conflicts[0]
+    assert conflict.existing_row.staging_kind == "custom"
+    assert conflict.existing_row.id == 33
+
+
+@pytest.mark.asyncio
+async def test_replace_recommended_preserves_other_sections_rows():
+    """Recommended rows owned by a DIFFERENT section are not deleted."""
+    op = SetupOperation(
+        kind="bind_channel",
+        subsystem="logging",
+        binding_name="mod_channel",
+        target_id=999,
+        target_kind="channel",
+    )
+    other_section_row = _row(
+        id=50,
+        seq=4,
+        op_kind="bind_channel",
+        binding_name="join_channel",
+        section_slug="other_section",  # different section
+        staging_kind="recommended",
+        target_id=111,
+    )
+    list_mock = AsyncMock(return_value=[other_section_row])
+    insert_mock = AsyncMock(side_effect=[60])
+    delete_mock = AsyncMock(return_value=0)
+    with (
+        patch.object(setup_draft.db, "list_rows", new=list_mock),
+        patch.object(setup_draft.db, "insert", new=insert_mock),
+        patch.object(setup_draft.db, "delete_by_ids", new=delete_mock),
+    ):
+        await setup_draft.replace_recommended_for_section(
+            1,
+            "logging",
+            [op],
+            actor_id=99,
+        )
+    # No prior recommended rows in THIS section, so the service-level
+    # delete short-circuits and the DB primitive is never invoked.
+    # The "other_section" recommended row is untouched.
+    delete_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_replace_recommended_empty_section_slug_rejected():
+    with pytest.raises(ValueError, match="section_slug"):
+        await setup_draft.replace_recommended_for_section(
+            1, "", [], actor_id=99,
+        )

@@ -339,3 +339,209 @@ def test_migration_lists_all_known_op_kinds_in_check():
     ).read_text()
     for kind in draft_db._KNOWN_OP_KINDS:
         assert f"'{kind}'" in sql, f"CHECK omits op_kind {kind!r}"
+
+
+# ---------------------------------------------------------------------------
+# Phase 0 provenance — migration 045 + new helpers
+# ---------------------------------------------------------------------------
+
+
+def test_migration_045_present_and_idempotent():
+    """Phase 0 migration adds provenance columns."""
+    from pathlib import Path
+
+    here = Path(__file__).resolve().parents[3]
+    path = (
+        here / "disbot" / "migrations" / "045_setup_draft_provenance.sql"
+    )
+    assert path.is_file(), "migration 045_setup_draft_provenance.sql is missing"
+    sql = path.read_text()
+    # All four columns added, all guarded by IF NOT EXISTS.
+    assert "ADD COLUMN IF NOT EXISTS section_slug" in sql
+    assert "ADD COLUMN IF NOT EXISTS staging_kind" in sql
+    assert "ADD COLUMN IF NOT EXISTS group_id" in sql
+    assert "ADD COLUMN IF NOT EXISTS parent_seq" in sql
+    # Section-slug index is also created idempotently.
+    assert "CREATE INDEX IF NOT EXISTS idx_setup_draft_operations_section_slug" in sql
+
+
+def test_staging_kinds_set_includes_all_documented_values():
+    """The DB-layer allowlist must include every staging_kind value
+    documented in services.setup_draft (recommended is included here
+    because the layer accepts it from the dedicated writer)."""
+    assert draft_db._STAGING_KINDS == frozenset(
+        {"recommended", "custom", "preset", "manual", "repair"},
+    )
+
+
+@pytest.mark.asyncio
+async def test_insert_accepts_provenance_columns(_mock_pool):
+    _mock_pool.fetchrow.return_value = {"seq": 1}
+    when = datetime.now(timezone.utc)
+    seq = await draft_db.insert(
+        guild_id=42,
+        session_started_at=when,
+        op_kind="bind_channel",
+        subsystem="logging",
+        binding_name="mod_channel",
+        setting_name=None,
+        target_id=999,
+        target_name="#mod-log",
+        target_kind="channel",
+        value_raw=None,
+        resource_mode=None,
+        resource_name=None,
+        existing_id=None,
+        automation_rule_id=None,
+        automation_rule_name=None,
+        trigger_kind=None,
+        action_kind=None,
+        trigger_config=None,
+        action_config=None,
+        schedule=None,
+        timezone=None,
+        actor_id=99,
+        label="bind mod_channel → #mod-log",
+        metadata={"source": "scan"},
+        section_slug="logging",
+        staging_kind="recommended",
+        group_id="g-1",
+        parent_seq=2,
+    )
+    assert seq == 1
+    sql, *args = _mock_pool.fetchrow.await_args.args
+    # New columns appear in the INSERT and UPDATE arms.
+    assert "section_slug" in sql
+    assert "staging_kind" in sql
+    assert "group_id" in sql
+    assert "parent_seq" in sql
+    # And in the positional args list.
+    assert "logging" in args
+    assert "recommended" in args
+    assert "g-1" in args
+    assert 2 in args
+
+
+@pytest.mark.asyncio
+async def test_insert_rejects_unknown_staging_kind(_mock_pool):
+    with pytest.raises(ValueError, match="staging_kind"):
+        await draft_db.insert(
+            guild_id=1,
+            session_started_at=datetime.now(timezone.utc),
+            op_kind="set_setting",
+            subsystem="x",
+            binding_name=None,
+            setting_name="y",
+            target_id=None,
+            target_name=None,
+            target_kind=None,
+            value_raw="1",
+            resource_mode=None,
+            resource_name=None,
+            existing_id=None,
+            automation_rule_id=None,
+            automation_rule_name=None,
+            trigger_kind=None,
+            action_kind=None,
+            trigger_config=None,
+            action_config=None,
+            schedule=None,
+            timezone=None,
+            actor_id=99,
+            label="x.y = 1",
+            metadata=None,
+            staging_kind="garbage",
+        )
+
+
+@pytest.mark.asyncio
+async def test_insert_accepts_null_staging_kind_for_legacy_rows(_mock_pool):
+    """Legacy / pre-Phase-0 callers don't pass staging_kind; that's a
+    documented "manual / preserve" default.
+    """
+    _mock_pool.fetchrow.return_value = {"seq": 1}
+    await draft_db.insert(
+        guild_id=1,
+        session_started_at=datetime.now(timezone.utc),
+        op_kind="set_setting",
+        subsystem="x",
+        binding_name=None,
+        setting_name="y",
+        target_id=None,
+        target_name=None,
+        target_kind=None,
+        value_raw="1",
+        resource_mode=None,
+        resource_name=None,
+        existing_id=None,
+        automation_rule_id=None,
+        automation_rule_name=None,
+        trigger_kind=None,
+        action_kind=None,
+        trigger_config=None,
+        action_config=None,
+        schedule=None,
+        timezone=None,
+        actor_id=99,
+        label="x.y = 1",
+        metadata=None,
+        # staging_kind unset
+    )
+    _mock_pool.fetchrow.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_list_rows_selects_provenance_columns(_mock_pool):
+    _mock_pool.fetch.return_value = []
+    await draft_db.list_rows(1)
+    sql, *_ = _mock_pool.fetch.await_args.args
+    assert "section_slug" in sql
+    assert "staging_kind" in sql
+    assert "group_id" in sql
+    assert "parent_seq" in sql
+
+
+@pytest.mark.asyncio
+async def test_list_by_section_filters_by_section_slug(_mock_pool):
+    _mock_pool.fetch.return_value = []
+    await draft_db.list_by_section(1, "logging")
+    sql, *args = _mock_pool.fetch.await_args.args
+    assert "section_slug = $2" in sql
+    assert args == [1, "logging"]
+
+
+@pytest.mark.asyncio
+async def test_delete_by_ids_uses_any_clause(_mock_pool):
+    _mock_pool.fetchrow.return_value = {"n": 2}
+    n = await draft_db.delete_by_ids(1, [7, 11])
+    assert n == 2
+    sql, *args = _mock_pool.fetchrow.await_args.args
+    assert "DELETE FROM setup_draft_operations" in sql
+    assert "= ANY($2::BIGINT[])" in sql
+    assert args[0] == 1
+    assert args[1] == [7, 11]
+
+
+@pytest.mark.asyncio
+async def test_delete_by_ids_noop_on_empty(_mock_pool):
+    n = await draft_db.delete_by_ids(1, [])
+    assert n == 0
+    _mock_pool.fetchrow.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_delete_by_seqs_uses_any_clause(_mock_pool):
+    _mock_pool.fetchrow.return_value = {"n": 1}
+    n = await draft_db.delete_by_seqs(1, [5])
+    assert n == 1
+    sql, *args = _mock_pool.fetchrow.await_args.args
+    assert "DELETE FROM setup_draft_operations" in sql
+    assert "= ANY($2::INT[])" in sql
+    assert args == [1, [5]]
+
+
+@pytest.mark.asyncio
+async def test_delete_by_seqs_noop_on_empty(_mock_pool):
+    n = await draft_db.delete_by_seqs(1, [])
+    assert n == 0
+    _mock_pool.fetchrow.assert_not_called()

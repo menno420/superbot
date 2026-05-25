@@ -10,10 +10,17 @@ Pins:
 * ``_apply_ops_in_order`` applies each op as its own single-op batch,
   ordered by phase, and the resulting ApplySummary aggregates the
   per-op results.
-* On apply success the FinalReviewView clears the draft and marks
-  the session complete.
+* Phase 0 safety: on **full success** the FinalReviewView clears the
+  draft and marks the session complete; on any failed / skipped
+  result it preserves the draft, does NOT mark complete, and mounts
+  :class:`PartialApplyRecoveryView` so the operator can retry or
+  cancel.
+* The apply path runs under
+  :func:`services.setup_operations.acquire_setup_apply_lock`; a
+  concurrent press is rejected with an ephemeral.
 * The embed renders both SetupRecommendation and SetupOperation
-  shapes.
+  shapes; partial-failure embed surfaces a distinct title /
+  description so the operator sees that setup is not complete.
 """
 
 from __future__ import annotations
@@ -32,11 +39,22 @@ from services.setup_operations import (
 from services.setup_plan import SetupRecommendation
 from views.setup.final_review import (
     FinalReviewView,
+    PartialApplyRecoveryView,
     _apply_ops_in_order,
     _sort_ops_for_apply,
     build_final_review_embed,
 )
 from views.setup.sections import final_review as final_review_section
+
+
+@pytest.fixture(autouse=True)
+def _reset_apply_lock():
+    """The single-flight lock is module-level state; reset between tests."""
+    from services.setup_operations import _reset_apply_inflight_for_tests
+
+    _reset_apply_inflight_for_tests()
+    yield
+    _reset_apply_inflight_for_tests()
 
 # ---------------------------------------------------------------------------
 # _sort_ops_for_apply
@@ -263,6 +281,162 @@ async def test_view_apply_runs_ops_path_when_ops_set():
 
 
 @pytest.mark.asyncio
+async def test_view_apply_preserves_draft_on_failed_result():
+    """Phase 0: any failed op preserves the draft and does NOT mark complete."""
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    with (
+        patch(
+            "views.setup.final_review._apply_ops_in_order",
+            new_callable=AsyncMock,
+        ) as ops_path,
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ) as complete_mock,
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+        ),
+    ):
+        from views.setup.final_review import ApplySummary
+
+        ops_path.return_value = ApplySummary(
+            applied=["one"],
+            failed=["two: boom"],
+        )
+        await view._apply.callback(interaction)
+
+    clear_mock.assert_not_called()
+    complete_mock.assert_not_called()
+    # The followup edit installed a PartialApplyRecoveryView instead of
+    # the now-stale FinalReviewView.
+    edit_kwargs = interaction.followup.edit_message.await_args.kwargs
+    assert isinstance(edit_kwargs["view"], PartialApplyRecoveryView)
+    embed = edit_kwargs["embed"]
+    assert "partially applied" in (embed.description or "").lower() or \
+        "partial" in (embed.title or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_view_apply_preserves_draft_on_skipped_result():
+    """skipped results (including NYI-folded ones) block completion."""
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    with (
+        patch(
+            "views.setup.final_review._apply_ops_in_order",
+            new_callable=AsyncMock,
+        ) as ops_path,
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ) as complete_mock,
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+        ),
+    ):
+        from views.setup.final_review import ApplySummary
+
+        ops_path.return_value = ApplySummary(
+            applied=["one"],
+            skipped=["weird (not yet implemented)"],
+        )
+        await view._apply.callback(interaction)
+
+    clear_mock.assert_not_called()
+    complete_mock.assert_not_called()
+    edit_kwargs = interaction.followup.edit_message.await_args.kwargs
+    assert isinstance(edit_kwargs["view"], PartialApplyRecoveryView)
+
+
+@pytest.mark.asyncio
+async def test_view_apply_full_success_clears_and_marks_complete():
+    """Full success: draft is cleared, session is marked complete, the
+    view is disabled (no recovery view mount).
+    """
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    with (
+        patch(
+            "views.setup.final_review._apply_ops_in_order",
+            new_callable=AsyncMock,
+        ) as ops_path,
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ) as complete_mock,
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+        ),
+    ):
+        from views.setup.final_review import ApplySummary
+
+        ops_path.return_value = ApplySummary(applied=["one"])
+        await view._apply.callback(interaction)
+
+    clear_mock.assert_awaited_once_with(1)
+    complete_mock.assert_awaited_once_with(1)
+    # Same view re-rendered with all buttons disabled, no recovery view.
+    edit_kwargs = interaction.followup.edit_message.await_args.kwargs
+    assert edit_kwargs["view"] is view
+
+
+@pytest.mark.asyncio
+async def test_view_apply_single_flight_rejects_concurrent_press():
+    """A second Apply press while one is in flight must be rejected with
+    an ephemeral and never enter the apply path.
+    """
+    from services.setup_operations import (
+        _reset_apply_inflight_for_tests,
+        acquire_setup_apply_lock,
+    )
+
+    _reset_apply_inflight_for_tests()
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    # Manually mark guild 1 inflight so the apply path raises immediately.
+    async with acquire_setup_apply_lock(1):
+        with (
+            patch(
+                "views.setup.final_review._apply_ops_in_order",
+                new_callable=AsyncMock,
+            ) as ops_path,
+            patch(
+                "core.runtime.interaction_helpers.safe_defer",
+                new_callable=AsyncMock,
+            ),
+        ):
+            await view._apply.callback(interaction)
+
+        ops_path.assert_not_called()
+        interaction.response.send_message.assert_awaited()
+        kwargs = interaction.response.send_message.await_args.kwargs
+        msg_args = interaction.response.send_message.await_args.args
+        text = (msg_args[0] if msg_args else kwargs.get("content", "")) or ""
+        assert "already in progress" in text.lower()
+        assert kwargs.get("ephemeral") is True
+
+
+@pytest.mark.asyncio
 async def test_view_apply_runs_accepted_path_when_only_accepted_set():
     """Legacy AI / suggestions path: ``accepted=`` uses
     ``_apply_accepted`` and does NOT touch the draft store.
@@ -371,6 +545,254 @@ def test_embed_renders_setup_operation_list():
 def test_embed_says_operations_when_given_ops():
     embed = build_final_review_embed([_op("bind_channel")])
     assert "operation" in (embed.description or "").lower()
+
+
+def test_embed_partial_state_signals_not_complete():
+    """Partial-failure embed must make clear setup is not complete and
+    the draft is preserved.
+    """
+    from views.setup.final_review import ApplySummary
+
+    summary = ApplySummary(applied=["one"], failed=["two: boom"])
+    embed = build_final_review_embed([_op("bind_channel")], summary=summary)
+    title = (embed.title or "").lower()
+    description = (embed.description or "").lower()
+    assert "partial" in title or "partial" in description
+    assert "not" in description and "complete" in description
+    assert "preserved" in description
+    # Footer surfaces the retry/cancel guidance.
+    footer = (embed.footer.text or "").lower() if embed.footer else ""
+    assert "retry" in footer
+    assert "cancel" in footer
+
+
+def test_embed_full_success_does_not_signal_partial():
+    """Full-success embed must not falsely surface the partial state."""
+    from views.setup.final_review import ApplySummary
+
+    summary = ApplySummary(applied=["one", "two"])
+    embed = build_final_review_embed([_op("bind_channel")], summary=summary)
+    title = (embed.title or "").lower()
+    assert "partial" not in title
+
+
+# ---------------------------------------------------------------------------
+# PartialApplyRecoveryView
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_recovery_view_retry_reruns_apply_path():
+    """Retry button re-runs the canonical apply flow under the same
+    single-flight lock, with the same ops list, and renders the new
+    result.  When the retry succeeds the draft is cleared.
+    """
+    from views.setup.final_review import ApplySummary
+
+    initial_summary = ApplySummary(applied=["a"], failed=["b: boom"])
+    recovery = PartialApplyRecoveryView(
+        _owner_member(),
+        ops=[_op("bind_channel")],
+        accepted=[],
+        summary=initial_summary,
+    )
+    interaction = _interaction_with_guild()
+
+    with (
+        patch(
+            "views.setup.final_review._apply_ops_in_order",
+            new_callable=AsyncMock,
+        ) as ops_path,
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ) as complete_mock,
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+        ),
+    ):
+        ops_path.return_value = ApplySummary(applied=["a", "b"])
+        await recovery._retry.callback(interaction)
+
+    ops_path.assert_awaited_once()
+    clear_mock.assert_awaited_once_with(1)
+    complete_mock.assert_awaited_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_recovery_view_retry_preserves_draft_on_second_failure():
+    """Retry that itself fails / skips must preserve the draft again."""
+    from views.setup.final_review import ApplySummary
+
+    recovery = PartialApplyRecoveryView(
+        _owner_member(),
+        ops=[_op("bind_channel")],
+        accepted=[],
+        summary=ApplySummary(applied=[], failed=["x: boom"]),
+    )
+    interaction = _interaction_with_guild()
+
+    with (
+        patch(
+            "views.setup.final_review._apply_ops_in_order",
+            new_callable=AsyncMock,
+        ) as ops_path,
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ) as complete_mock,
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+        ),
+    ):
+        ops_path.return_value = ApplySummary(failed=["x: still broken"])
+        await recovery._retry.callback(interaction)
+
+    clear_mock.assert_not_called()
+    complete_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_recovery_view_cancel_preserves_draft():
+    """Cancel just closes the recovery view; nothing else."""
+    from views.setup.final_review import ApplySummary
+
+    recovery = PartialApplyRecoveryView(
+        _owner_member(),
+        ops=[_op("bind_channel")],
+        accepted=[],
+        summary=ApplySummary(failed=["b: boom"]),
+    )
+    interaction = _interaction_with_guild()
+    interaction.response.edit_message = AsyncMock()
+
+    with patch(
+        "services.setup_draft.clear",
+        new_callable=AsyncMock,
+    ) as clear_mock:
+        await recovery._cancel.callback(interaction)
+
+    clear_mock.assert_not_called()
+    interaction.response.edit_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_recovery_view_retry_rejects_concurrent_press():
+    """Retry honours the same single-flight gate as the initial Apply."""
+    from services.setup_operations import (
+        _reset_apply_inflight_for_tests,
+        acquire_setup_apply_lock,
+    )
+    from views.setup.final_review import ApplySummary
+
+    _reset_apply_inflight_for_tests()
+    recovery = PartialApplyRecoveryView(
+        _owner_member(),
+        ops=[_op("bind_channel")],
+        accepted=[],
+        summary=ApplySummary(failed=["b: boom"]),
+    )
+    interaction = _interaction_with_guild()
+
+    async with acquire_setup_apply_lock(1):
+        with (
+            patch(
+                "views.setup.final_review._apply_ops_in_order",
+                new_callable=AsyncMock,
+            ) as ops_path,
+            patch(
+                "core.runtime.interaction_helpers.safe_defer",
+                new_callable=AsyncMock,
+            ),
+        ):
+            await recovery._retry.callback(interaction)
+        ops_path.assert_not_called()
+        interaction.response.send_message.assert_awaited()
+
+
+# ---------------------------------------------------------------------------
+# Retry idempotency for binding_failed
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_retry_after_binding_failed_does_not_duplicate_resource():
+    """End-to-end pin of the Phase 0 safety guarantee.
+
+    Scenario:
+
+    * Final Review apply runs a ``create_channel`` op whose
+      provisioning returns ``outcome="binding_failed"``.
+    * The op surfaces as ``failed``; the draft and session are NOT
+      cleared / marked complete; the recovery view mounts.
+    * The operator presses Retry.  The retry must run the same op
+      through ``_apply_ops_in_order`` exactly once — no duplicate
+      pipeline call from the original Final Review flow leaks
+      through.  Resource pipeline idempotency (create_with_reuse,
+      bind_channel already-bound short-circuit) is the production
+      mechanism that prevents duplicate Discord side effects; we
+      pin the call-count here so a future refactor cannot retry
+      twice per click.
+    """
+    from views.setup.final_review import ApplySummary
+
+    op = _op("create_channel", binding_name="mod_channel", resource_name="mod-log")
+    view = FinalReviewView(_owner_member(), ops=[op])
+    interaction = _interaction_with_guild()
+
+    ops_path_mock = AsyncMock()
+    # First call (initial Apply) returns binding_failed; second call
+    # (Retry) succeeds.  If the retry button accidentally called the
+    # path more than once, the test's await count would jump.
+    ops_path_mock.side_effect = [
+        ApplySummary(failed=["create_channel: resource provisioning outcome='binding_failed'"]),
+        ApplySummary(applied=["create_channel"]),
+    ]
+
+    with (
+        patch(
+            "views.setup.final_review._apply_ops_in_order",
+            new=ops_path_mock,
+        ),
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ) as complete_mock,
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+        ),
+    ):
+        # 1. Initial Apply: binding_failed → recovery view.
+        await view._apply.callback(interaction)
+        clear_mock.assert_not_called()
+        complete_mock.assert_not_called()
+        recovery_view = interaction.followup.edit_message.await_args.kwargs[
+            "view"
+        ]
+        assert isinstance(recovery_view, PartialApplyRecoveryView)
+
+        # 2. Retry from the recovery view: success → clear + complete.
+        await recovery_view._retry.callback(interaction)
+        # Exactly two calls total — one initial, one retry.  No
+        # accidental double-dispatch on either path.
+        assert ops_path_mock.await_count == 2
+        clear_mock.assert_awaited_once_with(1)
+        complete_mock.assert_awaited_once_with(1)
 
 
 def test_embed_says_recommendations_when_given_recs():
