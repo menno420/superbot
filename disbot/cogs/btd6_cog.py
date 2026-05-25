@@ -386,6 +386,25 @@ class BTD6Cog(commands.Cog):
             ),
         )
 
+    @btd6_group.command(name="sources")  # type: ignore[arg-type]
+    async def btd6_sources(self, ctx: commands.Context) -> None:
+        """List BTD6 source registry rows (M3A: read-only)."""
+        from services import btd6_source_registry
+
+        rows = await btd6_source_registry.list_all()
+        if not rows:
+            await ctx.send("No BTD6 sources registered yet.")
+            return
+        lines = []
+        for row in rows[:25]:
+            state = "ON" if row["enabled"] else "off"
+            url = row.get("full_url") or row.get("path_template") or "—"
+            lines.append(
+                f"`{row['source_key']:<26}` tier {row['trust_tier']} · "
+                f"{state} · {url}",
+            )
+        await ctx.send("\n".join(lines))
+
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:
         """Open the BTD6 panel (alias for ``!btd6``)."""
