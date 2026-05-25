@@ -1,4 +1,4 @@
-"""Preview / dry-run policy resolver view (PR4B).
+"""Preview / dry-run policy resolver view.
 
 When an admin clicks ``Preview`` in the policy chooser, this view
 asks them to pick a channel, then shows what
@@ -7,11 +7,13 @@ their own user identity in that channel — once with ``is_mention=True``
 and once with ``is_mention=False`` — using the dry-run mode that
 :class:`PolicyDecision.precedence_trace` exposes.
 
-Dry-run mode (PR4B):
+Dry-run mode:
 
 * Same resolution rules as the live path — guaranteed, since dry-run
   toggles only the trace bookkeeping; the decision logic is identical.
-* Returns the precedence_trace explaining each step that fired.
+* Returns the precedence_trace explaining each step that fired plus
+  the typed ``effective_mode`` / ``effective_source`` fields, which the
+  embed renders as a one-line summary above the trace bullets.
 * Pure read: never touches cooldown state, never writes audit. Safe
   to call from a UI without disturbing production.
 """
@@ -23,10 +25,29 @@ from typing import Any
 
 import discord
 
+from core.runtime.ai.contracts import PolicyDenialReason
+
 logger = logging.getLogger("bot.views.ai.policy.preview_view")
 
 _VIEW_TIMEOUT_SECONDS = 300
 _PANEL_COLOR = discord.Color.blurple()
+
+# Reasons that signal the guild has not yet configured AI or has the
+# hard kill switch on — these are "red" because no scoped override can
+# resurrect AI in these cases.
+_HARD_KILL_REASONS = frozenset(
+    {
+        PolicyDenialReason.AI_GLOBALLY_DISABLED,
+        PolicyDenialReason.GUILD_NOT_CONFIGURED,
+    },
+)
+
+# Reasons sourced from the guild NL baseline — admins can override these
+# per channel/category, so the embed flags them as "amber" baseline state
+# rather than the red hard-kill state.
+_BASELINE_DISABLED_REASONS = frozenset(
+    {PolicyDenialReason.AI_NL_DISABLED_FOR_GUILD},
+)
 
 
 async def _build_preview_embed(
@@ -87,18 +108,10 @@ async def _build_preview_embed(
             is_fresh_user=is_fresh_user,
         )
         decision = await nlp.resolve(ctx, dry_run=True)
-        verdict = (
-            "✅ **allowed**"
-            if decision.allowed
-            else f"❌ **denied** · `{decision.reason_code.value}`"
-        )
+        verdict = _render_verdict(decision)
+        effective_summary = _render_effective_summary(decision)
         trace_lines = "\n".join(f"· {step}" for step in decision.precedence_trace)
-        body = (
-            f"{verdict}\n"
-            f"min_level=`{decision.effective_min_level}` · "
-            f"cooldown=`{decision.effective_cooldown}s`\n"
-            f"{trace_lines}"
-        )
+        body = f"{verdict}\n{effective_summary}\n{trace_lines}"
         # Discord field value cap is 1024; truncate the trace if needed.
         if len(body) > 1024:
             body = body[:1020] + "\n…"
@@ -106,6 +119,34 @@ async def _build_preview_embed(
 
     embed.set_footer(text="dry_run=True · administrator-only")
     return embed
+
+
+def _render_verdict(decision: Any) -> str:
+    """Render the one-line verdict, distinguishing hard kill from baseline."""
+    if decision.allowed:
+        return "✅ **allowed**"
+    reason = decision.reason_code
+    if reason in _HARD_KILL_REASONS:
+        marker = "⛔"
+        label = "hard-disabled"
+    elif reason in _BASELINE_DISABLED_REASONS:
+        marker = "🟡"
+        label = "baseline-denied (override-able)"
+    else:
+        marker = "❌"
+        label = "denied"
+    return f"{marker} **{label}** · `{reason.value}`"
+
+
+def _render_effective_summary(decision: Any) -> str:
+    """Render the compact effective-policy line for the embed."""
+    source = decision.effective_source or "—"
+    mode = decision.effective_mode or "—"
+    return (
+        f"effective: source=`{source}` mode=`{mode}` · "
+        f"min_level=`{decision.effective_min_level}` · "
+        f"cooldown=`{decision.effective_cooldown}s`"
+    )
 
 
 class _PreviewChannelSelect(discord.ui.ChannelSelect):

@@ -5,19 +5,31 @@ for a single message. Pure resolver: no DB writes, no I/O beyond the
 DB reads it has to do, no gateway calls. Callers feed the decision
 into the rest of the natural-language stage.
 
-Precedence (must match the binding decision in the refined plan):
+Precedence (most-specific-wins for mode; chain for value inheritance):
 
-    guild baseline (ai_guild_policy)
-        → category override (ai_category_policy)
-        → channel override (ai_channel_policy)
-        → role eligibility + min-level adjustment (ai_role_policy)
-        → per-message cooldown / fresh-user allowance
-        → final PolicyDecision
+    guild AI hard gate (ai_guild_policy.enabled)
+        → channel explicit mode (ai_channel_policy.mode)
+        → category explicit mode (ai_category_policy.mode)
+        → guild natural-language baseline (natural_language_enabled)
+        → role policy (ai_role_policy)
+        → level gate
+        → (cooldown gate — enforced by the caller's stage)
 
 Rules:
 
-* Channel ``mode='disabled'`` and category ``mode='disabled'`` always
-  win — they explicitly forbid role-based lowering.
+* ``ai_guild_policy.enabled=false`` is the only hard kill switch — no
+  scoped override can resurrect AI when AI itself is disabled.
+* Channel explicit mode wins over category explicit mode. Category
+  wins over the guild natural-language baseline.
+* ``mode='inherit'`` (and any missing row) means "no opinion at this
+  scope" — fall through to the next layer. Param values
+  (min_level/cooldown/profile) at an ``inherit`` scope still apply if
+  set, preserving the existing value-inheritance chain.
+* ``mode='disabled'`` at the selected scope denies with the
+  source-specific reason (CHANNEL_DISABLED / CATEGORY_DISABLED /
+  AI_NL_DISABLED_FOR_GUILD).
+* ``mode='mention_only'`` at the selected scope requires a mention,
+  regardless of which scope sourced it (channel or category).
 * Explicit role deny wins over any other allow.
 * Among allowed roles, the most permissive ``min_level_override``
   wins (i.e. the smallest configured floor).
@@ -30,7 +42,7 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
 
 from core.runtime.ai.contracts import PolicyDenialReason
 from utils.db import ai as ai_db
@@ -66,21 +78,52 @@ class PolicyDecision:
     decisions carry the sentinel ``PolicyDenialReason.NONE`` so the
     audit row's NOT NULL column stays meaningful without overloading.
 
+    ``effective_mode`` and ``effective_source`` carry the typed mode
+    decision that won the most-specific-wins selection. They are
+    empty strings on the early-return paths
+    (``GUILD_NOT_CONFIGURED``, ``AI_GLOBALLY_DISABLED``) where no
+    effective policy is computed.
+
     ``precedence_trace`` is populated only when :func:`resolve` is
-    called with ``dry_run=True`` (PR4B). It records each precedence
-    step that influenced the decision so the admin preview UI can
-    show "why" without re-implementing the resolver. Live decisions
-    leave it empty so the production audit / payload size stays flat.
+    called with ``dry_run=True``. It records each precedence step that
+    influenced the decision so the admin preview UI can show "why"
+    without re-implementing the resolver. Live decisions leave it
+    empty so the production audit / payload size stays flat.
     """
 
     allowed: bool
     reason_code: PolicyDenialReason
     effective_min_level: int
     effective_cooldown: int
+    effective_mode: str = ""
+    effective_source: str = ""
     instruction_profile_ids: tuple[int, ...] = ()
     policy_snapshot_hash: str = ""
     extra: dict[str, Any] = field(default_factory=dict)
     precedence_trace: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class _EffectivePolicy:
+    """Resolver-private selection result.
+
+    Captures the winning mode and the merged value-inheritance chain
+    so the mode/role/level gates downstream do not need to re-walk
+    the layers.
+    """
+
+    source: Literal["channel", "category", "guild"]
+    mode: Literal["always_reply", "mention_only", "disabled"]
+    min_level: int
+    cooldown_seconds: int
+    instruction_profile_ids: tuple[int, ...]
+
+
+_DISABLED_REASON_BY_SOURCE: dict[str, PolicyDenialReason] = {
+    "channel": PolicyDenialReason.CHANNEL_DISABLED,
+    "category": PolicyDenialReason.CATEGORY_DISABLED,
+    "guild": PolicyDenialReason.AI_NL_DISABLED_FOR_GUILD,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -142,13 +185,13 @@ async def resolve(
 ) -> PolicyDecision:
     """Run the precedence rule for ``ctx`` and return the decision.
 
-    When ``dry_run=True`` (PR4B), the decision's ``precedence_trace``
-    is populated with a step-by-step record of each level that
-    influenced the outcome. Live behavior is otherwise identical:
-    ``resolve`` is a pure read with no side effects on cooldown
-    state or audit (those live in the caller's stage), so a dry-run
-    is safe to call from an admin preview UI without disturbing
-    production resolution state.
+    When ``dry_run=True``, the decision's ``precedence_trace`` is
+    populated with a step-by-step record of each level that influenced
+    the outcome. Live behavior is otherwise identical: ``resolve`` is
+    a pure read with no side effects on cooldown state or audit
+    (those live in the caller's stage), so a dry-run is safe to call
+    from an admin preview UI without disturbing production resolution
+    state.
     """
     trace: list[str] | None = [] if dry_run else None
     bundle = await _load_bundle(ctx.guild_id)
@@ -158,7 +201,9 @@ async def resolve(
         # No row yet → guild has never configured AI; deny by default
         # so an unconfigured deployment never silently starts replying.
         if trace is not None:
-            trace.append("guild: no ai_guild_policy row → deny GUILD_NOT_CONFIGURED")
+            trace.append(
+                "guild_ai_gate: no ai_guild_policy row → deny GUILD_NOT_CONFIGURED",
+            )
         return PolicyDecision(
             allowed=False,
             reason_code=PolicyDenialReason.GUILD_NOT_CONFIGURED,
@@ -170,7 +215,7 @@ async def resolve(
 
     if not policy.get("enabled"):
         if trace is not None:
-            trace.append("guild: enabled=false → deny AI_GLOBALLY_DISABLED")
+            trace.append("guild_ai_gate: AI enabled=false → deny AI_GLOBALLY_DISABLED")
         return _deny(
             policy,
             reason=PolicyDenialReason.AI_GLOBALLY_DISABLED,
@@ -179,46 +224,24 @@ async def resolve(
             trace=trace,
         )
 
-    if not policy.get("natural_language_enabled"):
-        if trace is not None:
-            trace.append(
-                "guild: natural_language_enabled=false → deny AI_NL_DISABLED_FOR_GUILD",
-            )
-        return _deny(
-            policy,
-            reason=PolicyDenialReason.AI_NL_DISABLED_FOR_GUILD,
-            min_level=int(policy.get("minimum_level_default", 2)),
-            cooldown=int(policy.get("cooldown_seconds", 30)),
-            trace=trace,
-        )
+    if trace is not None:
+        trace.append("guild_ai_gate: AI enabled=true")
 
-    # Start with guild baseline.
+    # ---- Phase A: accumulate params (guild → category → channel) ----
+    # Mode votes are captured separately so most-specific-wins can pick
+    # without conflating "no opinion" with explicit modes.
     min_level = int(policy.get("minimum_level_default", 2))
     cooldown = int(policy.get("cooldown_seconds", 30))
     profile_ids: list[int] = []
     if policy.get("guild_instruction_profile_id"):
         profile_ids.append(int(policy["guild_instruction_profile_id"]))
-    if trace is not None:
-        trace.append(
-            f"guild: baseline min_level={min_level} cooldown={cooldown}s",
-        )
 
-    # Category override.
     cat_row = bundle["category"].get(ctx.category_id) if ctx.category_id else None
+    cat_mode: str | None = None
     if cat_row:
-        if cat_row["mode"] == "disabled":
-            if trace is not None:
-                trace.append(
-                    f"category {ctx.category_id}: mode=disabled → deny CATEGORY_DISABLED",
-                )
-            return _deny(
-                policy,
-                reason=PolicyDenialReason.CATEGORY_DISABLED,
-                min_level=min_level,
-                cooldown=cooldown,
-                profile_ids=profile_ids,
-                trace=trace,
-            )
+        row_mode = cat_row.get("mode")
+        if row_mode and row_mode != "inherit":
+            cat_mode = row_mode
         if cat_row.get("min_level") is not None:
             min_level = int(cat_row["min_level"])
         if cat_row.get("cooldown_seconds") is not None:
@@ -227,42 +250,18 @@ async def resolve(
             profile_ids.append(int(cat_row["instruction_profile_id"]))
         if trace is not None:
             trace.append(
-                f"category {ctx.category_id}: mode={cat_row['mode']} "
+                f"category_policy: mode={row_mode or 'inherit'} "
                 f"min_level={min_level} cooldown={cooldown}s",
             )
     elif trace is not None and ctx.category_id is not None:
-        trace.append(f"category {ctx.category_id}: no override (inherit)")
+        trace.append(f"category_policy: no row for {ctx.category_id} (inherit)")
 
-    # Channel override.
     chan_row = bundle["channel"].get(ctx.channel_id)
+    chan_mode: str | None = None
     if chan_row:
-        if chan_row["mode"] == "disabled":
-            if trace is not None:
-                trace.append(
-                    f"channel {ctx.channel_id}: mode=disabled → deny CHANNEL_DISABLED",
-                )
-            return _deny(
-                policy,
-                reason=PolicyDenialReason.CHANNEL_DISABLED,
-                min_level=min_level,
-                cooldown=cooldown,
-                profile_ids=profile_ids,
-                trace=trace,
-            )
-        if chan_row["mode"] == "mention_only" and not ctx.is_mention:
-            if trace is not None:
-                trace.append(
-                    f"channel {ctx.channel_id}: mode=mention_only and "
-                    "is_mention=false → deny NO_MENTION_REQUIRED",
-                )
-            return _deny(
-                policy,
-                reason=PolicyDenialReason.NO_MENTION_REQUIRED,
-                min_level=min_level,
-                cooldown=cooldown,
-                profile_ids=profile_ids,
-                trace=trace,
-            )
+        row_mode = chan_row.get("mode")
+        if row_mode and row_mode != "inherit":
+            chan_mode = row_mode
         if chan_row.get("min_level") is not None:
             min_level = int(chan_row["min_level"])
         if chan_row.get("cooldown_seconds") is not None:
@@ -271,41 +270,123 @@ async def resolve(
             profile_ids.append(int(chan_row["instruction_profile_id"]))
         if trace is not None:
             trace.append(
-                f"channel {ctx.channel_id}: mode={chan_row['mode']} "
+                f"channel_policy: mode={row_mode or 'inherit'} "
                 f"min_level={min_level} cooldown={cooldown}s",
             )
     elif trace is not None:
-        trace.append(f"channel {ctx.channel_id}: no override (inherit)")
+        trace.append(f"channel_policy: no row for {ctx.channel_id} (inherit)")
 
-    # Role eligibility.
+    # ---- Phase B: select effective policy (most-specific-wins for mode) ----
+    nl_enabled = bool(policy.get("natural_language_enabled"))
+    baseline_mode: Literal["always_reply", "disabled"] = (
+        "always_reply" if nl_enabled else "disabled"
+    )
+    if trace is not None:
+        trace.append(
+            f"guild_baseline: natural_language_enabled={nl_enabled} → "
+            f"baseline mode={baseline_mode}",
+        )
+
+    effective: _EffectivePolicy
+    if chan_mode is not None:
+        effective = _EffectivePolicy(
+            source="channel",
+            mode=chan_mode,  # type: ignore[arg-type]
+            min_level=min_level,
+            cooldown_seconds=cooldown,
+            instruction_profile_ids=tuple(profile_ids),
+        )
+    elif cat_mode is not None:
+        effective = _EffectivePolicy(
+            source="category",
+            mode=cat_mode,  # type: ignore[arg-type]
+            min_level=min_level,
+            cooldown_seconds=cooldown,
+            instruction_profile_ids=tuple(profile_ids),
+        )
+    else:
+        effective = _EffectivePolicy(
+            source="guild",
+            mode=baseline_mode,
+            min_level=min_level,
+            cooldown_seconds=cooldown,
+            instruction_profile_ids=tuple(profile_ids),
+        )
+
+    if trace is not None:
+        trace.append(
+            f"effective_policy: source={effective.source} mode={effective.mode} "
+            f"min_level={effective.min_level} cooldown={effective.cooldown_seconds}s",
+        )
+
+    # ---- Mode gate ----
+    if effective.mode == "disabled":
+        reason = _DISABLED_REASON_BY_SOURCE[effective.source]
+        if trace is not None:
+            trace.append(f"mode_gate: mode=disabled → deny {reason.name}")
+        return _deny(
+            policy,
+            reason=reason,
+            min_level=effective.min_level,
+            cooldown=effective.cooldown_seconds,
+            profile_ids=list(effective.instruction_profile_ids),
+            effective_mode=effective.mode,
+            effective_source=effective.source,
+            trace=trace,
+        )
+    if effective.mode == "mention_only" and not ctx.is_mention:
+        if trace is not None:
+            trace.append(
+                "mode_gate: mode=mention_only and is_mention=false → "
+                "deny NO_MENTION_REQUIRED",
+            )
+        return _deny(
+            policy,
+            reason=PolicyDenialReason.NO_MENTION_REQUIRED,
+            min_level=effective.min_level,
+            cooldown=effective.cooldown_seconds,
+            profile_ids=list(effective.instruction_profile_ids),
+            effective_mode=effective.mode,
+            effective_source=effective.source,
+            trace=trace,
+        )
+    if trace is not None:
+        trace.append("mode_gate: allowed")
+
+    # ---- Role gate ----
     role_decision = _resolve_role(bundle["role"], ctx.user_role_ids)
     if role_decision["denied"]:
         if trace is not None:
-            trace.append("role: explicit deny → deny ROLE_DENIED")
+            trace.append("role_gate: explicit deny → deny ROLE_DENIED")
         return _deny(
             policy,
             reason=PolicyDenialReason.ROLE_DENIED,
-            min_level=min_level,
-            cooldown=cooldown,
-            profile_ids=profile_ids,
+            min_level=effective.min_level,
+            cooldown=effective.cooldown_seconds,
+            profile_ids=list(effective.instruction_profile_ids),
+            effective_mode=effective.mode,
+            effective_source=effective.source,
             trace=trace,
         )
 
+    gated_min_level = effective.min_level
     if role_decision["override_min_level"] is not None:
         candidate = int(role_decision["override_min_level"])
-        min_level = min(min_level, candidate)
+        gated_min_level = min(gated_min_level, candidate)
         if trace is not None:
             trace.append(
-                f"role: most-permissive override → min_level={min_level}",
+                f"role_gate: most-permissive override → min_level={gated_min_level}",
             )
+    elif trace is not None:
+        trace.append("role_gate: allowed")
 
     bypass_cooldown = role_decision["bypass_cooldown"]
-    effective_cooldown = 0 if bypass_cooldown else cooldown
+    effective_cooldown = 0 if bypass_cooldown else effective.cooldown_seconds
     if trace is not None and bypass_cooldown:
-        trace.append("role: bypass_cooldown=true → effective_cooldown=0s")
+        trace.append("role_gate: bypass_cooldown=true → effective_cooldown=0s")
 
-    # Per-user level check (XP / fresh-user allowance).
-    if ctx.user_level < min_level:
+    # ---- Level gate (XP / fresh-user allowance) ----
+    if ctx.user_level < gated_min_level:
         if (
             ctx.is_fresh_user
             and ctx.is_mention
@@ -313,47 +394,52 @@ async def resolve(
         ):
             if trace is not None:
                 trace.append(
-                    f"user: level={ctx.user_level} < min={min_level} "
+                    f"level_gate: level={ctx.user_level} < min={gated_min_level} "
                     "BUT fresh-user mention allowance → allowed",
                 )
         else:
             if trace is not None:
                 trace.append(
-                    f"user: level={ctx.user_level} < min={min_level} → "
+                    f"level_gate: level={ctx.user_level} < min={gated_min_level} → "
                     "deny BELOW_MIN_LEVEL",
                 )
             return _deny(
                 policy,
                 reason=PolicyDenialReason.BELOW_MIN_LEVEL,
-                min_level=min_level,
+                min_level=gated_min_level,
                 cooldown=effective_cooldown,
-                profile_ids=profile_ids,
+                profile_ids=list(effective.instruction_profile_ids),
+                effective_mode=effective.mode,
+                effective_source=effective.source,
                 trace=trace,
             )
     elif trace is not None:
         trace.append(
-            f"user: level={ctx.user_level} ≥ min={min_level} → allowed",
+            f"level_gate: level={ctx.user_level} ≥ min={gated_min_level} → allowed",
         )
 
     snapshot = _hash(
         {
             "g": policy.get("generation", 0),
-            "min": min_level,
+            "min": gated_min_level,
             "cd": effective_cooldown,
-            "profiles": profile_ids,
+            "profiles": list(effective.instruction_profile_ids),
             "allowed": True,
         },
     )
     if trace is not None:
         trace.append(
-            f"final: allowed min_level={min_level} cooldown={effective_cooldown}s",
+            f"final_decision: allowed min_level={gated_min_level} "
+            f"cooldown={effective_cooldown}s",
         )
     return PolicyDecision(
         allowed=True,
         reason_code=PolicyDenialReason.NONE,
-        effective_min_level=min_level,
+        effective_min_level=gated_min_level,
         effective_cooldown=effective_cooldown,
-        instruction_profile_ids=tuple(profile_ids),
+        effective_mode=effective.mode,
+        effective_source=effective.source,
+        instruction_profile_ids=effective.instruction_profile_ids,
         policy_snapshot_hash=snapshot,
         precedence_trace=tuple(trace or ()),
     )
@@ -371,6 +457,8 @@ def _deny(
     min_level: int,
     cooldown: int,
     profile_ids: list[int] | None = None,
+    effective_mode: str = "",
+    effective_source: str = "",
     trace: list[str] | None = None,
 ) -> PolicyDecision:
     return PolicyDecision(
@@ -378,6 +466,8 @@ def _deny(
         reason_code=reason,
         effective_min_level=int(min_level),
         effective_cooldown=int(cooldown),
+        effective_mode=effective_mode,
+        effective_source=effective_source,
         instruction_profile_ids=tuple(profile_ids or ()),
         policy_snapshot_hash=_hash(
             {"g": policy.get("generation", 0), "deny": reason.value},

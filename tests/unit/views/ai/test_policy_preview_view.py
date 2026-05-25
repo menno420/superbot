@@ -97,9 +97,12 @@ async def test_build_preview_embed_renders_decision_and_trace(monkeypatch):
             reason_code=PolicyDenialReason.CHANNEL_DISABLED,
             effective_min_level=2,
             effective_cooldown=30,
+            effective_mode="disabled",
+            effective_source="channel",
             precedence_trace=(
-                "guild: baseline min_level=2 cooldown=30s",
-                "channel 555: mode=disabled → deny CHANNEL_DISABLED",
+                "guild_baseline: natural_language_enabled=True → baseline mode=always_reply",
+                "channel_policy: mode=disabled min_level=2 cooldown=30s",
+                "mode_gate: mode=disabled → deny CHANNEL_DISABLED",
             ),
         )
 
@@ -115,11 +118,15 @@ async def test_build_preview_embed_renders_decision_and_trace(monkeypatch):
     interaction = _fake_interaction()
     embed = await _build_preview_embed(interaction, _fake_channel())
     blob = "\n".join(f"{f.name}\n{f.value}" for f in embed.fields)
-    assert "❌" in blob
+    # Verdict line carries the denial marker + reason value.
     assert "denied" in blob
-    assert "CHANNEL_DISABLED" in blob
-    assert "channel 555: mode=disabled" in blob
-    assert "guild: baseline" in blob
+    assert "channel_disabled" in blob
+    # Effective summary line names source + mode.
+    assert "effective:" in blob and "source=`channel`" in blob
+    assert "mode=`disabled`" in blob
+    # Trace bullets are rendered verbatim.
+    assert "channel_policy: mode=disabled" in blob
+    assert "mode_gate" in blob
 
 
 async def test_build_preview_embed_uses_resolved_user_level(monkeypatch):
@@ -235,3 +242,139 @@ def test_chooser_has_preview_button_on_row_one_with_list():
     assert "Preview" in btns
     assert "List overrides" in btns
     assert btns["Preview"].row == btns["List overrides"].row
+
+
+# ---------------------------------------------------------------------------
+# Verdict marker distinguishes hard-kill from baseline-denied (PR 3).
+# ---------------------------------------------------------------------------
+
+
+async def test_build_preview_embed_renders_hard_kill_marker(monkeypatch):
+    async def _resolve(ctx, *, dry_run=False):
+        return nlp.PolicyDecision(
+            allowed=False,
+            reason_code=PolicyDenialReason.AI_GLOBALLY_DISABLED,
+            effective_min_level=2,
+            effective_cooldown=30,
+        )
+
+    monkeypatch.setattr(nlp, "resolve", _resolve)
+
+    async def _xp(_g, _u):
+        record = MagicMock()
+        record.level = 7
+        return record
+
+    monkeypatch.setattr("services.xp_service.get_user_record", _xp)
+
+    interaction = _fake_interaction()
+    embed = await _build_preview_embed(interaction, _fake_channel())
+    blob = "\n".join(f"{f.name}\n{f.value}" for f in embed.fields)
+    assert "hard-disabled" in blob
+    assert "ai_globally_disabled" in blob
+
+
+async def test_build_preview_embed_renders_baseline_disabled_marker(monkeypatch):
+    """``AI_NL_DISABLED_FOR_GUILD`` is the baseline reason — admins
+    can override per channel/category, so it renders as baseline-denied
+    rather than hard-disabled."""
+    async def _resolve(ctx, *, dry_run=False):
+        return nlp.PolicyDecision(
+            allowed=False,
+            reason_code=PolicyDenialReason.AI_NL_DISABLED_FOR_GUILD,
+            effective_min_level=2,
+            effective_cooldown=30,
+            effective_mode="disabled",
+            effective_source="guild",
+        )
+
+    monkeypatch.setattr(nlp, "resolve", _resolve)
+
+    async def _xp(_g, _u):
+        record = MagicMock()
+        record.level = 7
+        return record
+
+    monkeypatch.setattr("services.xp_service.get_user_record", _xp)
+
+    interaction = _fake_interaction()
+    embed = await _build_preview_embed(interaction, _fake_channel())
+    blob = "\n".join(f"{f.name}\n{f.value}" for f in embed.fields)
+    assert "baseline-denied" in blob
+    assert "ai_nl_disabled_for_guild" in blob
+    # Effective summary names guild as the source.
+    assert "source=`guild`" in blob
+
+
+# ---------------------------------------------------------------------------
+# Preview ↔ live parity for the inheritance bug case (PR 3).
+# ---------------------------------------------------------------------------
+
+
+async def test_preview_and_live_agree_for_bug_case(monkeypatch):
+    """Bug case integration parity test: ``guild natural_language_enabled=false``
+    plus ``channel mode=always_reply`` must resolve to allowed via the same
+    decision whether the resolver is called with ``dry_run=False`` (live
+    runtime) or ``dry_run=True`` (preview). Pins that the dry-run toggle
+    only adds bookkeeping; it never changes the decision.
+    """
+    from utils.db import ai as ai_db
+
+    async def _get_policy(_gid):
+        return {
+            "guild_id": 1,
+            "enabled": True,
+            "natural_language_enabled": False,
+            "default_provider": "deterministic",
+            "default_model": "",
+            "minimum_level_default": 2,
+            "cooldown_seconds": 30,
+            "fresh_user_mention_allowance": 1,
+            "guild_instruction_profile_id": None,
+            "generation": 1,
+        }
+
+    async def _list_channel(_gid):
+        return [{
+            "channel_id": 555,
+            "mode": "always_reply",
+            "min_level": 0,
+            "cooldown_seconds": 10,
+            "instruction_profile_id": None,
+        }]
+
+    async def _empty(_gid):
+        return []
+
+    monkeypatch.setattr(ai_db, "get_guild_policy", _get_policy)
+    monkeypatch.setattr(ai_db, "list_channel_policies", _list_channel)
+    monkeypatch.setattr(ai_db, "list_category_policies", _empty)
+    monkeypatch.setattr(ai_db, "list_role_policies", _empty)
+    nlp._reset_for_tests()
+
+    ctx = nlp.MessageContext(
+        guild_id=1,
+        channel_id=555,
+        category_id=200,
+        user_id=99,
+        user_level=5,
+        user_role_ids=(),
+        is_mention=False,
+        is_fresh_user=False,
+    )
+    live = await nlp.resolve(ctx)
+    dry = await nlp.resolve(ctx, dry_run=True)
+
+    # Same decision both ways.
+    assert live.allowed is True and dry.allowed is True
+    assert live.reason_code is dry.reason_code is PolicyDenialReason.NONE
+    assert live.effective_min_level == dry.effective_min_level == 0
+    assert live.effective_cooldown == dry.effective_cooldown == 10
+    assert live.effective_mode == dry.effective_mode == "always_reply"
+    assert live.effective_source == dry.effective_source == "channel"
+    # Only the trace differs.
+    assert live.precedence_trace == ()
+    assert any(
+        "effective_policy: source=channel" in step for step in dry.precedence_trace
+    )
+    nlp._reset_for_tests()
