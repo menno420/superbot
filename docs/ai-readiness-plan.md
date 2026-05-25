@@ -1,6 +1,6 @@
 # SuperBot AI Readiness Plan
 
-Status: planning and inert scaffold only. This document does not change runtime behavior.
+Status: planning + shipped scaffold. **M1 of the BTD6-top-level + AI-central-policy initiative shipped the AI subsystem's settings foundation** (`disbot/cogs/ai/schemas.py`, `utils/settings_keys/ai.py`, the `audit_log_channel` BindingSpec, and the `!ai settings` / `/ai settings` entry points). The typed AI policy tables and the central natural-language stage land in M2.
 
 ## Purpose
 

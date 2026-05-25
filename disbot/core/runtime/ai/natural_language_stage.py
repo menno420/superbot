@@ -1,0 +1,327 @@
+"""Central natural-language message stage (M2).
+
+One pipeline owns "should the bot reply?" for every product
+handler. Registered at ``order=70``. M5 retired the transitional
+``AI_BTD6_VIA_ROUTER`` env var; the legacy BTD6 passive stage
+stays unregistered so this stage is the only passive responder.
+
+Flow per message:
+
+    1. resolver:  ai_natural_language_policy.resolve()
+    2. router:    ai_task_router.classify()
+    3. feature:   for BTD6 → btd6_context_service.build()
+    4. stack:     ai_instruction_service.assemble()
+    5. gateway:   services.ai_gateway.run()  (M2 keeps this best-effort)
+    6. audit:     ai_decision_audit_service.record()
+
+Every code path through this stage produces exactly one
+``ai_decision_audit`` row — denial, skip, reply, degrade, error.
+"""
+
+from __future__ import annotations
+
+import logging
+import time
+import uuid
+from dataclasses import dataclass
+
+import discord
+
+from core.runtime.ai.contracts import AITask, PolicyDenialReason
+from core.runtime.message_pipeline import MessagePipelineContext, StageResult
+from services import (
+    ai_context_service,
+    ai_conversation_service,
+    ai_decision_audit_service,
+    ai_instruction_service,
+    ai_natural_language_policy,
+    ai_permission_service,
+    ai_task_router,
+)
+from services.ai_natural_language_policy import MessageContext
+
+logger = logging.getLogger("bot.runtime.ai.natural_language_stage")
+
+STAGE_NAME = "ai_natural_language"
+STAGE_ORDER = 70
+
+
+@dataclass
+class AINaturalLanguageStage:
+    """Single passive natural-language responder.
+
+    The class is a simple registration target for
+    :func:`core.runtime.message_pipeline.register`; the heavy
+    lifting lives in the service modules so each piece is unit-
+    testable in isolation.
+    """
+
+    name: str = STAGE_NAME
+    order: int = STAGE_ORDER
+
+    async def process(
+        self,
+        ctx: MessagePipelineContext,
+    ) -> StageResult:
+        message: discord.Message = ctx.message
+
+        # Cheap pre-filter: only flow through when there is text.
+        text = (message.content or "").strip()
+        if not text:
+            return StageResult()
+
+        # Earlier stages may already have handled this message.
+        if ctx.metadata.get("handled_by"):
+            return StageResult()
+
+        if message.guild is None:
+            return StageResult()
+
+        guild_id = message.guild.id
+        channel_id = message.channel.id if message.channel else 0
+        category_id = (
+            getattr(message.channel, "category_id", None) if message.channel else None
+        )
+        user_id = message.author.id
+        is_mention = ctx.bot.user is not None and ctx.bot.user.mentioned_in(message)
+
+        snap = await ai_permission_service.snapshot(guild_id, user_id)
+
+        msg_ctx = MessageContext(
+            guild_id=guild_id,
+            channel_id=channel_id,
+            category_id=category_id,
+            user_id=user_id,
+            user_level=snap.level,
+            user_role_ids=tuple(
+                role.id for role in getattr(message.author, "roles", ())
+            ),
+            is_mention=is_mention,
+            is_fresh_user=snap.is_fresh_user,
+        )
+        decision = await ai_natural_language_policy.resolve(msg_ctx)
+
+        # Route classification first so the audit row records both
+        # the routed task and the resolver decision even when denied.
+        routed = ai_task_router.classify(text)
+
+        if not decision.allowed:
+            await ai_decision_audit_service.record(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                category_id=category_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                decision="denied",
+                reason_code=decision.reason_code,
+                policy_snapshot_hash=decision.policy_snapshot_hash,
+                instruction_profile_ids=list(decision.instruction_profile_ids) or None,
+            )
+            return StageResult()
+
+        # Cooldown — checked after policy resolved so we can record
+        # the rejection with the right reason code.
+        if ai_permission_service.is_on_cooldown(
+            guild_id,
+            user_id,
+            decision.effective_cooldown,
+        ):
+            await ai_decision_audit_service.record(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                category_id=category_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                decision="denied",
+                reason_code=PolicyDenialReason.COOLDOWN_ACTIVE,
+                policy_snapshot_hash=decision.policy_snapshot_hash,
+            )
+            return StageResult()
+
+        try:
+            feature_facts = await _gather_feature_facts(routed.task, text)
+            stack = await ai_instruction_service.assemble(
+                guild_id=guild_id,
+                user_message=text,
+                profile_ids=decision.instruction_profile_ids,
+                retrieved_facts=feature_facts,
+            )
+            correlation_id = uuid.uuid4().hex
+            built = ai_context_service.build(
+                task=routed.task,
+                guild_id=guild_id,
+                actor_id=user_id,
+                channel_id=channel_id,
+                correlation_id=correlation_id,
+            )
+
+            reply_text = await _invoke_gateway(stack, built, ctx)
+        except Exception:
+            logger.exception(
+                "ai_natural_language_stage: feature pipeline raised "
+                "for guild=%s channel=%s message=%s",
+                guild_id,
+                channel_id,
+                message.id,
+            )
+            await ai_decision_audit_service.record(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                category_id=category_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                decision="errored",
+                reason_code=PolicyDenialReason.PROVIDER_UNAVAILABLE,
+                policy_snapshot_hash=decision.policy_snapshot_hash,
+                instruction_profile_ids=(
+                    list(stack.instruction_profile_ids) if "stack" in locals() else None
+                ),
+            )
+            return StageResult()
+
+        if not reply_text:
+            await ai_decision_audit_service.record(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                category_id=category_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                decision="skipped",
+                reason_code=PolicyDenialReason.NO_ROUTE_MATCHED,
+                policy_snapshot_hash=decision.policy_snapshot_hash,
+                instruction_profile_ids=list(stack.instruction_profile_ids) or None,
+            )
+            return StageResult()
+
+        try:
+            await message.channel.send(reply_text)
+        except discord.HTTPException:
+            logger.exception(
+                "ai_natural_language_stage: send failed for guild=%s "
+                "channel=%s message=%s",
+                guild_id,
+                channel_id,
+                message.id,
+            )
+            await ai_decision_audit_service.record(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                category_id=category_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                decision="errored",
+                reason_code=PolicyDenialReason.PROVIDER_UNAVAILABLE,
+                policy_snapshot_hash=decision.policy_snapshot_hash,
+                instruction_profile_ids=list(stack.instruction_profile_ids) or None,
+            )
+            return StageResult()
+
+        ai_permission_service.mark_reply_sent(guild_id, user_id)
+        ai_conversation_service.append(
+            guild_id,
+            channel_id,
+            user_id=user_id,
+            role="user",
+            text=text,
+        )
+        ai_conversation_service.append(
+            guild_id,
+            channel_id,
+            user_id=user_id,
+            role="assistant",
+            text=reply_text,
+        )
+
+        await ai_decision_audit_service.record(
+            guild_id=guild_id,
+            channel_id=channel_id,
+            category_id=category_id,
+            user_id=user_id,
+            message_id=message.id,
+            task=routed.task.value,
+            route=routed.route,
+            decision="replied",
+            reason_code=PolicyDenialReason.NONE,
+            policy_snapshot_hash=decision.policy_snapshot_hash,
+            instruction_profile_ids=list(stack.instruction_profile_ids) or None,
+        )
+
+        ctx.metadata["handled_by"] = STAGE_NAME
+        return StageResult(short_circuit=True)
+
+
+async def _gather_feature_facts(task: AITask, text: str) -> list[str]:
+    """Hand off to the feature owner for fact retrieval.
+
+    BTD6 routes through :mod:`services.btd6_context_service`. Other
+    tasks return an empty list — the gateway answers from the
+    instruction stack alone.
+    """
+    if task is AITask.BTD6_ANSWER:
+        from services import btd6_context_service
+
+        ctx = await btd6_context_service.build(text)
+        return list(ctx.facts)
+    return []
+
+
+async def _invoke_gateway(
+    stack: ai_instruction_service.InstructionStack,
+    built: ai_context_service.BuiltContext,
+    _ctx: MessagePipelineContext,
+) -> str:
+    """Run the AI gateway and return the text reply (or empty string).
+
+    M2 keeps this best-effort: the deterministic provider returns a
+    short canned response so the audit pipeline can be tested without
+    a network call. Real provider work continues to flow through
+    :mod:`services.ai_gateway`.
+    """
+    from core.runtime.ai.contracts import AIRequest, AIResponseMode
+
+    request = AIRequest(
+        context=built.request_context,
+        system_prompt=stack.render_system_prompt(),
+        payload={"text": stack.render_payload_text()},
+        mode=AIResponseMode.TEXT,
+    )
+    try:
+        from services import ai_gateway
+
+        response = await ai_gateway.run(request)
+        return (response.text or "").strip()
+    except Exception as exc:  # noqa: BLE001 — gateway is best-effort in M2
+        logger.warning(
+            "ai_natural_language_stage: gateway raised (%s); emitting "
+            "empty reply so audit row records the skip",
+            exc,
+        )
+        return ""
+
+
+# Convenience export used by AICog.cog_load when wiring the stage in.
+def get_stage() -> AINaturalLanguageStage:
+    return AINaturalLanguageStage()
+
+
+__all__ = [
+    "AINaturalLanguageStage",
+    "STAGE_NAME",
+    "STAGE_ORDER",
+    "get_stage",
+]
+
+
+# Compile-time timestamp for diagnostics; placed last so import-time
+# errors elsewhere don't depend on this value.
+_BUILD_TIMESTAMP = int(time.time())

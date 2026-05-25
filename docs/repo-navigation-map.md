@@ -189,7 +189,9 @@ A condensed version of `docs/help-command-surface-map.md` and
 | Subsystem | Cog file | View package | Service / mutation path | DB module |
 |---|---|---|---|---|
 | admin | `cogs/admin_cog.py` (+ `cogs/admin/`) | — | n/a (uses governance) | n/a |
+| ai | `cogs/ai_cog.py` (+ `cogs/ai/`) | `views/ai/` | `services/ai_gateway.py` (read-only); `services/ai_diagnostics_service.py` | n/a in M1 (typed `ai_*` policy tables land in M2) |
 | blackjack | `cogs/blackjack_cog.py` (+ `cogs/blackjack/`) | `views/blackjack/` | `services/economy_service.py` (coins); `services/blackjack_engine.py` (math) | n/a |
+| btd6 | `cogs/btd6_cog.py` (+ `cogs/btd6/`) | `views/btd6/` | `services/btd6_ai_service.py` (AI augmentation) | n/a in M1 (typed `btd6_*` source/strategy tables land in M3A/M4) |
 | channel | `cogs/channel_cog.py` | `views/channels/` | `governance/writes.py` | n/a |
 | chain | `cogs/chain_cog.py` | — | direct CRUD | `utils/db/games/chain.py` |
 | cleanup | `cogs/cleanup_cog.py` (+ `cogs/cleanup/`) | — | direct CRUD | `utils/db/moderation.py` |

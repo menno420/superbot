@@ -274,14 +274,21 @@ class BTD6Cog(commands.Cog):
         self._passive_stage: BTD6AssistantMessageStage | None = None
 
     async def cog_load(self) -> None:
-        """Register the passive message stage with the platform pipeline.
+        """Register the BTD6 SubsystemSchema; do NOT register a passive stage.
 
-        Default-off (`BTD6_PASSIVE_ENABLED` controls behaviour). Even
-        when disabled, the stage is registered so `!btd6 why-no-response`
-        has a place to read skip reasons from.
+        M2 introduced the central natural-language stage (order=70).
+        M5 retires the short-lived ``AI_BTD6_VIA_ROUTER`` env var: the
+        BTD6 passive stage stays unregistered unconditionally so the
+        central stage is the only passive replier. ``!btd6
+        why-no-response`` reads the AI decision audit table directly,
+        not the in-memory skip buffer of the (now unregistered)
+        legacy stage.
         """
-        self._passive_stage = BTD6AssistantMessageStage()
-        message_pipeline.register(self._passive_stage)
+        from cogs.btd6.schemas import register_schemas
+
+        register_schemas()
+        self._passive_stage = None
+        message_pipeline.unregister(BTD6_STAGE_NAME)
 
     async def cog_unload(self) -> None:
         """Remove the passive stage so reload/test cycles stay clean."""
@@ -369,6 +376,46 @@ class BTD6Cog(commands.Cog):
                 ctx.channel.id if ctx.channel else 0,
             ),
         )
+
+    @btd6_group.command(name="sources")  # type: ignore[arg-type]
+    async def btd6_sources(self, ctx: commands.Context) -> None:
+        """List BTD6 source registry rows (M3A: read-only)."""
+        from services import btd6_source_registry
+
+        rows = await btd6_source_registry.list_all()
+        if not rows:
+            await ctx.send("No BTD6 sources registered yet.")
+            return
+        lines = []
+        for row in rows[:25]:
+            state = "ON" if row["enabled"] else "off"
+            url = row.get("full_url") or row.get("path_template") or "—"
+            lines.append(
+                f"`{row['source_key']:<26}` tier {row['trust_tier']} · "
+                f"{state} · {url}",
+            )
+        await ctx.send("\n".join(lines))
+
+    @btd6_group.command(name="strategies")  # type: ignore[arg-type]
+    async def btd6_strategies(self, ctx: commands.Context) -> None:
+        """List strategy memory entries available in this guild."""
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from services import btd6_strategy_service
+
+        rows = await btd6_strategy_service.list_for_guild(ctx.guild.id, limit=10)
+        if not rows:
+            await ctx.send("No BTD6 strategies recorded for this guild yet.")
+            return
+        lines = []
+        for row in rows:
+            tag = "📦 published" if row["visibility"] == "published" else "🛡️ guild"
+            lines.append(
+                f"{tag} · `{row['approval_status']}` · **{row['title']}** "
+                f"— {row['summary'][:80]}",
+            )
+        await ctx.send("\n".join(lines))
 
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:

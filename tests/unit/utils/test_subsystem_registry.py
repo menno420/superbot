@@ -127,6 +127,36 @@ def test_real_registry_validates_under_schema_v2():
             )
 
 
+def test_btd6_has_no_parent_hub_and_no_hub_group():
+    """M1 of the BTD6-top-level + AI-central-policy initiative:
+    BTD6 is no longer a Games child.
+
+    Pinned so a future change cannot silently re-attach BTD6 to the
+    Games hub. The matching top-level HubEntry is pinned by
+    ``tests/unit/utils/test_hub_registry.py::test_btd6_is_top_level_hub``.
+    """
+    btd6 = reg.SUBSYSTEMS["btd6"]
+    assert btd6.get("parent_hub") is None, (
+        "btd6 must not declare a parent_hub — it is its own top-level hub"
+    )
+    assert btd6.get("hub_group") is None, (
+        "btd6 must not declare a hub_group — it is its own top-level hub"
+    )
+
+
+def test_ai_subsystem_exposes_settings_capabilities():
+    """M1 adds the auto-dispatched settings UI for the AI subsystem.
+
+    ``ai.settings.configure`` (write) and ``ai.settings.view`` (read)
+    must appear in the AI capability list so the SubsystemSchema's
+    capability validation passes at startup.
+    """
+    ai = reg.SUBSYSTEMS["ai"]
+    capabilities = set(ai.get("capabilities", ()))
+    assert "ai.settings.configure" in capabilities
+    assert "ai.settings.view" in capabilities
+
+
 # ---------------------------------------------------------------------------
 # Positive cases
 # ---------------------------------------------------------------------------

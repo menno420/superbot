@@ -13,6 +13,22 @@ additions should land in the appropriate submodule rather than directly in
 this ``__init__``.
 """
 
+from utils.settings_keys.ai import (
+    AI_COOLDOWN_SECONDS,
+    AI_DEFAULT_MODEL,
+    AI_DEFAULT_PROVIDER,
+    AI_ENABLED,
+    AI_FRESH_USER_MENTION_ALLOWANCE,
+    AI_GUILD_INSTRUCTION_PROFILE,
+    AI_MINIMUM_LEVEL_DEFAULT,
+    AI_NATURAL_LANGUAGE_ENABLED,
+)
+from utils.settings_keys.btd6 import BTD6_STRATEGY_SUBMISSION_CHANNEL
+from utils.settings_keys.btd6_cache import (
+    BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD,
+    BTD6_CACHE_DEFAULT_INTERVAL_SECONDS,
+    BTD6_CACHE_FRESHNESS_WARNING_HOURS,
+)
 from utils.settings_keys.economy import ECONOMY_LOG_CHANNEL
 from utils.settings_keys.games import (
     ACTIVE_TOURNAMENT,
@@ -40,7 +56,19 @@ from utils.settings_keys.xp import (
 
 __all__ = [
     "ACTIVE_TOURNAMENT",
+    "AI_COOLDOWN_SECONDS",
+    "AI_DEFAULT_MODEL",
+    "AI_DEFAULT_PROVIDER",
+    "AI_ENABLED",
+    "AI_FRESH_USER_MENTION_ALLOWANCE",
+    "AI_GUILD_INSTRUCTION_PROFILE",
+    "AI_MINIMUM_LEVEL_DEFAULT",
+    "AI_NATURAL_LANGUAGE_ENABLED",
     "BLACKJACK_DEFAULT_ENTRY_FEE",
+    "BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD",
+    "BTD6_CACHE_DEFAULT_INTERVAL_SECONDS",
+    "BTD6_CACHE_FRESHNESS_WARNING_HOURS",
+    "BTD6_STRATEGY_SUBMISSION_CHANNEL",
     "DEATHMATCH_TURN_TIMEOUT",
     "DEFAULT_CLEANUP_CHANNEL_NAME",
     "DEFAULT_MOD_CHANNEL_NAME",

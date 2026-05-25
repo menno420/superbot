@@ -50,11 +50,13 @@ def test_committed_hub_set_matches_promoted_hubs():
     Settings, Platform) plus any hubs promoted in later PRs.
 
     S7 → Economy. S8 → Moderation/Safety. S9 → Community. S10 →
-    Utility. The map's S10 milestone is now complete; future PRs
-    that add hubs must come with a real panel or fail this test.
+    Utility. M1 of the BTD6-top-level + AI-central-policy
+    initiative → BTD6 Assistant. Future PRs that add hubs must come
+    with a real panel or fail this test.
     """
     assert {hub.key for hub in HUBS} == {
         "games",
+        "btd6",
         "economy",
         "moderation",
         "community",
@@ -110,6 +112,30 @@ def test_moderation_hub_uses_existing_panel():
     assert moderation.primary_children == ("cleanup", "logging", "proof_channel")
     assert moderation.cross_link_children == ()
     assert moderation.panel_available is True
+
+
+def test_btd6_is_top_level_hub():
+    """M1 of the BTD6-top-level + AI-central-policy initiative:
+    BTD6 Assistant is its own top-level hub. It has no
+    primary_children (BTD6 has no sub-cogs), no cross_link_children,
+    is user-tier visible, and has a real panel.
+
+    Pinned so a future change cannot silently demote BTD6 back to a
+    Games child.
+    """
+    btd6 = get_hub("btd6")
+    assert btd6 is not None
+    assert btd6.entry_command == "!btd6"
+    assert btd6.minimum_tier == "user"
+    assert btd6.primary_children == ()
+    assert btd6.cross_link_children == ()
+    assert btd6.panel_available is True
+
+    # No Games cross-link by accepted decision.
+    games = get_hub("games")
+    assert games is not None
+    assert "btd6" not in games.primary_children
+    assert "btd6" not in games.cross_link_children
 
 
 def test_economy_hub_uses_existing_panel():
@@ -208,12 +234,13 @@ def test_cross_link_children_reference_real_subsystems():
 
 
 def test_hubs_for_tier_user_sees_only_user_tier_hubs():
-    """Normal users see Games + Economy + Community + Utility (user
-    tier) but not Moderation (moderator) or Admin/Settings/Platform
-    (administrator).
+    """Normal users see Games + BTD6 + Economy + Community + Utility
+    (user tier) but not Moderation (moderator) or
+    Admin/Settings/Platform (administrator).
     """
     visible = {hub.key for hub in hubs_for_tier("user")}
     assert "games" in visible
+    assert "btd6" in visible
     assert "economy" in visible
     assert "community" in visible
     assert "utility" in visible
@@ -229,6 +256,7 @@ def test_hubs_for_tier_moderator_sees_moderation_but_not_admin():
     """
     visible = {hub.key for hub in hubs_for_tier("moderator")}
     assert "games" in visible
+    assert "btd6" in visible
     assert "economy" in visible
     assert "community" in visible
     assert "utility" in visible
@@ -242,6 +270,7 @@ def test_hubs_for_tier_administrator_sees_all():
     visible = {hub.key for hub in hubs_for_tier("administrator")}
     assert visible == {
         "games",
+        "btd6",
         "economy",
         "moderation",
         "community",
@@ -256,6 +285,7 @@ def test_hubs_for_tier_owner_sees_all():
     visible = {hub.key for hub in hubs_for_tier("owner")}
     assert visible == {
         "games",
+        "btd6",
         "economy",
         "moderation",
         "community",

@@ -25,7 +25,6 @@ the cog regardless of provider state.
 from __future__ import annotations
 
 import logging
-import os
 from dataclasses import replace
 
 from core.runtime.ai.contracts import (
@@ -61,13 +60,17 @@ _TRUTHY = frozenset({"1", "true", "yes", "on"})
 
 
 def btd6_ai_enabled() -> bool:
-    """Return True if BTD6 AI augmentation is enabled in the env.
+    """Return True if BTD6 AI augmentation is currently allowed.
 
-    The Module 5 implementation gates on a process-level env var.
-    Module 6 of the AI/BTD6 plan adds per-guild gating on top of
-    this once guild settings infrastructure ships.
+    M5 of the BTD6-top-level + AI-central-policy initiative retires
+    the legacy ``BTD6_AI_ENABLED`` env var. AI Platform task policy
+    + ``ai_natural_language_policy`` resolution are the runtime
+    gates now; this function stays as a thin shim returning True so
+    the legacy ``answer_question(augment_with_ai=True)`` caller path
+    continues to work end-to-end (the policy/task layer is checked
+    immediately after).
     """
-    return os.getenv("BTD6_AI_ENABLED", "").strip().lower() in _TRUTHY
+    return True
 
 
 _AUGMENT_SYSTEM_PROMPT = (
@@ -134,10 +137,12 @@ async def answer_question(
 ) -> BTD6Response:
     """Resolve free-form ``text`` and return a typed response.
 
-    Augmentation is opt-in AND gated by env: ``BTD6_AI_ENABLED`` and
-    the AI platform's ``HELP_ANSWER`` task flag both have to be on
-    for any provider call to happen. The deterministic baseline is
-    always produced first.
+    Augmentation is opt-in AND gated by AI Platform task policy:
+    after M5 the only gate is :func:`task_enabled(AITask.HELP_ANSWER)`
+    (and, in production, the central ``ai_natural_language_policy``
+    resolver via the M2 stage). The deterministic baseline is always
+    produced first; ``btd6_ai_enabled`` is a no-op shim kept for
+    backwards-compatible callers.
     """
     intent = resolve(text)
     response = deterministic_answer(intent)

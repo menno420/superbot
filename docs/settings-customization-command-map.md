@@ -965,23 +965,38 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 1. **cog_module**: `disbot/cogs/ai_cog.py`
 2. **subsystem**: `ai`
 3. **current_commands**: `!ai` (group), `!ai status`, `!ai diagnostics`,
-   `!ai providers`, `!ai routing`, `!aimenu`. Slash equivalents
-   (`/ai status`, `/ai diagnostics`, `/ai providers`, `/ai routing`,
-   `/aimenu`) mirror the prefix surface.
+   `!ai providers`, `!ai routing`, `!ai settings`, `!aimenu`. Slash
+   equivalents (`/ai status`, `/ai diagnostics`, `/ai providers`,
+   `/ai routing`, `/ai settings`, `/aimenu`) mirror the prefix surface.
 4. **current_command_groups**: `!ai` group (administrator-only).
 5. **current_command_panel_or_menu**: `!aimenu` (alias of `!ai`) opens the
-   persistent panel `AIPanelView`.
+   persistent panel `AIPanelView`; `!ai settings` opens the
+   auto-dispatched `SubsystemSettingsView` for the AI subsystem.
 6. **help_menu_discoverable**: Yes — `AICog.build_help_menu_view`
    returns the panel embed + view.
 7. **dedicated_panel_command**: `!aimenu`.
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` →
    `AIPanelView` (read-only).
-9. **existing_SettingSpec_declarations**: none. AI configuration is
-   driven by process env vars (`AI_ENABLED`, `AI_DEFAULT_PROVIDER`,
-   `SETUP_ADVISOR_PROVIDER`), not per-guild settings — see
-   `core.runtime.ai.feature_flags`.
-10. **existing_settings_keys**: none.
-11. **existing_BindingSpec_entries**: none.
+9. **existing_SettingSpec_declarations**: M1 of the BTD6-top-level +
+   AI-central-policy initiative shipped the AI subsystem's scalar
+   surface in `disbot/cogs/ai/schemas.py` — eight SettingSpecs:
+   `ai_enabled`, `ai_natural_language_enabled`, `ai_default_provider`,
+   `ai_default_model`, `ai_minimum_level_default`,
+   `ai_cooldown_seconds`, `ai_fresh_user_mention_allowance`, and
+   `ai_guild_instruction_profile`. Each spec maps to the matching
+   `AI_*` constant in `disbot/utils/settings_keys/ai.py`. The
+   `audit_log_channel` BindingSpec is the single source of truth
+   for the AI audit channel across later milestones.
+10. **existing_settings_keys**: `AI_ENABLED`, `AI_NATURAL_LANGUAGE_ENABLED`,
+    `AI_DEFAULT_PROVIDER`, `AI_DEFAULT_MODEL`,
+    `AI_MINIMUM_LEVEL_DEFAULT`, `AI_COOLDOWN_SECONDS`,
+    `AI_FRESH_USER_MENTION_ALLOWANCE`, `AI_GUILD_INSTRUCTION_PROFILE`
+    (all in `disbot/utils/settings_keys/ai.py`).
+11. **existing_BindingSpec_entries**: `audit_log_channel` (channel,
+    optional, capability `ai.settings.configure`) — routed through
+    `BindingMutationPipeline`. Remains the canonical owner of the
+    AI audit channel; M2 does NOT duplicate this into the typed
+    `ai_guild_policy` table.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=administrator`;
     capabilities `ai.platform.view`, `ai.diagnostics.view`,
@@ -995,9 +1010,14 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 16. **missing_settings_pages**: none for the read-only MVP.
 17. **missing_menu_buttons_selects_modals**: none (panel is read-only).
 18. **setting_class_per_value**: n/a (process-level platform settings).
-19. **target_Settings_Manager_page**: optional future page that mirrors
-    the AI diagnostics snapshot read-only.
-20. **target_mutation_path**: none (read-only).
+19. **target_Settings_Manager_page**: `!settings subsystem ai` plus
+    the dedicated `!ai settings` / `/ai settings` entry points that
+    open the auto-dispatched `SubsystemSettingsView` directly.
+20. **target_mutation_path**: `SettingsMutationPipeline` (eight M1
+    scalars); `BindingMutationPipeline` (`audit_log_channel`). M2
+    adds `ai_policy_mutation` / `ai_instruction_mutation` for the
+    typed policy tables; both write through the same audit/event
+    plumbing.
 21. **target_help_or_menu_route**: existing; AI Platform reachable via
     Admin / Diagnostics hubs (`related_subsystems`).
 22. **provisionable_resources**: none.
@@ -1023,11 +1043,25 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 7. **dedicated_panel_command**: `!btd6menu`.
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` →
    `BTD6PanelView`.
-9. **existing_SettingSpec_declarations**: none yet. Module 6 of the
-   AI/BTD6 plan will add per-guild settings (channel list, mention
-   behaviour, AI augmentation toggle).
-10. **existing_settings_keys**: none.
-11. **existing_BindingSpec_entries**: none.
+9. **existing_SettingSpec_declarations**: M3B of the BTD6
+   top-level + AI-central-policy initiative landed BTD6's source-
+   cache scalars under `disbot/utils/settings_keys/btd6_cache.py`
+   (BTD6-owned cadence, NOT AI policy): per-source overrides live in
+   `btd6_source_registry.cache_policy_key`; the three guild-level
+   defaults are the named constants below. Module 6 / M4 add
+   strategy-submission channel binding + AI augmentation toggle.
+10. **existing_settings_keys**: `BTD6_CACHE_DEFAULT_INTERVAL_SECONDS`,
+    `BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD`,
+    `BTD6_CACHE_FRESHNESS_WARNING_HOURS`
+    (in `disbot/utils/settings_keys/btd6_cache.py`);
+    `BTD6_STRATEGY_SUBMISSION_CHANNEL` (M4, in
+    `disbot/utils/settings_keys/btd6.py`).
+11. **existing_BindingSpec_entries**: `btd6.strategy_submission_channel`
+    (M4) routes natural-language submissions in bound channels into
+    the strategy review pipeline; declared in
+    `disbot/cogs/btd6/schemas.py` with capability
+    `btd6.settings.configure`. Writes flow through
+    `BindingMutationPipeline`.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`;
     capabilities `btd6.query.ask`, `btd6.strategy.view`,
@@ -1042,8 +1076,12 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     button (Module 5/6).
 18. **setting_class_per_value**: n/a in Module 4 (no settings yet).
 19. **target_Settings_Manager_page**: Module 6.
-20. **target_mutation_path**: Module 6 — guild settings mutation via
-    existing settings infrastructure.
+20. **target_mutation_path**: `SettingsMutationPipeline` (BTD6
+    cache scalars + future per-guild scalars);
+    `BindingMutationPipeline` (`btd6.strategy_submission_channel`,
+    M4); `services.btd6_strategy_mutation` (audited strategy
+    state transitions); `services.btd6_source_mutation` (audited
+    source registry edits).
 21. **target_help_or_menu_route**: existing; BTD6 reachable via Games
     hub (`parent_hub="games"`).
 22. **provisionable_resources**: none.

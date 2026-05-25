@@ -534,3 +534,102 @@ async def test_clear_binding_rejects_below_tier_actor(_xp_schema):
             BindingKind.CHANNEL,
             actor,
         )
+
+
+# ---------------------------------------------------------------------------
+# M1 — AI audit_log_channel binding flows through the pipeline
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def _ai_schema():
+    """Register the real AI_CONFIG_SCHEMA for one test.
+
+    Mirrors the ``_xp_schema`` fixture but uses the actual M1 schema
+    so the test exercises the same BindingSpec the runtime sees.
+    """
+    from core.runtime import subsystem_schema
+
+    saved = subsystem_schema.all_schemas()
+    subsystem_schema._reset_for_tests()
+    from cogs.ai.schemas import AI_CONFIG_SCHEMA
+
+    subsystem_schema.register(AI_CONFIG_SCHEMA)
+    yield AI_CONFIG_SCHEMA
+    subsystem_schema._reset_for_tests()
+    for schema in saved.values():
+        subsystem_schema.register(schema)
+
+
+@pytest.mark.asyncio
+async def test_set_ai_audit_log_channel_binding_writes_through_pipeline(_ai_schema):
+    """The M1 AI audit-channel binding is the canonical owner.
+
+    A successful write must produce a BindingValue with the right
+    kind, invoke ``upsert_with_audit`` once, and emit
+    EVT_BINDING_CHANGED. Pinned so the M2 work does not bypass this
+    pipeline by adding an audit_log_channel_id column to
+    ai_guild_policy.
+    """
+    pipeline = BindingMutationPipeline()
+    actor = _admin_actor()
+    guild = _guild(guild_id=999)
+
+    with patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.BOUND),
+    ), patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=999,
+                subsystem="ai",
+                binding_name="audit_log_channel",
+                kind=BindingKind.CHANNEL,
+            ),
+        ),
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(),
+    ) as mock_upsert, patch(
+        "core.events.bus.emit",
+        AsyncMock(),
+    ) as mock_emit:
+        result = await pipeline.set_binding(
+            guild,
+            "ai",
+            "audit_log_channel",
+            BindingKind.CHANNEL,
+            5555,
+            actor,
+        )
+
+    assert result.new_target_id == 5555
+    assert result.new_status is ResourceStatus.BOUND
+    assert result.event_emitted is True
+    mock_upsert.assert_awaited_once()
+
+    binding_emits = [
+        c for c in mock_emit.await_args_list
+        if c.args and c.args[0] == EVT_BINDING_CHANGED
+    ]
+    assert len(binding_emits) == 1
+    assert binding_emits[0].kwargs.get("subsystem") == "ai"
+    assert binding_emits[0].kwargs.get("binding_name") == "audit_log_channel"
+
+
+@pytest.mark.asyncio
+async def test_set_ai_binding_rejects_undeclared_name(_ai_schema):
+    """A binding that does not appear in AI_CONFIG_SCHEMA must be
+    rejected before any DB write — the schema is the contract."""
+    pipeline = BindingMutationPipeline()
+    actor = _admin_actor()
+    with pytest.raises(UndeclaredBindingError):
+        await pipeline.set_binding(
+            _guild(),
+            "ai",
+            "audit_log_channel_id",  # M2-style typo, must be rejected
+            BindingKind.CHANNEL,
+            42,
+            actor,
+        )

@@ -121,9 +121,11 @@ def test_view_has_one_select_with_visible_hubs_plus_all_commands():
     values = {opt.value for opt in select.options}
     # Committed hubs visible to administrator + ALL_COMMANDS sentinel.
     # Economy joined in S7, Moderation in S8, Community in S9, Utility
-    # in S10 — the mother-hub map's S1-S10 mainline is now complete.
+    # in S10. M1 of the BTD6-top-level + AI-central-policy initiative
+    # added BTD6 Assistant as its own top-level hub.
     assert values == {
         "games",
+        "btd6",
         "economy",
         "moderation",
         "community",
@@ -140,6 +142,7 @@ def test_user_tier_view_omits_admin_hubs():
     select = _select(view)
     values = {opt.value for opt in select.options}
     assert "games" in values
+    assert "btd6" in values
     assert "community" in values
     assert "utility" in values
     assert ALL_COMMANDS_KEY in values

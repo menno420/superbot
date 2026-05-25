@@ -332,10 +332,6 @@ async def _build_panel_for(
         from cogs.chain_cog import ChainCog
 
         cog = ChainCog(MagicMock())
-    elif subsystem == "btd6":
-        from cogs.btd6_cog import BTD6Cog
-
-        cog = BTD6Cog(MagicMock())
     else:
         raise NotImplementedError(
             f"No cog mapping for actionability target {subsystem!r}. "
@@ -362,7 +358,6 @@ async def _build_panel_for(
         pytest.param("mining"),
         pytest.param("counting"),
         pytest.param("chain"),
-        pytest.param("btd6"),
     ],
 )
 async def test_games_subsystem_panel_is_actionable(subsystem: str) -> None:
@@ -543,6 +538,10 @@ def test_actionability_targets_match_registry_games_children() -> None:
     parameter list.
     """
     registry_games = _games_subsystems_from_registry()
+    # M1 of the BTD6-top-level + AI-central-policy initiative
+    # promoted BTD6 to its own top-level hub; it is no longer a
+    # Games child. The actionability contract for BTD6 lives in
+    # the BTD6 cog's own tests now.
     expected = {
         "blackjack",
         "rps_tournament",
@@ -550,7 +549,6 @@ def test_actionability_targets_match_registry_games_children() -> None:
         "mining",
         "counting",
         "chain",
-        "btd6",
     }
     new_in_registry = registry_games - expected
     removed_from_registry = expected - registry_games

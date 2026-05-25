@@ -26,6 +26,36 @@ class AITask(str, Enum):
     HELP_ANSWER = "help.answer"
     CODE_CONTEXT_EXPLAIN = "code_context.explain"
     MODERATION_ASSIST = "moderation.assist"
+    # M2 — central natural-language orchestrator routes per task.
+    BTD6_ANSWER = "btd6.answer"
+    GENERAL_NL_ANSWER = "general.nl_answer"
+    # M4 — strategy submission review (AI extracts + validates;
+    # publishing requires staff confirmation).
+    BTD6_STRATEGY_REVIEW = "btd6.strategy_review"
+
+
+class PolicyDenialReason(str, Enum):
+    """Stable reason codes recorded on every ai_decision_audit row.
+
+    Success rows (``decision IN ('allowed','replied')``) use the
+    sentinel ``NONE``; denial rows pick the specific cause. Every
+    code in this enum is safe to expose in admin diagnostics.
+    """
+
+    NONE = "none"
+    AI_GLOBALLY_DISABLED = "ai_globally_disabled"
+    AI_NL_DISABLED_FOR_GUILD = "ai_nl_disabled_for_guild"
+    CHANNEL_DISABLED = "channel_disabled"
+    CATEGORY_DISABLED = "category_disabled"
+    ROLE_DENIED = "role_denied"
+    BELOW_MIN_LEVEL = "below_min_level"
+    COOLDOWN_ACTIVE = "cooldown_active"
+    NO_MENTION_REQUIRED = "no_mention_required"
+    NOT_A_QUESTION = "not_a_question"
+    NO_ROUTE_MATCHED = "no_route_matched"
+    PROVIDER_UNAVAILABLE = "provider_unavailable"
+    GROUNDING_FAILED = "grounding_failed"
+    GUILD_NOT_CONFIGURED = "guild_not_configured"
 
 
 class AIScope(str, Enum):
@@ -155,5 +185,6 @@ __all__ = [
     "AISuggestionKind",
     "AITask",
     "Confidence",
+    "PolicyDenialReason",
     "Severity",
 ]
