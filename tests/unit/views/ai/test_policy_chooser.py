@@ -89,24 +89,15 @@ async def test_channel_button_opens_channel_select_view():
     assert isinstance(kwargs["view"], ChannelPolicySelectView)
 
 
-@pytest.mark.parametrize(
-    ("attr_name", "expected_substring"),
-    [
-        ("role_btn", "PR4A commit 3"),
-        ("list_btn", "PR4A commit 4"),
-    ],
-)
-async def test_placeholder_buttons_send_typed_followups(attr_name, expected_substring):
-    """Role and List are still placeholders in PR4A commits 1-2; they
-    must respond explicitly rather than silently drop the interaction
-    (Discord rejects unanswered interactions after ~3 seconds)."""
+async def test_list_button_still_placeholder():
+    """``List overrides`` is the only remaining placeholder; it lands
+    in PR4A commit 4. The button must still answer the interaction."""
     view = PolicyChooserView()
     interaction = _admin_interaction()
-    handler = getattr(view, attr_name)
-    await handler.callback(interaction)
+    await view.list_btn.callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     args, kwargs = interaction.response.send_message.call_args
-    assert expected_substring in args[0]
+    assert "PR4A commit 4" in args[0]
     assert kwargs.get("ephemeral") is True
 
 
