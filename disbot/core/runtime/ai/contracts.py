@@ -29,6 +29,9 @@ class AITask(str, Enum):
     # M2 — central natural-language orchestrator routes per task.
     BTD6_ANSWER = "btd6.answer"
     GENERAL_NL_ANSWER = "general.nl_answer"
+    # M4 — strategy submission review (AI extracts + validates;
+    # publishing requires staff confirmation).
+    BTD6_STRATEGY_REVIEW = "btd6.strategy_review"
 
 
 class PolicyDenialReason(str, Enum):

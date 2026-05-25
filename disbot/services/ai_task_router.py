@@ -35,15 +35,31 @@ class RoutedTask:
     confidence: float   # 0.0 .. 1.0 — informational only in M2
 
 
-def classify(message_text: str) -> RoutedTask:
+def classify(
+    message_text: str,
+    *,
+    channel_is_strategy_intake: bool = False,
+) -> RoutedTask:
     """Return the routed task for ``message_text``.
 
     BTD6-related questions route to :attr:`AITask.BTD6_ANSWER` so
     M3+ can layer in real fact retrieval. Everything else falls back
     to :attr:`AITask.GENERAL_NL_ANSWER`.
+
+    When ``channel_is_strategy_intake`` is True (M4 — the channel is
+    bound to ``btd6.strategy_submission_channel``) and the message
+    looks BTD6-related, route to :attr:`AITask.BTD6_STRATEGY_REVIEW`
+    so the message flows into the strategy review pipeline.
     """
     lowered = (message_text or "").lower()
-    if any(keyword in lowered for keyword in _BTD6_KEYWORDS):
+    looks_btd6 = any(keyword in lowered for keyword in _BTD6_KEYWORDS)
+    if channel_is_strategy_intake and looks_btd6:
+        return RoutedTask(
+            task=AITask.BTD6_STRATEGY_REVIEW,
+            route="btd6.strategy_review",
+            confidence=0.7,
+        )
+    if looks_btd6:
         return RoutedTask(
             task=AITask.BTD6_ANSWER,
             route="btd6.answer",

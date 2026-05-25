@@ -381,6 +381,8 @@ SUBSYSTEMS: dict[str, dict] = {
             "btd6.query.ask",
             "btd6.strategy.view",
             "btd6.diagnostics.view",
+            # M4: strategy submission channel binding capability.
+            "btd6.settings.configure",
         ],
     },
     "deathmatch": {

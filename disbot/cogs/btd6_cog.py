@@ -289,6 +289,11 @@ class BTD6Cog(commands.Cog):
         """
         import os
 
+        # M4: register BTD6 SubsystemSchema (strategy submission channel).
+        from cogs.btd6.schemas import register_schemas
+
+        register_schemas()
+
         legacy_active = os.getenv("AI_BTD6_VIA_ROUTER", "").strip().lower() not in (
             "1", "true", "yes", "on",
         )

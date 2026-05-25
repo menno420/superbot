@@ -1053,11 +1053,15 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 10. **existing_settings_keys**: `BTD6_CACHE_DEFAULT_INTERVAL_SECONDS`,
     `BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD`,
     `BTD6_CACHE_FRESHNESS_WARNING_HOURS`
-    (in `disbot/utils/settings_keys/btd6_cache.py`); M4 adds the
-    strategy-submission keys.
-11. **existing_BindingSpec_entries**: none in M3B; M4 adds
-    `btd6.strategy_submission_channel` (channel binding routing
-    natural-language submissions into the strategy review pipeline).
+    (in `disbot/utils/settings_keys/btd6_cache.py`);
+    `BTD6_STRATEGY_SUBMISSION_CHANNEL` (M4, in
+    `disbot/utils/settings_keys/btd6.py`).
+11. **existing_BindingSpec_entries**: `btd6.strategy_submission_channel`
+    (M4) routes natural-language submissions in bound channels into
+    the strategy review pipeline; declared in
+    `disbot/cogs/btd6/schemas.py` with capability
+    `btd6.settings.configure`. Writes flow through
+    `BindingMutationPipeline`.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`;
     capabilities `btd6.query.ask`, `btd6.strategy.view`,
@@ -1072,8 +1076,12 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     button (Module 5/6).
 18. **setting_class_per_value**: n/a in Module 4 (no settings yet).
 19. **target_Settings_Manager_page**: Module 6.
-20. **target_mutation_path**: Module 6 — guild settings mutation via
-    existing settings infrastructure.
+20. **target_mutation_path**: `SettingsMutationPipeline` (BTD6
+    cache scalars + future per-guild scalars);
+    `BindingMutationPipeline` (`btd6.strategy_submission_channel`,
+    M4); `services.btd6_strategy_mutation` (audited strategy
+    state transitions); `services.btd6_source_mutation` (audited
+    source registry edits).
 21. **target_help_or_menu_route**: existing; BTD6 reachable via Games
     hub (`parent_hub="games"`).
 22. **provisionable_resources**: none.
