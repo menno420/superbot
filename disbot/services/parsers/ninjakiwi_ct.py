@@ -81,7 +81,7 @@ def _split_tile_type(raw: Any) -> tuple[str | None, str | None]:
     if not isinstance(raw, str):
         return None, None
     if raw.startswith(_RELIC_PREFIX):
-        return "Relic", raw[len(_RELIC_PREFIX):].strip() or None
+        return "Relic", raw[len(_RELIC_PREFIX) :].strip() or None
     return raw, None
 
 

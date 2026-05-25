@@ -68,10 +68,12 @@ def parse_bosses_index(
                     "scoring_type_deprecated": entry.get("scoringType"),
                     "normal_scoring_type": entry.get("normalScoringType"),
                     "elite_scoring_type": entry.get("eliteScoringType"),
-                    "leaderboard_standard_players_1_url":
-                        entry.get("leaderboard_standard_players_1"),
-                    "leaderboard_elite_players_1_url":
-                        entry.get("leaderboard_elite_players_1"),
+                    "leaderboard_standard_players_1_url": entry.get(
+                        "leaderboard_standard_players_1",
+                    ),
+                    "leaderboard_elite_players_1_url": entry.get(
+                        "leaderboard_elite_players_1",
+                    ),
                     "metadata_standard_url": entry.get("metadataStandard"),
                     "metadata_elite_url": entry.get("metadataElite"),
                 },
