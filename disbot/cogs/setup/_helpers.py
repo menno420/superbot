@@ -80,18 +80,21 @@ async def resolve_hub_entry(
         from services import setup_draft
         from views.setup.hub import SetupHubView, build_hub_embed
 
+        # Prefer the typed row reader so the hub's progress badges
+        # use ``section_slug`` provenance instead of the weaker
+        # ``op_kinds`` heuristic (Phase 2 progress alignment).
         try:
-            draft_ops = await setup_draft.list_ops(guild.id)
+            draft_rows = await setup_draft.list_rows(guild.id)
         except Exception:
             logger.exception(
-                "resolve_hub_entry: setup_draft.list_ops failed",
+                "resolve_hub_entry: setup_draft.list_rows failed",
             )
-            draft_ops = []
+            draft_rows = []
         hub = SetupHubView(member, session=session)
         embed = build_hub_embed(
             session,
-            pending_ops=len(draft_ops),
-            draft_ops=draft_ops,
+            pending_ops=len(draft_rows),
+            draft_ops=draft_rows,
         )
         return embed, hub, "hub"
 

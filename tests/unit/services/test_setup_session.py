@@ -67,6 +67,18 @@ def _mock_db():
             "services.setup_session.db.clear_skipped_sections",
             new_callable=AsyncMock,
         ) as clear_skipped_mock,
+        patch(
+            "services.setup_session.db.add_acknowledged_section",
+            new_callable=AsyncMock,
+        ) as add_acknowledged_mock,
+        patch(
+            "services.setup_session.db.remove_acknowledged_section",
+            new_callable=AsyncMock,
+        ) as remove_acknowledged_mock,
+        patch(
+            "services.setup_session.db.clear_acknowledged_sections",
+            new_callable=AsyncMock,
+        ) as clear_acknowledged_mock,
     ):
         yield {
             "get": get_mock,
@@ -77,6 +89,9 @@ def _mock_db():
             "add_skipped_section": add_skipped_mock,
             "remove_skipped_section": remove_skipped_mock,
             "clear_skipped_sections": clear_skipped_mock,
+            "add_acknowledged_section": add_acknowledged_mock,
+            "remove_acknowledged_section": remove_acknowledged_mock,
+            "clear_acknowledged_sections": clear_acknowledged_mock,
         }
 
 
@@ -312,3 +327,48 @@ async def test_add_delegated_admin_does_not_double_emit_audit_on_idempotent_gran
         await svc.add_delegated_admin(guild_id=1, user_id=42, actor_id=99)
         await svc.add_delegated_admin(guild_id=1, user_id=42, actor_id=99)
     assert audit_mock.await_count == 2
+
+
+# ---------------------------------------------------------------------------
+# ack_section / unack_section wrappers (Phase 2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_ack_section_routes_to_db_layer(_mock_db):
+    await svc.ack_section(1, "purpose")
+    _mock_db["add_acknowledged_section"].assert_awaited_once_with(1, "purpose")
+    # Acknowledging implicitly unmarks any prior skip so the operator
+    # who skipped and then changed their mind sees a clean state.
+    _mock_db["remove_skipped_section"].assert_awaited_once_with(1, "purpose")
+
+
+@pytest.mark.asyncio
+async def test_unack_section_routes_to_db_layer(_mock_db):
+    await svc.unack_section(1, "purpose")
+    _mock_db["remove_acknowledged_section"].assert_awaited_once_with(1, "purpose")
+
+
+@pytest.mark.asyncio
+async def test_mark_complete_clears_acknowledged_sections(_mock_db):
+    with patch("services.setup_session._clear_draft", new_callable=AsyncMock):
+        await svc.mark_complete(1)
+    _mock_db["clear_acknowledged_sections"].assert_awaited_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_dismiss_clears_acknowledged_sections(_mock_db):
+    with patch("services.setup_session._clear_draft", new_callable=AsyncMock):
+        await svc.dismiss(1)
+    _mock_db["clear_acknowledged_sections"].assert_awaited_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_resume_session_hydrates_acknowledged_sections(_mock_db):
+    _mock_db["get"].return_value = _row(
+        setup_status="in_progress",
+        acknowledged_sections=["purpose", "ai_setup"],
+    )
+    session = await svc.resume_session(1)
+    assert session is not None
+    assert session.acknowledged_sections == frozenset({"purpose", "ai_setup"})

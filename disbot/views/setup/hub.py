@@ -275,39 +275,58 @@ class SetupHubView(BaseView):
             if not await safe_defer(interaction, ephemeral=True, thinking=True):
                 return
             from services import setup_draft
+            from views.setup.section_card import call_recommended_ops_builder
 
             section_totals: dict[str, int] = {}
+            conflicts_total = 0
             for section in sections:
                 builder = section.recommended_ops_builder
                 if builder is None:
                     continue
                 try:
-                    ops = await builder(interaction.guild)
+                    ops = await call_recommended_ops_builder(
+                        builder,
+                        guild=interaction.guild,
+                        session=self.session,
+                        depth=(
+                            self.session.depth if self.session is not None else None
+                        ),
+                        section_slug=section.slug,
+                    )
                 except Exception:
                     logger.exception(
                         "hub.apply_all_recommended: builder failed (slug=%s)",
                         section.slug,
                     )
                     continue
-                staged = 0
-                for op in ops:
-                    try:
-                        await setup_draft.append(
-                            op,
-                            guild_id=interaction.guild_id,
-                            actor_id=interaction.user.id,
-                            label=f"[apply-all] {section.slug}.{op.kind}",
-                            metadata={"source": "setup_ux:recommended"},
-                        )
-                        staged += 1
-                    except Exception:
-                        logger.exception(
-                            "hub.apply_all_recommended: append failed",
-                        )
-                if staged:
-                    section_totals[section.slug] = staged
+                if not ops:
+                    continue
+                # Transactional replace so a repeated press of "Apply
+                # all recommended" doesn't accumulate duplicate rows;
+                # custom / preset / manual / repair rows at the same
+                # slot are preserved.
+                try:
+                    result = await setup_draft.replace_recommended_for_section(
+                        interaction.guild_id,
+                        section.slug,
+                        ops,
+                        actor_id=interaction.user.id,
+                        labels={
+                            idx: f"[apply-all] {section.slug}.{op.kind}"
+                            for idx, op in enumerate(ops)
+                        },
+                    )
+                except Exception:
+                    logger.exception(
+                        "hub.apply_all_recommended: "
+                        "replace_recommended_for_section failed",
+                    )
+                    continue
+                if result.inserted_seqs:
+                    section_totals[section.slug] = len(result.inserted_seqs)
+                conflicts_total += len(result.conflicts)
 
-            if not section_totals:
+            if not section_totals and not conflicts_total:
                 await interaction.followup.send(
                     "No recommended operations were generated. Most likely "
                     "the guild has no high-confidence channel matches or "
@@ -321,12 +340,21 @@ class SetupHubView(BaseView):
                 for slug, count in section_totals.items()
             )
             word = "operation" if total == 1 else "operations"
-            await interaction.followup.send(
+            msg = (
                 f"✅ Staged **{total} {word}** across "
                 f"{len(section_totals)} section(s). Open Final review "
-                f"to apply.\n\n{lines}",
-                ephemeral=True,
+                f"to apply."
             )
+            if lines:
+                msg += f"\n\n{lines}"
+            if conflicts_total:
+                conflict_word = "row" if conflicts_total == 1 else "rows"
+                msg += (
+                    f"\n\n⚠️ Preserved **{conflicts_total} custom / preset "
+                    f"{conflict_word}** at conflicting slot(s); no overwrite. "
+                    "Edit Final review to swap them out if needed."
+                )
+            await interaction.followup.send(msg, ephemeral=True)
 
         button.callback = _callback  # type: ignore[method-assign]
         return button
