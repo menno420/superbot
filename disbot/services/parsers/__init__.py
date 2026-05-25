@@ -16,6 +16,7 @@ from __future__ import annotations
 from services.parsers import (  # noqa: F401 — register-on-import side effects
     ninjakiwi_bosses,
     ninjakiwi_challenges,
+    ninjakiwi_ct,
     ninjakiwi_events,
     ninjakiwi_maps,
     ninjakiwi_odyssey,
