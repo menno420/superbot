@@ -35,7 +35,7 @@ async def get(guild_id: int) -> dict[str, Any] | None:
         SELECT guild_id, guild_name, owner_id, joined_at, setup_status,
                setup_channel_id, setup_message_id, last_readiness_score,
                current_step, delegated_admins, skipped_sections,
-               acknowledged_sections, depth,
+               acknowledged_sections, depth, purpose,
                created_at, updated_at
         FROM setup_session
         WHERE guild_id = $1
@@ -299,6 +299,46 @@ async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
 
 KNOWN_DEPTHS: frozenset[str] = frozenset({"quick", "standard", "advanced"})
 
+#: Allowed values for ``setup_session.purpose``.  Validated at the Python
+#: layer (migration 047 has no DB CHECK) so new options can land without
+#: a follow-up migration.  Sections that read ``session.purpose`` should
+#: treat unknown / NULL values as "unspecified".
+KNOWN_PURPOSES: frozenset[str] = frozenset(
+    {
+        "community",
+        "gaming_btd6",
+        "support",
+        "moderation",
+        "ai_helper",
+        "testing_private",
+        "mixed",
+    },
+)
+
+
+async def set_purpose(guild_id: int, purpose: str | None) -> None:
+    """Persist (or clear) the operator's ``purpose`` choice.
+
+    Phase 4 of the setup wizard.  Accepts any value in
+    :data:`KNOWN_PURPOSES` or ``None`` (clears the pick).  Other
+    values raise ``ValueError``.
+    """
+    if purpose is not None and purpose not in KNOWN_PURPOSES:
+        raise ValueError(
+            f"purpose must be one of {sorted(KNOWN_PURPOSES)} or None, "
+            f"got {purpose!r}",
+        )
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET purpose    = $2,
+               updated_at = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+        purpose,
+    )
+
 
 async def set_depth(guild_id: int, depth: str | None) -> None:
     """Persist the operator's depth choice (or ``None`` to unset).
@@ -325,6 +365,7 @@ async def set_depth(guild_id: int, depth: str | None) -> None:
 
 __all__ = [
     "KNOWN_DEPTHS",
+    "KNOWN_PURPOSES",
     "KNOWN_STATUSES",
     "add_acknowledged_section",
     "add_delegated_admin",
@@ -337,6 +378,7 @@ __all__ = [
     "remove_delegated_admin",
     "remove_skipped_section",
     "set_depth",
+    "set_purpose",
     "set_readiness_score",
     "set_setup_message_id",
     "set_status",

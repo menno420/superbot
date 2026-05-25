@@ -46,6 +46,7 @@ class SetupSession:
     skipped_sections: frozenset[str] = frozenset()
     acknowledged_sections: frozenset[str] = frozenset()
     depth: str | None = None
+    purpose: str | None = None
 
     @classmethod
     def from_row(cls, row: dict[str, Any]) -> SetupSession:
@@ -64,6 +65,7 @@ class SetupSession:
                 row.get("acknowledged_sections") or (),
             ),
             depth=row.get("depth"),
+            purpose=row.get("purpose"),
         )
 
 
@@ -290,6 +292,18 @@ async def set_depth(guild_id: int, depth: str | None) -> None:
     await db.set_depth(guild_id, depth)
 
 
+async def set_purpose(guild_id: int, purpose: str | None) -> None:
+    """Persist the operator's server-purpose choice (Phase 4).
+
+    Allowed values are in :data:`utils.db.setup_session.KNOWN_PURPOSES`;
+    ``None`` clears the pick.  Purpose is session metadata only — it
+    does not stage any setup operation.  Section builders that read
+    ``session.purpose`` should treat unknown / NULL values as
+    "unspecified" and fall back to neutral defaults.
+    """
+    await db.set_purpose(guild_id, purpose)
+
+
 # ---------------------------------------------------------------------------
 # Delegated-admin lifecycle
 # ---------------------------------------------------------------------------
@@ -457,6 +471,7 @@ __all__ = [
     "remove_delegated_admin",
     "resume_session",
     "set_depth",
+    "set_purpose",
     "set_setup_message_id",
     "start_session",
     "unack_section",

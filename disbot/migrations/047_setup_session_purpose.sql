@@ -1,0 +1,35 @@
+-- Migration 047: setup_session.purpose column.
+--
+-- Phase 4 of the setup-wizard plan.  Records the operator's
+-- single-pick answer to "what is this server for?" so downstream
+-- recommended-ops builders (logging presets, AI setup link copy,
+-- cleanup defaults, etc.) can adapt their suggestions.
+--
+-- Purpose is **session metadata only**:
+-- * It is NOT a setup mutation — Final Review does not consume it.
+-- * The Purpose section emits zero draft operations.
+-- * It is never written to guild config, AI policy, or any
+--   subsystem setting; that mapping lives in each section's builder
+--   if it cares to read ``session.purpose``.
+--
+-- Valid values are validated at the Python layer
+-- (``services.setup_session._KNOWN_PURPOSES``) rather than via a
+-- DB CHECK so new options can land without an additional migration.
+-- The current set:
+--
+--   community | gaming_btd6 | support | moderation
+--   | ai_helper | testing_private | mixed
+--
+-- ``NULL`` means "not picked yet" — the wizard renders the Purpose
+-- step as NOT_STARTED.
+--
+-- Rollback
+-- --------
+-- ``ALTER TABLE setup_session DROP COLUMN purpose`` removes the
+-- column.  No FK depends on it; recommended-ops builders gracefully
+-- treat missing purpose as "unspecified".
+--
+-- Forward-only and idempotent.
+
+ALTER TABLE setup_session
+    ADD COLUMN IF NOT EXISTS purpose TEXT;
