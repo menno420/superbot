@@ -144,7 +144,7 @@ applicable, the resolver's `dry_run=True` trace). No surface reads raw
 |---|---|---|
 | `!ai status` | `provider`, `policy`, `readiness_summary` | — |
 | `!ai readiness` | full snapshot | `services.ai_readiness_service.scan` |
-| `!ai policy` | `policy` (overrides), `provider` (header) | resolver `dry_run=True` for the effective decision; optional `[#channel]` arg dry-runs against that channel (PR-2) |
+| `!ai policy` | `policy` (overrides), `provider` (header) | resolver `dry_run=True` is the source of resolved precedence; optional `[#channel]` arg dry-runs against that channel. Snapshot is ancillary only — used for override counts + provider/model header, never for the resolved decision. |
 | `!ai memory` | `memory`, `audit.latest` (last reply memory) | — (PR-3) |
 | `!ai settings` | `policy`, `projection`, `instruction` | grouped renderer (PR-4B) |
 | `!ai routing` | `provider` | `services.ai_diagnostics_service.list_task_routing`; optional `[task]` arg filters to one row |

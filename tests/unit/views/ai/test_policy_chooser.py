@@ -100,7 +100,11 @@ async def test_all_scope_buttons_have_real_implementations():
 
 def test_chooser_view_has_one_button_per_scope():
     """Smoke check: five buttons (Channel / Category / Role on row 0,
-    Preview / List overrides on row 1) sit on the chooser."""
+    Effective policy / List overrides on row 1) sit on the chooser.
+    The Preview button was renamed to Effective policy in PR-2; the
+    underlying ``preview_btn`` handler (and its custom_id contract)
+    is unchanged.
+    """
     view = PolicyChooserView()
     labels = sorted(
         item.label
@@ -110,7 +114,7 @@ def test_chooser_view_has_one_button_per_scope():
     assert labels == [
         "Category",
         "Channel",
+        "Effective policy",
         "List overrides",
-        "Preview",
         "Role",
     ]

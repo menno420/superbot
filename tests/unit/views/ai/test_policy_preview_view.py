@@ -229,8 +229,11 @@ async def test_chooser_preview_button_opens_preview_view():
 
 
 def test_chooser_has_preview_button_on_row_one_with_list():
-    """Preview is an admin-only secondary action — same row as List
-    so the layout stays predictable."""
+    """The "Effective policy" button (renamed from Preview in PR-2)
+    is an admin-only secondary action — same row as List so the
+    layout stays predictable. The handler name (``preview_btn``)
+    is the persistent custom_id contract and is unchanged.
+    """
     from views.ai.policy.chooser import PolicyChooserView
 
     view = PolicyChooserView()
@@ -239,9 +242,9 @@ def test_chooser_has_preview_button_on_row_one_with_list():
         for item in view.children
         if isinstance(item, discord.ui.Button)
     }
-    assert "Preview" in btns
+    assert "Effective policy" in btns
     assert "List overrides" in btns
-    assert btns["Preview"].row == btns["List overrides"].row
+    assert btns["Effective policy"].row == btns["List overrides"].row
 
 
 # ---------------------------------------------------------------------------

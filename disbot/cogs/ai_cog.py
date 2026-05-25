@@ -438,32 +438,41 @@ class AICog(commands.Cog):
 
     @ai_group.command(name="policy")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
-    async def ai_policy(self, ctx: commands.Context) -> None:
-        """Show the typed policy row for this guild."""
+    async def ai_policy(
+        self,
+        ctx: commands.Context,
+        channel: discord.TextChannel | None = None,
+    ) -> None:
+        """Show the effective AI policy for a channel (dry-run resolver).
+
+        With no argument, dry-runs against the current channel; with
+        ``#channel`` dry-runs against the named one. The embed renders
+        the precedence trace produced by
+        :func:`ai_natural_language_policy.resolve(dry_run=True)` so
+        operators can see exactly which scope won.
+        """
         if not ctx.guild:
             await ctx.send("This command requires a guild context.")
             return
-        from utils.db import ai as ai_db
-
-        policy = await ai_db.get_guild_policy(ctx.guild.id)
-        if not policy:
+        target_channel = channel if channel is not None else ctx.channel
+        if not isinstance(target_channel, discord.TextChannel):
             await ctx.send(
-                "No typed AI policy row yet — set `ai.enabled` via `!settings`"
-                " to create one.",
+                "This command needs a text-channel context. Pass `#channel`"
+                " or run it from a regular text channel.",
             )
             return
-        lines = [
-            f"**enabled** = `{policy['enabled']}`",
-            f"**natural_language_enabled** = `{policy['natural_language_enabled']}`",
-            f"**default_provider** = `{policy['default_provider']}`",
-            f"**default_model** = `{policy['default_model'] or '—'}`",
-            f"**minimum_level_default** = `{policy['minimum_level_default']}`",
-            f"**cooldown_seconds** = `{policy['cooldown_seconds']}`",
-            f"**fresh_user_mention_allowance** ="
-            f" `{policy['fresh_user_mention_allowance']}`",
-            f"**generation** = `{policy['generation']}`",
-        ]
-        await ctx.send("\n".join(lines))
+        from services import ai_config_projection_service
+        from views.ai.policy.preview_view import build_effective_policy_embed
+
+        snapshot = await ai_config_projection_service.build_snapshot(ctx.guild.id)
+        embed = await build_effective_policy_embed(
+            guild=ctx.guild,
+            member=ctx.author,
+            channel=target_channel,
+            snapshot=snapshot,
+            title="AI Effective Policy",
+        )
+        await ctx.send(embed=embed)
 
     @ai_group.command(name="diagnostics")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
@@ -677,6 +686,48 @@ class AICog(commands.Cog):
         embed = await build_support_report_embed(
             guild_id=interaction.guild.id,
             bot_user_id=bot_user_id,
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @ai_app_group.command(
+        name="policy",
+        description=("Show the effective AI policy for a channel (dry-run resolver)."),
+    )
+    @app_commands.describe(
+        channel="Channel to dry-run against (defaults to here).",
+    )
+    @app_commands.checks.has_permissions(administrator=True)
+    async def ai_policy_slash(
+        self,
+        interaction: discord.Interaction,
+        channel: discord.TextChannel | None = None,
+    ) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "This command requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        target_channel = channel if channel is not None else interaction.channel
+        if not isinstance(target_channel, discord.TextChannel):
+            await interaction.response.send_message(
+                "This command needs a text-channel context. Pass `channel:`"
+                " or run it from a regular text channel.",
+                ephemeral=True,
+            )
+            return
+        from services import ai_config_projection_service
+        from views.ai.policy.preview_view import build_effective_policy_embed
+
+        snapshot = await ai_config_projection_service.build_snapshot(
+            interaction.guild.id,
+        )
+        embed = await build_effective_policy_embed(
+            guild=interaction.guild,
+            member=interaction.user,
+            channel=target_channel,
+            snapshot=snapshot,
+            title="AI Effective Policy",
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 

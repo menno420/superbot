@@ -50,22 +50,33 @@ _BASELINE_DISABLED_REASONS = frozenset(
 )
 
 
-async def _build_preview_embed(
-    interaction: discord.Interaction,
+async def build_effective_policy_embed(
+    *,
+    guild: discord.Guild,
+    member: Any,
     channel: Any,
+    snapshot: Any = None,
+    title: str = "AI policy preview",
 ) -> discord.Embed:
-    """Run resolve(dry_run=True) twice (with/without mention) and
+    """Run ``resolve(dry_run=True)`` twice (with/without mention) and
     render both decisions in one embed.
+
+    Reused by:
+
+    * the policy-chooser **Preview** button (still labelled
+      ``Effective policy`` after PR-2; the channel-select picks a
+      target channel and renders this same embed).
+    * the ``!ai policy [#channel]`` prefix command + slash twin.
+
+    ``snapshot`` is the optional :class:`AIConfigSnapshot` from
+    :mod:`services.ai_config_projection_service`. When supplied, the
+    embed adds an ancillary footer line listing override counts +
+    provider/model. The resolved precedence still comes from the
+    resolver dry-run — the snapshot is never used to compute "is the
+    channel reachable?".
     """
     from services import ai_natural_language_policy as nlp
     from services import xp_service
-
-    guild = interaction.guild
-    member = interaction.user
-    if guild is None:
-        # Caller is supposed to have checked; defensive fallback so
-        # we never deref None at .id below.
-        raise RuntimeError("preview_view requires a guild context")
 
     record = None
     try:
@@ -83,7 +94,7 @@ async def _build_preview_embed(
         category_id = int(category_id)
 
     embed = discord.Embed(
-        title="AI policy preview",
+        title=title,
         description=(
             f"Resolving for {getattr(channel, 'mention', f'<#{channel.id}>')} "
             f"as {member.mention} (level `{user_level}`, "
@@ -117,8 +128,68 @@ async def _build_preview_embed(
             body = body[:1020] + "\n…"
         embed.add_field(name=label, value=body, inline=False)
 
+    if snapshot is not None:
+        _attach_ancillary_field(embed, snapshot)
+
     embed.set_footer(text="dry_run=True · administrator-only")
     return embed
+
+
+async def _build_preview_embed(
+    interaction: discord.Interaction,
+    channel: Any,
+) -> discord.Embed:
+    """Back-compat shim — adapts the original interaction-coupled
+    signature to :func:`build_effective_policy_embed`.
+
+    Retained so existing tests + internal callers continue to work.
+    New code should call :func:`build_effective_policy_embed` directly
+    with the explicit ``guild`` / ``member`` keyword arguments.
+    """
+    guild = interaction.guild
+    if guild is None:
+        raise RuntimeError("preview_view requires a guild context")
+    return await build_effective_policy_embed(
+        guild=guild,
+        member=interaction.user,
+        channel=channel,
+    )
+
+
+def _attach_ancillary_field(embed: discord.Embed, snapshot: Any) -> None:
+    """Add an "Overrides + provider" field sourced from the snapshot.
+
+    The snapshot is read-only orchestration; this helper renders the
+    counts and provider/model without re-querying any DB. Resolver
+    precedence comes from the dry-run above, never from the snapshot.
+    """
+    policy = getattr(snapshot, "policy", None)
+    provider = getattr(snapshot, "provider", None)
+    if policy is None and provider is None:
+        return
+    parts: list[str] = []
+    if policy is not None:
+        parts.append(
+            f"Overrides: {policy.channel_override_count} channel · "
+            f"{policy.category_override_count} category · "
+            f"{policy.role_override_count} role",
+        )
+        model = getattr(policy, "default_model", None) or "—"
+        provider_name = (
+            getattr(policy, "default_provider", None)
+            or (getattr(provider, "default_provider", None) if provider else None)
+            or "—"
+        )
+        parts.append(f"Provider: `{provider_name}` · model: `{model}`")
+    elif provider is not None:
+        parts.append(
+            f"Provider: `{getattr(provider, 'default_provider', None) or '—'}`",
+        )
+    embed.add_field(
+        name="Context",
+        value="\n".join(parts) or "—",
+        inline=False,
+    )
 
 
 def _render_verdict(decision: Any) -> str:
@@ -182,7 +253,11 @@ class _PreviewChannelSelect(discord.ui.ChannelSelect):
         if full is not None:
             channel = full
 
-        embed = await _build_preview_embed(interaction, channel)
+        embed = await build_effective_policy_embed(
+            guild=interaction.guild,
+            member=interaction.user,
+            channel=channel,
+        )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -206,5 +281,5 @@ class PreviewChannelSelectView(discord.ui.View):
 
 __all__ = [
     "PreviewChannelSelectView",
-    "_build_preview_embed",
+    "build_effective_policy_embed",
 ]
