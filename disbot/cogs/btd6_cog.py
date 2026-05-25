@@ -402,6 +402,40 @@ class BTD6Cog(commands.Cog):
             )
         await ctx.send("\n".join(lines))
 
+    @btd6_group.command(name="pending")  # type: ignore[arg-type]
+    @commands.has_guild_permissions(manage_guild=True)
+    async def btd6_pending(self, ctx: commands.Context, limit: int = 5) -> None:
+        """List pending strategy submissions with review buttons (PR5).
+
+        Staff-only (manage_guild). Each pending strategy gets its own
+        review embed + button row (Approve guild / Publish / Reject /
+        Unpublish). All actions funnel through
+        ``services.btd6_strategy_mutation``.
+        """
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from utils.db import btd6_strategies as db
+        from views.btd6.strategy_review import (
+            StrategyReviewView,
+            build_strategy_embed,
+        )
+
+        limit = max(1, min(10, int(limit)))
+        rows = await db.search_strategies(
+            guild_id=ctx.guild.id,
+            approval_status="draft",
+            limit=limit,
+        )
+        if not rows:
+            await ctx.send("No pending strategies awaiting review for this guild.")
+            return
+        for row in rows:
+            await ctx.send(
+                embed=build_strategy_embed(row),
+                view=StrategyReviewView(row),
+            )
+
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:
         """Open the BTD6 panel (alias for ``!btd6``)."""

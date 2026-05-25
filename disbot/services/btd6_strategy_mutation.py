@@ -173,6 +173,57 @@ async def ai_approve_guild(
     )
 
 
+async def staff_approve_guild(
+    strategy_id: int,
+    *,
+    staff_actor: Any,
+    detail: dict[str, Any] | None = None,
+) -> StrategyMutationResult:
+    """Staff approves a draft strategy at guild-local visibility.
+
+    Separate from :func:`staff_publish`: this records staff approval
+    without flipping ``visibility`` to ``published``. The plan
+    explicitly keeps guild-local approval separated from staff-
+    confirmed global publishing, so two distinct button clicks are
+    required before a strategy goes global.
+    """
+    actor_id = _check_actor(staff_actor)
+    if not _is_staff(staff_actor):
+        raise UnauthorizedStrategyMutationError(
+            "staff approval requires manage_guild or administrator permission",
+        )
+    before = await db.get_strategy(strategy_id)
+    if before is None:
+        raise InvalidStrategyValueError(f"strategy {strategy_id} not found")
+    if before["visibility"] == "published":
+        raise InvalidStrategyValueError(
+            "strategy is already published — use unpublish to revert",
+        )
+
+    await db.update_strategy_state(
+        strategy_id,
+        approval_status="approved",
+        visibility="guild",
+        approved_by="staff",
+        approved_by_id=actor_id,
+        current_guild_id=before["current_guild_id"],
+        bump_version=True,
+    )
+    await db.record_strategy_audit(
+        strategy_id,
+        actor_kind="staff",
+        actor_id=actor_id,
+        action="staff_approved_guild",
+        detail=detail,
+    )
+    return StrategyMutationResult(
+        mutation_id=uuid.uuid4().hex,
+        strategy_id=strategy_id,
+        action="staff_approved_guild",
+        actor_kind="staff",
+    )
+
+
 async def staff_publish(
     strategy_id: int,
     *,
@@ -322,6 +373,7 @@ __all__ = [
     "ai_approve_guild",
     "anonymise_submitter",
     "reject",
+    "staff_approve_guild",
     "staff_publish",
     "submit_strategy",
     "unpublish",
