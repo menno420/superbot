@@ -30,7 +30,6 @@ from core.runtime.ai.contracts import (
 from core.runtime.ai.gateway import AIGateway, _overlay_guild_policy
 from core.runtime.ai.routing import RoutingTarget
 
-
 # ---------------------------------------------------------------------------
 # _overlay_guild_policy — direct contract tests
 # ---------------------------------------------------------------------------

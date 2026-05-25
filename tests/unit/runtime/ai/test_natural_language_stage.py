@@ -36,7 +36,6 @@ from core.runtime.ai.natural_language_stage import (
 from core.runtime.message_pipeline import MessagePipelineContext
 from services.ai_natural_language_policy import PolicyDecision
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

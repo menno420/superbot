@@ -301,7 +301,7 @@ async def _invoke_gateway(
     stack: ai_instruction_service.InstructionStack,
     built: ai_context_service.BuiltContext,
     _ctx: MessagePipelineContext,
-) -> "AIResponse":
+) -> AIResponse:
     """Run the AI gateway and return the full :class:`AIResponse`.
 
     The gateway never raises (it converts every error into a degraded

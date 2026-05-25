@@ -153,10 +153,7 @@ class AIGateway:
     ) -> AIResponse:
         """Run a request through the pipeline; never raises."""
         target = resolve(request.context.task)
-        if (
-            provider_override is None
-            and request.context.guild_id is not None
-        ):
+        if provider_override is None and request.context.guild_id is not None:
             target = await _overlay_guild_policy(target, request.context.guild_id)
         provider_name = provider_override.name if provider_override else target.provider
 

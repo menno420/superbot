@@ -339,7 +339,9 @@ async def project_from_legacy_settings(
     try:
         for legacy_key, policy_field in _LEGACY_TO_POLICY_FIELD.items():
             res = await settings_resolution.resolve_setting(
-                guild_id, "ai", _legacy_key_to_spec_name(legacy_key),
+                guild_id,
+                "ai",
+                _legacy_key_to_spec_name(legacy_key),
             )
             # `None` only if the spec was undeclared — defensive; the
             # AI subsystem schema covers all seven.
