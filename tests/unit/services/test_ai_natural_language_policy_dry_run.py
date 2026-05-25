@@ -103,14 +103,18 @@ async def test_dry_run_allowed_path_traces_each_level(monkeypatch):
     decision = await nlp.resolve(_ctx(), dry_run=True)
     assert decision.allowed is True
     trace = decision.precedence_trace
-    assert any("guild: baseline" in step for step in trace)
-    # Category 200 isn't configured → "no override (inherit)" line.
-    assert any("category 200: no override" in step for step in trace)
-    # Channel 100 isn't configured → "no override (inherit)" line.
-    assert any("channel 100: no override" in step for step in trace)
-    # Final "allowed" line.
-    assert any(step.startswith("user:") for step in trace)
-    assert trace[-1].startswith("final: allowed")
+    assert any("guild_ai_gate: AI enabled=true" in step for step in trace)
+    # Category 200 isn't configured → "no row" line.
+    assert any("category_policy: no row for 200" in step for step in trace)
+    # Channel 100 isn't configured → "no row" line.
+    assert any("channel_policy: no row for 100" in step for step in trace)
+    # Guild baseline + effective policy lines are always present.
+    assert any(step.startswith("guild_baseline:") for step in trace)
+    assert any(step.startswith("effective_policy:") for step in trace)
+    # Mode/level gates are explicit.
+    assert any(step.startswith("mode_gate:") for step in trace)
+    assert any(step.startswith("level_gate:") for step in trace)
+    assert trace[-1].startswith("final_decision: allowed")
 
 
 async def test_dry_run_guild_not_configured_traces_root_cause(monkeypatch):
@@ -144,9 +148,19 @@ async def test_dry_run_channel_disabled_traces_channel_id(monkeypatch):
     decision = await nlp.resolve(_ctx(), dry_run=True)
     assert decision.allowed is False
     assert decision.reason_code == PolicyDenialReason.CHANNEL_DISABLED
+    trace = decision.precedence_trace
+    # The channel-policy lookup line names the channel and its mode.
     assert any(
-        "channel 100" in step and "CHANNEL_DISABLED" in step
-        for step in decision.precedence_trace
+        "channel_policy: mode=disabled" in step for step in trace
+    )
+    # The effective policy line records that channel sourced the decision.
+    assert any(
+        "effective_policy: source=channel" in step and "mode=disabled" in step
+        for step in trace
+    )
+    # The mode gate denies with the source-tagged reason.
+    assert any(
+        "mode_gate" in step and "CHANNEL_DISABLED" in step for step in trace
     )
 
 
@@ -161,9 +175,11 @@ async def test_dry_run_mention_only_without_mention_traces(monkeypatch):
     await _stub_bundle(monkeypatch, policy=_enabled_policy(), channel=channel)
     decision = await nlp.resolve(_ctx(is_mention=False), dry_run=True)
     assert decision.reason_code == PolicyDenialReason.NO_MENTION_REQUIRED
+    trace = decision.precedence_trace
     assert any(
-        "mention_only" in step and "NO_MENTION_REQUIRED" in step
-        for step in decision.precedence_trace
+        "mode_gate" in step and "mention_only" in step
+        and "NO_MENTION_REQUIRED" in step
+        for step in trace
     )
 
 
@@ -203,8 +219,12 @@ async def test_dry_run_role_min_level_override_appears_in_trace(monkeypatch):
     )
     assert decision.allowed is True
     trace = decision.precedence_trace
-    assert any("role" in step and "min_level=0" in step for step in trace)
-    assert any("bypass_cooldown=true" in step for step in trace)
+    assert any(
+        "role_gate" in step and "min_level=0" in step for step in trace
+    )
+    assert any(
+        "role_gate" in step and "bypass_cooldown=true" in step for step in trace
+    )
     assert decision.effective_cooldown == 0
 
 
@@ -216,7 +236,8 @@ async def test_dry_run_below_min_level_traces_user_step(monkeypatch):
     decision = await nlp.resolve(_ctx(user_level=1), dry_run=True)
     assert decision.reason_code == PolicyDenialReason.BELOW_MIN_LEVEL
     assert any(
-        "level=1 < min=5" in step and "BELOW_MIN_LEVEL" in step
+        "level_gate" in step and "level=1 < min=5" in step
+        and "BELOW_MIN_LEVEL" in step
         for step in decision.precedence_trace
     )
 
@@ -281,3 +302,76 @@ async def test_dry_run_and_live_decisions_match_for_same_context(monkeypatch):
     # The live decision still has no trace; the dry one has many.
     assert live.precedence_trace == ()
     assert len(dry.precedence_trace) >= 3
+
+
+# ---------------------------------------------------------------------------
+# Trace assertions for the inheritance bug case (PR 1).
+# ---------------------------------------------------------------------------
+
+
+async def test_dry_run_traces_channel_override_when_guild_nl_disabled(monkeypatch):
+    """The bug case: trace must show channel selected before final allow."""
+    channel = [{
+        "channel_id": 100,
+        "mode": "always_reply",
+        "min_level": 0,
+        "cooldown_seconds": 10,
+        "instruction_profile_id": None,
+    }]
+    await _stub_bundle(
+        monkeypatch,
+        policy=_enabled_policy(natural_language_enabled=False),
+        channel=channel,
+    )
+    decision = await nlp.resolve(_ctx(), dry_run=True)
+    assert decision.allowed is True
+    trace = decision.precedence_trace
+
+    # Guild baseline must be recorded as mode=disabled (NL off).
+    assert any(
+        "guild_baseline:" in step
+        and "natural_language_enabled=False" in step
+        and "baseline mode=disabled" in step
+        for step in trace
+    )
+    # The channel-policy lookup names the channel and its mode.
+    assert any("channel_policy: mode=always_reply" in step for step in trace)
+    # Effective policy line names channel as the source before the gate.
+    assert any(
+        "effective_policy: source=channel" in step
+        and "mode=always_reply" in step
+        for step in trace
+    )
+    # Final decision is allowed.
+    assert trace[-1].startswith("final_decision: allowed")
+
+
+async def test_dry_run_traces_guild_baseline_when_all_scopes_inherit(monkeypatch):
+    """No scoped override → trace shows lookups then guild_baseline selected."""
+    await _stub_bundle(
+        monkeypatch,
+        policy=_enabled_policy(natural_language_enabled=False),
+    )
+    decision = await nlp.resolve(_ctx(), dry_run=True)
+    assert decision.allowed is False
+    assert decision.reason_code == PolicyDenialReason.AI_NL_DISABLED_FOR_GUILD
+    trace = decision.precedence_trace
+
+    # Both scoped lookups happen (and are recorded) before the baseline picks.
+    assert any("category_policy: no row" in step for step in trace)
+    assert any("channel_policy: no row" in step for step in trace)
+    # Guild baseline summary is present.
+    assert any(
+        "guild_baseline:" in step and "baseline mode=disabled" in step
+        for step in trace
+    )
+    # Effective policy is source=guild.
+    assert any(
+        "effective_policy: source=guild" in step and "mode=disabled" in step
+        for step in trace
+    )
+    # Mode gate denies with AI_NL_DISABLED_FOR_GUILD.
+    assert any(
+        "mode_gate" in step and "AI_NL_DISABLED_FOR_GUILD" in step
+        for step in trace
+    )
