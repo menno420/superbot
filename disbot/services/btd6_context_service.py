@@ -135,12 +135,14 @@ def _render_fact(row: dict[str, Any]) -> str:
 
 
 def _intent_to_queries(intent: Any) -> list[Any]:
-    """Map a :class:`ResolvedIntent` to grounding queries.
+    """Map a :class:`ResolvedIntent` to grounding queries (static kinds).
 
-    Each typed entity (tower / hero / map / mode) becomes one
-    :class:`BTD6FactQuery` with ``fact_type=None`` so any registered
-    fact about the entity surfaces. New entity kinds (events, races,
-    bosses) will land here once the resolver recognises them.
+    Each typed entity with a known key (tower / hero / map / mode)
+    becomes one :class:`BTD6FactQuery` with ``fact_type=None`` so any
+    registered fact about the entity surfaces. PR-E added live
+    entities (race / boss / CT / odyssey / challenge / event /
+    leaderboard) — those don't have a known key from the resolver
+    and are handled by :func:`_fetch_live_entity_rows` instead.
     """
     from services.btd6_fact_store import BTD6FactQuery
 
@@ -160,13 +162,47 @@ def _intent_to_queries(intent: Any) -> list[Any]:
     return queries
 
 
+async def _fetch_live_entity_rows(
+    intent: Any,
+    *,
+    per_kind_limit: int = 3,
+) -> list[dict[str, Any]]:
+    """Resolve PR-E live entities into the newest facts per kind.
+
+    The resolver yields ``LiveEntityMatch`` records that only carry
+    the parser-produced ``entity_kind``. The fact store's
+    ``search_facts`` already returns the newest envelopes per kind,
+    ordered by ``fetched_at DESC``. We cap each kind so one chatty
+    leaderboard cannot drown out other kinds in the same context.
+    """
+    matches = getattr(intent, "live_entities", ()) or ()
+    if not matches:
+        return []
+    from utils.db import btd6_sources as btd6_db
+
+    seen_kinds: set[str] = set()
+    rows: list[dict[str, Any]] = []
+    for match in matches:
+        kind = getattr(match, "entity_kind", None)
+        if not kind or kind in seen_kinds:
+            continue
+        seen_kinds.add(kind)
+        batch = await btd6_db.search_facts(
+            entity_kind=kind,
+            limit=per_kind_limit,
+        )
+        rows.extend(batch)
+    return rows
+
+
 async def build(message_text: str) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
-    The flow is: resolver → queries → fact_store.fetch_for_intent →
-    sanitised rendering with provenance. The instruction service
-    wraps the resulting tuple as untrusted data, so adversarial body
-    text reaches the LLM only inside the data envelope.
+    The flow is: resolver → queries → fact_store.fetch_for_intent +
+    PR-E live entity lookup → sanitised rendering with provenance.
+    The instruction service wraps the resulting tuple as untrusted
+    data, so adversarial body text reaches the LLM only inside the
+    data envelope.
     """
     facts: list[str] = []
     confidence = 0.0
@@ -178,6 +214,10 @@ async def build(message_text: str) -> BTD6Context:
         confidence = float(getattr(intent, "confidence", 0.0) or 0.0)
         queries = _intent_to_queries(intent)
         rows = await btd6_fact_store.fetch_for_intent(queries) if queries else []
+        # PR-E: also surface live-entity facts (race / boss / CT /
+        # odyssey / challenge / event / leaderboard).
+        live_rows = await _fetch_live_entity_rows(intent)
+        rows = rows + live_rows
         for row in rows:
             facts.append(_render_fact(row))
         if facts:
