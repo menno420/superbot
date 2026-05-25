@@ -178,7 +178,10 @@ async def _build_ai_settings_panel(
     Reuses :func:`views.settings.subsystem_view.build_subsystem_embed`
     and :class:`SubsystemSettingsView` so the dedicated ``!ai settings``
     entry point renders identically to opening AI via the global
-    ``!settings`` hub.
+    ``!settings`` hub, then appends an AI-specific "purpose grouping"
+    field at the top of the embed so operators can find global
+    baseline / scoped override / provider / memory / advanced knobs
+    without learning the alphabetical schema order.
     """
     from views.settings.subsystem_view import (
         SubsystemSettingsView,
@@ -188,8 +191,79 @@ async def _build_ai_settings_panel(
     # build_subsystem_embed only reads .guild_id from its first arg.
     shim = SimpleNamespace(guild_id=guild_id)
     embed = await build_subsystem_embed(shim, "ai")  # type: ignore[arg-type]
+    if guild_id is not None:
+        snapshot = await _safe_build_snapshot(SimpleNamespace(id=guild_id))  # type: ignore[arg-type]
+        _attach_settings_grouping_field(embed, snapshot)
     view = SubsystemSettingsView(author, "ai")
     return embed, view
+
+
+_SETTINGS_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    (
+        "Global baseline",
+        ("ai_enabled", "ai_natural_language_enabled"),
+    ),
+    (
+        "Provider config",
+        ("ai_default_provider", "ai_default_model"),
+    ),
+    (
+        "Memory config",
+        ("ai_memory_window_minutes", "ai_memory_channel_scan_enabled"),
+    ),
+    (
+        "Access gates",
+        (
+            "ai_minimum_level_default",
+            "ai_cooldown_seconds",
+            "ai_fresh_user_mention_allowance",
+        ),
+    ),
+    (
+        "Advanced policy",
+        ("ai_guild_instruction_profile",),
+    ),
+)
+
+
+def _attach_settings_grouping_field(
+    embed: discord.Embed,
+    snapshot: object | None,
+) -> None:
+    """Append an AI-specific purpose-grouped reference field to ``embed``.
+
+    Pure presentation — the underlying scalar schema in
+    ``cogs/ai/schemas.py`` is alphabetical and unchanged. Operators
+    skim this block to find the knob by purpose; the existing
+    "Scalar settings" field stays as the editable list.
+
+    Scoped-override counts come from ``snapshot.policy``; the
+    "Effective decision" line points operators at ``!ai policy``
+    which does the resolver dry-run.
+    """
+    policy = getattr(snapshot, "policy", None) if snapshot is not None else None
+    lines: list[str] = []
+    for label, keys in _SETTINGS_GROUPS:
+        lines.append(f"**{label}**")
+        for key in keys:
+            lines.append(f"• `{key}`")
+        lines.append("")
+
+    if policy is not None:
+        lines.append("**Scoped override (read-only summary)**")
+        lines.append(
+            f"• channels: {policy.channel_override_count}"
+            f" · categories: {policy.category_override_count}"
+            f" · roles: {policy.role_override_count}",
+        )
+        lines.append("• Run `!ai policy` for the effective resolver decision.")
+        lines.append("")
+
+    embed.add_field(
+        name="Quick reference (by purpose)",
+        value="\n".join(lines).strip(),
+        inline=False,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -262,9 +336,25 @@ def build_diagnostics_embed() -> discord.Embed:
     return embed
 
 
-def build_providers_embed() -> discord.Embed:
-    """List of configured providers and which is active right now."""
-    snap = ai_diagnostics_service.snapshot_for_cog()
+def build_providers_embed(snapshot: object | None = None) -> discord.Embed:
+    """List of configured providers and which is active right now.
+
+    When ``snapshot`` is supplied, sources every field from
+    ``snapshot.provider``. Falls back to the direct diagnostics call
+    when ``snapshot=None`` (panel-header callsite has no guild
+    context).
+    """
+    provider = getattr(snapshot, "provider", None) if snapshot is not None else None
+    policy = getattr(snapshot, "policy", None) if snapshot is not None else None
+    if provider is not None:
+        default_provider = str(provider.default_provider or "—")
+        provider_active = str(provider.provider_active or "—")
+        setup_advisor = str(provider.setup_advisor_provider or "—")
+    else:
+        snap = ai_diagnostics_service.snapshot_for_cog()
+        default_provider = str(snap["default_provider"])
+        provider_active = str(snap["provider_active"])
+        setup_advisor = str(snap["setup_advisor_provider"])
     embed = discord.Embed(
         title="AI Gateway — Providers",
         description=(
@@ -274,14 +364,31 @@ def build_providers_embed() -> discord.Embed:
         ),
         color=discord.Color.blurple(),
     )
-    embed.add_field(name="Default", value=str(snap["default_provider"]))
-    embed.add_field(name="Active (last call)", value=str(snap["provider_active"]))
-    embed.add_field(name="Setup advisor", value=str(snap["setup_advisor_provider"]))
+    embed.add_field(name="Default", value=default_provider)
+    embed.add_field(name="Active (last call)", value=provider_active)
+    embed.add_field(name="Setup advisor", value=setup_advisor)
+    if policy is not None and (policy.default_provider or policy.default_model):
+        embed.add_field(
+            name="Guild override",
+            value=(
+                f"provider: `{policy.default_provider or '—'}` · "
+                f"model: `{policy.default_model or '—'}`"
+            ),
+            inline=False,
+        )
     return embed
 
 
-def build_routing_embed(task_name: str | None = None) -> discord.Embed:
-    """Per-task routing table. With ``task_name``, narrows to one row."""
+def build_routing_embed(
+    task_name: str | None = None,
+    snapshot: object | None = None,
+) -> discord.Embed:
+    """Per-task routing table. With ``task_name``, narrows to one row.
+
+    The routing table is process-wide (env-driven), not per-guild —
+    the snapshot is used only to render a "guild override" footer
+    line when the typed ``ai_guild_policy`` has provider/model set.
+    """
     rows = ai_diagnostics_service.list_task_routing()
     if task_name:
         rows = [r for r in rows if r["task"] == task_name]
@@ -310,6 +417,16 @@ def build_routing_embed(task_name: str | None = None) -> discord.Embed:
                 f"enabled: `{row['enabled']}`"
             ),
             inline=True,
+        )
+    policy = getattr(snapshot, "policy", None) if snapshot is not None else None
+    if policy is not None and (policy.default_provider or policy.default_model):
+        embed.add_field(
+            name="Guild override (preempts the env-default at gateway time)",
+            value=(
+                f"provider: `{policy.default_provider or '—'}` · "
+                f"model: `{policy.default_model or '—'}`"
+            ),
+            inline=False,
         )
     embed.set_footer(
         text=(
@@ -660,7 +777,8 @@ class AICog(commands.Cog):
     @ai_group.command(name="providers")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_providers(self, ctx: commands.Context) -> None:
-        await ctx.send(embed=build_providers_embed())
+        snapshot = await _safe_build_snapshot(ctx.guild)
+        await ctx.send(embed=build_providers_embed(snapshot))
 
     @ai_group.command(name="routing")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
@@ -669,7 +787,8 @@ class AICog(commands.Cog):
         ctx: commands.Context,
         task: str | None = None,
     ) -> None:
-        await ctx.send(embed=build_routing_embed(task))
+        snapshot = await _safe_build_snapshot(ctx.guild)
+        await ctx.send(embed=build_routing_embed(task, snapshot=snapshot))
 
     @commands.command(name="aimenu")
     @commands.has_permissions(administrator=True)
@@ -797,8 +916,9 @@ class AICog(commands.Cog):
     )
     @app_commands.checks.has_permissions(administrator=True)
     async def ai_providers_slash(self, interaction: discord.Interaction) -> None:
+        snapshot = await _safe_build_snapshot(interaction.guild)
         await interaction.response.send_message(
-            embed=build_providers_embed(),
+            embed=build_providers_embed(snapshot),
             ephemeral=True,
         )
 
@@ -812,8 +932,9 @@ class AICog(commands.Cog):
         interaction: discord.Interaction,
         task: str | None = None,
     ) -> None:
+        snapshot = await _safe_build_snapshot(interaction.guild)
         await interaction.response.send_message(
-            embed=build_routing_embed(task),
+            embed=build_routing_embed(task, snapshot=snapshot),
             ephemeral=True,
         )
 

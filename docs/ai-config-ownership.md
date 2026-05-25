@@ -146,8 +146,9 @@ applicable, the resolver's `dry_run=True` trace). No surface reads raw
 | `!ai readiness` | full snapshot | `services.ai_readiness_service.scan` |
 | `!ai policy` | `policy` (overrides), `provider` (header) | resolver `dry_run=True` is the source of resolved precedence; optional `[#channel]` arg dry-runs against that channel. Snapshot is ancillary only — used for override counts + provider/model header, never for the resolved decision. |
 | `!ai memory` | `memory` (full), `audit.latest['memory_turns_used']` for "last reply used memory" | Per-channel turn count comes from `ai_conversation_service.channel_stats(guild_id)` for the current channel (snapshot is guild-scoped). "Last reply used memory" renders `—` until PR-5 ships and populates the audit field. |
-| `!ai settings` | `policy`, `projection`, `instruction` | grouped renderer (PR-4B) |
-| `!ai routing` | `provider` | `services.ai_diagnostics_service.list_task_routing`; optional `[task]` arg filters to one row |
+| `!ai settings` | `policy` (scoped-override counts), `projection`, `instruction` | The generic settings UI's "Scalar settings" field stays the editable list (schema-order, unchanged). The AI panel appends a "Quick reference (by purpose)" field grouping the scalars into Global baseline / Provider config / Memory config / Access gates / Advanced policy, plus the scoped-override summary. Purpose grouping lives in a presentation helper, not the schema. |
+| `!ai routing` | `provider` (process-wide rows from `services.ai_diagnostics_service.list_task_routing`); `policy.default_provider` / `policy.default_model` for the "Guild override" footer line when set | Optional `[task]` arg filters to one row. |
+| `!ai providers` | `provider`; `policy.default_provider` / `policy.default_model` for the "Guild override" field when set | — |
 | `!ai why-no-response` | `audit` | — |
 | `!ai support-report` | `policy`, `memory`, `provider`, `projection`, `audit` (PR-4A) | — |
 | `!ai diagnostics` | `provider` | — |
