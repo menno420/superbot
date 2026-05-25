@@ -189,7 +189,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | Subsystem | Cog file | View package | Service / mutation path | DB module |
 |---|---|---|---|---|
 | admin | `cogs/admin_cog.py` (+ `cogs/admin/`) | — | n/a (uses governance) | n/a |
-| ai | `cogs/ai_cog.py` (+ `cogs/ai/`) | `views/ai/` | `services/ai_gateway.py` (read-only); `services/ai_diagnostics_service.py` | n/a in M1 (typed `ai_*` policy tables land in M2) |
+| ai | `cogs/ai_cog.py` (+ `cogs/ai/`) | `views/ai/` | `services/ai_gateway.py` (read-only); `services/ai_diagnostics_service.py`; `services/ai_policy_mutation.py` (audited writes); `services/ai_config_projection_service.py` (operator-facing read model); `services/ai_readiness_service.py` (chain-check scan) — see `docs/ai-config-ownership.md` (binding) | `utils/db/ai.py` — typed `ai_guild_policy` / `ai_channel_policy` / `ai_category_policy` / `ai_role_policy` / `ai_instruction_profile` / `ai_decision_audit` |
 | blackjack | `cogs/blackjack_cog.py` (+ `cogs/blackjack/`) | `views/blackjack/` | `services/economy_service.py` (coins); `services/blackjack_engine.py` (math) | n/a |
 | btd6 | `cogs/btd6_cog.py` (+ `cogs/btd6/`) | `views/btd6/` | `services/btd6_ai_service.py` (AI augmentation) | n/a in M1 (typed `btd6_*` source/strategy tables land in M3A/M4) |
 | channel | `cogs/channel_cog.py` | `views/channels/` | `governance/writes.py` | n/a |

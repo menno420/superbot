@@ -2,6 +2,12 @@
 
 Status: planning artifact. No runtime behavior is changed by this file.
 
+> **Read first:** `docs/ai-config-ownership.md` (binding) — the
+> operator-facing read model (`AIConfigSnapshot`), projection rules,
+> mutation seam, and UI-surface contract that every AI-cog change must
+> respect. This integration map is the *forward-looking* sister doc;
+> the ownership doc is the *current contract*.
+
 ## Purpose
 
 This map shows where future AI-assisted behavior should connect to existing SuperBot services. It is meant to reduce future implementation time and prevent duplicate architecture.
@@ -13,6 +19,7 @@ This map shows where future AI-assisted behavior should connect to existing Supe
 3. Runtime modules own registries, feature flags, event flow, and typed platform utilities.
 4. AI provider calls must go through one gateway.
 5. AI output must be advisory unless converted into validated operations.
+6. Operator-facing AI surfaces read from `services.ai_config_projection_service.build_snapshot` — never from raw `guild_settings` rows or direct DB queries. Resolved precedence comes from `ai_natural_language_policy.resolve(dry_run=True)`. See `docs/ai-config-ownership.md` § "UI surfaces".
 
 ## Recommended connector points
 
