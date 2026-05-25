@@ -9,8 +9,12 @@ the live registry.
 
 The hub owns three responsibilities for every section:
 
-* **Owner gating** — every section button rejects non-owners with an
-  ephemeral message before the section's `run` callback fires.
+* **Apply gating** — every section button rejects callers who do not
+  satisfy :func:`services.setup_access.can_apply_setup` (server owner
+  or delegated setup admin).  Administrators without delegation get
+  a read-only readiness embed from the launcher, so they never reach
+  the hub in the first place; this gate is defence-in-depth in case
+  the launcher path is bypassed.
 * **Error isolation** — exceptions inside a section's `run` are caught,
   logged, and surfaced as an ephemeral error if the section hasn't
   already responded.  A buggy section cannot take the hub down.
@@ -242,7 +246,7 @@ class SetupHubView(BaseView):
         )
 
         async def _callback(interaction: discord.Interaction) -> None:
-            if not await self._gate_owner(interaction):
+            if not await self._gate_apply(interaction):
                 return
             if interaction.guild is None or interaction.guild_id is None:
                 await interaction.response.send_message(
@@ -336,7 +340,7 @@ class SetupHubView(BaseView):
         )
 
         async def _callback(interaction: discord.Interaction) -> None:
-            if not await self._gate_owner(interaction):
+            if not await self._gate_apply(interaction):
                 return
             from views.setup.depth_panel import (
                 DepthPanelView,
@@ -360,10 +364,18 @@ class SetupHubView(BaseView):
         if refreshed is not None:
             self.session = refreshed
 
-    async def _gate_owner(
+    async def _gate_apply(
         self,
         interaction: discord.Interaction,
     ) -> bool:
+        """Reject callers who can't apply setup operations.
+
+        Pre-Phase-1 this method only allowed the server owner, even
+        though hub entry already accepted delegated setup admins —
+        causing those delegates to bounce off every hub button.  Now
+        defers to :func:`setup_access.can_apply_setup` so the same
+        ladder gates entry, mutation, and Final Review.
+        """
         member = interaction.user
         if not isinstance(member, discord.Member):
             await interaction.response.send_message(
@@ -371,9 +383,10 @@ class SetupHubView(BaseView):
                 ephemeral=True,
             )
             return False
-        if not setup_access.is_server_owner(member):
+        if not setup_access.can_apply_setup(member, self.session):
             await interaction.response.send_message(
-                "Only the server owner can run the wizard.",
+                "Only the server owner or a delegated setup admin can run the "
+                "wizard. Ask the server owner to grant you `/setup-delegate`.",
                 ephemeral=True,
             )
             return False
@@ -392,7 +405,7 @@ class SetupHubView(BaseView):
             *,
             sec: SetupSection = section,
         ) -> None:
-            if not await self._gate_owner(interaction):
+            if not await self._gate_apply(interaction):
                 return
             try:
                 await sec.run(interaction, self)

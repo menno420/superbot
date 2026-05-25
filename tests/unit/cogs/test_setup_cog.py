@@ -1911,3 +1911,273 @@ async def test_setup_depth_slash_denies_random_member():
     set_depth_mock.assert_not_awaited()
     msg = interaction.response.send_message.await_args.args[0]
     assert "owner" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# /setup-delegate and /setup-undelegate slash commands (Phase 1)
+# ---------------------------------------------------------------------------
+
+
+def _target_member(member_id: int = 77):
+    """Member object passed to /setup-delegate as the grant target."""
+    import discord
+
+    m = MagicMock(spec=discord.Member)
+    m.id = member_id
+    m.mention = f"<@{member_id}>"
+    m.bot = False
+    return m
+
+
+def _bot_target_member(member_id: int = 88):
+    import discord
+
+    m = MagicMock(spec=discord.Member)
+    m.id = member_id
+    m.mention = f"<@{member_id}>"
+    m.bot = True
+    return m
+
+
+def _delegate_interaction(actor, *, guild_id: int = 1, guild_owner_id: int = 99):
+    """Mock interaction with a guild.id / guild.owner_id pair used by
+    /setup-delegate / /setup-undelegate.
+    """
+    interaction = _mock_interaction(actor, guild_id=guild_id)
+    interaction.guild.owner_id = guild_owner_id
+    interaction.guild.name = "Test"
+    return interaction
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_grants_owner_can_promote():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+        ) as add_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as recompute_mock,
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_awaited_once_with(1, 77, actor_id=99)
+    # Channel overwrites recomputed so the new delegate gets explicit
+    # channel access without needing to wait for the next ensure call.
+    recompute_mock.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "delegated" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_undelegate_slash_owner_can_revoke():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=(77,)),
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.remove_delegated_admin",
+            new_callable=AsyncMock,
+        ) as remove_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as recompute_mock,
+    ):
+        await cog.setup_undelegate_slash.callback(cog, interaction, member=target)
+
+    remove_mock.assert_awaited_once_with(1, 77, actor_id=99)
+    recompute_mock.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "un-delegated" in msg.lower() or "undelegated" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_denies_non_owner():
+    """Plain admin (not owner) cannot grant delegation — capability-
+    significant promotion is owner-only on purpose.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _admin_member()  # admin=True but id=42, not owner=99
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+        ) as add_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+        ) as recompute_mock,
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_not_awaited()
+    recompute_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_undelegate_slash_denies_non_owner():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _admin_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.remove_delegated_admin",
+            new_callable=AsyncMock,
+        ) as remove_mock,
+    ):
+        await cog.setup_undelegate_slash.callback(cog, interaction, member=target)
+
+    remove_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_rejects_bot_target():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _bot_target_member(88)
+    interaction = _delegate_interaction(actor)
+
+    with patch(
+        "cogs.setup._helpers.setup_session.add_delegated_admin",
+        new_callable=AsyncMock,
+    ) as add_mock:
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "bot" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_rejects_owner_target():
+    """Granting the owner delegation is a no-op the slash command
+    rejects with a friendly message rather than silently succeeding.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()  # id=99
+    target = _target_member(99)  # also id=99, matches guild.owner_id
+    interaction = _delegate_interaction(actor)
+
+    with patch(
+        "cogs.setup._helpers.setup_session.add_delegated_admin",
+        new_callable=AsyncMock,
+    ) as add_mock:
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_starts_session_when_missing():
+    """If no session row exists yet, the command initialises one so the
+    delegation actually persists.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    # First resume_session call returns None; start_session then runs;
+    # second resume_session (for the recompute) returns the new session.
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            side_effect=[None, _delegated_session(delegated=(77,))],
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.start_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ) as start_mock,
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+        ) as add_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    start_mock.assert_awaited_once()
+    add_mock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_surfaces_db_failure():
+    """A DB error during delegation surfaces as an error reply, not a
+    fake success.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("DB exploded"),
+        ),
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "could not" in msg

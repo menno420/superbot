@@ -47,6 +47,7 @@ from typing import TYPE_CHECKING, Any
 
 import discord
 
+from services import setup_access, setup_session
 from services.setup_plan import SetupRecommendation
 from views.base import BaseView
 
@@ -54,6 +55,43 @@ if TYPE_CHECKING:
     pass
 
 logger = logging.getLogger("bot.views.setup.final_review")
+
+
+async def _gate_apply(interaction: discord.Interaction) -> bool:
+    """Reject callers who don't satisfy ``can_apply_setup`` now.
+
+    Module-level helper shared by :class:`FinalReviewView` and
+    :class:`PartialApplyRecoveryView`.  The :class:`BaseView` author
+    gate already restricts the panel to the user who opened it, but
+    this layer re-checks the access tier against a fresh
+    :class:`SetupSession` so a delegated admin who lost delegation
+    between opening Final Review and pressing the button cannot
+    apply.
+    """
+    member = interaction.user
+    if not isinstance(member, discord.Member):
+        await interaction.response.send_message(
+            "Use this from inside the server.",
+            ephemeral=True,
+        )
+        return False
+    session = None
+    guild_id = interaction.guild_id
+    if guild_id is not None:
+        try:
+            session = await setup_session.resume_session(guild_id)
+        except Exception:
+            logger.exception("final_review._gate_apply: resume failed")
+            session = None
+    if not setup_access.can_apply_setup(member, session):
+        await interaction.response.send_message(
+            "Only the server owner or a delegated setup admin can apply "
+            "staged setup operations. Ask the server owner to grant you "
+            "`/setup-delegate`.",
+            ephemeral=True,
+        )
+        return False
+    return True
 
 
 @dataclass
@@ -247,6 +285,8 @@ class FinalReviewView(BaseView):
                 "Final review requires a guild context.",
                 ephemeral=True,
             )
+            return
+        if not await _gate_apply(interaction):
             return
         from core.runtime.interaction_helpers import safe_defer
         from services.setup_operations import (
@@ -563,6 +603,8 @@ class PartialApplyRecoveryView(BaseView):
                 "Retry requires a guild context.",
                 ephemeral=True,
             )
+            return
+        if not await _gate_apply(interaction):
             return
         from core.runtime.interaction_helpers import safe_defer
         from services.setup_operations import (

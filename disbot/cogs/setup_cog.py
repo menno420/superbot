@@ -31,6 +31,7 @@ from discord.ext import commands
 
 from cogs.setup._helpers import build_status_embed as _build_status_embed
 from cogs.setup._helpers import resolve_hub_entry as _resolve_hub_entry
+from cogs.setup._helpers import toggle_delegate as _toggle_delegate
 from services import setup_access, setup_session
 from views.setup.launcher import (
     SetupLauncherView,
@@ -419,6 +420,62 @@ class SetupCog(commands.Cog):
             f"continue.",
             ephemeral=True,
         )
+
+    @app_commands.command(
+        name="setup-delegate",
+        description="Grant a member delegated setup-admin authority (owner only).",
+    )
+    @app_commands.describe(
+        member="Member to grant delegated setup-admin authority.",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_delegate_slash(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+    ) -> None:
+        """Add ``member`` to the guild's ``delegated_admins`` set.
+
+        Owner-only on purpose: delegation is a capability-significant
+        change and must not be self-granted by other administrators.
+        Idempotent — re-granting an existing delegate is a no-op at
+        the DB layer.  After the grant succeeds the private setup
+        channel's overwrites are recomputed so the new delegate gets
+        explicit channel access.
+
+        Body lives in :func:`cogs.setup._helpers.toggle_delegate` so
+        the cog file stays under the S4.6 LOC ceiling.
+        """
+        await _toggle_delegate(interaction, member, grant=True)
+
+    @app_commands.command(
+        name="setup-undelegate",
+        description="Revoke delegated setup-admin authority (owner only).",
+    )
+    @app_commands.describe(
+        member="Member to revoke delegated setup-admin authority from.",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_undelegate_slash(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+    ) -> None:
+        """Drop ``member`` from the guild's ``delegated_admins`` set.
+
+        Owner-only.  Idempotent.  After the revoke succeeds the private
+        setup channel's overwrites are recomputed so the revoked
+        delegate loses explicit channel access (Discord administrator
+        permissions may still let them view — see PRIVACY_NOTE on
+        :mod:`services.setup_channel`).
+
+        Body lives in :func:`cogs.setup._helpers.toggle_delegate`.
+        """
+        await _toggle_delegate(interaction, member, grant=False)
 
     @app_commands.command(
         name="setup-status",
