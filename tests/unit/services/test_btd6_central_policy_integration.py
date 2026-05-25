@@ -41,7 +41,6 @@ from core.runtime.message_pipeline import MessagePipelineContext
 from services import ai_natural_language_policy as nlp
 from utils.db import ai as ai_db
 
-
 # ---------------------------------------------------------------------------
 # Architectural invariant: btd6_ai_service stays inside its boundary.
 # ---------------------------------------------------------------------------
