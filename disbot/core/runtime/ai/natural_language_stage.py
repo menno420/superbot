@@ -91,6 +91,25 @@ class AINaturalLanguageStage:
         user_id = message.author.id
         is_mention = ctx.bot.user is not None and ctx.bot.user.mentioned_in(message)
 
+        # Chat memory: record every human message the stage sees,
+        # whether or not the bot ends up replying. Skip command
+        # prefixes so operator typos don't pollute the conversational
+        # context. Bot messages are skipped by the earlier
+        # ``handled_by`` short-circuit + the pipeline's own filtering;
+        # we also guard against ``author.bot`` defensively here.
+        if (
+            not getattr(message.author, "bot", False)
+            and not text.startswith("!")
+            and not text.startswith("/")
+        ):
+            ai_conversation_service.append(
+                guild_id,
+                channel_id,
+                user_id=user_id,
+                role="user",
+                text=text,
+            )
+
         snap = await ai_permission_service.snapshot(guild_id, user_id)
 
         msg_ctx = MessageContext(
@@ -150,11 +169,35 @@ class AINaturalLanguageStage:
 
         try:
             feature_facts = await _gather_feature_facts(routed.task, text)
+            # Chat memory: gather recent channel turns (with optional
+            # Discord history fallback). Best-effort — failure returns
+            # an empty list and the stack assembles without recent
+            # turns, preserving the prior behaviour.
+            try:
+                from services import ai_memory_service
+
+                recent_turns = await ai_memory_service.gather_recent_turns(
+                    guild_id=guild_id,
+                    channel_id=channel_id,
+                    channel=getattr(message, "channel", None),
+                    bot_user_id=getattr(
+                        getattr(ctx, "bot_user", None),
+                        "id",
+                        None,
+                    ),
+                )
+            except Exception as exc:  # noqa: BLE001 — defensive
+                logger.debug(
+                    "ai_natural_language_stage: memory unavailable: %s",
+                    exc,
+                )
+                recent_turns = []
             stack = await ai_instruction_service.assemble(
                 guild_id=guild_id,
                 user_message=text,
                 profile_ids=decision.instruction_profile_ids,
                 retrieved_facts=feature_facts,
+                recent_turns=recent_turns,
             )
             correlation_id = uuid.uuid4().hex
             built = ai_context_service.build(
@@ -247,13 +290,9 @@ class AINaturalLanguageStage:
             return StageResult()
 
         ai_permission_service.mark_reply_sent(guild_id, user_id)
-        ai_conversation_service.append(
-            guild_id,
-            channel_id,
-            user_id=user_id,
-            role="user",
-            text=text,
-        )
+        # The AI cog's on_message listener owns user-message recording
+        # so chat memory captures bystander messages too. The stage
+        # only records its own assistant reply.
         ai_conversation_service.append(
             guild_id,
             channel_id,

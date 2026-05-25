@@ -62,6 +62,19 @@ class InstructionStack:
         return self.user_message
 
 
+def _render_recent_turn(turn: object) -> str:
+    """Format one ConversationTurn for inclusion in the data layer.
+
+    Accepts any object exposing ``user_id``, ``role``, and ``text``
+    attributes so the assembler stays decoupled from the conversation
+    service's concrete dataclass.
+    """
+    role = str(getattr(turn, "role", "user"))
+    user_id = getattr(turn, "user_id", "?")
+    text = str(getattr(turn, "text", "")).strip()
+    return f"[{role} user={user_id}] {text}"
+
+
 async def assemble(
     *,
     guild_id: int,
@@ -69,8 +82,15 @@ async def assemble(
     profile_ids: tuple[int, ...],
     feature_profile_id: int | None = None,
     retrieved_facts: list[str] | None = None,
+    recent_turns: list[object] | None = None,
 ) -> InstructionStack:
-    """Build the layered :class:`InstructionStack`."""
+    """Build the layered :class:`InstructionStack`.
+
+    ``recent_turns`` is an optional rolling slice of prior channel
+    messages (see :mod:`services.ai_conversation_service`). Each turn
+    is wrapped as untrusted data so adversarial text in a prior
+    message can never escape the data envelope.
+    """
     system: list[str] = [_SYSTEM_SAFETY, _BOT_AI_POLICY]
 
     # Load each referenced profile body and wrap as data.
@@ -92,6 +112,9 @@ async def assemble(
         system.append(wrap_untrusted_text(body, kind=kind))
 
     data: list[str] = []
+    if recent_turns:
+        joined = "\n".join(_render_recent_turn(t) for t in recent_turns)
+        data.append(wrap_untrusted_text(joined, kind="recent_channel_turns"))
     for fact in retrieved_facts or ():
         data.append(wrap_untrusted_text(str(fact), kind="retrieved_fact"))
 

@@ -979,18 +979,20 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
    `AIPanelView` (read-only).
 9. **existing_SettingSpec_declarations**: M1 of the BTD6-top-level +
    AI-central-policy initiative shipped the AI subsystem's scalar
-   surface in `disbot/cogs/ai/schemas.py` — eight SettingSpecs:
+   surface in `disbot/cogs/ai/schemas.py` — ten SettingSpecs:
    `ai_enabled`, `ai_natural_language_enabled`, `ai_default_provider`,
    `ai_default_model`, `ai_minimum_level_default`,
-   `ai_cooldown_seconds`, `ai_fresh_user_mention_allowance`, and
-   `ai_guild_instruction_profile`. Each spec maps to the matching
+   `ai_cooldown_seconds`, `ai_fresh_user_mention_allowance`,
+   `ai_guild_instruction_profile`, `ai_memory_window_minutes`, and
+   `ai_memory_channel_scan_enabled`. Each spec maps to the matching
    `AI_*` constant in `disbot/utils/settings_keys/ai.py`. The
    `audit_log_channel` BindingSpec is the single source of truth
    for the AI audit channel across later milestones.
 10. **existing_settings_keys**: `AI_ENABLED`, `AI_NATURAL_LANGUAGE_ENABLED`,
     `AI_DEFAULT_PROVIDER`, `AI_DEFAULT_MODEL`,
     `AI_MINIMUM_LEVEL_DEFAULT`, `AI_COOLDOWN_SECONDS`,
-    `AI_FRESH_USER_MENTION_ALLOWANCE`, `AI_GUILD_INSTRUCTION_PROFILE`
+    `AI_FRESH_USER_MENTION_ALLOWANCE`, `AI_GUILD_INSTRUCTION_PROFILE`,
+    `AI_MEMORY_WINDOW_MINUTES`, `AI_MEMORY_CHANNEL_SCAN_ENABLED`
     (all in `disbot/utils/settings_keys/ai.py`).
 11. **existing_BindingSpec_entries**: `audit_log_channel` (channel,
     optional, capability `ai.settings.configure`) — routed through
