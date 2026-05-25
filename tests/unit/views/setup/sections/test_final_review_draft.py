@@ -222,6 +222,7 @@ def _interaction_with_guild():
     interaction.message = MagicMock(id=100)
     interaction.response = MagicMock()
     interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
     interaction.response.defer = AsyncMock()
     interaction.followup = MagicMock()
     interaction.followup.edit_message = AsyncMock()
@@ -230,13 +231,13 @@ def _interaction_with_guild():
 
 def test_view_with_ops_disables_apply_when_ops_list_empty():
     view = FinalReviewView(_owner_member(), ops=[])
-    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply")
+    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup")
     assert apply_btn.disabled is True
 
 
 def test_view_with_ops_enables_apply_when_ops_non_empty():
     view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
-    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply")
+    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup")
     assert apply_btn.disabled is False
 
 
@@ -808,3 +809,101 @@ def test_embed_says_recommendations_when_given_recs():
     )
     embed = build_final_review_embed([rec])
     assert "recommendation" in (embed.description or "").lower()
+
+
+# ---------------------------------------------------------------------------
+# Phase 7 — Final Review copy polish
+# ---------------------------------------------------------------------------
+
+
+def test_pre_apply_embed_uses_new_copy_and_button_label():
+    """Phase 7 plan copy: 'Final review — nothing has changed yet.
+    These setup operations are staged and ready to apply.'
+    Primary button label is 'Apply staged setup'.
+    """
+    embed = build_final_review_embed([_op("bind_channel")])
+    description = (embed.description or "").lower()
+    assert "nothing has changed yet" in description
+    assert "apply staged setup" in description
+
+
+def test_full_success_embed_says_setup_complete():
+    """Full-success branch: 'Setup complete. Applied: ...'"""
+    from views.setup.final_review import ApplySummary
+
+    summary = ApplySummary(applied=["a", "b"])
+    embed = build_final_review_embed([_op("bind_channel")], summary=summary)
+    title = (embed.title or "").lower()
+    description = (embed.description or "").lower()
+    assert "setup complete" in title or "setup complete" in description
+
+
+def test_partial_success_embed_says_partially_applied():
+    """Partial-failure copy from Phase 0 stays exactly as the plan
+    documents in Phase 7."""
+    from views.setup.final_review import ApplySummary
+
+    summary = ApplySummary(applied=["a"], failed=["b: boom"])
+    embed = build_final_review_embed([_op("bind_channel")], summary=summary)
+    description = (embed.description or "").lower()
+    assert "partially applied" in description
+    assert "preserved" in description
+
+
+def test_final_review_view_has_apply_edit_back_cancel_buttons():
+    """Phase 7 button row: Apply staged setup / Edit setup / Back / Cancel."""
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    labels = {c.label for c in view.children if isinstance(c, discord.ui.Button)}
+    assert "Apply staged setup" in labels
+    assert "Edit setup" in labels
+    assert "Back" in labels
+    assert "Cancel" in labels
+
+
+def test_apply_button_has_stable_custom_id():
+    """The Apply button identity is anchored on a custom_id, not the
+    label — Phase 7 renamed the label but the custom_id stays so
+    test patches and persistent-view bindings (if any) keep working.
+    """
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    apply_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and getattr(c, "custom_id", None) == "setup_final_review:apply"
+    )
+    assert apply_btn.label == "Apply staged setup"
+
+
+@pytest.mark.asyncio
+async def test_edit_button_closes_with_keep_editing_message():
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    edit_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and getattr(c, "custom_id", None) == "setup_final_review:edit"
+    )
+    await edit_btn.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert "edit" in (kwargs.get("content", "")).lower()
+
+
+@pytest.mark.asyncio
+async def test_back_button_closes_with_back_message():
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    back_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and getattr(c, "custom_id", None) == "setup_final_review:back"
+    )
+    await back_btn.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()

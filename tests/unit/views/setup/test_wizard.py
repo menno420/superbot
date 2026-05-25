@@ -741,3 +741,87 @@ async def test_open_workspace_recovers_when_anchor_404():
     assert set_id_mock.await_count == 2
     assert set_id_mock.await_args_list[0].args == (1, None)
     assert set_id_mock.await_args_list[1].args == (1, 7777)
+
+
+# ---------------------------------------------------------------------------
+# Phase 7 — recovery view mount on section-flow failure
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_apply_recommended_mounts_recovery_view_on_builder_failure():
+    """When the section's recommended-ops builder raises, the wizard
+    edits the anchor to show the Phase 7 recovery embed + view
+    instead of just emitting a flat error ephemeral.
+    """
+    from views.setup.recovery import SectionRecoveryView
+
+    async def _broken_builder(_guild, **_kw):
+        raise RuntimeError("builder boom")
+
+    sections = [_section("cleanup", builder=_broken_builder)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+
+    with patch(
+        "views.setup.wizard.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_session(),
+    ):
+        apply_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_wizard:apply_recommended"
+        )
+        await apply_btn.callback(interaction)
+
+    # The anchor message is edited (not just an ephemeral) and the
+    # new view is the recovery view.
+    interaction.response.edit_message.assert_awaited_once()
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert isinstance(kwargs.get("view"), SectionRecoveryView)
+
+
+@pytest.mark.asyncio
+async def test_apply_recommended_mounts_recovery_view_on_replace_failure():
+    """Same flow when replace_recommended_for_section raises."""
+    from views.setup.recovery import SectionRecoveryView
+
+    sections = [_section("cleanup", builder=_builder_one_op)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+
+    with (
+        patch(
+            "views.setup.wizard.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.replace_recommended_for_section",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("DB down"),
+        ),
+    ):
+        apply_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_wizard:apply_recommended"
+        )
+        await apply_btn.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert isinstance(kwargs.get("view"), SectionRecoveryView)

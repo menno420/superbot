@@ -164,9 +164,10 @@ def build_final_review_embed(
         embed = discord.Embed(
             title="🛰 Final review",
             description=(
-                f"**{len(accepted)}** {noun}(s) staged. "
-                "Click **Apply** to route each through the audit "
-                "pipelines."
+                "Final review — **nothing has changed yet**.  "
+                f"**{len(accepted)}** {noun}(s) are staged and ready to "
+                "apply.  Click **Apply staged setup** to route each "
+                "through the audit pipelines."
             ),
             color=discord.Color.blurple(),
         )
@@ -185,20 +186,19 @@ def build_final_review_embed(
         color = discord.Color.gold()
         title = "🛰 Final review · partially applied"
         description = (
-            "Setup partially applied. Some changes succeeded, but "
-            "setup is **not** complete. Your remaining draft has "
-            "been preserved so you can retry or cancel.\n\n"
+            "**Setup partially applied.**  Some changes succeeded, but "
+            "setup is **not** complete.  Your remaining draft has been "
+            "preserved so you can retry or cancel.\n\n"
             f"Applied **{len(summary.applied)}**, "
             f"failed **{len(summary.failed)}**, "
             f"skipped **{len(summary.skipped)}**."
         )
     else:
         color = discord.Color.green()
-        title = "🛰 Final review · applied"
+        title = "🛰 Setup complete"
         description = (
-            f"Applied **{len(summary.applied)}**, "
-            f"failed **{len(summary.failed)}**, "
-            f"skipped **{len(summary.skipped)}**."
+            f"**Setup complete.**  Applied **{len(summary.applied)}** "
+            "operation(s); nothing failed or was skipped."
         )
     embed = discord.Embed(title=title, description=description, color=color)
     if summary.applied:
@@ -263,10 +263,20 @@ class FinalReviewView(BaseView):
         self.summary: ApplySummary | None = None
         if not self.accepted and not self.ops:
             for child in self.children:
-                if isinstance(child, discord.ui.Button) and child.label == "Apply":
+                # Disable the primary Apply button when there's nothing
+                # to apply.  Match by custom_id so renaming the label
+                # in copy passes (Phase 7) doesn't decouple this.
+                if (
+                    isinstance(child, discord.ui.Button)
+                    and getattr(child, "custom_id", None) == "setup_final_review:apply"
+                ):
                     child.disabled = True
 
-    @discord.ui.button(label="Apply", style=discord.ButtonStyle.success)
+    @discord.ui.button(
+        label="Apply staged setup",
+        style=discord.ButtonStyle.success,
+        custom_id="setup_final_review:apply",
+    )
     async def _apply(
         self,
         interaction: discord.Interaction,
@@ -392,7 +402,69 @@ class FinalReviewView(BaseView):
         except discord.HTTPException:
             logger.warning("FinalReviewView: followup edit failed")
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(
+        label="Edit setup",
+        style=discord.ButtonStyle.secondary,
+        custom_id="setup_final_review:edit",
+    )
+    async def _edit(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Close the ephemeral so the operator can return to the wizard
+        anchor (or hub) and re-stage / edit before applying.
+
+        Final Review is opened as an ephemeral follow-up; the wizard /
+        hub anchor message stays visible underneath.  This button just
+        signals "I want to keep editing" — closing the ephemeral
+        returns the operator to the anchor without any side effect.
+        """
+        del button
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await interaction.response.edit_message(
+            content=(
+                "Closed Final review — open the wizard or hub above to "
+                "edit your staged operations.  Nothing has been applied."
+            ),
+            view=self,
+        )
+        self.stop()
+
+    @discord.ui.button(
+        label="Back",
+        style=discord.ButtonStyle.secondary,
+        custom_id="setup_final_review:back",
+    )
+    async def _back(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Navigation alias for :meth:`_edit`.
+
+        ``Back`` reads more naturally from the wizard's flow ("go back
+        to the wizard") while ``Edit setup`` reads more naturally from
+        the hub.  Both close the ephemeral with the same side-effect.
+        """
+        del button
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await interaction.response.edit_message(
+            content=(
+                "Closed Final review — your wizard / hub anchor is "
+                "still open above.  Nothing has been applied."
+            ),
+            view=self,
+        )
+        self.stop()
+
+    @discord.ui.button(
+        label="Cancel",
+        style=discord.ButtonStyle.danger,
+        custom_id="setup_final_review:cancel",
+    )
     async def _cancel(
         self,
         interaction: discord.Interaction,

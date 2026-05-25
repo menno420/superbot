@@ -365,6 +365,63 @@ class LinearWizardView(BaseView):
             return False
         return True
 
+    async def _mount_recovery_view(
+        self,
+        interaction: discord.Interaction,
+        *,
+        section: SetupSection,
+        exc: BaseException,
+    ) -> None:
+        """Edit the wizard anchor to show the recovery embed + view.
+
+        Called when ``_on_apply_recommended`` (and, eventually, other
+        section-flow callbacks) catches a section-side exception.  The
+        recovery view's ``Continue`` button re-paints this step via
+        :meth:`_refresh_and_edit` so the operator returns cleanly to
+        the wizard flow.
+        """
+        from views.setup.recovery import (
+            SectionRecoveryView,
+            build_recovery_embed,
+            recovery_context_from_exception,
+        )
+
+        context = recovery_context_from_exception(
+            section=section,
+            exc=exc,
+            origin="wizard",
+            step_index=self.step_index,
+            total_steps=len(self.sections),
+        )
+        embed = build_recovery_embed(context)
+        recovery_view = SectionRecoveryView(
+            interaction.user,
+            context=context,
+            resume_callback=self._refresh_and_edit,
+        )
+        try:
+            if interaction.response.is_done():
+                await interaction.followup.edit_message(
+                    message_id=interaction.message.id,
+                    embed=embed,
+                    view=recovery_view,
+                )
+            else:
+                await interaction.response.edit_message(
+                    embed=embed,
+                    view=recovery_view,
+                )
+        except discord.HTTPException:
+            logger.exception(
+                "wizard._mount_recovery_view: edit failed",
+            )
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    f"Could not show the recovery view for "
+                    f"**{section.label}** — see logs.",
+                    ephemeral=True,
+                )
+
     async def _refresh_and_edit(self, interaction: discord.Interaction) -> None:
         """Refresh the session + draft state and edit the anchor message.
 
@@ -543,15 +600,12 @@ class LinearWizardView(BaseView):
                 depth=session.depth if session is not None else None,
                 section_slug=section.slug,
             )
-        except Exception:
+        except Exception as exc:
             logger.exception(
                 "wizard._on_apply_recommended: builder failed (%s)",
                 section.slug,
             )
-            await interaction.response.send_message(
-                "Could not build the recommended defaults — see logs.",
-                ephemeral=True,
-            )
+            await self._mount_recovery_view(interaction, section=section, exc=exc)
             return
         if not ops:
             await interaction.response.send_message(
@@ -570,14 +624,11 @@ class LinearWizardView(BaseView):
                     for idx, op in enumerate(ops)
                 },
             )
-        except Exception:
+        except Exception as exc:
             logger.exception(
                 "wizard._on_apply_recommended: replace_recommended failed",
             )
-            await interaction.response.send_message(
-                "Could not stage the recommended operations — see logs.",
-                ephemeral=True,
-            )
+            await self._mount_recovery_view(interaction, section=section, exc=exc)
             return
         try:
             await setup_session.unmark_section_skipped(
