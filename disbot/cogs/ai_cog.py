@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 from types import SimpleNamespace
+from typing import Any
 
 import discord
 from discord import app_commands
@@ -373,9 +374,10 @@ class AICog(commands.Cog):
             return
         from services import ai_readiness_service
 
-        target_channel: discord.abc.Messageable | None = (
-            channel if channel is not None else ctx.channel
-        )
+        # ``ctx.channel`` types as a union that includes DM / Group channels
+        # which lack the readiness service's expected attributes — and the
+        # service narrows by isinstance anyway. Pass through as Any.
+        target_channel: Any = channel if channel is not None else ctx.channel
         report = await ai_readiness_service.scan(
             ctx.guild.id,
             bot=self.bot,
@@ -575,9 +577,9 @@ class AICog(commands.Cog):
             return
         from services import ai_readiness_service
 
-        target_channel: discord.abc.Messageable | None = (
-            channel if channel is not None else interaction.channel
-        )
+        # ``interaction.channel`` types as a wide channel union the
+        # readiness service narrows by isinstance. Pass through as Any.
+        target_channel: Any = channel if channel is not None else interaction.channel
         report = await ai_readiness_service.scan(
             interaction.guild.id,
             bot=self.bot,
