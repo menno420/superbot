@@ -15,6 +15,7 @@ disabled``).
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import discord
 
@@ -34,23 +35,27 @@ class CategoryPolicyModal(discord.ui.Modal):
     the only differences are the mutation target table and the title.
     """
 
-    def __init__(self, category: discord.CategoryChannel) -> None:
+    def __init__(self, category: Any) -> None:
+        # See ChannelPolicyModal for the rationale behind the ``Any``
+        # annotation — Discord may hand us either ``CategoryChannel``
+        # or ``AppCommandChannel``; the modal only uses ``.id`` and
+        # ``.name``.
         super().__init__(title=f"AI policy · {category.name}", timeout=180)
         self.category = category
-        self.mode_input = discord.ui.TextInput(
+        self.mode_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Mode",
             placeholder="inherit | always_reply | mention_only | disabled",
             required=True,
             min_length=4,
             max_length=20,
         )
-        self.min_level_input = discord.ui.TextInput(
+        self.min_level_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Min level (blank = inherit)",
             placeholder="0",
             required=False,
             max_length=4,
         )
-        self.cooldown_input = discord.ui.TextInput(
+        self.cooldown_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Cooldown seconds (blank = inherit)",
             placeholder="30",
             required=False,
@@ -149,12 +154,18 @@ class _CategoryPickSelect(discord.ui.ChannelSelect):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         picked = self.values[0]
-        resolved = picked
+        category: Any = picked
         if interaction.guild is not None:
-            full = interaction.guild.get_channel(picked.id)
+            from core.runtime import guild_resources
+
+            full = guild_resources.resolve_channel(
+                interaction.guild,
+                channel_id=picked.id,
+                kind="category",
+            )
             if full is not None:
-                resolved = full
-        await interaction.response.send_modal(CategoryPolicyModal(resolved))
+                category = full
+        await interaction.response.send_modal(CategoryPolicyModal(category))
 
 
 class CategoryPolicySelectView(discord.ui.View):

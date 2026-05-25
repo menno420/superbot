@@ -15,6 +15,7 @@ Submit calls :func:`services.ai_policy_mutation.set_role_policy`.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import discord
 
@@ -48,23 +49,27 @@ def _parse_bool(raw: str, *, field: str) -> bool:
 class RolePolicyModal(discord.ui.Modal):
     """Edit modal that writes one ``ai_role_policy`` row."""
 
-    def __init__(self, role: discord.Role) -> None:
+    def __init__(self, role: Any) -> None:
+        # ``role`` is typed as ``Any`` for symmetry with the channel /
+        # category modals — Discord may hand us either ``discord.Role``
+        # or ``app_commands.AppCommandRole``; the modal uses ``.id``,
+        # ``.name``, and ``.mention`` only.
         super().__init__(title=f"AI policy · @{role.name}", timeout=180)
         self.role = role
-        self.decision_input = discord.ui.TextInput(
+        self.decision_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Decision",
             placeholder="allow | deny | inherit",
             required=True,
             min_length=4,
             max_length=10,
         )
-        self.min_level_input = discord.ui.TextInput(
+        self.min_level_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Min level override (blank = inherit)",
             placeholder="0",
             required=False,
             max_length=4,
         )
-        self.bypass_input = discord.ui.TextInput(
+        self.bypass_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Bypass cooldown (yes/no)",
             placeholder="no",
             required=False,

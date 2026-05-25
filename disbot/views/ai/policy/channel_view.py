@@ -24,6 +24,7 @@ modal, one job".
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import discord
 
@@ -62,23 +63,29 @@ class ChannelPolicyModal(discord.ui.Modal):
     Submit calls :func:`services.ai_policy_mutation.set_channel_policy`.
     """
 
-    def __init__(self, channel: discord.abc.GuildChannel) -> None:
+    def __init__(self, channel: Any) -> None:
+        # ``channel`` is typed as ``Any`` because Discord can hand us
+        # either a fully-hydrated ``GuildChannel`` (resolved via
+        # ``guild_resources.resolve_channel``) or the lighter
+        # ``app_commands.AppCommandChannel`` that ``ChannelSelect``
+        # surfaces. Both expose ``.id``, ``.name``, and ``.mention``,
+        # which is all this modal uses.
         super().__init__(title=f"AI policy · #{channel.name}", timeout=180)
         self.channel = channel
-        self.mode_input = discord.ui.TextInput(
+        self.mode_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Mode",
             placeholder="inherit | always_reply | mention_only | disabled",
             required=True,
             min_length=4,
             max_length=20,
         )
-        self.min_level_input = discord.ui.TextInput(
+        self.min_level_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Min level (blank = inherit)",
             placeholder="0",
             required=False,
             max_length=4,
         )
-        self.cooldown_input = discord.ui.TextInput(
+        self.cooldown_input: discord.ui.TextInput = discord.ui.TextInput(
             label="Cooldown seconds (blank = inherit)",
             placeholder="30",
             required=False,
@@ -176,15 +183,23 @@ class _ChannelPickSelect(discord.ui.ChannelSelect):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         picked = self.values[0]
-        # ``ChannelSelect`` resolves to a ``app_commands.AppCommandChannel``;
-        # we need the underlying guild channel for ``channel.mention`` in
-        # the modal title and for ``channel.id`` in the mutation call.
-        resolved = picked
+        # ``ChannelSelect.values`` returns ``AppCommandChannel`` /
+        # ``AppCommandThread`` shells; route through the canonical
+        # ``guild_resources.resolve_channel`` to recover the full
+        # guild channel where possible. The modal accepts either shape
+        # (see ChannelPolicyModal.__init__).
+        channel: Any = picked
         if interaction.guild is not None:
-            full = interaction.guild.get_channel(picked.id)
+            from core.runtime import guild_resources
+
+            full = guild_resources.resolve_channel(
+                interaction.guild,
+                channel_id=picked.id,
+                kind="text",
+            )
             if full is not None:
-                resolved = full
-        await interaction.response.send_modal(ChannelPolicyModal(resolved))
+                channel = full
+        await interaction.response.send_modal(ChannelPolicyModal(channel))
 
 
 class ChannelPolicySelectView(discord.ui.View):
