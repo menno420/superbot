@@ -209,12 +209,20 @@ AI_SETTINGS: tuple[SettingSpec, ...] = (
         capability_required=_CAPABILITY,
         hint=(
             "Free-text guild-wide instruction body that prefixes every "
-            "AI prompt for this guild. Transitional scalar seed: M2 "
-            "backfills this into a typed ai_instruction_profile row "
-            "named 'default' and the typed table becomes the runtime "
-            "source of truth."
+            "AI prompt for this guild. **Edited via the AI Behavior "
+            "chooser** — the typed `ai_instruction_profile` row is the "
+            "authoritative source. This scalar is retained for "
+            "backcompat reads only and is hidden from the primary "
+            "settings panel."
         ),
         validator=_validate_str,
+        # PR-6: hide from the auto-rendered settings panel. The
+        # Behavior chooser's "Edit guild instruction" modal is the
+        # authoritative editor — it writes through
+        # ai_instruction_mutation.upsert_profile and binds the resulting
+        # profile id via ai_policy_mutation.set_guild_policy. See
+        # docs/ai-config-ownership.md § "Resolved semantics".
+        hidden_from_panel=True,
     ),
     SettingSpec(
         name="ai_memory_window_minutes",

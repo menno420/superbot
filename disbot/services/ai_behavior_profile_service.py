@@ -54,6 +54,17 @@ class InvalidBehaviorPresetScopeError(BehaviorPresetError):
     pass
 
 
+class GuildScopeNotSupportedError(BehaviorPresetError):
+    """Raised when a preset's recommended mode cannot be expressed at
+    guild scope.
+
+    The typed ``ai_guild_policy.natural_language_enabled`` column is
+    boolean — it has no third state for ``mention_only``. Operators
+    who want mention-only behavior must apply the preset to a
+    category or channel instead.
+    """
+
+
 # ---------------------------------------------------------------------------
 # Catalog metadata
 # ---------------------------------------------------------------------------
@@ -148,7 +159,15 @@ class BehaviorApplyResult:
 # ---------------------------------------------------------------------------
 
 
-_SUPPORTED_SCOPES: frozenset[str] = frozenset({"channel", "category"})
+_SUPPORTED_SCOPES: frozenset[str] = frozenset({"channel", "category", "guild"})
+
+# Fields the guild preset application owns. Every other column on
+# ``ai_guild_policy`` is read from the current row and passed through
+# ``set_guild_policy`` unchanged — the preservation invariant in PR-6.
+_PRESET_OWNED_GUILD_FIELDS: tuple[str, ...] = (
+    "guild_instruction_profile_id",
+    "natural_language_enabled",
+)
 
 
 async def list_presets() -> list[BehaviorPresetSummary]:
@@ -203,21 +222,40 @@ async def apply_preset(
     *,
     guild_id: int,
     scope: str,
-    target_id: int,
+    target_id: int | None,
     preset_id: int,
     actor: Any,
 ) -> BehaviorApplyResult:
     """Bind a preset id into the matching policy scope.
 
-    ``scope`` must be one of :data:`_SUPPORTED_SCOPES`. The preset's
-    recommended mode and the preset id are written; other optional
-    columns (``min_level``, ``cooldown_seconds``) are passed as
+    ``scope`` must be one of :data:`_SUPPORTED_SCOPES`. For
+    ``channel`` / ``category`` scopes the preset's recommended mode
+    and the preset id are written; other optional columns
+    (``min_level``, ``cooldown_seconds``) are passed as
     :data:`ai_policy_mutation.UNCHANGED` so any existing per-scope
-    overrides are preserved across preset applies.
+    overrides are preserved.
+
+    For ``scope='guild'`` this delegates to
+    :func:`apply_preset_to_guild` (``target_id`` ignored). The guild
+    path enforces the preservation invariant: every existing
+    ``ai_guild_policy`` field NOT owned by the preset is passed
+    through unchanged.
     """
     if scope not in _SUPPORTED_SCOPES:
         raise InvalidBehaviorPresetScopeError(
             f"scope must be one of {sorted(_SUPPORTED_SCOPES)}, got {scope!r}",
+        )
+
+    if scope == "guild":
+        return await apply_preset_to_guild(
+            guild_id=guild_id,
+            preset_id=preset_id,
+            actor=actor,
+        )
+
+    if target_id is None:
+        raise InvalidBehaviorPresetScopeError(
+            f"scope={scope!r} requires a target_id",
         )
 
     summary = await describe_preset(preset_id)
@@ -257,15 +295,87 @@ async def apply_preset(
     )
 
 
+async def apply_preset_to_guild(
+    *,
+    guild_id: int,
+    preset_id: int,
+    actor: Any,
+) -> BehaviorApplyResult:
+    """Bind a preset id into ``ai_guild_policy.guild_instruction_profile_id``.
+
+    Preservation invariant (PR-6):
+
+    1. Read the current ``ai_guild_policy`` row.
+    2. Apply only the preset-owned fields
+       (:data:`_PRESET_OWNED_GUILD_FIELDS`):
+       ``guild_instruction_profile_id`` and ``natural_language_enabled``.
+    3. Pass every other field through
+       :func:`ai_policy_mutation.set_guild_policy` **unchanged** from
+       the current row (or its declared default when the row is empty).
+
+    ``mention_only`` presets are rejected with
+    :class:`GuildScopeNotSupportedError` because the typed
+    ``natural_language_enabled`` column has no third state. The UI
+    hides ``mention_only`` cards from the guild button per the same
+    rule; the service-side check is the safety net.
+    """
+    summary = await describe_preset(preset_id)
+    if summary is None:
+        raise UnknownBehaviorPresetError(
+            f"preset_id={preset_id} not found or not flagged is_preset=True",
+        )
+
+    mode = summary.recommended_mode
+    if mode == "mention_only":
+        raise GuildScopeNotSupportedError(
+            "mention_only is not supported at guild scope — apply this "
+            "preset to a category or channel instead. The typed "
+            "ai_guild_policy.natural_language_enabled column is boolean; "
+            "mention-only behavior must come from a scoped override.",
+        )
+    nl_enabled = mode == "always_reply"  # disabled → False
+
+    # Read current row so we can preserve every non-preset-owned field.
+    current = await ai_db.get_guild_policy(guild_id) or {}
+
+    result = await ai_policy_mutation.set_guild_policy(
+        guild_id,
+        enabled=bool(current.get("enabled", False)),
+        natural_language_enabled=nl_enabled,
+        default_provider=str(
+            current.get("default_provider", "deterministic") or "deterministic"
+        ),
+        default_model=str(current.get("default_model", "") or ""),
+        minimum_level_default=int(current.get("minimum_level_default", 2)),
+        cooldown_seconds=int(current.get("cooldown_seconds", 30)),
+        fresh_user_mention_allowance=int(
+            current.get("fresh_user_mention_allowance", 1)
+        ),
+        guild_instruction_profile_id=preset_id,
+        actor=actor,
+    )
+
+    return BehaviorApplyResult(
+        scope="guild",
+        target_id=guild_id,
+        preset_id=preset_id,
+        preset_key=summary.key,
+        recommended_mode=summary.recommended_mode,
+        policy_mutation_id=result.mutation_id,
+    )
+
+
 __all__ = [
     "BehaviorApplyResult",
     "BehaviorPresetCatalogEntry",
     "BehaviorPresetError",
     "BehaviorPresetSummary",
+    "GuildScopeNotSupportedError",
     "InvalidBehaviorPresetScopeError",
     "PRESET_KEYS",
     "UnknownBehaviorPresetError",
     "apply_preset",
+    "apply_preset_to_guild",
     "describe_preset",
     "list_presets",
 ]

@@ -250,10 +250,12 @@ async def test_apply_preset_to_category_calls_set_category_policy(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_apply_preset_refuses_unsupported_scope():
+    """Guild scope is supported as of PR-6 — refuse a genuinely
+    invalid scope name instead."""
     with pytest.raises(svc.InvalidBehaviorPresetScopeError):
         await svc.apply_preset(
             guild_id=1,
-            scope="guild",  # not supported
+            scope="role",  # not supported
             target_id=1,
             preset_id=1,
             actor=_admin_actor(),
