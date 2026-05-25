@@ -218,17 +218,26 @@ do not relitigate them.
   The setting hint reads "Minimal — last 3 messages only" (PR-3). The
   floor is a deliberate basic-conversational-handle guarantee, not a
   bug.
-- **Instruction-profile scalar.** `ai_guild_instruction_profile` is
-  hidden from the auto-rendered subsystem settings panel (PR-6). The
-  Behavior chooser hosts the only authoritative editor; writes go
-  through `ai_instruction_mutation.upsert_profile` and then bind the
-  resulting profile id via `ai_policy_mutation.set_guild_policy`. The
-  legacy KV row is retained for backcompat reads only.
-- **`mention_only` at guild scope.** Not supported. The Behavior
-  chooser hides preset cards whose mode is `mention_only` from the
-  guild button with a tooltip explaining the restriction; the service
-  raises `GuildScopeNotSupportedError` if a caller asks for it (PR-6).
-  Apply `mention_only` to a category or channel instead.
+- **Instruction-profile scalar (PR-6, shipped).**
+  `ai_guild_instruction_profile` is hidden from the auto-rendered
+  subsystem settings panel via the new `SettingSpec.hidden_from_panel`
+  flag. The Behavior chooser's "Edit guild instruction" modal is the
+  authoritative editor; it writes through
+  `ai_instruction_mutation.upsert_profile` and then binds the resulting
+  profile id via `ai_policy_mutation.set_guild_policy` (preservation
+  invariant applies). The legacy KV row is retained for backcompat
+  reads only.
+- **`mention_only` at guild scope (PR-6, shipped).** Not supported.
+  The Behavior chooser's preset picker hides cards whose mode is
+  `mention_only` when scope=`guild`; the service raises
+  `GuildScopeNotSupportedError` if a caller asks for it. Apply
+  `mention_only` to a category or channel instead.
+- **Guild preset preservation invariant (PR-6, shipped).** A guild
+  preset application reads the current `ai_guild_policy` row, applies
+  only the two preset-owned fields
+  (`guild_instruction_profile_id`, `natural_language_enabled`), and
+  passes every other field through `set_guild_policy` unchanged.
+  Pinned by `tests/unit/services/test_ai_behavior_profile_guild_scope.py`.
 
 ---
 

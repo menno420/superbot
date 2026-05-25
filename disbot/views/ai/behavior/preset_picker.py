@@ -165,6 +165,13 @@ class PresetPickerView(discord.ui.View):
         options: list[discord.SelectOption] = []
         lookup: dict[str, int] = {}
         for preset in presets[:_MAX_OPTIONS]:
+            # PR-6: hide ``mention_only`` cards from the guild button.
+            # The typed ``ai_guild_policy.natural_language_enabled``
+            # column is boolean — mention-only behavior needs a scoped
+            # override, not a guild baseline. The service-side check
+            # in ``apply_preset_to_guild`` is the safety net.
+            if self._scope == "guild" and preset.recommended_mode == "mention_only":
+                continue
             options.append(
                 discord.SelectOption(
                     label=preset.key,

@@ -133,6 +133,57 @@ class BehaviorChooserView(discord.ui.View):
         )
 
     @discord.ui.button(
+        label="Guild",
+        style=discord.ButtonStyle.primary,
+        row=0,
+    )
+    async def guild_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # PR-6: open the guild-scope preset picker. The picker filters
+        # out ``mention_only`` presets — the typed guild policy has no
+        # third state, so mention-only behavior must come from a
+        # scoped override.
+        from views.ai.behavior.preset_picker import PresetPickerView
+
+        guild_id = interaction.guild_id
+        await interaction.response.send_message(
+            "Pick a preset to bind at **guild scope**. `mention_only` "
+            "presets are hidden — apply those to a category or channel "
+            "instead. Other policy fields (provider, model, cooldown, "
+            "min level) are preserved.",
+            view=PresetPickerView(
+                scope="guild",
+                target_id=guild_id if guild_id is not None else 0,
+                target_label="this guild",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(
+        label="Edit guild instruction",
+        style=discord.ButtonStyle.secondary,
+        row=2,
+    )
+    async def edit_guild_instruction_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # PR-6: open the guild instruction-profile editor modal. The
+        # ``ai_guild_instruction_profile`` legacy scalar is hidden from
+        # the primary settings panel; this modal is the authoritative
+        # editor and writes through ``ai_instruction_mutation`` +
+        # ``ai_policy_mutation``.
+        from views.ai.behavior.instruction_modal import (
+            GuildInstructionProfileModal,
+        )
+
+        await interaction.response.send_modal(GuildInstructionProfileModal())
+
+    @discord.ui.button(
         label="Preview (dry-run)",
         style=discord.ButtonStyle.secondary,
         row=1,

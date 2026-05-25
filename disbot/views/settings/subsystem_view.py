@@ -67,6 +67,8 @@ async def _resolve_settings_block(
     lines: list[str] = []
     if guild_id is None:
         for spec in schema.settings:
+            if getattr(spec, "hidden_from_panel", False):
+                continue
             lines.append(
                 f"`{spec.name}` — type=`{spec.value_type.__name__}` "
                 f"default=`{spec.default!r}` *(no guild context)*",
@@ -75,6 +77,8 @@ async def _resolve_settings_block(
     from services.settings_resolution import resolve_setting
 
     for spec in schema.settings:
+        if getattr(spec, "hidden_from_panel", False):
+            continue
         try:
             resolution = await resolve_setting(guild_id, subsystem, spec.name)
         except Exception as exc:  # noqa: BLE001 — fail-soft per panel field
@@ -381,13 +385,22 @@ def _build_no_panel_embed(subsystem: str) -> discord.Embed:
 
 
 def _editable_specs(subsystem: str) -> list:
-    """Return SettingSpec instances we can edit (subset that has a settings_key)."""
+    """Return SettingSpec instances we can edit (subset that has a settings_key).
+
+    Specs flagged ``hidden_from_panel=True`` are also excluded — they
+    declare a dedicated editor surface elsewhere (e.g. the AI Behavior
+    chooser's instruction-profile modal).
+    """
     from core.runtime.subsystem_schema import get_schema
 
     schema = get_schema(subsystem)
     if schema is None:
         return []
-    return [spec for spec in schema.settings if spec.settings_key]
+    return [
+        spec
+        for spec in schema.settings
+        if spec.settings_key and not getattr(spec, "hidden_from_panel", False)
+    ]
 
 
 class _EditSettingSelect(discord.ui.Select):

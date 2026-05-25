@@ -177,6 +177,13 @@ class SettingSpec:
     allowed_values: tuple[Any, ...] = ()
     input_hint: str = ""
     presets: tuple[Any, ...] = ()
+    # True when the setting should NOT be rendered or editable through
+    # the generic per-subsystem settings panel — the subsystem provides
+    # a dedicated editor surface (e.g. a modal in the Behavior chooser).
+    # The KV row is preserved for backcompat reads but operators must
+    # use the dedicated surface to write to it. Defaults to False so
+    # existing settings stay visible.
+    hidden_from_panel: bool = False
 
 
 @dataclass(frozen=True)
