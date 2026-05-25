@@ -129,7 +129,7 @@ class PolicyChooserView(discord.ui.View):
         )
 
     @discord.ui.button(
-        label="Preview",
+        label="Effective policy",
         style=discord.ButtonStyle.secondary,
         row=1,
     )
@@ -138,12 +138,14 @@ class PolicyChooserView(discord.ui.View):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # PR4B: open the dry-run preview channel picker. The resolver
-        # runs in dry_run mode so cooldown / audit are untouched.
+        # PR-2: open the dry-run preview channel picker. The resolver
+        # runs in dry_run mode so cooldown / audit are untouched. Same
+        # underlying view as before — only the button label changed; the
+        # callback name (preview_btn) is its custom_id contract.
         from views.ai.policy.preview_view import PreviewChannelSelectView
 
         await interaction.response.send_message(
-            "Pick a channel to preview the effective AI policy as your user.",
+            "Pick a channel to see the effective AI policy as your user.",
             view=PreviewChannelSelectView(),
             ephemeral=True,
         )
