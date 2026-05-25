@@ -16,8 +16,12 @@ from __future__ import annotations
 from services.parsers import (  # noqa: F401 — register-on-import side effects
     ninjakiwi_bosses,
     ninjakiwi_challenges,
+    ninjakiwi_ct,
     ninjakiwi_events,
     ninjakiwi_maps,
     ninjakiwi_odyssey,
     ninjakiwi_races,
 )
+
+# Implemented sub-keys (parsers serve multiple source_keys per domain).
+# Listing here is informational; registration happens inside each module.

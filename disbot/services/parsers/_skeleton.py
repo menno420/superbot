@@ -32,6 +32,7 @@ class NinjaKiwiParserSkeleton:
         payload: Any,
         *,
         game_version: str | None = None,
+        path_params: dict[str, str] | None = None,
     ) -> list[dict[str, Any]]:
         raise ParserNotImplementedError(self.source_key)
 

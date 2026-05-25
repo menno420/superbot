@@ -1,11 +1,13 @@
-"""M3B — parser skeletons stay xfail until the NK response format is captured.
+"""M3B — Ninja Kiwi parser registry inventory.
 
-Every first-priority parser is registered (so the registry is the
-single source of truth for known endpoints), but the ``parse()``
-call is marked ``pytest.xfail(strict=False)`` with the explicit
-reason the refined-direction plan calls for. When a real parser
-lands, replace the xfail with a fixture-driven assertion in the
-same file.
+Every captured endpoint (the 18 rows enabled by migration 042) must
+have a registered parser. The 5 uncaptured endpoints (CT leaderboards,
+/users, /guild) must NOT yet have a parser — their parser scope is
+deferred until fixtures are captured and approved.
+
+Per-domain shape assertions live in the dedicated
+``tests/unit/services/parsers/test_ninjakiwi_*.py`` modules; this file
+covers the registry-level guarantees only.
 """
 
 from __future__ import annotations
@@ -20,57 +22,125 @@ if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
 
 from services import btd6_source_parser  # noqa: E402
-from services.parsers._skeleton import ParserNotImplementedError  # noqa: E402
 
-_FIRST_PRIORITY = (
+# 18 source_keys with implemented parsers (all enabled by migration 042).
+_REGISTERED = (
+    # Maps
     "nk_btd6_maps",
-    "nk_btd6_races",
-    "nk_btd6_bosses",
-    "nk_btd6_odyssey",
-    "nk_btd6_challenges",
+    "nk_btd6_maps_filter",
+    "nk_btd6_maps_one",
+    # Events
     "nk_btd6_events",
+    # Races
+    "nk_btd6_races",
+    "nk_btd6_races_metadata",
+    "nk_btd6_races_leaderboard",
+    # Odyssey
+    "nk_btd6_odyssey",
+    "nk_btd6_odyssey_diff",
+    "nk_btd6_odyssey_diff_maps",
+    # Challenges
+    "nk_btd6_challenges",
+    "nk_btd6_challenges_filter",
+    "nk_btd6_challenges_one",
+    # CT
+    "nk_btd6_ct",
+    "nk_btd6_ct_tiles",
+    # Bosses
+    "nk_btd6_bosses",
+    "nk_btd6_bosses_metadata",
+    "nk_btd6_bosses_leaderboard",
+)
+
+# 5 captured-disabled source_keys; no parser approved until scope is
+# explicitly opened with captured fixtures.
+_UNPARSED = (
+    "nk_btd6_ct_lb_player",
+    "nk_btd6_ct_lb_team",
+    "nk_btd6_ct_lb_group",
+    "nk_btd6_users",
+    "nk_btd6_guild",
 )
 
 
 @pytest.fixture(autouse=True)
 def _import_parsers():
-    # Importing the package registers every skeleton.
+    # Importing the package fires every domain module's register() call.
     import services.parsers  # noqa: F401
     yield
 
 
-@pytest.mark.parametrize("source_key", _FIRST_PRIORITY)
-def test_first_priority_parser_is_registered(source_key):
+@pytest.mark.parametrize("source_key", _REGISTERED)
+def test_captured_endpoint_has_a_registered_parser(source_key):
     parser = btd6_source_parser.get(source_key)
     assert parser is not None, (
-        f"M3B must register a parser skeleton for {source_key}"
+        f"M3B must register a parser for the captured endpoint {source_key}"
     )
     assert parser.source_key == source_key
 
 
-@pytest.mark.parametrize("source_key", _FIRST_PRIORITY)
-def test_parser_skeleton_raises_until_format_is_captured(source_key):
-    """Skeletons raise ParserNotImplementedError with a stable reason.
-
-    Marked ``xfail(strict=False)`` so the test still passes when a
-    real parser arrives and stops raising. Until then the explicit
-    raise prevents the M3B fetch loop from writing empty fact rows
-    by accident.
-    """
+@pytest.mark.parametrize("source_key", _UNPARSED)
+def test_uncaptured_endpoint_has_no_parser(source_key):
+    """The 5 uncaptured endpoints have no parser. They stay disabled
+    by migration 042; even if someone enabled the row by hand, the
+    fact pipeline would have no way to interpret the response."""
     parser = btd6_source_parser.get(source_key)
-    assert parser is not None
-    pytest.xfail(
-        reason=(
-            f"NK API response format for {source_key} has not been "
-            "captured yet — parser skeleton intentionally raises"
-        ),
+    assert parser is None, (
+        f"{source_key} should NOT have a parser — its scope has not "
+        "been approved yet (no fixture captured)"
     )
-    parser.parse(payload={}, game_version=None)
 
 
-def test_unknown_endpoints_not_in_first_priority_set():
+def test_registry_count_matches_captured_set():
+    known = set(btd6_source_parser.known_keys())
+    captured = set(_REGISTERED)
+    missing = captured - known
+    extra = known - captured
+    assert not missing, f"captured but unregistered: {sorted(missing)}"
+    assert not extra, (
+        f"registered but not in captured set: {sorted(extra)} — "
+        "either remove the registration or add a fixture + entry "
+        "to _REGISTERED"
+    )
+
+
+def test_unknown_endpoints_not_in_registry():
     """Out-of-scope endpoints (Battles2, /btd6/save) must not be
     registered as parsers."""
     known = set(btd6_source_parser.known_keys())
-    for forbidden in ("battles2_anything", "btd6_save", "nk_btd6_save"):
+    for forbidden in (
+        "battles2_anything",
+        "btd6_save",
+        "nk_btd6_save",
+    ):
         assert forbidden not in known
+
+
+@pytest.mark.parametrize(
+    ("source_key", "fixture_name"),
+    [
+        ("nk_btd6_maps", "btd6_maps.json"),
+        ("nk_btd6_events", "btd6_events.json"),
+        ("nk_btd6_races", "btd6_races.json"),
+        ("nk_btd6_odyssey", "btd6_odyssey.json"),
+        ("nk_btd6_challenges", "btd6_challenges.json"),
+        ("nk_btd6_ct", "btd6_ct.json"),
+        ("nk_btd6_bosses", "btd6_bosses.json"),
+    ],
+)
+def test_registered_index_parser_returns_facts_for_fixture(source_key, fixture_name):
+    """Smoke check: each non-parameterised index endpoint, when fed
+    its captured fixture through the registry, yields a non-empty
+    fact list. Per-fact shape is asserted in the per-domain test
+    modules."""
+    import json
+
+    fixtures_dir = (
+        Path(__file__).parents[2] / "fixtures" / "ninjakiwi"
+    )
+    payload = json.loads((fixtures_dir / fixture_name).read_text(encoding="utf-8"))
+    parser = btd6_source_parser.get(source_key)
+    assert parser is not None
+    facts = parser.parse(payload, game_version=None)
+    assert isinstance(facts, list)
+    assert facts, f"{source_key} returned empty facts for {fixture_name}"
