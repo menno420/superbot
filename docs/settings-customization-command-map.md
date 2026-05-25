@@ -1043,11 +1043,21 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 7. **dedicated_panel_command**: `!btd6menu`.
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` →
    `BTD6PanelView`.
-9. **existing_SettingSpec_declarations**: none yet. Module 6 of the
-   AI/BTD6 plan will add per-guild settings (channel list, mention
-   behaviour, AI augmentation toggle).
-10. **existing_settings_keys**: none.
-11. **existing_BindingSpec_entries**: none.
+9. **existing_SettingSpec_declarations**: M3B of the BTD6
+   top-level + AI-central-policy initiative landed BTD6's source-
+   cache scalars under `disbot/utils/settings_keys/btd6_cache.py`
+   (BTD6-owned cadence, NOT AI policy): per-source overrides live in
+   `btd6_source_registry.cache_policy_key`; the three guild-level
+   defaults are the named constants below. Module 6 / M4 add
+   strategy-submission channel binding + AI augmentation toggle.
+10. **existing_settings_keys**: `BTD6_CACHE_DEFAULT_INTERVAL_SECONDS`,
+    `BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD`,
+    `BTD6_CACHE_FRESHNESS_WARNING_HOURS`
+    (in `disbot/utils/settings_keys/btd6_cache.py`); M4 adds the
+    strategy-submission keys.
+11. **existing_BindingSpec_entries**: none in M3B; M4 adds
+    `btd6.strategy_submission_channel` (channel binding routing
+    natural-language submissions into the strategy review pipeline).
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`;
     capabilities `btd6.query.ask`, `btd6.strategy.view`,

@@ -1,27 +1,34 @@
-"""Single HTTP chokepoint for BTD6 source fetches.
+"""HTTP chokepoint for BTD6 source fetches (M3B real client).
 
-M3A ships the seam: a fetch request is refused unless the source is
-registered in ``btd6_source_registry``, has ``enabled=TRUE``, and
-carries a non-null ``base_url``. M3A does not actually issue an HTTP
-request — the real client lands in M3B after base URL + per-endpoint
-response formats are confirmed.
+M3A shipped this as a refusing seam; M3B replaces the seam with a
+real ``aiohttp`` client. Calls still refuse any source that is not
+registered / enabled / has a ``base_url``, so the M3A registry seed
+(all rows ``enabled=FALSE``) means nothing actually fires until a
+human flips a row via :func:`services.btd6_source_mutation.set_enabled`.
 
 The pin test ``tests/unit/runtime/test_no_untrusted_fetches.py``
-ensures every BTD6 service module that needs HTTP routes through
-this file; if you find yourself reaching for ``httpx`` / ``aiohttp``
-elsewhere in ``disbot/services/btd6_*.py`` you are bypassing the
-allowlist.
+ensures this is the only BTD6 service module that imports an HTTP
+client; the registry is the only allowlist source.
 """
 
 from __future__ import annotations
 
+import asyncio
+import hashlib
 import logging
+import time
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any
 
 from services import btd6_source_registry
 
 logger = logging.getLogger("bot.services.btd6_fetch")
+
+
+# ---------------------------------------------------------------------------
+# Errors / result types
+# ---------------------------------------------------------------------------
 
 
 class BTD6FetchRefused(Exception):
@@ -33,35 +40,123 @@ class BTD6FetchRefused(Exception):
         self.reason = reason
 
 
+class BTD6FetchHTTPError(Exception):
+    """Raised when the upstream HTTP request fails."""
+
+    def __init__(self, source_key: str, status_code: int, message: str) -> None:
+        super().__init__(
+            f"{source_key!r} fetch failed: status={status_code} {message}",
+        )
+        self.source_key = source_key
+        self.status_code = status_code
+
+
 @dataclass(frozen=True)
 class FetchResult:
     source_key: str
     status_code: int
     raw_body: str
 
+    @property
+    def raw_body_hash(self) -> str:
+        return hashlib.sha256(self.raw_body.encode("utf-8")).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Rate limiting + circuit breaker (per source_key)
+# ---------------------------------------------------------------------------
+
+
+_DEFAULT_REQUEST_TIMEOUT = 15.0
+_DEFAULT_MIN_INTERVAL = 1.0  # seconds between back-to-back fetches per source
+_DEFAULT_BREAKER_THRESHOLD = 5
+
+_LAST_REQUEST_AT: dict[str, float] = defaultdict(float)
+_FAILURES: dict[str, int] = defaultdict(int)
+_BREAKER_OPEN_UNTIL: dict[str, float] = defaultdict(float)
+
+
+def _reset_for_tests() -> None:
+    _LAST_REQUEST_AT.clear()
+    _FAILURES.clear()
+    _BREAKER_OPEN_UNTIL.clear()
+
 
 async def fetch(
     source_key: str,
     *,
     path_params: dict[str, Any] | None = None,
+    timeout: float = _DEFAULT_REQUEST_TIMEOUT,
 ) -> FetchResult:
-    """Validate the source then perform the HTTP request.
+    """Fetch ``source_key`` from its registered URL.
 
-    M3A intentionally raises ``BTD6FetchRefused`` for every call —
-    the seam exists so callers can be written today; real HTTP work
-    lands in M3B with rate-limiting, backoff, and circuit-breaker
-    metrics.
+    Raises :class:`BTD6FetchRefused` for any allowlist failure
+    (including the circuit breaker being open) and
+    :class:`BTD6FetchHTTPError` for an upstream non-2xx response.
     """
     usable, reason = await btd6_source_registry.is_source_usable(source_key)
     if not usable:
         raise BTD6FetchRefused(source_key, reason)
 
-    logger.warning(
-        "btd6_fetch_service: M3A seam refusing live fetch for %s — "
-        "M3B will wire the real HTTP client",
-        source_key,
+    if _BREAKER_OPEN_UNTIL[source_key] > time.time():
+        raise BTD6FetchRefused(source_key, "circuit_breaker_open")
+
+    # Per-source pacing.
+    last = _LAST_REQUEST_AT[source_key]
+    wait = max(0.0, _DEFAULT_MIN_INTERVAL - (time.time() - last))
+    if wait > 0:
+        await asyncio.sleep(wait)
+
+    row = await btd6_source_registry.get_by_key(source_key)
+    if row is None:
+        raise BTD6FetchRefused(source_key, "source_not_registered")
+    url = _resolve_url(row, path_params or {})
+
+    try:
+        body, status = await _http_get(url, timeout=timeout)
+    except BTD6FetchHTTPError:
+        _FAILURES[source_key] += 1
+        if _FAILURES[source_key] >= _DEFAULT_BREAKER_THRESHOLD:
+            _BREAKER_OPEN_UNTIL[source_key] = time.time() + 60.0
+        raise
+    finally:
+        _LAST_REQUEST_AT[source_key] = time.time()
+
+    _FAILURES[source_key] = 0
+    _BREAKER_OPEN_UNTIL[source_key] = 0
+    return FetchResult(source_key=source_key, status_code=status, raw_body=body)
+
+
+def _resolve_url(row: dict[str, Any], path_params: dict[str, Any]) -> str:
+    template = row.get("full_url") or (
+        f"{(row.get('base_url') or '').rstrip('/')}{row.get('path_template') or ''}"
     )
-    raise BTD6FetchRefused(source_key, "fetcher_unwired_in_m3a")
+    for key, value in path_params.items():
+        template = template.replace(f":{key}", str(value))
+    return template
 
 
-__all__ = ["BTD6FetchRefused", "FetchResult", "fetch"]
+async def _http_get(url: str, *, timeout: float) -> tuple[str, int]:
+    """Issue one GET request through ``aiohttp``. Imported lazily so
+    test environments that mock the fetcher never need the dep."""
+    try:
+        import aiohttp
+    except Exception as exc:  # pragma: no cover - dependency present in prod
+        raise BTD6FetchHTTPError("(no_source)", 0, f"aiohttp unavailable: {exc}")
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            url,
+            timeout=aiohttp.ClientTimeout(total=timeout),
+        ) as resp:
+            text = await resp.text()
+            if resp.status >= 400:
+                raise BTD6FetchHTTPError("(http)", resp.status, text[:200])
+            return text, resp.status
+
+
+__all__ = [
+    "BTD6FetchHTTPError",
+    "BTD6FetchRefused",
+    "FetchResult",
+    "fetch",
+]
