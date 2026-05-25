@@ -301,6 +301,58 @@ async def search_facts(
     return [dict(r) for r in rows]
 
 
+async def fetch_facts_for_intent(
+    queries: list[tuple[str | None, str, str]],
+    *,
+    overall_limit: int = 50,
+) -> list[dict[str, Any]]:
+    """Batch fact lookup joined with the source registry (M3 grounding).
+
+    ``queries`` is a list of ``(fact_type, entity_kind, entity_key)``
+    tuples. ``fact_type`` may be ``None`` to match any fact_type for
+    the given ``(entity_kind, entity_key)`` pair.
+
+    Returns rows joined with ``btd6_source_registry`` so callers see
+    ``source_key``, ``source_name``, ``trust_tier``, and ``source_kind``
+    alongside the fact row. Ordering is deterministic:
+    ``trust_tier ASC, fetched_at DESC, version DESC`` so Tier-1
+    official_api facts win over Tier-2 patch_notes / webpage rows, and
+    the latest fetched / latest version wins within a tier.
+    """
+    if not queries:
+        return []
+    clauses: list[str] = []
+    args: list[Any] = []
+    for fact_type, entity_kind, entity_key in queries:
+        if fact_type is None:
+            args.extend([entity_kind, entity_key])
+            clauses.append(
+                f"(f.entity_kind = ${len(args) - 1} "
+                f"AND f.entity_key = ${len(args)})",
+            )
+        else:
+            args.extend([fact_type, entity_kind, entity_key])
+            clauses.append(
+                f"(f.fact_type = ${len(args) - 2} "
+                f"AND f.entity_kind = ${len(args) - 1} "
+                f"AND f.entity_key = ${len(args)})",
+            )
+    args.append(int(overall_limit))
+    sql = f"""
+        SELECT f.id, f.source_id, f.fact_type, f.entity_kind, f.entity_key,
+               f.body_json, f.game_version, f.fetched_at, f.validated_at,
+               f.confidence, f.version,
+               r.source_key, r.source_name, r.trust_tier, r.source_kind
+        FROM btd6_facts f
+        JOIN btd6_source_registry r ON r.id = f.source_id
+        WHERE {" OR ".join(clauses)}
+        ORDER BY r.trust_tier ASC, f.fetched_at DESC, f.version DESC
+        LIMIT ${len(args)}
+    """
+    rows = await pool.get().fetch(sql, *args)
+    return [dict(r) for r in rows]
+
+
 # ---------------------------------------------------------------------------
 # btd6_patch_notes
 # ---------------------------------------------------------------------------
