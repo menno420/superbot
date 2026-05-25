@@ -52,6 +52,82 @@ def _relative_time(ts: datetime, *, now: datetime | None = None) -> str:
     return f"{int(delta // 86400)}d ago"
 
 
+_READINESS_STATUS_EMOJI: dict[str, str] = {
+    "ok": "✅",
+    "info": "ℹ️",
+    "warn": "⚠️",
+    "error": "❌",
+    "skipped": "⏭️",
+}
+
+
+def build_readiness_embed(
+    report: object,
+) -> discord.Embed:
+    """Render an :class:`AIReadinessReport` as a Discord embed.
+
+    Kept module-level (rather than a method on the cog) so the panel
+    button handler and tests can build the same embed without spinning
+    up a cog instance. Accepts ``object`` to avoid a top-level import of
+    the readiness service (it imports discord transitively at runtime).
+    """
+    summary = getattr(report, "summary", "—")
+    findings = getattr(report, "findings", ())
+    channel_id = getattr(report, "channel_id", None)
+    color = (
+        discord.Color.green()
+        if all(getattr(f, "status", "") in ("ok", "info") for f in findings)
+        else discord.Color.orange()
+    )
+    if any(getattr(f, "status", "") == "error" for f in findings):
+        color = discord.Color.red()
+    title = "AI Readiness"
+    if channel_id is not None:
+        title += f" — <#{channel_id}>"
+    embed = discord.Embed(
+        title=title,
+        description=summary,
+        color=color,
+    )
+    for finding in findings:
+        name = getattr(finding, "name", "?")
+        status = getattr(finding, "status", "?")
+        detail = getattr(finding, "detail", "")
+        emoji = _READINESS_STATUS_EMOJI.get(status, "•")
+        embed.add_field(
+            name=f"{emoji} {name}",
+            value=detail or "—",
+            inline=False,
+        )
+    return embed
+
+
+async def _attach_readiness_summary(
+    embed: discord.Embed,
+    guild: discord.Guild,
+    bot: commands.Bot,
+) -> None:
+    """Best-effort: add a one-line readiness summary to ``embed``.
+
+    Used by ``!ai status`` so operators see "Ready" / "Not ready: …"
+    without running the full ``!ai readiness`` scan. Failures are
+    silent — the readiness chain is the diagnostic surface for
+    failures, not the status summary.
+    """
+    try:
+        from services import ai_readiness_service
+
+        report = await ai_readiness_service.scan(guild.id, bot=bot)
+    except Exception:
+        logger.debug(
+            "ai_cog: readiness summary fetch failed for guild=%d",
+            guild.id,
+            exc_info=True,
+        )
+        return
+    embed.add_field(name="Readiness", value=report.summary, inline=False)
+
+
 def _format_audit_row(row: dict) -> str:
     """Format one ``ai_decision_audit`` row for the why-no-response embed.
 
@@ -273,7 +349,39 @@ class AICog(commands.Cog):
     @ai_group.command(name="status")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_status(self, ctx: commands.Context) -> None:
-        await ctx.send(embed=build_status_embed())
+        embed = build_status_embed()
+        if ctx.guild is not None:
+            await _attach_readiness_summary(embed, ctx.guild, self.bot)
+        await ctx.send(embed=embed)
+
+    @ai_group.command(name="readiness")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def ai_readiness(
+        self,
+        ctx: commands.Context,
+        channel: discord.TextChannel | None = None,
+    ) -> None:
+        """Run the full AI readiness chain check.
+
+        Probes provider configuration, the master switch, NL baseline /
+        scoped overrides, the resolver decision for ``channel`` (defaults
+        to the current channel), bot permissions, memory status, and
+        recent audit denials. Read-only — no provider call.
+        """
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from services import ai_readiness_service
+
+        target_channel: discord.abc.Messageable | None = (
+            channel if channel is not None else ctx.channel
+        )
+        report = await ai_readiness_service.scan(
+            ctx.guild.id,
+            bot=self.bot,
+            channel=target_channel,
+        )
+        await ctx.send(embed=build_readiness_embed(report))
 
     @ai_group.command(name="settings")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
@@ -441,8 +549,42 @@ class AICog(commands.Cog):
     @ai_app_group.command(name="status", description="AI gateway status summary.")
     @app_commands.checks.has_permissions(administrator=True)
     async def ai_status_slash(self, interaction: discord.Interaction) -> None:
+        embed = build_status_embed()
+        if interaction.guild is not None:
+            await _attach_readiness_summary(embed, interaction.guild, self.bot)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @ai_app_group.command(
+        name="readiness",
+        description="Run the AI readiness chain check (provider, policy, perms, memory).",
+    )
+    @app_commands.describe(
+        channel="Channel to dry-run the resolver against (defaults to here).",
+    )
+    @app_commands.checks.has_permissions(administrator=True)
+    async def ai_readiness_slash(
+        self,
+        interaction: discord.Interaction,
+        channel: discord.TextChannel | None = None,
+    ) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "This command requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from services import ai_readiness_service
+
+        target_channel: discord.abc.Messageable | None = (
+            channel if channel is not None else interaction.channel
+        )
+        report = await ai_readiness_service.scan(
+            interaction.guild.id,
+            bot=self.bot,
+            channel=target_channel,
+        )
         await interaction.response.send_message(
-            embed=build_status_embed(),
+            embed=build_readiness_embed(report),
             ephemeral=True,
         )
 

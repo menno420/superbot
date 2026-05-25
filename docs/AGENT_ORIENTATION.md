@@ -92,9 +92,12 @@ read **`docs/helper-policy.md`** first.
 
 ### Touching AI / setup advisor
 
-1. `docs/ai-readiness-plan.md` — the inert scaffold + planned layer.
-2. `docs/ai-service-integration-map.md` — current setup advisor integration shape.
-3. `disbot/core/runtime/ai/README.md` — package-level intent.
+1. `docs/ai-config-ownership.md` — binding contract for the AI cog's
+   read model, projection rules, mutation seam, and UI surface
+   pinning. Read this before any AI-cog change.
+2. `docs/ai-readiness-plan.md` — the inert scaffold + planned layer.
+3. `docs/ai-service-integration-map.md` — current setup advisor integration shape.
+4. `disbot/core/runtime/ai/README.md` — package-level intent.
 
 ---
 
@@ -122,6 +125,7 @@ something that conflicts with them.
 - `docs/server-logging.md` (shipped feature reference)
 - `docs/smoke-test-checklist.md` (pinned to code by doc-test)
 - `docs/help-command-surface-map.md` (pinned to code by doc-test)
+- `docs/ai-config-ownership.md` (pinned to code by doc-test)
 
 ### Living inventories / status ledgers
 

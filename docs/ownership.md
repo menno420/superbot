@@ -163,11 +163,14 @@ These calls are **forbidden** outside their owning module:
 | `db.set_subsystem_visibility` / raw writes to `subsystem_visibility` | `GovernanceMutationPipeline` | every cog, every other service. |
 | `db.set_cleanup_policy` / raw writes to `cleanup_policies` | `GovernanceMutationPipeline` | every cog, every other service. |
 | `db.write_governance_audit` | `GovernanceMutationPipeline` + `governance/execution._audit_internal_bypass` | every other module.  See "Audit-write carve-out" below. |
+| AI policy writes (`utils.db.ai.upsert_*_policy` / `bump_generation` / `upsert_instruction_profile`) | `services/ai_policy_mutation.py` + `services/ai_instruction_mutation.py` | every cog, every view, every other service.  AI configuration: see `docs/ai-config-ownership.md` (binding). |
+| `utils.db.ai.record_decision` | `services/ai_decision_audit_service.py` | every other module.  The audit row is written exactly once per natural-language stage invocation. |
 
 The first two row-pairs are enforced by INV-F (AST test) for economy
 and INV-E (`test_apply_template_uses_pipeline`) for visibility /
 cleanup pipeline writes.  Add to those tests when introducing future
-forbid-lists.
+forbid-lists.  The AI snapshot / readiness services are pinned to
+*non-mutating* by `tests/unit/services/test_ai_readonly_invariants.py`.
 
 ### Audit-write carve-out
 
