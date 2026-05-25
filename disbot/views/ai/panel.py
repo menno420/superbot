@@ -242,10 +242,55 @@ class AIPanelView(PersistentView):
             ephemeral=True,
         )
 
+    @discord.ui.button(
+        label="Memory",
+        style=discord.ButtonStyle.secondary,
+        row=2,
+        custom_id="ai:memory",
+    )
+    async def memory_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # PR-3: open the chat-memory status embed in place. Reads
+        # snapshot.memory + audit; never writes.
+        embed = await _build_memory_embed_for_interaction(interaction)
+        if embed is None:
+            await interaction.response.send_message(
+                "❌ Memory status needs a guild context.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.edit_message(embed=embed, view=self)
+
 
 # ---------------------------------------------------------------------------
 # Shared dispatch + interaction-router handler
 # ---------------------------------------------------------------------------
+
+
+async def _build_memory_embed_for_interaction(
+    interaction: discord.Interaction,
+) -> discord.Embed | None:
+    """Build the memory-status embed using the snapshot + per-channel
+    lookup. Returns ``None`` when the interaction lacks a guild
+    context — callers send the friendly error themselves.
+    """
+    if interaction.guild_id is None:
+        return None
+    from cogs.ai_cog import build_memory_embed
+    from services import ai_config_projection_service, ai_conversation_service
+
+    snapshot = await ai_config_projection_service.build_snapshot(interaction.guild_id)
+    channel_id = getattr(interaction.channel, "id", None)
+    per_guild = ai_conversation_service.channel_stats(interaction.guild_id)
+    turn_count = per_guild.get(channel_id) if channel_id is not None else None
+    return build_memory_embed(
+        snapshot,
+        channel_id=channel_id,
+        channel_turn_count=turn_count,
+    )
 
 
 def _embed_for_ai_panel_action(action: str) -> discord.Embed | None:
@@ -348,6 +393,18 @@ async def handle_ai_interaction(
             view=BehaviorChooserView(),
             ephemeral=True,
         )
+        return
+
+    # PR-3: memory status reads snapshot + per-channel cache stats.
+    if action == "memory":
+        embed = await _build_memory_embed_for_interaction(interaction)
+        if embed is None:
+            await interaction.response.send_message(
+                "❌ Memory status needs a guild context.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.edit_message(embed=embed, view=AIPanelView())
         return
 
     embed = _embed_for_ai_panel_action(action)

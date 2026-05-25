@@ -92,6 +92,11 @@ class MemorySnapshot:
     allowed set). ``min_floor_turns`` mirrors
     :data:`ai_conversation_service.MIN_FLOOR_TURNS` so renderers can
     explain the "Minimal" mode.
+
+    ``cached_channel_count`` and ``cached_total_turns`` are
+    **process-wide** — the conversation buffer is shared across all
+    guilds in the LRU cap. ``guild_channel_count`` and
+    ``guild_total_turns`` count only this guild's buffers.
     """
 
     window_minutes: int
@@ -101,6 +106,8 @@ class MemorySnapshot:
     per_channel_cap: int
     channel_lru_cap: int
     min_floor_turns: int
+    guild_channel_count: int = 0
+    guild_total_turns: int = 0
 
 
 @dataclass(frozen=True)
@@ -307,6 +314,14 @@ async def _build_memory_snapshot(guild_id: int) -> MemorySnapshot:
         )
         window, scan_enabled = 0, False
     stats = ai_conversation_service.stats()
+    try:
+        per_guild = ai_conversation_service.channel_stats(guild_id)
+    except Exception:
+        logger.exception(
+            "ai_config_projection: channel_stats failed for guild=%d",
+            guild_id,
+        )
+        per_guild = {}
     return MemorySnapshot(
         window_minutes=int(window),
         scan_enabled=bool(scan_enabled),
@@ -315,6 +330,8 @@ async def _build_memory_snapshot(guild_id: int) -> MemorySnapshot:
         per_channel_cap=int(stats.per_channel_cap),
         channel_lru_cap=int(stats.channel_lru_cap),
         min_floor_turns=int(ai_conversation_service.MIN_FLOOR_TURNS),
+        guild_channel_count=len(per_guild),
+        guild_total_turns=sum(per_guild.values()),
     )
 
 
