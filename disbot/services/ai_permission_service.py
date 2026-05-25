@@ -14,6 +14,8 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 
+import asyncpg
+
 logger = logging.getLogger("bot.services.ai_permission")
 
 
@@ -40,6 +42,11 @@ async def snapshot(guild_id: int, user_id: int) -> UserPermissionSnapshot:
     user with no XP row yet is treated as level 0 and ``is_fresh_user
     = True``; the cooldown / mention-allowance rules in the resolver
     decide whether that prevents a reply.
+
+    Only real DB-layer failures are caught — programming errors
+    (AttributeError, TypeError, ImportError, …) propagate so they
+    surface during development rather than silently downgrading every
+    permission check to "fresh user, level 0".
     """
     level = 0
     is_fresh = True
@@ -48,15 +55,15 @@ async def snapshot(guild_id: int, user_id: int) -> UserPermissionSnapshot:
 
         record = await xp_service.get_user_record(guild_id, user_id)
         if record is not None:
-            level = int(getattr(record, "level", 0) or 0)
-            is_fresh = level == 0 and int(getattr(record, "xp", 0) or 0) == 0
-    except Exception as exc:  # noqa: BLE001 — defensive
-        logger.debug(
-            "ai_permission_service: xp lookup failed (%s); treating "
-            "guild=%s user=%s as fresh",
-            exc,
+            level = record.level
+            is_fresh = record.level == 0 and record.xp == 0
+    except (asyncpg.PostgresError, ConnectionError, TimeoutError, OSError) as exc:
+        logger.warning(
+            "ai_permission_service: xp lookup failed guild=%s user=%s "
+            "exc_type=%s; treating as fresh user (level=0)",
             guild_id,
             user_id,
+            type(exc).__name__,
         )
     return UserPermissionSnapshot(
         user_id=user_id,
