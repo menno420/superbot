@@ -108,6 +108,23 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "subscription.changed",
         "user_preference.changed",
         "user_visibility.changed",
+        # ── AI policy (services/ai_policy_mutation.py, services/
+        # ai_instruction_mutation.py, post-PR-#310 hardening) ─────────────
+        # Advisory.  Emitted after every typed AI policy / instruction
+        # write commits + the resolver cache is invalidated.  Cache
+        # consistency is NOT event-driven — invalidate() runs inline
+        # inside the service.  Subscriber failure logged + swallowed.
+        # The "projection_failed" variant is emitted by
+        # ai_policy_mutation.project_from_legacy_settings when the
+        # legacy → typed projection cannot complete; payload carries
+        # guild_id, settings_key, mutation_id, exc_type — never the
+        # raw setting value.  See docs/ownership.md § Event ownership.
+        "ai.policy.guild_changed",
+        "ai.policy.channel_changed",
+        "ai.policy.category_changed",
+        "ai.policy.role_changed",
+        "ai.policy.projection_failed",
+        "ai.instruction.profile_changed",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
         # "mining.harvested",

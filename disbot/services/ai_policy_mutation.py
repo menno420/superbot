@@ -278,11 +278,180 @@ async def _emit(event: str, guild_id: int, mutation_id: str) -> bool:
         return False
 
 
+# ---------------------------------------------------------------------------
+# Projection from legacy AI scalar settings into the typed policy row
+# ---------------------------------------------------------------------------
+
+
+# Maps each canonical M1 settings_key to the ai_guild_policy column it
+# projects into.  ai_guild_instruction_profile is intentionally NOT in
+# this map — it stores a free-text body that needs a typed
+# ai_instruction_profile row, which is a separate projection path
+# (see services/ai_instruction_mutation.py) deferred to a follow-up.
+_LEGACY_TO_POLICY_FIELD: dict[str, str] = {
+    "ai_enabled": "enabled",
+    "ai_natural_language_enabled": "natural_language_enabled",
+    "ai_default_provider": "default_provider",
+    "ai_default_model": "default_model",
+    "ai_minimum_level_default": "minimum_level_default",
+    "ai_cooldown_seconds": "cooldown_seconds",
+    "ai_fresh_user_mention_allowance": "fresh_user_mention_allowance",
+}
+
+
+def projectable_keys() -> frozenset[str]:
+    """Return the set of legacy settings_keys this module projects.
+
+    Exposed so callers (e.g. the settings mutation pipeline) can decide
+    whether a given mutation triggers projection without reaching into
+    the private map.
+    """
+    return frozenset(_LEGACY_TO_POLICY_FIELD)
+
+
+async def project_from_legacy_settings(
+    guild_id: int,
+    actor: Any,
+    *,
+    mutation_id: str,
+) -> AIPolicyMutationResult | None:
+    """Project the seven mapped AI scalar settings into ``ai_guild_policy``.
+
+    Called by :class:`services.settings_mutation.SettingsMutationPipeline`
+    after a successful legacy-KV write for ``subsystem='ai'`` so the
+    typed policy table stays in sync with the UI.
+
+    Best-effort: any failure is logged at WARNING with a structured
+    diagnostic payload and a best-effort ``ai.policy.projection_failed``
+    bus event. The raw setting value is **never** included in the log
+    or the event payload because it may be a user-authored instruction
+    body or other operator text.
+
+    Returns the underlying :class:`AIPolicyMutationResult` on success,
+    or ``None`` on suppressed failure.
+    """
+    from services import settings_resolution
+
+    # Pull every mapped scalar from settings_resolution. The legacy KV
+    # cache for the just-mutated key was invalidated by the pipeline
+    # before this helper ran, so the freshly-written value is visible.
+    resolved: dict[str, Any] = {}
+    try:
+        for legacy_key, policy_field in _LEGACY_TO_POLICY_FIELD.items():
+            res = await settings_resolution.resolve_setting(
+                guild_id, "ai", _legacy_key_to_spec_name(legacy_key),
+            )
+            # `None` only if the spec was undeclared — defensive; the
+            # AI subsystem schema covers all seven.
+            if res is None:
+                continue
+            resolved[policy_field] = res.value
+    except Exception as exc:  # noqa: BLE001 — see structured log below
+        await _log_projection_failure(
+            guild_id=guild_id,
+            settings_key=None,
+            mutation_id=mutation_id,
+            exc=exc,
+        )
+        return None
+
+    # Read the current typed row so we keep guild_instruction_profile_id
+    # (which has no scalar projection target) intact.
+    current = await ai_db.get_guild_policy(guild_id)
+    instruction_profile_id = (
+        current.get("guild_instruction_profile_id") if current else None
+    )
+
+    try:
+        return await set_guild_policy(
+            guild_id,
+            enabled=bool(resolved.get("enabled", False)),
+            natural_language_enabled=bool(
+                resolved.get("natural_language_enabled", False),
+            ),
+            default_provider=str(
+                resolved.get("default_provider", "deterministic") or "deterministic",
+            ),
+            default_model=str(resolved.get("default_model", "") or ""),
+            minimum_level_default=int(resolved.get("minimum_level_default", 2)),
+            cooldown_seconds=int(resolved.get("cooldown_seconds", 30)),
+            fresh_user_mention_allowance=int(
+                resolved.get("fresh_user_mention_allowance", 1),
+            ),
+            guild_instruction_profile_id=instruction_profile_id,
+            actor=actor,
+        )
+    except Exception as exc:  # noqa: BLE001 — see structured log below
+        await _log_projection_failure(
+            guild_id=guild_id,
+            settings_key=None,
+            mutation_id=mutation_id,
+            exc=exc,
+        )
+        return None
+
+
+def _legacy_key_to_spec_name(legacy_key: str) -> str:
+    """Translate a settings_keys.ai constant into the SettingSpec name.
+
+    M1 named the spec the same as the key (e.g.
+    ``settings_key='ai_enabled'`` for ``SettingSpec(name='ai_enabled')``),
+    so this is the identity function today. Kept as a named helper so
+    the projection contract has a single seam if the two ever diverge.
+    """
+    return legacy_key
+
+
+async def _log_projection_failure(
+    *,
+    guild_id: int,
+    settings_key: str | None,
+    mutation_id: str,
+    exc: BaseException,
+) -> None:
+    """Emit the structured drift-visibility WARNING + best-effort event.
+
+    Fields are documented in the post-PR-#310 hardening plan. The raw
+    setting value is intentionally omitted because it may carry a free-
+    text instruction body.
+    """
+    exc_type = type(exc).__name__
+    exc_message = str(exc)[:200]
+    logger.warning(
+        "ai_policy_mutation: projection failed",
+        extra={
+            "guild_id": guild_id,
+            "subsystem": "ai",
+            "settings_key": settings_key,
+            "mutation_id": mutation_id,
+            "exc_type": exc_type,
+            "exc_message": exc_message,
+        },
+    )
+    try:
+        from core.events import bus
+
+        await bus.emit(
+            "ai.policy.projection_failed",
+            guild_id=guild_id,
+            settings_key=settings_key,
+            mutation_id=mutation_id,
+            exc_type=exc_type,
+        )
+    except Exception:  # noqa: BLE001 — bus must never amplify drift
+        logger.debug(
+            "ai_policy_mutation: ai.policy.projection_failed emit failed",
+            exc_info=True,
+        )
+
+
 __all__ = [
     "AIPolicyMutationError",
     "AIPolicyMutationResult",
     "InvalidAIPolicyValueError",
     "UnauthorizedAIPolicyMutationError",
+    "project_from_legacy_settings",
+    "projectable_keys",
     "set_category_policy",
     "set_channel_policy",
     "set_guild_policy",

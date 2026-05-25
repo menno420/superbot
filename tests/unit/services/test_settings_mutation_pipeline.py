@@ -172,12 +172,42 @@ def _isolated_state(monkeypatch):
 
     monkeypatch.setattr(bus, "emit", _fake_emit)
 
+    # AI projection stub — the post-PR-#310 hardening adds an inline
+    # ai_policy_mutation.project_from_legacy_settings call inside the
+    # pipeline for subsystem='ai'. Stub it so these unit tests stay
+    # focused on the pipeline contract; a dedicated test file pins the
+    # projection behaviour.
+    projection_calls: list[dict] = []
+    from services import ai_policy_mutation
+
+    async def _fake_projection(
+        guild_id: int,
+        actor: object,
+        *,
+        mutation_id: str,
+    ) -> object:
+        projection_calls.append(
+            {
+                "guild_id": guild_id,
+                "actor_id": getattr(actor, "id", None),
+                "mutation_id": mutation_id,
+            },
+        )
+        return None
+
+    monkeypatch.setattr(
+        ai_policy_mutation,
+        "project_from_legacy_settings",
+        _fake_projection,
+    )
+
     yield {
         "kv": _kv,
         "audit_log": audit_log,
         "invalidations": invalidations,
         "emitted": emitted,
         "bus_raises": bus_raises,
+        "projection_calls": projection_calls,
     }
 
     schema_mod._reset_for_tests()
@@ -801,3 +831,53 @@ async def test_ai_natural_language_enabled_bool_round_trip(_isolated_state):
     assert (303, AI_NATURAL_LANGUAGE_ENABLED) in _isolated_state["invalidations"]
     assert _isolated_state["audit_log"][-1]["subsystem"] == "ai"
     assert _isolated_state["audit_log"][-1]["new_value_raw"] == "true"
+
+
+@pytest.mark.asyncio
+async def test_ai_subsystem_mutation_triggers_typed_policy_projection(
+    _isolated_state,
+):
+    """Post-PR-#310 hardening: every projectable AI scalar mutation
+    invokes ``ai_policy_mutation.project_from_legacy_settings`` with
+    the live ``mutation_id`` so the typed policy stays in sync."""
+    from cogs.ai.schemas import AI_CONFIG_SCHEMA
+
+    schema_mod.register(AI_CONFIG_SCHEMA)
+    guild = _FakeGuild(505)
+    actor = _FakeMember(606, guild=guild)
+
+    result = await SettingsMutationPipeline().set_value(
+        guild,
+        "ai",
+        "ai_enabled",
+        True,
+        actor,
+    )
+
+    calls = _isolated_state["projection_calls"]
+    assert len(calls) == 1, "expected exactly one projection call"
+    assert calls[0]["guild_id"] == 505
+    assert calls[0]["actor_id"] == 606
+    assert calls[0]["mutation_id"] == result.mutation_id
+
+
+@pytest.mark.asyncio
+async def test_non_ai_subsystem_does_not_trigger_projection(_isolated_state):
+    """Projection is gated on ``subsystem='ai'`` — other subsystems
+    must NOT trigger the AI policy mutation chokepoint."""
+    from cogs.xp.schemas import XP_CONFIG_SCHEMA
+
+    schema_mod.register(XP_CONFIG_SCHEMA)
+    guild = _FakeGuild(707)
+    actor = _FakeMember(808, guild=guild)
+
+    # Pick any XP scalar; the exact value doesn't matter.
+    await SettingsMutationPipeline().set_value(
+        guild,
+        "xp",
+        "xp_min",
+        7,
+        actor,
+    )
+
+    assert _isolated_state["projection_calls"] == []

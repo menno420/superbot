@@ -318,6 +318,21 @@ class SettingsMutationPipeline:
         committed_at = _now_utc()
         self._invalidate_cache(guild.id, spec.settings_key)
 
+        # Post-PR-#310 hardening: AI subsystem scalars project into the
+        # typed ai_guild_policy table so the runtime resolver (which
+        # reads only the typed row) tracks UI mutations. Best-effort —
+        # failure is logged at WARNING with structured fields by the
+        # projection helper and the legacy KV write stays authoritative.
+        if subsystem == "ai":
+            from services import ai_policy_mutation
+
+            if spec.settings_key in ai_policy_mutation.projectable_keys():
+                await ai_policy_mutation.project_from_legacy_settings(
+                    guild.id,
+                    actor,
+                    mutation_id=mutation_id,
+                )
+
         # Phase 9c.2: companion ``audit.action_recorded`` event emitted
         # via the shared publisher. Best-effort; failure is logged
         # inside the helper, not propagated.
