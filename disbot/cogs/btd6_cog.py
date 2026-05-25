@@ -22,211 +22,26 @@ Architecture:
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from cogs.btd6._embeds import (
+    build_diagnostics_embed,
+    build_modes_embed,
+    build_status_embed,
+    build_test_intent_embed,
+    build_towers_embed,
+    response_to_embed as _response_to_embed,
+)
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline
-from services import btd6_ai_service, btd6_knowledge_service
+from services import btd6_ai_service
 from services.btd6_resolver_service import resolve
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 logger = logging.getLogger("bot")
-
-
-# ---------------------------------------------------------------------------
-# Embed builders — shared by panel buttons and explicit commands.
-# ---------------------------------------------------------------------------
-
-
-def _response_to_embed(response: Any) -> discord.Embed:
-    """Convert a :class:`BTD6Response` into a Discord embed."""
-    color = {
-        "high": discord.Color.green(),
-        "medium": discord.Color.gold(),
-        "low": discord.Color.light_grey(),
-    }.get(response.confidence, discord.Color.light_grey())
-    embed = discord.Embed(
-        title=response.title,
-        description=response.short_answer,
-        color=color,
-    )
-    if response.why_it_matters:
-        embed.add_field(
-            name="Why it matters",
-            value=response.why_it_matters,
-            inline=False,
-        )
-    if response.recommended_options:
-        embed.add_field(
-            name="Recommended options",
-            value="\n".join(f"• {opt}" for opt in response.recommended_options),
-            inline=False,
-        )
-    if response.common_mistakes:
-        embed.add_field(
-            name="Common mistakes",
-            value="\n".join(f"• {m}" for m in response.common_mistakes),
-            inline=False,
-        )
-    if response.version_sensitivity:
-        embed.add_field(
-            name="Version sensitivity",
-            value=response.version_sensitivity,
-            inline=False,
-        )
-    if response.follow_up:
-        embed.add_field(name="Follow-up", value=response.follow_up, inline=False)
-    if response.sources:
-        embed.set_footer(text="Sources: " + " · ".join(response.sources))
-    return embed
-
-
-def build_status_embed() -> discord.Embed:
-    """BTD6 status: data version + entity counts."""
-    embed = discord.Embed(
-        title="🐵 BTD6 Assistant — Status",
-        description=(
-            "Deterministic facts plus live grounding for matched intents. "
-            "Natural-language replies are gated by the AI Platform."
-        ),
-        color=discord.Color.green(),
-    )
-    embed.add_field(
-        name="Data version",
-        value=btd6_knowledge_service.data_version(),
-        inline=True,
-    )
-    embed.add_field(
-        name="Game version",
-        value=btd6_knowledge_service.game_version(),
-        inline=True,
-    )
-    embed.add_field(
-        name="Towers",
-        value=str(len(btd6_knowledge_service.list_towers())),
-        inline=True,
-    )
-    embed.add_field(
-        name="Heroes",
-        value=str(len(btd6_knowledge_service.list_heroes())),
-        inline=True,
-    )
-    embed.add_field(
-        name="Maps",
-        value=str(len(btd6_knowledge_service.list_maps())),
-        inline=True,
-    )
-    embed.add_field(
-        name="Rounds",
-        value=str(len(btd6_knowledge_service.list_rounds())),
-        inline=True,
-    )
-    return embed
-
-
-def build_diagnostics_embed() -> discord.Embed:
-    """Detailed diagnostics: source labels and entry catalogues."""
-    embed = discord.Embed(
-        title="🐵 BTD6 Assistant — Diagnostics",
-        color=discord.Color.green(),
-    )
-    embed.add_field(
-        name="Towers",
-        value=", ".join(t.canonical for t in btd6_knowledge_service.list_towers()),
-        inline=False,
-    )
-    embed.add_field(
-        name="Heroes",
-        value=", ".join(h.canonical for h in btd6_knowledge_service.list_heroes()),
-        inline=False,
-    )
-    embed.add_field(
-        name="Maps",
-        value=", ".join(m.canonical for m in btd6_knowledge_service.list_maps()),
-        inline=False,
-    )
-    embed.add_field(
-        name="Modes",
-        value=", ".join(m.canonical for m in btd6_knowledge_service.list_modes()),
-        inline=False,
-    )
-    rounds = ", ".join(
-        str(r.round_number) for r in btd6_knowledge_service.list_rounds()
-    )
-    embed.add_field(name="Rounds tracked", value=rounds, inline=False)
-    return embed
-
-
-def build_towers_embed() -> discord.Embed:
-    embed = discord.Embed(
-        title="🐵 BTD6 — Towers",
-        color=discord.Color.green(),
-    )
-    for tower in btd6_knowledge_service.list_towers():
-        embed.add_field(
-            name=tower.canonical,
-            value=f"Cost: {tower.base_cost} • Category: {tower.category}",
-            inline=True,
-        )
-    return embed
-
-
-def build_modes_embed() -> discord.Embed:
-    embed = discord.Embed(
-        title="🐵 BTD6 — Modes",
-        color=discord.Color.green(),
-    )
-    for mode in btd6_knowledge_service.list_modes():
-        embed.add_field(
-            name=mode.canonical,
-            value=(
-                f"Starting cash: {mode.starting_cash} • "
-                f"Lives: {mode.starting_lives}"
-            ),
-            inline=False,
-        )
-    return embed
-
-
-def build_test_intent_embed(text: str) -> discord.Embed:
-    """Resolver introspection — useful for operators tuning the cog."""
-    intent = resolve(text)
-    embed = discord.Embed(
-        title="🐵 BTD6 — test-intent",
-        description=f"Resolved intent for: ``{text[:200]}``",
-        color=discord.Color.green(),
-    )
-    embed.add_field(name="Confidence", value=f"{intent.confidence:.2f}")
-    embed.add_field(
-        name="Towers",
-        value=", ".join(t.canonical for t in intent.towers) or "—",
-        inline=False,
-    )
-    embed.add_field(
-        name="Heroes",
-        value=", ".join(h.canonical for h in intent.heroes) or "—",
-        inline=False,
-    )
-    embed.add_field(
-        name="Maps",
-        value=", ".join(m.canonical for m in intent.maps) or "—",
-        inline=False,
-    )
-    embed.add_field(
-        name="Modes",
-        value=", ".join(m.canonical for m in intent.modes) or "—",
-        inline=False,
-    )
-    embed.add_field(
-        name="Rounds",
-        value=", ".join(str(n) for n in intent.candidate_round_numbers) or "—",
-        inline=False,
-    )
-    return embed
 
 
 # ---------------------------------------------------------------------------
@@ -402,6 +217,68 @@ class BTD6Cog(commands.Cog):
             await ctx.send(payload)
         else:
             await ctx.send(embed=payload)
+
+    @btd6_group.command(name="browse")  # type: ignore[arg-type]
+    async def btd6_browse(
+        self,
+        ctx: commands.Context,
+        limit: int = 10,
+    ) -> None:
+        """Browse published BTD6 strategies (PR-F)."""
+        from views.btd6.strategy_browse import build_browse_embed
+
+        await ctx.send(embed=await build_browse_embed(limit=limit))
+
+    @btd6_group.command(name="mine")  # type: ignore[arg-type]
+    async def btd6_mine(self, ctx: commands.Context, limit: int = 10) -> None:
+        """List my own strategy submissions in this guild (PR-F)."""
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from views.btd6.strategy_browse import build_mine_embed
+
+        await ctx.send(
+            embed=await build_mine_embed(ctx.guild.id, ctx.author.id, limit=limit),
+        )
+
+    @btd6_group.command(name="strategy")  # type: ignore[arg-type]
+    async def btd6_strategy_detail(
+        self,
+        ctx: commands.Context,
+        strategy_id: int,
+    ) -> None:
+        """Show one strategy in detail (PR-F)."""
+        from views.btd6.strategy_browse import build_detail_embed
+
+        viewer_guild = ctx.guild.id if ctx.guild else None
+        payload = await build_detail_embed(strategy_id, viewer_guild_id=viewer_guild)
+        if isinstance(payload, str):
+            await ctx.send(payload)
+        else:
+            await ctx.send(embed=payload)
+
+    @btd6_group.command(name="strategy-audit")  # type: ignore[arg-type]
+    async def btd6_strategy_audit(
+        self,
+        ctx: commands.Context,
+        strategy_id: int,
+    ) -> None:
+        """Show the per-strategy audit log (PR-F)."""
+        from views.btd6.strategy_browse import build_audit_embed
+
+        await ctx.send(embed=await build_audit_embed(strategy_id))
+
+    @btd6_group.command(name="submit")  # type: ignore[arg-type]
+    async def btd6_submit(self, ctx: commands.Context) -> None:
+        """Open a strategy submission modal (slash-only on Discord).
+
+        Discord modals are slash-only; the prefix command surfaces a
+        friendly message redirecting to /btd6 submit.
+        """
+        await ctx.send(
+            "Strategy submission opens a Discord modal — use `/btd6 submit` "
+            "to fill it in.",
+        )
 
     @btd6_group.command(name="pending")  # type: ignore[arg-type]
     @commands.has_guild_permissions(manage_guild=True)
@@ -652,6 +529,97 @@ class BTD6Cog(commands.Cog):
             await interaction.response.send_message(payload, ephemeral=True)
         else:
             await interaction.response.send_message(embed=payload, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="browse",
+        description="Browse published BTD6 strategies.",
+    )
+    async def btd6_browse_slash(
+        self,
+        interaction: discord.Interaction,
+        limit: int = 10,
+    ) -> None:
+        from views.btd6.strategy_browse import build_browse_embed
+
+        await interaction.response.send_message(
+            embed=await build_browse_embed(limit=limit),
+            ephemeral=True,
+        )
+
+    @btd6_app_group.command(
+        name="mine",
+        description="List my own strategy submissions in this guild.",
+    )
+    async def btd6_mine_slash(
+        self,
+        interaction: discord.Interaction,
+        limit: int = 10,
+    ) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "This command requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from views.btd6.strategy_browse import build_mine_embed
+
+        await interaction.response.send_message(
+            embed=await build_mine_embed(
+                interaction.guild.id,
+                interaction.user.id,
+                limit=limit,
+            ),
+            ephemeral=True,
+        )
+
+    @btd6_app_group.command(
+        name="strategy",
+        description="Show one strategy in detail.",
+    )
+    async def btd6_strategy_slash(
+        self,
+        interaction: discord.Interaction,
+        strategy_id: int,
+    ) -> None:
+        from views.btd6.strategy_browse import build_detail_embed
+
+        viewer_guild = interaction.guild.id if interaction.guild else None
+        payload = await build_detail_embed(strategy_id, viewer_guild_id=viewer_guild)
+        if isinstance(payload, str):
+            await interaction.response.send_message(payload, ephemeral=True)
+        else:
+            await interaction.response.send_message(embed=payload, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="strategy-audit",
+        description="Per-strategy audit log.",
+    )
+    async def btd6_strategy_audit_slash(
+        self,
+        interaction: discord.Interaction,
+        strategy_id: int,
+    ) -> None:
+        from views.btd6.strategy_browse import build_audit_embed
+
+        await interaction.response.send_message(
+            embed=await build_audit_embed(strategy_id),
+            ephemeral=True,
+        )
+
+    @btd6_app_group.command(
+        name="submit",
+        description="Submit a BTD6 strategy.",
+    )
+    async def btd6_submit_slash(self, interaction: discord.Interaction) -> None:
+        from views.btd6.strategy_submit import StrategySubmitModal
+
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "❌ Submitting a strategy requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_modal(StrategySubmitModal())
 
     @btd6_app_group.command(
         name="pending",
