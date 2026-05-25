@@ -35,6 +35,7 @@ def parse_map_filters(
     payload: Any,
     *,
     game_version: str | None = None,
+    path_params: dict[str, str] | None = None,  # noqa: ARG001 — body carries id
 ) -> list[dict[str, Any]]:
     """Parse the ``/btd6/maps`` filter directory into fact rows.
 
@@ -73,6 +74,7 @@ def parse_map_list(
     payload: Any,
     *,
     game_version: str | None = None,
+    path_params: dict[str, str] | None = None,  # noqa: ARG001 — body carries id
 ) -> list[dict[str, Any]]:
     """Parse a ``/btd6/maps/filter/<filter>`` page into fact rows.
 
@@ -114,6 +116,7 @@ def parse_map_metadata(
     payload: Any,
     *,
     game_version: str | None = None,
+    path_params: dict[str, str] | None = None,  # noqa: ARG001 — body carries id
 ) -> list[dict[str, Any]]:
     """Parse a ``/btd6/maps/map/<mapID>`` document into one fact row.
 

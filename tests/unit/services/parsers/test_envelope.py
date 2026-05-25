@@ -92,14 +92,20 @@ def test_unwrap_rejects_error_field_set_even_when_success_true():
 def test_parser_adapter_satisfies_protocol_and_delegates():
     captured: dict = {}
 
-    def _fake_parse(payload, *, game_version=None):
+    def _fake_parse(payload, *, game_version=None, path_params=None):
         captured["payload"] = payload
         captured["game_version"] = game_version
+        captured["path_params"] = path_params
         return [{"fact_type": "btd6.test", "entity_kind": "x",
                  "entity_key": "y", "body_json": {}}]
 
     adapter = ParserAdapter("nk_btd6_maps", _fake_parse)
-    result = adapter.parse({"success": True, "body": []}, game_version="54.3")
+    result = adapter.parse(
+        {"success": True, "body": []},
+        game_version="54.3",
+        path_params={"raceID": "abc"},
+    )
     assert adapter.source_key == "nk_btd6_maps"
     assert captured["game_version"] == "54.3"
+    assert captured["path_params"] == {"raceID": "abc"}
     assert result[0]["fact_type"] == "btd6.test"

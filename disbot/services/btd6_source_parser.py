@@ -22,7 +22,15 @@ logger = logging.getLogger("bot.services.btd6_source_parser")
 
 @runtime_checkable
 class BTD6Parser(Protocol):
-    """A parser converts one raw fetch payload into normalised facts."""
+    """A parser converts one raw fetch payload into normalised facts.
+
+    ``path_params`` carries the substituted URL placeholders that the
+    fetcher used (e.g. ``{"raceID": "Reversed_Loop_mpbd7tcu"}``). Some
+    NK endpoints — most notably race / boss / odyssey metadata — return
+    a body whose ``id`` field is ``"n/a"``; for those endpoints the
+    parser needs ``path_params`` to compose a stable ``entity_key``.
+    Parsers whose body always carries the id may ignore the argument.
+    """
 
     source_key: str
 
@@ -31,6 +39,7 @@ class BTD6Parser(Protocol):
         payload: Any,
         *,
         game_version: str | None,
+        path_params: dict[str, str] | None = None,
     ) -> list[dict[str, Any]]: ...
 
 

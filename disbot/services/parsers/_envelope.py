@@ -83,6 +83,11 @@ class ParserAdapter:
     :func:`services.btd6_source_parser.register`. The registry stays
     keyed by source_key while domain modules expose plain functions
     for direct use in tests and renderers.
+
+    ``path_params`` is forwarded so parsers that need URL context (race
+    / boss / odyssey metadata, whose body ``id`` is ``"n/a"``) can
+    compose a stable entity_key. Parsers that ignore it accept the
+    keyword and discard.
     """
 
     source_key: str
@@ -93,8 +98,13 @@ class ParserAdapter:
         payload: Any,
         *,
         game_version: str | None = None,
+        path_params: dict[str, str] | None = None,
     ) -> list[dict[str, Any]]:
-        return self.fn(payload, game_version=game_version)
+        return self.fn(
+            payload,
+            game_version=game_version,
+            path_params=path_params,
+        )
 
 
 __all__ = ["Envelope", "EnvelopeError", "ParseFn", "ParserAdapter", "unwrap"]

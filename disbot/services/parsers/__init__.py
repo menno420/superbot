@@ -21,3 +21,6 @@ from services.parsers import (  # noqa: F401 — register-on-import side effects
     ninjakiwi_odyssey,
     ninjakiwi_races,
 )
+
+# Implemented sub-keys (parsers serve multiple source_keys per domain).
+# Listing here is informational; registration happens inside each module.
