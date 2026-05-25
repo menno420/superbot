@@ -1,9 +1,14 @@
-"""Single writer for ``btd6_facts`` (M3A).
+"""Writer + grounded reader for ``btd6_facts``.
 
 Parsers and the M3B fetch loop call :func:`store_fact` /
 :func:`store_facts`; nothing else may write to the table. The
 ``test_no_ai_factual_writes`` pin (M4) asserts no AI code path
 reaches this module directly.
+
+PR3 adds :func:`fetch_for_intent`: a deterministic batched read used
+by :mod:`services.btd6_context_service` to surface trusted facts to
+the AI gateway. Read paths are independent of the write surface — AI
+code may call ``fetch_for_intent`` freely.
 """
 
 from __future__ import annotations
@@ -24,6 +29,21 @@ class FactWriteResult:
     entity_kind: str
     entity_key: str
     version: int
+
+
+@dataclass(frozen=True)
+class BTD6FactQuery:
+    """One bucket of facts to look up.
+
+    ``fact_type`` may be ``None`` to match any fact_type for the
+    given ``(entity_kind, entity_key)`` pair — useful when the caller
+    has a resolved entity but doesn't yet know which fact_type carries
+    the answer.
+    """
+
+    fact_type: str | None
+    entity_kind: str
+    entity_key: str
 
 
 async def store_fact(
@@ -92,4 +112,52 @@ async def store_facts(
     return results
 
 
-__all__ = ["FactWriteResult", "store_fact", "store_facts"]
+async def fetch_for_intent(
+    queries: list[BTD6FactQuery],
+    *,
+    per_fact_type_limit: int = 5,
+    overall_limit: int = 20,
+) -> list[dict[str, Any]]:
+    """Read-only batch lookup with deterministic ordering and capping.
+
+    The DB primitive returns rows ordered by ``trust_tier ASC,
+    fetched_at DESC, version DESC`` so Tier-1 (official_api) facts win
+    over Tier-2 (patch_notes / webpage). After the join, this service
+    enforces a per-fact_type cap so one noisy endpoint (e.g. a
+    leaderboard with 50 rank rows) cannot crowd out tower-metadata
+    facts in the same context. Returns at most ``overall_limit`` rows.
+
+    Empty input → empty output (cheap fast path). Conflicting facts
+    are NOT silently reconciled here: callers receive every row that
+    matched, in deterministic order, with ``source_name``,
+    ``trust_tier``, ``fetched_at``, and ``version`` attached so
+    downstream rendering can surface provenance.
+    """
+    if not queries:
+        return []
+    # Over-fetch so per-fact_type capping has headroom to skip excess
+    # rows from one bucket and still hit overall_limit across buckets.
+    raw_rows = await btd6_db.fetch_facts_for_intent(
+        [(q.fact_type, q.entity_kind, q.entity_key) for q in queries],
+        overall_limit=overall_limit * 4,
+    )
+    counts: dict[str, int] = {}
+    capped: list[dict[str, Any]] = []
+    for row in raw_rows:
+        fact_type = row["fact_type"]
+        if counts.get(fact_type, 0) >= per_fact_type_limit:
+            continue
+        counts[fact_type] = counts.get(fact_type, 0) + 1
+        capped.append(row)
+        if len(capped) >= overall_limit:
+            break
+    return capped
+
+
+__all__ = [
+    "BTD6FactQuery",
+    "FactWriteResult",
+    "fetch_for_intent",
+    "store_fact",
+    "store_facts",
+]
