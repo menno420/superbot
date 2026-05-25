@@ -272,6 +272,31 @@ async def clear_acknowledged_sections(guild_id: int) -> None:
     )
 
 
+async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
+    """Persist (or clear) the workspace wizard's anchor message id.
+
+    The setup wizard posts a single message in the private setup channel
+    and re-edits it across the session lifetime; ``message_id`` is the
+    Discord snowflake of that anchor.  Passing ``None`` clears the
+    pointer (e.g. when the launcher cog's resume sweep can't refetch
+    the message and chooses to repost on the next ``/setup``).
+
+    A dedicated setter is required because :func:`upsert` COALESCEs
+    its ``setup_message_id`` argument with the existing value, so the
+    upsert path cannot clear a stale id.
+    """
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET setup_message_id = $2,
+               updated_at       = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+        message_id,
+    )
+
+
 KNOWN_DEPTHS: frozenset[str] = frozenset({"quick", "standard", "advanced"})
 
 
@@ -313,6 +338,7 @@ __all__ = [
     "remove_skipped_section",
     "set_depth",
     "set_readiness_score",
+    "set_setup_message_id",
     "set_status",
     "set_step",
     "upsert",

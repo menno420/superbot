@@ -228,6 +228,20 @@ async def record_readiness_score(guild_id: int, score: int | None) -> None:
     await db.set_readiness_score(guild_id, score)
 
 
+async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
+    """Persist (or clear) the wizard's anchor message id for ``guild_id``.
+
+    The setup wizard's workspace flow (Phase 3) posts a single message
+    in ``#superbot-setup`` and re-edits it across the session lifetime;
+    ``message_id`` is the Discord snowflake of that anchor.  Passing
+    ``None`` clears the pointer — used when the launcher cog's resume
+    sweep can't refetch the message and the next ``/setup`` reposts.
+
+    Idempotent.  Side-effect-free above the DB layer.
+    """
+    await db.set_setup_message_id(guild_id, message_id)
+
+
 async def mark_section_skipped(guild_id: int, slug: str) -> None:
     """Record that ``slug`` was explicitly skipped during the current run.
 
@@ -443,6 +457,7 @@ __all__ = [
     "remove_delegated_admin",
     "resume_session",
     "set_depth",
+    "set_setup_message_id",
     "start_session",
     "unack_section",
     "unmark_section_skipped",

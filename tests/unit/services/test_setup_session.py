@@ -372,3 +372,30 @@ async def test_resume_session_hydrates_acknowledged_sections(_mock_db):
     session = await svc.resume_session(1)
     assert session is not None
     assert session.acknowledged_sections == frozenset({"purpose", "ai_setup"})
+
+
+# ---------------------------------------------------------------------------
+# set_setup_message_id (Phase 3)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_set_setup_message_id_routes_to_db_layer():
+    with patch(
+        "services.setup_session.db.set_setup_message_id",
+        new_callable=AsyncMock,
+    ) as set_mock:
+        await svc.set_setup_message_id(1, 5555)
+    set_mock.assert_awaited_once_with(1, 5555)
+
+
+@pytest.mark.asyncio
+async def test_set_setup_message_id_accepts_none_to_clear():
+    """Passing None clears the pointer — used after the launcher cog's
+    resume sweep finds a stale message it can't refetch."""
+    with patch(
+        "services.setup_session.db.set_setup_message_id",
+        new_callable=AsyncMock,
+    ) as set_mock:
+        await svc.set_setup_message_id(1, None)
+    set_mock.assert_awaited_once_with(1, None)
