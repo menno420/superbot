@@ -59,6 +59,15 @@ def build_behavior_embed() -> discord.Embed:
         inline=False,
     )
     embed.add_field(
+        name="Routing matrix",
+        value=(
+            "Read-only diagnostic showing the dry-run resolver "
+            "outcome for a channel — useful when an operator asks "
+            "*why* a channel allows or denies."
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="Advanced",
         value=(
             "Open the raw policy editor (mode / min_level / cooldown / "
@@ -144,9 +153,29 @@ class BehaviorChooserView(discord.ui.View):
         )
 
     @discord.ui.button(
-        label="Advanced",
+        label="Routing matrix",
         style=discord.ButtonStyle.secondary,
         row=1,
+    )
+    async def matrix_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # PR-G: read-only routing matrix. Operator picks a channel,
+        # the resolver runs in dry-run mode.
+        from views.ai.routing import RoutingMatrixSelectView
+
+        await interaction.response.send_message(
+            "Pick a channel to dry-run the AI routing matrix.",
+            view=RoutingMatrixSelectView(),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(
+        label="Advanced",
+        style=discord.ButtonStyle.secondary,
+        row=2,
     )
     async def advanced_btn(
         self,
