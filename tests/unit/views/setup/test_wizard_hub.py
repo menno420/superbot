@@ -738,10 +738,13 @@ def test_apply_all_recommended_button_absent_when_no_builders():
 
 
 @pytest.mark.asyncio
-async def test_apply_all_recommended_iterates_sections_and_stages_ops():
-    """Clicking the button calls every depth-filtered section's
-    recommended_ops_builder and stages each returned op via
-    setup_draft.append with metadata.source='setup_ux:recommended'."""
+async def test_apply_all_recommended_iterates_sections_and_stages_via_replace():
+    """Phase 2: Clicking ``Apply all recommended`` calls every
+    depth-filtered section's ``recommended_ops_builder`` via the
+    Phase 2 adapter and stages each section's ops through the
+    transactional ``replace_recommended_for_section`` helper.
+    """
+    from services.setup_draft import ReplaceRecommendedResult
     from services.setup_operations import SetupOperation
     from services.setup_sections import REGISTRY, SetupSection
 
@@ -798,23 +801,32 @@ async def test_apply_all_recommended_iterates_sections_and_stages_ops():
                 new_callable=AsyncMock,
             ),
             patch(
-                "services.setup_draft.append",
+                "services.setup_draft.replace_recommended_for_section",
                 new_callable=AsyncMock,
-                return_value=1,
-            ) as append_mock,
+                return_value=ReplaceRecommendedResult(
+                    inserted_seqs=[1],
+                    deleted_count=0,
+                    conflicts=[],
+                ),
+            ) as replace_mock,
         ):
             await button.callback(interaction)
 
-    assert append_mock.await_count == 1
-    metadata = append_mock.await_args.kwargs["metadata"]
-    assert metadata["source"] == "setup_ux:recommended"
+    assert replace_mock.await_count == 1
+    # Positional args: guild_id, section_slug, ops
+    args = replace_mock.await_args.args
+    assert args[0] == 1
+    assert args[1] == "_fake_apply_all"
+    assert len(args[2]) == 1
     interaction.followup.send.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_apply_all_recommended_handles_empty_builder_output():
     """If every builder returns an empty list, the followup tells the
-    operator nothing was staged."""
+    operator nothing was staged.  Empty-output paths short-circuit
+    before reaching the staging helper.
+    """
     from services.setup_sections import REGISTRY, SetupSection
 
     async def _build(_guild):
@@ -862,13 +874,13 @@ async def test_apply_all_recommended_handles_empty_builder_output():
                 new_callable=AsyncMock,
             ),
             patch(
-                "services.setup_draft.append",
+                "services.setup_draft.replace_recommended_for_section",
                 new_callable=AsyncMock,
-            ) as append_mock,
+            ) as replace_mock,
         ):
             await button.callback(interaction)
 
-    append_mock.assert_not_awaited()
+    replace_mock.assert_not_awaited()
     interaction.followup.send.assert_awaited_once()
     msg = interaction.followup.send.await_args.args[0]
     assert "no" in msg.lower()

@@ -44,6 +44,7 @@ class SetupSession:
     current_step: str | None
     delegated_admins: tuple[int, ...]
     skipped_sections: frozenset[str] = frozenset()
+    acknowledged_sections: frozenset[str] = frozenset()
     depth: str | None = None
 
     @classmethod
@@ -59,6 +60,9 @@ class SetupSession:
             current_step=row.get("current_step"),
             delegated_admins=tuple(row.get("delegated_admins") or ()),
             skipped_sections=frozenset(row.get("skipped_sections") or ()),
+            acknowledged_sections=frozenset(
+                row.get("acknowledged_sections") or (),
+            ),
             depth=row.get("depth"),
         )
 
@@ -119,7 +123,8 @@ async def mark_in_progress(guild_id: int, *, step: str | None = None) -> None:
 
 async def mark_complete(guild_id: int) -> None:
     """Move the row to ``complete``; clears any in-flight step token,
-    drops pending draft operations, and clears the skipped-section set.
+    drops pending draft operations, and clears the skipped- and
+    acknowledged-section sets.
 
     Final Review calls this after a successful apply, so the draft
     is empty by that point.  Clearing here is defence-in-depth — if
@@ -129,6 +134,7 @@ async def mark_complete(guild_id: int) -> None:
     await db.set_status(guild_id, "complete")
     await db.set_step(guild_id, None)
     await db.clear_skipped_sections(guild_id)
+    await db.clear_acknowledged_sections(guild_id)
     await _clear_draft(guild_id)
     await _emit_session_audit(
         guild_id=guild_id,
@@ -141,7 +147,8 @@ async def mark_complete(guild_id: int) -> None:
 
 async def dismiss(guild_id: int) -> None:
     """Move the row to ``dismissed``; clears any in-flight step token,
-    drops pending draft operations, and clears the skipped-section set.
+    drops pending draft operations, and clears the skipped- and
+    acknowledged-section sets.
 
     Note: this only flips the launcher state and discards staged
     drafts.  It does **not** delete the guild's already-applied
@@ -151,6 +158,7 @@ async def dismiss(guild_id: int) -> None:
     await db.set_status(guild_id, "dismissed")
     await db.set_step(guild_id, None)
     await db.clear_skipped_sections(guild_id)
+    await db.clear_acknowledged_sections(guild_id)
     await _clear_draft(guild_id)
     await _emit_session_audit(
         guild_id=guild_id,
@@ -232,6 +240,31 @@ async def mark_section_skipped(guild_id: int, slug: str) -> None:
 async def unmark_section_skipped(guild_id: int, slug: str) -> None:
     """Drop ``slug`` from the skipped-sections set."""
     await db.remove_skipped_section(guild_id, slug)
+
+
+async def ack_section(guild_id: int, slug: str) -> None:
+    """Record that ``slug`` was acknowledged complete.
+
+    Used by metadata-only / link-only setup sections (Purpose, AI
+    link-only in Phases 4 and 6) that emit zero draft operations.
+    The hub's :mod:`services.setup_progress` read model surfaces
+    acknowledged slugs as APPLIED so the section doesn't show as
+    NOT_STARTED forever.
+
+    Acknowledging also drops the slug from ``skipped_sections`` so
+    an operator who skipped and then changed their mind sees the
+    correct state on the next hub render.
+
+    Idempotent — set semantics at the DB layer.
+    """
+    await db.add_acknowledged_section(guild_id, slug)
+    # If the slug was skipped earlier, acknowledging supersedes that.
+    await db.remove_skipped_section(guild_id, slug)
+
+
+async def unack_section(guild_id: int, slug: str) -> None:
+    """Drop ``slug`` from the acknowledged-sections set."""
+    await db.remove_acknowledged_section(guild_id, slug)
 
 
 async def set_depth(guild_id: int, depth: str | None) -> None:
@@ -399,6 +432,7 @@ def detect_drift(
 __all__ = [
     "DriftReport",
     "SetupSession",
+    "ack_section",
     "add_delegated_admin",
     "detect_drift",
     "dismiss",
@@ -410,5 +444,6 @@ __all__ = [
     "resume_session",
     "set_depth",
     "start_session",
+    "unack_section",
     "unmark_section_skipped",
 ]

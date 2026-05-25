@@ -38,9 +38,10 @@ Constraints preserved:
 
 from __future__ import annotations
 
+import inspect
 import logging
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import discord
 
@@ -51,6 +52,7 @@ from services.setup_sections import REGISTRY, SetupSection
 from views.base import BaseView
 
 if TYPE_CHECKING:
+    from services.setup_session import SetupSession
     from views.setup.hub import SetupHubView
 
 logger = logging.getLogger("bot.views.setup.section_card")
@@ -62,9 +64,72 @@ CustomizeCallback = Callable[
 ]
 
 RecommendedOpsBuilder = Callable[
-    [discord.Guild],
+    ...,
     Awaitable[list[SetupOperation]],
 ]
+
+
+_BUILDER_KNOWN_KWARGS: frozenset[str] = frozenset(
+    {"guild", "session", "purpose", "depth", "section_slug"},
+)
+
+
+async def call_recommended_ops_builder(
+    builder: RecommendedOpsBuilder,
+    *,
+    guild: discord.Guild,
+    session: SetupSession | None = None,
+    purpose: str | None = None,
+    depth: str | None = None,
+    section_slug: str | None = None,
+) -> list[SetupOperation]:
+    """Call a section's recommended-ops builder, passing only the
+    kwargs its signature accepts.
+
+    The legacy builder shape is ``async (guild) -> list[SetupOperation]``;
+    later phases introduce builders that accept additional context
+    (``session``, ``purpose``, ``depth``, ``section_slug``).  This
+    adapter inspects the callable's signature and forwards only the
+    kwargs it declares — so a one-arg builder still works unchanged
+    and a future builder can opt into any subset of the extended
+    context.
+
+    ``guild`` is **always** passed positionally because every legacy
+    builder takes it as the first argument; the inspection only
+    decides whether to pass the optional kwargs.
+
+    Builders that declare ``**kwargs`` receive every supported kwarg
+    so they can fish out what they need without changing the adapter.
+    """
+    try:
+        sig = inspect.signature(builder)
+    except (TypeError, ValueError):
+        # Builtins or C-implementations: fall back to the legacy
+        # one-arg call.  Any TypeError propagates from the call itself.
+        return await builder(guild)
+
+    accepts_var_kw = any(
+        param.kind == inspect.Parameter.VAR_KEYWORD for param in sig.parameters.values()
+    )
+    declared_names = {
+        name
+        for name, param in sig.parameters.items()
+        if param.kind
+        in (inspect.Parameter.KEYWORD_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+    }
+
+    kwargs: dict[str, Any] = {}
+    candidates = {
+        "session": session,
+        "purpose": purpose,
+        "depth": depth,
+        "section_slug": section_slug,
+    }
+    for name, value in candidates.items():
+        if accepts_var_kw or name in declared_names:
+            kwargs[name] = value
+
+    return await builder(guild, **kwargs)
 
 
 _STATUS_LABELS = {
@@ -268,8 +333,23 @@ class SectionCardView(BaseView):
                 ephemeral=True,
             )
             return
+
+        # Builders may opt into the extended context (session, depth,
+        # purpose, section_slug) via inspect.signature; legacy
+        # ``async (guild)`` builders still work unchanged.
         try:
-            ops = await self._recommended_ops_builder(guild)
+            session = await setup_session.resume_session(interaction.guild_id)
+        except Exception:
+            logger.exception("section_card._apply_recommended: resume failed")
+            session = None
+        try:
+            ops = await call_recommended_ops_builder(
+                self._recommended_ops_builder,
+                guild=guild,
+                session=session,
+                depth=session.depth if session is not None else None,
+                section_slug=self._section.slug,
+            )
         except Exception:
             logger.exception(
                 "section_card._apply_recommended: builder failed (section=%s)",
@@ -287,19 +367,28 @@ class SectionCardView(BaseView):
             )
             return
 
-        for op in ops:
-            try:
-                await setup_draft.append(
-                    op,
-                    guild_id=interaction.guild_id,
-                    actor_id=interaction.user.id,
-                    label=f"[Recommended] {op.kind}",
-                    metadata={"source": "setup_ux:recommended"},
-                )
-            except Exception:
-                logger.exception(
-                    "section_card._apply_recommended: append failed",
-                )
+        # Use the Phase-0 transactional replace helper so repeated
+        # Apply Recommended clicks don't duplicate rows: prior
+        # recommended rows for THIS section are deleted before the
+        # new ones land, and non-recommended (custom / preset /
+        # manual / repair) rows at the same slot are preserved.
+        try:
+            result = await setup_draft.replace_recommended_for_section(
+                interaction.guild_id,
+                self._section.slug,
+                ops,
+                actor_id=interaction.user.id,
+                labels={idx: f"[Recommended] {op.kind}" for idx, op in enumerate(ops)},
+            )
+        except Exception:
+            logger.exception(
+                "section_card._apply_recommended: replace_recommended failed",
+            )
+            await interaction.response.send_message(
+                "Could not stage the recommended operations. See logs.",
+                ephemeral=True,
+            )
+            return
 
         try:
             await setup_session.unmark_section_skipped(
@@ -309,12 +398,23 @@ class SectionCardView(BaseView):
         except Exception:
             logger.exception("section_card: unmark skip failed")
 
-        word = "operation" if len(ops) == 1 else "operations"
-        await interaction.response.send_message(
-            f"Staged **{len(ops)} recommended {word}** for {self._section.label}. "
-            "Open Final review to apply.",
-            ephemeral=True,
+        word = "operation" if len(result.inserted_seqs) == 1 else "operations"
+        msg = (
+            f"Staged **{len(result.inserted_seqs)} recommended {word}** for "
+            f"{self._section.label}. Open Final review to apply."
         )
+        if result.conflicts:
+            # Non-recommended rows already occupy the same slot — the
+            # operator's prior custom / preset / manual / repair work
+            # is preserved.  Surface this so they know why the count
+            # is lower than expected.
+            conflict_word = "operation" if len(result.conflicts) == 1 else "operations"
+            msg += (
+                f"\n\n⚠️ Preserved **{len(result.conflicts)} custom / preset "
+                f"{conflict_word}** at the same slot(s) — no overwrite. "
+                "Edit Final review if you want to swap them out."
+            )
+        await interaction.response.send_message(msg, ephemeral=True)
 
     async def _customize(self, interaction: discord.Interaction) -> None:
         if self._on_customize is None:
@@ -420,15 +520,18 @@ async def show(
         session = None
 
     try:
-        draft_ops = await setup_draft.list_ops(interaction.guild_id)
+        # Prefer the typed row reader so progress badges use
+        # ``section_slug`` provenance instead of the weaker
+        # ``op_kinds`` heuristic.
+        draft_rows = await setup_draft.list_rows(interaction.guild_id)
     except Exception:
-        logger.exception("section_card.show: list_ops failed")
-        draft_ops = []
+        logger.exception("section_card.show: list_rows failed")
+        draft_rows = []
 
     progress = setup_progress.compute_section_status(
         section,
         session=session,
-        draft_ops=draft_ops,
+        draft_ops=draft_rows,
     )
 
     embed = build_section_card(
