@@ -276,12 +276,28 @@ class BTD6Cog(commands.Cog):
     async def cog_load(self) -> None:
         """Register the passive message stage with the platform pipeline.
 
-        Default-off (`BTD6_PASSIVE_ENABLED` controls behaviour). Even
-        when disabled, the stage is registered so `!btd6 why-no-response`
-        has a place to read skip reasons from.
+        M2 deprecates the BTD6 passive stage in favour of the central
+        natural-language stage (order=70) shipped in
+        ``core/runtime/ai/natural_language_stage.py``. The legacy
+        BTD6 stage is only re-registered when the short-lived
+        ``AI_BTD6_VIA_ROUTER`` env var is OFF (default). When the
+        env var is ON, the central stage classifies messages and
+        routes BTD6 questions through
+        :func:`services.ai_task_router.classify` →
+        :class:`AITask.BTD6_ANSWER`, and this stage stays
+        unregistered. M5 removes the flag and this branch entirely.
         """
-        self._passive_stage = BTD6AssistantMessageStage()
-        message_pipeline.register(self._passive_stage)
+        import os
+
+        legacy_active = os.getenv("AI_BTD6_VIA_ROUTER", "").strip().lower() not in (
+            "1", "true", "yes", "on",
+        )
+        if legacy_active:
+            self._passive_stage = BTD6AssistantMessageStage()
+            message_pipeline.register(self._passive_stage)
+        else:
+            self._passive_stage = None
+            message_pipeline.unregister(BTD6_STAGE_NAME)
 
     async def cog_unload(self) -> None:
         """Remove the passive stage so reload/test cycles stay clean."""

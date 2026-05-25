@@ -120,6 +120,13 @@ async def teardown(guild_id: int) -> None:
     #     get cleaned up by the ON DELETE CASCADE on rule_id.
     await _teardown_automation_rules(guild_id)
 
+    # 20. AI Platform — drop every per-guild row across the six M2
+    #     tables (instruction profile / guild policy / channel /
+    #     category / role / decision audit). Global instruction
+    #     profiles (guild_id IS NULL) are preserved. Process-local
+    #     conversation buffers also get dropped.
+    await _teardown_ai_platform(guild_id)
+
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
 
@@ -508,6 +515,41 @@ async def _teardown_automation_rules(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: automation_rules teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_ai_platform(guild_id: int) -> None:
+    """Drop every AI Platform row scoped to ``guild_id``.
+
+    M2 of the BTD6 + AI-central-policy initiative. Sweeps the six
+    typed tables (``ai_guild_policy``, ``ai_channel_policy``,
+    ``ai_category_policy``, ``ai_role_policy``,
+    ``ai_decision_audit``, and per-guild ``ai_instruction_profile``
+    rows). Global instruction profiles (``guild_id IS NULL``) are
+    preserved. Also invalidates the resolver cache and drops the
+    process-local conversation buffers for the guild.
+    """
+    try:
+        from services import (
+            ai_conversation_service,
+            ai_natural_language_policy,
+        )
+        from utils.db import ai as ai_db
+
+        deleted = await ai_db.delete_for_guild(guild_id)
+        ai_natural_language_policy.invalidate(guild_id)
+        ai_conversation_service.forget_guild(guild_id)
+        if deleted:
+            logger.debug(
+                "guild_lifecycle: deleted %d AI Platform row(s) for guild=%d",
+                deleted,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: AI Platform teardown failed for guild=%d: %s",
             guild_id,
             exc,
         )

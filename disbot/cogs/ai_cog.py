@@ -162,6 +162,22 @@ class AICog(commands.Cog):
 
         register_schemas()
 
+        # M2: install the central natural-language stage at order 70
+        # so it runs before the legacy BTD6 stage (order 80) and
+        # before any future passive responder. Registering through
+        # message_pipeline.register dedupes by name, so reloading
+        # the cog stays clean.
+        from core.runtime import message_pipeline
+        from core.runtime.ai.natural_language_stage import get_stage
+
+        message_pipeline.register(get_stage())
+
+    async def cog_unload(self) -> None:
+        from core.runtime import message_pipeline
+        from core.runtime.ai.natural_language_stage import STAGE_NAME
+
+        message_pipeline.unregister(STAGE_NAME)
+
     # ------------------------------------------------------------------
     # Prefix commands — `!ai`, `!ai status`, `!ai diagnostics`, ...
     # ------------------------------------------------------------------
@@ -184,6 +200,63 @@ class AICog(commands.Cog):
         guild_id = ctx.guild.id if ctx.guild else None
         embed, view = await _build_ai_settings_panel(ctx.author, guild_id)
         await ctx.send(embed=embed, view=view)
+
+    @ai_group.command(name="why-no-response")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def ai_why_no_response(
+        self,
+        ctx: commands.Context,
+        limit: int = 10,
+    ) -> None:
+        """Show the most recent denials / skips for this guild."""
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from services import ai_decision_audit_service
+
+        rows = await ai_decision_audit_service.query(
+            ctx.guild.id, limit=max(1, min(50, int(limit))),
+        )
+        denials = [r for r in rows if r["decision"] in ("denied", "skipped", "errored", "degraded")]
+        if not denials:
+            await ctx.send("No recent denials or skips for this guild.")
+            return
+        lines = [
+            f"`{r['decision']:<8}` `{r['reason_code']}` · "
+            f"channel=<#{r['channel_id']}> · user=<@{r['user_id']}> · "
+            f"task={r.get('task') or '—'}"
+            for r in denials[:25]
+        ]
+        await ctx.send("\n".join(lines))
+
+    @ai_group.command(name="policy")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def ai_policy(self, ctx: commands.Context) -> None:
+        """Show the typed policy row for this guild."""
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from utils.db import ai as ai_db
+
+        policy = await ai_db.get_guild_policy(ctx.guild.id)
+        if not policy:
+            await ctx.send(
+                "No typed AI policy row yet — set `ai.enabled` via `!settings`"
+                " to create one.",
+            )
+            return
+        lines = [
+            f"**enabled** = `{policy['enabled']}`",
+            f"**natural_language_enabled** = `{policy['natural_language_enabled']}`",
+            f"**default_provider** = `{policy['default_provider']}`",
+            f"**default_model** = `{policy['default_model'] or '—'}`",
+            f"**minimum_level_default** = `{policy['minimum_level_default']}`",
+            f"**cooldown_seconds** = `{policy['cooldown_seconds']}`",
+            f"**fresh_user_mention_allowance** ="
+            f" `{policy['fresh_user_mention_allowance']}`",
+            f"**generation** = `{policy['generation']}`",
+        ]
+        await ctx.send("\n".join(lines))
 
     @ai_group.command(name="diagnostics")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
