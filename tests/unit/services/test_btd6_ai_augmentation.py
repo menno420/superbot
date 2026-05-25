@@ -46,9 +46,12 @@ def _ai_response(
 
 
 @pytest.mark.asyncio
-async def test_augmentation_disabled_skips_gateway(monkeypatch):
-    monkeypatch.delenv("BTD6_AI_ENABLED", raising=False)
+async def test_augmentation_with_task_disabled_skips_gateway(monkeypatch):
+    """M5: BTD6_AI_ENABLED is retired. The remaining gate is the AI
+    Platform task policy — when HELP_ANSWER is disabled, augmentation
+    is skipped even with AI_ENABLED=1."""
     monkeypatch.setenv("AI_ENABLED", "1")
+    monkeypatch.setenv("AI_TASK_HELP_ANSWER_ENABLED", "0")
 
     spy = AsyncMock()
     monkeypatch.setattr(ai_gateway, "execute", spy)

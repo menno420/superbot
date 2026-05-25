@@ -1,9 +1,9 @@
 """Central natural-language message stage (M2).
 
 One pipeline owns "should the bot reply?" for every product
-handler. Registered at ``order=70`` (before the legacy BTD6 stage
-at ``order=80`` when the ``AI_BTD6_VIA_ROUTER`` flag is OFF, and
-unconditionally before any other passive responder).
+handler. Registered at ``order=70``. M5 retired the transitional
+``AI_BTD6_VIA_ROUTER`` env var; the legacy BTD6 passive stage
+stays unregistered so this stage is the only passive responder.
 
 Flow per message:
 

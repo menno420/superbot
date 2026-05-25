@@ -274,35 +274,21 @@ class BTD6Cog(commands.Cog):
         self._passive_stage: BTD6AssistantMessageStage | None = None
 
     async def cog_load(self) -> None:
-        """Register the passive message stage with the platform pipeline.
+        """Register the BTD6 SubsystemSchema; do NOT register a passive stage.
 
-        M2 deprecates the BTD6 passive stage in favour of the central
-        natural-language stage (order=70) shipped in
-        ``core/runtime/ai/natural_language_stage.py``. The legacy
-        BTD6 stage is only re-registered when the short-lived
-        ``AI_BTD6_VIA_ROUTER`` env var is OFF (default). When the
-        env var is ON, the central stage classifies messages and
-        routes BTD6 questions through
-        :func:`services.ai_task_router.classify` →
-        :class:`AITask.BTD6_ANSWER`, and this stage stays
-        unregistered. M5 removes the flag and this branch entirely.
+        M2 introduced the central natural-language stage (order=70).
+        M5 retires the short-lived ``AI_BTD6_VIA_ROUTER`` env var: the
+        BTD6 passive stage stays unregistered unconditionally so the
+        central stage is the only passive replier. ``!btd6
+        why-no-response`` reads the AI decision audit table directly,
+        not the in-memory skip buffer of the (now unregistered)
+        legacy stage.
         """
-        import os
-
-        # M4: register BTD6 SubsystemSchema (strategy submission channel).
         from cogs.btd6.schemas import register_schemas
 
         register_schemas()
-
-        legacy_active = os.getenv("AI_BTD6_VIA_ROUTER", "").strip().lower() not in (
-            "1", "true", "yes", "on",
-        )
-        if legacy_active:
-            self._passive_stage = BTD6AssistantMessageStage()
-            message_pipeline.register(self._passive_stage)
-        else:
-            self._passive_stage = None
-            message_pipeline.unregister(BTD6_STAGE_NAME)
+        self._passive_stage = None
+        message_pipeline.unregister(BTD6_STAGE_NAME)
 
     async def cog_unload(self) -> None:
         """Remove the passive stage so reload/test cycles stay clean."""
@@ -407,6 +393,30 @@ class BTD6Cog(commands.Cog):
             lines.append(
                 f"`{row['source_key']:<26}` tier {row['trust_tier']} · "
                 f"{state} · {url}",
+            )
+        await ctx.send("\n".join(lines))
+
+    @btd6_group.command(name="strategies")  # type: ignore[arg-type]
+    async def btd6_strategies(self, ctx: commands.Context) -> None:
+        """List strategy memory entries available in this guild."""
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from services import btd6_strategy_service
+
+        rows = await btd6_strategy_service.list_for_guild(ctx.guild.id, limit=10)
+        if not rows:
+            await ctx.send("No BTD6 strategies recorded for this guild yet.")
+            return
+        lines = []
+        for row in rows:
+            tag = (
+                "📦 published" if row["visibility"] == "published"
+                else "🛡️ guild"
+            )
+            lines.append(
+                f"{tag} · `{row['approval_status']}` · **{row['title']}** "
+                f"— {row['summary'][:80]}",
             )
         await ctx.send("\n".join(lines))
 
