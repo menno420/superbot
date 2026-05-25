@@ -138,6 +138,10 @@ def _expected_parity_names() -> set[str]:
         "sources",
         "strategies",
         "pending",
+        # PR-D additions:
+        "source-health",
+        "latest-data",
+        "grounding",
     }
 
 

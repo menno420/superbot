@@ -53,11 +53,25 @@ async def get_source(source_id: int) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
+_LIST_SOURCES_MAX_LIMIT = 200
+
+
 async def list_sources(
     *,
     trust_tier: int | None = None,
     enabled: bool | None = None,
+    limit: int = 50,
+    offset: int = 0,
 ) -> list[dict[str, Any]]:
+    """Bounded list of source registry rows.
+
+    ``limit`` and ``offset`` are required to be sane integers. The hard
+    cap is :data:`_LIST_SOURCES_MAX_LIMIT` so callers cannot accidentally
+    request unbounded paging. Callers that need the full registry must
+    page explicitly.
+    """
+    safe_limit = max(1, min(int(limit), _LIST_SOURCES_MAX_LIMIT))
+    safe_offset = max(0, int(offset))
     sql = (
         "SELECT id, source_key, source_name, source_owner, source_kind, "
         "trust_tier, base_url, path_template, full_url, enabled, notes "
@@ -73,7 +87,58 @@ async def list_sources(
         clauses.append(f"enabled = ${len(args)}")
     if clauses:
         sql += " WHERE " + " AND ".join(clauses)
-    sql += " ORDER BY trust_tier, source_key"
+    args.append(safe_limit)
+    args.append(safe_offset)
+    sql += (
+        " ORDER BY trust_tier, source_key "
+        f"LIMIT ${len(args) - 1} OFFSET ${len(args)}"
+    )
+    rows = await pool.get().fetch(sql, *args)
+    return [dict(r) for r in rows]
+
+
+async def list_sources_with_freshness(
+    *,
+    enabled: bool | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[dict[str, Any]]:
+    """Per-source freshness aggregate (PR-D).
+
+    Joins ``btd6_source_registry`` with the latest
+    ``btd6_facts.fetched_at`` per source. Returns each source row
+    enriched with ``last_fetched_at`` (nullable) and ``fact_count``
+    so callers can bucket freshness without a second query.
+
+    Tier-1 sources with no facts (recently enabled but never
+    fetched) appear with ``last_fetched_at = NULL`` and
+    ``fact_count = 0``.
+    """
+    safe_limit = max(1, min(int(limit), _LIST_SOURCES_MAX_LIMIT))
+    safe_offset = max(0, int(offset))
+    sql = (
+        "SELECT r.id, r.source_key, r.source_name, r.source_owner, "
+        "r.source_kind, r.trust_tier, r.base_url, r.path_template, "
+        "r.full_url, r.enabled, r.notes, "
+        "facts.last_fetched_at, facts.fact_count "
+        "FROM btd6_source_registry r "
+        "LEFT JOIN ("
+        "  SELECT source_id, "
+        "         MAX(fetched_at) AS last_fetched_at, "
+        "         COUNT(*) AS fact_count "
+        "  FROM btd6_facts GROUP BY source_id"
+        ") facts ON facts.source_id = r.id"
+    )
+    args: list[Any] = []
+    if enabled is not None:
+        args.append(enabled)
+        sql += f" WHERE r.enabled = ${len(args)}"
+    args.append(safe_limit)
+    args.append(safe_offset)
+    sql += (
+        " ORDER BY r.trust_tier, r.source_key "
+        f"LIMIT ${len(args) - 1} OFFSET ${len(args)}"
+    )
     rows = await pool.get().fetch(sql, *args)
     return [dict(r) for r in rows]
 

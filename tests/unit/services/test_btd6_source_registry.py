@@ -44,13 +44,13 @@ def _stub_db(monkeypatch):
         ],
     }
 
-    async def _list(*, trust_tier=None, enabled=None):
+    async def _list(*, trust_tier=None, enabled=None, limit=100, offset=0):
         out = list(state["rows"])
         if trust_tier is not None:
             out = [r for r in out if r["trust_tier"] == trust_tier]
         if enabled is not None:
             out = [r for r in out if r["enabled"] == enabled]
-        return out
+        return out[offset : offset + limit]
 
     async def _by_key(key):
         return next((r for r in state["rows"] if r["source_key"] == key), None)

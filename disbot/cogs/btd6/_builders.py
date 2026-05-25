@@ -175,9 +175,179 @@ async def build_pending_review_payload(
     return [(build_strategy_embed(row), StrategyReviewView(row)) for row in rows]
 
 
+# ---------------------------------------------------------------------------
+# source-health (PR-D)
+# ---------------------------------------------------------------------------
+
+
+_BUCKET_BADGE = {
+    "fresh": "🟢 fresh",
+    "aging": "🟡 aging",
+    "stale": "🔴 stale",
+    "never": "⚪ never",
+}
+
+
+async def build_source_health_embed(
+    *,
+    limit: int = 25,
+) -> discord.Embed:
+    """Render the source-health overview (PR-D).
+
+    Bounded by ``limit`` (default 25, hard cap inside the DB layer).
+    Freshness buckets are computed in
+    :mod:`services.btd6_source_registry`.
+    """
+    from services import btd6_source_registry
+
+    health = await btd6_source_registry.list_health(limit=limit)
+    embed = discord.Embed(
+        title="🐵 BTD6 — Source Health",
+        description=(
+            f"Showing {len(health)} sources. Freshness buckets: "
+            "🟢 fresh (≤6h) · 🟡 aging (≤2d) · 🔴 stale (>2d) · "
+            "⚪ never fetched."
+        ),
+        color=discord.Color.gold(),
+    )
+    if not health:
+        embed.description = "No BTD6 sources registered yet."
+        return embed
+    for src in health:
+        state = "ON" if src.enabled else "off"
+        when = (
+            src.last_fetched_at.isoformat(timespec="minutes")
+            if src.last_fetched_at
+            else "never"
+        )
+        embed.add_field(
+            name=f"`{src.source_key}` · tier {src.trust_tier}",
+            value=(
+                f"{_BUCKET_BADGE[src.bucket]} · {state} · "
+                f"kind=`{src.source_kind}` · facts={src.fact_count}\n"
+                f"last_fetched=`{when}`"
+            ),
+            inline=False,
+        )
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# latest-data (PR-D)
+# ---------------------------------------------------------------------------
+
+
+async def build_latest_data_embed(*, limit_per_kind: int = 1) -> discord.Embed:
+    """Show the newest fact envelope per source_kind.
+
+    Reuses :func:`utils.db.btd6_sources.search_facts` to read the most
+    recent rows. Pure read; the model is never invoked.
+    """
+    from utils.db import btd6_sources as btd6_db
+
+    rows = await btd6_db.search_facts(limit=50)
+    by_kind: dict[str, list[dict]] = {}
+    for row in rows:
+        by_kind.setdefault(row["entity_kind"], []).append(row)
+
+    embed = discord.Embed(
+        title="🐵 BTD6 — Latest Data",
+        description=(
+            "Newest fact envelopes per entity_kind. Sourced from "
+            "`btd6_facts` with no provider involvement."
+        ),
+        color=discord.Color.gold(),
+    )
+    if not by_kind:
+        embed.description = "No facts recorded yet."
+        return embed
+    for kind in sorted(by_kind.keys()):
+        latest = by_kind[kind][:limit_per_kind]
+        lines = []
+        for fact in latest:
+            when = (
+                fact["fetched_at"].isoformat(timespec="minutes")
+                if fact.get("fetched_at")
+                else "—"
+            )
+            lines.append(
+                f"`{fact['entity_key']}` · v{fact['version']} · "
+                f"fetched=`{when}`",
+            )
+        embed.add_field(
+            name=f"`{kind}`",
+            value="\n".join(lines) or "—",
+            inline=False,
+        )
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# grounding (PR-D)
+# ---------------------------------------------------------------------------
+
+
+async def build_grounding_embed(
+    guild_id: int,
+    message_id: int,
+) -> discord.Embed | str:
+    """Show the grounding facts that fed the AI response to a message.
+
+    Reads the matching ``ai_decision_audit`` row plus the latest fact
+    envelopes for any entities that appear in the audit row's
+    metadata. Pure read — the model is never re-invoked.
+
+    Returns ``str`` when there is no matching audit row.
+    """
+    from services import ai_decision_audit_service
+
+    rows = await ai_decision_audit_service.query(guild_id, limit=200)
+    target = next(
+        (r for r in rows if r.get("message_id") == message_id),
+        None,
+    )
+    if target is None:
+        return (
+            f"No audit row for message_id={message_id}. The bot may "
+            "not have processed that message."
+        )
+
+    embed = discord.Embed(
+        title=f"🐵 BTD6 — Grounding for message {message_id}",
+        description=(
+            f"Decision: `{target['decision']}` · "
+            f"reason: `{target['reason_code']}` · "
+            f"task: `{target.get('task') or '—'}`"
+        ),
+        color=discord.Color.gold(),
+    )
+    embed.add_field(
+        name="Routing",
+        value=(
+            f"route=`{target.get('route') or '—'}` · "
+            f"provider=`{target.get('provider') or '—'}` · "
+            f"model=`{target.get('model') or '—'}`"
+        ),
+        inline=False,
+    )
+    profile_ids = target.get("instruction_profile_ids") or []
+    embed.add_field(
+        name="Policy state",
+        value=(
+            f"policy_snapshot=`{target.get('policy_snapshot_hash') or '—'}` · "
+            f"profiles=`{', '.join(str(p) for p in profile_ids) or '—'}`"
+        ),
+        inline=False,
+    )
+    return embed
+
+
 __all__ = [
+    "build_grounding_embed",
     "build_hero_embed",
+    "build_latest_data_embed",
     "build_pending_review_payload",
+    "build_source_health_embed",
     "build_sources_payload",
     "build_strategies_payload",
     "build_why_no_response_payload",

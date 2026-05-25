@@ -367,6 +367,42 @@ class BTD6Cog(commands.Cog):
 
         await ctx.send(await build_strategies_payload(ctx.guild.id))
 
+    @btd6_group.command(name="source-health")  # type: ignore[arg-type]
+    async def btd6_source_health(
+        self,
+        ctx: commands.Context,
+        limit: int = 25,
+    ) -> None:
+        """Show source registry freshness (PR-D)."""
+        from cogs.btd6._builders import build_source_health_embed
+
+        await ctx.send(embed=await build_source_health_embed(limit=limit))
+
+    @btd6_group.command(name="latest-data")  # type: ignore[arg-type]
+    async def btd6_latest_data(self, ctx: commands.Context) -> None:
+        """Show newest fact envelope per entity_kind (PR-D)."""
+        from cogs.btd6._builders import build_latest_data_embed
+
+        await ctx.send(embed=await build_latest_data_embed())
+
+    @btd6_group.command(name="grounding")  # type: ignore[arg-type]
+    async def btd6_grounding(
+        self,
+        ctx: commands.Context,
+        message_id: int,
+    ) -> None:
+        """Show the grounding facts that fed an AI response (PR-D)."""
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from cogs.btd6._builders import build_grounding_embed
+
+        payload = await build_grounding_embed(ctx.guild.id, message_id)
+        if isinstance(payload, str):
+            await ctx.send(payload)
+        else:
+            await ctx.send(embed=payload)
+
     @btd6_group.command(name="pending")  # type: ignore[arg-type]
     @commands.has_guild_permissions(manage_guild=True)
     async def btd6_pending(self, ctx: commands.Context, limit: int = 5) -> None:
@@ -554,6 +590,68 @@ class BTD6Cog(commands.Cog):
             await build_strategies_payload(interaction.guild.id),
             ephemeral=True,
         )
+
+    @btd6_app_group.command(
+        name="source-health",
+        description="BTD6 source registry freshness overview.",
+    )
+    async def btd6_source_health_slash(
+        self,
+        interaction: discord.Interaction,
+        limit: int = 25,
+    ) -> None:
+        from cogs.btd6._builders import build_source_health_embed
+
+        await interaction.response.send_message(
+            embed=await build_source_health_embed(limit=limit),
+            ephemeral=True,
+        )
+
+    @btd6_app_group.command(
+        name="latest-data",
+        description="Newest fact envelope per entity_kind.",
+    )
+    async def btd6_latest_data_slash(
+        self,
+        interaction: discord.Interaction,
+    ) -> None:
+        from cogs.btd6._builders import build_latest_data_embed
+
+        await interaction.response.send_message(
+            embed=await build_latest_data_embed(),
+            ephemeral=True,
+        )
+
+    @btd6_app_group.command(
+        name="grounding",
+        description="Grounding facts that fed an AI response.",
+    )
+    async def btd6_grounding_slash(
+        self,
+        interaction: discord.Interaction,
+        message_id: str,
+    ) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "This command requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        try:
+            mid = int(message_id)
+        except ValueError:
+            await interaction.response.send_message(
+                f"❌ Invalid message_id: {message_id!r}",
+                ephemeral=True,
+            )
+            return
+        from cogs.btd6._builders import build_grounding_embed
+
+        payload = await build_grounding_embed(interaction.guild.id, mid)
+        if isinstance(payload, str):
+            await interaction.response.send_message(payload, ephemeral=True)
+        else:
+            await interaction.response.send_message(embed=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="pending",
