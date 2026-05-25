@@ -1,4 +1,4 @@
-"""BTD6 persistent panel — Module 4 of the AI/BTD6 plan.
+"""BTD6 persistent panel.
 
 The view lives under ``views/btd6/`` (Pattern B) so the cog file
 stays small. Importing this module triggers the ``@register``
@@ -6,11 +6,10 @@ decorator side-effect on :class:`BTD6PanelView`; the persistent
 view registry then resolves the ``btd6`` subsystem when
 ``on_ready`` restores anchors.
 
-The panel is read-only and entirely deterministic: every button
-renders an embed built from the validated fixtures in
-:mod:`services.btd6_data_service`. No provider, no network, no AI.
-Module 5 will add an optional augmentation toggle gated by guild
-config.
+Panel buttons render deterministic embeds from
+:mod:`services.btd6_knowledge_service` and the BTD6 response
+builder. Natural-language replies are owned by the AI Platform's
+central stage — this panel never invokes a provider directly.
 """
 
 from __future__ import annotations
@@ -44,7 +43,7 @@ class BTD6AskModal(discord.ui.Modal, title="Ask BTD6 Assistant"):
 
 
 def build_btd6_panel_embed() -> discord.Embed:
-    """Deterministic BTD6 panel embed.
+    """BTD6 panel embed.
 
     Pulls the dataset version + game version so operators can see at
     a glance which patch the assistant is pinned to.
@@ -52,8 +51,8 @@ def build_btd6_panel_embed() -> discord.Embed:
     embed = discord.Embed(
         title="🐵 BTD6 Assistant",
         description=(
-            "Ask deterministic BTD6 questions. The buttons below render "
-            "tower / round / mode lookups from the pinned fixtures."
+            "Ask BTD6 questions. The buttons below render "
+            "tower / round / mode lookups."
         ),
         color=_PANEL_COLOR,
     )

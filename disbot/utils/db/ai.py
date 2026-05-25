@@ -450,7 +450,7 @@ async def query_decisions(
     sql = (
         "SELECT id, guild_id, channel_id, category_id, user_id, message_id,"
         " task, route, decision, reason_code, policy_snapshot_hash,"
-        " provider, model, created_at "
+        " instruction_profile_ids, provider, model, created_at "
         "FROM ai_decision_audit WHERE guild_id = $1"
     )
     args: list[Any] = [guild_id]

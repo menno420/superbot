@@ -47,6 +47,10 @@ def _row(*, decision: str, task: str, reason: str = "below_min_level"):
         "reason_code": reason,
         "channel_id": 1,
         "user_id": 9,
+        "policy_snapshot_hash": "abc123",
+        "instruction_profile_ids": [101, 202],
+        "provider": "openai",
+        "model": "gpt-4",
     }
 
 
@@ -88,10 +92,17 @@ async def test_btd6_why_no_response_reads_audit_table(monkeypatch):
 
     assert captured == [{"guild_id": 42, "limit": 10}]
     ctx.send.assert_awaited_once()
-    msg = ctx.send.await_args.args[0]
-    assert "denied" in msg
-    assert "below_min_level" in msg
-    assert "no_route_matched" in msg
+    embed = ctx.send.await_args.kwargs.get("embed")
+    assert embed is not None
+    field_text = "\n".join(f"{f.name}\n{f.value}" for f in embed.fields)
+    assert "denied" in field_text
+    assert "below_min_level" in field_text
+    assert "no_route_matched" in field_text
+    # New PR-A fields surface the audit-quality diagnostics.
+    assert "abc123" in field_text  # policy_snapshot_hash
+    assert "101" in field_text and "202" in field_text  # profile ids
+    assert "openai" in field_text  # provider
+    assert "gpt-4" in field_text  # model
 
 
 @pytest.mark.asyncio
@@ -113,10 +124,12 @@ async def test_btd6_why_no_response_filters_to_btd6_task(monkeypatch):
     ctx = _ctx(guild_id=42)
     await cog.btd6_why_no_response.callback(cog, ctx)
 
-    msg = ctx.send.await_args.args[0]
-    assert "below_min_level" in msg
+    embed = ctx.send.await_args.kwargs.get("embed")
+    assert embed is not None
+    field_text = "\n".join(f"{f.name}\n{f.value}" for f in embed.fields)
+    assert "below_min_level" in field_text
     # The general.nl_answer denial must NOT bleed through.
-    assert "role_denied" not in msg
+    assert "role_denied" not in field_text
 
 
 @pytest.mark.asyncio
