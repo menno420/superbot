@@ -192,6 +192,32 @@ class AIPanelView(PersistentView):
         )
         await interaction.response.edit_message(embed=embed, view=view)
 
+    @discord.ui.button(
+        label="Policy",
+        style=discord.ButtonStyle.success,
+        row=1,
+        custom_id="ai:policy",
+    )
+    async def policy_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # PR4A: open the policy chooser as an ephemeral follow-up.
+        # The chooser dispatches each scope (channel / category / role /
+        # list) into its own ephemeral view. Writes flow through
+        # ``services.ai_policy_mutation`` from inside those scope views.
+        from views.ai.policy.chooser import (
+            PolicyChooserView,
+            build_chooser_embed,
+        )
+
+        await interaction.response.send_message(
+            embed=build_chooser_embed(),
+            view=PolicyChooserView(),
+            ephemeral=True,
+        )
+
 
 # ---------------------------------------------------------------------------
 # Shared dispatch + interaction-router handler
@@ -267,6 +293,23 @@ async def handle_ai_interaction(
             interaction.guild_id,
         )
         await interaction.response.edit_message(embed=embed, view=view)
+        return
+
+    # PR4A: the Policy button opens an ephemeral chooser. The View's
+    # own callback already handles this when the View is alive in
+    # memory; the router-side branch keeps the flow working after a
+    # process restart, when only the persistent prefix survives.
+    if action == "policy":
+        from views.ai.policy.chooser import (
+            PolicyChooserView,
+            build_chooser_embed,
+        )
+
+        await interaction.response.send_message(
+            embed=build_chooser_embed(),
+            view=PolicyChooserView(),
+            ephemeral=True,
+        )
         return
 
     embed = _embed_for_ai_panel_action(action)
