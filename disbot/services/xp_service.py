@@ -49,6 +49,36 @@ class XpAward:
     source: str
 
 
+@dataclass(frozen=True)
+class UserXPRecord:
+    """Typed read-only view of an XP row for permission/level checks."""
+
+    xp: int
+    level: int
+    messages: int
+
+
+async def get_user_record(
+    guild_id: int,
+    user_id: int,
+) -> UserXPRecord | None:
+    """Return the typed XP record for ``user_id`` in ``guild_id``.
+
+    ``utils.db.xp.get_xp`` synthesises an all-zeros dict when no row
+    exists; ``add_xp`` always inserts ``messages=1`` on first grant, so
+    ``messages == 0`` distinguishes the synthesised sentinel from any
+    real row. Returns ``None`` for that sentinel so callers can branch
+    on "no row yet" without inspecting fields.
+    """
+    row = await db.get_xp(user_id, guild_id)
+    messages = int(row.get("messages", 0) or 0)
+    xp = int(row.get("xp", 0) or 0)
+    level = int(row.get("level", 0) or 0)
+    if messages == 0 and xp == 0 and level == 0:
+        return None
+    return UserXPRecord(xp=xp, level=level, messages=messages)
+
+
 async def award(
     guild_id: int,
     user_id: int,

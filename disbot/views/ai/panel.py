@@ -6,20 +6,31 @@ small. Importing this module triggers the ``@register`` decorator
 on :class:`AIPanelView` so the persistent-view registry sees the
 ``ai`` subsystem before ``on_ready`` runs ``restore_anchors``.
 
-Custom_ids use the ``ai:<action>`` prefix. The cog wires a single
-interaction-router handler for prefix ``ai`` that dispatches to
-embed-building helpers in :mod:`services.ai_diagnostics_service` —
-no provider logic ever runs from a button.
+Custom_ids use the ``ai:<action>`` prefix. ``AICog.cog_load``
+registers :func:`handle_ai_interaction` with
+:mod:`core.runtime.interaction_router` so the router does not log
+"Unhandled interaction prefix 'ai'" warnings when a button is
+clicked. The View's own ``@discord.ui.button`` callbacks remain the
+primary dispatcher for ``PersistentView`` buttons; the router
+handler is a safety net that bails immediately when
+``interaction.response.is_done()`` is true.
 """
 
 from __future__ import annotations
+
+import logging
+from typing import Any
 
 import discord
 
 from core.runtime.persistent_views import PersistentView, register
 from services import ai_diagnostics_service
 
+logger = logging.getLogger("bot.views.ai.panel")
+
 _PANEL_COLOR = discord.Color.blurple()
+
+AI_ROUTER_PREFIX = "ai"
 
 
 def build_ai_panel_embed() -> discord.Embed:
@@ -113,7 +124,8 @@ class AIPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        await interaction.response.edit_message(embed=build_ai_panel_embed(), view=self)
+        embed = _embed_for_ai_panel_action("refresh")
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
         label="Diagnostics",
@@ -126,12 +138,8 @@ class AIPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.ai_cog import build_diagnostics_embed
-
-        await interaction.response.edit_message(
-            embed=build_diagnostics_embed(),
-            view=self,
-        )
+        embed = _embed_for_ai_panel_action("diagnostics")
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
         label="Providers",
@@ -144,12 +152,8 @@ class AIPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.ai_cog import build_providers_embed
-
-        await interaction.response.edit_message(
-            embed=build_providers_embed(),
-            view=self,
-        )
+        embed = _embed_for_ai_panel_action("providers")
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
         label="Routing",
@@ -162,12 +166,8 @@ class AIPanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.ai_cog import build_routing_embed
-
-        await interaction.response.edit_message(
-            embed=build_routing_embed(),
-            view=self,
-        )
+        embed = _embed_for_ai_panel_action("routing")
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(
         label="Settings",
@@ -181,6 +181,9 @@ class AIPanelView(PersistentView):
         _: discord.ui.Button,
     ) -> None:
         # M1: open the AI subsystem settings panel in place.
+        # Settings is the only action that requires an async call —
+        # _embed_for_ai_panel_action handles the four sync actions; this
+        # branch is special-cased here and in handle_ai_interaction below.
         from cogs.ai_cog import _build_ai_settings_panel
 
         embed, view = await _build_ai_settings_panel(
@@ -188,3 +191,97 @@ class AIPanelView(PersistentView):
             interaction.guild_id,
         )
         await interaction.response.edit_message(embed=embed, view=view)
+
+
+# ---------------------------------------------------------------------------
+# Shared dispatch + interaction-router handler
+# ---------------------------------------------------------------------------
+
+
+def _embed_for_ai_panel_action(action: str) -> discord.Embed | None:
+    """Single source of truth for sync AI panel action → embed mapping.
+
+    Returns the embed for refresh / diagnostics / providers / routing.
+    Returns ``None`` for "settings" (async, special-cased by callers) and
+    for unknown actions. Callers decide which ``view`` to attach (the
+    View buttons reuse ``self``; the router handler creates a fresh
+    ``AIPanelView()``).
+    """
+    if action == "refresh":
+        return build_ai_panel_embed()
+    # Lazy imports keep this module importable from cogs.ai_cog without
+    # introducing a circular dependency at module load time.
+    if action == "diagnostics":
+        from cogs.ai_cog import build_diagnostics_embed
+
+        return build_diagnostics_embed()
+    if action == "providers":
+        from cogs.ai_cog import build_providers_embed
+
+        return build_providers_embed()
+    if action == "routing":
+        from cogs.ai_cog import build_routing_embed
+
+        return build_routing_embed()
+    return None
+
+
+async def handle_ai_interaction(
+    interaction: discord.Interaction,
+    action: str,
+    session: Any,
+    request_id: str,
+) -> None:
+    """Interaction-router handler for prefix ``"ai"``.
+
+    The View's own ``@discord.ui.button`` callbacks are the primary
+    dispatcher for ``PersistentView`` button clicks — discord.py
+    dispatches them in the connection layer before ``on_interaction``
+    fires. This handler runs only after that path completes, so it
+    bails immediately when the response has already been sent.
+    """
+    # PersistentView may already have handled this interaction.
+    # Check is_done() BEFORE any permission check or action handling.
+    if interaction.response.is_done():
+        return
+
+    # Admin gate — mirrors AIPanelView.interaction_check so the router
+    # path enforces the same authorization as the View path.
+    member = interaction.user
+    if not getattr(member, "guild_permissions", None) or not (
+        member.guild_permissions.administrator  # type: ignore[union-attr]
+    ):
+        await interaction.response.send_message(
+            "❌ You need the Administrator permission to use the AI panel.",
+            ephemeral=True,
+        )
+        return
+
+    # Settings requires an async call to _build_ai_settings_panel; the
+    # synchronous _embed_for_ai_panel_action helper cannot serve it.
+    if action == "settings":
+        from cogs.ai_cog import _build_ai_settings_panel
+
+        embed, view = await _build_ai_settings_panel(
+            interaction.user,
+            interaction.guild_id,
+        )
+        await interaction.response.edit_message(embed=embed, view=view)
+        return
+
+    embed = _embed_for_ai_panel_action(action)
+    if embed is None:
+        await interaction.response.send_message(
+            f"❌ Unknown AI panel action: {action!r}",
+            ephemeral=True,
+        )
+        return
+    await interaction.response.edit_message(embed=embed, view=AIPanelView())
+
+
+__all__ = [
+    "AI_ROUTER_PREFIX",
+    "AIPanelView",
+    "build_ai_panel_embed",
+    "handle_ai_interaction",
+]

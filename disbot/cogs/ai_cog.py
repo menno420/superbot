@@ -16,6 +16,7 @@ and a parallel ``app_commands`` family with the same gating. The
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import discord
@@ -27,6 +28,45 @@ from services import ai_diagnostics_service
 from views.ai.panel import AIPanelView, build_ai_panel_embed
 
 logger = logging.getLogger("bot")
+
+
+def _relative_time(ts: datetime, *, now: datetime | None = None) -> str:
+    """Format ``ts`` as a relative-time string like ``"2m ago"``.
+
+    Returns ``"in the future"`` if ``ts`` is later than ``now``; the
+    audit table writes ``created_at`` server-side so this should not
+    happen in practice, but the renderer must not raise on clock skew.
+    """
+    reference = now or datetime.now(timezone.utc)
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    delta = (reference - ts).total_seconds()
+    if delta < 0:
+        return "in the future"
+    if delta < 60:
+        return f"{int(delta)}s ago"
+    if delta < 3600:
+        return f"{int(delta // 60)}m ago"
+    if delta < 86400:
+        return f"{int(delta // 3600)}h ago"
+    return f"{int(delta // 86400)}d ago"
+
+
+def _format_audit_row(row: dict) -> str:
+    """Format one ``ai_decision_audit`` row for the why-no-response embed.
+
+    Includes relative timestamp, decision, reason_code, task, route,
+    channel link, user mention, provider, model. No raw message content
+    is rendered (the audit table does not store any).
+    """
+    created_at = row.get("created_at")
+    when = _relative_time(created_at) if isinstance(created_at, datetime) else "—"
+    return (
+        f"`{when:<8}` · `{row['decision']:<8}` · `{row['reason_code']}` · "
+        f"task={row.get('task') or '—'} · route={row.get('route') or '—'} · "
+        f"<#{row['channel_id']}> · <@{row['user_id']}> · "
+        f"provider={row.get('provider') or '—'} model={row.get('model') or '—'}"
+    )
 
 
 async def _build_ai_settings_panel(
@@ -179,11 +219,46 @@ class AICog(commands.Cog):
 
         message_pipeline.register(get_stage())
 
+        # Claim the "ai" prefix on the interaction router so button
+        # clicks from views.ai.panel.AIPanelView don't emit
+        # "Unhandled interaction prefix 'ai'" warnings. The View's own
+        # @discord.ui.button callbacks remain the primary dispatcher;
+        # the router handler is a safety net that bails when
+        # interaction.response.is_done() is true.
+        #
+        # interaction_router has no unregister() API; registrations are
+        # process-lifetime. The guard below makes cog_load idempotent so
+        # repeated reloads do not trigger spurious overwrite WARNINGs
+        # and do not silently replace a handler set by another path.
+        from core.runtime import interaction_router
+        from views.ai.panel import AI_ROUTER_PREFIX, handle_ai_interaction
+
+        existing = interaction_router._handlers.get(AI_ROUTER_PREFIX)
+        if existing is handle_ai_interaction:
+            pass  # already registered to the correct handler; skip
+        elif existing is not None:
+            logger.warning(
+                "AICog.cog_load: replacing unexpected handler for "
+                "interaction-router prefix %r",
+                AI_ROUTER_PREFIX,
+            )
+            interaction_router.register(AI_ROUTER_PREFIX, handle_ai_interaction)
+        else:
+            interaction_router.register(AI_ROUTER_PREFIX, handle_ai_interaction)
+
     async def cog_unload(self) -> None:
         from core.runtime import message_pipeline
         from core.runtime.ai.natural_language_stage import STAGE_NAME
 
         message_pipeline.unregister(STAGE_NAME)
+
+        # interaction_router exposes no unregister() API — the module-level
+        # _handlers dict holds registrations for the lifetime of the
+        # process by design. We cannot remove the "ai" prefix here. The
+        # handler reference remains valid because it dispatches to
+        # module-level build_* functions that stay importable. On reload,
+        # cog_load's idempotency guard detects that the handler is already
+        # handle_ai_interaction and skips re-registration.
 
     # ------------------------------------------------------------------
     # Prefix commands — `!ai`, `!ai status`, `!ai diagnostics`, ...
@@ -229,17 +304,27 @@ class AICog(commands.Cog):
             r
             for r in rows
             if r["decision"] in ("denied", "skipped", "errored", "degraded")
-        ]
+        ][:25]
         if not denials:
             await ctx.send("No recent denials or skips for this guild.")
             return
-        lines = [
-            f"`{r['decision']:<8}` `{r['reason_code']}` · "
-            f"channel=<#{r['channel_id']}> · user=<@{r['user_id']}> · "
-            f"task={r.get('task') or '—'}"
-            for r in denials[:25]
-        ]
-        await ctx.send("\n".join(lines))
+        lines = [_format_audit_row(r) for r in denials]
+        embed = discord.Embed(
+            title="AI — why no response",
+            description="\n".join(lines),
+            color=discord.Color.orange(),
+        )
+        oldest = denials[-1].get("created_at")
+        if isinstance(oldest, datetime):
+            embed.set_footer(
+                text=(
+                    f"Showing {len(denials)} most recent · "
+                    f"oldest: {oldest.isoformat()}"
+                ),
+            )
+        else:
+            embed.set_footer(text=f"Showing {len(denials)} most recent")
+        await ctx.send(embed=embed)
 
     @ai_group.command(name="policy")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
