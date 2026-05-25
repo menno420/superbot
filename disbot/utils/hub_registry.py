@@ -96,15 +96,30 @@ HUBS: tuple[HubEntry, ...] = (
         emoji="🎮",
         purpose="Game flows and tournaments.",
         entry_command="!games",
+        # M1: BTD6 promoted to its own top-level hub. Removed from
+        # Games' primary_children; subsystem_registry drops btd6's
+        # parent_hub="games" / hub_group="activities" in the same PR.
+        # No Games cross-link by accepted decision.
         primary_children=(
             "blackjack",
-            "btd6",
             "deathmatch",
             "rps_tournament",
             "mining",
             "counting",
             "chain",
         ),
+        minimum_tier="user",
+    ),
+    HubEntry(
+        key="btd6",
+        display_name="BTD6 Assistant",
+        emoji="🐵",
+        purpose=(
+            "Bloons Tower Defense 6 assistant — lookups, strategy "
+            "guidance, and round breakdowns."
+        ),
+        entry_command="!btd6",
+        primary_children=(),
         minimum_tier="user",
     ),
     HubEntry(

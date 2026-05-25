@@ -16,6 +16,7 @@ and a parallel ``app_commands`` family with the same gating. The
 from __future__ import annotations
 
 import logging
+from types import SimpleNamespace
 
 import discord
 from discord import app_commands
@@ -26,6 +27,29 @@ from services import ai_diagnostics_service
 from views.ai.panel import AIPanelView, build_ai_panel_embed
 
 logger = logging.getLogger("bot")
+
+
+async def _build_ai_settings_panel(
+    author: discord.abc.User,
+    guild_id: int | None,
+) -> tuple[discord.Embed, discord.ui.View]:
+    """Build the (embed, view) pair for the AI Platform settings panel.
+
+    Reuses :func:`views.settings.subsystem_view.build_subsystem_embed`
+    and :class:`SubsystemSettingsView` so the dedicated ``!ai settings``
+    entry point renders identically to opening AI via the global
+    ``!settings`` hub.
+    """
+    from views.settings.subsystem_view import (
+        SubsystemSettingsView,
+        build_subsystem_embed,
+    )
+
+    # build_subsystem_embed only reads .guild_id from its first arg.
+    shim = SimpleNamespace(guild_id=guild_id)
+    embed = await build_subsystem_embed(shim, "ai")  # type: ignore[arg-type]
+    view = SubsystemSettingsView(author, "ai")
+    return embed, view
 
 
 # ---------------------------------------------------------------------------
@@ -124,10 +148,19 @@ def build_routing_embed(task_name: str | None = None) -> discord.Embed:
 
 
 class AICog(commands.Cog):
-    """Read-only diagnostics surface for the AI gateway."""
+    """AI Platform surface — diagnostics (Module 2) + M1 settings host."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    async def cog_load(self) -> None:
+        # Register the AI SubsystemSchema so the auto-dispatched
+        # settings UI renders the AI section for free. Idempotent —
+        # the underlying registry replaces on re-registration with a
+        # DEBUG log entry.
+        from cogs.ai.schemas import register_schemas
+
+        register_schemas()
 
     # ------------------------------------------------------------------
     # Prefix commands — `!ai`, `!ai status`, `!ai diagnostics`, ...
@@ -143,6 +176,14 @@ class AICog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def ai_status(self, ctx: commands.Context) -> None:
         await ctx.send(embed=build_status_embed())
+
+    @ai_group.command(name="settings")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def ai_settings(self, ctx: commands.Context) -> None:
+        """Open the AI Platform settings panel directly."""
+        guild_id = ctx.guild.id if ctx.guild else None
+        embed, view = await _build_ai_settings_panel(ctx.author, guild_id)
+        await ctx.send(embed=embed, view=view)
 
     @ai_group.command(name="diagnostics")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
@@ -221,6 +262,22 @@ class AICog(commands.Cog):
     ) -> None:
         await interaction.response.send_message(
             embed=build_routing_embed(task),
+            ephemeral=True,
+        )
+
+    @ai_app_group.command(
+        name="settings",
+        description="Open the AI Platform settings panel.",
+    )
+    @app_commands.checks.has_permissions(administrator=True)
+    async def ai_settings_slash(self, interaction: discord.Interaction) -> None:
+        embed, view = await _build_ai_settings_panel(
+            interaction.user,
+            interaction.guild_id,
+        )
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
             ephemeral=True,
         )
 

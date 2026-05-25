@@ -168,3 +168,23 @@ class AIPanelView(PersistentView):
             embed=build_routing_embed(),
             view=self,
         )
+
+    @discord.ui.button(
+        label="Settings",
+        style=discord.ButtonStyle.success,
+        row=1,
+        custom_id="ai:settings",
+    )
+    async def settings_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # M1: open the AI subsystem settings panel in place.
+        from cogs.ai_cog import _build_ai_settings_panel
+
+        embed, view = await _build_ai_settings_panel(
+            interaction.user,
+            interaction.guild_id,
+        )
+        await interaction.response.edit_message(embed=embed, view=view)

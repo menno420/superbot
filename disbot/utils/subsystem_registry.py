@@ -372,9 +372,11 @@ SUBSYSTEMS: dict[str, dict] = {
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
-        "ui_priority": 35,
-        "parent_hub": "games",
-        "hub_group": "activities",
+        # M1: BTD6 promoted from Games child to its own top-level Help
+        # section. The hub-registry HubEntry is the presentation side;
+        # this entry drops parent_hub/hub_group so it no longer appears
+        # under Games. ui_priority moves into the top-level band.
+        "ui_priority": 32,
         "capabilities": [
             "btd6.query.ask",
             "btd6.strategy.view",
@@ -640,6 +642,12 @@ SUBSYSTEMS: dict[str, dict] = {
             "ai.diagnostics.view",
             "ai.provider.view",
             "ai.routing.view",
+            # M1: AI cog hosts the auto-dispatched settings UI for the
+            # AI subsystem schema (cogs/ai/schemas.py). These two
+            # capabilities gate writes/reads through the existing
+            # SettingsMutationPipeline / BindingMutationPipeline lanes.
+            "ai.settings.configure",
+            "ai.settings.view",
         ],
     },
     "settings": {

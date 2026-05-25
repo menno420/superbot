@@ -38,9 +38,16 @@ from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 
 def test_subsystem_registry_has_btd6_entry():
+    """M1 of the BTD6-top-level + AI-central-policy initiative
+    promoted BTD6 from a Games child to its own top-level hub.
+    The registry entry must therefore NOT declare a parent_hub
+    or hub_group. The matching HubEntry is pinned by
+    ``tests/unit/utils/test_hub_registry.py::test_btd6_is_top_level_hub``.
+    """
     meta = SUBSYSTEMS["btd6"]
     assert meta["visibility_tier"] == "user"
-    assert meta["parent_hub"] == "games"
+    assert meta.get("parent_hub") is None
+    assert meta.get("hub_group") is None
     assert set(meta["entry_points"]) == {"btd6", "btd6menu"}
     assert "btd6.query.ask" in meta["capabilities"]
 

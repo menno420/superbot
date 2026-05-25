@@ -27,12 +27,13 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 1. Mother hubs
 
-8 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
+9 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
 `SUBSYSTEMS` key so Help can resolve a hub entry to its host cog.
 
 | key | display | entry | host cog | panel | min tier |
 | --- | --- | --- | --- | --- | --- |
 | `games` | 🎮 Games | `!games` | `games_cog` | `GamesHubView` (`views/games/hub.py`) | user |
+| `btd6` | 🐵 BTD6 Assistant | `!btd6` | `btd6_cog` | `BTD6PanelView` | user |
 | `economy` | 💰 Economy | `!economymenu` | `economy_cog` | `EconomyPanelView` | user |
 | `moderation` | 🛡️ Moderation & Safety | `!modmenu` | `moderation_cog` | `ModPanelView` | moderator |
 | `community` | 🌱 Community | `!community` | `community_cog` | `CommunityHubView` | user |
@@ -52,8 +53,8 @@ or raises.
 | subsystem | owner | public commands (sample) | hidden / legacy | panel hook | Help route today | Hub route today | Recommendation |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `admin` | `admin_cog.py` | `adminmenu`, `serverstats`, `cog`, `loadall`, `unloadall`, `restart`, `loglevel` | — | `_AdminPanelView` | `!help admin` → opens Admin panel (shared resolver) | dropdown Admin → panel | hub top-level (Admin) |
-| `ai` | `ai_cog.py` | `ai`, `aimenu`, `ai status`, `ai diagnostics`, `ai providers`, `ai routing` | — | `AIPanelView` | `!help ai` → opens AI Platform panel (shared resolver) | reached via Admin / Diagnostics | hub child (Admin / Platform) |
-| `btd6` | `btd6_cog.py` | `btd6`, `btd6menu`, `btd6 ask`, `btd6 tower`, `btd6 round`, `btd6 status`, `btd6 diagnostics`, `btd6 test-intent` | — | `BTD6PanelView` | `!help btd6` → opens BTD6 panel (shared resolver) | reached via Games (`parent_hub="games"`) | hub child (Games) |
+| `ai` | `ai_cog.py` | `ai`, `aimenu`, `ai status`, `ai diagnostics`, `ai providers`, `ai routing`, `ai settings` | — | `AIPanelView` | `!help ai` → opens AI Platform panel (shared resolver) | reached via Admin / Diagnostics | central AI policy host (M1+); auto-dispatched settings via `ai settings` and `!settings` hub |
+| `btd6` | `btd6_cog.py` | `btd6`, `btd6menu`, `btd6 ask`, `btd6 tower`, `btd6 round`, `btd6 status`, `btd6 diagnostics`, `btd6 test-intent` | — | `BTD6PanelView` | `!help btd6` → opens BTD6 panel (shared resolver) | dropdown BTD6 → panel | hub top-level (BTD6 Assistant) |
 | `blackjack` | `blackjack_cog.py:95` | `blackjack`, `bj`, `bjtournament`, `bjstart`, `bjstatus` | — | `BlackjackPanelView` | `!help blackjack` → opens Blackjack panel (shared resolver) | reached via Games | hub child (Games) |
 | `chain` | `chain_cog.py` | `chain`, `chainmenu` | — | `_ChainMenuView` | `!help chain` → opens Chain panel (shared resolver) | reached via Games / Community | hub child |
 | `channel` | `channel_cog.py:144` | `lock`, `unlock` | several `*_channel`-family commands | `_ChannelManagerView` | `!help channel` → opens Channel panel (shared resolver) | reached via Admin | hub child (Admin) |

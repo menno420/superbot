@@ -13,6 +13,16 @@ additions should land in the appropriate submodule rather than directly in
 this ``__init__``.
 """
 
+from utils.settings_keys.ai import (
+    AI_COOLDOWN_SECONDS,
+    AI_DEFAULT_MODEL,
+    AI_DEFAULT_PROVIDER,
+    AI_ENABLED,
+    AI_FRESH_USER_MENTION_ALLOWANCE,
+    AI_GUILD_INSTRUCTION_PROFILE,
+    AI_MINIMUM_LEVEL_DEFAULT,
+    AI_NATURAL_LANGUAGE_ENABLED,
+)
 from utils.settings_keys.economy import ECONOMY_LOG_CHANNEL
 from utils.settings_keys.games import (
     ACTIVE_TOURNAMENT,
@@ -40,6 +50,14 @@ from utils.settings_keys.xp import (
 
 __all__ = [
     "ACTIVE_TOURNAMENT",
+    "AI_COOLDOWN_SECONDS",
+    "AI_DEFAULT_MODEL",
+    "AI_DEFAULT_PROVIDER",
+    "AI_ENABLED",
+    "AI_FRESH_USER_MENTION_ALLOWANCE",
+    "AI_GUILD_INSTRUCTION_PROFILE",
+    "AI_MINIMUM_LEVEL_DEFAULT",
+    "AI_NATURAL_LANGUAGE_ENABLED",
     "BLACKJACK_DEFAULT_ENTRY_FEE",
     "DEATHMATCH_TURN_TIMEOUT",
     "DEFAULT_CLEANUP_CHANNEL_NAME",

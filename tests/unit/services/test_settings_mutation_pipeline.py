@@ -737,3 +737,67 @@ def test_actor_type_allowlist_matches_documented_set():
 
 def test_mutation_type_allowlist_is_set_value_only_in_v1():
     assert sm_mod._ALLOWED_MUTATION_TYPES == frozenset({"set_value"})
+
+
+# ---------------------------------------------------------------------------
+# M1 — AI subsystem scalars flow through the pipeline
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_ai_minimum_level_default_writes_through_pipeline(_isolated_state):
+    """The AI_CONFIG_SCHEMA setting routes through SettingsMutationPipeline
+    with the right audit row, cache invalidation, and event payload.
+    """
+    from cogs.ai.schemas import AI_CONFIG_SCHEMA
+    from utils.settings_keys import AI_MINIMUM_LEVEL_DEFAULT
+
+    schema_mod.register(AI_CONFIG_SCHEMA)
+    guild = _FakeGuild(101)
+    actor = _FakeMember(202, guild=guild)
+
+    result = await SettingsMutationPipeline().set_value(
+        guild,
+        "ai",
+        "ai_minimum_level_default",
+        5,
+        actor,
+    )
+
+    assert isinstance(result, SettingsMutationResult)
+    assert result.new_value == 5
+    assert _isolated_state["kv"][(101, AI_MINIMUM_LEVEL_DEFAULT)] == "5"
+    assert (101, AI_MINIMUM_LEVEL_DEFAULT) in _isolated_state["invalidations"]
+    assert _isolated_state["audit_log"][-1]["subsystem"] == "ai"
+    assert _isolated_state["audit_log"][-1]["settings_key"] == AI_MINIMUM_LEVEL_DEFAULT
+    assert _isolated_state["emitted"][-1]["event"] == EVT_SETTINGS_CHANGED
+
+
+@pytest.mark.asyncio
+async def test_ai_natural_language_enabled_bool_round_trip(_isolated_state):
+    """The bool scalar coerces through the pipeline as 'true' / 'false'.
+
+    Pinned because the natural-language stage (M2) reads this value
+    via the typed-resolver path and stays at the conservative default
+    until the operator opts in.
+    """
+    from cogs.ai.schemas import AI_CONFIG_SCHEMA
+    from utils.settings_keys import AI_NATURAL_LANGUAGE_ENABLED
+
+    schema_mod.register(AI_CONFIG_SCHEMA)
+    guild = _FakeGuild(303)
+    actor = _FakeMember(404, guild=guild)
+
+    result = await SettingsMutationPipeline().set_value(
+        guild,
+        "ai",
+        "ai_natural_language_enabled",
+        True,
+        actor,
+    )
+
+    assert result.new_value is True
+    assert _isolated_state["kv"][(303, AI_NATURAL_LANGUAGE_ENABLED)] == "true"
+    assert (303, AI_NATURAL_LANGUAGE_ENABLED) in _isolated_state["invalidations"]
+    assert _isolated_state["audit_log"][-1]["subsystem"] == "ai"
+    assert _isolated_state["audit_log"][-1]["new_value_raw"] == "true"
