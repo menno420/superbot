@@ -290,9 +290,10 @@ class AINaturalLanguageStage:
             return StageResult()
 
         ai_permission_service.mark_reply_sent(guild_id, user_id)
-        # The AI cog's on_message listener owns user-message recording
-        # so chat memory captures bystander messages too. The stage
-        # only records its own assistant reply.
+        # The stage owns memory recording for both roles: user turns
+        # were appended above (around the policy resolve), and the
+        # bot's own assistant turn is appended here once we know we
+        # actually replied.
         ai_conversation_service.append(
             guild_id,
             channel_id,

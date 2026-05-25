@@ -225,11 +225,11 @@ AI_SETTINGS: tuple[SettingSpec, ...] = (
         hint=(
             "How many minutes of recent channel messages the bot "
             "should keep in its in-process memory and include as "
-            "context on each AI reply. ``0`` keeps only the last 3 "
-            "messages per channel (the always-on minimum so basic "
-            "conversational handles still work). Hard cap 120 "
-            "minutes; the cache is in-process only and dropped on "
-            "restart."
+            "context on each AI reply. ``0`` = **Minimal — last 3 "
+            "messages only** (the always-on 3-turn floor so basic "
+            "conversational handles work even with memory 'off'). "
+            "Other choices set a time window in minutes; hard cap "
+            "120. The cache is in-process only and dropped on restart."
         ),
         validator=_validate_memory_window,
         input_hint="numeric_presets",

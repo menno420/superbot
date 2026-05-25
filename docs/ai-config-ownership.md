@@ -145,7 +145,7 @@ applicable, the resolver's `dry_run=True` trace). No surface reads raw
 | `!ai status` | `provider`, `policy`, `readiness_summary` | — |
 | `!ai readiness` | full snapshot | `services.ai_readiness_service.scan` |
 | `!ai policy` | `policy` (overrides), `provider` (header) | resolver `dry_run=True` is the source of resolved precedence; optional `[#channel]` arg dry-runs against that channel. Snapshot is ancillary only — used for override counts + provider/model header, never for the resolved decision. |
-| `!ai memory` | `memory`, `audit.latest` (last reply memory) | — (PR-3) |
+| `!ai memory` | `memory` (full), `audit.latest['memory_turns_used']` for "last reply used memory" | Per-channel turn count comes from `ai_conversation_service.channel_stats(guild_id)` for the current channel (snapshot is guild-scoped). "Last reply used memory" renders `—` until PR-5 ships and populates the audit field. |
 | `!ai settings` | `policy`, `projection`, `instruction` | grouped renderer (PR-4B) |
 | `!ai routing` | `provider` | `services.ai_diagnostics_service.list_task_routing`; optional `[task]` arg filters to one row |
 | `!ai why-no-response` | `audit` | — |
@@ -236,8 +236,8 @@ is allowed; PR descriptions should verify no test asserts a fixed
 `len(view.children)`.
 
 The AI panel's button custom_ids today: `ai:refresh`, `ai:diagnostics`,
-`ai:providers`, `ai:routing`, `ai:settings`, `ai:policy`, `ai:behavior`.
-PR-3 adds `ai:memory`.
+`ai:providers`, `ai:routing`, `ai:settings`, `ai:policy`, `ai:behavior`,
+`ai:memory` (added in PR-3, row 2).
 
 ### Additive nullable migrations (I-4)
 

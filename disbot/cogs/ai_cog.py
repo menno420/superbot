@@ -266,6 +266,102 @@ def build_routing_embed(task_name: str | None = None) -> discord.Embed:
     return embed
 
 
+def build_memory_embed(
+    snapshot: object,
+    *,
+    channel_id: int | None = None,
+    channel_turn_count: int | None = None,
+) -> discord.Embed:
+    """Render an :class:`AIConfigSnapshot.memory` slice as an embed.
+
+    ``channel_id`` + ``channel_turn_count`` are the current-channel
+    context the snapshot itself does not carry (the snapshot is
+    guild-scoped). The cog command fills them in from ``ctx.channel``;
+    panel-button paths pass ``None`` and the embed renders ``—``.
+
+    "Last memory used in reply" reads from
+    ``snapshot.audit.latest['memory_turns_used']`` if PR-5 has shipped
+    and the audit row carries that field; otherwise renders ``—``.
+    Accepts the snapshot as ``object`` so this builder can also be
+    called from the panel-button path without coupling on the
+    projection-service type.
+    """
+    memory = getattr(snapshot, "memory", None)
+    audit = getattr(snapshot, "audit", None)
+    if memory is None:
+        return discord.Embed(
+            title="AI Memory",
+            description="No memory snapshot available.",
+            color=discord.Color.greyple(),
+        )
+
+    if memory.window_minutes <= 0:
+        mode_value = f"Minimal — last {memory.min_floor_turns} messages only"
+    else:
+        mode_value = f"Time window: {memory.window_minutes} min"
+
+    embed = discord.Embed(
+        title="AI Memory",
+        description=(
+            "In-process chat memory the bot includes as context on AI "
+            "replies. Dropped on restart and on `!ai forget`."
+        ),
+        color=discord.Color.blurple(),
+    )
+    embed.add_field(name="Mode", value=mode_value, inline=True)
+    embed.add_field(
+        name="Storage",
+        value="in-process only · dropped on restart",
+        inline=True,
+    )
+    embed.add_field(
+        name="Discord history scan",
+        value="on" if memory.scan_enabled else "off",
+        inline=True,
+    )
+    if channel_id is not None:
+        embed.add_field(
+            name="This channel cached turns",
+            value=(
+                f"<#{channel_id}>: {channel_turn_count if channel_turn_count is not None else 0}"
+            ),
+            inline=True,
+        )
+    embed.add_field(
+        name="Guild cached channels",
+        value=f"{memory.guild_channel_count}",
+        inline=True,
+    )
+    embed.add_field(
+        name="Process LRU",
+        value=(
+            f"{memory.cached_channel_count} / {memory.channel_lru_cap} channels · "
+            f"{memory.cached_total_turns} turns"
+        ),
+        inline=True,
+    )
+
+    last_reply_turns: object = "—"
+    if audit is not None:
+        latest = getattr(audit, "latest", None) or {}
+        # PR-5 will populate memory_turns_used on `replied` rows.
+        # Until then we render "—" — render rule per
+        # docs/ai-config-ownership.md § I-4.
+        value = latest.get("memory_turns_used") if isinstance(latest, dict) else None
+        if value is not None:
+            last_reply_turns = str(value)
+    embed.add_field(
+        name="Last reply used memory",
+        value=str(last_reply_turns),
+        inline=True,
+    )
+
+    embed.set_footer(
+        text=("Setting: ai_memory_window_minutes · 0 = Minimal (3-turn floor)."),
+    )
+    return embed
+
+
 # ---------------------------------------------------------------------------
 # Cog
 # ---------------------------------------------------------------------------
@@ -471,6 +567,32 @@ class AICog(commands.Cog):
             channel=target_channel,
             snapshot=snapshot,
             title="AI Effective Policy",
+        )
+        await ctx.send(embed=embed)
+
+    @ai_group.command(name="memory")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def ai_memory(self, ctx: commands.Context) -> None:
+        """Show the chat-memory status for this guild + channel.
+
+        Sources from :func:`ai_config_projection_service.build_snapshot`
+        (memory + audit slices) plus a per-channel lookup against
+        ``ai_conversation_service.channel_stats`` for the "this
+        channel cached turns" line.
+        """
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from services import ai_config_projection_service, ai_conversation_service
+
+        snapshot = await ai_config_projection_service.build_snapshot(ctx.guild.id)
+        channel_id = getattr(ctx.channel, "id", None)
+        per_guild = ai_conversation_service.channel_stats(ctx.guild.id)
+        turn_count = per_guild.get(channel_id) if channel_id is not None else None
+        embed = build_memory_embed(
+            snapshot,
+            channel_id=channel_id,
+            channel_turn_count=turn_count,
         )
         await ctx.send(embed=embed)
 
@@ -728,6 +850,33 @@ class AICog(commands.Cog):
             channel=target_channel,
             snapshot=snapshot,
             title="AI Effective Policy",
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @ai_app_group.command(
+        name="memory",
+        description=("Show chat-memory status (mode, scan, cached turns, last reply)."),
+    )
+    @app_commands.checks.has_permissions(administrator=True)
+    async def ai_memory_slash(self, interaction: discord.Interaction) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "This command requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from services import ai_config_projection_service, ai_conversation_service
+
+        snapshot = await ai_config_projection_service.build_snapshot(
+            interaction.guild.id,
+        )
+        channel_id = getattr(interaction.channel, "id", None)
+        per_guild = ai_conversation_service.channel_stats(interaction.guild.id)
+        turn_count = per_guild.get(channel_id) if channel_id is not None else None
+        embed = build_memory_embed(
+            snapshot,
+            channel_id=channel_id,
+            channel_turn_count=turn_count,
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
