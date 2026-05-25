@@ -160,9 +160,18 @@ class _RolePickSelect(discord.ui.RoleSelect):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         picked = self.values[0]
+        # The pin test ``test_no_raw_guild_lookups_outside_resolver``
+        # forbids bare ``guild.get_role`` in non-resolver code; route
+        # through core.runtime.guild_resources.resolve_role instead so
+        # missing-role handling stays uniform across the codebase.
         resolved = picked
         if interaction.guild is not None:
-            full = interaction.guild.get_role(picked.id)
+            from core.runtime import guild_resources
+
+            full = guild_resources.resolve_role(
+                interaction.guild,
+                role_id=picked.id,
+            )
             if full is not None:
                 resolved = full
         await interaction.response.send_modal(RolePolicyModal(resolved))
