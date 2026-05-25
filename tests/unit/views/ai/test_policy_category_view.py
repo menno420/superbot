@@ -77,7 +77,11 @@ async def test_submit_writes_through_set_category_policy(monkeypatch):
     assert captured["mode"] == "mention_only"
     assert captured["min_level"] == 2
     assert captured["cooldown_seconds"] == 120
-    assert captured["instruction_profile_id"] is None
+    # PR-C-pre: modal preserves any existing profile binding via
+    # UNCHANGED sentinel.
+    from services.ai_policy_mutation import UNCHANGED
+
+    assert captured["instruction_profile_id"] is UNCHANGED
     args, kwargs = interaction.response.send_message.call_args
     assert "✅" in args[0]
     assert "category **quiet**" in args[0]

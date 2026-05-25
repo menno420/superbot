@@ -104,12 +104,15 @@ def test_sanitise_returns_empty_for_non_string():
 
 
 def test_relative_time_buckets_into_s_m_h_d():
+    from datetime import timedelta
+
     now = datetime.now(timezone.utc)
     rel = btd6_context_service._relative_time
     assert rel(now) in ("just now", "0s ago")
-    assert "m ago" in rel(now.replace(minute=(now.minute - 5) % 60))
-    # Build absolute timestamps by subtracting timedeltas.
-    from datetime import timedelta
+    # Use timedelta math so the test is wall-clock-independent —
+    # the prior ``minute - 5`` arithmetic broke whenever the current
+    # minute was < 5 and rolled into the future.
+    assert "m ago" in rel(now - timedelta(minutes=5))
     assert "h ago" in rel(now - timedelta(hours=3))
     assert "d ago" in rel(now - timedelta(days=2))
 

@@ -98,6 +98,8 @@ class CategoryPolicyModal(discord.ui.Modal):
             await interaction.response.send_message(f"❌ {exc}", ephemeral=True)
             return
 
+        from services.ai_policy_mutation import UNCHANGED
+
         try:
             result = await set_category_policy(
                 interaction.guild.id,
@@ -105,7 +107,7 @@ class CategoryPolicyModal(discord.ui.Modal):
                 mode=mode,
                 min_level=min_level,
                 cooldown_seconds=cooldown_seconds,
-                instruction_profile_id=None,
+                instruction_profile_id=UNCHANGED,
                 actor=interaction.user,
             )
         except AIPolicyMutationError as exc:

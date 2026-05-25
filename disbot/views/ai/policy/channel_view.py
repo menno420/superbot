@@ -1,4 +1,4 @@
-"""Channel-scope AI policy write UI (PR4A).
+"""Channel-scope AI policy write UI.
 
 Two-step flow:
 
@@ -14,11 +14,11 @@ Two-step flow:
 The view never writes to the DB directly — every mutation goes
 through ``ai_policy_mutation``.
 
-instruction_profile_id is intentionally omitted from this modal:
-profile creation / assignment is a separate surface tracked in a
-follow-up PR; channel policy upserts pass ``None`` so the column
-clears any prior assignment. That matches the principle "one
-modal, one job".
+``instruction_profile_id`` is intentionally omitted from this
+modal: profile / preset assignment is owned by the Behavior UI
+(``views/ai/behavior/``) and the preset service. This modal passes
+``UNCHANGED`` for that column so partial mode/min_level/cooldown
+edits no longer wipe an existing profile binding (PR-C-pre).
 """
 
 from __future__ import annotations
@@ -128,6 +128,8 @@ class ChannelPolicyModal(discord.ui.Modal):
             await interaction.response.send_message(f"❌ {exc}", ephemeral=True)
             return
 
+        from services.ai_policy_mutation import UNCHANGED
+
         try:
             result = await set_channel_policy(
                 interaction.guild.id,
@@ -135,7 +137,7 @@ class ChannelPolicyModal(discord.ui.Modal):
                 mode=mode,
                 min_level=min_level,
                 cooldown_seconds=cooldown_seconds,
-                instruction_profile_id=None,
+                instruction_profile_id=UNCHANGED,
                 actor=interaction.user,
             )
         except AIPolicyMutationError as exc:

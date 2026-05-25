@@ -19,12 +19,47 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Final
 
 from services import ai_natural_language_policy
 from utils.db import ai as ai_db
 
 logger = logging.getLogger("bot.services.ai_policy_mutation")
+
+
+# ---------------------------------------------------------------------------
+# UNCHANGED sentinel (PR-C-pre)
+# ---------------------------------------------------------------------------
+#
+# Three-state per optional column on partial updates:
+#
+#   * concrete value (int, bool, str)     → "set this column".
+#   * ``None``                            → "clear this column" (NULL).
+#   * :data:`UNCHANGED`                   → "preserve existing column".
+#
+# The mutation functions accept :data:`UNCHANGED` (the default for
+# optional fields). Sentinel fields are listed in ``unchanged_fields``
+# when handed to ``ai_db.upsert_*``; the DB layer omits them from
+# the ``EXCLUDED`` SET on conflict. On an INSERT path the sentinel
+# means NULL (there is nothing to preserve).
+#
+# Before PR-C-pre, the channel/category modals passed ``None`` for
+# every field they did not own — which silently cleared
+# ``instruction_profile_id`` on every save. That footgun is fixed
+# here at the chokepoint so every existing and future caller is safe
+# by default.
+
+
+class _Unchanged:
+    """Singleton sentinel — compared with ``is`` only."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:  # pragma: no cover - debug only
+        return "UNCHANGED"
+
+
+UNCHANGED: Final[_Unchanged] = _Unchanged()
 
 
 # ---------------------------------------------------------------------------
@@ -144,31 +179,61 @@ async def set_guild_policy(
 # ---------------------------------------------------------------------------
 
 
+def _resolve_optional(value: Any) -> tuple[Any, bool]:
+    """Translate UNCHANGED into ``(None, True)``; otherwise ``(value, False)``.
+
+    Returns ``(insert_value, is_unchanged)``. The DB layer uses
+    ``insert_value`` for the binding (NULL on insert) and skips the
+    column from the ``EXCLUDED`` SET when ``is_unchanged`` is True.
+    """
+    if value is UNCHANGED:
+        return None, True
+    return value, False
+
+
 async def set_channel_policy(
     guild_id: int,
     channel_id: int,
     *,
-    mode: str,
-    min_level: int | None,
-    cooldown_seconds: int | None,
-    instruction_profile_id: int | None,
+    mode: str | _Unchanged = UNCHANGED,
+    min_level: int | None | _Unchanged = UNCHANGED,
+    cooldown_seconds: int | None | _Unchanged = UNCHANGED,
+    instruction_profile_id: int | None | _Unchanged = UNCHANGED,
     actor: Any,
 ) -> AIPolicyMutationResult:
     actor_id = _check_admin(actor)
+    if mode is UNCHANGED:
+        raise InvalidAIPolicyValueError(
+            "channel mode is required on upsert (UNCHANGED not supported "
+            "for the mode column because the row must always carry a mode)",
+        )
     if mode not in _VALID_CHANNEL_MODES:
         raise InvalidAIPolicyValueError(
             f"channel mode must be one of {sorted(_VALID_CHANNEL_MODES)}, "
             f"got {mode!r}",
         )
+    min_level_val, min_level_unchanged = _resolve_optional(min_level)
+    cooldown_val, cooldown_unchanged = _resolve_optional(cooldown_seconds)
+    profile_val, profile_unchanged = _resolve_optional(instruction_profile_id)
+
+    unchanged_fields: set[str] = set()
+    if min_level_unchanged:
+        unchanged_fields.add("min_level")
+    if cooldown_unchanged:
+        unchanged_fields.add("cooldown_seconds")
+    if profile_unchanged:
+        unchanged_fields.add("instruction_profile_id")
+
     mutation_id = uuid.uuid4().hex
     await ai_db.upsert_channel_policy(
         guild_id,
         channel_id,
         mode=mode,
-        min_level=min_level,
-        cooldown_seconds=cooldown_seconds,
-        instruction_profile_id=instruction_profile_id,
+        min_level=min_level_val,
+        cooldown_seconds=cooldown_val,
+        instruction_profile_id=profile_val,
         updated_by=actor_id,
+        unchanged_fields=unchanged_fields,
     )
     generation = await ai_db.bump_generation(guild_id)
     ai_natural_language_policy.invalidate(guild_id)
@@ -187,27 +252,45 @@ async def set_category_policy(
     guild_id: int,
     category_id: int,
     *,
-    mode: str,
-    min_level: int | None,
-    cooldown_seconds: int | None,
-    instruction_profile_id: int | None,
+    mode: str | _Unchanged = UNCHANGED,
+    min_level: int | None | _Unchanged = UNCHANGED,
+    cooldown_seconds: int | None | _Unchanged = UNCHANGED,
+    instruction_profile_id: int | None | _Unchanged = UNCHANGED,
     actor: Any,
 ) -> AIPolicyMutationResult:
     actor_id = _check_admin(actor)
+    if mode is UNCHANGED:
+        raise InvalidAIPolicyValueError(
+            "category mode is required on upsert (UNCHANGED not supported "
+            "for the mode column because the row must always carry a mode)",
+        )
     if mode not in _VALID_CHANNEL_MODES:
         raise InvalidAIPolicyValueError(
             f"category mode must be one of {sorted(_VALID_CHANNEL_MODES)}, "
             f"got {mode!r}",
         )
+    min_level_val, min_level_unchanged = _resolve_optional(min_level)
+    cooldown_val, cooldown_unchanged = _resolve_optional(cooldown_seconds)
+    profile_val, profile_unchanged = _resolve_optional(instruction_profile_id)
+
+    unchanged_fields: set[str] = set()
+    if min_level_unchanged:
+        unchanged_fields.add("min_level")
+    if cooldown_unchanged:
+        unchanged_fields.add("cooldown_seconds")
+    if profile_unchanged:
+        unchanged_fields.add("instruction_profile_id")
+
     mutation_id = uuid.uuid4().hex
     await ai_db.upsert_category_policy(
         guild_id,
         category_id,
         mode=mode,
-        min_level=min_level,
-        cooldown_seconds=cooldown_seconds,
-        instruction_profile_id=instruction_profile_id,
+        min_level=min_level_val,
+        cooldown_seconds=cooldown_val,
+        instruction_profile_id=profile_val,
         updated_by=actor_id,
+        unchanged_fields=unchanged_fields,
     )
     generation = await ai_db.bump_generation(guild_id)
     ai_natural_language_policy.invalidate(guild_id)
@@ -226,27 +309,45 @@ async def set_role_policy(
     guild_id: int,
     role_id: int,
     *,
-    decision: str,
-    min_level_override: int | None,
-    bypass_cooldown: bool,
+    decision: str | _Unchanged = UNCHANGED,
+    min_level_override: int | None | _Unchanged = UNCHANGED,
+    bypass_cooldown: bool | _Unchanged = UNCHANGED,
     actor: Any,
 ) -> AIPolicyMutationResult:
     actor_id = _check_admin(actor)
+    if decision is UNCHANGED:
+        raise InvalidAIPolicyValueError(
+            "role decision is required on upsert (UNCHANGED not supported "
+            "for the decision column because the row must always carry one)",
+        )
     if decision not in _VALID_ROLE_DECISIONS:
         raise InvalidAIPolicyValueError(
             f"role decision must be one of {sorted(_VALID_ROLE_DECISIONS)}, "
             f"got {decision!r}",
         )
-    if min_level_override is not None and min_level_override < 0:
+    min_level_val, min_level_unchanged = _resolve_optional(min_level_override)
+    bypass_val, bypass_unchanged = _resolve_optional(bypass_cooldown)
+    if min_level_val is not None and min_level_val < 0:
         raise InvalidAIPolicyValueError("min_level_override must be >= 0")
+
+    unchanged_fields: set[str] = set()
+    if min_level_unchanged:
+        unchanged_fields.add("min_level_override")
+    if bypass_unchanged:
+        unchanged_fields.add("bypass_cooldown")
+
     mutation_id = uuid.uuid4().hex
     await ai_db.upsert_role_policy(
         guild_id,
         role_id,
         decision=decision,
-        min_level_override=min_level_override,
-        bypass_cooldown=bypass_cooldown,
+        min_level_override=min_level_val,
+        # NB: on INSERT path with sentinel, the column gets FALSE
+        # (matching its default) rather than NULL — bypass_cooldown is
+        # NOT NULL.
+        bypass_cooldown=bool(bypass_val) if not bypass_unchanged else False,
         updated_by=actor_id,
+        unchanged_fields=unchanged_fields,
     )
     generation = await ai_db.bump_generation(guild_id)
     ai_natural_language_policy.invalidate(guild_id)

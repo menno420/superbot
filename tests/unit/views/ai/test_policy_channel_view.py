@@ -106,9 +106,12 @@ async def test_submit_writes_through_set_channel_policy(monkeypatch):
     assert captured["mode"] == "always_reply"
     assert captured["min_level"] == 3
     assert captured["cooldown_seconds"] == 60
-    # PR4A scope: instruction_profile_id always None — profile UI is
-    # a separate surface.
-    assert captured["instruction_profile_id"] is None
+    # PR-C-pre: the modal now passes the UNCHANGED sentinel for
+    # instruction_profile_id so partial edits do not silently clear
+    # an existing profile binding.
+    from services.ai_policy_mutation import UNCHANGED
+
+    assert captured["instruction_profile_id"] is UNCHANGED
     interaction.response.send_message.assert_awaited_once()
     args, kwargs = interaction.response.send_message.call_args
     assert "✅" in args[0]

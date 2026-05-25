@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from typing import Any
 
 from services.btd6_data_service import (
     HeroEntry,
@@ -34,6 +35,7 @@ from services.btd6_data_service import (
     get_dataset,
     get_round,
 )
+from services.btd6_resolver_vocabulary import resolve_live_entities
 
 _ROUND_PATTERNS = (
     re.compile(r"\bround\s+(\d{1,3})\b", re.IGNORECASE),
@@ -54,6 +56,11 @@ class ResolvedIntent:
     rounds: tuple[RoundEntry, ...] = ()
     ambiguous_terms: tuple[str, ...] = ()
     candidate_round_numbers: tuple[int, ...] = field(default_factory=tuple)
+    # PR-E: live Ninja Kiwi entities (races, bosses, CT, odyssey,
+    # challenges, events, leaderboards). Each entry carries the
+    # parser-produced ``entity_kind`` only — the entity_key is
+    # resolved downstream against the latest fact envelope per kind.
+    live_entities: tuple[Any, ...] = ()
 
 
 def _word_iter(text: str) -> list[str]:
@@ -142,12 +149,16 @@ def resolve(text: str) -> ResolvedIntent:
                 if entry is not None:
                     rounds.append(entry)
 
+    # PR-E: live NK entity vocabulary.
+    live_entities, ambiguous = resolve_live_entities(text)
+
     matched_count = (
         len(tower_ids)
         + len(hero_ids)
         + len(map_ids)
         + len(mode_ids)
         + len(candidate_rounds)
+        + len(live_entities)
     )
     # Confidence model: linear scale up to 3 matched entities, capped at 1.0.
     confidence = min(1.0, matched_count / 3.0) if matched_count else 0.0
@@ -161,4 +172,6 @@ def resolve(text: str) -> ResolvedIntent:
         modes=tuple(m for m in dataset.modes if m.id in mode_ids),
         rounds=tuple(rounds),
         candidate_round_numbers=tuple(candidate_rounds),
+        ambiguous_terms=tuple(ambiguous),
+        live_entities=tuple(live_entities),
     )

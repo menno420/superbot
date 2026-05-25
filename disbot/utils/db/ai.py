@@ -155,21 +155,39 @@ async def upsert_channel_policy(
     cooldown_seconds: int | None,
     instruction_profile_id: int | None,
     updated_by: int | None,
+    unchanged_fields: set[str] | None = None,
 ) -> None:
+    """Upsert a channel policy row.
+
+    Fields named in ``unchanged_fields`` are omitted from the
+    ``EXCLUDED`` SET on conflict — i.e. preserved from the existing
+    row. On the INSERT path (no existing row) the parameter values
+    are inserted as-is; for sentinel fields the caller should pass
+    ``None``. This is the SQL half of the PR-C-pre ``UNCHANGED``
+    sentinel pattern.
+    """
+    unchanged = unchanged_fields or set()
+    set_clauses = [
+        ("mode", "mode = EXCLUDED.mode"),
+        ("min_level", "min_level = EXCLUDED.min_level"),
+        ("cooldown_seconds", "cooldown_seconds = EXCLUDED.cooldown_seconds"),
+        (
+            "instruction_profile_id",
+            "instruction_profile_id = EXCLUDED.instruction_profile_id",
+        ),
+    ]
+    active_sets = [clause for name, clause in set_clauses if name not in unchanged]
+    active_sets.append("updated_at = NOW()")
+    active_sets.append("updated_by = EXCLUDED.updated_by")
+    sql = (
+        "INSERT INTO ai_channel_policy ("
+        "    guild_id, channel_id, mode, min_level, cooldown_seconds,"
+        "    instruction_profile_id, updated_at, updated_by"
+        ") VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7) "
+        "ON CONFLICT (guild_id, channel_id) DO UPDATE SET " + ", ".join(active_sets)
+    )
     await pool.get().execute(
-        """
-        INSERT INTO ai_channel_policy (
-            guild_id, channel_id, mode, min_level, cooldown_seconds,
-            instruction_profile_id, updated_at, updated_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7)
-        ON CONFLICT (guild_id, channel_id) DO UPDATE SET
-            mode                   = EXCLUDED.mode,
-            min_level              = EXCLUDED.min_level,
-            cooldown_seconds       = EXCLUDED.cooldown_seconds,
-            instruction_profile_id = EXCLUDED.instruction_profile_id,
-            updated_at             = NOW(),
-            updated_by             = EXCLUDED.updated_by
-        """,
+        sql,
         guild_id,
         channel_id,
         mode,
@@ -225,21 +243,33 @@ async def upsert_category_policy(
     cooldown_seconds: int | None,
     instruction_profile_id: int | None,
     updated_by: int | None,
+    unchanged_fields: set[str] | None = None,
 ) -> None:
+    """Upsert a category policy row; see :func:`upsert_channel_policy`
+    for the ``unchanged_fields`` sentinel semantics.
+    """
+    unchanged = unchanged_fields or set()
+    set_clauses = [
+        ("mode", "mode = EXCLUDED.mode"),
+        ("min_level", "min_level = EXCLUDED.min_level"),
+        ("cooldown_seconds", "cooldown_seconds = EXCLUDED.cooldown_seconds"),
+        (
+            "instruction_profile_id",
+            "instruction_profile_id = EXCLUDED.instruction_profile_id",
+        ),
+    ]
+    active_sets = [clause for name, clause in set_clauses if name not in unchanged]
+    active_sets.append("updated_at = NOW()")
+    active_sets.append("updated_by = EXCLUDED.updated_by")
+    sql = (
+        "INSERT INTO ai_category_policy ("
+        "    guild_id, category_id, mode, min_level, cooldown_seconds,"
+        "    instruction_profile_id, updated_at, updated_by"
+        ") VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7) "
+        "ON CONFLICT (guild_id, category_id) DO UPDATE SET " + ", ".join(active_sets)
+    )
     await pool.get().execute(
-        """
-        INSERT INTO ai_category_policy (
-            guild_id, category_id, mode, min_level, cooldown_seconds,
-            instruction_profile_id, updated_at, updated_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7)
-        ON CONFLICT (guild_id, category_id) DO UPDATE SET
-            mode                   = EXCLUDED.mode,
-            min_level              = EXCLUDED.min_level,
-            cooldown_seconds       = EXCLUDED.cooldown_seconds,
-            instruction_profile_id = EXCLUDED.instruction_profile_id,
-            updated_at             = NOW(),
-            updated_by             = EXCLUDED.updated_by
-        """,
+        sql,
         guild_id,
         category_id,
         mode,
@@ -276,20 +306,32 @@ async def upsert_role_policy(
     min_level_override: int | None,
     bypass_cooldown: bool,
     updated_by: int | None,
+    unchanged_fields: set[str] | None = None,
 ) -> None:
+    """Upsert a role policy row; see :func:`upsert_channel_policy`
+    for the ``unchanged_fields`` sentinel semantics.
+    """
+    unchanged = unchanged_fields or set()
+    set_clauses = [
+        ("decision", "decision = EXCLUDED.decision"),
+        (
+            "min_level_override",
+            "min_level_override = EXCLUDED.min_level_override",
+        ),
+        ("bypass_cooldown", "bypass_cooldown = EXCLUDED.bypass_cooldown"),
+    ]
+    active_sets = [clause for name, clause in set_clauses if name not in unchanged]
+    active_sets.append("updated_at = NOW()")
+    active_sets.append("updated_by = EXCLUDED.updated_by")
+    sql = (
+        "INSERT INTO ai_role_policy ("
+        "    guild_id, role_id, decision, min_level_override, bypass_cooldown,"
+        "    created_at, updated_at, updated_by"
+        ") VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), $6) "
+        "ON CONFLICT (guild_id, role_id) DO UPDATE SET " + ", ".join(active_sets)
+    )
     await pool.get().execute(
-        """
-        INSERT INTO ai_role_policy (
-            guild_id, role_id, decision, min_level_override, bypass_cooldown,
-            created_at, updated_at, updated_by
-        ) VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), $6)
-        ON CONFLICT (guild_id, role_id) DO UPDATE SET
-            decision           = EXCLUDED.decision,
-            min_level_override = EXCLUDED.min_level_override,
-            bypass_cooldown    = EXCLUDED.bypass_cooldown,
-            updated_at         = NOW(),
-            updated_by         = EXCLUDED.updated_by
-        """,
+        sql,
         guild_id,
         role_id,
         decision,
@@ -307,7 +349,7 @@ async def upsert_role_policy(
 async def get_instruction_profile(profile_id: int) -> dict[str, Any] | None:
     row = await pool.get().fetchrow(
         """
-        SELECT id, guild_id, name, body, scope, feature_key,
+        SELECT id, guild_id, name, body, scope, feature_key, is_preset,
                created_at, created_by, updated_at
         FROM ai_instruction_profile
         WHERE id = $1
@@ -325,7 +367,7 @@ async def list_instruction_profiles(
     if scope:
         rows = await pool.get().fetch(
             """
-            SELECT id, guild_id, name, body, scope, feature_key,
+            SELECT id, guild_id, name, body, scope, feature_key, is_preset,
                    created_at, created_by, updated_at
             FROM ai_instruction_profile
             WHERE (guild_id = $1 OR (guild_id IS NULL AND $1 IS NULL))
@@ -338,7 +380,7 @@ async def list_instruction_profiles(
     else:
         rows = await pool.get().fetch(
             """
-            SELECT id, guild_id, name, body, scope, feature_key,
+            SELECT id, guild_id, name, body, scope, feature_key, is_preset,
                    created_at, created_by, updated_at
             FROM ai_instruction_profile
             WHERE guild_id IS NOT DISTINCT FROM $1
@@ -346,6 +388,22 @@ async def list_instruction_profiles(
             """,
             guild_id,
         )
+    return [dict(r) for r in rows]
+
+
+async def list_preset_profiles() -> list[dict[str, Any]]:
+    """Built-in presets, sorted alphabetically. Returns all rows with
+    ``is_preset = TRUE`` (seeded by migration 044).
+    """
+    rows = await pool.get().fetch(
+        """
+        SELECT id, guild_id, name, body, scope, feature_key, is_preset,
+               created_at, created_by, updated_at
+        FROM ai_instruction_profile
+        WHERE is_preset = TRUE
+        ORDER BY name
+        """,
+    )
     return [dict(r) for r in rows]
 
 
@@ -357,16 +415,18 @@ async def upsert_instruction_profile(
     scope: str,
     feature_key: str | None,
     created_by: int | None,
+    is_preset: bool = False,
 ) -> int:
     row = await pool.get().fetchrow(
         """
         INSERT INTO ai_instruction_profile (
-            guild_id, name, body, scope, feature_key,
+            guild_id, name, body, scope, feature_key, is_preset,
             created_at, created_by, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, NOW(), $6, NOW())
+        ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7, NOW())
         ON CONFLICT (guild_id, scope, name) DO UPDATE SET
             body        = EXCLUDED.body,
             feature_key = EXCLUDED.feature_key,
+            is_preset   = EXCLUDED.is_preset,
             updated_at  = NOW()
         RETURNING id
         """,
@@ -375,6 +435,7 @@ async def upsert_instruction_profile(
         body,
         scope,
         feature_key,
+        is_preset,
         created_by,
     )
     return int(row["id"])
@@ -450,7 +511,7 @@ async def query_decisions(
     sql = (
         "SELECT id, guild_id, channel_id, category_id, user_id, message_id,"
         " task, route, decision, reason_code, policy_snapshot_hash,"
-        " provider, model, created_at "
+        " instruction_profile_ids, provider, model, created_at "
         "FROM ai_decision_audit WHERE guild_id = $1"
     )
     args: list[Any] = [guild_id]
