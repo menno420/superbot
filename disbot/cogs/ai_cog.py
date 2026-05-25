@@ -380,6 +380,34 @@ class AICog(commands.Cog):
         """Open the AI Platform panel (alias for ``!ai``)."""
         await ctx.send(embed=build_ai_panel_embed(), view=AIPanelView())
 
+    @ai_group.command(name="forget")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def ai_forget(self, ctx: commands.Context) -> None:
+        """Flush the chat-memory cache for THIS channel.
+
+        Drops every cached turn for the current (guild, channel)
+        pair. Bot restart drops the entire cache; this command is the
+        on-demand equivalent for a single channel.
+        """
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from services import ai_conversation_service
+
+        # ``ctx.channel`` types as a union that includes DM / Group
+        # channels (which lack ``.mention``); use the explicit
+        # ``<#id>`` form so mypy on py3.10 is happy and the output
+        # matches the slash twin's format.
+        channel_id = ctx.channel.id
+        dropped = ai_conversation_service.forget_channel(
+            ctx.guild.id,
+            channel_id,
+        )
+        if dropped:
+            await ctx.send(f"✅ Cleared chat memory for <#{channel_id}>.")
+        else:
+            await ctx.send(f"No chat memory cached for <#{channel_id}>.")
+
     @ai_group.command(name="support-report")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_support_report(self, ctx: commands.Context) -> None:
@@ -454,6 +482,35 @@ class AICog(commands.Cog):
             embed=build_routing_embed(task),
             ephemeral=True,
         )
+
+    @ai_app_group.command(
+        name="forget",
+        description="Flush the chat-memory cache for this channel.",
+    )
+    @app_commands.checks.has_permissions(administrator=True)
+    async def ai_forget_slash(self, interaction: discord.Interaction) -> None:
+        if interaction.guild is None or interaction.channel is None:
+            await interaction.response.send_message(
+                "This command requires a guild + channel context.",
+                ephemeral=True,
+            )
+            return
+        from services import ai_conversation_service
+
+        dropped = ai_conversation_service.forget_channel(
+            interaction.guild.id,
+            interaction.channel.id,
+        )
+        if dropped:
+            await interaction.response.send_message(
+                f"✅ Cleared chat memory for <#{interaction.channel.id}>.",
+                ephemeral=True,
+            )
+        else:
+            await interaction.response.send_message(
+                f"No chat memory cached for <#{interaction.channel.id}>.",
+                ephemeral=True,
+            )
 
     @ai_app_group.command(
         name="support-report",

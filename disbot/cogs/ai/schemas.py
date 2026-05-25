@@ -32,6 +32,8 @@ from utils.settings_keys import (
     AI_ENABLED,
     AI_FRESH_USER_MENTION_ALLOWANCE,
     AI_GUILD_INSTRUCTION_PROFILE,
+    AI_MEMORY_CHANNEL_SCAN_ENABLED,
+    AI_MEMORY_WINDOW_MINUTES,
     AI_MINIMUM_LEVEL_DEFAULT,
     AI_NATURAL_LANGUAGE_ENABLED,
 )
@@ -60,6 +62,20 @@ def _validate_non_negative_int(value: object) -> None:
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise ValueError(
             f"expected non-negative int, got {value!r}",
+        )
+
+
+# Hard cap (and discrete choices) for the chat-memory window. Operators
+# pick from this set — no free-text — so a typo can't request a wild
+# window that explodes the prompt size.
+_ALLOWED_MEMORY_WINDOWS = (0, 15, 30, 60, 120)
+
+
+def _validate_memory_window(value: object) -> None:
+    if value not in _ALLOWED_MEMORY_WINDOWS:
+        raise ValueError(
+            "ai_memory_window_minutes must be one of "
+            f"{_ALLOWED_MEMORY_WINDOWS}, got {value!r}",
         )
 
 
@@ -199,6 +215,40 @@ AI_SETTINGS: tuple[SettingSpec, ...] = (
             "source of truth."
         ),
         validator=_validate_str,
+    ),
+    SettingSpec(
+        name="ai_memory_window_minutes",
+        value_type=int,
+        default=0,
+        settings_key=AI_MEMORY_WINDOW_MINUTES,
+        capability_required=_CAPABILITY,
+        hint=(
+            "How many minutes of recent channel messages the bot "
+            "should keep in its in-process memory and include as "
+            "context on each AI reply. ``0`` keeps only the last 3 "
+            "messages per channel (the always-on minimum so basic "
+            "conversational handles still work). Hard cap 120 "
+            "minutes; the cache is in-process only and dropped on "
+            "restart."
+        ),
+        validator=_validate_memory_window,
+        input_hint="numeric_presets",
+        presets=_ALLOWED_MEMORY_WINDOWS,
+    ),
+    SettingSpec(
+        name="ai_memory_channel_scan_enabled",
+        value_type=bool,
+        default=False,
+        settings_key=AI_MEMORY_CHANNEL_SCAN_ENABLED,
+        capability_required=_CAPABILITY,
+        hint=(
+            "When ON, the bot may scan recent channel history via "
+            "Discord's API to backfill its memory cache when the in-"
+            "process buffer holds fewer messages than the configured "
+            "window requires. OFF means memory is limited to messages "
+            "the bot observed since process start."
+        ),
+        validator=_validate_bool,
     ),
 )
 
