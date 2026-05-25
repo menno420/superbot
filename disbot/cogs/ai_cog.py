@@ -394,18 +394,19 @@ class AICog(commands.Cog):
             return
         from services import ai_conversation_service
 
+        # ``ctx.channel`` types as a union that includes DM / Group
+        # channels (which lack ``.mention``); use the explicit
+        # ``<#id>`` form so mypy on py3.10 is happy and the output
+        # matches the slash twin's format.
+        channel_id = ctx.channel.id
         dropped = ai_conversation_service.forget_channel(
             ctx.guild.id,
-            ctx.channel.id,
+            channel_id,
         )
         if dropped:
-            await ctx.send(
-                f"✅ Cleared chat memory for {ctx.channel.mention}.",
-            )
+            await ctx.send(f"✅ Cleared chat memory for <#{channel_id}>.")
         else:
-            await ctx.send(
-                f"No chat memory cached for {ctx.channel.mention}.",
-            )
+            await ctx.send(f"No chat memory cached for <#{channel_id}>.")
 
     @ai_group.command(name="support-report")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
