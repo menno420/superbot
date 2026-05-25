@@ -179,11 +179,46 @@ class AICog(commands.Cog):
 
         message_pipeline.register(get_stage())
 
+        # Claim the "ai" prefix on the interaction router so button
+        # clicks from views.ai.panel.AIPanelView don't emit
+        # "Unhandled interaction prefix 'ai'" warnings. The View's own
+        # @discord.ui.button callbacks remain the primary dispatcher;
+        # the router handler is a safety net that bails when
+        # interaction.response.is_done() is true.
+        #
+        # interaction_router has no unregister() API; registrations are
+        # process-lifetime. The guard below makes cog_load idempotent so
+        # repeated reloads do not trigger spurious overwrite WARNINGs
+        # and do not silently replace a handler set by another path.
+        from core.runtime import interaction_router
+        from views.ai.panel import AI_ROUTER_PREFIX, handle_ai_interaction
+
+        existing = interaction_router._handlers.get(AI_ROUTER_PREFIX)
+        if existing is handle_ai_interaction:
+            pass  # already registered to the correct handler; skip
+        elif existing is not None:
+            logger.warning(
+                "AICog.cog_load: replacing unexpected handler for "
+                "interaction-router prefix %r",
+                AI_ROUTER_PREFIX,
+            )
+            interaction_router.register(AI_ROUTER_PREFIX, handle_ai_interaction)
+        else:
+            interaction_router.register(AI_ROUTER_PREFIX, handle_ai_interaction)
+
     async def cog_unload(self) -> None:
         from core.runtime import message_pipeline
         from core.runtime.ai.natural_language_stage import STAGE_NAME
 
         message_pipeline.unregister(STAGE_NAME)
+
+        # interaction_router exposes no unregister() API — the module-level
+        # _handlers dict holds registrations for the lifetime of the
+        # process by design. We cannot remove the "ai" prefix here. The
+        # handler reference remains valid because it dispatches to
+        # module-level build_* functions that stay importable. On reload,
+        # cog_load's idempotency guard detects that the handler is already
+        # handle_ai_interaction and skips re-registration.
 
     # ------------------------------------------------------------------
     # Prefix commands — `!ai`, `!ai status`, `!ai diagnostics`, ...
