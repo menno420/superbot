@@ -76,8 +76,7 @@ class CategoryPolicyModal(discord.ui.Modal):
         mode = (self.mode_input.value or "").strip()
         if mode not in _VALID_MODES:
             await interaction.response.send_message(
-                "❌ mode must be one of: "
-                + ", ".join(f"`{m}`" for m in _VALID_MODES),
+                "❌ mode must be one of: " + ", ".join(f"`{m}`" for m in _VALID_MODES),
                 ephemeral=True,
             )
             return
