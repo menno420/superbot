@@ -11,7 +11,9 @@ Flow per message:
     2. router:    ai_task_router.classify()
     3. feature:   for BTD6 → btd6_context_service.build()
     4. stack:     ai_instruction_service.assemble()
-    5. gateway:   services.ai_gateway.run()  (M2 keeps this best-effort)
+    5. gateway:   services.ai_gateway.execute()  (never raises; returns
+                  a degraded :class:`AIResponse` when the provider path
+                  fails — audit row records degraded vs skipped).
     6. audit:     ai_decision_audit_service.record()
 
 Every code path through this stage produces exactly one
@@ -24,11 +26,15 @@ import logging
 import time
 import uuid
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import discord
 
 from core.runtime.ai.contracts import AITask, PolicyDenialReason
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
+
+if TYPE_CHECKING:
+    from core.runtime.ai.contracts import AIResponse
 from services import (
     ai_context_service,
     ai_conversation_service,
@@ -159,7 +165,7 @@ class AINaturalLanguageStage:
                 correlation_id=correlation_id,
             )
 
-            reply_text = await _invoke_gateway(stack, built, ctx)
+            response = await _invoke_gateway(stack, built, ctx)
         except Exception:
             logger.exception(
                 "ai_natural_language_stage: feature pipeline raised "
@@ -185,7 +191,17 @@ class AINaturalLanguageStage:
             )
             return StageResult()
 
+        reply_text = (response.text or "").strip()
         if not reply_text:
+            # Differentiate "provider degraded" (gateway/provider failure)
+            # from "model returned empty text" (genuine skip) so operators
+            # can tell them apart in the audit table.
+            if response.degraded:
+                audit_decision = "degraded"
+                audit_reason = PolicyDenialReason.PROVIDER_UNAVAILABLE
+            else:
+                audit_decision = "skipped"
+                audit_reason = PolicyDenialReason.NO_ROUTE_MATCHED
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
                 channel_id=channel_id,
@@ -194,10 +210,12 @@ class AINaturalLanguageStage:
                 message_id=message.id,
                 task=routed.task.value,
                 route=routed.route,
-                decision="skipped",
-                reason_code=PolicyDenialReason.NO_ROUTE_MATCHED,
+                decision=audit_decision,
+                reason_code=audit_reason,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
                 instruction_profile_ids=list(stack.instruction_profile_ids) or None,
+                provider=response.provider or None,
+                model=response.model or None,
             )
             return StageResult()
 
@@ -223,6 +241,8 @@ class AINaturalLanguageStage:
                 reason_code=PolicyDenialReason.PROVIDER_UNAVAILABLE,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
                 instruction_profile_ids=list(stack.instruction_profile_ids) or None,
+                provider=response.provider or None,
+                model=response.model or None,
             )
             return StageResult()
 
@@ -254,6 +274,8 @@ class AINaturalLanguageStage:
             reason_code=PolicyDenialReason.NONE,
             policy_snapshot_hash=decision.policy_snapshot_hash,
             instruction_profile_ids=list(stack.instruction_profile_ids) or None,
+            provider=response.provider or None,
+            model=response.model or None,
         )
 
         ctx.metadata["handled_by"] = STAGE_NAME
@@ -279,15 +301,18 @@ async def _invoke_gateway(
     stack: ai_instruction_service.InstructionStack,
     built: ai_context_service.BuiltContext,
     _ctx: MessagePipelineContext,
-) -> str:
-    """Run the AI gateway and return the text reply (or empty string).
+) -> "AIResponse":
+    """Run the AI gateway and return the full :class:`AIResponse`.
 
-    M2 keeps this best-effort: the deterministic provider returns a
-    short canned response so the audit pipeline can be tested without
-    a network call. Real provider work continues to flow through
-    :mod:`services.ai_gateway`.
+    The gateway never raises (it converts every error into a degraded
+    :class:`AIResponse`), so this helper has no local exception
+    handling — any exception that escapes is a gateway contract
+    violation and propagates to the outer handler in
+    :meth:`AINaturalLanguageStage.process` which audits it as
+    ``errored / PROVIDER_UNAVAILABLE``.
     """
     from core.runtime.ai.contracts import AIRequest, AIResponseMode
+    from services import ai_gateway
 
     request = AIRequest(
         context=built.request_context,
@@ -295,18 +320,7 @@ async def _invoke_gateway(
         payload={"text": stack.render_payload_text()},
         mode=AIResponseMode.TEXT,
     )
-    try:
-        from services import ai_gateway
-
-        response = await ai_gateway.run(request)
-        return (response.text or "").strip()
-    except Exception as exc:  # noqa: BLE001 — gateway is best-effort in M2
-        logger.warning(
-            "ai_natural_language_stage: gateway raised (%s); emitting "
-            "empty reply so audit row records the skip",
-            exc,
-        )
-        return ""
+    return await ai_gateway.execute(request)
 
 
 # Convenience export used by AICog.cog_load when wiring the stage in.
