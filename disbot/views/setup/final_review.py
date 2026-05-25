@@ -250,7 +250,7 @@ class FinalReviewView(BaseView):
             return
         from core.runtime.interaction_helpers import safe_defer
         from services.setup_operations import (
-            SetupApplyInProgress,
+            SetupApplyInProgressError,
             acquire_setup_apply_lock,
         )
 
@@ -262,7 +262,7 @@ class FinalReviewView(BaseView):
             async with acquire_setup_apply_lock(guild.id):
                 await safe_defer(interaction, ephemeral=True)
                 await self._run_apply(interaction, guild=guild)
-        except SetupApplyInProgress:
+        except SetupApplyInProgressError:
             await interaction.response.send_message(
                 "Setup apply is already in progress — wait for the result "
                 "message before retrying.",
@@ -566,7 +566,7 @@ class PartialApplyRecoveryView(BaseView):
             return
         from core.runtime.interaction_helpers import safe_defer
         from services.setup_operations import (
-            SetupApplyInProgress,
+            SetupApplyInProgressError,
             acquire_setup_apply_lock,
         )
 
@@ -584,7 +584,7 @@ class PartialApplyRecoveryView(BaseView):
                 )
                 await retry._run_apply(interaction, guild=guild)
                 self.summary = retry.summary
-        except SetupApplyInProgress:
+        except SetupApplyInProgressError:
             await interaction.response.send_message(
                 "Setup apply is already in progress — wait for the result "
                 "message before retrying.",

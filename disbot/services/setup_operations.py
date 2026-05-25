@@ -31,11 +31,11 @@ Future preset and readiness-repair migration should produce
 
 from __future__ import annotations
 
-import asyncio
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, AsyncIterator, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from services.setup_change_plan import ChangePlanEntry, ChangeValue
@@ -56,7 +56,7 @@ logger = logging.getLogger("bot.services.setup_operations")
 # primitive would be needed if SuperBot grew to multiple shards.
 
 
-class SetupApplyInProgress(RuntimeError):
+class SetupApplyInProgressError(RuntimeError):
     """Raised by :func:`acquire_setup_apply_lock` when an apply batch
     for the same guild is already running.
 
@@ -82,13 +82,13 @@ async def acquire_setup_apply_lock(guild_id: int) -> AsyncIterator[None]:
     The check + add happen without an intervening ``await``, so under
     asyncio's cooperative scheduling the operation is atomic — a
     concurrent ``async with`` either sees the guild in the set and
-    raises :class:`SetupApplyInProgress`, or wins the slot and runs.
+    raises :class:`SetupApplyInProgressError`, or wins the slot and runs.
 
     UI button disabling stays as a UX courtesy; this lock is the
     actual mechanism.
     """
     if guild_id in _apply_inflight:
-        raise SetupApplyInProgress(guild_id)
+        raise SetupApplyInProgressError(guild_id)
     _apply_inflight.add(guild_id)
     try:
         yield
@@ -104,6 +104,7 @@ def _reset_apply_inflight_for_tests() -> None:
     Not part of the public API; do not call from production code.
     """
     _apply_inflight.clear()
+
 
 # ---------------------------------------------------------------------------
 # Public types
@@ -1373,7 +1374,7 @@ def _label(op: SetupOperation) -> str:
 __all__ = [
     "OperationKind",
     "OperationStatus",
-    "SetupApplyInProgress",
+    "SetupApplyInProgressError",
     "SetupOperation",
     "SetupOperationBatchResult",
     "SetupOperationResult",

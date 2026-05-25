@@ -470,9 +470,9 @@ async def test_acquire_setup_apply_lock_allows_sequential_calls():
 
 @pytest.mark.asyncio
 async def test_acquire_setup_apply_lock_blocks_concurrent_calls_for_same_guild():
-    """Second concurrent call for the same guild raises SetupApplyInProgress."""
+    """Second concurrent call for the same guild raises SetupApplyInProgressError."""
     from services.setup_operations import (
-        SetupApplyInProgress,
+        SetupApplyInProgressError,
         _reset_apply_inflight_for_tests,
         acquire_setup_apply_lock,
     )
@@ -480,7 +480,7 @@ async def test_acquire_setup_apply_lock_blocks_concurrent_calls_for_same_guild()
     _reset_apply_inflight_for_tests()
     try:
         async with acquire_setup_apply_lock(1):
-            with pytest.raises(SetupApplyInProgress) as excinfo:
+            with pytest.raises(SetupApplyInProgressError) as excinfo:
                 async with acquire_setup_apply_lock(1):
                     pass
             assert excinfo.value.guild_id == 1
