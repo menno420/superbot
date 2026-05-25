@@ -106,10 +106,11 @@ class PolicyChooserView(discord.ui.View):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # PR4A commit 2: replaces this placeholder with a real
-        # CategoryPolicySelectView.
+        from views.ai.policy.category_view import CategoryPolicySelectView
+
         await interaction.response.send_message(
-            "Category policy UI lands in PR4A commit 2.",
+            "Pick a category to set its AI policy.",
+            view=CategoryPolicySelectView(),
             ephemeral=True,
         )
 
