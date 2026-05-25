@@ -25,8 +25,8 @@ from discord import app_commands
 from discord.ext import commands
 
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
-from cogs.btd6.stage import BTD6AssistantMessageStage
 from core.runtime import message_pipeline
+from core.runtime.ai.contracts import AITask
 from services import btd6_ai_service, btd6_knowledge_service
 from services.btd6_resolver_service import resolve
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
@@ -186,44 +186,6 @@ def build_modes_embed() -> discord.Embed:
     return embed
 
 
-def build_why_no_response_embed(
-    stage: BTD6AssistantMessageStage | None,
-    channel_id: int,
-) -> discord.Embed:
-    """Render the latest passive-stage skip reasons for a channel.
-
-    The buffer carries only skip-reason codes + confidence scores —
-    never message content — so this command is safe to run in
-    public channels.
-    """
-    embed = discord.Embed(
-        title="🐵 BTD6 — Why no response?",
-        color=discord.Color.light_grey(),
-    )
-    if stage is None:
-        embed.description = (
-            "Passive stage is not loaded. Reload the BTD6 cog and try again."
-        )
-        return embed
-    skips = stage.latest_skips(channel_id)
-    if not skips:
-        embed.description = (
-            "No recent skip records for this channel. Either the passive "
-            "stage has not seen a message here yet, or it replied to the "
-            "last eligible one."
-        )
-        return embed
-    lines: list[str] = []
-    for record in reversed(skips):  # newest first
-        lines.append(
-            f"`{record.reason}` • confidence={record.confidence:.2f} "
-            f"• <t:{int(record.timestamp)}:R>",
-        )
-    embed.description = "\n".join(lines)
-    embed.set_footer(text="No message content is stored — only skip reasons.")
-    return embed
-
-
 def build_test_intent_embed(text: str) -> discord.Embed:
     """Resolver introspection — useful for operators tuning the cog."""
     intent = resolve(text)
@@ -271,29 +233,25 @@ class BTD6Cog(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self._passive_stage: BTD6AssistantMessageStage | None = None
 
     async def cog_load(self) -> None:
         """Register the BTD6 SubsystemSchema; do NOT register a passive stage.
 
         M2 introduced the central natural-language stage (order=70).
-        M5 retires the short-lived ``AI_BTD6_VIA_ROUTER`` env var: the
+        M5 retired the short-lived ``AI_BTD6_VIA_ROUTER`` env var: the
         BTD6 passive stage stays unregistered unconditionally so the
         central stage is the only passive replier. ``!btd6
         why-no-response`` reads the AI decision audit table directly,
-        not the in-memory skip buffer of the (now unregistered)
-        legacy stage.
+        filtered to ``task='btd6.answer'``.
         """
         from cogs.btd6.schemas import register_schemas
 
         register_schemas()
-        self._passive_stage = None
         message_pipeline.unregister(BTD6_STAGE_NAME)
 
     async def cog_unload(self) -> None:
-        """Remove the passive stage so reload/test cycles stay clean."""
+        """Defensive unregister so reload/test cycles stay clean."""
         message_pipeline.unregister(BTD6_STAGE_NAME)
-        self._passive_stage = None
 
     # ------------------------------------------------------------------
     # Prefix commands
@@ -368,14 +326,41 @@ class BTD6Cog(commands.Cog):
         await ctx.send(embed=build_test_intent_embed(text))
 
     @btd6_group.command(name="why-no-response")  # type: ignore[arg-type]
-    async def btd6_why_no_response(self, ctx: commands.Context) -> None:
-        """Show the latest passive-stage skip reasons for this channel."""
-        await ctx.send(
-            embed=build_why_no_response_embed(
-                self._passive_stage,
-                ctx.channel.id if ctx.channel else 0,
-            ),
+    async def btd6_why_no_response(
+        self,
+        ctx: commands.Context,
+        limit: int = 10,
+    ) -> None:
+        """Show the most recent BTD6 denials / skips for this guild.
+
+        Reads the canonical ``ai_decision_audit`` table filtered to
+        ``task='btd6.answer'`` — the legacy in-memory skip buffer of
+        the retired passive stage is no longer consulted.
+        """
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from services import ai_decision_audit_service
+
+        rows = await ai_decision_audit_service.query(
+            ctx.guild.id,
+            limit=max(1, min(50, int(limit))),
         )
+        btd6_rows = [
+            r
+            for r in rows
+            if r.get("task") == AITask.BTD6_ANSWER.value
+            and r["decision"] in ("denied", "skipped", "errored", "degraded")
+        ]
+        if not btd6_rows:
+            await ctx.send("No recent BTD6 denials or skips for this guild.")
+            return
+        lines = [
+            f"`{r['decision']:<8}` `{r['reason_code']}` · "
+            f"channel=<#{r['channel_id']}> · user=<@{r['user_id']}>"
+            for r in btd6_rows[:25]
+        ]
+        await ctx.send("\n".join(lines))
 
     @btd6_group.command(name="sources")  # type: ignore[arg-type]
     async def btd6_sources(self, ctx: commands.Context) -> None:
