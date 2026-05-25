@@ -42,9 +42,10 @@ from core.runtime.ai.providers import (
     Provider,
     ProviderUnavailableError,
 )
-from core.runtime.ai.routing import resolve
+from core.runtime.ai.routing import RoutingTarget, resolve
 from core.runtime.ai.safety import precheck
 from services import metrics
+from utils.db import ai as ai_db
 
 logger = logging.getLogger("bot.runtime.ai.gateway")
 
@@ -80,6 +81,48 @@ def _degraded_response(
     )
 
 
+async def _overlay_guild_policy(
+    target: RoutingTarget,
+    guild_id: int,
+) -> RoutingTarget:
+    """Apply per-guild provider/model overrides from ``ai_guild_policy``.
+
+    Resolution precedence:
+
+    1. Typed ``ai_guild_policy.default_provider`` / ``default_model``
+       (when non-empty).
+    2. Env / task routing target from :func:`resolve` (the input).
+    3. Hardcoded :data:`routing._DEFAULT_MODELS` (already baked into
+       ``target.model`` by the resolver).
+
+    Missing typed row or DB read failure: keep ``target`` unchanged.
+    Failure must never raise — the gateway contract requires that
+    ``execute`` cannot raise to callers.
+    """
+    try:
+        policy = await ai_db.get_guild_policy(guild_id)
+    except Exception:  # noqa: BLE001 — DB failure is non-fatal here
+        logger.warning(
+            "ai gateway: ai_guild_policy read failed for guild_id=%s; "
+            "keeping env / default routing",
+            guild_id,
+            exc_info=True,
+        )
+        return target
+    if not policy:
+        return target
+
+    provider = (policy.get("default_provider") or "").strip()
+    model = (policy.get("default_model") or "").strip()
+    if not provider and not model:
+        return target
+    return RoutingTarget(
+        provider=(provider or target.provider).lower(),
+        model=model or target.model,
+        timeout_seconds=target.timeout_seconds,
+    )
+
+
 class AIGateway:
     """Provider-neutral entry point for AI requests."""
 
@@ -110,6 +153,11 @@ class AIGateway:
     ) -> AIResponse:
         """Run a request through the pipeline; never raises."""
         target = resolve(request.context.task)
+        if (
+            provider_override is None
+            and request.context.guild_id is not None
+        ):
+            target = await _overlay_guild_policy(target, request.context.guild_id)
         provider_name = provider_override.name if provider_override else target.provider
 
         if provider_override is None and not task_enabled(request.context.task):
