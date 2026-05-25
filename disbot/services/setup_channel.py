@@ -53,7 +53,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from core.runtime.guild_resources import ensure_channel
+from core.runtime.guild_resources import ensure_channel, resolve_member
 
 if TYPE_CHECKING:
     from services.setup_session import SetupSession
@@ -144,7 +144,10 @@ def _private_overwrites(
         overwrites[guild.owner] = _allow_overwrite()
     if session is not None:
         for delegated_id in session.delegated_admins:
-            member = guild.get_member(delegated_id)
+            # Cache-only lookup via the project's canonical resolver
+            # (S5 invariant — no raw guild.get_member outside
+            # core.runtime.guild_resources).
+            member = resolve_member(guild, delegated_id)
             if member is None:
                 # Member left the guild or is uncached — skip; the
                 # session row still holds the id so a future
