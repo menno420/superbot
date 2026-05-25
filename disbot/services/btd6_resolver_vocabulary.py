@@ -195,7 +195,8 @@ def resolve_live_entities(text: str) -> tuple[list[LiveEntityMatch], list[str]]:
                         seen.add(key)
                         matches.append(
                             LiveEntityMatch(
-                                entity_kind=entity_kind, matched_term=term,
+                                entity_kind=entity_kind,
+                                matched_term=term,
                             ),
                         )
             elif term in tokens:

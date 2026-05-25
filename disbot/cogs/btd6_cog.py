@@ -29,12 +29,10 @@ from discord.ext import commands
 
 from cogs.btd6._embeds import (
     build_diagnostics_embed,
-    build_modes_embed,
     build_status_embed,
     build_test_intent_embed,
-    build_towers_embed,
-    response_to_embed as _response_to_embed,
 )
+from cogs.btd6._embeds import response_to_embed as _response_to_embed
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline
 from services import btd6_ai_service

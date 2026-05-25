@@ -63,7 +63,9 @@ class _BehaviorChannelSelect(discord.ui.ChannelSelect):
             target_label=getattr(picked, "mention", f"<#{picked.id}>"),
         )
         await interaction.response.send_message(
-            embed=await build_preset_picker_embed(scope_label=f"channel {picked.mention}"),
+            embed=await build_preset_picker_embed(
+                scope_label=f"channel {picked.mention}",
+            ),
             view=view,
             ephemeral=True,
         )

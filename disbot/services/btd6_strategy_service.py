@@ -11,7 +11,6 @@ from typing import Any
 
 from utils.db import btd6_strategies as db
 
-
 # Hard caps for every list query so callers cannot accidentally
 # fetch the whole table.
 _MAX_LIMIT = 25

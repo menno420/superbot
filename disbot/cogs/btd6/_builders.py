@@ -21,7 +21,6 @@ import discord
 
 from core.runtime.ai.contracts import AITask
 
-
 # ---------------------------------------------------------------------------
 # why-no-response
 # ---------------------------------------------------------------------------
@@ -89,10 +88,10 @@ async def build_why_no_response_payload(
 
 
 async def build_hero_embed(name: str) -> discord.Embed:
-    from cogs.btd6_cog import _response_to_embed
+    from cogs.btd6._embeds import response_to_embed as _response_to_embed
     from services import btd6_ai_service
     from services.btd6_resolver_service import resolve
-    from services.btd6_response_builder import for_hero, for_unresolved
+    from services.btd6_response_builder import for_hero
 
     intent = resolve(name)
     if not intent.heroes:
@@ -176,7 +175,7 @@ async def build_pending_review_payload(
 
 
 # ---------------------------------------------------------------------------
-# source-health (PR-D)
+# source-health builder
 # ---------------------------------------------------------------------------
 
 
@@ -233,7 +232,7 @@ async def build_source_health_embed(
 
 
 # ---------------------------------------------------------------------------
-# latest-data (PR-D)
+# latest-data builder
 # ---------------------------------------------------------------------------
 
 
@@ -283,7 +282,7 @@ async def build_latest_data_embed(*, limit_per_kind: int = 1) -> discord.Embed:
 
 
 # ---------------------------------------------------------------------------
-# grounding (PR-D)
+# grounding builder
 # ---------------------------------------------------------------------------
 
 

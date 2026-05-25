@@ -19,7 +19,6 @@ import pytest
 
 from views.ai.behavior import BehaviorChooserView, build_behavior_embed
 
-
 _BEHAVIOR_DIR = (
     Path(__file__).resolve().parents[4] / "disbot" / "views" / "ai" / "behavior"
 )

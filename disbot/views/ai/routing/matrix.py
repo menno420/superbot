@@ -71,11 +71,7 @@ async def build_routing_matrix_embed(
     decision = await nlp.resolve(ctx, dry_run=True)
     presets = await _preset_lookup()
 
-    color = (
-        discord.Color.green()
-        if decision.allowed
-        else discord.Color.red()
-    )
+    color = discord.Color.green() if decision.allowed else discord.Color.red()
     embed = discord.Embed(
         title="🧭 AI Routing matrix (dry-run)",
         description=(
@@ -86,7 +82,11 @@ async def build_routing_matrix_embed(
     )
     embed.add_field(
         name="Outcome",
-        value="✅ allowed" if decision.allowed else f"❌ denied · `{decision.reason_code.value}`",
+        value=(
+            "✅ allowed"
+            if decision.allowed
+            else f"❌ denied · `{decision.reason_code.value}`"
+        ),
         inline=False,
     )
     embed.add_field(

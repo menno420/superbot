@@ -77,7 +77,9 @@ async def build_browse_embed(*, limit: int = _DEFAULT_PAGE_SIZE) -> discord.Embe
             value=_summarize_row(row),
             inline=False,
         )
-    embed.set_footer(text="!btd6 strategy <id> for detail · staff-only commands gate writes.")
+    embed.set_footer(
+        text="!btd6 strategy <id> for detail · staff-only commands gate writes.",
+    )
     return embed
 
 
@@ -213,10 +215,7 @@ async def build_audit_embed(strategy_id: int) -> discord.Embed:
         when_str = when.isoformat(timespec="minutes") if when else "—"
         embed.add_field(
             name=f"`{r.get('action')}` · {r.get('actor_kind')}",
-            value=(
-                f"actor_id=`{r.get('actor_id') or '—'}` · "
-                f"at=`{when_str}`"
-            ),
+            value=(f"actor_id=`{r.get('actor_id') or '—'}` · at=`{when_str}`"),
             inline=False,
         )
     return embed

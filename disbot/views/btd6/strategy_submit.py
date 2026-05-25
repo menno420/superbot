@@ -112,5 +112,6 @@ __all__ = ["StrategySubmitModal"]
 # inspection of ``submitter.id`` — that already happens inside the
 # mutation chokepoint, so no extra wiring is needed here.
 
+
 def _has_user_id(actor: Any) -> bool:  # pragma: no cover - tiny shim
     return getattr(actor, "id", None) is not None

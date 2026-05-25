@@ -33,11 +33,11 @@ class BTD6AskModal(discord.ui.Modal, title="Ask BTD6 Assistant"):
     )
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        from cogs.btd6_cog import _response_to_embed
+        from cogs.btd6._embeds import response_to_embed
 
         response = await btd6_ai_service.answer_question(str(self.question.value))
         await interaction.response.send_message(
-            embed=_response_to_embed(response),
+            embed=response_to_embed(response),
             ephemeral=True,
         )
 
@@ -130,7 +130,7 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.btd6_cog import build_towers_embed
+        from cogs.btd6._embeds import build_towers_embed
 
         await interaction.response.edit_message(
             embed=build_towers_embed(),
@@ -148,7 +148,7 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.btd6_cog import build_modes_embed
+        from cogs.btd6._embeds import build_modes_embed
 
         await interaction.response.edit_message(
             embed=build_modes_embed(),
@@ -166,7 +166,7 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.btd6_cog import build_status_embed
+        from cogs.btd6._embeds import build_status_embed
 
         await interaction.response.edit_message(
             embed=build_status_embed(),

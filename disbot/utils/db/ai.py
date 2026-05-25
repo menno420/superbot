@@ -184,8 +184,7 @@ async def upsert_channel_policy(
         "    guild_id, channel_id, mode, min_level, cooldown_seconds,"
         "    instruction_profile_id, updated_at, updated_by"
         ") VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7) "
-        "ON CONFLICT (guild_id, channel_id) DO UPDATE SET "
-        + ", ".join(active_sets)
+        "ON CONFLICT (guild_id, channel_id) DO UPDATE SET " + ", ".join(active_sets)
     )
     await pool.get().execute(
         sql,
@@ -247,7 +246,8 @@ async def upsert_category_policy(
     unchanged_fields: set[str] | None = None,
 ) -> None:
     """Upsert a category policy row; see :func:`upsert_channel_policy`
-    for the ``unchanged_fields`` sentinel semantics."""
+    for the ``unchanged_fields`` sentinel semantics.
+    """
     unchanged = unchanged_fields or set()
     set_clauses = [
         ("mode", "mode = EXCLUDED.mode"),
@@ -266,8 +266,7 @@ async def upsert_category_policy(
         "    guild_id, category_id, mode, min_level, cooldown_seconds,"
         "    instruction_profile_id, updated_at, updated_by"
         ") VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7) "
-        "ON CONFLICT (guild_id, category_id) DO UPDATE SET "
-        + ", ".join(active_sets)
+        "ON CONFLICT (guild_id, category_id) DO UPDATE SET " + ", ".join(active_sets)
     )
     await pool.get().execute(
         sql,
@@ -310,7 +309,8 @@ async def upsert_role_policy(
     unchanged_fields: set[str] | None = None,
 ) -> None:
     """Upsert a role policy row; see :func:`upsert_channel_policy`
-    for the ``unchanged_fields`` sentinel semantics."""
+    for the ``unchanged_fields`` sentinel semantics.
+    """
     unchanged = unchanged_fields or set()
     set_clauses = [
         ("decision", "decision = EXCLUDED.decision"),
@@ -328,8 +328,7 @@ async def upsert_role_policy(
         "    guild_id, role_id, decision, min_level_override, bypass_cooldown,"
         "    created_at, updated_at, updated_by"
         ") VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), $6) "
-        "ON CONFLICT (guild_id, role_id) DO UPDATE SET "
-        + ", ".join(active_sets)
+        "ON CONFLICT (guild_id, role_id) DO UPDATE SET " + ", ".join(active_sets)
     )
     await pool.get().execute(
         sql,

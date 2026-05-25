@@ -472,9 +472,7 @@ class AICog(commands.Cog):
             return
         from views.ai.support_report import build_support_report_embed
 
-        bot_user_id = (
-            getattr(self.bot.user, "id", None) if self.bot.user else None
-        )
+        bot_user_id = getattr(self.bot.user, "id", None) if self.bot.user else None
         embed = await build_support_report_embed(
             guild_id=interaction.guild.id,
             bot_user_id=bot_user_id,

@@ -21,9 +21,9 @@ from pathlib import Path
 import discord
 import pytest
 
-from cogs.btd6_cog import BTD6Cog, build_status_embed
+from cogs.btd6._embeds import build_status_embed
+from cogs.btd6_cog import BTD6Cog
 from views.btd6.panel import build_btd6_panel_embed
-
 
 _DISBOT_ROOT = Path(__file__).resolve().parents[3] / "disbot"
 
