@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -71,6 +72,16 @@ _DEFAULT_REQUEST_TIMEOUT = 15.0
 _DEFAULT_MIN_INTERVAL = 1.0  # seconds between back-to-back fetches per source
 _DEFAULT_BREAKER_THRESHOLD = 5
 
+# PR2 is page-1-only by design. Bounded explicit pagination is deferred
+# to a follow-up — this guard fires before any registry lookup or HTTP
+# call so leaderboard / list endpoints cannot crawl pages.
+_ONLY_ALLOWED_PAGE = 1
+
+# Matches an unresolved ``:varName`` placeholder remaining in a path
+# after substitution. Anchored on a leading slash so it does not match
+# the ``://`` in ``https://``. Word characters keep camelCase intact.
+_UNRESOLVED_PATH_PARAM = re.compile(r"/:([A-Za-z][A-Za-z0-9_]*)")
+
 _LAST_REQUEST_AT: dict[str, float] = defaultdict(float)
 _FAILURES: dict[str, int] = defaultdict(int)
 _BREAKER_OPEN_UNTIL: dict[str, float] = defaultdict(float)
@@ -85,15 +96,25 @@ def _reset_for_tests() -> None:
 async def fetch(
     source_key: str,
     *,
-    path_params: dict[str, Any] | None = None,
+    path_params: dict[str, str] | None = None,
+    page: int = 1,
     timeout: float = _DEFAULT_REQUEST_TIMEOUT,
 ) -> FetchResult:
     """Fetch ``source_key`` from its registered URL.
 
+    ``page`` must be ``1``; PR2 supports page-1-only fetches. Any
+    other value raises :class:`BTD6FetchRefusedError` with reason
+    ``paging_cap`` before any registry lookup or HTTP call. Bounded
+    explicit pagination is deferred to a follow-up.
+
     Raises :class:`BTD6FetchRefusedError` for any allowlist failure
-    (including the circuit breaker being open) and
-    :class:`BTD6FetchHTTPError` for an upstream non-2xx response.
+    (including the circuit breaker being open, paging cap, or
+    unresolved path placeholders) and :class:`BTD6FetchHTTPError` for
+    an upstream non-2xx response.
     """
+    if page != _ONLY_ALLOWED_PAGE:
+        raise BTD6FetchRefusedError(source_key, "paging_cap")
+
     usable, reason = await btd6_source_registry.is_source_usable(source_key)
     if not usable:
         raise BTD6FetchRefusedError(source_key, reason)
@@ -111,6 +132,10 @@ async def fetch(
     if row is None:
         raise BTD6FetchRefusedError(source_key, "source_not_registered")
     url = _resolve_url(row, path_params or {})
+    # After substitution any remaining ``/:varName`` placeholder is a
+    # caller bug (forgot a path_param); never let it reach the wire.
+    if _UNRESOLVED_PATH_PARAM.search(url):
+        raise BTD6FetchRefusedError(source_key, "missing_path_param")
 
     try:
         body, status = await _http_get(url, timeout=timeout)
