@@ -244,6 +244,64 @@ async def set_depth(guild_id: int, depth: str | None) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Delegated-admin lifecycle
+# ---------------------------------------------------------------------------
+#
+# DB primitives ``utils.db.setup_session.add_delegated_admin`` and
+# ``remove_delegated_admin`` already exist (PostgreSQL set semantics on
+# the ``setup_session.delegated_admins`` TEXT[] column).  These
+# service-level wrappers add the canonical audit emission and the
+# uniform call signature the setup cog's ``/setup-delegate`` /
+# ``/setup-undelegate`` slash commands consume.
+
+
+async def add_delegated_admin(
+    guild_id: int,
+    user_id: int,
+    *,
+    actor_id: int | None,
+) -> None:
+    """Append ``user_id`` to the guild's ``delegated_admins`` set.
+
+    Idempotent — repeated calls leave the set unchanged.  Emits
+    ``setup.delegated_admin.added`` so the audit pipeline sees the
+    promotion.  ``actor_id`` is the user who performed the grant
+    (typically the server owner via ``/setup-delegate``).
+    """
+    await db.add_delegated_admin(guild_id, user_id)
+    await _emit_session_audit(
+        guild_id=guild_id,
+        mutation_type="setup.delegated_admin.added",
+        new_value=str(user_id),
+        actor_id=actor_id,
+        actor_type="user",
+    )
+
+
+async def remove_delegated_admin(
+    guild_id: int,
+    user_id: int,
+    *,
+    actor_id: int | None,
+) -> None:
+    """Drop ``user_id`` from the guild's ``delegated_admins`` set.
+
+    Idempotent.  Emits ``setup.delegated_admin.removed``.  The
+    private setup channel's overwrites should be recomputed by the
+    caller (see :func:`services.setup_channel.recompute_setup_channel_overwrites`)
+    so the revoked admin loses explicit channel access too.
+    """
+    await db.remove_delegated_admin(guild_id, user_id)
+    await _emit_session_audit(
+        guild_id=guild_id,
+        mutation_type="setup.delegated_admin.removed",
+        new_value=str(user_id),
+        actor_id=actor_id,
+        actor_type="user",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Drift detection (Phase 9i / Track 8 PR 24)
 # ---------------------------------------------------------------------------
 
@@ -341,12 +399,14 @@ def detect_drift(
 __all__ = [
     "DriftReport",
     "SetupSession",
+    "add_delegated_admin",
     "detect_drift",
     "dismiss",
     "mark_complete",
     "mark_in_progress",
     "mark_section_skipped",
     "record_readiness_score",
+    "remove_delegated_admin",
     "resume_session",
     "set_depth",
     "start_session",

@@ -44,7 +44,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from services import setup_draft, setup_progress, setup_session
+from services import setup_access, setup_draft, setup_progress, setup_session
 from services.setup_operations import SetupOperation
 from services.setup_progress import SectionProgress, badge_for
 from services.setup_sections import REGISTRY, SetupSection
@@ -160,7 +160,16 @@ def build_section_card(
 
 
 class SectionCardView(BaseView):
-    """Card view that owns the four-button section panel."""
+    """Card view that owns the four-button section panel.
+
+    Mutating buttons (Apply Recommended, Skip) re-check
+    :func:`services.setup_access.can_apply_setup` against the live
+    session snapshot before doing any work — so a delegated admin
+    who lost delegation between opening the card and pressing a
+    button cannot mutate the draft.  The :class:`BaseView` author
+    gate already restricts the panel to the user who opened it, but
+    that gate does not catch revoked delegations.
+    """
 
     def __init__(
         self,
@@ -211,7 +220,41 @@ class SectionCardView(BaseView):
         self._hub_button.callback = self._return_to_hub  # type: ignore[method-assign]
         self.add_item(self._hub_button)
 
+    async def _gate_apply(self, interaction: discord.Interaction) -> bool:
+        """Reject callers who don't satisfy ``can_apply_setup`` now.
+
+        The author gate from :class:`BaseView` already filters to the
+        user who opened the card; this layer additionally re-checks
+        the access tier against a fresh ``SetupSession`` snapshot.
+        """
+        member = interaction.user
+        if not isinstance(member, discord.Member):
+            await interaction.response.send_message(
+                "Use this from inside the server.",
+                ephemeral=True,
+            )
+            return False
+        session = None
+        guild_id = interaction.guild_id
+        if guild_id is not None:
+            try:
+                session = await setup_session.resume_session(guild_id)
+            except Exception:
+                logger.exception("section_card._gate_apply: resume failed")
+                session = None
+        if not setup_access.can_apply_setup(member, session):
+            await interaction.response.send_message(
+                "Only the server owner or a delegated setup admin can stage "
+                "or skip setup operations. Ask the server owner to grant "
+                "you `/setup-delegate`.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
     async def _apply_recommended(self, interaction: discord.Interaction) -> None:
+        if not await self._gate_apply(interaction):
+            return
         if self._recommended_ops_builder is None:
             await interaction.response.send_message(
                 "This section has no recommended defaults.",
@@ -294,6 +337,8 @@ class SectionCardView(BaseView):
                 )
 
     async def _skip(self, interaction: discord.Interaction) -> None:
+        if not await self._gate_apply(interaction):
+            return
         if interaction.guild_id is None:
             await interaction.response.send_message(
                 "Skip requires a guild context.",
