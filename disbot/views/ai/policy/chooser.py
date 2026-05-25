@@ -129,6 +129,26 @@ class PolicyChooserView(discord.ui.View):
         )
 
     @discord.ui.button(
+        label="Preview",
+        style=discord.ButtonStyle.secondary,
+        row=1,
+    )
+    async def preview_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # PR4B: open the dry-run preview channel picker. The resolver
+        # runs in dry_run mode so cooldown / audit are untouched.
+        from views.ai.policy.preview_view import PreviewChannelSelectView
+
+        await interaction.response.send_message(
+            "Pick a channel to preview the effective AI policy as your user.",
+            view=PreviewChannelSelectView(),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(
         label="List overrides",
         style=discord.ButtonStyle.secondary,
         row=1,
