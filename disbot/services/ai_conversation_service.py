@@ -12,12 +12,11 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from typing import Deque
 
 # Tunable defaults. We deliberately keep this small to stay well
 # below provider context windows and to avoid retaining old data.
 _MAX_TURNS_PER_CHANNEL = 6
-_BUFFERS: dict[tuple[int, int], Deque["ConversationTurn"]] = {}
+_BUFFERS: dict[tuple[int, int], deque[ConversationTurn]] = {}
 
 
 @dataclass(frozen=True)

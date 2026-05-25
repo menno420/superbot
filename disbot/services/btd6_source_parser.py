@@ -26,8 +26,12 @@ class BTD6Parser(Protocol):
 
     source_key: str
 
-    def parse(self, payload: Any, *, game_version: str | None) -> list[dict[str, Any]]:
-        ...
+    def parse(
+        self,
+        payload: Any,
+        *,
+        game_version: str | None,
+    ) -> list[dict[str, Any]]: ...
 
 
 _REGISTRY: dict[str, BTD6Parser] = {}

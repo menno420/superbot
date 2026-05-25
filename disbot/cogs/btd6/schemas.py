@@ -13,11 +13,6 @@ from core.runtime.subsystem_schema import (
     BindingSpec,
     SubsystemSchema,
 )
-from utils.settings_keys import (
-    BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD,
-    BTD6_CACHE_DEFAULT_INTERVAL_SECONDS,
-    BTD6_CACHE_FRESHNESS_WARNING_HOURS,
-)
 
 _CAPABILITY = "btd6.settings.configure"
 

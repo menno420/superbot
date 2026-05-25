@@ -410,10 +410,7 @@ class BTD6Cog(commands.Cog):
             return
         lines = []
         for row in rows:
-            tag = (
-                "📦 published" if row["visibility"] == "published"
-                else "🛡️ guild"
-            )
+            tag = "📦 published" if row["visibility"] == "published" else "🛡️ guild"
             lines.append(
                 f"{tag} · `{row['approval_status']}` · **{row['title']}** "
                 f"— {row['summary'][:80]}",

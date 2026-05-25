@@ -59,9 +59,7 @@ def _is_staff(actor: Any) -> bool:
         return False
     if getattr(perms, "administrator", False):
         return True
-    if getattr(perms, "manage_guild", False):
-        return True
-    return False
+    return bool(getattr(perms, "manage_guild", False))
 
 
 async def submit_strategy(
@@ -70,7 +68,7 @@ async def submit_strategy(
     submitter: Any,
     title: str,
     summary: str,
-    map: str | None = None,
+    map_name: str | None = None,
     mode: str | None = None,
     difficulty: str | None = None,
     hero: str | None = None,
@@ -86,7 +84,9 @@ async def submit_strategy(
     if not title.strip() or not summary.strip():
         raise InvalidStrategyValueError("title and summary are required")
     snapshot = getattr(submitter, "display_name", None) or getattr(
-        submitter, "name", None,
+        submitter,
+        "name",
+        None,
     )
     strategy_id = await db.insert_strategy(
         origin_guild_id=origin_guild_id,
@@ -95,7 +95,10 @@ async def submit_strategy(
         approval_status="draft",
         title=title.strip(),
         summary=summary.strip(),
-        map=map, mode=mode, difficulty=difficulty, hero=hero,
+        map_name=map_name,
+        mode=mode,
+        difficulty=difficulty,
+        hero=hero,
         towers=list(towers or []),
         upgrade_paths=list(upgrade_paths or []),
         round_range=round_range,
@@ -157,7 +160,8 @@ async def ai_approve_guild(
         actor_id=None,
         action="ai_approved",
         detail={
-            "provider": provider, "model": model,
+            "provider": provider,
+            "model": model,
             **(detail or {}),
         },
     )
@@ -234,8 +238,7 @@ async def unpublish(
         strategy_id,
         approval_status="unpublished",
         visibility="guild",
-        current_guild_id=before["current_guild_id"]
-            or before["origin_guild_id"],
+        current_guild_id=before["current_guild_id"] or before["origin_guild_id"],
         bump_version=True,
     )
     await db.record_strategy_audit(
@@ -295,9 +298,7 @@ async def anonymise_submitter(
             "submitter_identity_state must be 'anonymized' or 'deleted'",
         )
     await db.anonymize_submitter(strategy_id, new_state=state)
-    action = (
-        "submitter_anonymized" if state == "anonymized" else "submitter_deleted"
-    )
+    action = "submitter_anonymized" if state == "anonymized" else "submitter_deleted"
     await db.record_strategy_audit(
         strategy_id,
         actor_kind="system",

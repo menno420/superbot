@@ -50,11 +50,11 @@ async def record(
     """
     if decision not in _VALID_DECISIONS:
         raise ValueError(
-            f"decision must be one of {sorted(_VALID_DECISIONS)}, "
-            f"got {decision!r}",
+            f"decision must be one of {sorted(_VALID_DECISIONS)}, got {decision!r}",
         )
     reason_value = (
-        reason_code.value if isinstance(reason_code, PolicyDenialReason)
+        reason_code.value
+        if isinstance(reason_code, PolicyDenialReason)
         else str(reason_code)
     )
     # Success rows always carry the sentinel reason_code='none'.

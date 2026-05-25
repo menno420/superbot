@@ -119,9 +119,18 @@ async def upsert_source(
             updated_by       = EXCLUDED.updated_by
         RETURNING id
         """,
-        source_key, source_name, source_owner, source_kind,
-        trust_tier, base_url, path_template, full_url,
-        cache_policy_key, enabled, notes, updated_by,
+        source_key,
+        source_name,
+        source_owner,
+        source_kind,
+        trust_tier,
+        base_url,
+        path_template,
+        full_url,
+        cache_policy_key,
+        enabled,
+        notes,
+        updated_by,
     )
     return int(row["id"])
 
@@ -152,7 +161,10 @@ async def record_source_audit(
         ) VALUES ($1, $2, $3, $4, $5::jsonb, $6::jsonb, $7, NOW())
         RETURNING id
         """,
-        actor_id, guild_id, source_key, action,
+        actor_id,
+        guild_id,
+        source_key,
+        action,
         json.dumps(old_value) if old_value is not None else None,
         json.dumps(new_value) if new_value is not None else None,
         reason,
@@ -175,7 +187,8 @@ async def list_source_audit(
             ORDER BY created_at DESC
             LIMIT $2
             """,
-            source_key, int(limit),
+            source_key,
+            int(limit),
         )
     else:
         rows = await pool.get().fetch(
@@ -224,8 +237,14 @@ async def upsert_fact(
             confidence   = EXCLUDED.confidence
         RETURNING id
         """,
-        source_id, fact_type, entity_kind, entity_key,
-        json.dumps(body_json), game_version, confidence, version,
+        source_id,
+        fact_type,
+        entity_kind,
+        entity_key,
+        json.dumps(body_json),
+        game_version,
+        confidence,
+        version,
     )
     return int(row["id"])
 
@@ -248,7 +267,9 @@ async def get_latest_fact(
         ORDER BY f.version DESC
         LIMIT 1
         """,
-        fact_type, entity_kind, entity_key,
+        fact_type,
+        entity_kind,
+        entity_key,
     )
     return dict(row) if row else None
 
@@ -302,7 +323,10 @@ async def upsert_patch_note(
             published_at = EXCLUDED.published_at
         RETURNING id
         """,
-        source_id, version, published_at, body,
+        source_id,
+        version,
+        published_at,
+        body,
     )
     return int(row["id"])
 

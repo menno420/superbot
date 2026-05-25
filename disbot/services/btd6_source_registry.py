@@ -24,7 +24,10 @@ async def get_by_id(source_id: int) -> dict[str, Any] | None:
     return await btd6_db.get_source(source_id)
 
 
-async def list_enabled_sources(*, trust_tier: int | None = None) -> list[dict[str, Any]]:
+async def list_enabled_sources(
+    *,
+    trust_tier: int | None = None,
+) -> list[dict[str, Any]]:
     return await btd6_db.list_sources(trust_tier=trust_tier, enabled=True)
 
 

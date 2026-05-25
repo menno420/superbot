@@ -70,22 +70,25 @@ async def store_facts(
 ) -> list[FactWriteResult]:
     """Bulk-write a list of fact dicts. Each dict must carry
     ``fact_type``, ``entity_kind``, ``entity_key``, ``body_json`` and
-    either ``source_id`` or rely on ``default_source_id``."""
+    either ``source_id`` or rely on ``default_source_id``.
+    """
     results: list[FactWriteResult] = []
     for raw in facts:
         source_id = raw.get("source_id", default_source_id)
         if source_id is None:
             raise ValueError("fact missing source_id and no default supplied")
-        results.append(await store_fact(
-            source_id=int(source_id),
-            fact_type=str(raw["fact_type"]),
-            entity_kind=str(raw["entity_kind"]),
-            entity_key=str(raw["entity_key"]),
-            body_json=raw.get("body_json") or {},
-            game_version=raw.get("game_version"),
-            confidence=float(raw.get("confidence", 1.0)),
-            version=int(raw.get("version", 1)),
-        ))
+        results.append(
+            await store_fact(
+                source_id=int(source_id),
+                fact_type=str(raw["fact_type"]),
+                entity_kind=str(raw["entity_kind"]),
+                entity_key=str(raw["entity_key"]),
+                body_json=raw.get("body_json") or {},
+                game_version=raw.get("game_version"),
+                confidence=float(raw.get("confidence", 1.0)),
+                version=int(raw.get("version", 1)),
+            ),
+        )
     return results
 
 

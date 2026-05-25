@@ -80,16 +80,14 @@ async def upsert_source(
         )
     if trust_tier not in _VALID_TIERS:
         raise InvalidSourceValueError(
-            f"trust_tier must be one of {sorted(_VALID_TIERS)}, "
-            f"got {trust_tier!r}",
+            f"trust_tier must be one of {sorted(_VALID_TIERS)}, got {trust_tier!r}",
         )
     if not source_key.strip():
         raise InvalidSourceValueError("source_key must be non-empty")
 
     before = await btd6_db.get_source_by_key(source_key)
     full_url = (
-        f"{base_url.rstrip('/')}{path_template}" if base_url and path_template
-        else None
+        f"{base_url.rstrip('/')}{path_template}" if base_url and path_template else None
     )
 
     source_id = await btd6_db.upsert_source(

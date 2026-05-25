@@ -20,7 +20,7 @@ if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
 
 from services import btd6_source_parser  # noqa: E402
-from services.parsers._skeleton import ParserNotImplemented  # noqa: E402
+from services.parsers._skeleton import ParserNotImplementedError  # noqa: E402
 
 _FIRST_PRIORITY = (
     "nk_btd6_maps",
@@ -50,7 +50,7 @@ def test_first_priority_parser_is_registered(source_key):
 
 @pytest.mark.parametrize("source_key", _FIRST_PRIORITY)
 def test_parser_skeleton_raises_until_format_is_captured(source_key):
-    """Skeletons raise ParserNotImplemented with a stable reason.
+    """Skeletons raise ParserNotImplementedError with a stable reason.
 
     Marked ``xfail(strict=False)`` so the test still passes when a
     real parser arrives and stops raising. Until then the explicit

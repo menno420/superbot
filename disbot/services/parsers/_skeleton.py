@@ -2,7 +2,7 @@
 
 Each first-priority NK API parser is a thin wrapper around
 :class:`NinjaKiwiParserSkeleton`. The skeleton raises a stable
-:class:`ParserNotImplemented` until the response format is captured
+:class:`ParserNotImplementedError` until the response format is captured
 so a real fetch loop cannot accidentally write empty fact rows.
 """
 
@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Any
 
 
-class ParserNotImplemented(NotImplementedError):
+class ParserNotImplementedError(NotImplementedError):
     """Raised by every M3B parser skeleton until the format is captured."""
 
     def __init__(self, source_key: str) -> None:
@@ -33,7 +33,7 @@ class NinjaKiwiParserSkeleton:
         *,
         game_version: str | None = None,
     ) -> list[dict[str, Any]]:
-        raise ParserNotImplemented(self.source_key)
+        raise ParserNotImplementedError(self.source_key)
 
 
-__all__ = ["NinjaKiwiParserSkeleton", "ParserNotImplemented"]
+__all__ = ["NinjaKiwiParserSkeleton", "ParserNotImplementedError"]

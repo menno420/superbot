@@ -215,9 +215,14 @@ class AICog(commands.Cog):
         from services import ai_decision_audit_service
 
         rows = await ai_decision_audit_service.query(
-            ctx.guild.id, limit=max(1, min(50, int(limit))),
+            ctx.guild.id,
+            limit=max(1, min(50, int(limit))),
         )
-        denials = [r for r in rows if r["decision"] in ("denied", "skipped", "errored", "degraded")]
+        denials = [
+            r
+            for r in rows
+            if r["decision"] in ("denied", "skipped", "errored", "degraded")
+        ]
         if not denials:
             await ctx.send("No recent denials or skips for this guild.")
             return

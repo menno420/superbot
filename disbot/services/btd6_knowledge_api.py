@@ -114,7 +114,9 @@ async def search_facts(
     limit: int = 25,
 ) -> list[FactBundle]:
     rows = await btd6_db.search_facts(
-        fact_type=fact_type, entity_kind=entity_kind, limit=limit,
+        fact_type=fact_type,
+        entity_kind=entity_kind,
+        limit=limit,
     )
     out: list[FactBundle] = []
     for row in rows:
@@ -153,7 +155,10 @@ async def _resolve(
         logger.debug(
             "btd6_knowledge_api: DB lookup failed for %s/%s/%s (%s); "
             "falling back to fixtures",
-            fact_type, entity_kind, entity_key, exc,
+            fact_type,
+            entity_kind,
+            entity_key,
+            exc,
         )
         row = None
 
@@ -171,10 +176,15 @@ def _bundle_from_row(
     fetched_at = row.get("fetched_at")
     freshness = "fresh"
     if isinstance(fetched_at, _dt.datetime):
-        age = (
-            _dt.datetime.now(_dt.timezone.utc) - fetched_at
+        now = _dt.datetime.now(_dt.timezone.utc)
+        # If the row came back without tzinfo, treat it as UTC — the
+        # DB layer always writes ``NOW()`` which Postgres returns as
+        # an aware timestamp, so naive values are an artefact of the
+        # test stub rather than a meaningful local time.
+        age = now - (
+            fetched_at
             if fetched_at.tzinfo
-            else _dt.datetime.utcnow() - fetched_at
+            else fetched_at.replace(tzinfo=_dt.timezone.utc)
         )
         if age.total_seconds() > 7 * 24 * 3600:
             freshness = "stale"
@@ -232,7 +242,10 @@ async def _fixture_fallback(
     except Exception as exc:  # noqa: BLE001
         logger.debug(
             "btd6_knowledge_api: fixture lookup raised for %s/%s/%s: %s",
-            fact_type, entity_kind, entity_key, exc,
+            fact_type,
+            entity_kind,
+            entity_key,
+            exc,
         )
         record = None
 
@@ -240,11 +253,7 @@ async def _fixture_fallback(
         return None
 
     if hasattr(record, "__dict__"):
-        body = {
-            k: v
-            for k, v in vars(record).items()
-            if not k.startswith("_")
-        }
+        body = {k: v for k, v in vars(record).items() if not k.startswith("_")}
     elif isinstance(record, dict):
         body = dict(record)
     else:

@@ -153,8 +153,8 @@ def test_audit_log_channel_is_a_channel_binding_not_a_scalar():
     milestones; M2 does not add an audit_log_channel_id column to
     ai_guild_policy.
     """
-    from core.runtime.subsystem_schema import BindingKind
     from cogs.ai.schemas import AI_CONFIG_SCHEMA
+    from core.runtime.subsystem_schema import BindingKind
 
     binding = next(
         (b for b in AI_CONFIG_SCHEMA.bindings if b.name == "audit_log_channel"),

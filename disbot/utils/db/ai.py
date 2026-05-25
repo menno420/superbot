@@ -170,15 +170,21 @@ async def upsert_channel_policy(
             updated_at             = NOW(),
             updated_by             = EXCLUDED.updated_by
         """,
-        guild_id, channel_id, mode, min_level, cooldown_seconds,
-        instruction_profile_id, updated_by,
+        guild_id,
+        channel_id,
+        mode,
+        min_level,
+        cooldown_seconds,
+        instruction_profile_id,
+        updated_by,
     )
 
 
 async def delete_channel_policy(guild_id: int, channel_id: int) -> int:
     result = await pool.get().execute(
         "DELETE FROM ai_channel_policy WHERE guild_id = $1 AND channel_id = $2",
-        guild_id, channel_id,
+        guild_id,
+        channel_id,
     )
     return int(result.split()[-1]) if result else 0
 
@@ -204,7 +210,8 @@ async def get_category_policy(guild_id: int, category_id: int) -> dict[str, Any]
         FROM ai_category_policy
         WHERE guild_id = $1 AND category_id = $2
         """,
-        guild_id, category_id,
+        guild_id,
+        category_id,
     )
     return dict(row) if row else None
 
@@ -233,8 +240,13 @@ async def upsert_category_policy(
             updated_at             = NOW(),
             updated_by             = EXCLUDED.updated_by
         """,
-        guild_id, category_id, mode, min_level, cooldown_seconds,
-        instruction_profile_id, updated_by,
+        guild_id,
+        category_id,
+        mode,
+        min_level,
+        cooldown_seconds,
+        instruction_profile_id,
+        updated_by,
     )
 
 
@@ -278,7 +290,11 @@ async def upsert_role_policy(
             updated_at         = NOW(),
             updated_by         = EXCLUDED.updated_by
         """,
-        guild_id, role_id, decision, min_level_override, bypass_cooldown,
+        guild_id,
+        role_id,
+        decision,
+        min_level_override,
+        bypass_cooldown,
         updated_by,
     )
 
@@ -316,7 +332,8 @@ async def list_instruction_profiles(
               AND scope = $2
             ORDER BY name
             """,
-            guild_id, scope,
+            guild_id,
+            scope,
         )
     else:
         rows = await pool.get().fetch(
@@ -353,7 +370,12 @@ async def upsert_instruction_profile(
             updated_at  = NOW()
         RETURNING id
         """,
-        guild_id, name, body, scope, feature_key, created_by,
+        guild_id,
+        name,
+        body,
+        scope,
+        feature_key,
+        created_by,
     )
     return int(row["id"])
 
@@ -399,9 +421,20 @@ async def record_decision(
         )
         RETURNING id
         """,
-        guild_id, channel_id, category_id, user_id, message_id,
-        task, route, decision, reason_code, policy_snapshot_hash,
-        instruction_profile_ids, provider, model, expires_at,
+        guild_id,
+        channel_id,
+        category_id,
+        user_id,
+        message_id,
+        task,
+        route,
+        decision,
+        reason_code,
+        policy_snapshot_hash,
+        instruction_profile_ids,
+        provider,
+        model,
+        expires_at,
     )
     return int(row["id"])
 

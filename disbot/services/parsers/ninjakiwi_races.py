@@ -3,7 +3,7 @@
 Real implementation lands once the response format is captured —
 see docs/AGENT_ORIENTATION.md and the refined-direction plan's
 M3B open question. Until then the skeleton's parse() raises
-raises `ParserNotImplemented` so the M3B
+raises `ParserNotImplementedError` so the M3B
 fetch loop cannot silently write empty fact rows.
 """
 

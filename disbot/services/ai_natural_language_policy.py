@@ -168,9 +168,7 @@ async def resolve(ctx: MessageContext) -> PolicyDecision:
         profile_ids.append(int(policy["guild_instruction_profile_id"]))
 
     # Category override.
-    cat_row = (
-        bundle["category"].get(ctx.category_id) if ctx.category_id else None
-    )
+    cat_row = bundle["category"].get(ctx.category_id) if ctx.category_id else None
     if cat_row:
         if cat_row["mode"] == "disabled":
             return _deny(
@@ -189,7 +187,6 @@ async def resolve(ctx: MessageContext) -> PolicyDecision:
 
     # Channel override.
     chan_row = bundle["channel"].get(ctx.channel_id)
-    channel_mode_disabled = False
     if chan_row:
         if chan_row["mode"] == "disabled":
             return _deny(
@@ -239,9 +236,11 @@ async def resolve(ctx: MessageContext) -> PolicyDecision:
 
     # Per-user level check (XP / fresh-user allowance).
     if ctx.user_level < min_level:
-        if ctx.is_fresh_user and ctx.is_mention and policy.get(
-            "fresh_user_mention_allowance", 0
-        ) > 0:
+        if (
+            ctx.is_fresh_user
+            and ctx.is_mention
+            and policy.get("fresh_user_mention_allowance", 0) > 0
+        ):
             # Fresh-user mention allowance: let the message through
             # this once even though the level gate would deny it.
             pass

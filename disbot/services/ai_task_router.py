@@ -19,20 +19,45 @@ from core.runtime.ai.contracts import AITask
 # Keep this list short and curated. It biases the router toward BTD6;
 # anything not matched falls through to GENERAL_NL_ANSWER.
 _BTD6_KEYWORDS = (
-    "btd6", "bloons", "bloon", "moab", "ddt", "bad ", "bfb", "zomg",
-    "tower", "hero", "obyn", "psi", "ezili", "geraldo", "etienne",
-    "chimps", "halfcash", "magicmonkeys", "alternate bloons",
-    "round ", "freeplay", "deflation", "apopalypse", "primary only",
-    "military only", "magic only", "support only", "boss bloon",
-    "ninja kiwi", "monkey", "primary monkey",
+    "btd6",
+    "bloons",
+    "bloon",
+    "moab",
+    "ddt",
+    "bad ",
+    "bfb",
+    "zomg",
+    "tower",
+    "hero",
+    "obyn",
+    "psi",
+    "ezili",
+    "geraldo",
+    "etienne",
+    "chimps",
+    "halfcash",
+    "magicmonkeys",
+    "alternate bloons",
+    "round ",
+    "freeplay",
+    "deflation",
+    "apopalypse",
+    "primary only",
+    "military only",
+    "magic only",
+    "support only",
+    "boss bloon",
+    "ninja kiwi",
+    "monkey",
+    "primary monkey",
 )
 
 
 @dataclass(frozen=True)
 class RoutedTask:
     task: AITask
-    route: str          # short string for the audit row (e.g. "btd6.answer")
-    confidence: float   # 0.0 .. 1.0 — informational only in M2
+    route: str  # short string for the audit row (e.g. "btd6.answer")
+    confidence: float  # 0.0 .. 1.0 — informational only in M2
 
 
 def classify(

@@ -41,19 +41,19 @@ def _stub_registry(monkeypatch):
 
 
 async def test_refuses_unknown_source():
-    with pytest.raises(fetch.BTD6FetchRefused) as info:
+    with pytest.raises(fetch.BTD6FetchRefusedError) as info:
         await fetch.fetch("does_not_exist")
     assert info.value.reason == "source_not_registered"
 
 
 async def test_refuses_disabled_row():
-    with pytest.raises(fetch.BTD6FetchRefused) as info:
+    with pytest.raises(fetch.BTD6FetchRefusedError) as info:
         await fetch.fetch("nk_btd6_disabled_with_url")
     assert info.value.reason == "source_disabled"
 
 
 async def test_refuses_when_base_url_missing():
-    with pytest.raises(fetch.BTD6FetchRefused) as info:
+    with pytest.raises(fetch.BTD6FetchRefusedError) as info:
         await fetch.fetch("nk_btd6_maps")
     assert info.value.reason in ("source_disabled", "source_missing_base_url")
 
@@ -73,7 +73,7 @@ async def test_circuit_breaker_opens_after_repeated_failures(monkeypatch):
         with pytest.raises(fetch.BTD6FetchHTTPError):
             await fetch.fetch("nk_btd6_events")
 
-    with pytest.raises(fetch.BTD6FetchRefused) as info:
+    with pytest.raises(fetch.BTD6FetchRefusedError) as info:
         await fetch.fetch("nk_btd6_events")
     assert info.value.reason == "circuit_breaker_open"
 

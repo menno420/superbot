@@ -23,8 +23,10 @@ _DISBOT = Path(__file__).parents[3] / "disbot"
 if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
 
-from core.runtime.ai.safety import claims_are_grounded, wrap_untrusted_text  # noqa: E402
-
+from core.runtime.ai.safety import (  # noqa: E402
+    claims_are_grounded,
+    wrap_untrusted_text,
+)
 
 # ---------------------------------------------------------------------------
 # Containment — wrap_untrusted_text

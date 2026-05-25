@@ -22,15 +22,18 @@ async def list_published(*, limit: int = 25) -> list[dict[str, Any]]:
 async def search(
     *,
     guild_id: int | None = None,
-    map: str | None = None,
+    map_name: str | None = None,
     mode: str | None = None,
     visibility: str | None = None,
     approval_status: str | None = None,
     limit: int = 25,
 ) -> list[dict[str, Any]]:
     return await db.search_strategies(
-        guild_id=guild_id, map=map, mode=mode,
-        visibility=visibility, approval_status=approval_status,
+        guild_id=guild_id,
+        map_name=map_name,
+        mode=mode,
+        visibility=visibility,
+        approval_status=approval_status,
         limit=limit,
     )
 

@@ -545,12 +545,15 @@ async def _teardown_btd6_strategies(guild_id: int) -> None:
             logger.debug(
                 "guild_lifecycle: btd6 strategies — deleted %d guild-local, "
                 "detached %d published for guild=%d",
-                deleted, detached, guild_id,
+                deleted,
+                detached,
+                guild_id,
             )
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: btd6 strategy teardown failed for guild=%d: %s",
-            guild_id, exc,
+            guild_id,
+            exc,
         )
 
 

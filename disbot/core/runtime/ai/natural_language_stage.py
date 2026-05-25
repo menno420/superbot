@@ -30,8 +30,8 @@ import discord
 from core.runtime.ai.contracts import AITask, PolicyDenialReason
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
 from services import (
-    ai_conversation_service,
     ai_context_service,
+    ai_conversation_service,
     ai_decision_audit_service,
     ai_instruction_service,
     ai_natural_language_policy,
@@ -80,14 +80,10 @@ class AINaturalLanguageStage:
         guild_id = message.guild.id
         channel_id = message.channel.id if message.channel else 0
         category_id = (
-            getattr(message.channel, "category_id", None)
-            if message.channel
-            else None
+            getattr(message.channel, "category_id", None) if message.channel else None
         )
         user_id = message.author.id
-        is_mention = (
-            ctx.bot.user is not None and ctx.bot.user.mentioned_in(message)
-        )
+        is_mention = ctx.bot.user is not None and ctx.bot.user.mentioned_in(message)
 
         snap = await ai_permission_service.snapshot(guild_id, user_id)
 
@@ -97,7 +93,9 @@ class AINaturalLanguageStage:
             category_id=category_id,
             user_id=user_id,
             user_level=snap.level,
-            user_role_ids=tuple(role.id for role in getattr(message.author, "roles", ())),
+            user_role_ids=tuple(
+                role.id for role in getattr(message.author, "roles", ())
+            ),
             is_mention=is_mention,
             is_fresh_user=snap.is_fresh_user,
         )
@@ -126,7 +124,9 @@ class AINaturalLanguageStage:
         # Cooldown — checked after policy resolved so we can record
         # the rejection with the right reason code.
         if ai_permission_service.is_on_cooldown(
-            guild_id, user_id, decision.effective_cooldown,
+            guild_id,
+            user_id,
+            decision.effective_cooldown,
         ):
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -164,7 +164,9 @@ class AINaturalLanguageStage:
             logger.exception(
                 "ai_natural_language_stage: feature pipeline raised "
                 "for guild=%s channel=%s message=%s",
-                guild_id, channel_id, message.id,
+                guild_id,
+                channel_id,
+                message.id,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -177,8 +179,9 @@ class AINaturalLanguageStage:
                 decision="errored",
                 reason_code=PolicyDenialReason.PROVIDER_UNAVAILABLE,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
-                instruction_profile_ids=list(stack.instruction_profile_ids)
-                    if "stack" in locals() else None,
+                instruction_profile_ids=(
+                    list(stack.instruction_profile_ids) if "stack" in locals() else None
+                ),
             )
             return StageResult()
 
@@ -204,7 +207,9 @@ class AINaturalLanguageStage:
             logger.exception(
                 "ai_natural_language_stage: send failed for guild=%s "
                 "channel=%s message=%s",
-                guild_id, channel_id, message.id,
+                guild_id,
+                channel_id,
+                message.id,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -223,12 +228,18 @@ class AINaturalLanguageStage:
 
         ai_permission_service.mark_reply_sent(guild_id, user_id)
         ai_conversation_service.append(
-            guild_id, channel_id,
-            user_id=user_id, role="user", text=text,
+            guild_id,
+            channel_id,
+            user_id=user_id,
+            role="user",
+            text=text,
         )
         ai_conversation_service.append(
-            guild_id, channel_id,
-            user_id=user_id, role="assistant", text=reply_text,
+            guild_id,
+            channel_id,
+            user_id=user_id,
+            role="assistant",
+            text=reply_text,
         )
 
         await ai_decision_audit_service.record(

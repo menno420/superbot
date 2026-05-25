@@ -37,7 +37,7 @@ _DEFAULT_CADENCES_SECONDS: dict[str, int] = {
     "nk_btd6_odyssey_diff": 3600,
     "nk_btd6_odyssey_diff_maps": 3600,
     "nk_btd6_events": 3600,
-    "nk_btd6_challenges": 0,         # spot-poll on demand
+    "nk_btd6_challenges": 0,  # spot-poll on demand
     "nk_btd6_challenges_filter": 0,
     "nk_btd6_challenges_one": 0,
 }

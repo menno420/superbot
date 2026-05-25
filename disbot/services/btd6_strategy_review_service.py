@@ -93,7 +93,7 @@ async def review_proposed_strategy(
         submitter=submitter,
         title=str(proposed["title"]),
         summary=str(proposed["summary"]),
-        map=proposed.get("map"),
+        map_name=proposed.get("map"),
         mode=proposed.get("mode"),
         difficulty=proposed.get("difficulty"),
         hero=proposed.get("hero"),

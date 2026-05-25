@@ -47,8 +47,7 @@ def _validate_bool(value: object) -> None:
 def _validate_provider(value: object) -> None:
     if value not in ("deterministic", "openai"):
         raise ValueError(
-            "default_provider must be 'deterministic' or 'openai', "
-            f"got {value!r}",
+            f"default_provider must be 'deterministic' or 'openai', got {value!r}",
         )
 
 

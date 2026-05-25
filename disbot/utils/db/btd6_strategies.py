@@ -34,7 +34,7 @@ async def insert_strategy(
     approval_status: str,
     title: str,
     summary: str,
-    map: str | None,
+    map_name: str | None,
     mode: str | None,
     difficulty: str | None,
     hero: str | None,
@@ -49,7 +49,7 @@ async def insert_strategy(
     origin_metadata: dict[str, Any],
 ) -> int:
     row = await pool.get().fetchrow(
-        f"""
+        """
         INSERT INTO btd6_strategies (
             origin_guild_id, current_guild_id, visibility, approval_status,
             title, summary, map, mode, difficulty, hero, towers,
@@ -63,12 +63,24 @@ async def insert_strategy(
         )
         RETURNING id
         """,
-        origin_guild_id, current_guild_id, visibility, approval_status,
-        title, summary, map, mode, difficulty, hero,
-        json.dumps(towers), json.dumps(upgrade_paths),
+        origin_guild_id,
+        current_guild_id,
+        visibility,
+        approval_status,
+        title,
+        summary,
+        map_name,
+        mode,
+        difficulty,
+        hero,
+        json.dumps(towers),
+        json.dumps(upgrade_paths),
         json.dumps(round_range) if round_range is not None else None,
-        json.dumps(steps), json.dumps(common_failures),
-        json.dumps(source_links), submitted_by, submitter_display_snapshot,
+        json.dumps(steps),
+        json.dumps(common_failures),
+        json.dumps(source_links),
+        submitted_by,
+        submitter_display_snapshot,
         json.dumps(origin_metadata),
     )
     return int(row["id"])
@@ -87,7 +99,7 @@ async def search_strategies(
     guild_id: int | None = None,
     visibility: str | None = None,
     approval_status: str | None = None,
-    map: str | None = None,
+    map_name: str | None = None,
     mode: str | None = None,
     limit: int = 25,
 ) -> list[dict[str, Any]]:
@@ -96,8 +108,9 @@ async def search_strategies(
     clauses: list[str] = []
     if guild_id is not None:
         args.append(guild_id)
+        pos = len(args)
         clauses.append(
-            "(origin_guild_id = $%d OR current_guild_id = $%d)" % (len(args), len(args)),
+            f"(origin_guild_id = ${pos} OR current_guild_id = ${pos})",
         )
     if visibility is not None:
         args.append(visibility)
@@ -105,8 +118,8 @@ async def search_strategies(
     if approval_status is not None:
         args.append(approval_status)
         clauses.append(f"approval_status = ${len(args)}")
-    if map is not None:
-        args.append(map)
+    if map_name is not None:
+        args.append(map_name)
         clauses.append(f"map = ${len(args)}")
     if mode is not None:
         args.append(mode)
@@ -194,7 +207,8 @@ async def anonymize_submitter(
             updated_at = NOW()
         WHERE id = $1
         """,
-        strategy_id, new_state,
+        strategy_id,
+        new_state,
     )
 
 
@@ -213,7 +227,10 @@ async def record_strategy_audit(
         ) VALUES ($1, $2, $3, $4, $5::jsonb, NOW())
         RETURNING id
         """,
-        strategy_id, actor_kind, actor_id, action,
+        strategy_id,
+        actor_kind,
+        actor_id,
+        action,
         json.dumps(detail or {}),
     )
     return int(row["id"])
@@ -232,7 +249,8 @@ async def list_strategy_audit(
         ORDER BY created_at DESC
         LIMIT $2
         """,
-        strategy_id, int(limit),
+        strategy_id,
+        int(limit),
     )
     return [dict(r) for r in rows]
 
@@ -257,7 +275,8 @@ async def delete_guild_local_for_guild(guild_id: int) -> int:
 
 async def detach_published_from_guild(guild_id: int) -> int:
     """Set ``current_guild_id`` to NULL on published rows for the
-    departed guild; preserves ``origin_guild_id`` for attribution."""
+    departed guild; preserves ``origin_guild_id`` for attribution.
+    """
     result = await pool.get().execute(
         """
         UPDATE btd6_strategies
@@ -276,8 +295,12 @@ def _row_to_dict(row: Any) -> dict[str, Any] | None:
         return None
     data = dict(row)
     for key in (
-        "towers", "upgrade_paths", "steps", "common_failures",
-        "source_links", "origin_metadata",
+        "towers",
+        "upgrade_paths",
+        "steps",
+        "common_failures",
+        "source_links",
+        "origin_metadata",
     ):
         if key in data and isinstance(data[key], str):
             try:

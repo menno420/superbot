@@ -31,7 +31,7 @@ logger = logging.getLogger("bot.services.btd6_fetch")
 # ---------------------------------------------------------------------------
 
 
-class BTD6FetchRefused(Exception):
+class BTD6FetchRefusedError(Exception):
     """Raised when the registry says the source can't be fetched."""
 
     def __init__(self, source_key: str, reason: str) -> None:
@@ -90,16 +90,16 @@ async def fetch(
 ) -> FetchResult:
     """Fetch ``source_key`` from its registered URL.
 
-    Raises :class:`BTD6FetchRefused` for any allowlist failure
+    Raises :class:`BTD6FetchRefusedError` for any allowlist failure
     (including the circuit breaker being open) and
     :class:`BTD6FetchHTTPError` for an upstream non-2xx response.
     """
     usable, reason = await btd6_source_registry.is_source_usable(source_key)
     if not usable:
-        raise BTD6FetchRefused(source_key, reason)
+        raise BTD6FetchRefusedError(source_key, reason)
 
     if _BREAKER_OPEN_UNTIL[source_key] > time.time():
-        raise BTD6FetchRefused(source_key, "circuit_breaker_open")
+        raise BTD6FetchRefusedError(source_key, "circuit_breaker_open")
 
     # Per-source pacing.
     last = _LAST_REQUEST_AT[source_key]
@@ -109,7 +109,7 @@ async def fetch(
 
     row = await btd6_source_registry.get_by_key(source_key)
     if row is None:
-        raise BTD6FetchRefused(source_key, "source_not_registered")
+        raise BTD6FetchRefusedError(source_key, "source_not_registered")
     url = _resolve_url(row, path_params or {})
 
     try:
@@ -138,25 +138,32 @@ def _resolve_url(row: dict[str, Any], path_params: dict[str, Any]) -> str:
 
 async def _http_get(url: str, *, timeout: float) -> tuple[str, int]:
     """Issue one GET request through ``aiohttp``. Imported lazily so
-    test environments that mock the fetcher never need the dep."""
+    test environments that mock the fetcher never need the dep.
+    """
     try:
         import aiohttp
     except Exception as exc:  # pragma: no cover - dependency present in prod
-        raise BTD6FetchHTTPError("(no_source)", 0, f"aiohttp unavailable: {exc}")
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
+        raise BTD6FetchHTTPError(
+            "(no_source)",
+            0,
+            f"aiohttp unavailable: {exc}",
+        ) from exc
+    async with (
+        aiohttp.ClientSession() as session,
+        session.get(
             url,
             timeout=aiohttp.ClientTimeout(total=timeout),
-        ) as resp:
-            text = await resp.text()
-            if resp.status >= 400:
-                raise BTD6FetchHTTPError("(http)", resp.status, text[:200])
-            return text, resp.status
+        ) as resp,
+    ):
+        text = await resp.text()
+        if resp.status >= 400:
+            raise BTD6FetchHTTPError("(http)", resp.status, text[:200])
+        return text, resp.status
 
 
 __all__ = [
     "BTD6FetchHTTPError",
-    "BTD6FetchRefused",
+    "BTD6FetchRefusedError",
     "FetchResult",
     "fetch",
 ]

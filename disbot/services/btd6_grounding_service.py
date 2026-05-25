@@ -50,16 +50,29 @@ async def validate_answer(
     used_keys: list[str] = []
     if context_facts:
         for fact in context_facts:
-            body = fact.get("body") if isinstance(fact, dict) else getattr(
-                fact, "body", None,
+            body = (
+                fact.get("body")
+                if isinstance(fact, dict)
+                else getattr(
+                    fact,
+                    "body",
+                    None,
+                )
             )
             if body:
                 haystack_pieces.append(str(body))
-            key = fact.get("entity_key") if isinstance(fact, dict) else getattr(
-                fact, "entity_key", None,
+            key = (
+                fact.get("entity_key")
+                if isinstance(fact, dict)
+                else getattr(
+                    fact,
+                    "entity_key",
+                    None,
+                )
             )
             confidence = (
-                fact.get("confidence") if isinstance(fact, dict)
+                fact.get("confidence")
+                if isinstance(fact, dict)
                 else getattr(fact, "confidence", 1.0)
             )
             if key and (confidence is None or float(confidence) >= minimum_confidence):
@@ -87,7 +100,11 @@ async def validate_strategy_field(
     proposed_body: dict[str, Any],
 ) -> GroundingResult:
     """Verify a single strategy field against the BTD6 KnowledgeAPI."""
-    bundle = await btd6_knowledge_api.get_tower(entity_key) if entity_kind == "tower" else None
+    bundle = (
+        await btd6_knowledge_api.get_tower(entity_key)
+        if entity_kind == "tower"
+        else None
+    )
     if entity_kind == "hero":
         bundle = await btd6_knowledge_api.get_hero(entity_key)
     elif entity_kind == "map":

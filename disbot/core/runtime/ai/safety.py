@@ -113,10 +113,7 @@ def claims_are_grounded(answer: str, allowed_facts: list[str]) -> bool:
     import re as _re
 
     haystack = " ".join(allowed_facts)
-    for token in _re.findall(r"\b\d+(?:\.\d+)?\b", answer):
-        if token not in haystack:
-            return False
-    return True
+    return all(token in haystack for token in _re.findall(r"\b\d+(?:\.\d+)?\b", answer))
 
 
 __all__ = [
