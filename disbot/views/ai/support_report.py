@@ -71,10 +71,13 @@ async def build_support_report_draft(
         lines.append("(no recent audit rows for this guild)")
     else:
         for r in rows:
+            eff_source = r.get("effective_source") or "—"
+            eff_mode = r.get("effective_mode") or "—"
             lines.append(
                 f"- decision={r.get('decision')} reason={r.get('reason_code')} "
                 f"task={r.get('task') or '—'} route={r.get('route') or '—'} "
-                f"provider={r.get('provider') or '—'} model={r.get('model') or '—'}",
+                f"provider={r.get('provider') or '—'} model={r.get('model') or '—'} "
+                f"effective={eff_source}/{eff_mode}",
             )
     lines.append("```")
     return "\n".join(lines)

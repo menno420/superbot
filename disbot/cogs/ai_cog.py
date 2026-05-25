@@ -156,16 +156,24 @@ def _format_audit_row(row: dict) -> str:
     """Format one ``ai_decision_audit`` row for the why-no-response embed.
 
     Includes relative timestamp, decision, reason_code, task, route,
-    channel link, user mention, provider, model. No raw message content
-    is rendered (the audit table does not store any).
+    channel link, user mention, provider, model, plus the migration-045
+    ``effective_source`` / ``effective_mode`` fields. Pre-045 rows
+    (and post-045 rows on branches that did not populate the new
+    fields — denial rows, error rows on the cooldown branch, etc.)
+    render the new fields as ``—`` per the I-4 legacy-NULL rendering
+    rule. No raw message content is rendered — the audit table never
+    stores any.
     """
     created_at = row.get("created_at")
     when = _relative_time(created_at) if isinstance(created_at, datetime) else "—"
+    eff_source = row.get("effective_source") or "—"
+    eff_mode = row.get("effective_mode") or "—"
     return (
         f"`{when:<8}` · `{row['decision']:<8}` · `{row['reason_code']}` · "
         f"task={row.get('task') or '—'} · route={row.get('route') or '—'} · "
         f"<#{row['channel_id']}> · <@{row['user_id']}> · "
-        f"provider={row.get('provider') or '—'} model={row.get('model') or '—'}"
+        f"provider={row.get('provider') or '—'} model={row.get('model') or '—'} · "
+        f"effective={eff_source}/{eff_mode}"
     )
 
 

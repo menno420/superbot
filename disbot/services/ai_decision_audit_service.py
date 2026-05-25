@@ -41,12 +41,23 @@ async def record(
     instruction_profile_ids: list[int] | None = None,
     provider: str | None = None,
     model: str | None = None,
+    memory_turns_used: int | None = None,
+    memory_window_minutes: int | None = None,
+    memory_scan_attempted: bool | None = None,
+    memory_scan_added_turns: int | None = None,
+    effective_source: str | None = None,
+    effective_mode: str | None = None,
 ) -> int:
     """Write one row; returns the new ``id``.
 
     Raises ``ValueError`` for unknown ``decision`` values so a typo
     surfaces at the call site rather than silently corrupting the
     audit table.
+
+    Migration 045 added the ``memory_*`` / ``effective_*`` kwargs; they
+    default to ``None`` so the natural-language stage can populate
+    them on the ``decision='replied'`` branch while every other
+    caller (denial / skip / error rows) leaves them NULL.
     """
     if decision not in _VALID_DECISIONS:
         raise ValueError(
@@ -75,6 +86,12 @@ async def record(
         instruction_profile_ids=instruction_profile_ids,
         provider=provider,
         model=model,
+        memory_turns_used=memory_turns_used,
+        memory_window_minutes=memory_window_minutes,
+        memory_scan_attempted=memory_scan_attempted,
+        memory_scan_added_turns=memory_scan_added_turns,
+        effective_source=effective_source,
+        effective_mode=effective_mode,
     )
 
 
