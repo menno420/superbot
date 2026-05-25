@@ -139,6 +139,13 @@ def build_routing_embed(task_name: str | None = None) -> discord.Embed:
             ),
             inline=True,
         )
+    embed.set_footer(
+        text=(
+            "Per-guild overrides from ai_guild_policy.default_provider / "
+            "default_model take precedence at gateway time when set. "
+            "Run !ai policy in a guild to see its typed overrides."
+        ),
+    )
     return embed
 
 
