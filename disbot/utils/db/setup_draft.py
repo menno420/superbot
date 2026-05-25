@@ -1,9 +1,11 @@
 """Setup draft operations — DB primitives (Setup Wizard).
 
 Owns the read/write surface for the ``setup_draft_operations`` table
-created by migration 035.  Higher-level callers (:mod:`services.setup_draft`)
-wrap these primitives; nothing outside this module + the service issues
-raw SQL against the table.
+created by migration 035 and extended by migration 045 with
+provenance columns (``section_slug``, ``staging_kind``, ``group_id``,
+``parent_seq``).  Higher-level callers (:mod:`services.setup_draft`)
+wrap these primitives; nothing outside this module + the service
+issues raw SQL against the table.
 
 Contract:
 
@@ -18,6 +20,12 @@ Contract:
 * ``clear`` removes every row for a guild — invoked by Final Review
   on successful apply and by ``setup_session.mark_complete`` /
   ``dismiss``.
+* ``replace_recommended_for_section`` is the sole writer of
+  ``staging_kind='recommended'``; it performs a transactional
+  conflict preflight that refuses to overwrite non-recommended rows.
+* ``delete_by_ids`` / ``delete_by_seqs`` remove specific rows by
+  stable identity; the recovery path uses these instead of matching
+  by label or rendered text.
 
 All writes occur in a single SQL statement; the upsert uses
 PostgreSQL's ``ON CONFLICT`` on the partial UNIQUE index so the
@@ -60,6 +68,13 @@ _KNOWN_OP_KINDS: frozenset[str] = frozenset(
 )
 
 
+# Valid staging_kind values.  ``None`` (legacy / not-yet-classified)
+# is also accepted on the read path and treated as "manual / preserve".
+_STAGING_KINDS: frozenset[str] = frozenset(
+    {"recommended", "custom", "preset", "manual", "repair"},
+)
+
+
 async def insert(
     *,
     guild_id: int,
@@ -86,6 +101,10 @@ async def insert(
     actor_id: int | None,
     label: str,
     metadata: dict[str, Any] | None,
+    section_slug: str | None = None,
+    staging_kind: str | None = None,
+    group_id: str | None = None,
+    parent_seq: int | None = None,
 ) -> int:
     """Insert or replace a draft op row; return the resulting ``seq``.
 
@@ -94,6 +113,15 @@ async def insert(
     for the slot, the existing row is replaced with the new content
     and assigned a fresh ``seq`` (current MAX+1 within the guild) so
     the operator-visible order reflects the latest edit.
+
+    Provenance columns (``section_slug``, ``staging_kind``,
+    ``group_id``, ``parent_seq``) come from migration 045 and are all
+    nullable for backward compatibility.  ``staging_kind`` must be
+    one of :data:`_STAGING_KINDS` or ``None``.  This primitive does
+    NOT enforce the "only :func:`replace_recommended_for_section`
+    writes ``'recommended'``" rule — the service layer does.  Callers
+    that bypass the service to write ``'recommended'`` directly are a
+    bug; the rule is enforced in :mod:`services.setup_draft`.
 
     The CHECK on ``op_kind`` is also enforced at the SQL layer, but
     we validate here for an earlier failure with a friendlier traceback.
@@ -106,6 +134,11 @@ async def insert(
         raise ValueError("subsystem must be non-empty")
     if not label:
         raise ValueError("label must be non-empty")
+    if staging_kind is not None and staging_kind not in _STAGING_KINDS:
+        raise ValueError(
+            f"staging_kind must be one of {sorted(_STAGING_KINDS)} or None, "
+            f"got {staging_kind!r}",
+        )
 
     trigger_json = json.dumps(trigger_config) if trigger_config is not None else None
     action_json = json.dumps(action_config) if action_config is not None else None
@@ -122,7 +155,8 @@ async def insert(
             value_raw, resource_mode, resource_name, existing_id,
             automation_rule_id, automation_rule_name, trigger_kind, action_kind,
             trigger_config_json, action_config_json, schedule, timezone,
-            actor_id, label, metadata_json
+            actor_id, label, metadata_json,
+            section_slug, staging_kind, group_id, parent_seq
         )
         VALUES (
             $1, $2,
@@ -134,7 +168,8 @@ async def insert(
             $10, $11, $12, $13,
             $14, $15, $16, $17,
             $18::JSONB, $19::JSONB, $20, $21,
-            $22, $23, $24::JSONB
+            $22, $23, $24::JSONB,
+            $25, $26, $27, $28
         )
         ON CONFLICT (
             guild_id, op_kind, subsystem,
@@ -163,6 +198,10 @@ async def insert(
             actor_id             = EXCLUDED.actor_id,
             label                = EXCLUDED.label,
             metadata_json        = EXCLUDED.metadata_json,
+            section_slug         = EXCLUDED.section_slug,
+            staging_kind         = EXCLUDED.staging_kind,
+            group_id             = EXCLUDED.group_id,
+            parent_seq           = EXCLUDED.parent_seq,
             created_at           = NOW()
         RETURNING seq
         """,
@@ -190,12 +229,22 @@ async def insert(
         actor_id,
         label,
         metadata_json,
+        section_slug,
+        staging_kind,
+        group_id,
+        parent_seq,
     )
     return int(row["seq"])
 
 
 async def list_rows(guild_id: int) -> list[dict[str, Any]]:
-    """Return every draft row for ``guild_id`` ordered by ``seq`` asc."""
+    """Return every draft row for ``guild_id`` ordered by ``seq`` asc.
+
+    Rows include the provenance columns added in migration 045
+    (``section_slug``, ``staging_kind``, ``group_id``, ``parent_seq``);
+    callers may treat ``staging_kind`` of ``None`` as
+    "legacy / manual / preserve".
+    """
     rows = await pool.get().fetch(
         """
         SELECT id, guild_id, session_started_at, seq, op_kind, subsystem,
@@ -203,7 +252,8 @@ async def list_rows(guild_id: int) -> list[dict[str, Any]]:
                value_raw, resource_mode, resource_name, existing_id,
                automation_rule_id, automation_rule_name, trigger_kind,
                action_kind, trigger_config_json, action_config_json,
-               schedule, timezone, actor_id, label, metadata_json, created_at
+               schedule, timezone, actor_id, label, metadata_json, created_at,
+               section_slug, staging_kind, group_id, parent_seq
           FROM setup_draft_operations
          WHERE guild_id = $1
          ORDER BY seq ASC
@@ -211,6 +261,87 @@ async def list_rows(guild_id: int) -> list[dict[str, Any]]:
         guild_id,
     )
     return [dict(r) for r in rows]
+
+
+async def list_by_section(
+    guild_id: int,
+    section_slug: str,
+) -> list[dict[str, Any]]:
+    """Return draft rows for ``guild_id`` filtered to ``section_slug``,
+    ordered by ``seq`` asc.
+
+    Rows with ``section_slug IS NULL`` (legacy / null-provenance) are
+    NOT returned by this helper; callers that need them should use
+    :func:`list_rows` and filter in Python.
+    """
+    rows = await pool.get().fetch(
+        """
+        SELECT id, guild_id, session_started_at, seq, op_kind, subsystem,
+               binding_name, setting_name, target_id, target_name, target_kind,
+               value_raw, resource_mode, resource_name, existing_id,
+               automation_rule_id, automation_rule_name, trigger_kind,
+               action_kind, trigger_config_json, action_config_json,
+               schedule, timezone, actor_id, label, metadata_json, created_at,
+               section_slug, staging_kind, group_id, parent_seq
+          FROM setup_draft_operations
+         WHERE guild_id = $1
+           AND section_slug = $2
+         ORDER BY seq ASC
+        """,
+        guild_id,
+        section_slug,
+    )
+    return [dict(r) for r in rows]
+
+
+async def delete_by_ids(guild_id: int, ids: list[int]) -> int:
+    """Delete draft rows whose ``id`` is in ``ids`` for ``guild_id``.
+
+    Returns the number of rows deleted.  Used by the partial-apply
+    recovery view to drop specific rows by stable row identity —
+    never by label or rendered text.  No-op when ``ids`` is empty.
+    """
+    if not ids:
+        return 0
+    row = await pool.get().fetchrow(
+        """
+        WITH deleted AS (
+            DELETE FROM setup_draft_operations
+             WHERE guild_id = $1
+               AND id = ANY($2::BIGINT[])
+             RETURNING 1
+        )
+        SELECT COUNT(*) AS n FROM deleted
+        """,
+        guild_id,
+        ids,
+    )
+    return int(row["n"]) if row else 0
+
+
+async def delete_by_seqs(guild_id: int, seqs: list[int]) -> int:
+    """Delete draft rows whose ``seq`` is in ``seqs`` for ``guild_id``.
+
+    Returns the number of rows deleted.  ``seq`` is monotonic per
+    guild but not globally unique, so this is a per-guild scope.
+    No-op when ``seqs`` is empty.
+    """
+    if not seqs:
+        return 0
+    row = await pool.get().fetchrow(
+        """
+        WITH deleted AS (
+            DELETE FROM setup_draft_operations
+             WHERE guild_id = $1
+               AND seq = ANY($2::INT[])
+             RETURNING 1
+        )
+        SELECT COUNT(*) AS n FROM deleted
+        """,
+        guild_id,
+        seqs,
+    )
+    return int(row["n"]) if row else 0
 
 
 async def clear(guild_id: int) -> int:
@@ -246,6 +377,9 @@ async def count(guild_id: int) -> int:
 __all__ = [
     "clear",
     "count",
+    "delete_by_ids",
+    "delete_by_seqs",
     "insert",
+    "list_by_section",
     "list_rows",
 ]

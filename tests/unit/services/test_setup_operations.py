@@ -362,7 +362,10 @@ async def test_apply_automation_disable_passes_enabled_false():
 
 @pytest.mark.asyncio
 async def test_apply_create_channel_routes_through_provisioning_pipeline():
-    mock_result = MagicMock(mutation_id="m-prov")
+    # Phase 0: _apply_resource_create inspects ProvisioningResult.outcome,
+    # so the mock must spell out outcome="success" — bare MagicMock would
+    # compare unequal to "success" and (correctly) map to failed.
+    mock_result = MagicMock(mutation_id="m-prov", outcome="success")
     mock_pipeline = MagicMock()
     mock_pipeline.provision = AsyncMock(return_value=mock_result)
 
@@ -381,6 +384,146 @@ async def test_apply_create_channel_routes_through_provisioning_pipeline():
     mock_pipeline.provision.assert_awaited_once()
     assert len(batch.applied) == 1
     assert batch.applied[0].mutation_id == "m-prov"
+
+
+@pytest.mark.asyncio
+async def test_apply_create_channel_binding_failed_outcome_maps_to_failed():
+    """Repo-verified Phase 0 bug: ProvisioningResult.outcome='binding_failed'
+    must NOT be reported as ``applied``.  The resource was created or
+    reused but the binding step failed, so the operator's draft has
+    not converged on the requested state.
+    """
+    mock_result = MagicMock(mutation_id="m-prov", outcome="binding_failed")
+    mock_pipeline = MagicMock()
+    mock_pipeline.provision = AsyncMock(return_value=mock_result)
+
+    op = SetupOperation(
+        kind="create_channel",
+        subsystem="logging",
+        binding_name="mod_channel",
+        resource_name="mod-log",
+    )
+    with patch(
+        "services.resource_provisioning.ResourceProvisioningPipeline",
+        return_value=mock_pipeline,
+    ):
+        batch = await apply_operations([op], guild=_guild(), actor=_actor())
+
+    assert len(batch.applied) == 0, "binding_failed must not appear in applied"
+    assert len(batch.failed) == 1
+    r = batch.failed[0]
+    assert r.status == "failed"
+    assert "binding_failed" in (r.error or "")
+    # The mutation id from the partial-success provision is preserved
+    # so the recovery embed can link back to the audit row.
+    assert r.mutation_id == "m-prov"
+
+
+@pytest.mark.asyncio
+async def test_apply_create_channel_permission_blocked_maps_to_failed():
+    """Any non-success ProvisioningResult.outcome must map to failed —
+    not just binding_failed.  Pins the broader rule from Phase 0.
+    """
+    mock_result = MagicMock(mutation_id="m-prov", outcome="permission_blocked")
+    mock_pipeline = MagicMock()
+    mock_pipeline.provision = AsyncMock(return_value=mock_result)
+
+    op = SetupOperation(
+        kind="create_channel",
+        subsystem="logging",
+        binding_name="mod_channel",
+        resource_name="mod-log",
+    )
+    with patch(
+        "services.resource_provisioning.ResourceProvisioningPipeline",
+        return_value=mock_pipeline,
+    ):
+        batch = await apply_operations([op], guild=_guild(), actor=_actor())
+
+    assert len(batch.applied) == 0
+    assert len(batch.failed) == 1
+    assert "permission_blocked" in (batch.failed[0].error or "")
+
+
+# ---------------------------------------------------------------------------
+# Single-flight apply lock
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_acquire_setup_apply_lock_allows_sequential_calls():
+    """One guild may run apply repeatedly so long as runs don't overlap."""
+    from services.setup_operations import (
+        _reset_apply_inflight_for_tests,
+        acquire_setup_apply_lock,
+    )
+
+    _reset_apply_inflight_for_tests()
+    try:
+        async with acquire_setup_apply_lock(1):
+            pass
+        async with acquire_setup_apply_lock(1):
+            pass
+    finally:
+        _reset_apply_inflight_for_tests()
+
+
+@pytest.mark.asyncio
+async def test_acquire_setup_apply_lock_blocks_concurrent_calls_for_same_guild():
+    """Second concurrent call for the same guild raises SetupApplyInProgressError."""
+    from services.setup_operations import (
+        SetupApplyInProgressError,
+        _reset_apply_inflight_for_tests,
+        acquire_setup_apply_lock,
+    )
+
+    _reset_apply_inflight_for_tests()
+    try:
+        async with acquire_setup_apply_lock(1):
+            with pytest.raises(SetupApplyInProgressError) as excinfo:
+                async with acquire_setup_apply_lock(1):
+                    pass
+            assert excinfo.value.guild_id == 1
+    finally:
+        _reset_apply_inflight_for_tests()
+
+
+@pytest.mark.asyncio
+async def test_acquire_setup_apply_lock_isolates_different_guilds():
+    """Different guilds may apply concurrently — the lock is per-guild."""
+    from services.setup_operations import (
+        _reset_apply_inflight_for_tests,
+        acquire_setup_apply_lock,
+    )
+
+    _reset_apply_inflight_for_tests()
+    try:
+        async with acquire_setup_apply_lock(1):
+            # Different guild id should acquire freely.
+            async with acquire_setup_apply_lock(2):
+                pass
+    finally:
+        _reset_apply_inflight_for_tests()
+
+
+@pytest.mark.asyncio
+async def test_acquire_setup_apply_lock_releases_on_exception():
+    """An exception inside the lock body still releases the slot."""
+    from services.setup_operations import (
+        _reset_apply_inflight_for_tests,
+        acquire_setup_apply_lock,
+    )
+
+    _reset_apply_inflight_for_tests()
+    try:
+        with pytest.raises(RuntimeError, match="boom"):
+            async with acquire_setup_apply_lock(1):
+                raise RuntimeError("boom")
+        # The guild slot must be free again.
+        async with acquire_setup_apply_lock(1):
+            pass
+    finally:
+        _reset_apply_inflight_for_tests()
 
 
 # ---------------------------------------------------------------------------

@@ -26,8 +26,17 @@ Two construction modes:
 Failures are isolated per operation; one bad op does not abort the
 rest.  Unsupported kinds appear in ``skipped`` /
 ``not_yet_implemented`` partitions rather than raising.
-On full success the wizard's draft is cleared and the session is
-marked complete.
+
+Safety invariants (Phase 0):
+
+* ``_apply`` runs under a per-guild
+  :func:`services.setup_operations.acquire_setup_apply_lock` so
+  double-clicks and concurrent presses cannot run two apply batches.
+* The draft is cleared and the session marked complete **only when
+  every operation succeeded**.  Any ``failed`` / ``skipped`` /
+  ``not_yet_implemented`` (the last folded into ``skipped`` by
+  :func:`_apply_ops_in_order`) preserves the draft and mounts the
+  partial-apply recovery view so the operator can retry or cancel.
 """
 
 from __future__ import annotations
@@ -91,6 +100,11 @@ def build_final_review_embed(
     (shows ``summary`` with applied / failed / skipped counts), or
     "nothing to apply" when ``accepted`` is empty.
 
+    Post-apply branch surfaces a distinct **partial-apply** state when
+    ``summary.failed`` or ``summary.skipped`` is non-empty: title and
+    description make clear that setup is NOT complete and the
+    operator's draft has been preserved.
+
     ``accepted`` may be a list of :class:`SetupRecommendation` (legacy
     AI / suggestions flow) or a list of :class:`SetupOperation` (the
     draft-driven flow from the setup wizard hub).  Both render with
@@ -128,16 +142,27 @@ def build_final_review_embed(
         embed.set_footer(text="Owner-gated. Nothing has applied yet.")
         return embed
 
-    color = discord.Color.green() if not summary.failed else discord.Color.gold()
-    embed = discord.Embed(
-        title="🛰 Final review · applied",
-        description=(
+    partial = bool(summary.failed) or bool(summary.skipped)
+    if partial:
+        color = discord.Color.gold()
+        title = "🛰 Final review · partially applied"
+        description = (
+            "Setup partially applied. Some changes succeeded, but "
+            "setup is **not** complete. Your remaining draft has "
+            "been preserved so you can retry or cancel.\n\n"
             f"Applied **{len(summary.applied)}**, "
             f"failed **{len(summary.failed)}**, "
             f"skipped **{len(summary.skipped)}**."
-        ),
-        color=color,
-    )
+        )
+    else:
+        color = discord.Color.green()
+        title = "🛰 Final review · applied"
+        description = (
+            f"Applied **{len(summary.applied)}**, "
+            f"failed **{len(summary.failed)}**, "
+            f"skipped **{len(summary.skipped)}**."
+        )
+    embed = discord.Embed(title=title, description=description, color=color)
     if summary.applied:
         embed.add_field(
             name="Applied",
@@ -160,6 +185,13 @@ def build_final_review_embed(
             name="Skipped",
             value="\n".join(f"• {x}" for x in summary.skipped[:10]),
             inline=False,
+        )
+    if partial:
+        embed.set_footer(
+            text=(
+                "Draft preserved. Use Retry to re-run the failed/skipped "
+                "operations, or Cancel to leave the draft for later."
+            ),
         )
     return embed
 
@@ -217,24 +249,45 @@ class FinalReviewView(BaseView):
             )
             return
         from core.runtime.interaction_helpers import safe_defer
+        from services.setup_operations import (
+            SetupApplyInProgressError,
+            acquire_setup_apply_lock,
+        )
 
-        await safe_defer(interaction, ephemeral=True)
+        # Single-flight gate.  The check + add inside
+        # acquire_setup_apply_lock is atomic under asyncio, so the
+        # losing interaction (second click / second user) never even
+        # enters the apply block.
+        try:
+            async with acquire_setup_apply_lock(guild.id):
+                await safe_defer(interaction, ephemeral=True)
+                await self._run_apply(interaction, guild=guild)
+        except SetupApplyInProgressError:
+            await interaction.response.send_message(
+                "Setup apply is already in progress — wait for the result "
+                "message before retrying.",
+                ephemeral=True,
+            )
+            return
 
+    async def _run_apply(
+        self,
+        interaction: discord.Interaction,
+        *,
+        guild: Any,
+    ) -> None:
+        """Run the apply batch under the held single-flight lock.
+
+        Splits out of :meth:`_apply` so the lock acquire/release is
+        readable as one ``async with`` block.  Caller is responsible
+        for having already deferred the interaction.
+        """
         if self.ops:
             summary = await _apply_ops_in_order(
                 self.ops,
                 guild=guild,
                 actor=interaction.user,
             )
-            # Clear the draft only when the apply ran end-to-end —
-            # mark_complete (below) also calls setup_draft.clear, but
-            # we drop the rows defensively here too.
-            try:
-                from services import setup_draft as _draft
-
-                await _draft.clear(guild.id)
-            except Exception:
-                logger.exception("FinalReviewView: setup_draft.clear failed")
         else:
             summary = await _apply_accepted(
                 self.accepted,
@@ -242,23 +295,59 @@ class FinalReviewView(BaseView):
                 actor=interaction.user,
             )
         self.summary = summary
+
+        # Full success only: clear draft + mark complete.  Any
+        # failed / skipped (not_yet_implemented folds into skipped
+        # via :func:`_apply_ops_in_order`) preserves the draft and
+        # mounts the recovery view.
+        full_success = not summary.failed and not summary.skipped
+        if full_success and self.ops:
+            try:
+                from services import setup_draft as _draft
+
+                await _draft.clear(guild.id)
+            except Exception:
+                logger.exception("FinalReviewView: setup_draft.clear failed")
+            try:
+                from services import setup_session
+
+                await setup_session.mark_complete(guild.id)
+            except Exception:
+                logger.exception("FinalReviewView: mark_complete failed")
+        elif full_success and self.accepted:
+            # Legacy recommendation-driven path: no draft to clear,
+            # but still mark the session complete on full success.
+            try:
+                from services import setup_session
+
+                await setup_session.mark_complete(guild.id)
+            except Exception:
+                logger.exception("FinalReviewView: mark_complete failed")
+
         embed = build_final_review_embed(
             self.accepted if self.accepted else self.ops,
             summary=summary,
         )
-        try:
-            from services import setup_session
-
-            await setup_session.mark_complete(guild.id)
-        except Exception:
-            logger.exception("FinalReviewView: mark_complete failed")
-        for child in self.children:
-            child.disabled = True  # type: ignore[attr-defined]
+        if full_success or not self.ops:
+            for child in self.children:
+                child.disabled = True  # type: ignore[attr-defined]
+            view: discord.ui.View | None = self
+        else:
+            # Partial-failure draft-driven branch: replace the view
+            # with the recovery surface so the operator can retry
+            # or cancel.  The original Apply / Cancel buttons go
+            # away — they are no longer the right next actions.
+            view = PartialApplyRecoveryView(
+                interaction.user,
+                ops=self.ops,
+                accepted=self.accepted,
+                summary=summary,
+            )
         try:
             await interaction.followup.edit_message(
                 message_id=interaction.message.id,
                 embed=embed,
-                view=self,
+                view=view,
             )
         except discord.HTTPException:
             logger.warning("FinalReviewView: followup edit failed")
@@ -422,9 +511,110 @@ async def _apply_accepted(
     return summary
 
 
+class PartialApplyRecoveryView(BaseView):
+    """View shown after a partial Final Review apply.
+
+    The draft is preserved (Phase 0 safety guarantee).  The operator
+    chooses between:
+
+    * **Retry** — re-run the apply path.  Goes through the same
+      single-flight lock and renders a fresh summary embed (which
+      may itself be partial or full success).  The dispatcher's
+      idempotency guarantees and the resource pipeline's reuse
+      semantics (mode=use_existing on retry, where appropriate)
+      ensure successful rows don't double-apply.
+    * **Cancel** — close the recovery view without changes; the
+      operator can re-open Final review later to retry or edit the
+      draft.
+
+    ``Skip failed`` is intentionally omitted in this PR — it
+    requires row-level provenance to identify exactly which draft
+    rows correspond to the failed / skipped summary entries.  That
+    matching is added when the wizard's section UIs start writing
+    ``section_slug`` to the draft (a follow-up PR).  Until then the
+    only safe drop is "everything via Retry succeeds".
+    """
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        ops: list[Any],
+        accepted: list[SetupRecommendation] | tuple[SetupRecommendation, ...],
+        summary: ApplySummary,
+        public: bool = False,
+        timeout: int = 300,
+    ) -> None:
+        super().__init__(author, public=public, timeout=timeout)
+        self.ops: list[Any] = list(ops or ())
+        self.accepted: list[SetupRecommendation] = list(accepted or ())
+        self.summary = summary
+
+    @discord.ui.button(label="Retry", style=discord.ButtonStyle.primary)
+    async def _retry(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Retry requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from core.runtime.interaction_helpers import safe_defer
+        from services.setup_operations import (
+            SetupApplyInProgressError,
+            acquire_setup_apply_lock,
+        )
+
+        try:
+            async with acquire_setup_apply_lock(guild.id):
+                await safe_defer(interaction, ephemeral=True)
+                # Rebuild a FinalReviewView so the canonical apply
+                # flow runs — same lock acquisition, same draft
+                # clear / mark_complete guarding, same partial
+                # recovery branch on second failure.
+                retry = FinalReviewView(
+                    interaction.user,
+                    ops=self.ops,
+                    accepted=self.accepted,
+                )
+                await retry._run_apply(interaction, guild=guild)
+                self.summary = retry.summary
+        except SetupApplyInProgressError:
+            await interaction.response.send_message(
+                "Setup apply is already in progress — wait for the result "
+                "message before retrying.",
+                ephemeral=True,
+            )
+            return
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def _cancel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        del button
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await interaction.response.edit_message(
+            content=(
+                "Recovery cancelled — your draft is preserved. Re-open "
+                "Final review when you're ready to retry."
+            ),
+            view=self,
+        )
+        self.stop()
+
+
 __all__ = [
     "ApplySummary",
     "FinalReviewView",
+    "PartialApplyRecoveryView",
     "_apply_ops_in_order",
     "_sort_ops_for_apply",
     "build_final_review_embed",
