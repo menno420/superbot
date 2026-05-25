@@ -210,11 +210,10 @@ async def apply_preset(
     """Bind a preset id into the matching policy scope.
 
     ``scope`` must be one of :data:`_SUPPORTED_SCOPES`. The preset's
-    recommended mode is written alongside the preset id; other
-    optional columns (``min_level``, ``cooldown_seconds``) are left
-    to inherit guild defaults. PR-C-pre will replace the ``None``
-    arguments here with an ``UNCHANGED`` sentinel so any existing
-    overrides are preserved on subsequent applies.
+    recommended mode and the preset id are written; other optional
+    columns (``min_level``, ``cooldown_seconds``) are passed as
+    :data:`ai_policy_mutation.UNCHANGED` so any existing per-scope
+    overrides are preserved across preset applies.
     """
     if scope not in _SUPPORTED_SCOPES:
         raise InvalidBehaviorPresetScopeError(
@@ -232,8 +231,8 @@ async def apply_preset(
             guild_id,
             target_id,
             mode=summary.recommended_mode,
-            min_level=None,
-            cooldown_seconds=None,
+            min_level=ai_policy_mutation.UNCHANGED,
+            cooldown_seconds=ai_policy_mutation.UNCHANGED,
             instruction_profile_id=preset_id,
             actor=actor,
         )
@@ -242,8 +241,8 @@ async def apply_preset(
             guild_id,
             target_id,
             mode=summary.recommended_mode,
-            min_level=None,
-            cooldown_seconds=None,
+            min_level=ai_policy_mutation.UNCHANGED,
+            cooldown_seconds=ai_policy_mutation.UNCHANGED,
             instruction_profile_id=preset_id,
             actor=actor,
         )
