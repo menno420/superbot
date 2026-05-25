@@ -317,7 +317,12 @@ def _check_bot_permissions(channel: Any, scan_enabled: bool) -> AIReadinessFindi
         )
     if not isinstance(
         channel,
-        (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Thread),
+        (
+            discord.TextChannel,
+            discord.VoiceChannel,
+            discord.StageChannel,
+            discord.Thread,
+        ),
     ):
         return AIReadinessFinding(
             name="bot_permissions",
@@ -346,9 +351,7 @@ def _check_bot_permissions(channel: Any, scan_enabled: bool) -> AIReadinessFindi
         return AIReadinessFinding(
             name="bot_permissions",
             status=STATUS_ERROR,
-            detail=(
-                f"Bot lacks permissions in this channel: {', '.join(missing)}."
-            ),
+            detail=(f"Bot lacks permissions in this channel: {', '.join(missing)}."),
         )
     return AIReadinessFinding(
         name="bot_permissions",
@@ -396,9 +399,7 @@ def _check_recent_denials(
         return AIReadinessFinding(
             name="recent_denials",
             status=STATUS_OK,
-            detail=(
-                f"No denials/errors in the last {audit.recent_total} decisions."
-            ),
+            detail=(f"No denials/errors in the last {audit.recent_total} decisions."),
         )
     return AIReadinessFinding(
         name="recent_denials",

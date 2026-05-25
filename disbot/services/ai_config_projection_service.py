@@ -433,9 +433,7 @@ async def _build_projection_snapshot(
         except Exception:
             raw_scalars[legacy_key] = None
             continue
-        raw_scalars[legacy_key] = (
-            resolution.value if resolution is not None else None
-        )
+        raw_scalars[legacy_key] = resolution.value if resolution is not None else None
 
     return ProjectionSnapshot(
         fields=tuple(fields),
