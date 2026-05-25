@@ -138,10 +138,23 @@ class PolicyChooserView(discord.ui.View):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # PR4A commit 4: replaces this placeholder with a paged
-        # PolicyListView.
+        from views.ai.policy.list_view import (
+            PolicyListView,
+            build_list_embed,
+            collect_entries,
+        )
+
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "❌ Listing overrides requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        entries = await collect_entries(interaction.guild.id)
+        embed, _total = build_list_embed(entries, page=1)
         await interaction.response.send_message(
-            "Override list lands in PR4A commit 4.",
+            embed=embed,
+            view=PolicyListView(entries, page=1),
             ephemeral=True,
         )
 

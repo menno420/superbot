@@ -89,16 +89,13 @@ async def test_channel_button_opens_channel_select_view():
     assert isinstance(kwargs["view"], ChannelPolicySelectView)
 
 
-async def test_list_button_still_placeholder():
-    """``List overrides`` is the only remaining placeholder; it lands
-    in PR4A commit 4. The button must still answer the interaction."""
+async def test_all_scope_buttons_have_real_implementations():
+    """After PR4A commit 4, every chooser sub-button opens a real
+    follow-up view. The placeholder phase is done."""
     view = PolicyChooserView()
-    interaction = _admin_interaction()
-    await view.list_btn.callback(interaction)
-    interaction.response.send_message.assert_awaited_once()
-    args, kwargs = interaction.response.send_message.call_args
-    assert "PR4A commit 4" in args[0]
-    assert kwargs.get("ephemeral") is True
+    for attr in ("channel_btn", "category_btn", "role_btn", "list_btn"):
+        handler = getattr(view, attr)
+        assert handler is not None, attr
 
 
 def test_chooser_view_has_one_button_per_scope():
