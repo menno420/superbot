@@ -16,6 +16,7 @@ and a parallel ``app_commands`` family with the same gating. The
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import discord
@@ -27,6 +28,45 @@ from services import ai_diagnostics_service
 from views.ai.panel import AIPanelView, build_ai_panel_embed
 
 logger = logging.getLogger("bot")
+
+
+def _relative_time(ts: datetime, *, now: datetime | None = None) -> str:
+    """Format ``ts`` as a relative-time string like ``"2m ago"``.
+
+    Returns ``"in the future"`` if ``ts`` is later than ``now``; the
+    audit table writes ``created_at`` server-side so this should not
+    happen in practice, but the renderer must not raise on clock skew.
+    """
+    reference = now or datetime.now(timezone.utc)
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    delta = (reference - ts).total_seconds()
+    if delta < 0:
+        return "in the future"
+    if delta < 60:
+        return f"{int(delta)}s ago"
+    if delta < 3600:
+        return f"{int(delta // 60)}m ago"
+    if delta < 86400:
+        return f"{int(delta // 3600)}h ago"
+    return f"{int(delta // 86400)}d ago"
+
+
+def _format_audit_row(row: dict) -> str:
+    """Format one ``ai_decision_audit`` row for the why-no-response embed.
+
+    Includes relative timestamp, decision, reason_code, task, route,
+    channel link, user mention, provider, model. No raw message content
+    is rendered (the audit table does not store any).
+    """
+    created_at = row.get("created_at")
+    when = _relative_time(created_at) if isinstance(created_at, datetime) else "—"
+    return (
+        f"`{when:<8}` · `{row['decision']:<8}` · `{row['reason_code']}` · "
+        f"task={row.get('task') or '—'} · route={row.get('route') or '—'} · "
+        f"<#{row['channel_id']}> · <@{row['user_id']}> · "
+        f"provider={row.get('provider') or '—'} model={row.get('model') or '—'}"
+    )
 
 
 async def _build_ai_settings_panel(
@@ -264,17 +304,27 @@ class AICog(commands.Cog):
             r
             for r in rows
             if r["decision"] in ("denied", "skipped", "errored", "degraded")
-        ]
+        ][:25]
         if not denials:
             await ctx.send("No recent denials or skips for this guild.")
             return
-        lines = [
-            f"`{r['decision']:<8}` `{r['reason_code']}` · "
-            f"channel=<#{r['channel_id']}> · user=<@{r['user_id']}> · "
-            f"task={r.get('task') or '—'}"
-            for r in denials[:25]
-        ]
-        await ctx.send("\n".join(lines))
+        lines = [_format_audit_row(r) for r in denials]
+        embed = discord.Embed(
+            title="AI — why no response",
+            description="\n".join(lines),
+            color=discord.Color.orange(),
+        )
+        oldest = denials[-1].get("created_at")
+        if isinstance(oldest, datetime):
+            embed.set_footer(
+                text=(
+                    f"Showing {len(denials)} most recent · "
+                    f"oldest: {oldest.isoformat()}"
+                ),
+            )
+        else:
+            embed.set_footer(text=f"Showing {len(denials)} most recent")
+        await ctx.send(embed=embed)
 
     @ai_group.command(name="policy")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
