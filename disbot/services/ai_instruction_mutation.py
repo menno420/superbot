@@ -66,6 +66,7 @@ async def upsert_profile(
     body: str,
     scope: str = "guild",
     feature_key: str | None = None,
+    is_preset: bool = False,
     actor: Any,
 ) -> AIInstructionMutationResult:
     actor_id = _check_admin(actor)
@@ -81,6 +82,23 @@ async def upsert_profile(
         raise InvalidAIInstructionValueError("profile name must be non-empty")
     if not isinstance(body, str):
         raise InvalidAIInstructionValueError("profile body must be a string")
+    if is_preset and guild_id is not None:
+        # Presets are system-wide rows seeded by migration 044. Guild
+        # actors must never be able to author or impersonate them.
+        raise UnauthorizedAIInstructionMutationError(
+            "is_preset=True is reserved for system seeds; guild_id must be None",
+        )
+
+    # Refuse to flip an existing preset row's ``is_preset`` to FALSE
+    # from a guild-scope upsert (a name collision on the same scope
+    # would otherwise downgrade a seeded preset).
+    if not is_preset and guild_id is None and scope == "system":
+        existing = await ai_db.list_instruction_profiles(None, scope="system")
+        for row in existing:
+            if row.get("name") == name and row.get("is_preset"):
+                raise UnauthorizedAIInstructionMutationError(
+                    f"cannot overwrite preset row {name!r} with is_preset=False",
+                )
 
     mutation_id = uuid.uuid4().hex
     profile_id = await ai_db.upsert_instruction_profile(
@@ -90,6 +108,7 @@ async def upsert_profile(
         scope=scope,
         feature_key=feature_key,
         created_by=actor_id,
+        is_preset=is_preset,
     )
     if guild_id is not None:
         await ai_db.bump_generation(guild_id)
