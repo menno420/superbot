@@ -288,6 +288,9 @@ class SetupHubView(BaseView):
                         builder,
                         guild=interaction.guild,
                         session=self.session,
+                        purpose=(
+                            self.session.purpose if self.session is not None else None
+                        ),
                         depth=(
                             self.session.depth if self.session is not None else None
                         ),

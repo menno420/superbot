@@ -79,6 +79,10 @@ def _mock_db():
             "services.setup_session.db.clear_acknowledged_sections",
             new_callable=AsyncMock,
         ) as clear_acknowledged_mock,
+        patch(
+            "services.setup_session.db.set_purpose",
+            new_callable=AsyncMock,
+        ) as set_purpose_mock,
     ):
         yield {
             "get": get_mock,
@@ -92,6 +96,7 @@ def _mock_db():
             "add_acknowledged_section": add_acknowledged_mock,
             "remove_acknowledged_section": remove_acknowledged_mock,
             "clear_acknowledged_sections": clear_acknowledged_mock,
+            "set_purpose": set_purpose_mock,
         }
 
 
@@ -399,3 +404,42 @@ async def test_set_setup_message_id_accepts_none_to_clear():
     ) as set_mock:
         await svc.set_setup_message_id(1, None)
     set_mock.assert_awaited_once_with(1, None)
+
+
+# ---------------------------------------------------------------------------
+# set_purpose (Phase 4)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_set_purpose_routes_to_db_layer(_mock_db):
+    await svc.set_purpose(1, "community")
+    _mock_db["set_purpose"].assert_awaited_once_with(1, "community")
+
+
+@pytest.mark.asyncio
+async def test_set_purpose_accepts_none_to_clear(_mock_db):
+    await svc.set_purpose(1, None)
+    _mock_db["set_purpose"].assert_awaited_once_with(1, None)
+
+
+@pytest.mark.asyncio
+async def test_resume_session_hydrates_purpose(_mock_db):
+    _mock_db["get"].return_value = _row(
+        setup_status="in_progress",
+        purpose="gaming_btd6",
+    )
+    session = await svc.resume_session(1)
+    assert session is not None
+    assert session.purpose == "gaming_btd6"
+
+
+@pytest.mark.asyncio
+async def test_resume_session_purpose_defaults_to_none(_mock_db):
+    """Rows without a ``purpose`` (pre-Phase-4 / not yet picked)
+    surface as ``session.purpose is None`` rather than raising.
+    """
+    _mock_db["get"].return_value = _row(setup_status="in_progress")
+    session = await svc.resume_session(1)
+    assert session is not None
+    assert session.purpose is None

@@ -347,6 +347,7 @@ class SectionCardView(BaseView):
                 self._recommended_ops_builder,
                 guild=guild,
                 session=session,
+                purpose=session.purpose if session is not None else None,
                 depth=session.depth if session is not None else None,
                 section_slug=self._section.slug,
             )
