@@ -103,6 +103,29 @@ def build_readiness_embed(
     return embed
 
 
+async def _safe_build_snapshot(guild: discord.Guild | None) -> Any:
+    """Best-effort snapshot fetch for command handlers.
+
+    Returns ``None`` when ``guild`` is ``None`` (DM context) or when
+    the snapshot build raises. The embed builders that accept a
+    snapshot all tolerate ``None`` and fall back to their existing
+    direct-read path, so renderers never raise on a partial snapshot.
+    """
+    if guild is None:
+        return None
+    try:
+        from services import ai_config_projection_service
+
+        return await ai_config_projection_service.build_snapshot(guild.id)
+    except Exception:
+        logger.debug(
+            "ai_cog: snapshot build failed for guild=%d",
+            guild.id,
+            exc_info=True,
+        )
+        return None
+
+
 async def _attach_readiness_summary(
     embed: discord.Embed,
     guild: discord.Guild,
@@ -176,22 +199,54 @@ async def _build_ai_settings_panel(
 # ---------------------------------------------------------------------------
 
 
-def build_status_embed() -> discord.Embed:
-    """Compact status: enabled / default provider / last call outcome."""
-    snap = ai_diagnostics_service.snapshot_for_cog()
+def build_status_embed(snapshot: object | None = None) -> discord.Embed:
+    """Compact status: enabled / default provider / last call outcome.
+
+    When ``snapshot`` is supplied (the
+    :class:`AIConfigSnapshot.provider` slice), the embed sources every
+    provider/counter field from it — every operator-facing AI surface
+    funnels through one read model.
+
+    When ``snapshot`` is ``None`` the builder falls back to the direct
+    diagnostics call so panel-header callsites that lack a guild
+    context still work (the panel header is anchored before
+    ``interaction.guild_id`` is known).
+    """
+    provider = getattr(snapshot, "provider", None) if snapshot is not None else None
+    if provider is not None:
+        values: dict[str, str] = {
+            "enabled": "yes" if provider.enabled else "no",
+            "default_provider": str(provider.default_provider or "—"),
+            "setup_advisor_provider": str(
+                provider.setup_advisor_provider or "—",
+            ),
+            "provider_active": str(provider.provider_active or "—"),
+            "requests": str(provider.requests_observed),
+            "failures": str(provider.failures_observed),
+        }
+    else:
+        snap = ai_diagnostics_service.snapshot_for_cog()
+        values = {
+            "enabled": "yes" if snap["enabled"] else "no",
+            "default_provider": str(snap["default_provider"]),
+            "setup_advisor_provider": str(snap["setup_advisor_provider"]),
+            "provider_active": str(snap["provider_active"]),
+            "requests": str(snap["requests_observed"]),
+            "failures": str(snap["failures_observed"]),
+        }
     embed = discord.Embed(
         title="AI Gateway — Status",
         color=discord.Color.blurple(),
     )
-    embed.add_field(name="Enabled", value="yes" if snap["enabled"] else "no")
-    embed.add_field(name="Default provider", value=str(snap["default_provider"]))
+    embed.add_field(name="Enabled", value=values["enabled"])
+    embed.add_field(name="Default provider", value=values["default_provider"])
     embed.add_field(
         name="Setup advisor provider",
-        value=str(snap["setup_advisor_provider"]),
+        value=values["setup_advisor_provider"],
     )
-    embed.add_field(name="Active provider", value=str(snap["provider_active"]))
-    embed.add_field(name="Requests", value=str(snap["requests_observed"]))
-    embed.add_field(name="Failures", value=str(snap["failures_observed"]))
+    embed.add_field(name="Active provider", value=values["provider_active"])
+    embed.add_field(name="Requests", value=values["requests"])
+    embed.add_field(name="Failures", value=values["failures"])
     return embed
 
 
@@ -446,7 +501,8 @@ class AICog(commands.Cog):
     @ai_group.command(name="status")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def ai_status(self, ctx: commands.Context) -> None:
-        embed = build_status_embed()
+        snapshot = await _safe_build_snapshot(ctx.guild)
+        embed = build_status_embed(snapshot)
         if ctx.guild is not None:
             await _attach_readiness_summary(embed, ctx.guild, self.bot)
         await ctx.send(embed=embed)
@@ -663,9 +719,11 @@ class AICog(commands.Cog):
         from views.ai.support_report import build_support_report_embed
 
         bot_user_id = getattr(self.bot.user, "id", None) if self.bot.user else None
+        snapshot = await _safe_build_snapshot(ctx.guild)
         embed = await build_support_report_embed(
             guild_id=ctx.guild.id,
             bot_user_id=bot_user_id,
+            snapshot=snapshot,
         )
         await ctx.send(embed=embed)
 
@@ -682,7 +740,8 @@ class AICog(commands.Cog):
     @ai_app_group.command(name="status", description="AI gateway status summary.")
     @app_commands.checks.has_permissions(administrator=True)
     async def ai_status_slash(self, interaction: discord.Interaction) -> None:
-        embed = build_status_embed()
+        snapshot = await _safe_build_snapshot(interaction.guild)
+        embed = build_status_embed(snapshot)
         if interaction.guild is not None:
             await _attach_readiness_summary(embed, interaction.guild, self.bot)
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -805,9 +864,11 @@ class AICog(commands.Cog):
         from views.ai.support_report import build_support_report_embed
 
         bot_user_id = getattr(self.bot.user, "id", None) if self.bot.user else None
+        snapshot = await _safe_build_snapshot(interaction.guild)
         embed = await build_support_report_embed(
             guild_id=interaction.guild.id,
             bot_user_id=bot_user_id,
+            snapshot=snapshot,
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
