@@ -218,6 +218,30 @@ class AIPanelView(PersistentView):
             ephemeral=True,
         )
 
+    @discord.ui.button(
+        label="Behavior",
+        style=discord.ButtonStyle.success,
+        row=1,
+        custom_id="ai:behavior",
+    )
+    async def behavior_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # PR-C: open the usability-first Behavior chooser as an ephemeral
+        # follow-up. Bind presets without learning the raw policy knobs.
+        from views.ai.behavior import (
+            BehaviorChooserView,
+            build_behavior_embed,
+        )
+
+        await interaction.response.send_message(
+            embed=build_behavior_embed(),
+            view=BehaviorChooserView(),
+            ephemeral=True,
+        )
+
 
 # ---------------------------------------------------------------------------
 # Shared dispatch + interaction-router handler
@@ -308,6 +332,20 @@ async def handle_ai_interaction(
         await interaction.response.send_message(
             embed=build_chooser_embed(),
             view=PolicyChooserView(),
+            ephemeral=True,
+        )
+        return
+
+    # PR-C: same shape for the Behavior chooser.
+    if action == "behavior":
+        from views.ai.behavior import (
+            BehaviorChooserView,
+            build_behavior_embed,
+        )
+
+        await interaction.response.send_message(
+            embed=build_behavior_embed(),
+            view=BehaviorChooserView(),
             ephemeral=True,
         )
         return
