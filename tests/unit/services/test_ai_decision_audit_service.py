@@ -112,3 +112,61 @@ async def test_no_raw_message_content_is_stored(_stub_db):
     assert "text" not in sig.parameters
     assert "content" not in sig.parameters
     assert "message_text" not in sig.parameters
+
+
+# ---------------------------------------------------------------------------
+# PR-5 (migration 045) — new columns round-trip through record().
+# ---------------------------------------------------------------------------
+
+
+async def test_pr5_memory_and_effective_kwargs_pass_through(_stub_db):
+    """Memory-* and effective-* kwargs reach ai_db.record_decision."""
+    await svc.record(
+        guild_id=1,
+        channel_id=2,
+        category_id=None,
+        user_id=3,
+        message_id=4,
+        task="general.nl_answer",
+        route="openai",
+        decision="replied",
+        reason_code=PolicyDenialReason.NONE,
+        provider="openai",
+        model="gpt-4o-mini",
+        memory_turns_used=7,
+        memory_window_minutes=30,
+        memory_scan_attempted=True,
+        memory_scan_added_turns=2,
+        effective_source="channel",
+        effective_mode="always_reply",
+    )
+    row = _stub_db[0]
+    assert row["memory_turns_used"] == 7
+    assert row["memory_window_minutes"] == 30
+    assert row["memory_scan_attempted"] is True
+    assert row["memory_scan_added_turns"] == 2
+    assert row["effective_source"] == "channel"
+    assert row["effective_mode"] == "always_reply"
+
+
+async def test_pr5_columns_default_to_none(_stub_db):
+    """Legacy callers that omit the new kwargs get NULL (None) for
+    all six migration-045 columns."""
+    await svc.record(
+        guild_id=1,
+        channel_id=2,
+        category_id=None,
+        user_id=3,
+        message_id=4,
+        task=None,
+        route=None,
+        decision="denied",
+        reason_code=PolicyDenialReason.BELOW_MIN_LEVEL,
+    )
+    row = _stub_db[0]
+    assert row["memory_turns_used"] is None
+    assert row["memory_window_minutes"] is None
+    assert row["memory_scan_attempted"] is None
+    assert row["memory_scan_added_turns"] is None
+    assert row["effective_source"] is None
+    assert row["effective_mode"] is None

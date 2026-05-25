@@ -470,15 +470,32 @@ async def record_decision(
     provider: str | None,
     model: str | None,
     expires_at: Any | None = None,
+    memory_turns_used: int | None = None,
+    memory_window_minutes: int | None = None,
+    memory_scan_attempted: bool | None = None,
+    memory_scan_added_turns: int | None = None,
+    effective_source: str | None = None,
+    effective_mode: str | None = None,
 ) -> int:
+    """Insert one ai_decision_audit row.
+
+    Migration 045 added the ``memory_*`` / ``effective_*`` columns;
+    they are nullable so legacy callers continue to work without
+    changes. The natural-language stage threads these on every
+    record (effective fields always; memory fields on the
+    ``decision='replied'`` branch only).
+    """
     row = await pool.get().fetchrow(
         """
         INSERT INTO ai_decision_audit (
             guild_id, channel_id, category_id, user_id, message_id,
             task, route, decision, reason_code, policy_snapshot_hash,
-            instruction_profile_ids, provider, model, created_at, expires_at
+            instruction_profile_ids, provider, model, created_at, expires_at,
+            memory_turns_used, memory_window_minutes, memory_scan_attempted,
+            memory_scan_added_turns, effective_source, effective_mode
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), $14
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), $14,
+            $15, $16, $17, $18, $19, $20
         )
         RETURNING id
         """,
@@ -496,6 +513,12 @@ async def record_decision(
         provider,
         model,
         expires_at,
+        memory_turns_used,
+        memory_window_minutes,
+        memory_scan_attempted,
+        memory_scan_added_turns,
+        effective_source,
+        effective_mode,
     )
     return int(row["id"])
 
@@ -511,7 +534,9 @@ async def query_decisions(
     sql = (
         "SELECT id, guild_id, channel_id, category_id, user_id, message_id,"
         " task, route, decision, reason_code, policy_snapshot_hash,"
-        " instruction_profile_ids, provider, model, created_at "
+        " instruction_profile_ids, provider, model, created_at,"
+        " memory_turns_used, memory_window_minutes, memory_scan_attempted,"
+        " memory_scan_added_turns, effective_source, effective_mode "
         "FROM ai_decision_audit WHERE guild_id = $1"
     )
     args: list[Any] = [guild_id]

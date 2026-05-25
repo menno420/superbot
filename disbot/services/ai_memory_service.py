@@ -22,6 +22,7 @@ restart and on ``forget_guild`` / ``forget_channel``.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import Any
 
 from services import ai_conversation_service
@@ -65,6 +66,81 @@ async def read_memory_settings(guild_id: int) -> tuple[int, bool]:
         window = 0
     scan_enabled = str(raw_scan).strip().lower() in {"true", "1", "yes", "on"}
     return window, scan_enabled
+
+
+@dataclass(frozen=True)
+class MemoryGatherResult:
+    """Outcome of :func:`gather_recent_turns_with_metadata`.
+
+    Carries the turns themselves alongside the metadata the audit
+    row needs to record: the active memory window in minutes,
+    whether the Discord history scan was attempted, and how many
+    turns it appended. The natural-language stage uses this to
+    populate the migration-045 columns on a ``replied`` audit row.
+    """
+
+    turns: list[ai_conversation_service.ConversationTurn]
+    window_minutes: int
+    scan_attempted: bool
+    scan_added_turns: int
+
+
+async def gather_recent_turns_with_metadata(
+    *,
+    guild_id: int,
+    channel_id: int,
+    channel: Any = None,
+    bot_user_id: int | None = None,
+) -> MemoryGatherResult:
+    """Same behavior as :func:`gather_recent_turns` plus scan metadata.
+
+    Introduced in PR-5 so the natural-language stage can audit which
+    fallback path produced the turns. Returns a typed
+    :class:`MemoryGatherResult`. The legacy ``gather_recent_turns``
+    is kept for current callsites; only the NL stage moves to this
+    helper.
+    """
+    window, scan_enabled = await read_memory_settings(guild_id)
+    turns = ai_conversation_service.recent_turns(
+        guild_id,
+        channel_id,
+        window_minutes=window,
+    )
+    scan_attempted = False
+    scan_added = 0
+    if (
+        scan_enabled
+        and channel is not None
+        and len(turns) < ai_conversation_service.MIN_FLOOR_TURNS
+    ):
+        scan_attempted = True
+        try:
+            scan_added = await _seed_from_history(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                channel=channel,
+                bot_user_id=bot_user_id,
+            )
+        except Exception as exc:  # noqa: BLE001 — best-effort fallback
+            logger.debug(
+                "ai_memory: channel scan failed for guild=%s channel=%s: %s",
+                guild_id,
+                channel_id,
+                exc,
+            )
+            scan_added = 0
+        # Re-read after the seed.
+        turns = ai_conversation_service.recent_turns(
+            guild_id,
+            channel_id,
+            window_minutes=window,
+        )
+    return MemoryGatherResult(
+        turns=turns,
+        window_minutes=int(window),
+        scan_attempted=scan_attempted,
+        scan_added_turns=int(scan_added),
+    )
 
 
 async def gather_recent_turns(
@@ -174,6 +250,8 @@ async def _seed_from_history(
 
 
 __all__ = [
+    "MemoryGatherResult",
     "gather_recent_turns",
+    "gather_recent_turns_with_metadata",
     "read_memory_settings",
 ]

@@ -143,6 +143,8 @@ class AINaturalLanguageStage:
                 reason_code=decision.reason_code,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
                 instruction_profile_ids=list(decision.instruction_profile_ids) or None,
+                effective_source=decision.effective_source or None,
+                effective_mode=decision.effective_mode or None,
             )
             return StageResult()
 
@@ -164,8 +166,18 @@ class AINaturalLanguageStage:
                 decision="denied",
                 reason_code=PolicyDenialReason.COOLDOWN_ACTIVE,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
+                effective_source=decision.effective_source or None,
+                effective_mode=decision.effective_mode or None,
             )
             return StageResult()
+
+        # Memory metadata captured here so the `replied` audit row can
+        # record what context was actually supplied to the prompt. The
+        # other branches (error / cooldown / skip / degraded) leave the
+        # memory columns NULL — they did not produce a reply.
+        memory_window_minutes: int | None = None
+        memory_scan_attempted: bool | None = None
+        memory_scan_added_turns: int | None = None
 
         try:
             feature_facts = await _gather_feature_facts(routed.task, text)
@@ -176,7 +188,7 @@ class AINaturalLanguageStage:
             try:
                 from services import ai_memory_service
 
-                recent_turns = await ai_memory_service.gather_recent_turns(
+                result = await ai_memory_service.gather_recent_turns_with_metadata(
                     guild_id=guild_id,
                     channel_id=channel_id,
                     channel=getattr(message, "channel", None),
@@ -186,6 +198,10 @@ class AINaturalLanguageStage:
                         None,
                     ),
                 )
+                recent_turns = result.turns
+                memory_window_minutes = result.window_minutes
+                memory_scan_attempted = result.scan_attempted
+                memory_scan_added_turns = result.scan_added_turns
             except Exception as exc:  # noqa: BLE001 — defensive
                 logger.debug(
                     "ai_natural_language_stage: memory unavailable: %s",
@@ -231,6 +247,8 @@ class AINaturalLanguageStage:
                 instruction_profile_ids=(
                     list(stack.instruction_profile_ids) if "stack" in locals() else None
                 ),
+                effective_source=decision.effective_source or None,
+                effective_mode=decision.effective_mode or None,
             )
             return StageResult()
 
@@ -259,6 +277,8 @@ class AINaturalLanguageStage:
                 instruction_profile_ids=list(stack.instruction_profile_ids) or None,
                 provider=response.provider or None,
                 model=response.model or None,
+                effective_source=decision.effective_source or None,
+                effective_mode=decision.effective_mode or None,
             )
             return StageResult()
 
@@ -286,6 +306,8 @@ class AINaturalLanguageStage:
                 instruction_profile_ids=list(stack.instruction_profile_ids) or None,
                 provider=response.provider or None,
                 model=response.model or None,
+                effective_source=decision.effective_source or None,
+                effective_mode=decision.effective_mode or None,
             )
             return StageResult()
 
@@ -316,6 +338,12 @@ class AINaturalLanguageStage:
             instruction_profile_ids=list(stack.instruction_profile_ids) or None,
             provider=response.provider or None,
             model=response.model or None,
+            memory_turns_used=len(recent_turns) if recent_turns else 0,
+            memory_window_minutes=memory_window_minutes,
+            memory_scan_attempted=memory_scan_attempted,
+            memory_scan_added_turns=memory_scan_added_turns,
+            effective_source=decision.effective_source or None,
+            effective_mode=decision.effective_mode or None,
         )
 
         ctx.metadata["handled_by"] = STAGE_NAME

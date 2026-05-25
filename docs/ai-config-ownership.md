@@ -181,23 +181,30 @@ columns are nullable and render as `—` when missing or NULL.
 | `provider`, `model` | LLM invocation metadata |
 | `created_at`, `expires_at` | TTL support |
 
-### Columns added by migration 045 (PR-5)
+### Columns added by migration 045 (PR-5, shipped)
 
 All nullable; legacy rows stay NULL.
 
-| Column | Purpose |
-|---|---|
-| `memory_turns_used` | turns supplied to the prompt on a `replied` row |
-| `memory_window_minutes` | active memory window at decision time |
-| `memory_scan_attempted` | whether the Discord history scan was attempted |
-| `memory_scan_added_turns` | turns appended by the scan, if any |
-| `effective_source` | precedence scope that won (`channel` / `category` / `guild`) |
-| `effective_mode` | mode the winning source produced (`always_reply` / `mention_only` / `disabled`) |
+| Column | Purpose | Populated on |
+|---|---|---|
+| `memory_turns_used` | turns supplied to the prompt on a `replied` row | `replied` only |
+| `memory_window_minutes` | active memory window at decision time | `replied` only |
+| `memory_scan_attempted` | whether the Discord history scan was attempted | `replied` only |
+| `memory_scan_added_turns` | turns appended by the scan, if any | `replied` only |
+| `effective_source` | precedence scope that won (`channel` / `category` / `guild`) | every record() call that has a `PolicyDecision` |
+| `effective_mode` | mode the winning source produced (`always_reply` / `mention_only` / `disabled`) | every record() call that has a `PolicyDecision` |
 
 **Legacy-NULL rendering rule (I-4):** `_format_audit_row` in
-`disbot/cogs/ai_cog.py` and the support-report renderer must render
-`—` when any PR-5 field is NULL on the row being formatted. The cog
-test asserts this on a synthetic legacy row.
+`disbot/cogs/ai_cog.py` and the support-report draft renderer must
+render `—` when any PR-5 field is NULL on the row being formatted.
+Pinned by `tests/unit/cogs/test_format_audit_row_legacy_null.py`.
+
+**Memory helper migration:** PR-5 introduces
+`ai_memory_service.gather_recent_turns_with_metadata` returning a
+`MemoryGatherResult(turns, window_minutes, scan_attempted,
+scan_added_turns)` dataclass. The legacy `gather_recent_turns(...)`
+is kept intact for current callsites; only the natural-language
+stage migrates to the metadata-aware helper.
 
 ---
 
