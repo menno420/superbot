@@ -380,6 +380,26 @@ class AICog(commands.Cog):
         """Open the AI Platform panel (alias for ``!ai``)."""
         await ctx.send(embed=build_ai_panel_embed(), view=AIPanelView())
 
+    @ai_group.command(name="support-report")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def ai_support_report(self, ctx: commands.Context) -> None:
+        """Render a copy-pasteable support report from recent audit (PR-H).
+
+        No outbound delivery — the operator copies the rendered code
+        block into whatever support channel they use.
+        """
+        if not ctx.guild:
+            await ctx.send("This command requires a guild context.")
+            return
+        from views.ai.support_report import build_support_report_embed
+
+        bot_user_id = getattr(self.bot.user, "id", None) if self.bot.user else None
+        embed = await build_support_report_embed(
+            guild_id=ctx.guild.id,
+            bot_user_id=bot_user_id,
+        )
+        await ctx.send(embed=embed)
+
     # ------------------------------------------------------------------
     # App commands (slash). Mirror the prefix group, admin-gated.
     # ------------------------------------------------------------------
@@ -434,6 +454,32 @@ class AICog(commands.Cog):
             embed=build_routing_embed(task),
             ephemeral=True,
         )
+
+    @ai_app_group.command(
+        name="support-report",
+        description="Render a copy-paste AI support report (no delivery).",
+    )
+    @app_commands.checks.has_permissions(administrator=True)
+    async def ai_support_report_slash(
+        self,
+        interaction: discord.Interaction,
+    ) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "This command requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from views.ai.support_report import build_support_report_embed
+
+        bot_user_id = (
+            getattr(self.bot.user, "id", None) if self.bot.user else None
+        )
+        embed = await build_support_report_embed(
+            guild_id=interaction.guild.id,
+            bot_user_id=bot_user_id,
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @ai_app_group.command(
         name="settings",
