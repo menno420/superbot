@@ -285,6 +285,30 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     )
 
 
+async def _build_detail_embed(
+    guild: discord.Guild,
+    *,
+    session: object = None,
+    draft_rows: object = None,
+) -> discord.Embed:
+    """Wizard-native detail embed for the identity step."""
+    del session, draft_rows
+    current = await _read_current_warn_threshold(guild.id)
+    return _build_identity_embed(guild, current_warn_threshold=current)
+
+
+def _build_detail_view(
+    author: discord.Member | discord.User,
+    *,
+    section: SetupSection,
+    guild: discord.Guild,
+    session: object = None,
+) -> IdentitySectionView:
+    """Wizard-native detail view for the identity step."""
+    del section, guild, session
+    return IdentitySectionView(author)
+
+
 REGISTRY.register(
     SetupSection(
         slug=SLUG,
@@ -299,6 +323,8 @@ REGISTRY.register(
         ),
         depths=frozenset({"advanced"}),
         customize=_customize_run,
+        detail_embed_builder=_build_detail_embed,
+        detail_view_builder=_build_detail_view,
     ),
 )
 # Identity stages `set_setting` ops but `set_setting` is shared with

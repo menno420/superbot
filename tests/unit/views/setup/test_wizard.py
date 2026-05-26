@@ -242,7 +242,8 @@ def test_view_has_navigation_buttons_in_layout():
     assert "setup_wizard:customize" in custom_ids
     assert "setup_wizard:skip" in custom_ids
     assert "setup_wizard:continue" in custom_ids
-    assert "setup_wizard:open_hub" in custom_ids
+    # Open hub button removed — hub reachable only via /setup-hub now.
+    assert "setup_wizard:open_hub" not in custom_ids
     assert "setup_wizard:cancel" in custom_ids
 
 
@@ -1046,3 +1047,298 @@ async def test_apply_recommended_refreshes_anchor_after_staging():
     interaction.followup.edit_message.assert_awaited_once()
     kw = interaction.followup.edit_message.await_args.kwargs
     assert kw.get("message_id") == interaction.message.id
+
+
+# ---------------------------------------------------------------------------
+# Wizard-native Customize contract (detail_embed_builder + detail_view_builder)
+# ---------------------------------------------------------------------------
+
+
+def _section_with_detail(
+    slug: str = "channels",
+) -> SetupSection:
+    """Build a SetupSection with detail builders set."""
+    embed = discord.Embed(title=f"{slug} detail")
+    detail_view = discord.ui.View()
+    embed_builder = AsyncMock(return_value=embed)
+    view_builder = MagicMock(return_value=detail_view)
+    return SetupSection(
+        slug=slug,
+        label=slug.replace("_", " ").title(),
+        style=discord.ButtonStyle.secondary,
+        run=_noop_run,
+        emoji="📡",
+        order=40,
+        op_kinds=frozenset(),
+        detail_embed_builder=embed_builder,
+        detail_view_builder=view_builder,
+    )
+
+
+def test_customize_button_enabled_when_detail_builders_set_without_legacy():
+    """A section with detail builders but no legacy customize still has
+    Customize enabled — the wizard-native path is preferred."""
+    section = _section_with_detail("channels")
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=[section],
+        step_index=0,
+    )
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:customize"
+    )
+    assert btn.disabled is False
+
+
+@pytest.mark.asyncio
+async def test_on_customize_prefers_wizard_native_when_detail_builders_set():
+    """When a section provides both detail builders, the wizard calls
+    render_step_detail and skips the legacy ephemeral customize."""
+    legacy_customize = AsyncMock()
+    base = _section_with_detail("channels")
+    section = SetupSection(
+        slug=base.slug,
+        label=base.label,
+        style=base.style,
+        run=base.run,
+        emoji=base.emoji,
+        order=base.order,
+        op_kinds=base.op_kinds,
+        customize=legacy_customize,
+        detail_embed_builder=base.detail_embed_builder,
+        detail_view_builder=base.detail_view_builder,
+    )
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=[section],
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+
+    with (
+        patch(
+            "views.setup.wizard.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch(
+            "views.setup.wizard_nav.render_step_detail",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as render_detail,
+    ):
+        await view._on_customize(interaction)
+
+    legacy_customize.assert_not_called()
+    render_detail.assert_awaited_once()
+    kw = render_detail.await_args.kwargs
+    assert kw["section"] is section
+    assert kw["step_index"] == 0
+
+
+@pytest.mark.asyncio
+async def test_on_customize_falls_back_to_legacy_when_detail_unset():
+    """A section with only legacy customize still uses the ephemeral path."""
+
+    async def legacy_customize(interaction, hub):
+        interaction.response.is_done.return_value = True
+        await interaction.response.send_message("legacy", ephemeral=True)
+
+    sections = [_section("cleanup", customize=legacy_customize)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+
+    with (
+        patch(
+            "views.setup.wizard.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.list_rows",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.wizard_nav.render_step_detail",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as render_detail,
+    ):
+        await view._on_customize(interaction)
+
+    render_detail.assert_not_called()
+    interaction.followup.edit_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_full_linear_path_never_constructs_hub():
+    """Walking Apply Recommended → Continue → ... → Final Review must
+    not touch SetupHubView or build_hub_embed."""
+    from views.setup import hub as hub_module
+
+    sections = [
+        _section("cleanup_a", builder=_builder_one_op, order=10),
+        _section("cleanup_b", builder=_builder_one_op, order=20),
+    ]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+
+    def _mark_done(*args, **kwargs):
+        interaction.response.is_done.return_value = True
+
+    interaction.response.defer = AsyncMock(side_effect=_mark_done)
+
+    with (
+        patch.object(hub_module, "SetupHubView") as hub_view_mock,
+        patch.object(hub_module, "build_hub_embed") as hub_embed_mock,
+        patch(
+            "views.setup.wizard.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.replace_recommended_for_section",
+            new_callable=AsyncMock,
+            return_value=ReplaceRecommendedResult(
+                inserted_seqs=[1],
+                deleted_count=0,
+                conflicts=[],
+            ),
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.list_rows",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.list_ops",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.wizard.setup_session.unmark_section_skipped",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.setup.wizard.push_setup_notice",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        apply_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_wizard:apply_recommended"
+        )
+        await apply_btn.callback(interaction)
+
+        interaction.response.is_done.return_value = False
+        cont_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_wizard:continue"
+        )
+        await cont_btn.callback(interaction)
+
+        interaction.response.is_done.return_value = False
+        cont_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_wizard:continue"
+        )
+        await cont_btn.callback(interaction)
+
+    hub_view_mock.assert_not_called()
+    hub_embed_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_resume_picks_session_current_step():
+    """open_setup_workspace mounts the wizard at session.current_step."""
+    from views.setup import wizard as wizard_module
+
+    first = _section("zz_one", order=10)
+    second = _section("zz_two", order=20)
+    REGISTRY.register(first)
+    REGISTRY.register(second)
+    try:
+        guild = MagicMock(spec=discord.Guild)
+        guild.id = 1
+        guild.name = "Test"
+        member = _owner_member()
+        channel = _make_text_channel(7000)
+        channel.send = AsyncMock(return_value=MagicMock(id=8888))
+        session = _session(
+            current_step="zz_two",
+            setup_channel_id=channel.id,
+            setup_message_id=None,
+            depth=None,
+        )
+
+        captured: list[LinearWizardView] = []
+        original_init = LinearWizardView.__init__
+
+        def _capture_init(self, *args, **kwargs):
+            original_init(self, *args, **kwargs)
+            captured.append(self)
+
+        with (
+            patch.object(
+                wizard_module.setup_channel,
+                "ensure_setup_channel",
+                new_callable=AsyncMock,
+                return_value=(channel, False),
+            ),
+            patch.object(
+                wizard_module.setup_session,
+                "set_setup_channel_id",
+                new_callable=AsyncMock,
+            ),
+            patch.object(
+                wizard_module.setup_session,
+                "set_setup_message_id",
+                new_callable=AsyncMock,
+            ),
+            patch.object(
+                wizard_module.setup_session,
+                "mark_in_progress",
+                new_callable=AsyncMock,
+            ),
+            patch.object(
+                wizard_module.setup_draft,
+                "list_rows",
+                new_callable=AsyncMock,
+                return_value=[],
+            ),
+            patch.object(LinearWizardView, "__init__", _capture_init),
+        ):
+            await wizard_module.open_setup_workspace(
+                guild,
+                member=member,
+                session=session,
+            )
+
+        assert captured, "LinearWizardView was not constructed"
+        wizard_view = captured[-1]
+        assert wizard_view.sections[wizard_view.step_index].slug == "zz_two"
+    finally:
+        REGISTRY.unregister("zz_one")
+        REGISTRY.unregister("zz_two")

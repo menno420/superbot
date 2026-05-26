@@ -237,6 +237,7 @@ class SetupHubView(BaseView):
         if any(s.recommended_ops_builder is not None for s in depth_sections):
             self.add_item(self._build_apply_all_recommended_button())
         self.add_item(self._build_change_depth_button())
+        self.add_item(self._build_back_to_wizard_button())
 
     def _build_apply_all_recommended_button(self) -> discord.ui.Button:
         button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
@@ -414,6 +415,42 @@ class SetupHubView(BaseView):
                 embed=build_depth_embed(),
                 view=view,
             )
+
+        button.callback = _callback  # type: ignore[method-assign]
+        return button
+
+    def _build_back_to_wizard_button(self) -> discord.ui.Button:
+        button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
+            label="↩ Back to wizard",
+            style=discord.ButtonStyle.secondary,
+            custom_id="setup_hub:back_to_wizard",
+            row=4,
+        )
+
+        async def _callback(interaction: discord.Interaction) -> None:
+            member = interaction.user
+            guild = interaction.guild
+            if guild is None or not isinstance(member, discord.Member):
+                await interaction.response.send_message(
+                    "Use this from inside the server.",
+                    ephemeral=True,
+                )
+                return
+            await self._refresh_session()
+            from views.setup.wizard_nav import render_wizard_step
+
+            ok = await render_wizard_step(
+                interaction,
+                guild=guild,
+                member=member,
+                session=self.session,
+                step_index=None,
+            )
+            if not ok and not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "Could not restore the wizard view — see logs.",
+                    ephemeral=True,
+                )
 
         button.callback = _callback  # type: ignore[method-assign]
         return button

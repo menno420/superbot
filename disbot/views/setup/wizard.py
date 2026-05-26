@@ -19,10 +19,10 @@ Architecture
   (Phase 0 / Phase 2 helper), reads progress via
   :mod:`services.setup_progress`, and gates every mutating button
   through :func:`services.setup_access.can_apply_setup`.
-* The hub continues to exist; the wizard's ``Open hub`` button posts
-  the hub-style embed as a transient reply so operators who prefer
-  the section-list UI still get it.  ``/setup-hub`` remains as the
-  explicit hub entry point.
+* The hub continues to exist as an expert / advanced entry point
+  reached via ``/setup-hub``.  The wizard no longer carries a button
+  to it — the hub's own ``↩ Back to wizard`` button is the return
+  path for operators who chose to open the hub explicitly.
 
 Lifecycle
 ---------
@@ -227,12 +227,12 @@ class LinearWizardView(BaseView):
     :func:`services.setup_access.can_apply_setup` against a fresh
     session snapshot, mirroring the section card's per-button gate
     from Phase 1.  Navigation buttons (``Back``, ``Continue``,
-    ``Open hub``, ``Cancel``) are not gated — they only mutate
-    view-local state.
+    ``Cancel``) are not gated — they only mutate view-local state.
 
     The view does not own the anchor message; the caller (typically
     :func:`open_setup_workspace`) edits the message after each
-    button press to re-render the new step.
+    button press to re-render the new step. Anchor rebuilds go
+    through :func:`views.setup.wizard_nav.render_wizard_step`.
     """
 
     def __init__(
@@ -288,11 +288,18 @@ class LinearWizardView(BaseView):
         apply_recommended.callback = self._on_apply_recommended  # type: ignore[method-assign]
         self.add_item(apply_recommended)
 
+        customize_disabled = section is None or (
+            section.customize is None
+            and (
+                section.detail_embed_builder is None
+                or section.detail_view_builder is None
+            )
+        )
         customize: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
             label="Customize",
             style=discord.ButtonStyle.primary,
             custom_id="setup_wizard:customize",
-            disabled=(section is None or section.customize is None),
+            disabled=customize_disabled,
             row=0,
         )
         customize.callback = self._on_customize  # type: ignore[method-assign]
@@ -322,15 +329,6 @@ class LinearWizardView(BaseView):
         )
         continue_btn.callback = self._on_continue  # type: ignore[method-assign]
         self.add_item(continue_btn)
-
-        open_hub: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
-            label="Open hub",
-            style=discord.ButtonStyle.secondary,
-            custom_id="setup_wizard:open_hub",
-            row=1,
-        )
-        open_hub.callback = self._on_open_hub  # type: ignore[method-assign]
-        self.add_item(open_hub)
 
         cancel: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
             label="Cancel",
@@ -425,60 +423,34 @@ class LinearWizardView(BaseView):
                 )
 
     async def _refresh_and_edit(self, interaction: discord.Interaction) -> None:
-        """Refresh the session + draft state and edit the anchor message.
+        """Refresh state and edit the anchor message at ``self.step_index``.
 
-        Used by every button callback that needs to repaint the embed
-        with new step / progress data.  Edits in place so the anchor's
-        id remains stable.
+        Thin delegate over :func:`views.setup.wizard_nav.render_wizard_step`
+        so every wizard callback uses the same anchor-rebuild path
+        (also used by the hub's ↩ Back to wizard button).
         """
-        guild_id = interaction.guild_id
-        if guild_id is not None:
-            try:
-                self.session = await setup_session.resume_session(guild_id)
-            except Exception:
-                logger.exception("wizard._refresh_and_edit: resume failed")
-        # Re-resolve sections in case depth changed.
-        self.sections = _resolve_sections(self.session)
-        # Clamp step index in case the section list shrank.
-        if self.step_index >= len(self.sections):
-            self.step_index = max(0, len(self.sections) - 1)
-        self._rebuild_buttons()
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            # Without a Member context we can't construct a new wizard
+            # view; fall back to the same ephemeral hint the apply gate
+            # uses.
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "Use this from inside the server.",
+                    ephemeral=True,
+                )
+            return
 
-        draft_rows: list[DraftOperationRow] = []
-        if guild_id is not None:
-            try:
-                draft_rows = await setup_draft.list_rows(guild_id)
-            except Exception:
-                logger.exception("wizard._refresh_and_edit: list_rows failed")
+        from views.setup.wizard_nav import render_wizard_step
 
-        section = self.current_section
-        if section is None:
-            embed = discord.Embed(
-                title=_WIZARD_TITLE,
-                description=(
-                    "No setup sections are available for this depth. "
-                    "Pick a different depth via `/setup-depth` or open "
-                    "the hub for the full section list."
-                ),
-                color=discord.Color.dark_grey(),
-            )
-        else:
-            embed = build_wizard_step_embed(
-                session=self.session,
-                section=section,
-                step_index=self.step_index,
-                total_steps=len(self.sections),
-                draft_rows=draft_rows,
-            )
-
-        if interaction.response.is_done():
-            await interaction.followup.edit_message(
-                message_id=interaction.message.id,
-                embed=embed,
-                view=self,
-            )
-        else:
-            await interaction.response.edit_message(embed=embed, view=self)
+        await render_wizard_step(
+            interaction,
+            guild=guild,
+            member=member,
+            session=self.session,
+            step_index=self.step_index,
+        )
 
     async def _on_back(self, interaction: discord.Interaction) -> None:
         if self.step_index > 0:
@@ -492,54 +464,6 @@ class LinearWizardView(BaseView):
             return
         # Last step → open Final Review as a transient ephemeral.
         await self._open_final_review(interaction)
-
-    async def _on_open_hub(self, interaction: discord.Interaction) -> None:
-        # Aggressive ephemeral policy: swap the anchor view to the hub
-        # view so the operator can browse the section list inside the
-        # durable workspace message, not in a per-user ephemeral that
-        # cannot be deleted/revisited/shared.
-        from views.setup.hub import SetupHubView, build_hub_embed
-
-        guild = interaction.guild
-        if guild is None:
-            await interaction.response.send_message(
-                "Open hub requires a guild context.",
-                ephemeral=True,
-            )
-            return
-
-        member = interaction.user
-        if not isinstance(member, discord.Member):
-            await interaction.response.send_message(
-                "Use this from inside the server.",
-                ephemeral=True,
-            )
-            return
-
-        if not await safe_defer(interaction):
-            return
-
-        try:
-            session = await setup_session.resume_session(guild.id)
-        except Exception:
-            logger.exception("wizard._on_open_hub: resume failed")
-            session = self.session
-
-        try:
-            draft_rows = await setup_draft.list_rows(guild.id)
-        except Exception:
-            logger.exception("wizard._on_open_hub: list_rows failed")
-            draft_rows = []
-
-        hub_view = SetupHubView(member, session=session)
-        embed = build_hub_embed(
-            session,
-            pending_ops=len(draft_rows),
-            draft_ops=draft_rows,
-        )
-        # safe_edit after defer edits the clicked anchor via
-        # followup.edit_message(message_id=interaction.message.id).
-        await safe_edit(interaction, embed=embed, view=hub_view)
 
     async def _on_cancel(self, interaction: discord.Interaction) -> None:
         for child in self.children:
@@ -784,7 +708,17 @@ class LinearWizardView(BaseView):
 
     async def _on_customize(self, interaction: discord.Interaction) -> None:
         section = self.current_section
-        if section is None or section.customize is None:
+        if section is None:
+            await interaction.response.send_message(
+                "This step has no detail view.",
+                ephemeral=True,
+            )
+            return
+        has_detail = (
+            section.detail_embed_builder is not None
+            and section.detail_view_builder is not None
+        )
+        if not has_detail and section.customize is None:
             await interaction.response.send_message(
                 "This step has no detail view.",
                 ephemeral=True,
@@ -793,8 +727,47 @@ class LinearWizardView(BaseView):
         # Gate before opening — detail views can stage draft operations.
         if not await self._gate_apply(interaction):
             return
+
+        if has_detail:
+            # Wizard-native path: swap the anchor into detail mode with
+            # an injected ↩ Back to step button.  No ephemeral side
+            # panel, no stranding.
+            guild = interaction.guild
+            member = interaction.user
+            if guild is None or not isinstance(member, discord.Member):
+                await interaction.response.send_message(
+                    "Use this from inside the server.",
+                    ephemeral=True,
+                )
+                return
+            from views.setup.wizard_nav import render_step_detail
+
+            try:
+                ok = await render_step_detail(
+                    interaction,
+                    guild=guild,
+                    member=member,
+                    session=self.session,
+                    section=section,
+                    step_index=self.step_index,
+                )
+            except Exception:
+                logger.exception(
+                    "wizard._on_customize: render_step_detail failed (%s)",
+                    section.slug,
+                )
+                ok = False
+            if not ok and not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "Could not open the detail view — see logs.",
+                    ephemeral=True,
+                )
+            return
+
+        # Legacy fallback: section provides only the ephemeral customize
+        # callback.  After it consumes the interaction we refresh the
+        # anchor so the operator sees any newly staged state.
         try:
-            # Pass None as hub; all registered customizers handle hub=None.
             await section.customize(interaction, None)
         except Exception:
             logger.exception(
@@ -807,11 +780,6 @@ class LinearWizardView(BaseView):
                     ephemeral=True,
                 )
             return
-        # The section's customize callback consumed the interaction response
-        # (ephemeral detail view).  Refresh the anchor to show current state.
-        # For detail views that stage ops asynchronously (user picks options
-        # inside the ephemeral), the anchor updates again on the next wizard
-        # button press — this is intentional and documented.
         try:
             await self._refresh_and_edit(interaction)
         except Exception:
@@ -928,7 +896,7 @@ async def open_setup_workspace(
             title=_WIZARD_TITLE,
             description=(
                 "No setup sections are available for this depth. "
-                "Pick a depth via `/setup-depth` or open the hub."
+                "Pick a depth via `/setup-depth` to populate the wizard."
             ),
             color=discord.Color.dark_grey(),
         )
