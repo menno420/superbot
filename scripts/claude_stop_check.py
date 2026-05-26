@@ -35,8 +35,19 @@ SCRIPTS = REPO_ROOT / "scripts"
 PY = "python3.10" if shutil.which("python3.10") else sys.executable
 
 
-def _changed_disbot_files() -> list[str]:
-    """Return Python files under disbot/ changed vs origin/main (plus dirty WC)."""
+# CI's exclude list for formatters/lint — must match
+# .github/workflows/code-quality.yml exactly.
+_EXCLUDED_PREFIXES = (".github/", "tests/", "venv/", "env/", "build/", "dist/")
+
+
+def _changed_py_files() -> list[str]:
+    """Return Python files changed vs origin/main (plus dirty WC).
+
+    Excludes the same prefixes CI excludes from black/isort/ruff. The
+    formatter/lint scope is *not* limited to disbot/ — scripts/ and any
+    other top-level .py files are also checked. Mypy is narrowed further
+    in main() to match CI's `mypy disbot/` invocation.
+    """
     seen: set[str] = set()
     for cmd in (
         ["git", "diff", "--name-only", "origin/main...HEAD"],
@@ -47,8 +58,11 @@ def _changed_disbot_files() -> list[str]:
             continue
         for line in result.stdout.splitlines():
             line = line.strip()
-            if line.endswith(".py") and line.startswith("disbot/"):
-                seen.add(line)
+            if not line.endswith(".py"):
+                continue
+            if any(line.startswith(p) for p in _EXCLUDED_PREFIXES):
+                continue
+            seen.add(line)
     return sorted(seen)
 
 
@@ -60,13 +74,21 @@ def _run(label: str, cmd: list[str]) -> tuple[bool, str]:
 
 
 def main() -> int:
-    changed = _changed_disbot_files()
+    changed = _changed_py_files()
     if not changed:
         return 0
+    # mypy in CI runs only against disbot/ — narrow the type-check set
+    # so we don't add false positives from scripts/ etc.
+    disbot_changed = [p for p in changed if p.startswith("disbot/")]
+    arch_changed = disbot_changed  # architecture rules only apply under disbot/
 
-    print("\n── stop-check ──────────────────────────────────────────────", file=sys.stderr)
+    print(
+        "\n── stop-check ──────────────────────────────────────────────",
+        file=sys.stderr,
+    )
 
-    checks: list[tuple[str, list[str]]] = [
+    checks: list[tuple[str, list[str], bool]] = [
+        # (label, command, skip-if-empty-target)
         (
             "architecture",
             [
@@ -76,27 +98,35 @@ def main() -> int:
                 "--mode",
                 "strict",
             ],
+            not arch_changed,
         ),
         (
             "black --check",
             [PY, "-m", "black", "--check", "--quiet", *changed],
+            False,
         ),
         (
             "isort --check",
             [PY, "-m", "isort", "--check-only", "--quiet", *changed],
+            False,
         ),
         (
             "ruff check",
             [PY, "-m", "ruff", "check", *changed],
+            False,
         ),
         (
             "mypy",
-            [PY, "-m", "mypy", *changed],
+            [PY, "-m", "mypy", *disbot_changed],
+            not disbot_changed,
         ),
     ]
 
     failures: list[tuple[str, str]] = []
-    for label, cmd in checks:
+    for label, cmd, skip in checks:
+        if skip:
+            print(f"  · {label} (skipped — no matching files)", file=sys.stderr)
+            continue
         ok, output = _run(label, cmd)
         if ok:
             print(f"  ✓ {label}", file=sys.stderr)
