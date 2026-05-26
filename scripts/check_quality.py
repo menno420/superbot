@@ -37,12 +37,15 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
     results = []
     flag = ["--check"] if check_only else []
 
+    # Mirror CI: tests/ is excluded from black/isort (pyproject.toml says the same).
+    # ruff already excludes tests/ via extend-exclude in pyproject.toml.
+    _EXCLUDE = r"(\.github|tests|venv|env|build|dist)"
     results.append(
         (
             "black",
             _run(
-                "black" + (" --check" if check_only else " --fix"),
-                ["black", *flag, "disbot/", "scripts/", "tests/"],
+                "black" + (" --check" if check_only else ""),
+                ["black", *flag, "--exclude", _EXCLUDE, "."],
             ),
         ),
     )
@@ -54,9 +57,9 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
                 [
                     "isort",
                     *(["--check-only"] if check_only else []),
-                    "disbot/",
-                    "scripts/",
-                    "tests/",
+                    "--skip-glob",
+                    f"*/{_EXCLUDE}/*",
+                    ".",
                 ],
             ),
         ),

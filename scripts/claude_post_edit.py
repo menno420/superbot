@@ -2,7 +2,9 @@
 """PostToolUse hook: auto-format the just-edited Python file.
 
 Called by Claude Code after every Edit or Write tool use.
-The file path is read from CLAUDE_TOOL_INPUT_FILE_PATH.
+The file path is sourced from (in priority order):
+  1. stdin JSON  — {"tool_input": {"file_path": "..."}}  (web / CLI harness)
+  2. CLAUDE_TOOL_INPUT_FILE_PATH env var                 (some CLI versions)
 
 Runs black → isort → ruff --fix in sequence.
 Always exits 0 — formatting failures are logged but never block
@@ -12,6 +14,7 @@ NOT fixed here; those require human judgment.
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -20,8 +23,26 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
+def _resolve_file_path() -> str:
+    # Primary: stdin JSON payload from the Claude Code harness
+    try:
+        raw = sys.stdin.read()
+        if raw.strip():
+            data = json.loads(raw)
+            fp = data.get("tool_input", {}).get("file_path", "") or data.get(
+                "tool_response",
+                {},
+            ).get("filePath", "")
+            if fp:
+                return fp.strip()
+    except Exception:
+        pass
+    # Fallback: env var (set by some CLI harness versions)
+    return os.environ.get("CLAUDE_TOOL_INPUT_FILE_PATH", "").strip()
+
+
 def main() -> int:
-    file_path = os.environ.get("CLAUDE_TOOL_INPUT_FILE_PATH", "").strip()
+    file_path = _resolve_file_path()
     if not file_path:
         return 0
 
