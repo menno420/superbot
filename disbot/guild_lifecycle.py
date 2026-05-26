@@ -56,6 +56,14 @@ async def teardown(guild_id: int) -> None:
       19. Automation rules      — delete every automation_rules row for the
                                    guild (Phase 9g PR 18). ``automation_runs``
                                    rows are removed via ON DELETE CASCADE.
+      20. AI Platform           — drop every per-guild row across the six M2
+                                   tables; invalidate resolver cache + drop
+                                   conversation buffers.
+      21. BTD6 strategies (M4)  — delete guild-local rows; detach published
+                                   rows so attribution survives.
+      22. Command-access policy — drop both the cached snapshot and the
+                                   ``guild_command_access_policy`` row
+                                   (CASCADE sweeps the channel allowlist).
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -132,6 +140,14 @@ async def teardown(guild_id: int) -> None:
     #     origin_guild_id + origin_metadata preserved for
     #     attribution).
     await _teardown_btd6_strategies(guild_id)
+
+    # 22. Command-access policy (command-access onboarding PR-3) —
+    #     drop both the cached typed-accessor entry and the
+    #     ``guild_command_access_policy`` row (CASCADE sweeps the
+    #     child ``guild_command_access_channels`` rows).  Paired in
+    #     ``core.runtime.command_access.forget_guild`` so the cache
+    #     and the DB never diverge across a re-invite.
+    await _teardown_command_access(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
@@ -521,6 +537,27 @@ async def _teardown_automation_rules(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: automation_rules teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_command_access(guild_id: int) -> None:
+    """Drop the guild's command-access policy + cached snapshot.
+
+    Wraps :func:`core.runtime.command_access.forget_guild`, which
+    invalidates the typed-accessor cache entry and then runs
+    ``DELETE FROM guild_command_access_policy WHERE guild_id = $1``.
+    The CASCADE on ``guild_command_access_channels`` sweeps the child
+    rows; no separate step needed for the allowlist.
+    """
+    try:
+        from core.runtime.command_access import forget_guild as _ca_forget
+
+        await _ca_forget(guild_id)
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: command_access teardown failed for guild=%d: %s",
             guild_id,
             exc,
         )
