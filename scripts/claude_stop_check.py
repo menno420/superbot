@@ -45,7 +45,8 @@ def main() -> int:
             sys.executable,
             str(SCRIPTS / "check_architecture.py"),
             "--changed-only",
-            "--mode", "strict",
+            "--mode",
+            "strict",
         ],
         cwd=REPO_ROOT,
     )

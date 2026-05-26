@@ -20,7 +20,11 @@ SEP = "─" * 60
 def _run(cmd: list[str], default: str = "?", timeout: int = 10) -> str:
     try:
         r = subprocess.run(
-            cmd, capture_output=True, text=True, cwd=REPO_ROOT, timeout=timeout
+            cmd,
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            timeout=timeout,
         )
         return r.stdout.strip() if r.returncode == 0 else default
     except Exception:
@@ -58,7 +62,9 @@ def main() -> int:
         cwd=REPO_ROOT,
         timeout=30,
     )
-    first_line = arch.stdout.splitlines()[0] if arch.stdout.strip() else "no changes to check"
+    first_line = (
+        arch.stdout.splitlines()[0] if arch.stdout.strip() else "no changes to check"
+    )
     print(f"  {first_line}")
     if arch.returncode != 0:
         print("  ⚠  errors found — run check_architecture.py for details")
@@ -68,7 +74,9 @@ def main() -> int:
     print("Quick commands:")
     print("  python scripts/check_architecture.py --mode strict   # full arch check")
     print("  python scripts/check_quality.py --check-only         # lint only")
-    print("  python scripts/check_quality.py --full               # lint + mypy + tests")
+    print(
+        "  python scripts/check_quality.py --full               # lint + mypy + tests",
+    )
     print(SEP)
     return 0
 

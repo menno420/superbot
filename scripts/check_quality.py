@@ -37,18 +37,45 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
     results = []
     flag = ["--check"] if check_only else []
 
-    results.append(("black", _run(
-        "black" + (" --check" if check_only else " --fix"),
-        ["black", *flag, "disbot/", "scripts/", "tests/"],
-    )))
-    results.append(("isort", _run(
-        "isort" + (" --check-only" if check_only else ""),
-        ["isort", *(["--check-only"] if check_only else []), "disbot/", "scripts/", "tests/"],
-    )))
-    results.append(("ruff", _run(
-        "ruff" + (" --no-fix" if check_only else " --fix"),
-        ["ruff", "check", *(["--no-fix"] if check_only else ["--fix"]), "disbot/", "scripts/"],
-    )))
+    results.append(
+        (
+            "black",
+            _run(
+                "black" + (" --check" if check_only else " --fix"),
+                ["black", *flag, "disbot/", "scripts/", "tests/"],
+            ),
+        ),
+    )
+    results.append(
+        (
+            "isort",
+            _run(
+                "isort" + (" --check-only" if check_only else ""),
+                [
+                    "isort",
+                    *(["--check-only"] if check_only else []),
+                    "disbot/",
+                    "scripts/",
+                    "tests/",
+                ],
+            ),
+        ),
+    )
+    results.append(
+        (
+            "ruff",
+            _run(
+                "ruff" + (" --no-fix" if check_only else " --fix"),
+                [
+                    "ruff",
+                    "check",
+                    *(["--no-fix"] if check_only else ["--fix"]),
+                    "disbot/",
+                    "scripts/",
+                ],
+            ),
+        ),
+    )
     return results
 
 

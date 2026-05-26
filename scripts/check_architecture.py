@@ -23,7 +23,6 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -73,7 +72,7 @@ def _load(name: str) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _file_layer(filepath: Path) -> Optional[str]:
+def _file_layer(filepath: Path) -> str | None:
     try:
         rel = filepath.relative_to(DISBOT_ROOT)
     except ValueError:
@@ -81,7 +80,7 @@ def _file_layer(filepath: Path) -> Optional[str]:
     return rel.parts[0] if rel.parts and rel.parts[0] in PROJECT_LAYERS else None
 
 
-def _import_layer(module: str) -> Optional[str]:
+def _import_layer(module: str) -> str | None:
     first = module.split(".")[0]
     return first if first in PROJECT_LAYERS else None
 
@@ -95,7 +94,7 @@ class _ImportVisitor(ast.NodeVisitor):
     """
 
     def __init__(self) -> None:
-        self._fn_depth = 0   # >0 means we're inside a function body
+        self._fn_depth = 0  # >0 means we're inside a function body
         self._in_tc = False  # inside `if TYPE_CHECKING:` block
         self.imports: list[tuple[int, str, bool]] = []  # lineno, module, is_tc
 
@@ -167,16 +166,18 @@ def check_layer_boundaries(files: list[Path], rules: dict) -> list[Violation]:
                 rel_file == kv.get("file") and module.startswith(kv.get("import", ""))
                 for kv in known
             )
-            violations.append(Violation(
-                file=filepath,
-                line=lineno,
-                check="layer_boundary",
-                message=(
-                    f"{'[known] ' if is_known else ''}"
-                    f"{file_layer} → {import_layer}: `{module}` is not allowed"
+            violations.append(
+                Violation(
+                    file=filepath,
+                    line=lineno,
+                    check="layer_boundary",
+                    message=(
+                        f"{'[known] ' if is_known else ''}"
+                        f"{file_layer} → {import_layer}: `{module}` is not allowed"
+                    ),
+                    severity="warning" if is_known else "error",
                 ),
-                severity="warning" if is_known else "error",
-            ))
+            )
 
     return violations
 
@@ -187,10 +188,10 @@ def check_layer_boundaries(files: list[Path], rules: dict) -> list[Violation]:
 
 _RAW_SQL_RE = re.compile(
     r'\.execute\s*\(\s*(?:f?b?["\']|f?b?""")'
-    r'.*?(?:UPDATE|INSERT|DELETE|CREATE|DROP|ALTER)',
+    r".*?(?:UPDATE|INSERT|DELETE|CREATE|DROP|ALTER)",
     re.IGNORECASE | re.DOTALL,
 )
-_POOL_EXECUTE_RE = re.compile(r'\bpool\s*\.\s*(?:execute|fetchone|fetchall|get)\s*\(')
+_POOL_EXECUTE_RE = re.compile(r"\bpool\s*\.\s*(?:execute|fetchone|fetchall|get)\s*\(")
 
 
 def check_raw_sql(files: list[Path], rules: dict) -> list[Violation]:
@@ -211,16 +212,18 @@ def check_raw_sql(files: list[Path], rules: dict) -> list[Violation]:
         for i, line in enumerate(lines, 1):
             if _RAW_SQL_RE.search(line) or _POOL_EXECUTE_RE.search(line):
                 is_known = rel in known_files
-                violations.append(Violation(
-                    file=filepath,
-                    line=i,
-                    check="raw_sql",
-                    message=(
-                        f"{'[known] ' if is_known else ''}"
-                        "Raw SQL / pool primitive outside utils/db/ — use utils.db.* functions"
+                violations.append(
+                    Violation(
+                        file=filepath,
+                        line=i,
+                        check="raw_sql",
+                        message=(
+                            f"{'[known] ' if is_known else ''}"
+                            "Raw SQL / pool primitive outside utils/db/ — use utils.db.* functions"
+                        ),
+                        severity="warning" if is_known else "error",
                     ),
-                    severity="warning" if is_known else "error",
-                ))
+                )
 
     return violations
 
@@ -230,7 +233,7 @@ def check_raw_sql(files: list[Path], rules: dict) -> list[Violation]:
 # ---------------------------------------------------------------------------
 
 _SETTINGS_LITERAL_RE = re.compile(
-    r'\bget_setting\s*\([^,)]+,\s*["\']([a-z][a-z0-9_]*)["\']'
+    r'\bget_setting\s*\([^,)]+,\s*["\']([a-z][a-z0-9_]*)["\']',
 )
 
 
@@ -247,16 +250,18 @@ def check_settings_key_literals(files: list[Path], _rules: dict) -> list[Violati
         for i, line in enumerate(source.splitlines(), 1):
             m = _SETTINGS_LITERAL_RE.search(line)
             if m:
-                violations.append(Violation(
-                    file=filepath,
-                    line=i,
-                    check="settings_key_literal",
-                    message=(
-                        f"Hardcoded settings key `{m.group(1)}` — "
-                        "import the constant from utils.settings_keys"
+                violations.append(
+                    Violation(
+                        file=filepath,
+                        line=i,
+                        check="settings_key_literal",
+                        message=(
+                            f"Hardcoded settings key `{m.group(1)}` — "
+                            "import the constant from utils.settings_keys"
+                        ),
+                        severity="warning",
                     ),
-                    severity="warning",
-                ))
+                )
     return violations
 
 
@@ -285,8 +290,7 @@ def _class_bases(node: ast.ClassDef) -> list[str]:
 def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation]:
     cfg = rules.get("base_view", {})
     exemption_prefixes = [
-        e["pattern"].replace("disbot/", "")
-        for e in cfg.get("exemptions", [])
+        e["pattern"].replace("disbot/", "") for e in cfg.get("exemptions", [])
     ]
     violations: list[Violation] = []
 
@@ -311,18 +315,20 @@ def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation
                 # Avoid flagging BaseView itself
                 if node.name in ("BaseView", "HubView", "PersistentView"):
                     continue
-                violations.append(Violation(
-                    file=filepath,
-                    line=node.lineno,
-                    check="baseview_inheritance",
-                    message=(
-                        f"`{node.name}` extends discord.ui.View directly — "
-                        "use BaseView / HubView / PersistentView unless "
-                        "specialized game or lifecycle ownership is required "
-                        "(document the reason in a comment)"
+                violations.append(
+                    Violation(
+                        file=filepath,
+                        line=node.lineno,
+                        check="baseview_inheritance",
+                        message=(
+                            f"`{node.name}` extends discord.ui.View directly — "
+                            "use BaseView / HubView / PersistentView unless "
+                            "specialized game or lifecycle ownership is required "
+                            "(document the reason in a comment)"
+                        ),
+                        severity="warning",
                     ),
-                    severity="warning",
-                ))
+                )
 
     return violations
 
