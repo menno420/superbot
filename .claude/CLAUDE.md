@@ -123,3 +123,56 @@ If CodeGraph output conflicts with what the source file says, **source files are
 
 Run `npx -y @optave/codegraph@3.10.0 build .` from the project root. No global install is required — the MCP server starts through pinned `npx` automatically when Claude Code launches. If MCP tools are absent entirely, restart Claude Code after pulling this config; a restart is not needed just to rebuild the index.
 <!-- CODEGRAPH_END -->
+
+<!-- ARCH_RULES_START -->
+## Architecture rules — never / always
+
+These rules are enforced by `scripts/check_architecture.py`. Run it before
+every commit. Adding a known violation to `architecture_rules/` YAML is
+the only valid way to bypass the checker — not suppressing the check.
+
+### Layer boundaries (hard rules — new violations are errors)
+
+| Layer | May import | Must NOT import |
+|---|---|---|
+| `utils/` | stdlib, discord | services, core, cogs, views |
+| `utils/db/` | asyncpg only | everything else |
+| `core/` | utils | services, cogs (lazy body imports tracked as known violations) |
+| `services/` | utils, core, services, governance | **views** ← hardest rule; **cogs** |
+| `governance/` | utils, core | cogs (services imports tracked as known violations) |
+| `views/` | utils, core, services, views | **cogs** ← tracked violations exist; no new ones |
+| `cogs/` | everything above | cross-cog imports (use EventBus or a service) |
+
+**The one rule with zero tolerance for new violations:** `services/ → views/`.
+Any new import from `views/` in a `services/` file is an immediate ERROR.
+
+### Database access
+
+- **Always** call `utils.db.[submodule_function]()` — never use `pool.execute()` or `conn.execute()` directly outside `utils/db/`.
+- **Always** use `settings_keys` constants (e.g. `WARN_THRESHOLD`) — never pass raw string keys to `db.get_setting()`.
+
+### Views
+
+- **Always** extend `BaseView`, `HubView`, or `PersistentView` for Discord UI views.
+- Game-state views (`views/rps/`, `views/blackjack/`) may extend `discord.ui.View` directly when specialized lifecycle is required — add a comment explaining why.
+
+### Mutations
+
+- **Always** write through the domain's `*_mutation.py` service. No direct DB writes from cogs or views.
+- **Always** call `services.audit_events.emit_audit_action()` when performing auditable mutations.
+
+### Helpers
+
+- Before adding a utility function anywhere, read `docs/helper-policy.md`.
+- **Never** define a utility function in `views/` or `cogs/` that other layers need. Move it to `utils/` or `services/`.
+- If a function is needed by both `services/` and `views/`, it belongs in `utils/` — not in either layer.
+
+### Pre-commit verification
+
+```bash
+python scripts/check_architecture.py --mode strict
+python scripts/check_quality.py --check-only
+```
+
+Both must exit 0 before pushing any branch.
+<!-- ARCH_RULES_END -->

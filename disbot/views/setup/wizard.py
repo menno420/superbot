@@ -290,7 +290,7 @@ class LinearWizardView(BaseView):
             label="Customize",
             style=discord.ButtonStyle.primary,
             custom_id="setup_wizard:customize",
-            disabled=True,
+            disabled=(section is None or section.customize is None),
             row=0,
         )
         customize.callback = self._on_customize  # type: ignore[method-assign]
@@ -653,6 +653,14 @@ class LinearWizardView(BaseView):
             f"{section.label}.{conflict_text}",
             ephemeral=True,
         )
+        # Refresh the anchor to show the updated section status badge.
+        # response.is_done() is True above, so _refresh_and_edit uses followup.
+        try:
+            await self._refresh_and_edit(interaction)
+        except Exception:
+            logger.exception(
+                "wizard._on_apply_recommended: anchor refresh failed",
+            )
 
     async def _on_skip(self, interaction: discord.Interaction) -> None:
         if not await self._gate_apply(interaction):
@@ -762,15 +770,39 @@ class LinearWizardView(BaseView):
         )
 
     async def _on_customize(self, interaction: discord.Interaction) -> None:
-        # Customize delegation is the navigation-host adapter from the
-        # plan; it lands in its own PR.  For now the button is disabled
-        # but its callback surface exists so Phase 3.5 can wire it
-        # without changing the button row layout.
-        await interaction.response.send_message(
-            "Customize lands in a follow-up PR.  Use **Open hub** to "
-            "reach the section's detail view in the meantime.",
-            ephemeral=True,
-        )
+        section = self.current_section
+        if section is None or section.customize is None:
+            await interaction.response.send_message(
+                "This step has no detail view.",
+                ephemeral=True,
+            )
+            return
+        # Gate before opening — detail views can stage draft operations.
+        if not await self._gate_apply(interaction):
+            return
+        try:
+            # Pass None as hub; all registered customizers handle hub=None.
+            await section.customize(interaction, None)
+        except Exception:
+            logger.exception(
+                "wizard._on_customize: section handler failed (%s)",
+                section.slug,
+            )
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "Could not open the detail view — see logs.",
+                    ephemeral=True,
+                )
+            return
+        # The section's customize callback consumed the interaction response
+        # (ephemeral detail view).  Refresh the anchor to show current state.
+        # For detail views that stage ops asynchronously (user picks options
+        # inside the ephemeral), the anchor updates again on the next wizard
+        # button press — this is intentional and documented.
+        try:
+            await self._refresh_and_edit(interaction)
+        except Exception:
+            logger.exception("wizard._on_customize: anchor refresh failed")
 
     async def _open_final_review(
         self,
@@ -800,6 +832,13 @@ class LinearWizardView(BaseView):
             view=final,
             ephemeral=True,
         )
+        # Refresh the wizard anchor so it reflects the current staged state
+        # before the operator reviews.  response.is_done() is True, so
+        # _refresh_and_edit uses followup.edit_message.
+        try:
+            await self._refresh_and_edit(interaction)
+        except Exception:
+            logger.exception("wizard._open_final_review: anchor refresh failed")
 
 
 # ---------------------------------------------------------------------------
@@ -843,6 +882,14 @@ async def open_setup_workspace(
     )
     if channel is None:
         return None, None, "no_channel"
+
+    # Persist the resolved channel id when it differs from the session's
+    # stored value (covers stale pointer and first-run cases).
+    if session is None or session.setup_channel_id != channel.id:
+        try:
+            await setup_session.set_setup_channel_id(guild.id, channel.id)
+        except Exception:
+            logger.exception("open_setup_workspace: set_setup_channel_id failed")
 
     sections = _resolve_sections(session)
     step_index = _step_index_for(session, sections)

@@ -67,6 +67,7 @@ def _section(
     op_kinds: frozenset[str] = frozenset({"set_cleanup_policy"}),
     description_if_skipped: str = "",
     builder=None,
+    customize=None,
     order: int = 60,
 ) -> SetupSection:
     return SetupSection(
@@ -79,6 +80,7 @@ def _section(
         op_kinds=op_kinds,
         description_if_skipped=description_if_skipped,
         recommended_ops_builder=builder,
+        customize=customize,
     )
 
 
@@ -825,3 +827,196 @@ async def test_apply_recommended_mounts_recovery_view_on_replace_failure():
     interaction.response.edit_message.assert_awaited_once()
     kwargs = interaction.response.edit_message.await_args.kwargs
     assert isinstance(kwargs.get("view"), SectionRecoveryView)
+
+
+# ---------------------------------------------------------------------------
+# Phase 3.5 — Customize button and anchor-refresh behaviour
+# ---------------------------------------------------------------------------
+
+
+async def _noop_customize(interaction, hub):  # pragma: no cover
+    await interaction.response.send_message("detail view", ephemeral=True)
+
+
+def test_customize_button_disabled_when_section_has_no_customize():
+    sections = [_section("cleanup", customize=None)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:customize"
+    )
+    assert btn.disabled is True
+
+
+def test_customize_button_enabled_when_section_has_customize():
+    sections = [_section("cleanup", customize=_noop_customize)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:customize"
+    )
+    assert btn.disabled is False
+
+
+@pytest.mark.asyncio
+async def test_on_customize_calls_section_callback_with_none_hub():
+    """_on_customize calls section.customize(interaction, None) and then
+    refreshes the wizard anchor via followup.edit_message."""
+    calls = []
+
+    async def recording_customize(interaction, hub):
+        calls.append(hub)
+        interaction.response.is_done.return_value = True
+        await interaction.response.send_message("detail view", ephemeral=True)
+
+    sections = [_section("cleanup", customize=recording_customize)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+
+    with (
+        patch(
+            "views.setup.wizard.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.list_rows",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+    ):
+        await view._on_customize(interaction)
+
+    assert len(calls) == 1
+    assert calls[0] is None  # hub=None passed to section
+    interaction.followup.edit_message.assert_awaited_once()
+    kw = interaction.followup.edit_message.await_args.kwargs
+    assert kw.get("message_id") == interaction.message.id
+
+
+@pytest.mark.asyncio
+async def test_on_customize_denied_without_apply_access():
+    """Non-owner without delegation gets an ephemeral denial; callback never fires."""
+    calls = []
+
+    async def recording_customize(interaction, hub):  # pragma: no cover
+        calls.append(hub)
+
+    non_owner = MagicMock(spec=discord.Member)
+    non_owner.id = 555
+    non_owner.guild = SimpleNamespace(owner_id=99)
+    non_owner.guild_permissions = SimpleNamespace(administrator=False)
+
+    sections = [_section("cleanup", customize=recording_customize)]
+    view = LinearWizardView(
+        non_owner,
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(non_owner)
+
+    with patch(
+        "views.setup.wizard.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_session(),
+    ):
+        await view._on_customize(interaction)
+
+    assert calls == []
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "delegate" in msg or "owner" in msg
+
+
+@pytest.mark.asyncio
+async def test_on_customize_sends_error_when_no_customize():
+    """Calling _on_customize on a section with customize=None sends ephemeral error."""
+    sections = [_section("cleanup", customize=None)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+    await view._on_customize(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "no detail view" in msg or "detail" in msg
+
+
+@pytest.mark.asyncio
+async def test_apply_recommended_refreshes_anchor_after_staging():
+    """After staging ops the anchor embed is updated via followup.edit_message."""
+    sections = [_section("cleanup", builder=_builder_one_op)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+    # Simulate discord.py marking the response as done after send_message
+    # (as it would after posting the ephemeral confirmation).
+    def _mark_done(*args, **kwargs):
+        interaction.response.is_done.return_value = True
+
+    interaction.response.send_message = AsyncMock(side_effect=_mark_done)
+
+    with (
+        patch(
+            "views.setup.wizard.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.replace_recommended_for_section",
+            new_callable=AsyncMock,
+            return_value=ReplaceRecommendedResult(
+                inserted_seqs=[1],
+                deleted_count=0,
+                conflicts=[],
+            ),
+        ),
+        patch(
+            "views.setup.wizard.setup_session.unmark_section_skipped",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.list_rows",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+    ):
+        apply_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_wizard:apply_recommended"
+        )
+        await apply_btn.callback(interaction)
+
+    # Ephemeral confirmation sent first.
+    interaction.response.send_message.assert_awaited_once()
+    # Anchor refreshed via followup after staging.
+    interaction.followup.edit_message.assert_awaited_once()
+    kw = interaction.followup.edit_message.await_args.kwargs
+    assert kw.get("message_id") == interaction.message.id

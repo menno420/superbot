@@ -574,6 +574,7 @@ REGISTRY.register(
         ),
         depths=frozenset({"standard", "advanced"}),
         recommended_ops_builder=_recommended_channel_ops,
+        customize=_customize_run,
     ),
 )
 

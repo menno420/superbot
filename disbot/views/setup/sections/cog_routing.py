@@ -599,6 +599,7 @@ REGISTRY.register(
             "later in `!settings`."
         ),
         depths=frozenset({"advanced"}),
+        customize=_customize_run,
     ),
 )
 

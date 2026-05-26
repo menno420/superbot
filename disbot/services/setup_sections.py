@@ -94,6 +94,7 @@ class SetupSection:
     description_if_skipped: str = ""
     depths: frozenset[str] = frozenset({"quick", "standard", "advanced"})
     recommended_ops_builder: Any = None  # async (Guild) -> list[SetupOperation]
+    customize: Any = None  # CustomizeCallback | None — see section_card.py
 
     @property
     def session_step(self) -> str:
