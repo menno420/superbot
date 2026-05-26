@@ -73,7 +73,8 @@ def main() -> int:
         # ruff exits 1 when it applies fixes (not an error); anything > 1 is a problem
         # black/isort exit 1 for "module not found" (tool not installed in python3.10 env)
         if result.returncode > 1 or (
-            result.returncode == 1 and "No module named" in (result.stderr + result.stdout)
+            result.returncode == 1
+            and "No module named" in (result.stderr + result.stdout)
         ):
             msg = (result.stderr.strip() or result.stdout.strip())[:300]
             errors.append((tool, msg))
