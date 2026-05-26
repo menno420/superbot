@@ -106,6 +106,27 @@ governance_denials_total = Counter(
     ["subsystem", "scope"],
 )
 
+# Command-access onboarding PR-8 — per-decision counter for the
+# central command-access resolver (prefix + slash share the same
+# admission path).  The breakdown lets operators see, at scrape time,
+# how many denials a given guild is producing and why.
+#
+# Label cardinality is bounded:
+#   * invocation: "prefix" | "slash" (2)
+#   * decision:   "allow" | "deny"    (2)
+#   * reason:     DecisionReason enum (6 values today)
+#   * mode:       AccessMode enum + "none" for the lifecycle/DM/default
+#                 branches that don't carry a mode (4)
+#   * source:     DecisionSource enum (4)
+#
+# At most 2 × 2 × 6 × 4 × 4 = 384 label combinations.
+command_access_decisions_total = Counter(
+    "command_access_decisions_total",
+    "Command-access resolver decisions broken down by invocation, "
+    "decision, reason, mode, and source.",
+    ["invocation", "decision", "reason", "mode", "source"],
+)
+
 task_outcome_total = Counter(
     "task_outcome_total",
     "Outcomes of managed background tasks spawned via core.runtime.tasks",

@@ -1270,10 +1270,166 @@ async def build_setup_readiness_embed(
     return embed
 
 
+async def build_command_access_diagnostic_embed(
+    *,
+    ctx: commands.Context,
+    target_channel: discord.abc.GuildChannel,
+) -> discord.Embed:
+    """Render the live command-access decision for ``target_channel``.
+
+    Closes the "command vanished" debugging loop the command-access
+    onboarding fix exists to fix: the operator can ask the bot
+    directly "would `!bj` work here, and if not, why" and get a
+    structured answer that names the mode, the source, the reason,
+    and the recovery path.
+
+    The probe runs the real resolver with a synthetic
+    :class:`CommandAccessContext`, scoring the channel as if a
+    non-bootstrap normal command (``blackjack``) were invoked there
+    by the requesting operator.  This mirrors the most common
+    operator-facing failure mode — the one that prompted the entire
+    fix — instead of probing with a bootstrap command that would
+    bypass the policy and tell us nothing.
+    """
+    from core.runtime.command_access import (
+        AccessMode,
+        CommandAccessContext,
+        resolve_command_access,
+    )
+    from services.command_access_service import get_policy_snapshot
+
+    guild = ctx.guild
+    guild_id = guild.id if guild is not None else None
+    snapshot = await get_policy_snapshot(guild_id) if guild_id is not None else None
+
+    author = ctx.author
+    perms = getattr(author, "guild_permissions", None)
+    is_operator = bool(
+        perms
+        and (
+            getattr(perms, "administrator", False)
+            or getattr(perms, "manage_guild", False)
+        ),
+    )
+    if hasattr(ctx.bot, "is_owner"):
+        is_bot_owner = await ctx.bot.is_owner(author)
+    else:
+        is_bot_owner = False
+
+    probe_ctx = CommandAccessContext(
+        guild_id=guild_id,
+        channel_id=target_channel.id,
+        user_id=author.id,
+        command_name="blackjack",  # synthetic non-bootstrap probe
+        invocation_type="prefix",
+        is_guild_operator=is_operator,
+        is_bot_owner=bool(is_bot_owner),
+        is_dm=guild is None,
+    )
+    decision = await resolve_command_access(probe_ctx)
+
+    title_emoji = "✅" if decision.allowed else "🚫"
+    embed = discord.Embed(
+        title=f"{title_emoji} Command Access — {target_channel.mention}",
+        color=discord.Color.green() if decision.allowed else discord.Color.red(),
+    )
+
+    if snapshot is None or snapshot.mode is None:
+        embed.add_field(
+            name="Configured mode",
+            value="`all_channels` (default — no policy row in this guild)",
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="Configured mode",
+            value=f"`{snapshot.mode}`",
+            inline=False,
+        )
+
+    if snapshot is not None and snapshot.allowed_channels:
+        listed = " ".join(f"<#{cid}>" for cid in sorted(snapshot.allowed_channels))
+        if len(listed) > 950:
+            head = " ".join(
+                f"<#{cid}>" for cid in sorted(snapshot.allowed_channels)[:30]
+            )
+            listed = f"{head} … (+{len(snapshot.allowed_channels) - 30} more)"
+        embed.add_field(
+            name=f"Allowed channels ({len(snapshot.allowed_channels)})",
+            value=listed,
+            inline=False,
+        )
+
+    embed.add_field(
+        name="Would a normal command run here?",
+        value=("**Yes** — admitted." if decision.allowed else "**No** — denied."),
+        inline=False,
+    )
+    embed.add_field(
+        name="Decision details",
+        value=(
+            f"`reason`: {decision.reason.value}\n"
+            f"`source`: {decision.source.value}\n"
+            f"`effective_mode`: "
+            f"{decision.mode.value if decision.mode is not None else 'n/a'}\n"
+            f"`prefix_enabled`: yes\n"
+            f"`slash_enabled`: yes  *(same admission chain)*"
+        ),
+        inline=False,
+    )
+
+    bootstrap_ctx = CommandAccessContext(
+        guild_id=guild_id,
+        channel_id=target_channel.id,
+        user_id=author.id,
+        command_name="setup",
+        invocation_type="prefix",
+        is_guild_operator=is_operator,
+        is_bot_owner=bool(is_bot_owner),
+        is_dm=guild is None,
+    )
+    bootstrap_decision = await resolve_command_access(bootstrap_ctx)
+    embed.add_field(
+        name="Bootstrap probe (`!setup` for this operator)",
+        value=(
+            "✅ allowed via `bootstrap_bypass`"
+            if bootstrap_decision.allowed
+            else f"🚫 denied — reason `{bootstrap_decision.reason.value}`"
+        ),
+        inline=False,
+    )
+
+    if decision.feedback is not None:
+        embed.add_field(
+            name="Operator-facing feedback (sent on real invocations)",
+            value=decision.feedback,
+            inline=False,
+        )
+
+    if decision.mode is AccessMode.DISABLED_EXCEPT_BOOTSTRAP:
+        embed.add_field(
+            name="Recovery",
+            value=(
+                "Open `!settings → Command access` to switch the mode, "
+                "or run `!setup` to revisit onboarding."
+            ),
+            inline=False,
+        )
+
+    embed.set_footer(
+        text=(
+            "Probe was synthetic; no audit row was emitted.  "
+            "Configure via `!settings → Command access`."
+        ),
+    )
+    return embed
+
+
 __all__ = [
     "build_anchors_embed",
     "build_bindings_embed",
     "build_caches_embed",
+    "build_command_access_diagnostic_embed",
     "build_consistency_embed",
     "build_customization_embed",
     "build_flags_embed",

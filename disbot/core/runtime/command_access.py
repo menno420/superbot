@@ -274,6 +274,51 @@ async def resolve_command_access(
     4. **Policy mode** — looks up the cached per-guild policy.  Absence
        of a policy is the safe default: ``ALL_CHANNELS`` with
        ``DEFAULT_UNCONFIGURED`` source.
+
+    Every decision (allow + deny) emits
+    :data:`services.metrics.command_access_decisions_total` exactly
+    once via :func:`_emit_decision_metric` so Prometheus sees a
+    complete picture of who is asking, what answer they got, and why.
+    """
+    decision = await _decide(ctx)
+    _emit_decision_metric(ctx, decision)
+    return decision
+
+
+def _emit_decision_metric(
+    ctx: CommandAccessContext,
+    decision: CommandAccessDecision,
+) -> None:
+    """Increment the per-decision counter; best-effort, never raises.
+
+    Called exactly once per :func:`resolve_command_access` invocation
+    so allow + deny are both observable.  The lazy import keeps
+    ``services.metrics`` out of the test fixtures that import
+    ``core.runtime.command_access`` without the rest of the
+    runtime.
+    """
+    try:
+        from services import metrics as _metrics
+
+        _metrics.command_access_decisions_total.labels(
+            invocation=ctx.invocation_type,
+            decision="allow" if decision.allowed else "deny",
+            reason=decision.reason.value,
+            mode=decision.mode.value if decision.mode is not None else "none",
+            source=decision.source.value,
+        ).inc()
+    except Exception:
+        # Metrics are advisory — never fail admission because a
+        # counter raised.  prom-client failures land in the bot log
+        # via the metrics module's own exception handling.
+        pass
+
+
+async def _decide(ctx: CommandAccessContext) -> CommandAccessDecision:
+    """Inner admission logic — every branch returns a frozen
+    :class:`CommandAccessDecision`.  Split from
+    :func:`resolve_command_access` so the metric emit can wrap the
+    whole chain without per-branch duplication.
     """
     # Local import avoids a hard dep at module import time so test
     # fixtures that monkeypatch ``lifecycle.can_accept_commands`` keep
