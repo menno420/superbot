@@ -35,18 +35,22 @@
 --
 -- ``updated_by`` / ``created_by`` are intentionally NULL so the
 -- audit row reads "system" rather than attributing the backfill to
--- a random operator id.
+-- a random operator id. The ``::bigint`` cast on each NULL is
+-- required because Postgres infers a bare NULL literal as ``text``
+-- in a SELECT projection, which would clash with the ``BIGINT``
+-- column type and fail the INSERT with "column is of type bigint
+-- but expression is of type text".
 --
 -- Forward-only and idempotent.
 
 INSERT INTO guild_command_access_policy (guild_id, mode, updated_by)
-SELECT DISTINCT guild_id, 'selected_channels', NULL
+SELECT DISTINCT guild_id, 'selected_channels', NULL::bigint
   FROM panel_anchors
  WHERE channel_id IN (1348795460948590622, 1403818013408624642)
 ON CONFLICT (guild_id) DO NOTHING;
 
 INSERT INTO guild_command_access_channels (guild_id, channel_id, created_by)
-SELECT DISTINCT guild_id, channel_id, NULL
+SELECT DISTINCT guild_id, channel_id, NULL::bigint
   FROM panel_anchors
  WHERE channel_id IN (1348795460948590622, 1403818013408624642)
 ON CONFLICT (guild_id, channel_id) DO NOTHING;
