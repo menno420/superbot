@@ -196,6 +196,7 @@ async def test_work_result_back_button_returns_to_economy_panel():
     interaction.user = _author(id_=1)
     interaction.guild_id = 2
     interaction.response.is_done = MagicMock(return_value=False)
+    interaction.response.defer = AsyncMock()
     interaction.response.edit_message = AsyncMock()
 
     with patch(
