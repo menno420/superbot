@@ -1,0 +1,49 @@
+# Canonical helper rules for SuperBot.
+#
+# Defines which modules/classes must be used for common operations.
+# Deviations are flagged by check_architecture.py.
+
+settings_keys:
+  description: >
+    All settings key constants must be imported from utils.settings_keys.
+    Passing raw string literals to db.get_setting() bypasses the registry
+    and makes key renames dangerous.
+  # Regex checked by check_architecture.py (check_settings_key_literals).
+  # Pattern: get_setting(anything, "literal_key") or get_setting(anything, 'literal_key')
+  severity: warning
+  allowed_in:
+    - utils/settings_keys/
+    - tests/
+
+base_view:
+  description: >
+    Discord UI views must extend BaseView (views/base.py), HubView, or
+    PersistentView (core/runtime/persistent_views.py).
+    Extending discord.ui.View directly is allowed only for game-state views
+    that require specialized timeout/lifecycle ownership (documented in
+    views/base.py).
+  canonical_class: BaseView
+  canonical_module: views.base
+  severity: warning
+  # Directories where direct discord.ui.View use is documented and expected.
+  exemptions:
+    - pattern: views/rps/
+      reason: RPS game views require tight gameplay lifecycle coupling
+    - pattern: views/blackjack/
+      reason: Blackjack views require specialized timeout and state cleanup
+    - pattern: views/games/
+      reason: General game views with specialized lifecycle ownership
+    - pattern: views/ai/
+      reason: >
+        AI multi-step selection views use chained select menus that require
+        fine-grained interaction lifecycle control beyond what BaseView provides.
+
+audit_events:
+  description: >
+    Auditable mutations must emit through services.audit_events.emit_audit_action().
+    Direct writes without audit emission bypass the audit trail.
+  canonical_module: services.audit_events
+  canonical_function: emit_audit_action
+  severity: warning
+  # Not yet automatically checked — tracked here for documentation.
+  auto_checked: false

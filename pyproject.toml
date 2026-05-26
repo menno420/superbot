@@ -86,6 +86,11 @@ ignore = [
     "RET503", # missing explicit return None          — discord.py callbacks often early-return
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# CLI scripts: print() is intentional output, subprocess uses hardcoded
+# trusted commands, and AST visitor naming follows the ast module convention.
+"scripts/*.py" = ["T201", "S603", "S607", "N815"]
+
 [tool.ruff.lint.mccabe]
 max-complexity = 8
 

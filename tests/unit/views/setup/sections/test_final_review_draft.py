@@ -222,21 +222,24 @@ def _interaction_with_guild():
     interaction.message = MagicMock(id=100)
     interaction.response = MagicMock()
     interaction.response.send_message = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
     interaction.response.defer = AsyncMock()
+    interaction.response.is_done = MagicMock(return_value=False)
     interaction.followup = MagicMock()
     interaction.followup.edit_message = AsyncMock()
+    interaction.followup.send = AsyncMock()
     return interaction
 
 
 def test_view_with_ops_disables_apply_when_ops_list_empty():
     view = FinalReviewView(_owner_member(), ops=[])
-    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply")
+    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup")
     assert apply_btn.disabled is True
 
 
 def test_view_with_ops_enables_apply_when_ops_non_empty():
     view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
-    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply")
+    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup")
     assert apply_btn.disabled is False
 
 
@@ -363,9 +366,12 @@ async def test_view_apply_preserves_draft_on_skipped_result():
 
 @pytest.mark.asyncio
 async def test_view_apply_full_success_clears_and_marks_complete():
-    """Full success: draft is cleared, session is marked complete, the
-    view is disabled (no recovery view mount).
+    """Full success: draft is cleared, session is marked complete, and
+    (Phase 8) the SetupCompleteView is mounted so the operator can
+    delete the now-empty setup channel or keep it.
     """
+    from views.setup.final_review import SetupCompleteView
+
     view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
     interaction = _interaction_with_guild()
 
@@ -394,9 +400,11 @@ async def test_view_apply_full_success_clears_and_marks_complete():
 
     clear_mock.assert_awaited_once_with(1)
     complete_mock.assert_awaited_once_with(1)
-    # Same view re-rendered with all buttons disabled, no recovery view.
+    # Phase 8: on full success the SetupCompleteView is mounted with
+    # the Delete / Keep cleanup buttons.  Partial-recovery NEVER gets
+    # these buttons (pinned separately).
     edit_kwargs = interaction.followup.edit_message.await_args.kwargs
-    assert edit_kwargs["view"] is view
+    assert isinstance(edit_kwargs["view"], SetupCompleteView)
 
 
 @pytest.mark.asyncio
@@ -808,3 +816,315 @@ def test_embed_says_recommendations_when_given_recs():
     )
     embed = build_final_review_embed([rec])
     assert "recommendation" in (embed.description or "").lower()
+
+
+# ---------------------------------------------------------------------------
+# Phase 7 — Final Review copy polish
+# ---------------------------------------------------------------------------
+
+
+def test_pre_apply_embed_uses_new_copy_and_button_label():
+    """Phase 7 plan copy: 'Final review — nothing has changed yet.
+    These setup operations are staged and ready to apply.'
+    Primary button label is 'Apply staged setup'.
+    """
+    embed = build_final_review_embed([_op("bind_channel")])
+    description = (embed.description or "").lower()
+    assert "nothing has changed yet" in description
+    assert "apply staged setup" in description
+
+
+def test_full_success_embed_says_setup_complete():
+    """Full-success branch: 'Setup complete. Applied: ...'"""
+    from views.setup.final_review import ApplySummary
+
+    summary = ApplySummary(applied=["a", "b"])
+    embed = build_final_review_embed([_op("bind_channel")], summary=summary)
+    title = (embed.title or "").lower()
+    description = (embed.description or "").lower()
+    assert "setup complete" in title or "setup complete" in description
+
+
+def test_partial_success_embed_says_partially_applied():
+    """Partial-failure copy from Phase 0 stays exactly as the plan
+    documents in Phase 7."""
+    from views.setup.final_review import ApplySummary
+
+    summary = ApplySummary(applied=["a"], failed=["b: boom"])
+    embed = build_final_review_embed([_op("bind_channel")], summary=summary)
+    description = (embed.description or "").lower()
+    assert "partially applied" in description
+    assert "preserved" in description
+
+
+def test_final_review_view_has_apply_edit_back_cancel_buttons():
+    """Phase 7 button row: Apply staged setup / Edit setup / Back / Cancel."""
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    labels = {c.label for c in view.children if isinstance(c, discord.ui.Button)}
+    assert "Apply staged setup" in labels
+    assert "Edit setup" in labels
+    assert "Back" in labels
+    assert "Cancel" in labels
+
+
+def test_apply_button_has_stable_custom_id():
+    """The Apply button identity is anchored on a custom_id, not the
+    label — Phase 7 renamed the label but the custom_id stays so
+    test patches and persistent-view bindings (if any) keep working.
+    """
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    apply_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and getattr(c, "custom_id", None) == "setup_final_review:apply"
+    )
+    assert apply_btn.label == "Apply staged setup"
+
+
+@pytest.mark.asyncio
+async def test_edit_button_closes_with_keep_editing_message():
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    edit_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and getattr(c, "custom_id", None) == "setup_final_review:edit"
+    )
+    await edit_btn.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+    kwargs = interaction.response.edit_message.await_args.kwargs
+    assert "edit" in (kwargs.get("content", "")).lower()
+
+
+@pytest.mark.asyncio
+async def test_back_button_closes_with_back_message():
+    view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
+    interaction = _interaction_with_guild()
+
+    back_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and getattr(c, "custom_id", None) == "setup_final_review:back"
+    )
+    await back_btn.callback(interaction)
+
+    interaction.response.edit_message.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# Phase 8 — SetupCompleteView cleanup buttons
+# ---------------------------------------------------------------------------
+
+
+def test_setup_complete_view_has_delete_and_keep_buttons():
+    from views.setup.final_review import ApplySummary, SetupCompleteView
+
+    view = SetupCompleteView(_owner_member(), summary=ApplySummary(applied=["x"]))
+    custom_ids = {
+        c.custom_id
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert custom_ids == {"setup_complete:delete", "setup_complete:keep"}
+
+
+@pytest.mark.asyncio
+async def test_setup_complete_delete_calls_cleanup_service():
+    """Pressing Delete invokes the guarded cleanup service and edits the
+    embed to the post-deletion state on success.
+    """
+    from services.setup_channel import CleanupResult
+    from views.setup.final_review import ApplySummary, SetupCompleteView
+
+    view = SetupCompleteView(_owner_member(), summary=ApplySummary(applied=["x"]))
+    interaction = _interaction_with_guild()
+    fake_session = MagicMock()
+    fake_session.delegated_admins = ()
+    fake_session.guild = SimpleNamespace(owner_id=99)
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=fake_session,
+        ),
+        patch(
+            "services.setup_channel.cleanup_setup_channel_after_completion",
+            new_callable=AsyncMock,
+            return_value=CleanupResult(
+                reason="ok",
+                detail="Setup channel deleted.",
+            ),
+        ) as cleanup_mock,
+        patch(
+            "services.setup_session.set_setup_message_id",
+            new_callable=AsyncMock,
+        ),
+        # _gate_apply uses resume_session + can_apply_setup; the
+        # owner member always passes can_apply_setup against the
+        # session.owner_id.
+        patch(
+            "views.setup.final_review.setup_access.can_apply_setup",
+            return_value=True,
+        ),
+    ):
+        delete_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_complete:delete"
+        )
+        await delete_btn.callback(interaction)
+
+    cleanup_mock.assert_awaited_once()
+    # Embed flipped to the post-deletion success state.
+    edit_kwargs = interaction.response.edit_message.await_args.kwargs
+    new_embed = edit_kwargs.get("embed")
+    assert new_embed is not None
+    assert "deleted" in (new_embed.description or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_complete_delete_surfaces_guard_failure_as_ephemeral():
+    """Guard failure (e.g. channel renamed) shows the reason
+    ephemerally and leaves the buttons clickable for retry.
+    """
+    from services.setup_channel import CleanupResult
+    from views.setup.final_review import ApplySummary, SetupCompleteView
+
+    view = SetupCompleteView(_owner_member(), summary=ApplySummary(applied=["x"]))
+    interaction = _interaction_with_guild()
+    fake_session = MagicMock()
+    fake_session.delegated_admins = ()
+    fake_session.guild = SimpleNamespace(owner_id=99)
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=fake_session,
+        ),
+        patch(
+            "services.setup_channel.cleanup_setup_channel_after_completion",
+            new_callable=AsyncMock,
+            return_value=CleanupResult(
+                reason="channel_renamed",
+                detail="Channel renamed; refusing to delete.",
+            ),
+        ),
+        patch(
+            "views.setup.final_review.setup_access.can_apply_setup",
+            return_value=True,
+        ),
+    ):
+        delete_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_complete:delete"
+        )
+        await delete_btn.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "renamed" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_complete_delete_rejects_non_delegated_admin():
+    from views.setup.final_review import ApplySummary, SetupCompleteView
+
+    # Use _owner_member here just for the BaseView author check;
+    # _gate_apply patches can_apply_setup to False below.
+    view = SetupCompleteView(_owner_member(), summary=ApplySummary(applied=["x"]))
+    interaction = _interaction_with_guild()
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=MagicMock(),
+        ),
+        patch(
+            "views.setup.final_review.setup_access.can_apply_setup",
+            return_value=False,
+        ),
+        patch(
+            "services.setup_channel.cleanup_setup_channel_after_completion",
+            new_callable=AsyncMock,
+        ) as cleanup_mock,
+    ):
+        delete_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_complete:delete"
+        )
+        await delete_btn.callback(interaction)
+
+    cleanup_mock.assert_not_awaited()
+    interaction.response.send_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_setup_complete_keep_closes_view_without_deletion():
+    from views.setup.final_review import ApplySummary, SetupCompleteView
+
+    view = SetupCompleteView(_owner_member(), summary=ApplySummary(applied=["x"]))
+    interaction = _interaction_with_guild()
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=MagicMock(),
+        ),
+        patch(
+            "views.setup.final_review.setup_access.can_apply_setup",
+            return_value=True,
+        ),
+        patch(
+            "services.setup_channel.cleanup_setup_channel_after_completion",
+            new_callable=AsyncMock,
+        ) as cleanup_mock,
+    ):
+        keep_btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_complete:keep"
+        )
+        await keep_btn.callback(interaction)
+
+    cleanup_mock.assert_not_awaited()
+    interaction.response.edit_message.assert_awaited_once()
+    interaction.followup.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_partial_recovery_view_does_not_offer_cleanup_buttons():
+    """Phase 8: partial-recovery flows NEVER offer the Delete / Keep
+    buttons.  Pinned because the plan explicitly forbids it.
+    """
+    from views.setup.final_review import ApplySummary
+
+    summary = ApplySummary(applied=["one"], failed=["two: boom"])
+    recovery = PartialApplyRecoveryView(
+        _owner_member(),
+        ops=[_op("bind_channel")],
+        accepted=[],
+        summary=summary,
+    )
+    custom_ids = {
+        getattr(c, "custom_id", None) or c.label
+        for c in recovery.children
+        if isinstance(c, discord.ui.Button)
+    }
+    # Neither cleanup-button custom_id appears on the recovery view.
+    assert "setup_complete:delete" not in custom_ids
+    assert "setup_complete:keep" not in custom_ids

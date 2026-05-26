@@ -17,5 +17,41 @@
       "mcp__codegraph__brief",
       "mcp__codegraph__audit"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/claude_post_edit.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/claude_stop_check.py",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/claude_session_summary.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }

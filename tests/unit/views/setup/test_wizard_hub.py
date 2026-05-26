@@ -195,6 +195,99 @@ def test_build_hub_embed_marks_skipped_sections_with_warning_badge():
     assert "⚠️" in value
 
 
+# ---------------------------------------------------------------------------
+# Phase 1 — _gate_apply (replaces _gate_owner) accepts delegated admins
+# ---------------------------------------------------------------------------
+
+
+def _delegated_member(member_id: int = 42, guild_owner_id: int = 99):
+    """Member who is not the server owner but is in delegated_admins."""
+    import discord
+
+    m = MagicMock(spec=discord.Member)
+    m.id = member_id
+    m.guild = SimpleNamespace(owner_id=guild_owner_id)
+    m.guild_permissions = SimpleNamespace(administrator=False)
+    return m
+
+
+def _session_with_delegated(delegated_admins=(42,)):
+    return SetupSession(
+        guild_id=1,
+        guild_name="Test",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=delegated_admins,
+        skipped_sections=frozenset(),
+    )
+
+
+@pytest.mark.asyncio
+async def test_hub_section_button_accepts_delegated_admin():
+    """A delegated admin (non-owner) can press section buttons.
+
+    Pre-Phase-1 the hub's _gate_owner allowed only the server owner,
+    blocking delegated admins even though hub entry accepted them.
+    The replacement _gate_apply defers to can_apply_setup.
+    """
+    delegated = _delegated_member(42)
+    view = SetupHubView(delegated, session=_session_with_delegated((42,)))
+    interaction = _interaction(delegated)
+    fake_embed = MagicMock()
+    with (
+        patch(
+            "cogs.diagnostic._platform_embeds.build_setup_readiness_embed",
+            new_callable=AsyncMock,
+            return_value=fake_embed,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await _section_button(view, "readiness").callback(interaction)
+    # Section ran (readiness embed was sent) — not the access-denied embed.
+    interaction.response.send_message.assert_awaited_once()
+    sent_kwargs = interaction.response.send_message.await_args.kwargs
+    assert sent_kwargs.get("embed") is fake_embed
+
+
+@pytest.mark.asyncio
+async def test_hub_section_button_rejects_non_delegated_admin():
+    """A plain administrator (not delegated, not owner) is rejected."""
+    other = _other_member()  # admin=True, id=42, owner=99, no delegation
+    view = SetupHubView(other, session=_session_with_delegated(()))
+    interaction = _interaction(other)
+    await _section_button(view, "readiness").callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    # Reject message now mentions delegation as the recovery path.
+    assert "delegate" in msg or "owner" in msg
+
+
+@pytest.mark.asyncio
+async def test_hub_section_button_rejects_member_without_delegation_when_session_changes():
+    """Even if the hub was constructed with a session granting delegation,
+    a later session without that delegation must NOT be silently used —
+    the gate reads the live ``self.session``.  We verify by mutating
+    the view's session in-place.
+    """
+    delegated = _delegated_member(42)
+    session_granting = _session_with_delegated((42,))
+    view = SetupHubView(delegated, session=session_granting)
+    # Mutate the session to revoke delegation.
+    view.session = _session_with_delegated(())
+    interaction = _interaction(delegated)
+    await _section_button(view, "readiness").callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "delegate" in msg or "owner" in msg
+
+
 @pytest.mark.asyncio
 async def test_hub_readiness_button_owner_only():
     view = SetupHubView(_other_member())
@@ -377,7 +470,7 @@ def test_final_review_view_disables_apply_when_empty():
     apply_btn = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button) and c.label == "Apply"
+        if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup"
     )
     assert apply_btn.disabled is True
 
@@ -645,10 +738,13 @@ def test_apply_all_recommended_button_absent_when_no_builders():
 
 
 @pytest.mark.asyncio
-async def test_apply_all_recommended_iterates_sections_and_stages_ops():
-    """Clicking the button calls every depth-filtered section's
-    recommended_ops_builder and stages each returned op via
-    setup_draft.append with metadata.source='setup_ux:recommended'."""
+async def test_apply_all_recommended_iterates_sections_and_stages_via_replace():
+    """Phase 2: Clicking ``Apply all recommended`` calls every
+    depth-filtered section's ``recommended_ops_builder`` via the
+    Phase 2 adapter and stages each section's ops through the
+    transactional ``replace_recommended_for_section`` helper.
+    """
+    from services.setup_draft import ReplaceRecommendedResult
     from services.setup_operations import SetupOperation
     from services.setup_sections import REGISTRY, SetupSection
 
@@ -705,23 +801,32 @@ async def test_apply_all_recommended_iterates_sections_and_stages_ops():
                 new_callable=AsyncMock,
             ),
             patch(
-                "services.setup_draft.append",
+                "services.setup_draft.replace_recommended_for_section",
                 new_callable=AsyncMock,
-                return_value=1,
-            ) as append_mock,
+                return_value=ReplaceRecommendedResult(
+                    inserted_seqs=[1],
+                    deleted_count=0,
+                    conflicts=[],
+                ),
+            ) as replace_mock,
         ):
             await button.callback(interaction)
 
-    assert append_mock.await_count == 1
-    metadata = append_mock.await_args.kwargs["metadata"]
-    assert metadata["source"] == "setup_ux:recommended"
+    assert replace_mock.await_count == 1
+    # Positional args: guild_id, section_slug, ops
+    args = replace_mock.await_args.args
+    assert args[0] == 1
+    assert args[1] == "_fake_apply_all"
+    assert len(args[2]) == 1
     interaction.followup.send.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_apply_all_recommended_handles_empty_builder_output():
     """If every builder returns an empty list, the followup tells the
-    operator nothing was staged."""
+    operator nothing was staged.  Empty-output paths short-circuit
+    before reaching the staging helper.
+    """
     from services.setup_sections import REGISTRY, SetupSection
 
     async def _build(_guild):
@@ -769,13 +874,13 @@ async def test_apply_all_recommended_handles_empty_builder_output():
                 new_callable=AsyncMock,
             ),
             patch(
-                "services.setup_draft.append",
+                "services.setup_draft.replace_recommended_for_section",
                 new_callable=AsyncMock,
-            ) as append_mock,
+            ) as replace_mock,
         ):
             await button.callback(interaction)
 
-    append_mock.assert_not_awaited()
+    replace_mock.assert_not_awaited()
     interaction.followup.send.assert_awaited_once()
     msg = interaction.followup.send.await_args.args[0]
     assert "no" in msg.lower()

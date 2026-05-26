@@ -1,0 +1,122 @@
+# Mutation ownership rules for SuperBot.
+#
+# Each domain has exactly one canonical mutation service. Direct database
+# writes (INSERT/UPDATE/DELETE) outside utils/db/ and the owning service
+# are flagged as violations.
+#
+# The canonical write path for all domains is:
+#   caller → *_mutation.py service → utils.db.[submodule] → pool.execute()
+#
+# pool.execute() and other raw db primitives are ONLY allowed inside utils/db/.
+
+domains:
+  economy:
+    owner_module: services.economy_service
+    db_module: utils.db.economy
+    description: Coins, jobs, daily claims, bets
+
+  xp:
+    owner_module: services.xp_service
+    db_module: utils.db.xp
+    description: XP grants, level progression, cooldowns
+
+  moderation:
+    owner_module: services.moderation_service
+    db_module: utils.db.moderation
+    description: Warnings, mod action logs, prohibited words
+
+  ai_policy:
+    owner_module: services.ai_policy_mutation
+    db_module: utils.db.ai
+    description: Guild/channel/category/role AI policy records
+
+  ai_instructions:
+    owner_module: services.ai_instruction_mutation
+    db_module: utils.db.ai
+    description: Instruction profiles and per-channel overrides
+
+  bindings:
+    owner_module: services.binding_mutation
+    db_module: utils.db.bindings
+    description: Subsystem-to-channel/role/category bindings
+
+  participation:
+    owner_module: services.participation_mutation
+    db_module: utils.db.participation
+    description: User opt-in/opt-out state per subsystem
+
+  settings:
+    owner_module: services.settings_mutation
+    db_module: utils.db
+    description: Guild settings key-value store
+
+  automation:
+    owner_module: services.automation_mutation
+    db_module: utils.db.automation
+    description: Automation rules and trigger configs
+
+  rollout:
+    owner_module: services.rollout_mutation
+    db_module: utils.db.feature_flags
+    description: Feature flag rollout state
+
+  setup_session:
+    owner_module: services.setup_session
+    db_module: utils.db.setup
+    description: Setup wizard session lifecycle
+
+  setup_draft:
+    owner_module: services.setup_draft
+    db_module: utils.db.setup
+    description: Staged setup operations (pre-apply draft)
+
+  roles:
+    owner_module: services.role_automation
+    db_module: utils.db.roles
+    description: Role thresholds, reaction roles, automation triggers
+
+  btd6:
+    owner_module: services.btd6_strategy_mutation
+    db_module: utils.db.btd6
+    description: BTD6 strategy submissions and source records
+
+
+# Raw-write violations that exist today and are tracked for cleanup.
+# Listed here so the architecture checker reports them as WARN not ERROR.
+known_raw_write_violations:
+  - file: services/binding_backfill.py
+    reason: >
+      Legacy migration script; uses lock_conn.execute() for atomic
+      backfill operations. Does not run in normal bot operation.
+    ticket: arch-fix-2
+
+  - file: services/game_state_service.py
+    reason: >
+      Game state mutations use direct pool.execute() calls. Should be
+      moved to utils/db/games/ submodule.
+    ticket: arch-fix-3
+
+  - file: services/economy_service.py
+    reason: >
+      Transaction-level conn.execute() for atomic bet/settle operations.
+      Should be encapsulated in utils/db/economy.py transaction helper.
+    ticket: arch-fix-3
+
+  - file: governance/writes.py
+    reason: >
+      Governance layer holds cleanup execution ownership and uses raw
+      execute() for bulk cleanup operations. Requires dedicated review
+      before moving to utils/db/.
+    ticket: arch-fix-4
+
+  - file: services/automation_scheduler.py
+    reason: >
+      Automation scheduler uses a raw pool.execute() call for a scheduled
+      cleanup query. Should be encapsulated in utils/db/automation.py.
+    ticket: arch-fix-15
+
+  - file: services/platform_consistency.py
+    reason: >
+      Platform consistency service uses raw pool.execute() for bulk
+      cross-subsystem auditing queries. Should be moved to utils/db/.
+    ticket: arch-fix-16

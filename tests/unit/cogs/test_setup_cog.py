@@ -463,7 +463,9 @@ async def test_start_button_refuses_non_owner():
     view = SetupLauncherView()
     interaction = _mock_interaction(_admin_member())
 
-    await view._start.callback(interaction)
+    with patch("services.setup_session.resume_session", AsyncMock(return_value=None)):
+        with patch("services.setup_session.start_session", AsyncMock(return_value=None)):
+            await view._start.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
     assert (
@@ -472,40 +474,42 @@ async def test_start_button_refuses_non_owner():
 
 
 @pytest.mark.asyncio
-async def test_start_button_opens_setup_hub_for_owner():
-    """Start Setup must open ``SetupHubView`` — no longer a stub."""
+async def test_start_button_opens_wizard_for_owner():
+    """Start Setup must open the linear wizard in #superbot-setup."""
     view = SetupLauncherView()
     interaction = _mock_interaction(_owner_member())
 
+    mock_channel = MagicMock()
+    mock_channel.mention = "#superbot-setup"
+    mock_message = MagicMock()
+    mock_message.jump_url = "https://discord.com/channels/1/2/3"
+
     with patch("services.setup_session.resume_session", AsyncMock(return_value=None)):
-        with patch(
-            "services.setup_session.mark_in_progress",
-            AsyncMock(),
-        ) as mark_mock:
-            await view._start.callback(interaction)
+        with patch("services.setup_session.start_session", AsyncMock(return_value=None)):
+            with patch(
+                "views.setup.wizard.open_setup_workspace",
+                AsyncMock(return_value=(mock_channel, mock_message, "ok")),
+            ) as open_mock:
+                await view._start.callback(interaction)
+
+    # open_setup_workspace must be called exactly once.
+    open_mock.assert_awaited_once()
 
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs
-    # Hub is rendered with an embed + view, sent ephemerally.
     assert kwargs.get("ephemeral") is True
-    assert kwargs.get("embed") is not None
-    sent_view = kwargs.get("view")
-    assert sent_view is not None
-    # The view dispatched must be the wizard hub, not the launcher.
-    from views.setup.hub import SetupHubView
-
-    assert isinstance(sent_view, SetupHubView)
-    # Session step is persisted so the launcher relabels after restart.
-    mark_mock.assert_awaited_once()
-    assert mark_mock.await_args.kwargs.get("step") == "hub"
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "#superbot-setup" in msg
+    assert "wizard" in msg.lower() or "open" in msg.lower()
 
 
 @pytest.mark.asyncio
 async def test_start_button_requires_guild_context():
-    """No guild_id → deny rather than crash inside SetupHubView."""
+    """No guild → deny rather than crash."""
     view = SetupLauncherView()
     interaction = _mock_interaction(_owner_member())
     interaction.guild_id = None
+    interaction.guild = None
 
     await view._start.callback(interaction)
 
@@ -1075,13 +1079,132 @@ def _delegated_session(
     )
 
 
+def _mock_channel_for_workspace(mention: str = "<#7000>") -> MagicMock:
+    """Mock target channel returned by open_setup_workspace."""
+    ch = MagicMock()
+    ch.mention = mention
+    return ch
+
+
+def _mock_workspace_message(jump_url: str = "https://discord.com/x/y/z") -> MagicMock:
+    """Mock anchor message returned by open_setup_workspace."""
+    msg = MagicMock()
+    msg.jump_url = jump_url
+    return msg
+
+
 @pytest.mark.asyncio
-async def test_setup_cmd_opens_hub_for_owner():
+async def test_setup_cmd_opens_wizard_for_owner():
+    """Phase 3: !setup posts the wizard in #superbot-setup and replies
+    in the invoking channel with a jump link.  No hub view is sent
+    in-channel anymore — that lives in /setup-hub.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    ctx = _mock_ctx(_owner_member())
+
+    channel = _mock_channel_for_workspace()
+    message = _mock_workspace_message()
+    with (
+        patch(
+            "cogs.setup._wizard_entry.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "cogs.setup._wizard_entry.open_setup_workspace",
+            new_callable=AsyncMock,
+            return_value=(channel, message, "ok"),
+        ) as open_mock,
+    ):
+        await cog.setup_cmd.callback(cog, ctx)
+
+    open_mock.assert_awaited_once()
+    # Invoking channel reply mentions the workspace channel and the
+    # jump link to the anchor message.
+    ctx.send.assert_awaited_once()
+    sent = ctx.send.await_args.args[0]
+    assert channel.mention in sent
+    assert message.jump_url in sent
+    # No hub view is sent into the invoking channel anymore.
+    assert "view" not in ctx.send.await_args.kwargs
+
+
+@pytest.mark.asyncio
+async def test_setup_cmd_starts_session_when_missing():
+    """No session row → !setup starts one before opening the wizard."""
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    ctx = _mock_ctx(_owner_member())
+
+    channel = _mock_channel_for_workspace()
+    message = _mock_workspace_message()
+    with (
+        patch(
+            "cogs.setup._wizard_entry.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.setup._wizard_entry.setup_session.start_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ) as start_mock,
+        patch(
+            "cogs.setup._wizard_entry.open_setup_workspace",
+            new_callable=AsyncMock,
+            return_value=(channel, message, "ok"),
+        ),
+    ):
+        await cog.setup_cmd.callback(cog, ctx)
+
+    start_mock.assert_awaited_once()
+    ctx.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_setup_cmd_handles_missing_setup_channel():
+    """If ensure_setup_channel fails (no Manage Channels perm),
+    !setup surfaces the recovery hint in the invoking channel.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    ctx = _mock_ctx(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup._wizard_entry.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "cogs.setup._wizard_entry.open_setup_workspace",
+            new_callable=AsyncMock,
+            return_value=(None, None, "no_channel"),
+        ),
+    ):
+        await cog.setup_cmd.callback(cog, ctx)
+
+    ctx.send.assert_awaited_once()
+    msg = ctx.send.await_args.args[0].lower()
+    assert "manage channels" in msg
+
+
+@pytest.mark.asyncio
+async def test_setup_hub_slash_opens_hub_for_owner():
+    """The new /setup-hub compatibility command preserves the
+    pre-Phase-3 behavior: opens the hub view ephemerally in the
+    invoking channel.  Used by operators / tests that prefer the
+    section-list UI to the linear wizard.
+    """
     from cogs.setup_cog import SetupCog
     from views.setup.hub import SetupHubView
 
     cog = SetupCog(MagicMock())
-    ctx = _mock_ctx(_owner_member())
+    interaction = _mock_interaction(_owner_member())
 
     with (
         patch(
@@ -1099,58 +1222,27 @@ async def test_setup_cmd_opens_hub_for_owner():
             new_callable=AsyncMock,
         ) as mark_mock,
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setup_hub_slash.callback(cog, interaction)
 
-    ctx.send.assert_awaited_once()
-    sent_view = ctx.send.await_args.kwargs.get("view")
-    assert isinstance(sent_view, SetupHubView)
+    interaction.response.send_message.assert_awaited_once()
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs.get("ephemeral") is True
+    assert isinstance(kwargs.get("view"), SetupHubView)
     mark_mock.assert_awaited_once()
     assert mark_mock.await_args.kwargs.get("step") == "hub"
 
 
 @pytest.mark.asyncio
-async def test_setup_cmd_starts_session_when_missing():
-    from cogs.setup_cog import SetupCog
-
-    cog = SetupCog(MagicMock())
-    ctx = _mock_ctx(_owner_member())
-
-    with (
-        patch(
-            "cogs.setup_cog.setup_session.resume_session",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
-        patch(
-            "cogs.setup_cog.setup_session.start_session",
-            new_callable=AsyncMock,
-            return_value=_delegated_session(),
-        ) as start_mock,
-        patch(
-            "services.setup_draft.count",
-            new_callable=AsyncMock,
-            return_value=0,
-        ),
-        patch(
-            "cogs.setup_cog.setup_session.mark_in_progress",
-            new_callable=AsyncMock,
-        ),
-    ):
-        await cog.setup_cmd.callback(cog, ctx)
-
-    start_mock.assert_awaited_once()
-    ctx.send.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-async def test_setup_cmd_shows_depth_picker_when_depth_unset():
-    """First-time entry (session.depth=None) routes the operator
-    through the depth picker before opening the hub."""
+async def test_setup_hub_slash_shows_depth_picker_when_depth_unset():
+    """The hub compat command still routes through the depth picker
+    when no depth has been chosen yet (preserves the pre-Phase-3
+    behavior under its new name).
+    """
     from cogs.setup_cog import SetupCog
     from views.setup.depth_panel import DepthPanelView
 
     cog = SetupCog(MagicMock())
-    ctx = _mock_ctx(_owner_member())
+    interaction = _mock_interaction(_owner_member())
 
     with (
         patch(
@@ -1163,10 +1255,10 @@ async def test_setup_cmd_shows_depth_picker_when_depth_unset():
             new_callable=AsyncMock,
         ) as mark_mock,
     ):
-        await cog.setup_cmd.callback(cog, ctx)
+        await cog.setup_hub_slash.callback(cog, interaction)
 
-    ctx.send.assert_awaited_once()
-    sent_view = ctx.send.await_args.kwargs.get("view")
+    interaction.response.send_message.assert_awaited_once()
+    sent_view = interaction.response.send_message.await_args.kwargs.get("view")
     assert isinstance(sent_view, DepthPanelView)
     # mark_in_progress should NOT fire — the operator hasn't reached
     # the hub yet.
@@ -1176,7 +1268,9 @@ async def test_setup_cmd_shows_depth_picker_when_depth_unset():
 @pytest.mark.asyncio
 async def test_setup_cmd_returns_readiness_for_plain_admin():
     """A Discord administrator with no delegation gets the readiness embed,
-    not the hub — they may scan but not apply."""
+    not the wizard — they may scan but not apply.  The new prefix
+    flow preserves this branch.
+    """
     from cogs.setup_cog import SetupCog
 
     cog = SetupCog(MagicMock())
@@ -1185,7 +1279,7 @@ async def test_setup_cmd_returns_readiness_for_plain_admin():
     fake_embed = MagicMock()
     with (
         patch(
-            "cogs.setup_cog.setup_session.resume_session",
+            "cogs.setup._wizard_entry.setup_session.resume_session",
             new_callable=AsyncMock,
             return_value=_delegated_session(delegated=()),
         ),
@@ -1198,15 +1292,15 @@ async def test_setup_cmd_returns_readiness_for_plain_admin():
         await cog.setup_cmd.callback(cog, ctx)
 
     ctx.send.assert_awaited_once()
-    # Readiness path sends an embed but no hub view.
+    # Readiness path sends an embed but no view.
     assert ctx.send.await_args.kwargs.get("embed") is fake_embed
     assert ctx.send.await_args.kwargs.get("view") is None
 
 
 @pytest.mark.asyncio
-async def test_setup_cmd_opens_hub_for_delegated_admin():
+async def test_setup_cmd_opens_wizard_for_delegated_admin():
+    """Delegated admin (non-owner) gets the wizard workspace flow."""
     from cogs.setup_cog import SetupCog
-    from views.setup.hub import SetupHubView
 
     cog = SetupCog(MagicMock())
     # Delegated admin: not the owner, not a Discord administrator, but
@@ -1214,26 +1308,26 @@ async def test_setup_cmd_opens_hub_for_delegated_admin():
     member = _random_member(user_id=42)
     ctx = _mock_ctx(member)
 
+    channel = _mock_channel_for_workspace()
+    message = _mock_workspace_message()
     with (
         patch(
-            "cogs.setup_cog.setup_session.resume_session",
+            "cogs.setup._wizard_entry.setup_session.resume_session",
             new_callable=AsyncMock,
             return_value=_delegated_session(delegated=(42,)),
         ),
         patch(
-            "services.setup_draft.count",
+            "cogs.setup._wizard_entry.open_setup_workspace",
             new_callable=AsyncMock,
-            return_value=0,
-        ),
-        patch(
-            "cogs.setup_cog.setup_session.mark_in_progress",
-            new_callable=AsyncMock,
-        ),
+            return_value=(channel, message, "ok"),
+        ) as open_mock,
     ):
         await cog.setup_cmd.callback(cog, ctx)
 
-    sent_view = ctx.send.await_args.kwargs.get("view")
-    assert isinstance(sent_view, SetupHubView)
+    open_mock.assert_awaited_once()
+    ctx.send.assert_awaited_once()
+    sent = ctx.send.await_args.args[0]
+    assert channel.mention in sent
 
 
 @pytest.mark.asyncio
@@ -1244,7 +1338,7 @@ async def test_setup_cmd_denies_random_member():
     ctx = _mock_ctx(_random_member())
 
     with patch(
-        "cogs.setup_cog.setup_session.resume_session",
+        "cogs.setup._wizard_entry.setup_session.resume_session",
         new_callable=AsyncMock,
         return_value=_delegated_session(delegated=()),
     ):
@@ -1273,36 +1367,38 @@ async def test_setup_cmd_requires_guild_context():
 
 
 @pytest.mark.asyncio
-async def test_setup_slash_opens_hub_for_owner():
+async def test_setup_slash_opens_wizard_for_owner():
+    """Phase 3: /setup opens the wizard via the workspace flow and
+    replies ephemerally in the invoking channel with a jump link.
+    """
     from cogs.setup_cog import SetupCog
-    from views.setup.hub import SetupHubView
 
     cog = SetupCog(MagicMock())
     interaction = _mock_interaction(_owner_member())
 
+    channel = _mock_channel_for_workspace()
+    message = _mock_workspace_message()
     with (
         patch(
-            "cogs.setup_cog.setup_session.resume_session",
+            "cogs.setup._wizard_entry.setup_session.resume_session",
             new_callable=AsyncMock,
             return_value=_delegated_session(),
         ),
         patch(
-            "services.setup_draft.count",
+            "cogs.setup._wizard_entry.open_setup_workspace",
             new_callable=AsyncMock,
-            return_value=0,
-        ),
-        patch(
-            "cogs.setup_cog.setup_session.mark_in_progress",
-            new_callable=AsyncMock,
-        ) as mark_mock,
+            return_value=(channel, message, "ok"),
+        ) as open_mock,
     ):
         await cog.setup_slash.callback(cog, interaction)
 
+    open_mock.assert_awaited_once()
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs
     assert kwargs.get("ephemeral") is True
-    assert isinstance(kwargs.get("view"), SetupHubView)
-    mark_mock.assert_awaited_once()
+    sent = interaction.response.send_message.await_args.args[0]
+    assert channel.mention in sent
+    assert message.jump_url in sent
 
 
 @pytest.mark.asyncio
@@ -1315,7 +1411,7 @@ async def test_setup_slash_returns_readiness_for_plain_admin():
     fake_embed = MagicMock()
     with (
         patch(
-            "cogs.setup_cog.setup_session.resume_session",
+            "cogs.setup._wizard_entry.setup_session.resume_session",
             new_callable=AsyncMock,
             return_value=_delegated_session(delegated=()),
         ),
@@ -1911,3 +2007,273 @@ async def test_setup_depth_slash_denies_random_member():
     set_depth_mock.assert_not_awaited()
     msg = interaction.response.send_message.await_args.args[0]
     assert "owner" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# /setup-delegate and /setup-undelegate slash commands (Phase 1)
+# ---------------------------------------------------------------------------
+
+
+def _target_member(member_id: int = 77):
+    """Member object passed to /setup-delegate as the grant target."""
+    import discord
+
+    m = MagicMock(spec=discord.Member)
+    m.id = member_id
+    m.mention = f"<@{member_id}>"
+    m.bot = False
+    return m
+
+
+def _bot_target_member(member_id: int = 88):
+    import discord
+
+    m = MagicMock(spec=discord.Member)
+    m.id = member_id
+    m.mention = f"<@{member_id}>"
+    m.bot = True
+    return m
+
+
+def _delegate_interaction(actor, *, guild_id: int = 1, guild_owner_id: int = 99):
+    """Mock interaction with a guild.id / guild.owner_id pair used by
+    /setup-delegate / /setup-undelegate.
+    """
+    interaction = _mock_interaction(actor, guild_id=guild_id)
+    interaction.guild.owner_id = guild_owner_id
+    interaction.guild.name = "Test"
+    return interaction
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_grants_owner_can_promote():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+        ) as add_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as recompute_mock,
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_awaited_once_with(1, 77, actor_id=99)
+    # Channel overwrites recomputed so the new delegate gets explicit
+    # channel access without needing to wait for the next ensure call.
+    recompute_mock.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "delegated" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_undelegate_slash_owner_can_revoke():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=(77,)),
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.remove_delegated_admin",
+            new_callable=AsyncMock,
+        ) as remove_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as recompute_mock,
+    ):
+        await cog.setup_undelegate_slash.callback(cog, interaction, member=target)
+
+    remove_mock.assert_awaited_once_with(1, 77, actor_id=99)
+    recompute_mock.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "un-delegated" in msg.lower() or "undelegated" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_denies_non_owner():
+    """Plain admin (not owner) cannot grant delegation — capability-
+    significant promotion is owner-only on purpose.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _admin_member()  # admin=True but id=42, not owner=99
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+        ) as add_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+        ) as recompute_mock,
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_not_awaited()
+    recompute_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_undelegate_slash_denies_non_owner():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _admin_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.remove_delegated_admin",
+            new_callable=AsyncMock,
+        ) as remove_mock,
+    ):
+        await cog.setup_undelegate_slash.callback(cog, interaction, member=target)
+
+    remove_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_rejects_bot_target():
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _bot_target_member(88)
+    interaction = _delegate_interaction(actor)
+
+    with patch(
+        "cogs.setup._helpers.setup_session.add_delegated_admin",
+        new_callable=AsyncMock,
+    ) as add_mock:
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "bot" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_rejects_owner_target():
+    """Granting the owner delegation is a no-op the slash command
+    rejects with a friendly message rather than silently succeeding.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()  # id=99
+    target = _target_member(99)  # also id=99, matches guild.owner_id
+    interaction = _delegate_interaction(actor)
+
+    with patch(
+        "cogs.setup._helpers.setup_session.add_delegated_admin",
+        new_callable=AsyncMock,
+    ) as add_mock:
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    add_mock.assert_not_awaited()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "owner" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_starts_session_when_missing():
+    """If no session row exists yet, the command initialises one so the
+    delegation actually persists.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    # First resume_session call returns None; start_session then runs;
+    # second resume_session (for the recompute) returns the new session.
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            side_effect=[None, _delegated_session(delegated=(77,))],
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.start_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ) as start_mock,
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+        ) as add_mock,
+        patch(
+            "services.setup_channel.recompute_setup_channel_overwrites",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    start_mock.assert_awaited_once()
+    add_mock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_slash_surfaces_db_failure():
+    """A DB error during delegation surfaces as an error reply, not a
+    fake success.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    actor = _owner_member()
+    target = _target_member(77)
+    interaction = _delegate_interaction(actor)
+
+    with (
+        patch(
+            "cogs.setup._helpers.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(delegated=()),
+        ),
+        patch(
+            "cogs.setup._helpers.setup_session.add_delegated_admin",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("DB exploded"),
+        ),
+    ):
+        await cog.setup_delegate_slash.callback(cog, interaction, member=target)
+
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "could not" in msg

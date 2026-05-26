@@ -31,6 +31,7 @@ from discord.ext import commands
 
 from cogs.setup._helpers import build_status_embed as _build_status_embed
 from cogs.setup._helpers import resolve_hub_entry as _resolve_hub_entry
+from cogs.setup._helpers import toggle_delegate as _toggle_delegate
 from services import setup_access, setup_session
 from views.setup.launcher import (
     SetupLauncherView,
@@ -71,41 +72,18 @@ class SetupCog(commands.Cog):
     @commands.command(name="setup")
     @commands.guild_only()
     async def setup_cmd(self, ctx: commands.Context) -> None:
-        """Open or resume the setup wizard from any channel.
+        """Open or resume the linear setup wizard.
 
-        Owners and delegated setup admins get the hub; administrators
+        Routes through :func:`views.setup.wizard.open_setup_workspace`
+        so the wizard message lives in ``#superbot-setup`` and the
+        invoking channel only receives a transient pointer reply.
+        Owners and delegated setup admins get the wizard; administrators
         without delegation get a read-only readiness embed; everyone
         else is denied.
         """
-        guild = ctx.guild
-        member = ctx.author
-        if guild is None or not isinstance(member, discord.Member):
-            await ctx.send("Run `!setup` from inside the server.")
-            return
+        from cogs.setup._wizard_entry import open_wizard_from_prefix
 
-        embed, view, mode = await _resolve_hub_entry(member, guild)
-        if mode == "denied":
-            await ctx.send(
-                "Only the server owner, an administrator, or a delegated "
-                "setup admin can open the setup wizard.",
-            )
-            return
-        if mode == "readiness":
-            if embed is None:
-                await ctx.send("Could not build the readiness scan.")
-                return
-            await ctx.send(embed=embed)
-            return
-
-        if embed is None or view is None:
-            await ctx.send("Could not build the setup hub. See logs.")
-            return
-        await ctx.send(embed=embed, view=view)
-        if mode == "hub":
-            try:
-                await setup_session.mark_in_progress(guild.id, step="hub")
-            except Exception:
-                logger.exception("setup_cog.setup_cmd: mark_in_progress failed")
+        await open_wizard_from_prefix(ctx)
 
     @app_commands.command(
         name="setup",
@@ -115,15 +93,37 @@ class SetupCog(commands.Cog):
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.guild_only()
     async def setup_slash(self, interaction: discord.Interaction) -> None:
-        """Ephemeral slash front door for the setup wizard.
+        """Ephemeral slash front door for the linear setup wizard.
 
-        Mirrors the access ladder of the prefix command.
+        Routes through :func:`views.setup.wizard.open_setup_workspace`
+        so the wizard message lives in ``#superbot-setup`` and the
+        slash response is a transient ephemeral pointer reply.
+        """
+        from cogs.setup._wizard_entry import open_wizard_from_slash
+
+        await open_wizard_from_slash(interaction)
+
+    @app_commands.command(
+        name="setup-hub",
+        description="Open the legacy section-list hub (compat).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_hub_slash(self, interaction: discord.Interaction) -> None:
+        """Legacy section-list hub.
+
+        Preserved as a compatibility command for operators (and tests)
+        that want the registry-driven section list as the entry point
+        instead of the linear wizard.  Same access ladder as ``/setup``
+        used to use: owner / delegated admin → hub; plain admin →
+        readiness; otherwise denied.
         """
         guild = interaction.guild
         member = interaction.user
         if guild is None or not isinstance(member, discord.Member):
             await interaction.response.send_message(
-                "Use `/setup` from inside the server.",
+                "Use `/setup-hub` from inside the server.",
                 ephemeral=True,
             )
             return
@@ -132,7 +132,7 @@ class SetupCog(commands.Cog):
         if mode == "denied":
             await interaction.response.send_message(
                 "Only the server owner, an administrator, or a delegated "
-                "setup admin can open the setup wizard.",
+                "setup admin can open the setup hub.",
                 ephemeral=True,
             )
             return
@@ -161,7 +161,7 @@ class SetupCog(commands.Cog):
             try:
                 await setup_session.mark_in_progress(guild.id, step="hub")
             except Exception:
-                logger.exception("setup_cog.setup_slash: mark_in_progress failed")
+                logger.exception("setup_cog.setup_hub_slash: mark_in_progress failed")
 
     @app_commands.command(
         name="setup-depth",
@@ -419,6 +419,62 @@ class SetupCog(commands.Cog):
             f"continue.",
             ephemeral=True,
         )
+
+    @app_commands.command(
+        name="setup-delegate",
+        description="Grant a member delegated setup-admin authority (owner only).",
+    )
+    @app_commands.describe(
+        member="Member to grant delegated setup-admin authority.",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_delegate_slash(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+    ) -> None:
+        """Add ``member`` to the guild's ``delegated_admins`` set.
+
+        Owner-only on purpose: delegation is a capability-significant
+        change and must not be self-granted by other administrators.
+        Idempotent — re-granting an existing delegate is a no-op at
+        the DB layer.  After the grant succeeds the private setup
+        channel's overwrites are recomputed so the new delegate gets
+        explicit channel access.
+
+        Body lives in :func:`cogs.setup._helpers.toggle_delegate` so
+        the cog file stays under the S4.6 LOC ceiling.
+        """
+        await _toggle_delegate(interaction, member, grant=True)
+
+    @app_commands.command(
+        name="setup-undelegate",
+        description="Revoke delegated setup-admin authority (owner only).",
+    )
+    @app_commands.describe(
+        member="Member to revoke delegated setup-admin authority from.",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_undelegate_slash(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+    ) -> None:
+        """Drop ``member`` from the guild's ``delegated_admins`` set.
+
+        Owner-only.  Idempotent.  After the revoke succeeds the private
+        setup channel's overwrites are recomputed so the revoked
+        delegate loses explicit channel access (Discord administrator
+        permissions may still let them view — see PRIVACY_NOTE on
+        :mod:`services.setup_channel`).
+
+        Body lives in :func:`cogs.setup._helpers.toggle_delegate`.
+        """
+        await _toggle_delegate(interaction, member, grant=False)
 
     @app_commands.command(
         name="setup-status",

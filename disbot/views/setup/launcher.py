@@ -23,9 +23,10 @@ logger = logging.getLogger("bot.views.setup.launcher")
 _LAUNCHER_TITLE = "🛰 SuperBot setup"
 _LAUNCHER_DESC = (
     "Welcome! I'll help you wire SuperBot up to this server.\n\n"
-    "Use **Start Setup** for the guided walkthrough, **Run Readiness Scan** "
+    "Use **Start Setup** for the guided step-by-step wizard, **Run Readiness Scan** "
     "to see what's already configured, or **Dismiss** to defer.\n\n"
-    "**Quick commands:** `!setup` / `/setup` to open the hub, "
+    "**Quick commands:** `!setup` / `/setup` to open the guided wizard, "
+    "`/setup-hub` for the advanced section list, "
     "`/setup-status` for a read-only peek, `/setup-reset` to clear "
     "staged operations."
 )
@@ -166,39 +167,60 @@ class SetupLauncherView(discord.ui.View):
         button: discord.ui.Button,
     ) -> None:
         del button
-        if not await self._gate_owner(interaction):
+        guild = interaction.guild
+        member = interaction.user
+        if guild is None or not isinstance(member, discord.Member):
+            await self._deny(interaction, "Setup requires a guild context.")
             return
-        if interaction.guild_id is None:
+
+        # Resolve or start the session so can_apply_setup sees a real row.
+        # On a brand-new guild the session may not exist yet; starting it
+        # here avoids incorrectly denying the server owner.
+        session = await self._resolve_session(interaction)
+        if session is None:
+            try:
+                session = await setup_session.start_session(
+                    guild_id=guild.id,
+                    guild_name=guild.name,
+                    owner_id=guild.owner_id or member.id,
+                )
+            except Exception:
+                logger.exception("setup launcher: start_session failed")
+
+        if not setup_access.can_apply_setup(member, session):
             await self._deny(
                 interaction,
-                "Setup requires a guild context.",
+                "Only the server owner or a delegated setup admin can start setup.",
             )
             return
 
-        from services import setup_draft
-        from views.setup.hub import SetupHubView, build_hub_embed
+        from views.setup.wizard import jump_link, open_setup_workspace
 
-        session = await self._resolve_session(interaction)
-        try:
-            draft_ops = await setup_draft.list_ops(interaction.guild_id)
-        except Exception:
-            logger.exception("setup launcher: setup_draft.list_ops failed")
-            draft_ops = []
-        pending_ops = len(draft_ops)
-        hub = SetupHubView(interaction.user, session=session)
+        channel, message, reason = await open_setup_workspace(
+            guild,
+            member=member,
+            session=session,
+        )
+        if reason == "no_channel" or channel is None:
+            await interaction.response.send_message(
+                "I couldn't ensure the private `#superbot-setup` channel — "
+                "I need the **Manage Channels** permission.  Grant it and "
+                "try again.",
+                ephemeral=True,
+            )
+            return
+        if reason == "post_failed" or message is None:
+            await interaction.response.send_message(
+                f"The `#superbot-setup` channel exists ({channel.mention}) "
+                "but I couldn't post the wizard there — check my permissions "
+                "in that channel.",
+                ephemeral=True,
+            )
+            return
         await interaction.response.send_message(
-            embed=build_hub_embed(
-                session,
-                pending_ops=pending_ops,
-                draft_ops=draft_ops,
-            ),
-            view=hub,
+            f"Setup wizard is open in {channel.mention} — {jump_link(message)}.",
             ephemeral=True,
         )
-        try:
-            await setup_session.mark_in_progress(interaction.guild_id, step="hub")
-        except Exception:
-            logger.exception("setup launcher: mark_in_progress failed")
 
     @discord.ui.button(
         label="Run Readiness Scan",

@@ -214,7 +214,14 @@ def test_view_has_skip_and_hub_buttons():
 
 
 @pytest.mark.asyncio
-async def test_apply_recommended_stages_ops_with_recommended_source():
+async def test_apply_recommended_stages_ops_via_replace_recommended():
+    """Phase 2: Apply Recommended routes through the transactional
+    ``replace_recommended_for_section`` helper, not bare append.  That
+    way repeated clicks don't duplicate rows and custom / preset /
+    manual / repair rows at the same slot are preserved.
+    """
+    from services.setup_draft import ReplaceRecommendedResult
+
     section = _section()
     ops = [
         SetupOperation(
@@ -236,9 +243,19 @@ async def test_apply_recommended_stages_ops_with_recommended_source():
 
     with (
         patch(
-            "views.setup.section_card.setup_draft.append",
+            "views.setup.section_card.setup_draft.replace_recommended_for_section",
             new_callable=AsyncMock,
-        ) as append_mock,
+            return_value=ReplaceRecommendedResult(
+                inserted_seqs=[1],
+                deleted_count=0,
+                conflicts=[],
+            ),
+        ) as replace_mock,
+        patch(
+            "views.setup.section_card.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
         patch(
             "views.setup.section_card.setup_session.unmark_section_skipped",
             new_callable=AsyncMock,
@@ -246,9 +263,17 @@ async def test_apply_recommended_stages_ops_with_recommended_source():
     ):
         await view._apply_recommended(interaction)
 
-    append_mock.assert_awaited_once()
-    metadata = append_mock.await_args.kwargs["metadata"]
-    assert metadata["source"] == "setup_ux:recommended"
+    replace_mock.assert_awaited_once()
+    call = replace_mock.await_args
+    # Positional: guild_id, section_slug, ops
+    assert call.args[0] == 1
+    assert call.args[1] == "cleanup"
+    assert call.args[2] == ops
+    assert call.kwargs["actor_id"] == 99
+    # Labels are passed so the row text matches the operator's mental
+    # model when they look at the Final Review embed.
+    labels = call.kwargs["labels"]
+    assert labels[0].startswith("[Recommended]")
     interaction.response.send_message.assert_awaited_once()
     msg = interaction.response.send_message.await_args.args[0]
     assert "1 recommended operation" in msg
@@ -265,15 +290,94 @@ async def test_apply_recommended_handles_empty_builder_output():
     )
     interaction = _interaction_with_guild(_owner_member())
 
-    with patch(
-        "views.setup.section_card.setup_draft.append",
-        new_callable=AsyncMock,
-    ) as append_mock:
+    with (
+        patch(
+            "views.setup.section_card.setup_draft.replace_recommended_for_section",
+            new_callable=AsyncMock,
+        ) as replace_mock,
+        patch(
+            "views.setup.section_card.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+    ):
         await view._apply_recommended(interaction)
 
-    append_mock.assert_not_awaited()
+    replace_mock.assert_not_awaited()
     msg = interaction.response.send_message.await_args.args[0]
     assert "no recommended" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_apply_recommended_surfaces_conflicts_without_overwriting():
+    """When ``replace_recommended_for_section`` reports preserved
+    non-recommended rows, the operator-facing reply names them so the
+    operator knows why the staged count is lower than expected.
+    """
+    from services.setup_draft import (
+        DraftOperationRow,
+        RecommendedConflict,
+        ReplaceRecommendedResult,
+    )
+
+    section = _section()
+    op = SetupOperation(
+        kind="set_cleanup_policy",
+        subsystem="cleanup",
+        target_kind="guild",
+        target_id=1,
+        value="Light",
+    )
+    view = SectionCardView(
+        _owner_member(),
+        section=section,
+        hub=None,
+        on_customize=_noop_run,
+        recommended_ops_builder=_async_returning([op]),
+    )
+    interaction = _interaction_with_guild(_owner_member())
+    existing_row = DraftOperationRow(
+        id=33,
+        seq=2,
+        section_slug="cleanup",
+        staging_kind="custom",
+        group_id=None,
+        parent_seq=None,
+        label="custom: light",
+        op=op,
+    )
+
+    with (
+        patch(
+            "views.setup.section_card.setup_draft.replace_recommended_for_section",
+            new_callable=AsyncMock,
+            return_value=ReplaceRecommendedResult(
+                inserted_seqs=[],
+                deleted_count=0,
+                conflicts=[
+                    RecommendedConflict(
+                        op=op,
+                        label="conflict",
+                        existing_row=existing_row,
+                    ),
+                ],
+            ),
+        ),
+        patch(
+            "views.setup.section_card.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "views.setup.section_card.setup_session.unmark_section_skipped",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._apply_recommended(interaction)
+
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "preserved" in msg.lower()
+    assert "1 custom" in msg.lower()
 
 
 @pytest.mark.asyncio
@@ -374,3 +478,137 @@ def test_cleanup_section_registers_description_if_skipped():
     section = REGISTRY.get("cleanup")
     assert section is not None
     assert "cleanup" in section.description_if_skipped.lower()
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — call_recommended_ops_builder adapter
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_adapter_calls_one_arg_legacy_builder_unchanged():
+    """Legacy ``async (guild) -> list[SetupOperation]`` builders are
+    invoked with only ``guild`` — the adapter doesn't accidentally
+    pass unexpected kwargs to them.
+    """
+    from views.setup.section_card import call_recommended_ops_builder
+
+    called_with: dict = {}
+
+    async def legacy_builder(guild):
+        called_with["args"] = (guild,)
+        called_with["kwargs"] = {}
+        return []
+
+    guild = MagicMock()
+    result = await call_recommended_ops_builder(
+        legacy_builder,
+        guild=guild,
+        session=MagicMock(),
+        depth="standard",
+        section_slug="x",
+    )
+    assert result == []
+    assert called_with["args"] == (guild,)
+    # No extended kwargs were passed — the builder didn't declare them.
+    assert called_with["kwargs"] == {}
+
+
+@pytest.mark.asyncio
+async def test_adapter_passes_declared_kwargs_to_extended_builder():
+    """A builder that declares ``session`` / ``depth`` etc. receives
+    only those it declared."""
+    from views.setup.section_card import call_recommended_ops_builder
+
+    received: dict = {}
+
+    async def extended_builder(guild, *, session, depth):
+        received["guild"] = guild
+        received["session"] = session
+        received["depth"] = depth
+        return []
+
+    guild = MagicMock()
+    session = MagicMock()
+    await call_recommended_ops_builder(
+        extended_builder,
+        guild=guild,
+        session=session,
+        depth="standard",
+        section_slug="x",  # NOT declared by this builder
+    )
+    assert received["guild"] is guild
+    assert received["session"] is session
+    assert received["depth"] == "standard"
+    # section_slug was offered but not declared → not in received.
+    assert "section_slug" not in received
+
+
+@pytest.mark.asyncio
+async def test_adapter_passes_all_kwargs_to_var_kw_builder():
+    """A builder with ``**kwargs`` opts into every supported kwarg
+    so it can introspect them without us editing the adapter.
+    """
+    from views.setup.section_card import call_recommended_ops_builder
+
+    received: dict = {}
+
+    async def var_kw_builder(guild, **kwargs):
+        received["guild"] = guild
+        received["kwargs"] = kwargs
+        return []
+
+    guild = MagicMock()
+    await call_recommended_ops_builder(
+        var_kw_builder,
+        guild=guild,
+        session=None,
+        purpose="community",
+        depth="quick",
+        section_slug="purpose",
+    )
+    assert received["guild"] is guild
+    assert set(received["kwargs"].keys()) == {"session", "purpose", "depth", "section_slug"}
+    assert received["kwargs"]["purpose"] == "community"
+
+
+@pytest.mark.asyncio
+async def test_adapter_omits_kwargs_the_builder_does_not_declare():
+    """A builder that declares only ``purpose`` does not receive
+    ``session`` / ``depth`` / ``section_slug``.
+    """
+    from views.setup.section_card import call_recommended_ops_builder
+
+    received: dict = {}
+
+    async def purpose_builder(guild, *, purpose):
+        received["purpose"] = purpose
+        return []
+
+    guild = MagicMock()
+    await call_recommended_ops_builder(
+        purpose_builder,
+        guild=guild,
+        purpose="community",
+        session=MagicMock(),
+        depth="standard",
+        section_slug="purpose",
+    )
+    assert received["purpose"] == "community"
+
+
+@pytest.mark.asyncio
+async def test_adapter_propagates_builder_exceptions():
+    """An exception inside the builder is not swallowed by the
+    adapter — the caller decides whether to log / surface it.
+    """
+    from views.setup.section_card import call_recommended_ops_builder
+
+    async def boom(guild, **kwargs):
+        raise RuntimeError("builder exploded")
+
+    with pytest.raises(RuntimeError, match="builder exploded"):
+        await call_recommended_ops_builder(
+            boom,
+            guild=MagicMock(),
+        )

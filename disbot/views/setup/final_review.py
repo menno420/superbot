@@ -47,6 +47,7 @@ from typing import TYPE_CHECKING, Any
 
 import discord
 
+from services import setup_access, setup_session
 from services.setup_plan import SetupRecommendation
 from views.base import BaseView
 
@@ -54,6 +55,43 @@ if TYPE_CHECKING:
     pass
 
 logger = logging.getLogger("bot.views.setup.final_review")
+
+
+async def _gate_apply(interaction: discord.Interaction) -> bool:
+    """Reject callers who don't satisfy ``can_apply_setup`` now.
+
+    Module-level helper shared by :class:`FinalReviewView` and
+    :class:`PartialApplyRecoveryView`.  The :class:`BaseView` author
+    gate already restricts the panel to the user who opened it, but
+    this layer re-checks the access tier against a fresh
+    :class:`SetupSession` so a delegated admin who lost delegation
+    between opening Final Review and pressing the button cannot
+    apply.
+    """
+    member = interaction.user
+    if not isinstance(member, discord.Member):
+        await interaction.response.send_message(
+            "Use this from inside the server.",
+            ephemeral=True,
+        )
+        return False
+    session = None
+    guild_id = interaction.guild_id
+    if guild_id is not None:
+        try:
+            session = await setup_session.resume_session(guild_id)
+        except Exception:
+            logger.exception("final_review._gate_apply: resume failed")
+            session = None
+    if not setup_access.can_apply_setup(member, session):
+        await interaction.response.send_message(
+            "Only the server owner or a delegated setup admin can apply "
+            "staged setup operations. Ask the server owner to grant you "
+            "`/setup-delegate`.",
+            ephemeral=True,
+        )
+        return False
+    return True
 
 
 @dataclass
@@ -126,9 +164,10 @@ def build_final_review_embed(
         embed = discord.Embed(
             title="🛰 Final review",
             description=(
-                f"**{len(accepted)}** {noun}(s) staged. "
-                "Click **Apply** to route each through the audit "
-                "pipelines."
+                "Final review — **nothing has changed yet**.  "
+                f"**{len(accepted)}** {noun}(s) are staged and ready to "
+                "apply.  Click **Apply staged setup** to route each "
+                "through the audit pipelines."
             ),
             color=discord.Color.blurple(),
         )
@@ -147,20 +186,19 @@ def build_final_review_embed(
         color = discord.Color.gold()
         title = "🛰 Final review · partially applied"
         description = (
-            "Setup partially applied. Some changes succeeded, but "
-            "setup is **not** complete. Your remaining draft has "
-            "been preserved so you can retry or cancel.\n\n"
+            "**Setup partially applied.**  Some changes succeeded, but "
+            "setup is **not** complete.  Your remaining draft has been "
+            "preserved so you can retry or cancel.\n\n"
             f"Applied **{len(summary.applied)}**, "
             f"failed **{len(summary.failed)}**, "
             f"skipped **{len(summary.skipped)}**."
         )
     else:
         color = discord.Color.green()
-        title = "🛰 Final review · applied"
+        title = "🛰 Setup complete"
         description = (
-            f"Applied **{len(summary.applied)}**, "
-            f"failed **{len(summary.failed)}**, "
-            f"skipped **{len(summary.skipped)}**."
+            f"**Setup complete.**  Applied **{len(summary.applied)}** "
+            "operation(s); nothing failed or was skipped."
         )
     embed = discord.Embed(title=title, description=description, color=color)
     if summary.applied:
@@ -225,10 +263,20 @@ class FinalReviewView(BaseView):
         self.summary: ApplySummary | None = None
         if not self.accepted and not self.ops:
             for child in self.children:
-                if isinstance(child, discord.ui.Button) and child.label == "Apply":
+                # Disable the primary Apply button when there's nothing
+                # to apply.  Match by custom_id so renaming the label
+                # in copy passes (Phase 7) doesn't decouple this.
+                if (
+                    isinstance(child, discord.ui.Button)
+                    and getattr(child, "custom_id", None) == "setup_final_review:apply"
+                ):
                     child.disabled = True
 
-    @discord.ui.button(label="Apply", style=discord.ButtonStyle.success)
+    @discord.ui.button(
+        label="Apply staged setup",
+        style=discord.ButtonStyle.success,
+        custom_id="setup_final_review:apply",
+    )
     async def _apply(
         self,
         interaction: discord.Interaction,
@@ -247,6 +295,8 @@ class FinalReviewView(BaseView):
                 "Final review requires a guild context.",
                 ephemeral=True,
             )
+            return
+        if not await _gate_apply(interaction):
             return
         from core.runtime.interaction_helpers import safe_defer
         from services.setup_operations import (
@@ -328,15 +378,28 @@ class FinalReviewView(BaseView):
             self.accepted if self.accepted else self.ops,
             summary=summary,
         )
-        if full_success or not self.ops:
+        if full_success and self.ops:
+            # Phase 8: full-success draft-driven branch mounts the
+            # SetupCompleteView so the operator can either delete
+            # the now-empty setup channel or keep it.  The legacy
+            # recommendation-driven full-success path (``self.ops``
+            # empty) just disables the original buttons — there's
+            # no per-guild setup channel to clean up in that flow.
+            view: discord.ui.View | None = SetupCompleteView(
+                interaction.user,
+                summary=summary,
+            )
+        elif full_success or not self.ops:
             for child in self.children:
                 child.disabled = True  # type: ignore[attr-defined]
-            view: discord.ui.View | None = self
+            view = self
         else:
             # Partial-failure draft-driven branch: replace the view
             # with the recovery surface so the operator can retry
             # or cancel.  The original Apply / Cancel buttons go
             # away — they are no longer the right next actions.
+            # Partial-recovery flows NEVER offer the cleanup buttons
+            # (the plan explicitly forbids that).
             view = PartialApplyRecoveryView(
                 interaction.user,
                 ops=self.ops,
@@ -352,7 +415,69 @@ class FinalReviewView(BaseView):
         except discord.HTTPException:
             logger.warning("FinalReviewView: followup edit failed")
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(
+        label="Edit setup",
+        style=discord.ButtonStyle.secondary,
+        custom_id="setup_final_review:edit",
+    )
+    async def _edit(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Close the ephemeral so the operator can return to the wizard
+        anchor (or hub) and re-stage / edit before applying.
+
+        Final Review is opened as an ephemeral follow-up; the wizard /
+        hub anchor message stays visible underneath.  This button just
+        signals "I want to keep editing" — closing the ephemeral
+        returns the operator to the anchor without any side effect.
+        """
+        del button
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await interaction.response.edit_message(
+            content=(
+                "Closed Final review — open the wizard or hub above to "
+                "edit your staged operations.  Nothing has been applied."
+            ),
+            view=self,
+        )
+        self.stop()
+
+    @discord.ui.button(
+        label="Back",
+        style=discord.ButtonStyle.secondary,
+        custom_id="setup_final_review:back",
+    )
+    async def _back(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Navigation alias for :meth:`_edit`.
+
+        ``Back`` reads more naturally from the wizard's flow ("go back
+        to the wizard") while ``Edit setup`` reads more naturally from
+        the hub.  Both close the ephemeral with the same side-effect.
+        """
+        del button
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await interaction.response.edit_message(
+            content=(
+                "Closed Final review — your wizard / hub anchor is "
+                "still open above.  Nothing has been applied."
+            ),
+            view=self,
+        )
+        self.stop()
+
+    @discord.ui.button(
+        label="Cancel",
+        style=discord.ButtonStyle.danger,
+        custom_id="setup_final_review:cancel",
+    )
     async def _cancel(
         self,
         interaction: discord.Interaction,
@@ -564,6 +689,8 @@ class PartialApplyRecoveryView(BaseView):
                 ephemeral=True,
             )
             return
+        if not await _gate_apply(interaction):
+            return
         from core.runtime.interaction_helpers import safe_defer
         from services.setup_operations import (
             SetupApplyInProgressError,
@@ -611,10 +738,144 @@ class PartialApplyRecoveryView(BaseView):
         self.stop()
 
 
+class SetupCompleteView(BaseView):
+    """Post-apply view shown when Final Review applies cleanly.
+
+    Phase 8 of the setup-wizard plan.  Two buttons:
+
+    * **Delete now** — calls
+      :func:`services.setup_channel.cleanup_setup_channel_after_completion`.
+      On success the embed flips to "Setup channel deleted" and the
+      view stops; on a guard failure the operator sees an ephemeral
+      with the typed reason and the buttons stay clickable.
+    * **Keep setup channel** — closes the view without deletion; the
+      channel stays around for the next ``/setup``.
+
+    Both buttons re-check :func:`services.setup_access.can_apply_setup`
+    against a fresh session snapshot.  The plan explicitly forbids
+    showing these buttons on the partial-failure / recovery branch —
+    :meth:`FinalReviewView._run_apply` only mounts this view on the
+    ``full_success and self.ops`` branch.
+    """
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        summary: ApplySummary,
+        timeout: int = 300,
+    ) -> None:
+        super().__init__(author, public=False, timeout=timeout)
+        self.summary = summary
+        self._populate_buttons()
+
+    def _populate_buttons(self) -> None:
+        delete_btn: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Delete now",
+            style=discord.ButtonStyle.danger,
+            custom_id="setup_complete:delete",
+            row=0,
+        )
+        delete_btn.callback = self._on_delete  # type: ignore[method-assign]
+        self.add_item(delete_btn)
+
+        keep_btn: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Keep setup channel",
+            style=discord.ButtonStyle.secondary,
+            custom_id="setup_complete:keep",
+            row=0,
+        )
+        keep_btn.callback = self._on_keep  # type: ignore[method-assign]
+        self.add_item(keep_btn)
+
+    async def _on_delete(self, interaction: discord.Interaction) -> None:
+        if not await _gate_apply(interaction):
+            return
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Delete requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from services import setup_channel as _setup_channel
+        from services import setup_session as _setup_session
+
+        try:
+            session = await _setup_session.resume_session(guild.id)
+        except Exception:
+            logger.exception("SetupCompleteView._on_delete: resume failed")
+            await interaction.response.send_message(
+                "Couldn't read the setup session — see logs.",
+                ephemeral=True,
+            )
+            return
+
+        result = await _setup_channel.cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=interaction.user,
+        )
+        if result.reason != "ok":
+            await interaction.response.send_message(
+                f"⚠️ {result.detail}",
+                ephemeral=True,
+            )
+            return
+
+        # Success — disable the buttons, flip the embed to a final
+        # "Setup channel deleted" line.  We do NOT call self.stop()
+        # before editing because discord.py won't render a stopped
+        # view; just disable the children.
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        new_embed = discord.Embed(
+            title="🛰 Setup complete",
+            description=(
+                "**Setup channel deleted.**  "
+                f"Applied **{len(self.summary.applied)}** operation(s); "
+                "the workspace channel is gone.  Re-run `/setup` "
+                "later to recreate it."
+            ),
+            color=discord.Color.green(),
+        )
+        try:
+            await interaction.response.edit_message(
+                embed=new_embed,
+                view=self,
+            )
+        except discord.HTTPException:
+            # Editing the original message may fail because that
+            # message lived in #superbot-setup, which we just
+            # deleted.  Fall back to an ephemeral confirmation.
+            logger.info(
+                "SetupCompleteView._on_delete: edit_message failed (channel gone?)",
+            )
+            await interaction.followup.send(
+                "✅ Setup channel deleted.",
+                ephemeral=True,
+            )
+        self.stop()
+
+    async def _on_keep(self, interaction: discord.Interaction) -> None:
+        if not await _gate_apply(interaction):
+            return
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await interaction.response.edit_message(view=self)
+        await interaction.followup.send(
+            "✅ Setup channel kept.  Re-run `/setup` any time to revisit "
+            "the wizard.",
+            ephemeral=True,
+        )
+        self.stop()
+
+
 __all__ = [
     "ApplySummary",
     "FinalReviewView",
     "PartialApplyRecoveryView",
+    "SetupCompleteView",
     "_apply_ops_in_order",
     "_sort_ops_for_apply",
     "build_final_review_embed",

@@ -298,6 +298,7 @@ REGISTRY.register(
             "them later in `!settings` without re-running the wizard."
         ),
         depths=frozenset({"advanced"}),
+        customize=_customize_run,
     ),
 )
 # Identity stages `set_setting` ops but `set_setting` is shared with

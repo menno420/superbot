@@ -116,8 +116,7 @@ async def build_sources_payload() -> str:
         state = "ON" if row["enabled"] else "off"
         url = row.get("full_url") or row.get("path_template") or "—"
         lines.append(
-            f"`{row['source_key']:<26}` tier {row['trust_tier']} · "
-            f"{state} · {url}",
+            f"`{row['source_key']:<26}` tier {row['trust_tier']} · {state} · {url}",
         )
     return "\n".join(lines)
 
@@ -270,8 +269,7 @@ async def build_latest_data_embed(*, limit_per_kind: int = 1) -> discord.Embed:
                 else "—"
             )
             lines.append(
-                f"`{fact['entity_key']}` · v{fact['version']} · "
-                f"fetched=`{when}`",
+                f"`{fact['entity_key']}` · v{fact['version']} · fetched=`{when}`",
             )
         embed.add_field(
             name=f"`{kind}`",

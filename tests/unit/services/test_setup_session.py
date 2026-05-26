@@ -67,6 +67,22 @@ def _mock_db():
             "services.setup_session.db.clear_skipped_sections",
             new_callable=AsyncMock,
         ) as clear_skipped_mock,
+        patch(
+            "services.setup_session.db.add_acknowledged_section",
+            new_callable=AsyncMock,
+        ) as add_acknowledged_mock,
+        patch(
+            "services.setup_session.db.remove_acknowledged_section",
+            new_callable=AsyncMock,
+        ) as remove_acknowledged_mock,
+        patch(
+            "services.setup_session.db.clear_acknowledged_sections",
+            new_callable=AsyncMock,
+        ) as clear_acknowledged_mock,
+        patch(
+            "services.setup_session.db.set_purpose",
+            new_callable=AsyncMock,
+        ) as set_purpose_mock,
     ):
         yield {
             "get": get_mock,
@@ -77,6 +93,10 @@ def _mock_db():
             "add_skipped_section": add_skipped_mock,
             "remove_skipped_section": remove_skipped_mock,
             "clear_skipped_sections": clear_skipped_mock,
+            "add_acknowledged_section": add_acknowledged_mock,
+            "remove_acknowledged_section": remove_acknowledged_mock,
+            "clear_acknowledged_sections": clear_acknowledged_mock,
+            "set_purpose": set_purpose_mock,
         }
 
 
@@ -242,3 +262,184 @@ async def test_resume_session_hydrates_skipped_sections(_mock_db):
     session = await svc.resume_session(1)
     assert session is not None
     assert session.skipped_sections == frozenset({"cleanup", "cog_routing"})
+
+
+# ---------------------------------------------------------------------------
+# Delegated-admin lifecycle wrappers (Phase 1)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_add_delegated_admin_routes_to_db_layer():
+    with (
+        patch(
+            "services.setup_session.db.add_delegated_admin",
+            new_callable=AsyncMock,
+        ) as add_mock,
+        patch(
+            "services.setup_session._emit_session_audit",
+            new_callable=AsyncMock,
+        ) as audit_mock,
+    ):
+        await svc.add_delegated_admin(guild_id=1, user_id=42, actor_id=99)
+    add_mock.assert_awaited_once_with(1, 42)
+    audit_mock.assert_awaited_once()
+    kwargs = audit_mock.await_args.kwargs
+    assert kwargs["guild_id"] == 1
+    assert kwargs["mutation_type"] == "setup.delegated_admin.added"
+    assert kwargs["new_value"] == "42"
+    assert kwargs["actor_id"] == 99
+    assert kwargs["actor_type"] == "user"
+
+
+@pytest.mark.asyncio
+async def test_remove_delegated_admin_routes_to_db_layer():
+    with (
+        patch(
+            "services.setup_session.db.remove_delegated_admin",
+            new_callable=AsyncMock,
+        ) as remove_mock,
+        patch(
+            "services.setup_session._emit_session_audit",
+            new_callable=AsyncMock,
+        ) as audit_mock,
+    ):
+        await svc.remove_delegated_admin(guild_id=1, user_id=42, actor_id=99)
+    remove_mock.assert_awaited_once_with(1, 42)
+    audit_mock.assert_awaited_once()
+    kwargs = audit_mock.await_args.kwargs
+    assert kwargs["mutation_type"] == "setup.delegated_admin.removed"
+    assert kwargs["new_value"] == "42"
+
+
+@pytest.mark.asyncio
+async def test_add_delegated_admin_does_not_double_emit_audit_on_idempotent_grant():
+    """Calling add_delegated_admin twice for the same user emits the
+    audit event each time — the DB layer is idempotent on the
+    underlying set, but the audit trail records every operator action
+    (the owner pressed delegate again; that's still an action).
+    """
+    with (
+        patch(
+            "services.setup_session.db.add_delegated_admin",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "services.setup_session._emit_session_audit",
+            new_callable=AsyncMock,
+        ) as audit_mock,
+    ):
+        await svc.add_delegated_admin(guild_id=1, user_id=42, actor_id=99)
+        await svc.add_delegated_admin(guild_id=1, user_id=42, actor_id=99)
+    assert audit_mock.await_count == 2
+
+
+# ---------------------------------------------------------------------------
+# ack_section / unack_section wrappers (Phase 2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_ack_section_routes_to_db_layer(_mock_db):
+    await svc.ack_section(1, "purpose")
+    _mock_db["add_acknowledged_section"].assert_awaited_once_with(1, "purpose")
+    # Acknowledging implicitly unmarks any prior skip so the operator
+    # who skipped and then changed their mind sees a clean state.
+    _mock_db["remove_skipped_section"].assert_awaited_once_with(1, "purpose")
+
+
+@pytest.mark.asyncio
+async def test_unack_section_routes_to_db_layer(_mock_db):
+    await svc.unack_section(1, "purpose")
+    _mock_db["remove_acknowledged_section"].assert_awaited_once_with(1, "purpose")
+
+
+@pytest.mark.asyncio
+async def test_mark_complete_clears_acknowledged_sections(_mock_db):
+    with patch("services.setup_session._clear_draft", new_callable=AsyncMock):
+        await svc.mark_complete(1)
+    _mock_db["clear_acknowledged_sections"].assert_awaited_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_dismiss_clears_acknowledged_sections(_mock_db):
+    with patch("services.setup_session._clear_draft", new_callable=AsyncMock):
+        await svc.dismiss(1)
+    _mock_db["clear_acknowledged_sections"].assert_awaited_once_with(1)
+
+
+@pytest.mark.asyncio
+async def test_resume_session_hydrates_acknowledged_sections(_mock_db):
+    _mock_db["get"].return_value = _row(
+        setup_status="in_progress",
+        acknowledged_sections=["purpose", "ai_setup"],
+    )
+    session = await svc.resume_session(1)
+    assert session is not None
+    assert session.acknowledged_sections == frozenset({"purpose", "ai_setup"})
+
+
+# ---------------------------------------------------------------------------
+# set_setup_message_id (Phase 3)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_set_setup_message_id_routes_to_db_layer():
+    with patch(
+        "services.setup_session.db.set_setup_message_id",
+        new_callable=AsyncMock,
+    ) as set_mock:
+        await svc.set_setup_message_id(1, 5555)
+    set_mock.assert_awaited_once_with(1, 5555)
+
+
+@pytest.mark.asyncio
+async def test_set_setup_message_id_accepts_none_to_clear():
+    """Passing None clears the pointer — used after the launcher cog's
+    resume sweep finds a stale message it can't refetch."""
+    with patch(
+        "services.setup_session.db.set_setup_message_id",
+        new_callable=AsyncMock,
+    ) as set_mock:
+        await svc.set_setup_message_id(1, None)
+    set_mock.assert_awaited_once_with(1, None)
+
+
+# ---------------------------------------------------------------------------
+# set_purpose (Phase 4)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_set_purpose_routes_to_db_layer(_mock_db):
+    await svc.set_purpose(1, "community")
+    _mock_db["set_purpose"].assert_awaited_once_with(1, "community")
+
+
+@pytest.mark.asyncio
+async def test_set_purpose_accepts_none_to_clear(_mock_db):
+    await svc.set_purpose(1, None)
+    _mock_db["set_purpose"].assert_awaited_once_with(1, None)
+
+
+@pytest.mark.asyncio
+async def test_resume_session_hydrates_purpose(_mock_db):
+    _mock_db["get"].return_value = _row(
+        setup_status="in_progress",
+        purpose="gaming_btd6",
+    )
+    session = await svc.resume_session(1)
+    assert session is not None
+    assert session.purpose == "gaming_btd6"
+
+
+@pytest.mark.asyncio
+async def test_resume_session_purpose_defaults_to_none(_mock_db):
+    """Rows without a ``purpose`` (pre-Phase-4 / not yet picked)
+    surface as ``session.purpose is None`` rather than raising.
+    """
+    _mock_db["get"].return_value = _row(setup_status="in_progress")
+    session = await svc.resume_session(1)
+    assert session is not None
+    assert session.purpose is None

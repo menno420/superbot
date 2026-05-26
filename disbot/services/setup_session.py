@@ -44,7 +44,9 @@ class SetupSession:
     current_step: str | None
     delegated_admins: tuple[int, ...]
     skipped_sections: frozenset[str] = frozenset()
+    acknowledged_sections: frozenset[str] = frozenset()
     depth: str | None = None
+    purpose: str | None = None
 
     @classmethod
     def from_row(cls, row: dict[str, Any]) -> SetupSession:
@@ -59,7 +61,11 @@ class SetupSession:
             current_step=row.get("current_step"),
             delegated_admins=tuple(row.get("delegated_admins") or ()),
             skipped_sections=frozenset(row.get("skipped_sections") or ()),
+            acknowledged_sections=frozenset(
+                row.get("acknowledged_sections") or (),
+            ),
             depth=row.get("depth"),
+            purpose=row.get("purpose"),
         )
 
 
@@ -119,7 +125,8 @@ async def mark_in_progress(guild_id: int, *, step: str | None = None) -> None:
 
 async def mark_complete(guild_id: int) -> None:
     """Move the row to ``complete``; clears any in-flight step token,
-    drops pending draft operations, and clears the skipped-section set.
+    drops pending draft operations, and clears the skipped- and
+    acknowledged-section sets.
 
     Final Review calls this after a successful apply, so the draft
     is empty by that point.  Clearing here is defence-in-depth — if
@@ -129,6 +136,7 @@ async def mark_complete(guild_id: int) -> None:
     await db.set_status(guild_id, "complete")
     await db.set_step(guild_id, None)
     await db.clear_skipped_sections(guild_id)
+    await db.clear_acknowledged_sections(guild_id)
     await _clear_draft(guild_id)
     await _emit_session_audit(
         guild_id=guild_id,
@@ -141,7 +149,8 @@ async def mark_complete(guild_id: int) -> None:
 
 async def dismiss(guild_id: int) -> None:
     """Move the row to ``dismissed``; clears any in-flight step token,
-    drops pending draft operations, and clears the skipped-section set.
+    drops pending draft operations, and clears the skipped- and
+    acknowledged-section sets.
 
     Note: this only flips the launcher state and discards staged
     drafts.  It does **not** delete the guild's already-applied
@@ -151,6 +160,7 @@ async def dismiss(guild_id: int) -> None:
     await db.set_status(guild_id, "dismissed")
     await db.set_step(guild_id, None)
     await db.clear_skipped_sections(guild_id)
+    await db.clear_acknowledged_sections(guild_id)
     await _clear_draft(guild_id)
     await _emit_session_audit(
         guild_id=guild_id,
@@ -220,6 +230,32 @@ async def record_readiness_score(guild_id: int, score: int | None) -> None:
     await db.set_readiness_score(guild_id, score)
 
 
+async def set_setup_channel_id(guild_id: int, channel_id: int | None) -> None:
+    """Persist (or clear) the workspace's setup channel id (Phase 8).
+
+    Used by :func:`services.setup_channel.cleanup_setup_channel_after_completion`
+    after a successful Discord-side delete to null
+    ``session.setup_channel_id`` so the next ``/setup`` re-creates the
+    channel cleanly.  Service-layer wrapper around
+    :func:`utils.db.setup_session.set_setup_channel_id`.
+    """
+    await db.set_setup_channel_id(guild_id, channel_id)
+
+
+async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
+    """Persist (or clear) the wizard's anchor message id for ``guild_id``.
+
+    The setup wizard's workspace flow (Phase 3) posts a single message
+    in ``#superbot-setup`` and re-edits it across the session lifetime;
+    ``message_id`` is the Discord snowflake of that anchor.  Passing
+    ``None`` clears the pointer — used when the launcher cog's resume
+    sweep can't refetch the message and the next ``/setup`` reposts.
+
+    Idempotent.  Side-effect-free above the DB layer.
+    """
+    await db.set_setup_message_id(guild_id, message_id)
+
+
 async def mark_section_skipped(guild_id: int, slug: str) -> None:
     """Record that ``slug`` was explicitly skipped during the current run.
 
@@ -234,6 +270,31 @@ async def unmark_section_skipped(guild_id: int, slug: str) -> None:
     await db.remove_skipped_section(guild_id, slug)
 
 
+async def ack_section(guild_id: int, slug: str) -> None:
+    """Record that ``slug`` was acknowledged complete.
+
+    Used by metadata-only / link-only setup sections (Purpose, AI
+    link-only in Phases 4 and 6) that emit zero draft operations.
+    The hub's :mod:`services.setup_progress` read model surfaces
+    acknowledged slugs as APPLIED so the section doesn't show as
+    NOT_STARTED forever.
+
+    Acknowledging also drops the slug from ``skipped_sections`` so
+    an operator who skipped and then changed their mind sees the
+    correct state on the next hub render.
+
+    Idempotent — set semantics at the DB layer.
+    """
+    await db.add_acknowledged_section(guild_id, slug)
+    # If the slug was skipped earlier, acknowledging supersedes that.
+    await db.remove_skipped_section(guild_id, slug)
+
+
+async def unack_section(guild_id: int, slug: str) -> None:
+    """Drop ``slug`` from the acknowledged-sections set."""
+    await db.remove_acknowledged_section(guild_id, slug)
+
+
 async def set_depth(guild_id: int, depth: str | None) -> None:
     """Persist the operator's depth choice (quick / standard / advanced).
 
@@ -241,6 +302,76 @@ async def set_depth(guild_id: int, depth: str | None) -> None:
     on the next open.
     """
     await db.set_depth(guild_id, depth)
+
+
+async def set_purpose(guild_id: int, purpose: str | None) -> None:
+    """Persist the operator's server-purpose choice (Phase 4).
+
+    Allowed values are in :data:`utils.db.setup_session.KNOWN_PURPOSES`;
+    ``None`` clears the pick.  Purpose is session metadata only — it
+    does not stage any setup operation.  Section builders that read
+    ``session.purpose`` should treat unknown / NULL values as
+    "unspecified" and fall back to neutral defaults.
+    """
+    await db.set_purpose(guild_id, purpose)
+
+
+# ---------------------------------------------------------------------------
+# Delegated-admin lifecycle
+# ---------------------------------------------------------------------------
+#
+# DB primitives ``utils.db.setup_session.add_delegated_admin`` and
+# ``remove_delegated_admin`` already exist (PostgreSQL set semantics on
+# the ``setup_session.delegated_admins`` TEXT[] column).  These
+# service-level wrappers add the canonical audit emission and the
+# uniform call signature the setup cog's ``/setup-delegate`` /
+# ``/setup-undelegate`` slash commands consume.
+
+
+async def add_delegated_admin(
+    guild_id: int,
+    user_id: int,
+    *,
+    actor_id: int | None,
+) -> None:
+    """Append ``user_id`` to the guild's ``delegated_admins`` set.
+
+    Idempotent — repeated calls leave the set unchanged.  Emits
+    ``setup.delegated_admin.added`` so the audit pipeline sees the
+    promotion.  ``actor_id`` is the user who performed the grant
+    (typically the server owner via ``/setup-delegate``).
+    """
+    await db.add_delegated_admin(guild_id, user_id)
+    await _emit_session_audit(
+        guild_id=guild_id,
+        mutation_type="setup.delegated_admin.added",
+        new_value=str(user_id),
+        actor_id=actor_id,
+        actor_type="user",
+    )
+
+
+async def remove_delegated_admin(
+    guild_id: int,
+    user_id: int,
+    *,
+    actor_id: int | None,
+) -> None:
+    """Drop ``user_id`` from the guild's ``delegated_admins`` set.
+
+    Idempotent.  Emits ``setup.delegated_admin.removed``.  The
+    private setup channel's overwrites should be recomputed by the
+    caller (see :func:`services.setup_channel.recompute_setup_channel_overwrites`)
+    so the revoked admin loses explicit channel access too.
+    """
+    await db.remove_delegated_admin(guild_id, user_id)
+    await _emit_session_audit(
+        guild_id=guild_id,
+        mutation_type="setup.delegated_admin.removed",
+        new_value=str(user_id),
+        actor_id=actor_id,
+        actor_type="user",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -341,14 +472,21 @@ def detect_drift(
 __all__ = [
     "DriftReport",
     "SetupSession",
+    "ack_section",
+    "add_delegated_admin",
     "detect_drift",
     "dismiss",
     "mark_complete",
     "mark_in_progress",
     "mark_section_skipped",
     "record_readiness_score",
+    "remove_delegated_admin",
     "resume_session",
     "set_depth",
+    "set_purpose",
+    "set_setup_channel_id",
+    "set_setup_message_id",
     "start_session",
+    "unack_section",
     "unmark_section_skipped",
 ]
