@@ -1,0 +1,39 @@
+# Duplicate helper allowlist for SuperBot.
+#
+# Functions or patterns that appear in multiple places for legitimate reasons.
+# The architecture checker will not flag these as duplicate helpers.
+#
+# When adding an entry, include the reason — "it seemed easier" is not
+# a valid reason. The bar is: the duplication is genuinely intentional
+# and moving to a shared location would cause more coupling than it saves.
+
+allowlist:
+  - name: _deny
+    locations:
+      - views/setup/launcher.py
+      - views/base.py  # BaseView._deny is the canonical version
+    reason: >
+      launcher._deny is a private, ephemeral-only shortcut for the
+      launcher view. BaseView._deny handles the general case including
+      author gating. The launcher variant intentionally skips author
+      gating since it owns its own access control.
+
+  - name: _resolve_session
+    locations:
+      - views/setup/launcher.py
+    reason: >
+      Launcher-specific session resolution. Different signature and
+      behavior from service-layer session helpers.
+
+  - name: logger
+    locations: ["*"]
+    reason: >
+      Each module creates its own logger with a module-specific name.
+      This is the standard Python logging pattern — not a duplicate.
+
+# Patterns that are intentionally repeated across the codebase and should
+# never be flagged as duplication candidates.
+exempt_patterns:
+  - "__all__"
+  - "logger = logging.getLogger"
+  - "from __future__ import annotations"

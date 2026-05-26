@@ -1,0 +1,351 @@
+# Layer boundary rules for SuperBot.
+#
+# Based on the binding architecture contract in docs/architecture.md.
+#
+# IMPORTANT: Only MODULE-LEVEL imports are checked. Lazy function-body
+# imports (from X import Y inside a def) are allowed throughout the
+# codebase to avoid circular import problems — these are NOT flagged.
+#
+# TYPE_CHECKING-guarded imports are also exempt when type_checking_exempt
+# is true for the layer (they create no runtime dependency).
+#
+# Canonical allowed import directions (from docs/architecture.md §Ownership):
+#   cogs       → services, core, views, governance, utils
+#   views      → services, core, utils (NOT cogs)
+#   services   → utils, core/events   (NOT views, NOT cogs)
+#   governance → utils, core          (NOT services — uses writes.py pipeline)
+#   core       → utils                (NOT services, NOT cogs — per arch doc)
+#   utils      → stdlib, discord      (NOT services, NOT core, NOT cogs)
+#   utils/db   → asyncpg only         (NOT anything in project layers)
+
+layers:
+  utils:
+    description: Pure helpers — no I/O. stdlib and discord only.
+    path_prefix: utils
+    may_import: []
+    type_checking_exempt: true
+    # utils/db/ is a subdirectory; its stricter rule (no project imports) is
+    # covered by the same empty may_import list.
+
+  core:
+    description: Platform primitives — session, anchor, router, EventBus, scheduler.
+    path_prefix: core
+    may_import: [utils]
+    type_checking_exempt: true
+    # core/runtime must NOT import services or cogs at module level.
+
+  governance:
+    description: Per-guild visibility and cleanup policy engine.
+    path_prefix: governance
+    may_import: [utils, core]
+    type_checking_exempt: true
+
+  services:
+    description: Audited cross-subsystem mutation paths.
+    path_prefix: services
+    may_import: [utils, core, services, governance]
+    type_checking_exempt: true
+    # services must NOT import views or cogs at module level — ever.
+
+  views:
+    description: Reusable Discord UI components.
+    path_prefix: views
+    may_import: [utils, core, services, views]
+    type_checking_exempt: true
+    # views must NOT import cogs.
+
+  cogs:
+    description: Discord command handlers and event listeners (top layer).
+    path_prefix: cogs
+    may_import: [utils, core, services, views, governance, cogs]
+    type_checking_exempt: true
+
+
+# Known module-level violations tracked for follow-up, reported as WARN.
+known_violations:
+  # services → views (the core rule being enforced)
+  - file: services/cleanup_profiles.py
+    import: views.setup.scan_panel
+    reason: >
+      classify_channel_name() lives in views but is needed by this service.
+      Fix: move the function to services/ or utils/.
+    ticket: arch-fix-1
+
+  - file: services/cog_routing_profiles.py
+    import: views.setup.scan_panel
+    reason: Same — classify_channel_name() misplaced in views layer.
+    ticket: arch-fix-1
+
+  - file: services/channel_recommender.py
+    import: views.setup.scan_panel
+    reason: Same — classify_channel_name() misplaced in views layer.
+    ticket: arch-fix-1
+
+  # services → cogs
+  - file: services/automation_executor.py
+    import: cogs.diagnostic._platform_embeds
+    reason: >
+      Diagnostic embed helper imported directly from a cog's internal module.
+      Fix: move to utils/ or services/.
+    ticket: arch-fix-5
+
+  # utils → core / services (known violations in heavily-integrated utils)
+  - file: utils/db/pool.py
+    import: core.runtime
+    reason: >
+      pool.py imports slow_path_log for query timing. Should use a utils-level
+      hook instead of importing core directly.
+    ticket: arch-fix-6
+
+  - file: utils/db/pool.py
+    import: services
+    reason: pool.py imports metrics service for instrumentation.
+    ticket: arch-fix-6
+
+  - file: utils/guild_config_accessors.py
+    import: core.runtime
+    reason: Accessor imports config_arbitration to resolve runtime config.
+    ticket: arch-fix-7
+
+  - file: utils/helpers.py
+    import: core.runtime
+    reason: helpers.py imports config_arbitration at module level.
+    ticket: arch-fix-7
+
+  - file: utils/hub_registry.py
+    import: governance
+    reason: Hub registry imports permission_tiers from governance.
+    ticket: arch-fix-8
+
+  - file: utils/subsystem_registry.py
+    import: services
+    reason: Registry imports governance_exceptions service.
+    ticket: arch-fix-8
+
+  - file: utils/subsystem_registry.py
+    import: core.runtime
+    reason: Registry imports core runtime types.
+    ticket: arch-fix-8
+
+  - file: utils/tournaments.py
+    import: services
+    reason: Tournament utils import a service at module level.
+    ticket: arch-fix-9
+
+  # services → governance (accepted — governance_service bridges the layers)
+  - file: services/governance_service.py
+    import: governance
+    reason: >
+      governance_service acts as the services-layer facade over the
+      governance engine; direct governance import is intentional here.
+    ticket: arch-accepted-1
+
+  # services → setup_operations using governance models
+  - file: services/setup_operations.py
+    import: governance
+    reason: >
+      setup_operations references governance.models and governance.writes
+      for apply-phase operations.
+    ticket: arch-fix-10
+
+  # core/runtime → services (architecture doc: disallowed; existing technical debt)
+  # These should be resolved by introducing a hook/callback interface so core
+  # doesn't need to import services directly.
+  - file: core/events_catalogue.py
+    import: governance.events
+    reason: Events catalogue references governance event definitions.
+    ticket: arch-fix-11
+
+  - file: core/resources/role_service.py
+    import: governance.permission_tiers
+    reason: Role service imports governance tiers/templates/scopes at module level.
+    ticket: arch-fix-11
+  - file: core/resources/role_service.py
+    import: governance.role_templates
+    reason: Same as above.
+    ticket: arch-fix-11
+  - file: core/resources/role_service.py
+    import: governance.scopes
+    reason: Same as above.
+    ticket: arch-fix-11
+
+  - file: core/runtime/ai/gateway.py
+    import: services
+    reason: AI gateway imports services at module level for request routing.
+    ticket: arch-fix-11
+  - file: core/runtime/ai/natural_language_stage.py
+    import: services
+    reason: NL stage imports services at module level.
+    ticket: arch-fix-11
+  - file: core/runtime/ai/natural_language_stage.py
+    import: services.ai_natural_language_policy
+    reason: Same as above.
+    ticket: arch-fix-11
+  - file: core/runtime/guild_config.py
+    import: services
+    reason: Guild config imports services for config resolution.
+    ticket: arch-fix-11
+  - file: core/runtime/interaction_router.py
+    import: services
+    reason: Interaction router imports services at module level.
+    ticket: arch-fix-11
+  - file: core/runtime/lifecycle.py
+    import: services
+    reason: Lifecycle imports services for startup/shutdown hooks.
+    ticket: arch-fix-11
+  - file: core/runtime/live_update_scheduler.py
+    import: services
+    reason: Live update scheduler imports services.
+    ticket: arch-fix-11
+  - file: core/runtime/message_anchor_manager.py
+    import: services
+    reason: Anchor manager imports services at module level.
+    ticket: arch-fix-11
+  - file: core/runtime/message_pipeline.py
+    import: services
+    reason: Message pipeline imports services at module level.
+    ticket: arch-fix-11
+  - file: core/runtime/navigation_stack.py
+    import: services
+    reason: Navigation stack imports services.
+    ticket: arch-fix-11
+  - file: core/runtime/persistent_views.py
+    import: services
+    reason: Persistent views imports services.
+    ticket: arch-fix-11
+  - file: core/runtime/scope_locks.py
+    import: services
+    reason: Scope locks imports services.
+    ticket: arch-fix-11
+  - file: core/runtime/session_gc.py
+    import: services
+    reason: Session GC imports services.
+    ticket: arch-fix-11
+  - file: core/runtime/slow_path_log.py
+    import: services
+    reason: Slow path log imports metrics service.
+    ticket: arch-fix-11
+  - file: core/runtime/tasks.py
+    import: services
+    reason: Tasks imports services at module level.
+    ticket: arch-fix-11
+
+  # governance → services (partly legitimate: audit_events + exceptions;
+  # partly technical debt: resolver, cache, cleanup, execution importing services)
+  - file: governance/__init__.py
+    import: services.governance_exceptions
+    reason: Governance imports exceptions service.
+    ticket: arch-fix-12
+  - file: governance/cache.py
+    import: services
+    reason: Governance cache imports services.
+    ticket: arch-fix-12
+  - file: governance/cleanup.py
+    import: services
+    reason: Governance cleanup imports services.
+    ticket: arch-fix-12
+  - file: governance/execution.py
+    import: services
+    reason: Governance execution imports services.
+    ticket: arch-fix-12
+  - file: governance/resolver.py
+    import: services
+    reason: Governance resolver imports services.
+    ticket: arch-fix-12
+  - file: governance/writes.py
+    import: services.audit_events
+    reason: Governance writes emits audit events through services layer.
+    ticket: arch-fix-12
+  - file: governance/writes.py
+    import: services.governance_exceptions
+    reason: Governance writes uses shared exceptions from services.
+    ticket: arch-fix-12
+
+  # views → cogs (views importing cog-internal helpers/state/recipes)
+  # Fix: move shared helpers to services/ or utils/, or create a
+  # dedicated shared module outside the cog.
+  - file: views/blackjack/embeds.py
+    import: cogs.blackjack._state
+    reason: Blackjack embeds import game state from the cog.
+    ticket: arch-fix-13
+  - file: views/blackjack/pvp_view.py
+    import: cogs.blackjack._persistence
+    reason: PvP view imports persistence helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/blackjack/pvp_view.py
+    import: cogs.blackjack._state
+    reason: PvP view imports game state from the cog.
+    ticket: arch-fix-13
+  - file: views/blackjack/solo_view.py
+    import: cogs.blackjack._persistence
+    reason: Solo view imports persistence helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/blackjack/solo_view.py
+    import: cogs.blackjack._state
+    reason: Solo view imports game state from the cog.
+    ticket: arch-fix-13
+  - file: views/blackjack/tournament_views.py
+    import: cogs.blackjack._state
+    reason: Tournament views import game state from the cog.
+    ticket: arch-fix-13
+  - file: views/diagnostic/hub_panel.py
+    import: cogs.diagnostic._helpers
+    reason: Diagnostic panel imports helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/diagnostic/platform_panel.py
+    import: cogs.diagnostic._platform_embeds
+    reason: Platform panel imports embed builders from the cog.
+    ticket: arch-fix-13
+  - file: views/economy/main_panel.py
+    import: cogs.economy._helpers
+    reason: Economy panel imports helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/economy/shop_panel.py
+    import: cogs.economy._helpers
+    reason: Shop panel imports helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/economy/work_panel.py
+    import: cogs.economy._helpers
+    reason: Work panel imports helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/games/blackjack_panel.py
+    import: cogs.blackjack.actions
+    reason: Games panel imports actions from the blackjack cog.
+    ticket: arch-fix-13
+  - file: views/games/deathmatch_panel.py
+    import: cogs.deathmatch.actions
+    reason: Deathmatch panel imports actions from the cog.
+    ticket: arch-fix-13
+  - file: views/games/deathmatch_panel.py
+    import: cogs.deathmatch_cog
+    reason: Deathmatch panel imports the cog directly.
+    ticket: arch-fix-13
+  - file: views/mining/main_panel.py
+    import: cogs.mining.recipes
+    reason: Mining panel imports recipes from the cog.
+    ticket: arch-fix-13
+  - file: views/mining/main_panel.py
+    import: cogs.mining.rewards
+    reason: Mining panel imports rewards from the cog.
+    ticket: arch-fix-13
+  - file: views/mining/mine_view.py
+    import: cogs.mining.rewards
+    reason: Mine view imports rewards from the cog.
+    ticket: arch-fix-13
+  - file: views/moderation/modals.py
+    import: cogs.moderation._helpers
+    reason: Moderation modals import helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/xp/config_panel.py
+    import: cogs.xp._helpers
+    reason: XP config panel imports helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/xp/main_panel.py
+    import: cogs.xp._helpers
+    reason: XP main panel imports helpers from the cog.
+    ticket: arch-fix-13
+  - file: views/xp/rank_view.py
+    import: cogs.xp._helpers
+    reason: XP rank view imports helpers from the cog.
+    ticket: arch-fix-13
+

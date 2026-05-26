@@ -1,0 +1,432 @@
+#!/usr/bin/env python3
+"""Architecture rule engine for SuperBot.
+
+Checks:
+  1. Layer boundary violations  (services importing views, etc.)
+  2. Raw SQL usage outside utils/db/
+  3. Settings key string literals  (should use settings_keys constants)
+  4. Direct discord.ui.View inheritance  (should use BaseView unless exempt)
+
+Usage:
+    python scripts/check_architecture.py                    # report mode (exit 0)
+    python scripts/check_architecture.py --mode strict      # exit 1 on errors
+    python scripts/check_architecture.py --changed-only     # only files changed vs main
+    python scripts/check_architecture.py --file disbot/x.py # single file
+"""
+
+from __future__ import annotations
+
+import argparse
+import ast
+import re
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
+
+import yaml
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DISBOT_ROOT = REPO_ROOT / "disbot"
+RULES_DIR = REPO_ROOT / "architecture_rules"
+PROJECT_LAYERS = frozenset({"utils", "core", "services", "governance", "views", "cogs"})
+
+
+# ---------------------------------------------------------------------------
+# Violation model
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class Violation:
+    file: Path
+    line: int
+    check: str
+    message: str
+    severity: str = "error"  # "error" | "warning"
+
+    def display(self, root: Path) -> str:
+        try:
+            rel = self.file.relative_to(root)
+        except ValueError:
+            rel = self.file
+        tag = "ERROR" if self.severity == "error" else " WARN"
+        return f"  [{tag}] {rel}:{self.line}  ({self.check})  {self.message}"
+
+
+# ---------------------------------------------------------------------------
+# YAML loader
+# ---------------------------------------------------------------------------
+
+
+def _load(name: str) -> dict:
+    p = RULES_DIR / name
+    if not p.exists():
+        return {}
+    with p.open(encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
+
+
+# ---------------------------------------------------------------------------
+# Check 1 — Layer boundary violations
+# ---------------------------------------------------------------------------
+
+
+def _file_layer(filepath: Path) -> Optional[str]:
+    try:
+        rel = filepath.relative_to(DISBOT_ROOT)
+    except ValueError:
+        return None
+    return rel.parts[0] if rel.parts and rel.parts[0] in PROJECT_LAYERS else None
+
+
+def _import_layer(module: str) -> Optional[str]:
+    first = module.split(".")[0]
+    return first if first in PROJECT_LAYERS else None
+
+
+class _ImportVisitor(ast.NodeVisitor):
+    """Collect module-level absolute imports, tracking TYPE_CHECKING context.
+
+    Lazy function-body imports (from X import Y inside a def/async def) are
+    NOT collected — they don't create circular import risks and are an
+    established pattern throughout this codebase.
+    """
+
+    def __init__(self) -> None:
+        self._fn_depth = 0   # >0 means we're inside a function body
+        self._in_tc = False  # inside `if TYPE_CHECKING:` block
+        self.imports: list[tuple[int, str, bool]] = []  # lineno, module, is_tc
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._fn_depth += 1
+        self.generic_visit(node)
+        self._fn_depth -= 1
+
+    visit_AsyncFunctionDef = visit_FunctionDef  # type: ignore[assignment]
+
+    def visit_If(self, node: ast.If) -> None:
+        test = node.test
+        enters_tc = (isinstance(test, ast.Name) and test.id == "TYPE_CHECKING") or (
+            isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING"
+        )
+        prev = self._in_tc
+        if enters_tc:
+            self._in_tc = True
+        self.generic_visit(node)
+        self._in_tc = prev
+
+    def visit_Import(self, node: ast.Import) -> None:
+        if self._fn_depth > 0:
+            return
+        for alias in node.names:
+            self.imports.append((node.lineno, alias.name, self._in_tc))
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        if self._fn_depth > 0 or not node.module or node.level != 0:
+            return
+        self.imports.append((node.lineno, node.module, self._in_tc))
+
+
+def check_layer_boundaries(files: list[Path], rules: dict) -> list[Violation]:
+    layers_cfg = rules.get("layers", {})
+    known: list[dict] = rules.get("known_violations", [])
+    violations: list[Violation] = []
+
+    for filepath in files:
+        file_layer = _file_layer(filepath)
+        if file_layer is None or file_layer not in layers_cfg:
+            continue
+
+        cfg = layers_cfg[file_layer]
+        may_import: set[str] = set(cfg.get("may_import", []))
+        tc_exempt: bool = cfg.get("type_checking_exempt", False)
+
+        try:
+            source = filepath.read_text(encoding="utf-8", errors="replace")
+            tree = ast.parse(source, filename=str(filepath))
+        except SyntaxError:
+            continue
+
+        visitor = _ImportVisitor()
+        visitor.visit(tree)
+
+        rel_file = str(filepath.relative_to(DISBOT_ROOT))
+
+        for lineno, module, is_tc in visitor.imports:
+            import_layer = _import_layer(module)
+            if import_layer is None or import_layer == file_layer:
+                continue
+            if import_layer in may_import:
+                continue
+            if is_tc and tc_exempt:
+                continue
+
+            is_known = any(
+                rel_file == kv.get("file") and module.startswith(kv.get("import", ""))
+                for kv in known
+            )
+            violations.append(Violation(
+                file=filepath,
+                line=lineno,
+                check="layer_boundary",
+                message=(
+                    f"{'[known] ' if is_known else ''}"
+                    f"{file_layer} → {import_layer}: `{module}` is not allowed"
+                ),
+                severity="warning" if is_known else "error",
+            ))
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Check 2 — Raw SQL outside utils/db/
+# ---------------------------------------------------------------------------
+
+_RAW_SQL_RE = re.compile(
+    r'\.execute\s*\(\s*(?:f?b?["\']|f?b?""")'
+    r'.*?(?:UPDATE|INSERT|DELETE|CREATE|DROP|ALTER)',
+    re.IGNORECASE | re.DOTALL,
+)
+_POOL_EXECUTE_RE = re.compile(r'\bpool\s*\.\s*(?:execute|fetchone|fetchall|get)\s*\(')
+
+
+def check_raw_sql(files: list[Path], rules: dict) -> list[Violation]:
+    known_files = {kv["file"] for kv in rules.get("known_raw_write_violations", [])}
+    violations: list[Violation] = []
+
+    for filepath in files:
+        rel = str(filepath.relative_to(DISBOT_ROOT))
+        if rel.startswith("utils/db") or "test" in rel.lower():
+            continue
+
+        try:
+            source = filepath.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+
+        lines = source.splitlines()
+        for i, line in enumerate(lines, 1):
+            if _RAW_SQL_RE.search(line) or _POOL_EXECUTE_RE.search(line):
+                is_known = rel in known_files
+                violations.append(Violation(
+                    file=filepath,
+                    line=i,
+                    check="raw_sql",
+                    message=(
+                        f"{'[known] ' if is_known else ''}"
+                        "Raw SQL / pool primitive outside utils/db/ — use utils.db.* functions"
+                    ),
+                    severity="warning" if is_known else "error",
+                ))
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Check 3 — Settings key string literals
+# ---------------------------------------------------------------------------
+
+_SETTINGS_LITERAL_RE = re.compile(
+    r'\bget_setting\s*\([^,)]+,\s*["\']([a-z][a-z0-9_]*)["\']'
+)
+
+
+def check_settings_key_literals(files: list[Path], _rules: dict) -> list[Violation]:
+    violations: list[Violation] = []
+    for filepath in files:
+        rel = str(filepath.relative_to(DISBOT_ROOT))
+        if "settings_keys" in rel or "test" in rel.lower():
+            continue
+        try:
+            source = filepath.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for i, line in enumerate(source.splitlines(), 1):
+            m = _SETTINGS_LITERAL_RE.search(line)
+            if m:
+                violations.append(Violation(
+                    file=filepath,
+                    line=i,
+                    check="settings_key_literal",
+                    message=(
+                        f"Hardcoded settings key `{m.group(1)}` — "
+                        "import the constant from utils.settings_keys"
+                    ),
+                    severity="warning",
+                ))
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Check 4 — BaseView inheritance
+# ---------------------------------------------------------------------------
+
+
+def _class_bases(node: ast.ClassDef) -> list[str]:
+    names = []
+    for base in node.bases:
+        if isinstance(base, ast.Name):
+            names.append(base.id)
+        elif isinstance(base, ast.Attribute):
+            parts = []
+            cur: ast.expr = base
+            while isinstance(cur, ast.Attribute):
+                parts.append(cur.attr)
+                cur = cur.value
+            if isinstance(cur, ast.Name):
+                parts.append(cur.id)
+            names.append(".".join(reversed(parts)))
+    return names
+
+
+def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation]:
+    cfg = rules.get("base_view", {})
+    exemption_prefixes = [
+        e["pattern"].replace("disbot/", "")
+        for e in cfg.get("exemptions", [])
+    ]
+    violations: list[Violation] = []
+
+    for filepath in files:
+        rel = str(filepath.relative_to(DISBOT_ROOT))
+        if not rel.startswith("views/") or "test" in rel.lower():
+            continue
+        if any(rel.startswith(prefix) for prefix in exemption_prefixes):
+            continue
+
+        try:
+            source = filepath.read_text(encoding="utf-8", errors="replace")
+            tree = ast.parse(source, filename=str(filepath))
+        except (SyntaxError, OSError):
+            continue
+
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ClassDef):
+                continue
+            bases = _class_bases(node)
+            if "discord.ui.View" in bases or "View" in bases:
+                # Avoid flagging BaseView itself
+                if node.name in ("BaseView", "HubView", "PersistentView"):
+                    continue
+                violations.append(Violation(
+                    file=filepath,
+                    line=node.lineno,
+                    check="baseview_inheritance",
+                    message=(
+                        f"`{node.name}` extends discord.ui.View directly — "
+                        "use BaseView / HubView / PersistentView unless "
+                        "specialized game or lifecycle ownership is required "
+                        "(document the reason in a comment)"
+                    ),
+                    severity="warning",
+                ))
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# File collection
+# ---------------------------------------------------------------------------
+
+
+def _all_files() -> list[Path]:
+    return sorted(DISBOT_ROOT.rglob("*.py"))
+
+
+def _changed_files() -> list[Path]:
+    for cmd in (
+        ["git", "diff", "--name-only", "origin/main...HEAD"],
+        ["git", "diff", "--name-only", "HEAD"],
+    ):
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+        if result.returncode == 0 and result.stdout.strip():
+            break
+    files = []
+    for line in result.stdout.splitlines():
+        p = (REPO_ROOT / line.strip()).resolve()
+        if p.suffix == ".py" and p.exists():
+            try:
+                p.relative_to(DISBOT_ROOT)
+                files.append(p)
+            except ValueError:
+                pass
+    return files
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="SuperBot architecture checker")
+    parser.add_argument(
+        "--mode",
+        choices=["report", "strict"],
+        default="report",
+        help="report: always exit 0; strict: exit 1 if any errors",
+    )
+    parser.add_argument(
+        "--changed-only",
+        action="store_true",
+        help="Only check files changed vs origin/main",
+    )
+    parser.add_argument(
+        "--file",
+        type=Path,
+        help="Check a single file (relative or absolute)",
+    )
+    args = parser.parse_args()
+
+    layers_rules = _load("layers.yaml")
+    mutation_rules = _load("mutation_owners.yaml")
+    helpers_rules = _load("canonical_helpers.yaml")
+
+    if args.file:
+        files = [(REPO_ROOT / args.file).resolve()]
+    elif args.changed_only:
+        files = _changed_files()
+    else:
+        files = _all_files()
+
+    if not files:
+        print("check_architecture: no files to check")
+        return 0
+
+    all_violations: list[Violation] = []
+    all_violations += check_layer_boundaries(files, layers_rules)
+    all_violations += check_raw_sql(files, mutation_rules)
+    all_violations += check_settings_key_literals(files, helpers_rules)
+    all_violations += check_baseview_inheritance(files, helpers_rules)
+
+    errors = [v for v in all_violations if v.severity == "error"]
+    warnings = [v for v in all_violations if v.severity == "warning"]
+
+    if not all_violations:
+        print("check_architecture: all checks passed ✓")
+        return 0
+
+    label = f"{len(errors)} error(s)  {len(warnings)} warning(s)"
+    print(f"\ncheck_architecture — {label}\n")
+
+    if errors:
+        print("ERRORS — must fix before merge:")
+        for v in sorted(errors, key=lambda x: (str(x.file), x.line)):
+            print(v.display(REPO_ROOT))
+
+    if warnings:
+        print("\nWARNINGS — tracked, fix in follow-up PR:")
+        for v in sorted(warnings, key=lambda x: (str(x.file), x.line)):
+            print(v.display(REPO_ROOT))
+
+    print()
+    if args.mode == "strict" and errors:
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
