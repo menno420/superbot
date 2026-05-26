@@ -199,13 +199,25 @@ async def ensure_setup_channel(
     if existing_channel_id is not None:
         existing = guild.get_channel(existing_channel_id)
         if isinstance(existing, discord.TextChannel):
-            # Reuse the channel, but repair its overwrites from the
-            # current session snapshot — admin roles created since
-            # last run get denied, newly-delegated admins gain
-            # access, and revoked admins lose theirs.  Best-effort:
-            # a failure is logged and the channel is still returned.
-            await _apply_overwrites(existing, guild, session=session)
-            return existing, False
+            if existing.name == SETUP_CHANNEL_NAME:
+                # Reuse the channel, but repair its overwrites from the
+                # current session snapshot — admin roles created since
+                # last run get denied, newly-delegated admins gain
+                # access, and revoked admins lose theirs.  Best-effort:
+                # a failure is logged and the channel is still returned.
+                await _apply_overwrites(existing, guild, session=session)
+                return existing, False
+            # setup_channel_id points to a channel with the wrong name
+            # (e.g. #general from a stale or incorrect pointer).  Fall
+            # through to the normal ensure path, which reuses or creates
+            # #superbot-setup by name — no duplicate is created when the
+            # correct channel already exists.
+            logger.warning(
+                "setup_channel: setup_channel_id %d points to #%s, not #%s — ignoring stale pointer",
+                existing_channel_id,
+                existing.name,
+                SETUP_CHANNEL_NAME,
+            )
 
     if not _bot_can_manage_channels(guild):
         logger.info(

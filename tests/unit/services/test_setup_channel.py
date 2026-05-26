@@ -810,3 +810,58 @@ async def test_cleanup_delegated_admin_can_trigger_deletion():
             actor=_random_member(user_id=42),
         )
     assert result.reason == "ok"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3.5 — workspace channel name guard
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_ensure_setup_channel_rejects_wrong_name():
+    """When existing_channel_id points to a channel with the wrong name (e.g.
+    #general), ensure_setup_channel ignores it and falls through to create
+    or find #superbot-setup instead."""
+    wrong_channel = MagicMock(spec=discord.TextChannel)
+    wrong_channel.id = 999
+    wrong_channel.name = "general"  # NOT "superbot-setup"
+
+    correct_channel = _make_text_channel(7000)
+    guild = _make_guild(cached_channel=wrong_channel)
+
+    with patch(
+        "services.setup_channel.ensure_channel",
+        new_callable=AsyncMock,
+        return_value=correct_channel,
+    ) as ensure_mock:
+        channel, was_created = await ensure_setup_channel(
+            guild,
+            existing_channel_id=999,
+        )
+
+    # The wrong-name channel must not be returned.
+    assert channel is not wrong_channel
+    assert channel is correct_channel
+    # ensure_channel was called to find/create #superbot-setup.
+    ensure_mock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_ensure_setup_channel_reuses_correct_name():
+    """When existing_channel_id points to a TextChannel already named
+    superbot-setup, it is reused without calling ensure_channel."""
+    correct_channel = _make_text_channel(7000)  # name = SETUP_CHANNEL_NAME
+    guild = _make_guild(cached_channel=correct_channel)
+
+    with patch(
+        "services.setup_channel.ensure_channel",
+        new_callable=AsyncMock,
+    ) as ensure_mock:
+        channel, was_created = await ensure_setup_channel(
+            guild,
+            existing_channel_id=7000,
+        )
+
+    assert channel is correct_channel
+    assert was_created is False
+    ensure_mock.assert_not_awaited()

@@ -567,6 +567,7 @@ REGISTRY.register(
         ),
         depths=frozenset({"standard", "advanced"}),
         recommended_ops_builder=_recommended_cleanup_ops,
+        customize=_customize_run,
     ),
 )
 
