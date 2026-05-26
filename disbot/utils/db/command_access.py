@@ -162,21 +162,20 @@ async def replace_allowed_channels(
     input so callers can pass a list directly without pre-processing.
     """
     desired = sorted({int(cid) for cid in channel_ids})
-    async with pool.get().acquire() as conn:
-        async with conn.transaction():
-            await conn.execute(
-                "DELETE FROM guild_command_access_channels WHERE guild_id = $1",
-                guild_id,
+    async with pool.get().acquire() as conn, conn.transaction():
+        await conn.execute(
+            "DELETE FROM guild_command_access_channels WHERE guild_id = $1",
+            guild_id,
+        )
+        if desired:
+            await conn.executemany(
+                """
+                INSERT INTO guild_command_access_channels
+                    (guild_id, channel_id, created_by)
+                VALUES ($1, $2, $3)
+                """,
+                [(guild_id, cid, created_by) for cid in desired],
             )
-            if desired:
-                await conn.executemany(
-                    """
-                    INSERT INTO guild_command_access_channels
-                        (guild_id, channel_id, created_by)
-                    VALUES ($1, $2, $3)
-                    """,
-                    [(guild_id, cid, created_by) for cid in desired],
-                )
 
 
 # ---------------------------------------------------------------------------
