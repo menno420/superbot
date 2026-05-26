@@ -22,12 +22,20 @@ import hashlib
 import json
 import logging
 import time
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
-from services import btd6_fact_store, btd6_fetch_service, btd6_source_parser, btd6_source_registry
-from services import parsers as _parsers_pkg  # noqa: F401  — triggers registration side-effects
+from services import (
+    btd6_fact_store,
+    btd6_fetch_service,
+    btd6_source_parser,
+    btd6_source_registry,
+)
+from services import (  # noqa: F401  — triggers registration side-effects
+    parsers as _parsers_pkg,
+)
 from utils.db import btd6_sources as btd6_sources_db
 
 logger = logging.getLogger("bot.services.btd6_ingestion")
@@ -41,7 +49,15 @@ logger = logging.getLogger("bot.services.btd6_ingestion")
 @dataclass(frozen=True)
 class IngestionResult:
     source_key: str
-    status: Literal["ok", "fetch_error", "parse_error", "store_error", "skipped", "disabled", "interrupted"]
+    status: Literal[
+        "ok",
+        "fetch_error",
+        "parse_error",
+        "store_error",
+        "skipped",
+        "disabled",
+        "interrupted",
+    ]
     fact_count: int
     duration_ms: int
     error_code: str | None
@@ -94,7 +110,7 @@ async def refresh_source(
     # 2. Compute path_params_hash.
     if path_params is not None:
         path_params_hash = hashlib.sha256(
-            json.dumps(path_params, sort_keys=True).encode()
+            json.dumps(path_params, sort_keys=True).encode(),
         ).hexdigest()
     else:
         path_params_hash = ""
@@ -165,7 +181,12 @@ async def _run_ingestion(
     def _elapsed() -> int:
         return int((time.monotonic() - start_ms) * 1000)
 
-    async def _fail(status: str, error_code: str, error_message: str | None = None, status_code: int | None = None) -> IngestionResult:
+    async def _fail(
+        status: str,
+        error_code: str,
+        error_message: str | None = None,
+        status_code: int | None = None,
+    ) -> IngestionResult:
         await btd6_sources_db.update_ingestion_run(
             run_id,
             status=status,
@@ -186,11 +207,18 @@ async def _run_ingestion(
 
     # 5. Fetch.
     try:
-        fetch_result = await btd6_fetch_service.fetch(source_key, path_params=path_params)
+        fetch_result = await btd6_fetch_service.fetch(
+            source_key,
+            path_params=path_params,
+        )
     except btd6_fetch_service.BTD6FetchRefusedError as err:
         return await _fail("disabled", err.reason)
     except btd6_fetch_service.BTD6FetchHTTPError as err:
-        return await _fail("fetch_error", str(err.status_code), status_code=err.status_code)
+        return await _fail(
+            "fetch_error",
+            str(err.status_code),
+            status_code=err.status_code,
+        )
     except Exception as err:
         return await _fail("fetch_error", "unexpected_fetch_error", str(err))
 
@@ -203,7 +231,12 @@ async def _run_ingestion(
             raw_body=fetch_result.raw_body,
         )
     except Exception:
-        logger.warning("snapshot write failed for %s run %d", source_key, run_id, exc_info=True)
+        logger.warning(
+            "snapshot write failed for %s run %d",
+            source_key,
+            run_id,
+            exc_info=True,
+        )
 
     # 7. Look up parser.
     parser = btd6_source_parser.get(source_key)

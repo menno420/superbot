@@ -328,8 +328,14 @@ class AICog(commands.Cog):
         from core.runtime.ai import response_renderer_registry
         from views import youtube_renderers
 
-        response_renderer_registry.register(AITask.VIDEO_DESCRIBE, youtube_renderers.render_describe)
-        response_renderer_registry.register(AITask.VIDEO_COMPARE, youtube_renderers.render_compare)
+        response_renderer_registry.register(
+            AITask.VIDEO_DESCRIBE,
+            youtube_renderers.render_describe,
+        )
+        response_renderer_registry.register(
+            AITask.VIDEO_COMPARE,
+            youtube_renderers.render_compare,
+        )
 
     async def cog_unload(self) -> None:
         from core.runtime import message_pipeline

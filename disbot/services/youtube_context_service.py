@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
@@ -27,7 +27,7 @@ from services import video_reference_cache_service, youtube_fetch_service
 logger = logging.getLogger("bot.services.youtube_context")
 
 _YOUTUBE_URL_RE = re.compile(
-    r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})"
+    r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
 )
 _CONTROL_CHAR_RE = re.compile(r"[\x00-\x1f\x7f]")
 _MENTION_RE = re.compile(r"(@everyone|@here|<@[!&]?\d+>)")
@@ -100,7 +100,7 @@ def _sanitise(text: str | None, max_chars: int = 500) -> str | None:
 
 
 # ---------------------------------------------------------------------------
-# build()
+# Public entry point
 # ---------------------------------------------------------------------------
 
 
@@ -176,7 +176,11 @@ async def _resolve_video(video_id: str) -> VideoContext | str | None:
     if cached is not None:
         if cached.fetch_status != "ok":
             return cached.fetch_status
-        return _build_video_context(video_id, cached.metadata_json, cached.transcript_text)
+        return _build_video_context(
+            video_id,
+            cached.metadata_json,
+            cached.transcript_text,
+        )
 
     try:
         metadata = await youtube_fetch_service.fetch_video_metadata(video_id)
@@ -190,7 +194,11 @@ async def _resolve_video(video_id: str) -> VideoContext | str | None:
         )
         return err.reason
     except Exception:
-        logger.warning("unexpected error fetching metadata for %s", video_id, exc_info=True)
+        logger.warning(
+            "unexpected error fetching metadata for %s",
+            video_id,
+            exc_info=True,
+        )
         return "fetch_error"
 
     transcript_segments = await youtube_fetch_service.fetch_transcript(video_id)
@@ -200,7 +208,10 @@ async def _resolve_video(video_id: str) -> VideoContext | str | None:
         transcript_text = _sanitise(raw, _MAX_TRANSCRIPT_CHARS)
 
     await video_reference_cache_service.put_cached(
-        video_id, metadata, transcript_text, fetch_status="ok"
+        video_id,
+        metadata,
+        transcript_text,
+        fetch_status="ok",
     )
     return _build_video_context(video_id, metadata, transcript_text)
 
@@ -224,13 +235,16 @@ def _build_video_context(
 
     title = _sanitise(snippet.get("title"), _MAX_TITLE_CHARS)
     channel = _sanitise(snippet.get("channelTitle"), _MAX_CHANNEL_CHARS)
-    description = _sanitise(snippet.get("description", "")[:_MAX_DESCRIPTION_CHARS], _MAX_DESCRIPTION_CHARS)
+    description = _sanitise(
+        snippet.get("description", "")[:_MAX_DESCRIPTION_CHARS],
+        _MAX_DESCRIPTION_CHARS,
+    )
 
     published_at: datetime | None = None
     raw_pub = snippet.get("publishedAt")
     if raw_pub:
         try:
-            from datetime import timezone
+
             published_at = datetime.fromisoformat(raw_pub.replace("Z", "+00:00"))
         except ValueError:
             pass
@@ -241,10 +255,10 @@ def _build_video_context(
         duration_seconds = _parse_iso8601_duration(raw_dur)
 
     thumbnails = snippet.get("thumbnails", {})
-    thumbnail_url = (
-        thumbnails.get("high", {}).get("url")
-        or thumbnails.get("default", {}).get("url")
-    )
+    thumbnail_url = thumbnails.get("high", {}).get("url") or thumbnails.get(
+        "default",
+        {},
+    ).get("url")
 
     limitations: list[str] = []
     if not transcript_text:
@@ -277,6 +291,7 @@ def _build_video_context(
 
 def _parse_iso8601_duration(duration: str) -> int | None:
     import re as _re
+
     m = _re.match(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", duration)
     if not m:
         return None

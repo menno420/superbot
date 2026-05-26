@@ -11,8 +11,9 @@ replaces the renderer, making repeated AICog.cog_load() safe.
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Awaitable, Callable
+from typing import TYPE_CHECKING
 
 import discord
 
@@ -34,18 +35,18 @@ class RenderedResponse:
     allowed_mentions: discord.AllowedMentions | None
 
 
-_RENDERERS: dict["AITask", RendererFn] = {}
+_RENDERERS: dict[AITask, RendererFn] = {}
 
 
-def register(task: "AITask", fn: RendererFn) -> None:
+def register(task: AITask, fn: RendererFn) -> None:
     """Register a renderer for a task.  Idempotent — safe to call multiple times."""
     _RENDERERS[task] = fn
 
 
 async def render(
-    task: "AITask",
-    response: "AIResponse",
-    req: "FeatureFactRequest",
+    task: AITask,
+    response: AIResponse,
+    req: FeatureFactRequest,
     render_context: object | None,
 ) -> RenderedResponse | None:
     """Dispatch to the registered renderer, or return None for plain-text path."""

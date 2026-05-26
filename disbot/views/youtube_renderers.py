@@ -3,6 +3,7 @@
 Registered explicitly from AICog.cog_load() — not as import side effects.
 VIDEO_QA uses plain-text AI reply in M1; no renderer is registered for it.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -17,9 +18,9 @@ if TYPE_CHECKING:
 
 
 async def render_describe(
-    task: "AITask",
-    response: "AIResponse",
-    req: "FeatureFactRequest",
+    task: AITask,
+    response: AIResponse,
+    req: FeatureFactRequest,
     render_context: object | None,
 ) -> RenderedResponse | None:
     """Renderer for VIDEO_DESCRIBE — single-video card embed."""
@@ -37,9 +38,9 @@ async def render_describe(
 
 
 async def render_compare(
-    task: "AITask",
-    response: "AIResponse",
-    req: "FeatureFactRequest",
+    task: AITask,
+    response: AIResponse,
+    req: FeatureFactRequest,
     render_context: object | None,
 ) -> RenderedResponse | None:
     """Renderer for VIDEO_COMPARE — side-by-side comparison embed."""

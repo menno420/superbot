@@ -28,7 +28,9 @@ from utils.db import btd6_sources as btd6_sources_db
 
 logger = logging.getLogger("bot.services.btd6_ingestion_supervisor")
 
-_BTD6_INGESTION_ENABLED: bool = os.getenv("BTD6_INGESTION_ENABLED", "false").lower() == "true"
+_BTD6_INGESTION_ENABLED: bool = (
+    os.getenv("BTD6_INGESTION_ENABLED", "false").lower() == "true"
+)
 _STARTUP_DELAY_S: int = int(os.getenv("BTD6_INGESTION_STARTUP_DELAY_S", "60"))
 _DEFAULT_INTERVAL_S: int = int(os.getenv("BTD6_INGESTION_DEFAULT_INTERVAL_S", "3600"))
 _STOP_TIMEOUT_S: int = 30
@@ -65,9 +67,15 @@ async def start_supervisor() -> None:
     try:
         recovered = await btd6_sources_db.mark_stale_runs_interrupted()
         if recovered:
-            logger.warning("recovered %d stale ingestion run(s) to interrupted", recovered)
+            logger.warning(
+                "recovered %d stale ingestion run(s) to interrupted",
+                recovered,
+            )
     except Exception:
-        logger.warning("failed to recover stale ingestion runs on startup", exc_info=True)
+        logger.warning(
+            "failed to recover stale ingestion runs on startup",
+            exc_info=True,
+        )
     _stop_event.clear()
     _supervisor_task = tasks.spawn(
         "btd6_ingestion:supervisor",
@@ -87,7 +95,10 @@ async def stop_supervisor() -> None:
     try:
         await asyncio.wait_for(asyncio.shield(task), timeout=_STOP_TIMEOUT_S)
     except (asyncio.TimeoutError, asyncio.CancelledError):
-        logger.warning("supervisor did not finish within %ds; continuing", _STOP_TIMEOUT_S)
+        logger.warning(
+            "supervisor did not finish within %ds; continuing",
+            _STOP_TIMEOUT_S,
+        )
     logger.info("BTD6 ingestion supervisor stopped")
 
 
@@ -118,23 +129,37 @@ async def _run_loop() -> None:
             try:
                 child_task = tasks.spawn(
                     f"btd6_ingestion:refresh:{source_key}",
-                    btd6_ingestion_service.refresh_with_dependencies(source_key, reason="scheduled"),
+                    btd6_ingestion_service.refresh_with_dependencies(
+                        source_key,
+                        reason="scheduled",
+                    ),
                 )
                 results = await child_task
-                failed = [r for r in results if r.status in ("fetch_error", "parse_error")]
+                failed = [
+                    r for r in results if r.status in ("fetch_error", "parse_error")
+                ]
                 if failed:
-                    new_backoff = min(_backoff.get(source_key, _BACKOFF_BASE_S) * 2, _BACKOFF_CAP_S)
+                    new_backoff = min(
+                        _backoff.get(source_key, _BACKOFF_BASE_S) * 2,
+                        _BACKOFF_CAP_S,
+                    )
                     _backoff[source_key] = new_backoff
                     logger.warning(
                         "source %s failed (%s); backing off %ds",
-                        source_key, failed[0].error_code, new_backoff,
+                        source_key,
+                        failed[0].error_code,
+                        new_backoff,
                     )
                 else:
                     _backoff.pop(source_key, None)
             except asyncio.CancelledError:
                 return
             except Exception:
-                logger.error("unexpected error refreshing %s", source_key, exc_info=True)
+                logger.error(
+                    "unexpected error refreshing %s",
+                    source_key,
+                    exc_info=True,
+                )
 
         if _stop_event.is_set():
             break

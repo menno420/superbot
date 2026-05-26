@@ -1,4 +1,5 @@
 """Discord embed builders for YouTube video responses."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -17,7 +18,7 @@ def _fmt_duration(seconds: int) -> str:
     return f"{m}:{s:02d}"
 
 
-def build_video_card_embed(ctx: "VideoContext", ai_summary: str) -> discord.Embed:
+def build_video_card_embed(ctx: VideoContext, ai_summary: str) -> discord.Embed:
     """Single-video describe embed with metadata and AI-generated summary."""
     meta = ctx.metadata
     title = (meta.title or ctx.reference.video_id)[:256]
@@ -43,14 +44,16 @@ def build_video_card_embed(ctx: "VideoContext", ai_summary: str) -> discord.Embe
             value=meta.published_at.strftime("%Y-%m-%d"),
             inline=True,
         )
-    transcript_note = "Transcript available" if ctx.transcript.available else "No transcript"
+    transcript_note = (
+        "Transcript available" if ctx.transcript.available else "No transcript"
+    )
     embed.set_footer(text=transcript_note)
     return embed
 
 
 def build_compare_embed(
-    a: "VideoContext",
-    b: "VideoContext",
+    a: VideoContext,
+    b: VideoContext,
     ai_text: str,
 ) -> discord.Embed:
     """Side-by-side comparison embed for two YouTube videos."""

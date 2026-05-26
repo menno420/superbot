@@ -22,7 +22,7 @@ _API_KEY_WARNED = False
 
 _VIDEO_ID_RE = re.compile(
     r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)"
-    r"([A-Za-z0-9_-]{11})"
+    r"([A-Za-z0-9_-]{11})",
 )
 _BARE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 
@@ -67,16 +67,26 @@ async def fetch_video_metadata(video_id: str) -> dict:
         "key": _API_KEY,
         "part": "snippet,contentDetails",
     }
-    async with aiohttp.ClientSession() as session:
-        async with session.get(_METADATA_URL, params=params, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-            if resp.status == 403:
-                text = await resp.text()
-                if "quotaExceeded" in text or "dailyLimitExceeded" in text:
-                    raise YouTubeFetchError(video_id, "quota_limited")
-                raise YouTubeFetchError(video_id, "fetch_error")
-            if resp.status != 200:
-                raise YouTubeFetchError(video_id, "fetch_error", retryable=resp.status >= 500)
-            data = await resp.json()
+    async with (
+        aiohttp.ClientSession() as session,
+        session.get(
+            _METADATA_URL,
+            params=params,
+            timeout=aiohttp.ClientTimeout(total=10),
+        ) as resp,
+    ):
+        if resp.status == 403:
+            text = await resp.text()
+            if "quotaExceeded" in text or "dailyLimitExceeded" in text:
+                raise YouTubeFetchError(video_id, "quota_limited")
+            raise YouTubeFetchError(video_id, "fetch_error")
+        if resp.status != 200:
+            raise YouTubeFetchError(
+                video_id,
+                "fetch_error",
+                retryable=resp.status >= 500,
+            )
+        data = await resp.json()
 
     items = data.get("items", [])
     if not items:
@@ -91,14 +101,15 @@ async def fetch_transcript(video_id: str) -> list[dict]:
     for absent transcript.  Runs the blocking API in an executor.
     """
     try:
-        from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
+        from youtube_transcript_api import (
+            YouTubeTranscriptApi,
+        )
 
         loop = asyncio.get_running_loop()
-        segments = await loop.run_in_executor(
+        return await loop.run_in_executor(
             None,
             lambda: YouTubeTranscriptApi.get_transcript(video_id),
         )
-        return segments
     except Exception:
         return []
 

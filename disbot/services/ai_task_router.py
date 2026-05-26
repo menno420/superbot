@@ -18,9 +18,11 @@ from dataclasses import dataclass
 from core.runtime.ai.contracts import AITask
 
 _YOUTUBE_URL_RE = re.compile(
-    r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})"
+    r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
 )
-_VIDEO_QUESTION_WORDS = frozenset({"what", "explain", "how", "why", "summarize", "describe", "tell"})
+_VIDEO_QUESTION_WORDS = frozenset(
+    {"what", "explain", "how", "why", "summarize", "describe", "tell"},
+)
 
 
 def _count_youtube_urls(text: str) -> int:
@@ -30,6 +32,7 @@ def _count_youtube_urls(text: str) -> int:
 def _has_question_intent(text: str) -> bool:
     words = frozenset(text.lower().split())
     return bool(words & _VIDEO_QUESTION_WORDS)
+
 
 # Keep this list short and curated. It biases the router toward BTD6;
 # anything not matched falls through to GENERAL_NL_ANSWER.
@@ -107,11 +110,19 @@ def classify(
         )
     url_count = _count_youtube_urls(message_text or "")
     if url_count >= 2:
-        return RoutedTask(task=AITask.VIDEO_COMPARE, route="video.compare", confidence=0.90)
+        return RoutedTask(
+            task=AITask.VIDEO_COMPARE,
+            route="video.compare",
+            confidence=0.90,
+        )
     if url_count == 1 and _has_question_intent(message_text or ""):
         return RoutedTask(task=AITask.VIDEO_QA, route="video.qa", confidence=0.80)
     if url_count == 1:
-        return RoutedTask(task=AITask.VIDEO_DESCRIBE, route="video.describe", confidence=0.85)
+        return RoutedTask(
+            task=AITask.VIDEO_DESCRIBE,
+            route="video.describe",
+            confidence=0.85,
+        )
     return RoutedTask(
         task=AITask.GENERAL_NL_ANSWER,
         route="general.nl_answer",

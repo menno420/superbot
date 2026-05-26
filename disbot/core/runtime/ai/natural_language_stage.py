@@ -33,11 +33,6 @@ import discord
 from core.runtime.ai.contracts import AITask, PolicyDenialReason
 from core.runtime.ai.feature_facts import FeatureFactRequest, FeatureFactsResult
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
-
-_VIDEO_TASKS = frozenset({AITask.VIDEO_DESCRIBE, AITask.VIDEO_COMPARE, AITask.VIDEO_QA})
-
-if TYPE_CHECKING:
-    from core.runtime.ai.contracts import AIResponse
 from services import (
     ai_context_service,
     ai_conversation_service,
@@ -48,6 +43,11 @@ from services import (
     ai_task_router,
 )
 from services.ai_natural_language_policy import MessageContext
+
+if TYPE_CHECKING:
+    from core.runtime.ai.contracts import AIResponse
+
+_VIDEO_TASKS = frozenset({AITask.VIDEO_DESCRIBE, AITask.VIDEO_COMPARE, AITask.VIDEO_QA})
 
 logger = logging.getLogger("bot.runtime.ai.natural_language_stage")
 
@@ -313,7 +313,10 @@ class AINaturalLanguageStage:
         from core.runtime.ai import response_renderer_registry
 
         rendered = await response_renderer_registry.render(
-            routed.task, response, _fact_req, feature.render_context
+            routed.task,
+            response,
+            _fact_req,
+            feature.render_context,
         )
 
         try:
@@ -321,7 +324,8 @@ class AINaturalLanguageStage:
                 await message.channel.send(
                     content=rendered.content,
                     embed=rendered.embed,
-                    allowed_mentions=rendered.allowed_mentions or discord.AllowedMentions.none(),
+                    allowed_mentions=rendered.allowed_mentions
+                    or discord.AllowedMentions.none(),
                 )
             else:
                 await message.channel.send(
@@ -346,7 +350,8 @@ class AINaturalLanguageStage:
                 route=routed.route,
                 decision="errored",
                 reason_code=(
-                    "video_response_send_failed" if routed.task in _VIDEO_TASKS
+                    "video_response_send_failed"
+                    if routed.task in _VIDEO_TASKS
                     else "response_send_failed"
                 ),
                 policy_snapshot_hash=decision.policy_snapshot_hash,
@@ -405,7 +410,11 @@ async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
 
         ctx = await youtube_context_service.build(req)
         if not ctx.facts:
-            return FeatureFactsResult(facts=(), render_context=None, error_reason=ctx.error_reason)
+            return FeatureFactsResult(
+                facts=(),
+                render_context=None,
+                error_reason=ctx.error_reason,
+            )
         return FeatureFactsResult(facts=ctx.facts, render_context=ctx)
     return FeatureFactsResult(facts=())
 

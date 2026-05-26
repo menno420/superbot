@@ -69,6 +69,6 @@ async def upsert_video_cache(
 
 async def purge_expired_video_cache() -> int:
     result = await pool.get().execute(
-        "DELETE FROM youtube_video_cache WHERE expires_at <= now()"
+        "DELETE FROM youtube_video_cache WHERE expires_at <= now()",
     )
     return int(result.split()[-1])
