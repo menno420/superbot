@@ -379,13 +379,25 @@ def main() -> int:
         type=Path,
         help="Check a single file (relative or absolute)",
     )
+    parser.add_argument(
+        "files",
+        nargs="*",
+        type=Path,
+        help="Positional file list (used by pre-commit pass_filenames)",
+    )
     args = parser.parse_args()
 
     layers_rules = _load("layers.yaml")
     mutation_rules = _load("mutation_owners.yaml")
     helpers_rules = _load("canonical_helpers.yaml")
 
-    if args.file:
+    if args.files:
+        files = [
+            (REPO_ROOT / f).resolve()
+            for f in args.files
+            if (REPO_ROOT / f).resolve().suffix == ".py"
+        ]
+    elif args.file:
         files = [(REPO_ROOT / args.file).resolve()]
     elif args.changed_only:
         files = _changed_files()

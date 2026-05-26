@@ -1,4 +1,15 @@
 repos:
+  # Architecture layer-boundary check — hard fail on new violations
+  - repo: local
+    hooks:
+      - id: check-architecture
+        name: SuperBot architecture check
+        language: python
+        entry: python scripts/check_architecture.py --mode strict
+        types: [python]
+        pass_filenames: true
+        files: ^disbot/
+
   # Black - format
   - repo: https://github.com/psf/black
     rev: 24.4.2
