@@ -39,7 +39,6 @@ from core.runtime.command_access import (
 )
 from utils.guild_config_accessors import CommandAccessPolicySnapshot
 
-
 # ---------------------------------------------------------------------------
 # Fixtures / helpers
 # ---------------------------------------------------------------------------
