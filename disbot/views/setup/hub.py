@@ -41,6 +41,7 @@ from services.setup_progress import SectionProgress, badge_for
 from services.setup_sections import REGISTRY, SetupSection
 from services.setup_session import SetupSession
 from views.base import BaseView
+from views.setup._anchor import push_setup_notice
 
 logger = logging.getLogger("bot.views.setup.hub")
 
@@ -330,6 +331,8 @@ class SetupHubView(BaseView):
                 conflicts_total += len(result.conflicts)
 
             if not section_totals and not conflicts_total:
+                # No state change → no durable record needed; keep the
+                # short ephemeral validation notice.
                 await interaction.followup.send(
                     "No recommended operations were generated. Most likely "
                     "the guild has no high-confidence channel matches or "
@@ -343,21 +346,48 @@ class SetupHubView(BaseView):
                 for slug, count in section_totals.items()
             )
             word = "operation" if total == 1 else "operations"
-            msg = (
-                f"✅ Staged **{total} {word}** across "
-                f"{len(section_totals)} section(s). Open Final review "
-                f"to apply."
+            description = (
+                f"Staged **{total} {word}** across "
+                f"{len(section_totals)} section(s). Open Final review to apply."
             )
             if lines:
-                msg += f"\n\n{lines}"
+                description += f"\n\n{lines}"
             if conflicts_total:
                 conflict_word = "row" if conflicts_total == 1 else "rows"
-                msg += (
+                description += (
                     f"\n\n⚠️ Preserved **{conflicts_total} custom / preset "
                     f"{conflict_word}** at conflicting slot(s); no overwrite. "
                     "Edit Final review to swap them out if needed."
                 )
-            await interaction.followup.send(msg, ephemeral=True)
+            # Aggressive ephemeral policy: this is durable setup state —
+            # admins need to see what apply-all changed, share it, and
+            # reference it later. Post a workspace notice and ack the
+            # ephemeral defer with a short pointer.
+            notice_embed = discord.Embed(
+                title=f"✅ Apply all recommended — {total} {word}",
+                description=description,
+                color=discord.Color.green(),
+            )
+            posted = False
+            if interaction.guild is not None:
+                try:
+                    posted = await push_setup_notice(
+                        interaction.guild,
+                        embed=notice_embed,
+                    )
+                except Exception:
+                    logger.exception(
+                        "hub.apply_all_recommended: push_setup_notice failed",
+                    )
+            if posted:
+                await interaction.followup.send(
+                    "📋 Apply-all results posted in the setup workspace.",
+                    ephemeral=True,
+                )
+            else:
+                # Fall back to the original ephemeral so the operator
+                # still sees the outcome.
+                await interaction.followup.send(description, ephemeral=True)
 
         button.callback = _callback  # type: ignore[method-assign]
         return button
@@ -442,6 +472,23 @@ class SetupHubView(BaseView):
                 await sec.run(interaction, self)
             except Exception:
                 logger.exception("setup hub section %s failed", sec.slug)
+                # Section failures are real setup events — push a
+                # durable notice so admins can trace what failed and
+                # when. The ephemeral kept here is the minimal user
+                # feedback because the section already started writing
+                # state and the interaction is not deferred.
+                if interaction.guild is not None:
+                    notice = discord.Embed(
+                        title=f"⚠️ Section `{sec.slug}` failed",
+                        description="See logs for details.",
+                        color=discord.Color.red(),
+                    )
+                    try:
+                        await push_setup_notice(interaction.guild, embed=notice)
+                    except Exception:
+                        logger.exception(
+                            "hub.section_callback: push_setup_notice failed",
+                        )
                 if not interaction.response.is_done():
                     await interaction.response.send_message(
                         f"Section `{sec.slug}` failed. Check logs.",

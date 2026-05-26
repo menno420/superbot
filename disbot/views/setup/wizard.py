@@ -59,6 +59,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import (
     setup_access,
     setup_channel,
@@ -69,6 +70,7 @@ from services import (
 from services.setup_sections import REGISTRY, SetupSection
 from services.setup_session import SetupSession
 from views.base import BaseView
+from views.setup._anchor import push_setup_notice
 from views.setup.section_card import call_recommended_ops_builder
 
 if TYPE_CHECKING:
@@ -492,9 +494,10 @@ class LinearWizardView(BaseView):
         await self._open_final_review(interaction)
 
     async def _on_open_hub(self, interaction: discord.Interaction) -> None:
-        # Surface the existing hub-style embed as an ephemeral follow-up
-        # so the operator can browse the section list without losing
-        # the wizard anchor.
+        # Aggressive ephemeral policy: swap the anchor view to the hub
+        # view so the operator can browse the section list inside the
+        # durable workspace message, not in a per-user ephemeral that
+        # cannot be deleted/revisited/shared.
         from views.setup.hub import SetupHubView, build_hub_embed
 
         guild = interaction.guild
@@ -511,6 +514,9 @@ class LinearWizardView(BaseView):
                 "Use this from inside the server.",
                 ephemeral=True,
             )
+            return
+
+        if not await safe_defer(interaction):
             return
 
         try:
@@ -531,11 +537,9 @@ class LinearWizardView(BaseView):
             pending_ops=len(draft_rows),
             draft_ops=draft_rows,
         )
-        await interaction.response.send_message(
-            embed=embed,
-            view=hub_view,
-            ephemeral=True,
-        )
+        # safe_edit after defer edits the clicked anchor via
+        # followup.edit_message(message_id=interaction.message.id).
+        await safe_edit(interaction, embed=embed, view=hub_view)
 
     async def _on_cancel(self, interaction: discord.Interaction) -> None:
         for child in self.children:
@@ -648,13 +652,22 @@ class LinearWizardView(BaseView):
                 f"\n\n⚠️ Preserved **{cn} custom / preset {conflict_word}** "
                 "at conflicting slot(s); no overwrite."
             )
-        await interaction.response.send_message(
-            f"✅ Staged **{count} recommended {noun}** for "
-            f"{section.label}.{conflict_text}",
-            ephemeral=True,
+        # Aggressive ephemeral policy: post the apply-recommended record
+        # as a durable workspace notice (event log) and let the anchor
+        # refresh reflect the new state. defer() is the interaction ack.
+        await safe_defer(interaction)
+        notice_embed = discord.Embed(
+            title=f"✅ Recommended staged · {section.label}",
+            description=f"Staged **{count} {noun}**.{conflict_text}",
+            color=discord.Color.green(),
         )
+        try:
+            await push_setup_notice(guild, embed=notice_embed)
+        except Exception:
+            logger.exception(
+                "wizard._on_apply_recommended: push_setup_notice failed",
+            )
         # Refresh the anchor to show the updated section status badge.
-        # response.is_done() is True above, so _refresh_and_edit uses followup.
         try:
             await self._refresh_and_edit(interaction)
         except Exception:
@@ -808,7 +821,13 @@ class LinearWizardView(BaseView):
         self,
         interaction: discord.Interaction,
     ) -> None:
-        """Open Final Review as an ephemeral follow-up on the last step."""
+        """Swap the wizard anchor to the Final Review embed + view.
+
+        Aggressive ephemeral policy: Final Review is canonical setup
+        state — admins need to revisit it, share it, and delete it
+        from the source-of-truth workspace channel rather than from
+        a private ephemeral that's tied to one operator.
+        """
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
@@ -821,24 +840,20 @@ class LinearWizardView(BaseView):
             build_final_review_embed,
         )
 
+        if not await safe_defer(interaction):
+            return
+
         try:
             ops = await setup_draft.list_ops(guild.id)
         except Exception:
             logger.exception("wizard._open_final_review: list_ops failed")
             ops = []
         final = FinalReviewView(interaction.user, ops=ops)
-        await interaction.response.send_message(
+        await safe_edit(
+            interaction,
             embed=build_final_review_embed(final.ops),
             view=final,
-            ephemeral=True,
         )
-        # Refresh the wizard anchor so it reflects the current staged state
-        # before the operator reviews.  response.is_done() is True, so
-        # _refresh_and_edit uses followup.edit_message.
-        try:
-            await self._refresh_and_edit(interaction)
-        except Exception:
-            logger.exception("wizard._open_final_review: anchor refresh failed")
 
 
 # ---------------------------------------------------------------------------
