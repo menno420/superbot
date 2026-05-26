@@ -81,6 +81,20 @@ class SetupSection:
             every section's safe default in one click. ``None`` means
             the section has no auto-recommended path; operators must
             customise it manually.
+        detail_embed_builder: Optional async callable returning the
+            embed shown when the wizard swaps its durable anchor into
+            step-detail mode for this section. Signature:
+            ``async (guild, *, session, draft_rows) -> discord.Embed``.
+            Paired with ``detail_view_builder``; when either is ``None``
+            the wizard falls back to the legacy ephemeral ``customize``
+            callback.
+        detail_view_builder: Optional sync callable that returns the
+            ``discord.ui.View`` mounted on the wizard anchor in
+            step-detail mode. Signature:
+            ``(author, *, section, guild, session) -> discord.ui.View``.
+            Must use rows 0–3 only — ``row=4`` is reserved by
+            ``views.setup.wizard_nav.render_step_detail`` for the
+            injected "↩ Back to step" button.
     """
 
     slug: str
@@ -95,6 +109,8 @@ class SetupSection:
     depths: frozenset[str] = frozenset({"quick", "standard", "advanced"})
     recommended_ops_builder: Any = None  # async (Guild) -> list[SetupOperation]
     customize: Any = None  # CustomizeCallback | None — see section_card.py
+    detail_embed_builder: Any = None  # async (guild, *, session, draft_rows) -> Embed
+    detail_view_builder: Any = None  # (author, *, section, guild, session) -> View
 
     @property
     def session_step(self) -> str:

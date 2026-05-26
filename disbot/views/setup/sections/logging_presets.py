@@ -671,6 +671,37 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     )
 
 
+async def _build_detail_embed(
+    guild: discord.Guild,
+    *,
+    session: object = None,
+    draft_rows: object = None,
+) -> discord.Embed:
+    """Wizard-native detail embed for the logging-presets step."""
+    del session, guild
+    supported = _supported_bindings()
+    rows = list(draft_rows) if draft_rows is not None else []
+    current = infer_current_preset(rows)
+    return build_logging_presets_embed(supported, current_preset=current)
+
+
+def _build_detail_view(
+    author: discord.Member | discord.User,
+    *,
+    section: SetupSection,
+    guild: discord.Guild,
+    session: object = None,
+) -> LoggingPresetsView:
+    """Wizard-native detail view for the logging-presets step."""
+    del section, guild, session
+    return LoggingPresetsView(
+        author,
+        hub=None,
+        supported=_supported_bindings(),
+        current_preset=None,
+    )
+
+
 REGISTRY.register(
     SetupSection(
         slug=SLUG,
@@ -694,6 +725,8 @@ REGISTRY.register(
         depths=frozenset({"standard", "advanced"}),
         recommended_ops_builder=_recommended_logging_ops,
         customize=_customize_run,
+        detail_embed_builder=_build_detail_embed,
+        detail_view_builder=_build_detail_view,
     ),
 )
 

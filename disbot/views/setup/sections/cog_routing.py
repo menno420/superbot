@@ -584,6 +584,29 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     )
 
 
+async def _build_detail_embed(
+    guild: discord.Guild,
+    *,
+    session: object = None,
+    draft_rows: object = None,
+) -> discord.Embed:
+    """Wizard-native detail embed for the cog-routing step."""
+    del guild, session, draft_rows
+    return build_cog_routing_embed()
+
+
+def _build_detail_view(
+    author: discord.Member | discord.User,
+    *,
+    section: SetupSection,
+    guild: discord.Guild,
+    session: object = None,
+) -> CogRoutingSectionView:
+    """Wizard-native detail view for the cog-routing step."""
+    del section, guild, session
+    return CogRoutingSectionView(author)
+
+
 REGISTRY.register(
     SetupSection(
         slug=SLUG,
@@ -600,6 +623,8 @@ REGISTRY.register(
         ),
         depths=frozenset({"advanced"}),
         customize=_customize_run,
+        detail_embed_builder=_build_detail_embed,
+        detail_view_builder=_build_detail_view,
     ),
 )
 

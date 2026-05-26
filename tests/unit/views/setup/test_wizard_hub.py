@@ -1007,3 +1007,75 @@ def test_hub_embed_omits_depth_marker_when_unset():
     embed = build_hub_embed(session)
     description = (embed.description or "").lower()
     assert "depth:" not in description
+
+
+# ---------------------------------------------------------------------------
+# Hub ↩ Back to wizard button
+# ---------------------------------------------------------------------------
+
+
+def test_back_to_wizard_button_present_on_hub():
+    """Every hub view exposes the ↩ Back to wizard button."""
+    view = SetupHubView(_owner_member())
+    custom_ids = {
+        getattr(c, "custom_id", None)
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+    }
+    assert "setup_hub:back_to_wizard" in custom_ids
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and c.custom_id == "setup_hub:back_to_wizard"
+    )
+    assert btn.label is not None and btn.label.startswith("↩")
+
+
+@pytest.mark.asyncio
+async def test_back_to_wizard_button_invokes_render_wizard_step():
+    """Clicking ↩ Back to wizard calls wizard_nav.render_wizard_step."""
+    session = SetupSession(
+        guild_id=1,
+        guild_name="Test",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step="identity",
+        delegated_admins=(),
+        depth="advanced",
+    )
+    member = _owner_member()
+    view = SetupHubView(member, session=session)
+    guild = MagicMock(spec=discord.Guild)
+    guild.id = 1
+    interaction = _interaction(member, guild=guild)
+
+    btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+        and c.custom_id == "setup_hub:back_to_wizard"
+    )
+
+    with (
+        patch(
+            "views.setup.hub.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=session,
+        ),
+        patch(
+            "views.setup.wizard_nav.render_wizard_step",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as render_step,
+    ):
+        await btn.callback(interaction)
+
+    render_step.assert_awaited_once()
+    kw = render_step.await_args.kwargs
+    assert kw["guild"] is guild
+    assert kw["member"] is member
+    assert kw["step_index"] is None  # resume at current_step

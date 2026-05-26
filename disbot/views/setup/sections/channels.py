@@ -558,6 +558,40 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     )
 
 
+async def _build_detail_embed(
+    guild: discord.Guild,
+    *,
+    session: Any = None,
+    draft_rows: Any = None,
+) -> discord.Embed:
+    """Wizard-native detail embed for the channels step."""
+    try:
+        from services import guild_snapshot
+
+        snapshot: GuildSnapshot | None = await guild_snapshot.collect(guild)
+    except Exception:
+        logger.exception("channels._build_detail_embed: snapshot collect failed")
+        snapshot = None
+    return build_channels_embed(snapshot)
+
+
+def _build_detail_view(
+    author: discord.Member | discord.User,
+    *,
+    section: SetupSection,
+    guild: discord.Guild,
+    session: Any = None,
+) -> ChannelsSectionView:
+    """Wizard-native detail view for the channels step.
+
+    The snapshot is fetched lazily inside the picker callback when
+    needed; constructing the view itself only requires the author.
+    Mirrors the snapshot-less fallback path the legacy
+    ``_customize_run`` already handled.
+    """
+    return ChannelsSectionView(author, snapshot=None)
+
+
 REGISTRY.register(
     SetupSection(
         slug=SLUG,
@@ -575,6 +609,8 @@ REGISTRY.register(
         depths=frozenset({"standard", "advanced"}),
         recommended_ops_builder=_recommended_channel_ops,
         customize=_customize_run,
+        detail_embed_builder=_build_detail_embed,
+        detail_view_builder=_build_detail_view,
     ),
 )
 
