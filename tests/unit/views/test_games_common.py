@@ -31,7 +31,18 @@ def _stub_interaction(user: SimpleNamespace) -> MagicMock:
     interaction = MagicMock(spec=discord.Interaction)
     interaction.user = user
     interaction.response = MagicMock()
+    # safe_defer calls is_done() then defer(); safe_edit branches on
+    # is_done() again. The mock doesn't track state across calls, so a
+    # constant False keeps the test on the "not-yet-deferred" branch
+    # of safe_edit (response.edit_message) — same surface the helper
+    # picks for a freshly-clicked button at run time.
+    interaction.response.is_done = MagicMock(return_value=False)
+    interaction.response.defer = AsyncMock()
     interaction.response.edit_message = AsyncMock()
+    interaction.response.send_message = AsyncMock()
+    interaction.followup = MagicMock()
+    interaction.followup.edit_message = AsyncMock()
+    interaction.followup.send = AsyncMock()
     interaction.message = MagicMock(id=444)
     return interaction
 
@@ -58,11 +69,7 @@ def test_back_button_renders_with_label_and_custom_id():
 async def test_back_button_callback_returns_panel_and_overview_embed():
     author = _author(42)
     parent_view = _RpsBetPresetView(author)  # type: ignore[arg-type]
-    btn = next(
-        c
-        for c in parent_view.children
-        if isinstance(c, BackToPanelButton)
-    )
+    btn = next(c for c in parent_view.children if isinstance(c, BackToPanelButton))
     interaction = _stub_interaction(author)
     await btn.callback(interaction)
 
@@ -78,6 +85,44 @@ async def test_back_button_callback_returns_panel_and_overview_embed():
     # Author preserved across the back nav (invoker-restriction stays
     # bound to the original opener).
     assert new_view._author is author
+
+
+@pytest.mark.asyncio
+async def test_back_button_callback_defers_before_editing():
+    """Hardened callback: safe_defer fires before any rebuild work, so
+    a token-expiry race or upstream service exception cannot surface as
+    a raw "interaction failed" — the helpers swallow the recoverable
+    failure modes and log instead.
+    """
+    author = _author(42)
+    parent_view = _RpsBetPresetView(author)  # type: ignore[arg-type]
+    btn = next(c for c in parent_view.children if isinstance(c, BackToPanelButton))
+    interaction = _stub_interaction(author)
+    await btn.callback(interaction)
+
+    interaction.response.defer.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_back_button_callback_bails_when_defer_fails():
+    """If safe_defer returns False (token expired before defer reached
+    Discord), the callback aborts cleanly without attempting an edit.
+    """
+    from unittest.mock import patch
+
+    author = _author(42)
+    parent_view = _RpsBetPresetView(author)  # type: ignore[arg-type]
+    btn = next(c for c in parent_view.children if isinstance(c, BackToPanelButton))
+    interaction = _stub_interaction(author)
+
+    async def fake_defer(_i, **_kw):
+        return False
+
+    with patch("views.games.common.safe_defer", new=fake_defer):
+        await btn.callback(interaction)
+
+    interaction.response.edit_message.assert_not_called()
+    interaction.followup.edit_message.assert_not_called()
 
 
 @pytest.mark.asyncio

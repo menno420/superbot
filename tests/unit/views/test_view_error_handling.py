@@ -84,6 +84,30 @@ class TestBaseViewOnError:
         ), "on_error must log the custom_id"
 
     @pytest.mark.asyncio
+    async def test_log_payload_includes_response_done(self, caplog):
+        """Distinguishing "raised before defer" from "raised after defer"
+        is important enough to keep in the structured log. Pin that the
+        payload includes ``response_done`` for both paths.
+        """
+        import logging
+
+        import discord
+
+        from views.base import BaseView
+
+        author = MagicMock(spec=discord.Member)
+        view = BaseView(author)
+
+        for responded in (False, True):
+            caplog.clear()
+            interaction = _make_interaction(responded=responded)
+            with caplog.at_level(logging.ERROR, logger="bot.views"):
+                await view.on_error(interaction, RuntimeError("x"), _make_item())
+            assert any(
+                f"response_done={responded}" in r.message for r in caplog.records
+            ), f"response_done={responded} missing from log payload"
+
+    @pytest.mark.asyncio
     async def test_sends_ephemeral_when_not_responded(self):
         import discord
 

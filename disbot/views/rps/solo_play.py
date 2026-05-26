@@ -8,12 +8,17 @@ lose nothing more than they already have).  Win credits, loss debits
 with overdraft allowed to preserve the original floor-at-zero
 behaviour.
 
-After resolution the move buttons stay visible-but-disabled and a
-``Play again`` / ``↩ Back to RPS`` row is appended. ``Play again``
-spawns a fresh :class:`_RpsView` with the same user/guild/bet
-(after a balance pre-check when ``bet > 0``); ``Back to RPS``
-returns to :class:`views.games.rps_panel.RPSPanelView` via the
-shared :class:`views.games.common.BackToPanelButton`.
+After resolution ``_RpsView`` hands the message off to a fresh
+``_RpsSoloResultView`` — same three disabled Rock/Paper/Scissors
+shells on row 0, plus ``🔁 Play again`` / ``↩ Back to RPS`` on row
+1. Swapping the view (rather than appending buttons and calling
+``stop()`` on the original) keeps the terminal-state buttons
+dispatchable: the original view's ``stop()`` un-registers it from
+discord.py's component dispatch table, and any buttons still bound
+to it would surface "interaction failed" on click. ``Play again``
+spawns a fresh ``_RpsView`` with the same user/guild/bet (after a
+balance pre-check when ``bet > 0``); ``Back to RPS`` returns to
+``RPSPanelView`` via the shared ``BackToPanelButton``.
 """
 
 from __future__ import annotations
@@ -105,20 +110,65 @@ class _RpsView(discord.ui.View):
             color=color,
         )
 
-        self._attach_result_actions()
-
-        await safe_edit(interaction, embed=embed, view=self)
-        # Stop the original game's timeout. The newly-added result-action
-        # buttons remain clickable indefinitely (they have their own
-        # ownership check via interaction_check above).
+        result_view = _RpsSoloResultView(self.user, self.guild_id, self.bet)
+        await safe_edit(interaction, embed=embed, view=result_view)
+        result_view.message = interaction.message
         self.stop()
 
-    def _attach_result_actions(self) -> None:
-        """Append Play again + Back to RPS buttons on row 1.
+    @discord.ui.button(label="Rock", emoji="🪨", style=discord.ButtonStyle.grey)
+    async def rock(self, i: discord.Interaction, _: discord.ui.Button):
+        await self._play(i, "rock")
 
-        Called once at end-of-game, after the move buttons on row 0 are
-        disabled.
-        """
+    @discord.ui.button(label="Paper", emoji="📄", style=discord.ButtonStyle.grey)
+    async def paper(self, i: discord.Interaction, _: discord.ui.Button):
+        await self._play(i, "paper")
+
+    @discord.ui.button(label="Scissors", emoji="✂️", style=discord.ButtonStyle.grey)
+    async def scissors(self, i: discord.Interaction, _: discord.ui.Button):
+        await self._play(i, "scissors")
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True  # type: ignore[attr-defined]
+        try:
+            await self.message.edit(content="Game timed out.", view=self)
+        except Exception:
+            pass
+
+
+class _RpsSoloResultView(discord.ui.View):
+    """Terminal-state view shown after a solo RPS round resolves.
+
+    Replaces the live ``_RpsView`` once ``_play`` settles so that Play
+    again / Back stay independently dispatchable. The previous design
+    appended these buttons to the still-attached ``_RpsView`` and
+    called ``self.stop()`` on it — which removes the view from
+    discord.py's component dispatch table and leaves the visible
+    buttons unable to respond (Discord renders "interaction failed").
+    """
+
+    def __init__(self, user: discord.Member, guild_id: int, bet: int) -> None:
+        super().__init__(timeout=60)
+        self.user = user
+        self.guild_id = guild_id
+        self.bet = bet
+        self.message: discord.Message | None = None
+
+        for label, emoji in (
+            ("Rock", "🪨"),
+            ("Paper", "📄"),
+            ("Scissors", "✂️"),
+        ):
+            self.add_item(
+                discord.ui.Button(
+                    label=label,
+                    emoji=emoji,
+                    style=discord.ButtonStyle.grey,
+                    disabled=True,
+                    row=0,
+                ),
+            )
+
         replay_btn = discord.ui.Button(  # type: ignore[var-annotated]
             label="🔁 Play again",
             style=discord.ButtonStyle.success,
@@ -128,21 +178,42 @@ class _RpsView(discord.ui.View):
         replay_btn.callback = self._replay  # type: ignore[method-assign]
         self.add_item(replay_btn)
 
-        # Late import: rps_panel imports _RpsView, so importing it at
-        # module level would create a cycle.
+        # Late import: rps_panel imports _RpsView, so a module-level
+        # import would create a cycle.
         from views.games.rps_panel import _make_rps_back_button
 
         back_btn = _make_rps_back_button()
         back_btn.row = 1
         self.add_item(back_btn)
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message(
+                "This game isn't yours.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        if self.message is None:
+            return
+        for item in self.children:
+            item.disabled = True  # type: ignore[attr-defined]
+        try:
+            await self.message.edit(view=self)
+        except Exception:
+            pass
+
     async def _replay(self, interaction: discord.Interaction) -> None:
         """Spawn a fresh ``_RpsView`` with the same user/guild/bet.
 
-        If ``self.bet > 0`` the user's balance is pre-checked; if it
-        cannot cover the bet, an ephemeral nudge is sent and the
-        current result view is left in place so the user can use
-        Back to RPS instead.
+        Mirrors the canonical RPS solo start shape used by
+        ``cogs.rps_tournament._quickplay`` and
+        ``views.games.rps_panel`` — balance check when ``bet > 0``
+        then construct ``_RpsView(user, guild_id, bet)``. No public
+        ``start_solo_rps`` exists; this construction *is* the
+        canonical entry surface (helper-policy: single caller).
         """
         if not await safe_defer(interaction):
             return
@@ -170,23 +241,3 @@ class _RpsView(discord.ui.View):
             view=new_view,
         )
         new_view.message = interaction.message
-
-    @discord.ui.button(label="Rock", emoji="🪨", style=discord.ButtonStyle.grey)
-    async def rock(self, i: discord.Interaction, _: discord.ui.Button):
-        await self._play(i, "rock")
-
-    @discord.ui.button(label="Paper", emoji="📄", style=discord.ButtonStyle.grey)
-    async def paper(self, i: discord.Interaction, _: discord.ui.Button):
-        await self._play(i, "paper")
-
-    @discord.ui.button(label="Scissors", emoji="✂️", style=discord.ButtonStyle.grey)
-    async def scissors(self, i: discord.Interaction, _: discord.ui.Button):
-        await self._play(i, "scissors")
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        try:
-            await self.message.edit(content="Game timed out.", view=self)
-        except Exception:
-            pass

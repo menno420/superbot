@@ -464,7 +464,9 @@ async def test_start_button_refuses_non_owner():
     interaction = _mock_interaction(_admin_member())
 
     with patch("services.setup_session.resume_session", AsyncMock(return_value=None)):
-        with patch("services.setup_session.start_session", AsyncMock(return_value=None)):
+        with patch(
+            "services.setup_session.start_session", AsyncMock(return_value=None)
+        ):
             await view._start.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
@@ -485,7 +487,9 @@ async def test_start_button_opens_wizard_for_owner():
     mock_message.jump_url = "https://discord.com/channels/1/2/3"
 
     with patch("services.setup_session.resume_session", AsyncMock(return_value=None)):
-        with patch("services.setup_session.start_session", AsyncMock(return_value=None)):
+        with patch(
+            "services.setup_session.start_session", AsyncMock(return_value=None)
+        ):
             with patch(
                 "views.setup.wizard.open_setup_workspace",
                 AsyncMock(return_value=(mock_channel, mock_message, "ok")),
@@ -1837,7 +1841,9 @@ async def test_setup_unskip_slash_unmarks_section():
         ) as unskip_mock,
     ):
         await cog.setup_unskip_slash.callback(
-            cog, interaction, section="cleanup",
+            cog,
+            interaction,
+            section="cleanup",
         )
 
     unskip_mock.assert_awaited_once_with(1, "cleanup")
@@ -1865,7 +1871,9 @@ async def test_setup_skip_slash_rejects_unknown_section():
         ) as skip_mock,
     ):
         await cog.setup_skip_slash.callback(
-            cog, interaction, section="bogus-section",
+            cog,
+            interaction,
+            section="bogus-section",
         )
 
     skip_mock.assert_not_awaited()
@@ -1892,7 +1900,9 @@ async def test_setup_skip_slash_denies_random_member():
         ) as skip_mock,
     ):
         await cog.setup_skip_slash.callback(
-            cog, interaction, section="cleanup",
+            cog,
+            interaction,
+            section="cleanup",
         )
 
     skip_mock.assert_not_awaited()
@@ -2277,3 +2287,85 @@ async def test_setup_delegate_slash_surfaces_db_failure():
 
     msg = interaction.response.send_message.await_args.args[0].lower()
     assert "could not" in msg
+
+
+# ---------------------------------------------------------------------------
+# PR 3 — /setup-status posts to workspace as durable notice
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_setup_status_slash_posts_durable_notice_in_workspace():
+    """Aggressive ephemeral policy: /setup-status pushes the snapshot
+    to #superbot-setup as a durable notice; the interaction reply is
+    a short ephemeral pointer ("📋 Setup status posted in <#…>").
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=3,
+        ),
+        patch(
+            "views.setup._anchor.push_setup_notice",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as push_mock,
+    ):
+        await cog.setup_status_slash.callback(cog, interaction)
+
+    push_mock.assert_awaited_once()
+    # Pointer reply is ephemeral and references the workspace channel.
+    interaction.response.send_message.assert_awaited_once()
+    call = interaction.response.send_message.await_args
+    assert call.kwargs.get("ephemeral") is True
+    # Pointer carries the workspace mention.
+    msg = call.args[0]
+    assert "posted in" in msg.lower()
+
+
+@pytest.mark.asyncio
+async def test_setup_status_slash_falls_back_to_ephemeral_when_workspace_unreachable():
+    """If push_setup_notice returns False (no workspace channel),
+    fall back to the historic ephemeral embed reply so the operator
+    still sees the snapshot.
+    """
+    from cogs.setup_cog import SetupCog
+
+    cog = SetupCog(MagicMock())
+    interaction = _mock_interaction(_owner_member())
+
+    with (
+        patch(
+            "cogs.setup_cog.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_delegated_session(),
+        ),
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "views.setup._anchor.push_setup_notice",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+    ):
+        await cog.setup_status_slash.callback(cog, interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    call_kwargs = interaction.response.send_message.await_args.kwargs
+    # Fallback path sends the embed itself, still ephemeral.
+    assert call_kwargs.get("ephemeral") is True
+    assert call_kwargs.get("embed") is not None

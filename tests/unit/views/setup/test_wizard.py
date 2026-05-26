@@ -160,7 +160,7 @@ def test_wizard_step_embed_shows_step_counter():
         total_steps=len(sections),
         draft_rows=[],
     )
-    title = (embed.title or "")
+    title = embed.title or ""
     assert "Step 1/2" in title
     assert "Cleanup" in (embed.description or "")
 
@@ -247,7 +247,10 @@ def test_view_has_navigation_buttons_in_layout():
 
 
 def test_view_back_button_disabled_on_first_step():
-    sections = [_section("cleanup", builder=_builder_one_op), _section("channels", order=70)]
+    sections = [
+        _section("cleanup", builder=_builder_one_op),
+        _section("channels", order=70),
+    ]
     view = LinearWizardView(
         _owner_member(),
         session=_session(),
@@ -257,8 +260,7 @@ def test_view_back_button_disabled_on_first_step():
     back = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "setup_wizard:back"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:back"
     )
     assert back.disabled is True
 
@@ -291,14 +293,16 @@ def test_view_continue_button_label_is_final_review_on_last_step():
     cont = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "setup_wizard:continue"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:continue"
     )
     assert "Final" in (cont.label or "")
 
 
 def test_view_continue_label_is_continue_when_not_last_step():
-    sections = [_section("cleanup", builder=_builder_one_op), _section("channels", order=70)]
+    sections = [
+        _section("cleanup", builder=_builder_one_op),
+        _section("channels", order=70),
+    ]
     view = LinearWizardView(
         _owner_member(),
         session=_session(),
@@ -308,8 +312,7 @@ def test_view_continue_label_is_continue_when_not_last_step():
     cont = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "setup_wizard:continue"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:continue"
     )
     assert "Continue" in (cont.label or "")
 
@@ -344,6 +347,14 @@ async def test_apply_recommended_routes_through_replace_recommended():
             "views.setup.wizard.setup_session.unmark_section_skipped",
             new_callable=AsyncMock,
         ),
+        # PR 3 — apply-recommended success no longer sends an ephemeral
+        # confirmation; the outcome lands as a durable workspace notice
+        # via push_setup_notice, and the anchor refresh repaints state.
+        patch(
+            "views.setup.wizard.push_setup_notice",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as push_mock,
     ):
         # The view's first button callback for apply_recommended.
         apply_btn = next(
@@ -359,7 +370,9 @@ async def test_apply_recommended_routes_through_replace_recommended():
     assert args[0] == 1
     assert args[1] == "cleanup"
     assert len(args[2]) == 1
-    interaction.response.send_message.assert_awaited_once()
+    push_mock.assert_awaited_once()
+    # Aggressive ephemeral policy: no ephemeral success message.
+    interaction.response.send_message.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -464,8 +477,7 @@ async def test_skip_deletes_section_rows_when_provenance_present():
         skip_btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button)
-            and c.custom_id == "setup_wizard:skip"
+            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:skip"
         )
         await skip_btn.callback(interaction)
 
@@ -498,10 +510,14 @@ async def test_continue_on_last_step_opens_final_review():
         )
         await cont.callback(interaction)
 
-    interaction.response.send_message.assert_awaited_once()
+    # PR 3 — Final Review is now durable: defer + edit the anchor view
+    # to FinalReviewView, not an ephemeral send_message.
+    interaction.response.defer.assert_awaited_once()
+    interaction.response.edit_message.assert_awaited_once()
+    interaction.response.send_message.assert_not_called()
     from views.setup.final_review import FinalReviewView
 
-    sent_view = interaction.response.send_message.await_args.kwargs["view"]
+    sent_view = interaction.response.edit_message.await_args.kwargs["view"]
     assert isinstance(sent_view, FinalReviewView)
 
 
@@ -572,8 +588,7 @@ async def test_back_button_decrements_step():
         back = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button)
-            and c.custom_id == "setup_wizard:back"
+            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_wizard:back"
         )
         await back.callback(interaction)
 
@@ -596,7 +611,9 @@ async def test_open_workspace_returns_no_channel_when_ensure_fails():
         return_value=(None, False),
     ):
         channel, message, reason = await open_setup_workspace(
-            guild, member=member, session=_session(),
+            guild,
+            member=member,
+            session=_session(),
         )
     assert channel is None
     assert message is None
@@ -965,7 +982,9 @@ async def test_on_customize_sends_error_when_no_customize():
 
 @pytest.mark.asyncio
 async def test_apply_recommended_refreshes_anchor_after_staging():
-    """After staging ops the anchor embed is updated via followup.edit_message."""
+    """After staging ops the wizard defers (ack), pushes a workspace
+    notice, and refreshes the anchor embed via followup.edit_message.
+    """
     sections = [_section("cleanup", builder=_builder_one_op)]
     view = LinearWizardView(
         _owner_member(),
@@ -974,12 +993,13 @@ async def test_apply_recommended_refreshes_anchor_after_staging():
         step_index=0,
     )
     interaction = _interaction(_owner_member())
-    # Simulate discord.py marking the response as done after send_message
-    # (as it would after posting the ephemeral confirmation).
+
+    # Simulate discord.py marking the response as done after defer
+    # (as it would after the safe_defer ack).
     def _mark_done(*args, **kwargs):
         interaction.response.is_done.return_value = True
 
-    interaction.response.send_message = AsyncMock(side_effect=_mark_done)
+    interaction.response.defer = AsyncMock(side_effect=_mark_done)
 
     with (
         patch(
@@ -1005,6 +1025,11 @@ async def test_apply_recommended_refreshes_anchor_after_staging():
             new_callable=AsyncMock,
             return_value=[],
         ),
+        patch(
+            "views.setup.wizard.push_setup_notice",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
     ):
         apply_btn = next(
             c
@@ -1014,9 +1039,10 @@ async def test_apply_recommended_refreshes_anchor_after_staging():
         )
         await apply_btn.callback(interaction)
 
-    # Ephemeral confirmation sent first.
-    interaction.response.send_message.assert_awaited_once()
-    # Anchor refreshed via followup after staging.
+    # PR 3 — defer is the interaction ack (replaces the prior ephemeral
+    # send_message). Anchor refreshed via followup.edit_message.
+    interaction.response.defer.assert_awaited_once()
+    interaction.response.send_message.assert_not_called()
     interaction.followup.edit_message.assert_awaited_once()
     kw = interaction.followup.edit_message.await_args.kwargs
     assert kw.get("message_id") == interaction.message.id

@@ -26,6 +26,8 @@ from collections.abc import Callable
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_edit
+
 ParentBuilder = Callable[
     [discord.Member | discord.User],
     discord.ui.View,
@@ -66,10 +68,19 @@ class BackToPanelButton(discord.ui.Button):
         self._overview_builder = overview_builder
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        # Canonical "component defer then edit clicked message" pattern:
+        # safe_defer is idempotent and bails cleanly on token expiry, and
+        # safe_edit routes through followup.edit_message(message_id=
+        # interaction.message.id) once deferred. Without this, a raw
+        # response.edit_message after token expiry surfaces "interaction
+        # failed" to the user.
+        if not await safe_defer(interaction):
+            return
         parent_view = self.view
         author = getattr(parent_view, "_author", interaction.user)
         new_view = self._panel_builder(author)
-        await interaction.response.edit_message(
+        await safe_edit(
+            interaction,
             embed=self._overview_builder(),
             view=new_view,
         )

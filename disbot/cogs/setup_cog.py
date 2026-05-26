@@ -523,7 +523,25 @@ class SetupCog(commands.Cog):
             pending_ops = 0
 
         embed = _build_status_embed(session, pending_ops=pending_ops)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        # Aggressive ephemeral policy: post the status snapshot to the
+        # workspace as a durable notice (event log) rather than a
+        # per-user ephemeral. The wizard anchor stays in place, so
+        # running /setup-status mid-wizard does not clobber state.
+        # Reply with a short ephemeral pointer.
+        from views.setup._anchor import push_setup_notice
+
+        posted = await push_setup_notice(guild, embed=embed)
+        if posted:
+            channel_id = session.setup_channel_id if session is not None else None
+            ref = f"<#{channel_id}>" if channel_id else "the setup workspace"
+            await interaction.response.send_message(
+                f"📋 Setup status posted in {ref}.",
+                ephemeral=True,
+            )
+        else:
+            # Fall back to the historic ephemeral when the workspace is
+            # unreachable so the operator still sees the snapshot.
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
