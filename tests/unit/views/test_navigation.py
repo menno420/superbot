@@ -7,11 +7,15 @@ Covers:
 * ``attach_back_button`` returns ``False`` and logs a WARNING when
   the view is already at Discord's 25-component cap; the button is
   not added.
-* The button's callback calls ``parent_builder`` at click time.
-* If ``parent_builder`` raises, the user gets an ephemeral fallback
-  and the original message is NOT edited.
-* If ``parent_builder`` succeeds, the message is edited in place
-  with the new ``(embed, view)``.
+* The button's callback follows defer → build → edit-in-place,
+  routing through ``safe_defer`` / ``safe_edit`` so slow rebuilds
+  don't exhaust Discord's 3-second response window.
+* If ``safe_defer`` returns ``False`` the callback bails silently.
+* If ``parent_builder`` raises after defer, the user gets an
+  ephemeral via ``followup.send`` and the original message is NOT
+  edited.
+* If ``parent_builder`` succeeds, ``safe_edit`` swaps in the new
+  ``(embed, view)``.
 * ``transition_to`` defers, builds, and edits via ``safe_edit``.
 * ``transition_to`` surfaces builder errors as ephemerals without
   crashing.
@@ -151,15 +155,29 @@ def test_attach_back_button_warns_when_skipping(caplog):
 
 
 @pytest.mark.asyncio
-async def test_attach_back_button_callback_calls_parent_builder_at_click_time():
+async def test_attach_back_button_callback_defers_before_calling_builder():
+    """The Back callback must follow defer → build → edit-in-place.
+
+    A shared ``order`` list records every step; the final assertion
+    catches both "builder before defer" and "edit before build"
+    regressions in one check.
+    """
     view = discord.ui.View()
-    captured_interaction: list[discord.Interaction] = []
     parent_embed = discord.Embed(title="parent")
     parent_view = discord.ui.View()
+    order: list[str] = []
 
-    async def fake_builder(interaction):
-        captured_interaction.append(interaction)
+    async def fake_defer(_interaction, **_kwargs):
+        order.append("defer")
+        return True
+
+    async def fake_builder(_interaction):
+        order.append("builder")
         return parent_embed, parent_view
+
+    async def fake_edit(_interaction, **_kwargs):
+        order.append("edit")
+        return True
 
     attach_back_button(
         view,
@@ -170,18 +188,67 @@ async def test_attach_back_button_callback_calls_parent_builder_at_click_time():
 
     interaction = _interaction()
     btn = view.children[0]
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(side_effect=fake_defer),
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(side_effect=fake_edit),
+        ) as patched_edit,
+    ):
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
 
-    assert len(captured_interaction) == 1
-    assert captured_interaction[0] is interaction
-    interaction.response.edit_message.assert_awaited_once()
-    _args, kwargs = interaction.response.edit_message.call_args
+    assert order == ["defer", "builder", "edit"]
+    _args, kwargs = patched_edit.call_args
     assert kwargs["embed"] is parent_embed
     assert kwargs["view"] is parent_view
 
 
 @pytest.mark.asyncio
-async def test_attach_back_button_callback_surfaces_builder_error_as_ephemeral():
+async def test_attach_back_button_callback_aborts_when_defer_fails():
+    """When ``safe_defer`` returns ``False`` the callback must bail
+    silently: no builder call, no edit, no followup.
+    """
+    view = discord.ui.View()
+
+    async def fake_builder(_interaction):
+        raise AssertionError("builder must not be called when defer fails")
+
+    attach_back_button(
+        view,
+        label="↩ Back",
+        custom_id="test:back",
+        parent_builder=fake_builder,
+    )
+
+    interaction = _interaction()
+    btn = view.children[0]
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(return_value=False),
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(),
+        ) as fake_edit,
+    ):
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    fake_edit.assert_not_called()
+    interaction.followup.send.assert_not_called()
+    interaction.response.edit_message.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_attach_back_button_callback_surfaces_builder_error_as_followup_ephemeral():
+    """When the builder raises after defer, the user must see an
+    ephemeral via ``followup.send`` and the original message must be
+    left untouched. The old pre-defer ``response.send_message`` route
+    must not be reachable.
+    """
     view = discord.ui.View()
 
     async def fake_builder(_interaction):
@@ -195,28 +262,43 @@ async def test_attach_back_button_callback_surfaces_builder_error_as_ephemeral()
         error_message="Couldn't load help — please retry.",
     )
 
-    interaction = _interaction(is_done=False)
+    interaction = _interaction()
     btn = view.children[0]
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(),
+        ) as fake_edit,
+    ):
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
 
-    interaction.response.send_message.assert_awaited_once()
-    args, kwargs = interaction.response.send_message.call_args
+    interaction.followup.send.assert_awaited_once()
+    args, kwargs = interaction.followup.send.call_args
     assert "Couldn't load help" in (args[0] if args else kwargs.get("content", ""))
     assert kwargs.get("ephemeral") is True
-    # The original message is NOT edited.
+    fake_edit.assert_not_called()
     interaction.response.edit_message.assert_not_called()
+    interaction.response.send_message.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_attach_back_button_callback_uses_edit_original_when_deferred():
-    """If the interaction was already deferred before the button fires
-    (e.g. by an upstream handler), edit_message would 4xx — fall through
-    to edit_original_response."""
+async def test_attach_back_button_callback_success_calls_safe_defer_and_safe_edit():
+    """Happy path: ``safe_defer`` and ``safe_edit`` are both awaited,
+    the builder receives the click interaction, and the raw
+    ``response.edit_message`` / ``edit_original_response`` routes are
+    not touched.
+    """
     view = discord.ui.View()
     parent_embed = discord.Embed(title="parent")
     parent_view = discord.ui.View()
+    captured: list[discord.Interaction] = []
 
-    async def fake_builder(_interaction):
+    async def fake_builder(interaction):
+        captured.append(interaction)
         return parent_embed, parent_view
 
     attach_back_button(
@@ -225,12 +307,30 @@ async def test_attach_back_button_callback_uses_edit_original_when_deferred():
         custom_id="test:back",
         parent_builder=fake_builder,
     )
-    interaction = _interaction(is_done=True)
-    btn = view.children[0]
-    await btn.callback(interaction)  # type: ignore[union-attr,misc]
 
-    interaction.edit_original_response.assert_awaited_once()
+    interaction = _interaction()
+    btn = view.children[0]
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(return_value=True),
+        ) as fake_defer,
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(return_value=True),
+        ) as fake_edit,
+    ):
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    fake_defer.assert_awaited_once()
+    assert len(captured) == 1
+    assert captured[0] is interaction
+    fake_edit.assert_awaited_once()
+    _args, kwargs = fake_edit.call_args
+    assert kwargs["embed"] is parent_embed
+    assert kwargs["view"] is parent_view
     interaction.response.edit_message.assert_not_called()
+    interaction.edit_original_response.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -248,13 +348,16 @@ async def test_transition_to_defers_then_builds_then_edits():
         return parent_embed, parent_view
 
     # Patch the in-module imports used by transition_to.
-    with patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        AsyncMock(return_value=True),
-    ) as fake_defer, patch(
-        "core.runtime.interaction_helpers.safe_edit",
-        AsyncMock(),
-    ) as fake_edit:
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(return_value=True),
+        ) as fake_defer,
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(),
+        ) as fake_edit,
+    ):
         await transition_to(interaction, builder=fake_builder)
 
     fake_defer.assert_awaited_once()
@@ -268,13 +371,16 @@ async def test_transition_to_aborts_when_defer_fails():
     async def fake_builder(_interaction):
         raise AssertionError("builder must not be called when defer fails")
 
-    with patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        AsyncMock(return_value=False),
-    ), patch(
-        "core.runtime.interaction_helpers.safe_edit",
-        AsyncMock(),
-    ) as fake_edit:
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(return_value=False),
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(),
+        ) as fake_edit,
+    ):
         await transition_to(interaction, builder=fake_builder)
 
     fake_edit.assert_not_called()
@@ -287,13 +393,16 @@ async def test_transition_to_surfaces_builder_error_as_ephemeral():
     async def fake_builder(_interaction):
         raise RuntimeError("boom")
 
-    with patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        AsyncMock(return_value=True),
-    ), patch(
-        "core.runtime.interaction_helpers.safe_edit",
-        AsyncMock(),
-    ) as fake_edit:
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            AsyncMock(),
+        ) as fake_edit,
+    ):
         await transition_to(
             interaction,
             builder=fake_builder,

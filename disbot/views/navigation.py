@@ -125,6 +125,9 @@ def attach_back_button(
     exception is logged with ``exc_info=True`` and the user receives an
     ephemeral fallback. The original message is NOT edited (preserving
     whatever the user was looking at).
+
+    The callback defers before invoking ``parent_builder`` so slow
+    rebuilds do not exhaust Discord's initial response window.
     """
     if len(view.children) >= MAX_COMPONENTS:
         logger.warning(
@@ -144,6 +147,10 @@ def attach_back_button(
     )
 
     async def _back_callback(interaction: discord.Interaction) -> None:
+        from core.runtime.interaction_helpers import safe_defer, safe_edit
+
+        if not await safe_defer(interaction):
+            return
         try:
             embed, parent_view = await parent_builder(interaction)
         except Exception as exc:  # noqa: BLE001 — navigation must not crash
@@ -153,42 +160,15 @@ def attach_back_button(
                 exc,
                 exc_info=True,
             )
-            if not interaction.response.is_done():
-                try:
-                    await interaction.response.send_message(
-                        error_message,
-                        ephemeral=True,
-                    )
-                except Exception as send_exc:  # noqa: BLE001 — log + swallow
-                    logger.warning(
-                        "navigation back-button: ephemeral fallback also failed: %s",
-                        send_exc,
-                    )
-            return
-        # Use response.edit_message when we haven't been deferred yet;
-        # otherwise fall through to edit_original_response.
-        if interaction.response.is_done():
             try:
-                await interaction.edit_original_response(
-                    embed=embed,
-                    view=parent_view,
-                )
-            except Exception as exc:  # noqa: BLE001 — log + swallow
+                await interaction.followup.send(error_message, ephemeral=True)
+            except Exception as send_exc:  # noqa: BLE001 — log + swallow
                 logger.warning(
-                    "navigation back-button: edit_original_response failed "
-                    "(custom_id=%r): %s",
-                    custom_id,
-                    exc,
+                    "navigation back-button: ephemeral fallback also failed: %s",
+                    send_exc,
                 )
             return
-        try:
-            await interaction.response.edit_message(embed=embed, view=parent_view)
-        except Exception as exc:  # noqa: BLE001 — log + swallow
-            logger.warning(
-                "navigation back-button: edit_message failed (custom_id=%r): %s",
-                custom_id,
-                exc,
-            )
+        await safe_edit(interaction, embed=embed, view=parent_view)
 
     btn.callback = _back_callback  # type: ignore[method-assign]
     view.add_item(btn)

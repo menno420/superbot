@@ -460,6 +460,7 @@ async def test_back_button_returns_to_same_cleanup_panel_instance():
     next_interaction.client = MagicMock()
     next_interaction.response = MagicMock()
     next_interaction.response.is_done = MagicMock(return_value=False)
+    next_interaction.response.defer = AsyncMock()
     next_interaction.response.edit_message = AsyncMock()
     next_interaction.response.send_message = AsyncMock()
     next_interaction.edit_original_response = AsyncMock()

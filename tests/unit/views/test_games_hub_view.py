@@ -520,6 +520,7 @@ async def test_back_button_callback_rebuilds_games_hub_with_original_author():
     interaction = MagicMock(spec=discord.Interaction)
     interaction.response = MagicMock()
     interaction.response.is_done = MagicMock(return_value=False)
+    interaction.response.defer = AsyncMock()
     interaction.response.edit_message = AsyncMock()
     interaction.response.send_message = AsyncMock()
     interaction.edit_original_response = AsyncMock()

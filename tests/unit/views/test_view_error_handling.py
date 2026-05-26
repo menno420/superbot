@@ -39,8 +39,11 @@ def _make_interaction(*, responded: bool = False) -> MagicMock:
     interaction.message.id = 22222
     interaction.response = MagicMock()
     interaction.response.is_done = MagicMock(return_value=responded)
+    interaction.response.defer = AsyncMock()
     interaction.response.send_message = AsyncMock()
     interaction.response.edit_message = AsyncMock()
+    interaction.followup = MagicMock()
+    interaction.followup.send = AsyncMock()
     return interaction
 
 
@@ -219,10 +222,12 @@ class TestBackCallbackErrorHandling:
             back_btn = sub_view.add_item.call_args[0][0]
             await back_btn.callback(interaction)
 
-        interaction.response.send_message.assert_awaited_once()
-        assert (
-            interaction.response.send_message.call_args.kwargs.get("ephemeral") is True
-        )
+        # After Phase 3.5 lifecycle hardening the Back callback defers
+        # before invoking parent_builder, so a builder failure surfaces
+        # via ``followup.send`` rather than ``response.send_message``.
+        interaction.followup.send.assert_awaited_once()
+        assert interaction.followup.send.call_args.kwargs.get("ephemeral") is True
+        interaction.response.send_message.assert_not_awaited()
         interaction.response.edit_message.assert_not_awaited()
 
     @pytest.mark.asyncio
