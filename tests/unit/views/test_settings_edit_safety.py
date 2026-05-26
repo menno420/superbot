@@ -371,4 +371,7 @@ def test_s6_invariant_allowlist_only_contains_edit_files():
         "edit_channel.py",
         "edit_role.py",
         "edit_number_presets.py",
+        # Command-access onboarding PR-6 — per-guild allowed-channel
+        # policy mutation surface.
+        "edit_command_access.py",
     }

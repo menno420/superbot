@@ -252,6 +252,36 @@ class _OpenAudit(discord.ui.Button):
         await interaction.response.edit_message(embed=embed, view=view)
 
 
+class _OpenCommandAccess(discord.ui.Button):
+    """Open the per-guild command-access (allowed-channels) panel.
+
+    The panel mutates state, but the ``!settings`` group is already
+    gated by ``@commands.has_permissions(administrator=True)`` so
+    reaching this button implies admin.  The view itself re-checks
+    Administrator / Manage Guild on every callback as a defence in
+    depth.
+    """
+
+    def __init__(self):
+        super().__init__(
+            label="Command access",
+            style=discord.ButtonStyle.secondary,
+            emoji="🚪",
+            custom_id="settings_hub.command_access",
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from views.settings.edit_command_access import (
+            CommandAccessView,
+            build_command_access_embed,
+        )
+
+        view = CommandAccessView(interaction.user)
+        embed = await build_command_access_embed(interaction.guild_id)
+        await interaction.response.edit_message(embed=embed, view=view)
+
+
 class SettingsHubView(HubView):
     """Top-level navigation for the Settings Manager (S5)."""
 
@@ -262,6 +292,7 @@ class SettingsHubView(HubView):
         self.add_item(_OpenInvalid())
         self.add_item(_OpenMissingBindings())
         self.add_item(_OpenAudit())
+        self.add_item(_OpenCommandAccess())
 
     @staticmethod
     def build_embed() -> discord.Embed:
