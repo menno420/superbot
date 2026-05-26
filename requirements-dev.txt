@@ -1,0 +1,11 @@
+# Dev-only dependencies needed to run lint + tests locally / in CI / in
+# Claude Code on the web sessions.  Mirrors the install block in
+# `.github/workflows/code-quality.yml` so local and CI agree on tool
+# versions.  Install with `bash scripts/setup_dev_env.sh` or:
+#   pip install -r requirements.txt -r requirements-dev.txt
+black
+isort
+ruff
+mypy
+pytest
+pytest-asyncio
