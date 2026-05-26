@@ -57,7 +57,7 @@ platform concerns the cog simply *uses*.
                                                     ▼
                                           ┌────────────────────┐
                                           │ PostgreSQL         │
-                                          │ (15 migrations)    │
+                                          │ (51 migrations)    │
                                           └────────────────────┘
 ```
 
