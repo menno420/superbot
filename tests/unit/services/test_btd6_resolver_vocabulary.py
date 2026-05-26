@@ -14,6 +14,7 @@ def test_known_entity_kinds_covers_each_live_kind():
         "btd6_race",
         "btd6_boss",
         "btd6_ct",
+        "btd6_ct_tile",
         "btd6_odyssey",
         "btd6_challenge",
         "btd6_event",
@@ -36,10 +37,37 @@ def test_recognises_boss_by_name():
     assert "btd6_boss" in kinds
 
 
-def test_recognises_ct_word_boundary():
-    matches, _ambig = resolve_live_entities("explain ct tiles")
+def test_recognises_ct_index():
+    matches, _ambig = resolve_live_entities("what is the current ct?")
     kinds = {m.entity_kind for m in matches}
     assert "btd6_ct" in kinds
+    assert "btd6_ct_tile" not in kinds
+
+
+def test_recognises_ct_tiles_as_tile_kind():
+    matches, _ambig = resolve_live_entities("explain ct tiles")
+    kinds = {m.entity_kind for m in matches}
+    assert "btd6_ct_tile" in kinds
+    # Note: bare "ct" token also matches btd6_ct; that is expected behaviour.
+    # The key invariant is that ct_tile kind is resolved — not that ct kind is absent.
+
+
+def test_recognises_ct_tile_singular():
+    matches, _ambig = resolve_live_entities("what does this ct tile do?")
+    kinds = {m.entity_kind for m in matches}
+    assert "btd6_ct_tile" in kinds
+
+
+def test_recognises_relic_tile():
+    matches, _ambig = resolve_live_entities("show me relic tiles")
+    kinds = {m.entity_kind for m in matches}
+    assert "btd6_ct_tile" in kinds
+
+
+def test_recognises_contested_territory_tile():
+    matches, _ambig = resolve_live_entities("contested territory tile info")
+    kinds = {m.entity_kind for m in matches}
+    assert "btd6_ct_tile" in kinds
 
 
 def test_recognises_odyssey():
