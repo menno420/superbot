@@ -489,8 +489,11 @@ async def test_start_button_opens_wizard_for_owner():
             with patch(
                 "views.setup.wizard.open_setup_workspace",
                 AsyncMock(return_value=(mock_channel, mock_message, "ok")),
-            ):
+            ) as open_mock:
                 await view._start.callback(interaction)
+
+    # open_setup_workspace must be called exactly once.
+    open_mock.assert_awaited_once()
 
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs

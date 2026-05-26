@@ -842,8 +842,11 @@ async def test_ensure_setup_channel_rejects_wrong_name():
     # The wrong-name channel must not be returned.
     assert channel is not wrong_channel
     assert channel is correct_channel
-    # ensure_channel was called to find/create #superbot-setup.
+    # ensure_channel was called exactly once to find/create #superbot-setup
+    # by name — guarantees an existing #superbot-setup is reused, not
+    # duplicated, when the stale pointer points elsewhere.
     ensure_mock.assert_awaited_once()
+    assert ensure_mock.call_args.args[1] == SETUP_CHANNEL_NAME
 
 
 @pytest.mark.asyncio
