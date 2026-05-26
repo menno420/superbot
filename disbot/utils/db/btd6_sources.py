@@ -11,7 +11,9 @@ BTD6 facts are global (not guild-scoped) so there is no
 
 from __future__ import annotations
 
+import json
 import logging
+from datetime import datetime
 from typing import Any
 
 from utils.db import pool
@@ -458,3 +460,123 @@ async def latest_patch_note() -> dict[str, Any] | None:
         """,
     )
     return dict(row) if row else None
+
+
+# ---------------------------------------------------------------------------
+# btd6_ingestion_runs
+# ---------------------------------------------------------------------------
+
+
+async def insert_ingestion_run(
+    *,
+    source_key: str,
+    status: str,
+    triggered_by: str,
+    path_params_json: dict[str, Any] | None,
+    started_by_user_id: int | None,
+) -> int:
+    """INSERT a new ingestion run row; returns the new id."""
+    row = await pool.get().fetchrow(
+        """
+        INSERT INTO btd6_ingestion_runs (
+            source_key, status, triggered_by,
+            path_params_json, started_by_user_id
+        ) VALUES ($1, $2, $3, $4::jsonb, $5)
+        RETURNING id
+        """,
+        source_key,
+        status,
+        triggered_by,
+        json.dumps(path_params_json) if path_params_json is not None else None,
+        started_by_user_id,
+    )
+    return int(row["id"])
+
+
+async def update_ingestion_run(
+    run_id: int,
+    *,
+    status: str,
+    finished_at: datetime,
+    duration_ms: int,
+    fact_count: int | None = None,
+    raw_body_hash: str | None = None,
+    status_code: int | None = None,
+    path_params_hash: str | None = None,
+    error_code: str | None = None,
+    error_message: str | None = None,
+) -> None:
+    await pool.get().execute(
+        """
+        UPDATE btd6_ingestion_runs SET
+            status           = $2,
+            finished_at      = $3,
+            duration_ms      = $4,
+            fact_count       = $5,
+            raw_body_hash    = $6,
+            status_code      = $7,
+            path_params_hash = $8,
+            error_code       = $9,
+            error_message    = $10
+        WHERE id = $1
+        """,
+        run_id,
+        status,
+        finished_at,
+        duration_ms,
+        fact_count,
+        raw_body_hash,
+        status_code,
+        path_params_hash,
+        error_code,
+        error_message,
+    )
+
+
+async def mark_stale_runs_interrupted(
+    *,
+    older_than_minutes: int = 10,
+) -> int:
+    """Mark running rows older than the threshold as interrupted.
+
+    Called at supervisor startup to recover rows left in 'running'
+    status by a crashed or killed process.
+    Returns the count of rows updated.
+    """
+    result = await pool.get().execute(
+        """
+        UPDATE btd6_ingestion_runs
+        SET status     = 'interrupted',
+            error_code = 'supervisor_restart',
+            finished_at = now()
+        WHERE status = 'running'
+          AND started_at < now() - ($1 || ' minutes')::interval
+        """,
+        str(older_than_minutes),
+    )
+    return int(result.split()[-1])
+
+
+# ---------------------------------------------------------------------------
+# btd6_source_snapshots
+# ---------------------------------------------------------------------------
+
+
+async def insert_source_snapshot(
+    *,
+    source_id: int,
+    status_code: int,
+    raw_body_hash: str,
+    raw_body: str,
+) -> None:
+    await pool.get().execute(
+        """
+        INSERT INTO btd6_source_snapshots
+            (source_id, status_code, raw_body_hash, raw_body)
+        VALUES ($1, $2, $3, $4)
+        """,
+        source_id,
+        status_code,
+        raw_body_hash,
+        raw_body,
+    )

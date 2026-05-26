@@ -34,8 +34,8 @@ from cogs.btd6._embeds import (
 )
 from cogs.btd6._embeds import response_to_embed as _response_to_embed
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
-from core.runtime import message_pipeline
-from services import btd6_ai_service
+from core.runtime import message_pipeline, tasks
+from services import btd6_ai_service, btd6_ingestion_supervisor
 from services.btd6_resolver_service import resolve
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
@@ -67,10 +67,13 @@ class BTD6Cog(commands.Cog):
 
         register_schemas()
         message_pipeline.unregister(BTD6_STAGE_NAME)
+        await btd6_ingestion_supervisor.start_supervisor()
 
     async def cog_unload(self) -> None:
         """Defensive unregister so reload/test cycles stay clean."""
         message_pipeline.unregister(BTD6_STAGE_NAME)
+        await btd6_ingestion_supervisor.stop_supervisor()
+        tasks.cancel_by_prefix("btd6_ingestion:")
 
     # ------------------------------------------------------------------
     # Prefix commands
