@@ -439,3 +439,41 @@ async def test_teardown_participation_failure_is_isolated(_teardown_patches):
     ):
         await guild_lifecycle.teardown(99)
         mock_forget.assert_called_once_with(99)
+
+
+# ---------------------------------------------------------------------------
+# Step 22 — command-access policy + cached snapshot (command-access PR-3)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_teardown_calls_command_access_forget_guild(_teardown_patches):
+    """Step 22 awaits ``core.runtime.command_access.forget_guild`` so
+    both the typed-accessor cache entry and the
+    ``guild_command_access_policy`` row are dropped on guild leave.
+    """
+    import guild_lifecycle
+
+    with patch(
+        "core.runtime.command_access.forget_guild",
+        new_callable=AsyncMock,
+    ) as mock_forget:
+        await guild_lifecycle.teardown(99)
+        mock_forget.assert_awaited_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_teardown_command_access_failure_is_isolated(_teardown_patches):
+    """A failure in command-access teardown must not abort the
+    surrounding lifecycle sequence — matches the try/except discipline
+    every other step uses.
+    """
+    import guild_lifecycle
+
+    with patch(
+        "core.runtime.command_access.forget_guild",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("DB blip"),
+    ):
+        # No exception escapes — the lifecycle swallows + logs.
+        await guild_lifecycle.teardown(99)

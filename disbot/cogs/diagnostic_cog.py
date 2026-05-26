@@ -490,6 +490,35 @@ class DiagnosticCog(commands.Cog):
         report = await collect_report(bot=self.bot, guild=ctx.guild)
         await ctx.send(embed=build_consistency_embed(report))
 
+    @platform_grp.command(  # type: ignore[arg-type]
+        name="command-access",
+        aliases=["commandaccess"],
+    )
+    @commands.has_permissions(administrator=True)
+    async def platform_command_access(
+        self,
+        ctx,
+        channel: discord.TextChannel | None = None,
+    ):
+        """Show the live command-access decision for a channel.
+
+        Defaults to the invoking channel.  Output covers every input
+        the resolver consumed to make its decision so operators can
+        see at a glance why ``!bj`` (or ``/blackjack``) succeeded or
+        denied here — closes the "command vanished" debugging loop
+        the command-access onboarding fix was written to eliminate.
+        """
+        from cogs.diagnostic._platform_embeds import (
+            build_command_access_diagnostic_embed,
+        )
+
+        target = channel or ctx.channel
+        embed = await build_command_access_diagnostic_embed(
+            ctx=ctx,
+            target_channel=target,
+        )
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(DiagnosticCog(bot))

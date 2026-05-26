@@ -90,6 +90,29 @@ read **`docs/helper-policy.md`** first.
 1. `docs/smoke-test-checklist.md` — what must be smoked before a runtime-relevant PR ships. Pinned to `ReadinessSnapshot` by `tests/unit/docs/test_smoke_test_checklist.py`.
 2. `tests/unit/docs/` — every doc-pinning test. Adding or removing a doc that has a pinning test means the test changes too.
 
+### Touching command access (prefix + slash admission)
+
+1. `disbot/core/runtime/command_access.py` — the resolver
+   (`resolve_command_access`), adapters (`from_prefix_ctx` /
+   `from_interaction`), and the bootstrap allowlist.  Both the
+   prefix global check and `bot.tree.interaction_check` delegate
+   here.
+2. `disbot/services/command_access_service.py` — the canonical write
+   path (`set_mode`, `replace_allowed_channels`, the `set_policy`
+   composite).  Every operator-facing mutation must route through
+   this module so cache invalidation + audit emission stay in step.
+3. `disbot/cogs/bootstrap_access_cog.py` — installs both gates
+   (prefix `_channel_guard` and `tree.interaction_check`).  Loads
+   first in `config.INITIAL_EXTENSIONS`.
+4. `disbot/views/settings/edit_command_access.py` + the
+   `Command access` button on `views/settings/hub.py` — the
+   operator UI surface.
+5. `disbot/migrations/050_guild_command_access.sql` (schema) +
+   `051_command_access_main_server_backfill.sql` (data) — the
+   policy storage and the main-server backfill.  Add to
+   migration 050's CHECK constraint before adding a new
+   `AccessMode` literal.
+
 ### Touching AI / setup advisor
 
 1. `docs/ai-config-ownership.md` — binding contract for the AI cog's

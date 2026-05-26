@@ -33,6 +33,7 @@ from cogs.bootstrap_access_cog import (
 def _legacy_guard_fn():
     async def _channel_guard(ctx):  # noqa: ARG001
         return True
+
     _channel_guard.__globals__["_shutting_down"] = False
     return _channel_guard
 
@@ -51,6 +52,12 @@ def _make_bot(*initial_checks):
     bot.remove_check = MagicMock(side_effect=_remove)
     bot.add_check = MagicMock(side_effect=_add)
     bot.add_cog = AsyncMock()
+    # Real attribute so ``setup()``'s tree.interaction_check assignment
+    # writes to an inspectable slot (PR-5).  ``None`` starts the slot
+    # in the "before any installer ran" state.
+    from types import SimpleNamespace
+
+    bot.tree = SimpleNamespace(interaction_check=None)
     return bot
 
 
@@ -212,3 +219,71 @@ async def test_unload_then_reload_keeps_exactly_one_check():
     bot.add_cog = AsyncMock()
     await setup(bot)
     assert len(_find_channel_guard_checks(bot)) == 1
+
+
+# ---------------------------------------------------------------------------
+# PR-5 — slash ``tree.interaction_check`` reload safety
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_first_load_installs_tree_interaction_check():
+    """After ``setup()`` the cog owns ``tree.interaction_check``."""
+    bot = _make_bot()
+    await setup(bot)
+    cog = bot.add_cog.await_args.args[0]
+    # Bound methods aren't ``is``-identical across attribute lookups;
+    # compare the function + bound instance instead.
+    assert bot.tree.interaction_check.__func__ is BootstrapAccessCog._slash_access_check
+    assert bot.tree.interaction_check.__self__ is cog
+
+
+@pytest.mark.asyncio
+async def test_reload_replaces_stale_bootstrap_owned_interaction_check():
+    """A previous load left its bound method pinned to the dead cog
+    instance.  ``setup()`` must overwrite it with the new cog's
+    method — otherwise every slash invocation would route through a
+    closure on an unloaded cog.
+    """
+    bot = _make_bot()
+    prev_cog = BootstrapAccessCog(bot)
+    bot.tree.interaction_check = prev_cog._slash_access_check
+
+    await setup(bot)
+
+    new_cog = bot.add_cog.await_args.args[0]
+    assert bot.tree.interaction_check.__func__ is BootstrapAccessCog._slash_access_check
+    assert bot.tree.interaction_check.__self__ is new_cog
+    assert bot.tree.interaction_check.__self__ is not prev_cog
+
+
+@pytest.mark.asyncio
+async def test_unload_restores_default_interaction_check():
+    """``cog_unload`` resets ``tree.interaction_check`` to the trivial
+    always-True coroutine so the next ``setup()`` overwrites cleanly
+    without a stale bound method clinging to the unloaded cog.
+    """
+    from cogs.bootstrap_access_cog import _default_interaction_check
+
+    bot = _make_bot()
+    await setup(bot)
+    cog = bot.add_cog.await_args.args[0]
+
+    cog.cog_unload()
+    assert bot.tree.interaction_check is _default_interaction_check
+
+
+@pytest.mark.asyncio
+async def test_unload_then_reload_keeps_tree_check_owned_by_new_cog():
+    """Full round-trip on the slash slot mirrors the prefix one."""
+    bot = _make_bot()
+    await setup(bot)
+    first_cog = bot.add_cog.await_args.args[0]
+    first_cog.cog_unload()
+
+    bot.add_cog = AsyncMock()
+    await setup(bot)
+    new_cog = bot.add_cog.await_args.args[0]
+    assert bot.tree.interaction_check.__func__ is BootstrapAccessCog._slash_access_check
+    assert bot.tree.interaction_check.__self__ is new_cog
+    assert bot.tree.interaction_check.__self__ is not first_cog

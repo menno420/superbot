@@ -82,8 +82,6 @@ bot = commands.Bot(
     help_command=None,
 )
 
-ALLOWED_CHANNELS = config.ALLOWED_CHANNELS
-
 
 def _begin_shutdown(*_) -> None:
     """SIGTERM handler: route through the lifecycle service so command
@@ -308,11 +306,12 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         await reporter.on_command_error(ctx, error)
 
     if isinstance(error, commands.CheckFailure):
-        # Governance check failures produce their own user-facing message.
+        # Check failures (channel-access denial, governance subsystem
+        # denial) produce their own user-facing message at the layer
+        # that raised them.  Stay silent here so the operator does
+        # not see a duplicate / generic "unexpected error" reply on
+        # top of the specific denial feedback.
         return
-
-    in_allowed = ctx.channel.id in ALLOWED_CHANNELS
-    is_force = ctx.command is not None and ctx.command.name == "force"
 
     # Log ALL non-check errors regardless of channel so bugs are never invisible.
     if not isinstance(
@@ -336,9 +335,13 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
             exc_info=True,
         )
 
-    # Only send user-facing replies in allowed channels.
-    if not in_allowed and not is_force:
-        return
+    # PR-4: user-facing replies are surfaced in every channel.  The
+    # legacy ``in_allowed = ctx.channel.id in ALLOWED_CHANNELS`` gate
+    # that suppressed replies outside hardcoded channel IDs was the
+    # root cause of the "command vanished" UX — operators in fresh
+    # guilds saw nothing when a command failed.  Channel-access denial
+    # now comes from the resolver layer with its own feedback, so the
+    # error handler is free to surface every other failure mode.
 
     if isinstance(error, commands.MissingPermissions):
         await ctx.send(
@@ -383,18 +386,18 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
 
 
 # ---------------------------------------------------------------------------
-# Global check — restrict commands to allowed channels; block during shutdown
+# Global command-access guard
 # ---------------------------------------------------------------------------
-
-
-@bot.check
-async def _channel_guard(ctx: commands.Context) -> bool:
-    if not _lifecycle.can_accept_commands():
-        return False
-    return ctx.guild is not None and (
-        ctx.channel.id in ALLOWED_CHANNELS
-        or (ctx.command is not None and ctx.command.name == "force")
-    )
+# The prefix admission gate lives in
+# ``disbot/cogs/bootstrap_access_cog.py``.  That cog is intentionally
+# loaded first (``config.INITIAL_EXTENSIONS[0]``) so the gate is
+# installed before any other cog registers a command.  Pre-PR-4 a
+# legacy ``@bot.check _channel_guard`` defined here was the default
+# gate that the cog then displaced at boot; deleting the legacy
+# definition leaves the cog as the single, canonical owner of the
+# admission gate and removes the dead-code branch that confused
+# readers ("is this the live check or the displaced one?").
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------

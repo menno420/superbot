@@ -42,14 +42,17 @@ def test_hub_embed_has_title_and_inventory_field():
     assert "Customization findings" in field_names
 
 
-def test_hub_view_contains_subsystem_dropdown_and_four_buttons():
+def test_hub_view_contains_subsystem_dropdown_and_diagnostic_buttons():
+    """Subsystem dropdown + four S5 diagnostic buttons + the
+    command-access edit-flow button (added in command-access PR-6).
+    """
     view = SettingsHubView(_author())
-    # 1 Select + 4 Buttons = 5 items.
-    assert len(view.children) == 5
+    # 1 Select + 4 diagnostic Buttons + 1 command-access Button = 6 items.
+    assert len(view.children) == 6
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
     assert len(selects) == 1
-    assert len(buttons) == 4
+    assert len(buttons) == 5
 
 
 def test_hub_dropdown_lists_registered_subsystems():
@@ -75,7 +78,9 @@ def test_hub_dropdown_options_capped_to_discord_limit():
 
 
 def test_button_labels_match_directive():
-    """The four sub-panel buttons must match the directive's vocabulary."""
+    """The four S5 diagnostic buttons match the directive's vocabulary;
+    the fifth (command-access PR-6) opens the per-guild policy panel.
+    """
     view = SettingsHubView(_author())
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
     labels = {b.label for b in buttons}
@@ -84,6 +89,7 @@ def test_button_labels_match_directive():
         "Invalid settings",
         "Missing bindings",
         "Recent changes",
+        "Command access",
     }
 
 

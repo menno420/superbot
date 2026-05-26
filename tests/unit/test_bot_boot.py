@@ -57,9 +57,9 @@ def test_bot1_imports_and_calls_spawn_scheduler() -> None:
         "can be spawned at boot (PR-F)."
     )
     # Must call it with ``bot`` so the cog can reach the running loop.
-    assert re.search(r"spawn_scheduler\s*\(\s*bot\s*\)", src), (
-        "bot1.py must call spawn_scheduler(bot) at startup (PR-F)."
-    )
+    assert re.search(
+        r"spawn_scheduler\s*\(\s*bot\s*\)", src
+    ), "bot1.py must call spawn_scheduler(bot) at startup (PR-F)."
 
 
 def test_bot1_does_not_double_supervise_scheduler_task() -> None:
@@ -111,9 +111,7 @@ def test_bot1_shutdown_drains_via_core_runtime_tasks() -> None:
     assert not re.search(
         r"if\s+_shutting_down\s*:\s*\n\s+(?:pending|cancelled|_,)\s*=",
         src,
-    ), (
-        "Shutdown drain must run on every exit, not gated on _shutting_down."
-    )
+    ), "Shutdown drain must run on every exit, not gated on _shutting_down."
 
 
 def test_bot1_applies_config_log_level_at_boot() -> None:
@@ -151,16 +149,16 @@ def test_bot1_sigterm_handler_routes_through_lifecycle() -> None:
     )
 
 
-def test_bot1_channel_guard_admits_via_lifecycle() -> None:
-    """LP-2: ``_channel_guard`` must consult
-    :func:`core.runtime.lifecycle.can_accept_commands` rather than the
-    legacy ``_shutting_down`` bool.
-    """
-    src = _src()
-    assert "_lifecycle.can_accept_commands()" in src, (
-        "bot1._channel_guard must check lifecycle.can_accept_commands() "
-        "so command admission tracks the lifecycle phase (LP-2)."
-    )
+# LP-2 ``_channel_guard`` admit-via-lifecycle assertion moved out of
+# ``bot1.py`` in command-access PR-4.  The prefix admission gate now
+# lives in ``cogs.bootstrap_access_cog`` and delegates to
+# ``core.runtime.command_access.resolve_command_access``, which
+# consults ``lifecycle.can_accept_commands()`` as step 1 of the
+# admission chain.  The lifecycle-drain admission contract is pinned
+# by ``tests/unit/runtime/test_command_access_resolver.py::
+# test_resolver_denies_silently_when_lifecycle_draining`` and by
+# ``tests/unit/cogs/test_bootstrap_access_cog.py::
+# test_channel_guard_blocks_when_lifecycle_is_shutting_down``.
 
 
 def test_bot1_posts_startup_summary_webhook_before_bot_start() -> None:
@@ -195,9 +193,9 @@ def test_bot1_spawns_lifecycle_close_driver() -> None:
         "'lifecycle_close_driver' to drive bot.close() on any pending "
         "lifecycle request."
     )
-    assert "_drive_close_on_lifecycle_request" in src, (
-        "bot1.py must define and spawn _drive_close_on_lifecycle_request."
-    )
+    assert (
+        "_drive_close_on_lifecycle_request" in src
+    ), "bot1.py must define and spawn _drive_close_on_lifecycle_request."
 
 
 def test_bot1_close_driver_uses_bounded_timeout() -> None:
@@ -213,8 +211,7 @@ def test_bot1_close_driver_uses_bounded_timeout() -> None:
         r"asyncio\.wait_for\(\s*bot\.close\(\)\s*,",
         src,
     ), (
-        "bot1.py must wrap bot.close() in asyncio.wait_for with a "
-        "bounded timeout."
+        "bot1.py must wrap bot.close() in asyncio.wait_for with a " "bounded timeout."
     )
 
 
@@ -227,9 +224,9 @@ def test_bot1_close_driver_gates_on_pending_and_draining() -> None:
         "bot1.py close-driver must consult _lifecycle.get_pending() — "
         "not restart_requested() — so shutdown intent is also closed."
     )
-    assert "_lifecycle.Phase.DRAINING" in src, (
-        "bot1.py close-driver must gate on _lifecycle.Phase.DRAINING."
-    )
+    assert (
+        "_lifecycle.Phase.DRAINING" in src
+    ), "bot1.py close-driver must gate on _lifecycle.Phase.DRAINING."
 
 
 def test_bot1_close_driver_does_not_own_cleanup() -> None:
@@ -251,9 +248,9 @@ def test_bot1_close_driver_does_not_own_cleanup() -> None:
         ):
             driver_fn = node
             break
-    assert driver_fn is not None, (
-        "bot1.py must define async def _drive_close_on_lifecycle_request."
-    )
+    assert (
+        driver_fn is not None
+    ), "bot1.py must define async def _drive_close_on_lifecycle_request."
 
     forbidden_attr_calls = {
         "release_lock_best_effort",
@@ -305,9 +302,7 @@ def test_bot1_no_legacy_restart_close_driver_names() -> None:
         )
 
 
-def test_bot1_finally_block_transitions_to_restarting_when_restart_pending() -> (
-    None
-):
+def test_bot1_finally_block_transitions_to_restarting_when_restart_pending() -> None:
     """LP-3: the finally block surfaces RESTARTING as the terminal
     phase when a restart was requested, so the recent-event buffer
     distinguishes restart-exit from shutdown-exit."""
@@ -358,10 +353,12 @@ def test_bot1_shutdown_drain_logs_timeout() -> None:
     noise."""
     src = _src()
     finally_block = src.split("finally:", 1)[-1]
-    assert "still_pending" in finally_block, (
-        "Shutdown drain must capture still_pending tasks after timeout."
-    )
-    assert re.search(r"logger\.warning\([^)]*Shutdown drain", finally_block, re.DOTALL), (
+    assert (
+        "still_pending" in finally_block
+    ), "Shutdown drain must capture still_pending tasks after timeout."
+    assert re.search(
+        r"logger\.warning\([^)]*Shutdown drain", finally_block, re.DOTALL
+    ), (
         "Shutdown drain timeout must emit a WARNING log line so "
         "operators can detect the slow drain."
     )

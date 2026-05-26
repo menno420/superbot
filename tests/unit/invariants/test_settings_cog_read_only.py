@@ -43,6 +43,10 @@ _FORBIDDEN_IMPORT_PREFIXES: frozenset[str] = frozenset(
         "services.resource_provisioning",  # creator/binder of Discord resources
         "services.participation_mutation",
         "services.rollout_mutation",
+        # Command-access service (per-guild policy mutation pipeline,
+        # command-access onboarding PR-6).  Same invariant logic:
+        # write paths must live in the allowlisted edit-flow widget.
+        "services.command_access_service",
         "governance.writes",
     },
 )
@@ -74,6 +78,15 @@ _FORBIDDEN_METHOD_CALLS: frozenset[str] = frozenset(
         "set_cleanup_policy",
         "set_cleanup_policy_for_scope",
         "provision",  # ResourceProvisioningPipeline.provision
+        # Command-access mutation pipeline (PR-6).  Module-level
+        # functions, but the AST call-pattern is the same — they
+        # appear as ``service.set_mode(...)`` etc. in the allowlisted
+        # widget and nowhere else under disbot/views/settings/.
+        "set_mode",
+        "replace_allowed_channels",
+        "add_allowed_channel",
+        "remove_allowed_channel",
+        "set_policy",
     },
 )
 
@@ -114,6 +127,12 @@ _ALLOWED_EDIT_FILES: frozenset[Path] = frozenset(
         _DISBOT / "views" / "settings" / "edit_channel.py",
         _DISBOT / "views" / "settings" / "edit_role.py",
         _DISBOT / "views" / "settings" / "edit_number_presets.py",
+        # Command-access onboarding PR-6 — per-guild allowed-channel
+        # policy.  This file IS the operator mutation surface for
+        # command_access_service; ``set_mode`` / ``replace_allowed_channels``
+        # are explicitly routed through it on the
+        # mode-button / channel-select callbacks.
+        _DISBOT / "views" / "settings" / "edit_command_access.py",
     },
 )
 

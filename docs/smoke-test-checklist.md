@@ -140,6 +140,47 @@ prefix `!setup` opens the wizard hub.
       inventory and matches the readiness snapshot's setup blocker
       summary.
 
+## Command-access onboarding
+
+The command-access onboarding fix (migrations 050 + 051) is the
+canonical admission path for every prefix + slash command.  Smoke
+each shape so a regression in resolver / cog wiring / settings UI /
+migration is caught before it strands fresh guilds again.
+
+- [ ] **Fresh guild, no DB row** — invite the bot to a clean test
+      guild.  `!help` works for the operator (bootstrap bypass) and
+      `!bj` works in any channel (unconfigured guild defaults to
+      `all_channels`).  `/blackjack` matches.
+- [ ] **`!settings → Command access`** opens the policy panel and
+      renders the current mode + allowed channels.  Switching to
+      `selected_channels` mode, picking one channel, and clicking
+      back to Hub returns to the hub embed without raising.
+- [ ] **`selected_channels` denial** — with the policy from the
+      previous step, `!bj` in a non-allowed channel posts the
+      "Commands aren't enabled in this channel…" reply
+      (`delete_after=10`) and the command does not run.
+      `/blackjack` in the same channel posts the same text as an
+      ephemeral.
+- [ ] **`disabled_except_bootstrap`** — switching to this mode and
+      running `!bj` posts the "Commands are disabled…" feedback;
+      `!setup` and `!settings` still work for the operator
+      (bootstrap bypass intact).
+- [ ] **`!platform command-access [#channel]`** prints the
+      structured decision embed: configured mode, allowed
+      channels, decision (yes/no), reason code, source, and the
+      bootstrap probe.  No audit row is emitted by the probe
+      (check the `audit_log` table after the run).
+- [ ] **Main-server backfill** — confirm migration 051 wrote a
+      `selected_channels` row for the main server (
+      `SELECT * FROM guild_command_access_policy WHERE
+      guild_id = <main_server_guild_id>;`).  Verify `!bj` still
+      works in the configured channels and is denied elsewhere.
+- [ ] **Metric stream** — scrape `/metrics` while exercising the
+      above.  `command_access_decisions_total{decision="allow"}`
+      and `…{decision="deny"}` both increment with the correct
+      reason/source labels.
+
+
 ## Shutdown drain
 
 Trigger `SIGTERM` (or run `kill -TERM $PID`) and observe:

@@ -223,12 +223,82 @@ def invalidate_setting_value(guild_id: int, settings_key: str) -> None:
     guild_config.invalidate(guild_id, _SETTING_CACHE_PREFIX + settings_key)
 
 
+# ---------------------------------------------------------------------------
+# Command-access policy — consumed by core.runtime.command_access (PR-2)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CommandAccessPolicySnapshot:
+    """Cached per-guild command-access policy.
+
+    ``mode is None`` represents the "unconfigured" state — no row
+    exists in ``guild_command_access_policy``.  The resolver maps that
+    to the safe default (all channels) rather than synthesising a row
+    here so the unconfigured state remains observable.
+    """
+
+    mode: str | None
+    allowed_channels: frozenset[int]
+
+
+def _command_access_policy_loader(
+    guild_id: int,
+) -> Callable[[], Awaitable[CommandAccessPolicySnapshot]]:
+    async def _load() -> CommandAccessPolicySnapshot:
+        from utils.db import command_access as db_command_access
+
+        row = await db_command_access.get_policy(guild_id)
+        if row is None:
+            return CommandAccessPolicySnapshot(mode=None, allowed_channels=frozenset())
+        channels = await db_command_access.list_allowed_channels(guild_id)
+        return CommandAccessPolicySnapshot(
+            mode=str(row["mode"]),
+            allowed_channels=frozenset(channels),
+        )
+
+    return _load
+
+
+_command_access_policy_accessor: TypedAccessor[CommandAccessPolicySnapshot] = (
+    TypedAccessor(
+        cache_key="command_access_policy",
+        loader_factory=_command_access_policy_loader,
+    )
+)
+
+
+async def get_command_access_policy(guild_id: int) -> CommandAccessPolicySnapshot:
+    """Return the cached command-access policy for ``guild_id``.
+
+    Hot-path read for every prefix + slash command invocation.  Cached
+    via :mod:`core.runtime.guild_config` with the default TTL; admin
+    writes (mode change, channel add/remove) MUST call
+    :func:`invalidate_command_access_policy` afterward so the next read
+    reflects the change.
+    """
+    return await _command_access_policy_accessor.get(guild_id)
+
+
+def invalidate_command_access_policy(guild_id: int) -> None:
+    """Drop the cached command-access policy for ``guild_id``.
+
+    Called from the command-access mutation service (PR-3) on every
+    write — and from ``core.runtime.command_access.forget_guild`` when
+    the bot leaves the guild.
+    """
+    _command_access_policy_accessor.invalidate(guild_id)
+
+
 __all__ = [
+    "CommandAccessPolicySnapshot",
     "TypedAccessor",
     "XpConfig",
+    "get_command_access_policy",
     "get_setting_value",
     "get_xp_config",
     "get_xp_threshold_roles",
+    "invalidate_command_access_policy",
     "invalidate_setting_value",
     "invalidate_xp_config",
     "invalidate_xp_threshold_roles",

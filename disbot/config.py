@@ -31,11 +31,11 @@ PREFIX = os.getenv("BOT_PREFIX", "!")
 # Initial Cogs (Extensions)
 # ==========================
 INITIAL_EXTENSIONS = [
-    # bootstrap_access_cog MUST load first: it replaces the legacy
-    # `_channel_guard` defined in bot1.py with a fresh-guild-aware guard
-    # so guild operators can run !help / !setup / !platform / !diagnostics /
-    # !adminmenu / !settings / !syncslash before BOT_ALLOWED_CHANNELS is
-    # configured. Reordering this entry breaks fresh-guild onboarding.
+    # bootstrap_access_cog MUST load first: it installs the central
+    # command-access guard (prefix + slash) that gates every command
+    # invocation.  Reordering this entry would leave a window where
+    # commands could be admitted before the policy resolver is wired
+    # in.  See `docs/architecture.md` for the admission chain.
     "cogs.bootstrap_access_cog",
     "cogs.admin_cog",
     "cogs.help_cog",
@@ -76,6 +76,16 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 # ==========================
 # Channel Restrictions
 # ==========================
+# Command admission (where prefix + slash commands are allowed) is
+# owned by the per-guild ``guild_command_access_policy`` table
+# (migration 050) and read through
+# :func:`core.runtime.command_access.resolve_command_access`.  The
+# pre-PR-7 ``BOT_ALLOWED_CHANNELS`` env var + hardcoded fallback
+# channel IDs are gone; main-server channels are seeded by migration
+# 051 so existing behavior is preserved.  Configure new guilds via
+# ``!settings → Command access``.
+
+
 def _parse_channel_ids(env_key: str, fallback: list[int]) -> set[int]:
     raw = os.getenv(env_key, "")
     if raw.strip():
@@ -86,13 +96,11 @@ def _parse_channel_ids(env_key: str, fallback: list[int]) -> set[int]:
     return set(fallback)
 
 
-# Channels where bot commands are allowed
-ALLOWED_CHANNELS: set[int] = _parse_channel_ids(
-    "BOT_ALLOWED_CHANNELS",
-    [1348795460948590622, 1403818013408624642],
-)
-
-# Channels exempt from the cleanup cog's command-deletion rule
+# Channels exempt from the cleanup cog's command-deletion rule.
+# Still env-driven because cleanup whitelist is a separate concern
+# from command-access policy and is consumed by ``cogs/cleanup_cog.py``
+# at scope-resolution time.  A future PR can migrate this to a
+# DB-backed per-guild policy along the same shape as command access.
 CLEANUP_WHITELIST_CHANNELS: set[int] = _parse_channel_ids(
     "BOT_CLEANUP_WHITELIST",
     [
