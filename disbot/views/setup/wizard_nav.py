@@ -61,8 +61,8 @@ async def render_wizard_step(
     Returns ``True`` on a successful anchor edit.
     """
     from views.setup.wizard import (
-        LinearWizardView,
         _WIZARD_TITLE,
+        LinearWizardView,
         _resolve_sections,
         _step_index_for,
         build_wizard_step_embed,
