@@ -64,6 +64,27 @@ def test_is_bootstrap_command_rejects_normal_gameplay_commands():
     assert is_bootstrap_command(None) is False
 
 
+def test_is_bootstrap_command_accepts_hyphenated_slash_names():
+    """Slash commands can't contain whitespace, so multi-token
+    bootstrap commands ship hyphenated (``/setup-hub``, ``/setup-status``,
+    ``/setup-delegate``).  The classifier must recognise the
+    hyphen-namespaced form so operator bypass works on the slash
+    surface as well as the prefix one.
+    """
+    assert is_bootstrap_command("setup-hub") is True
+    assert is_bootstrap_command("setup-status") is True
+    assert is_bootstrap_command("setup-delegate") is True
+
+
+def test_is_bootstrap_command_hyphen_check_does_not_widen_to_normal_commands():
+    """Hyphen-rooting is bounded to existing bootstrap roots — a
+    plausible future ``daily-bonus`` name does NOT classify as
+    bootstrap because ``daily`` is not in the allowlist.
+    """
+    assert is_bootstrap_command("daily-bonus") is False
+    assert is_bootstrap_command("blackjack-stats") is False
+
+
 @pytest.mark.asyncio
 async def test_guild_owner_can_bypass_for_bootstrap_command():
     ctx = _ctx(command_name="help", author_id=42, owner_id=42)

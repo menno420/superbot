@@ -71,17 +71,34 @@ BOOTSTRAP_COMMANDS: frozenset[str] = frozenset(
 def is_bootstrap_command(command_name: str | None) -> bool:
     """Return ``True`` if ``command_name`` is a bootstrap command.
 
-    Accepts both bare names (``"help"``) and qualified group names
-    (``"platform identity"``).  The root of a qualified name is checked so
-    existing platform/settings/admin subcommands inherit their parent gate.
+    Accepts three spellings so prefix groups, slash sub-commands, and
+    operator-namespaced slash commands all classify consistently:
+
+    * bare names (``"help"``)
+    * qualified group names — whitespace-separated, the discord.py
+      prefix-group convention (``"platform identity"``)
+    * hyphen-namespaced slash commands (``"setup-hub"``) — discord.py
+      forbids whitespace in slash names so operators ship multi-token
+      setup commands as ``setup-*``; treating ``setup`` as the root
+      keeps the bootstrap bypass consistent across prefix + slash.
+
+    A hyphen-root match only widens the set within the existing
+    bootstrap surface (``setup-*``, ``settings-*``, ``admin-*``,
+    ``platform-*``, ``help-*``, ``diagnostics-*``) — every other
+    command name is unaffected.
     """
     if not command_name:
         return False
     normalized = command_name.strip().lower()
     if not normalized:
         return False
-    root = normalized.split(maxsplit=1)[0]
-    return normalized in BOOTSTRAP_COMMANDS or root in BOOTSTRAP_COMMANDS
+    if normalized in BOOTSTRAP_COMMANDS:
+        return True
+    space_root = normalized.split(maxsplit=1)[0]
+    if space_root in BOOTSTRAP_COMMANDS:
+        return True
+    hyphen_root = normalized.split("-", maxsplit=1)[0]
+    return hyphen_root in BOOTSTRAP_COMMANDS
 
 
 def _candidate_command_names(ctx: commands.Context) -> Iterable[str]:
