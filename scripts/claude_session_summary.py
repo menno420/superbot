@@ -72,10 +72,12 @@ def main() -> int:
     # Quick test summary (last pytest result from cache, not a fresh run)
     print()
     print("Quick commands:")
-    print("  python scripts/check_architecture.py --mode strict   # full arch check")
-    print("  python scripts/check_quality.py --check-only         # lint only")
     print(
-        "  python scripts/check_quality.py --full               # lint + mypy + tests",
+        "  python3.10 scripts/check_architecture.py --mode strict   # full arch check",
+    )
+    print("  python3.10 scripts/check_quality.py --check-only         # lint only")
+    print(
+        "  python3.10 scripts/check_quality.py --full               # lint + mypy + tests",
     )
     print(SEP)
     return 0
