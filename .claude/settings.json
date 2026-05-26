@@ -44,6 +44,11 @@
             "type": "command",
             "command": "python3 scripts/claude_session_summary.py",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "if [ \"$CLAUDE_CODE_REMOTE\" = \"true\" ]; then service postgresql start 2>/dev/null || true; fi",
+            "timeout": 15
           }
         ]
       }
