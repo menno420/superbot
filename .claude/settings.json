@@ -42,8 +42,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 scripts/claude_session_summary.py",
-            "timeout": 30
+            "command": "bash scripts/claude_session_start.sh",
+            "timeout": 180
           }
         ]
       }

@@ -48,6 +48,7 @@ superbot/data/logs/
 ########################################
 # CACHE / TEMP FILES
 ########################################
+.setup_deps_hash
 tmp/
 *.pid
 *.swp
