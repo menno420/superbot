@@ -7,13 +7,16 @@ use a separate view (``_TournBlackjackView``) because the chip / round
 bookkeeping differs.
 
 Solo end-of-hand UX: when a solo hand finishes (i.e. no PvP
-``on_finish`` callback and no ``tournament_chips``), ``_finish``
-appends a ``🔁 Play again`` / ``◀ Back to Blackjack`` row before
-re-rendering. ``Play again`` re-enters ``start_solo_blackjack``
-with the same user/guild/bet (after the same balance check the
-typed ``!blackjack`` command performs), so the active-game map and
-persistence path stay in one place. PvP and tournament views are
-untouched by the replay path.
+``on_finish`` callback and no ``tournament_chips``), ``_finish`` swaps
+the live ``BlackjackView`` for a fresh ``_BlackjackSoloResultView`` —
+the same disabled hit/stand/double shells on row 0, plus enabled
+``🔁 Play again`` / ``◀ Back to Blackjack`` on row 1.  Replacing
+the view (instead of appending buttons and calling ``stop()`` on the
+original) keeps the terminal-state buttons dispatchable: the original
+view's stop unregisters its callbacks from discord.py, and any
+buttons still bound to it would fail to respond. PvP and tournament
+paths keep their original ``BlackjackView`` until ``stop()`` — they
+never expose replay/back.
 """
 
 from __future__ import annotations
@@ -97,91 +100,27 @@ class BlackjackView(discord.ui.View):
         else:
             embed.add_field(name=result, value="​", inline=False)
 
-        # Solo-only: attach replay + back action row before the edit so
-        # the user has an enabled escape from the result message.
+        # Solo-only: hand the message off to a fresh result view so the
+        # Play again / Back buttons remain dispatchable. Calling
+        # self.stop() on a view that still exposes enabled buttons
+        # un-registers it from discord.py's dispatch table — those
+        # buttons would then surface "interaction failed" on click.
         if self.game.tournament_chips is None and self.on_finish is None:
-            self._attach_solo_result_actions()
+            result_view = _BlackjackSoloResultView(
+                self.game.user_id,
+                self.game.guild_id,
+                self.game.bet,
+                self.game,
+            )
+            await safe_edit(interaction, embed=embed, view=result_view)
+            result_view.message = interaction.message
+        else:
+            await safe_edit(interaction, embed=embed, view=self)
 
-        await safe_edit(interaction, embed=embed, view=self)
         self.stop()
 
         if self.on_finish:
             await self.on_finish(self.game, hand_value)
-
-    def _attach_solo_result_actions(self) -> None:
-        """Append Play again + Back to Blackjack buttons on row 1.
-
-        Called once at end-of-hand for solo games only. The original
-        hit/stand/double buttons on row 0 stay visible-but-disabled.
-        """
-        replay_btn = discord.ui.Button(  # type: ignore[var-annotated]
-            label="🔁 Play again",
-            style=discord.ButtonStyle.success,
-            custom_id="blackjack:solo:replay",
-            row=1,
-        )
-        replay_btn.callback = self._replay  # type: ignore[method-assign]
-        self.add_item(replay_btn)
-
-        # Late import: blackjack_panel imports BlackjackView indirectly
-        # via the actions helpers, so importing it at module level
-        # would create a cycle.
-        from views.games.blackjack_panel import _make_blackjack_back_button
-
-        back_btn = _make_blackjack_back_button()
-        back_btn.row = 1
-        self.add_item(back_btn)
-
-    async def _replay(self, interaction: discord.Interaction) -> None:
-        """Re-enter ``start_solo_blackjack`` with the same user/guild/bet.
-
-        Reuses the canonical entry point so the active-game map (``_active``),
-        persistence (``_save_game_state``), and natural-blackjack auto-payout
-        all behave identically to a fresh ``!blackjack`` invocation.
-        Balance is checked inside ``start_solo_blackjack``; insufficient
-        balance surfaces as an ephemeral nudge here.
-        """
-        if not await safe_defer(interaction):
-            return
-
-        # Late imports — actions imports BlackjackView at module level.
-        from cogs.blackjack.actions import (
-            commit_solo_blackjack,
-            start_solo_blackjack,
-        )
-
-        user = interaction.user
-        guild = interaction.guild
-        if guild is None:
-            await safe_followup(
-                interaction,
-                "❌ Replay isn't available in DMs.",
-                ephemeral=True,
-            )
-            return
-
-        result = await start_solo_blackjack(
-            user,
-            guild,
-            interaction.channel,  # type: ignore[arg-type]
-            self.game.bet,
-        )
-        if result.ephemeral_message is not None:
-            await safe_followup(
-                interaction,
-                result.ephemeral_message,
-                ephemeral=True,
-            )
-            return
-
-        # Natural blackjack auto-payout path: short-circuits with an
-        # embed but no playable view. Render the result and stop here.
-        if result.view is None:
-            await safe_edit(interaction, embed=result.embed, view=None)
-            return
-
-        await safe_edit(interaction, embed=result.embed, view=result.view)
-        await commit_solo_blackjack(result.view, interaction.message)  # type: ignore[arg-type]
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.game.user_id:
@@ -301,3 +240,141 @@ class BlackjackView(discord.ui.View):
         else:
             loss = -effective if effective else 0
             await self._finish(interaction, "😞 Dealer wins.", ERROR_COLOR, loss, pv)
+
+
+class _BlackjackSoloResultView(discord.ui.View):
+    """Terminal-state view shown after a solo blackjack hand resolves.
+
+    Replaces the live ``BlackjackView`` once ``_finish`` settles so that
+    Play again / Back buttons stay independently dispatchable. The
+    previous design appended these buttons to the still-attached
+    ``BlackjackView`` and called ``self.stop()`` — which removes the
+    view from discord.py's component dispatch table and leaves the
+    visible buttons unable to respond (Discord then renders
+    "interaction failed" after the 3 s response window).
+    """
+
+    def __init__(
+        self,
+        user_id: int,
+        guild_id: int,
+        bet: int,
+        game: _Game,
+    ) -> None:
+        super().__init__(timeout=120)
+        self.user_id = user_id
+        self.guild_id = guild_id
+        self.bet = bet
+        self.game = game
+        self.message: discord.Message | None = None
+
+        for label, emoji, style in (
+            ("Hit", "👊", discord.ButtonStyle.green),
+            ("Stand", "✋", discord.ButtonStyle.grey),
+            ("Double Down", "✌️", discord.ButtonStyle.blurple),
+        ):
+            self.add_item(
+                discord.ui.Button(
+                    label=label,
+                    emoji=emoji,
+                    style=style,
+                    disabled=True,
+                    row=0,
+                ),
+            )
+
+        replay_btn = discord.ui.Button(  # type: ignore[var-annotated]
+            label="🔁 Play again",
+            style=discord.ButtonStyle.success,
+            custom_id="blackjack:solo:replay",
+            row=1,
+        )
+        replay_btn.callback = self._replay  # type: ignore[method-assign]
+        self.add_item(replay_btn)
+
+        # Late import: blackjack_panel imports BlackjackView indirectly
+        # via the actions helpers, so importing it at module level
+        # would create a cycle.
+        from views.games.blackjack_panel import _make_blackjack_back_button
+
+        back_btn = _make_blackjack_back_button()
+        back_btn.row = 1
+        self.add_item(back_btn)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message(
+                "This isn't your hand.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        if self.message is None:
+            return
+        for item in self.children:
+            item.disabled = True  # type: ignore[attr-defined]
+        try:
+            await self.message.edit(view=self)
+        except Exception:
+            pass
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,  # type: ignore[type-arg]
+    ) -> None:
+        await _on_view_error(self, interaction, error, item)
+
+    async def _replay(self, interaction: discord.Interaction) -> None:
+        """Re-enter ``start_solo_blackjack`` with the same user/guild/bet.
+
+        Delegates to the canonical solo entry point so the active-game
+        map (``_active``), persistence, and natural-blackjack auto-payout
+        behave identically to a fresh ``!blackjack`` invocation. Balance
+        is checked inside ``start_solo_blackjack``; insufficient balance
+        surfaces as an ephemeral nudge here.
+        """
+        if not await safe_defer(interaction):
+            return
+
+        # Late imports — actions imports BlackjackView at module level.
+        from cogs.blackjack.actions import (
+            commit_solo_blackjack,
+            start_solo_blackjack,
+        )
+
+        user = interaction.user
+        guild = interaction.guild
+        if guild is None:
+            await safe_followup(
+                interaction,
+                "❌ Replay isn't available in DMs.",
+                ephemeral=True,
+            )
+            return
+
+        result = await start_solo_blackjack(
+            user,
+            guild,
+            interaction.channel,  # type: ignore[arg-type]
+            self.bet,
+        )
+        if result.ephemeral_message is not None:
+            await safe_followup(
+                interaction,
+                result.ephemeral_message,
+                ephemeral=True,
+            )
+            return
+
+        # Natural blackjack auto-payout path: short-circuits with an
+        # embed but no playable view. Render the result and stop here.
+        if result.view is None:
+            await safe_edit(interaction, embed=result.embed, view=None)
+            return
+
+        await safe_edit(interaction, embed=result.embed, view=result.view)
+        await commit_solo_blackjack(result.view, interaction.message)  # type: ignore[arg-type]
