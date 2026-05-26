@@ -32,6 +32,10 @@ class AITask(str, Enum):
     # M4 — strategy submission review (AI extracts + validates;
     # publishing requires staff confirmation).
     BTD6_STRATEGY_REVIEW = "btd6.strategy_review"
+    # M5 — YouTube video context tasks (URL-driven; feature-flag gated).
+    VIDEO_DESCRIBE = "video.describe"
+    VIDEO_COMPARE = "video.compare"
+    VIDEO_QA = "video.qa"
 
 
 class PolicyDenialReason(str, Enum):

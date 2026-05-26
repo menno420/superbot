@@ -314,6 +314,21 @@ SETTINGS_MANAGER_COG_ENABLED = FeatureFlag(
 )
 
 
+YOUTUBE_CONTEXT_ENABLED = FeatureFlag(
+    name="youtube.context.enabled",
+    description=(
+        "Enable YouTube URL metadata/transcript context for AI responses. "
+        "When ON the AI pipeline fetches video metadata and transcript "
+        "excerpts and includes them as grounded facts. "
+        "Env override: SUPERBOT_FF_YOUTUBE_CONTEXT_ENABLED=on. "
+        "Requires YOUTUBE_API_KEY to be set; if missing the flag is "
+        "effectively off even when enabled here."
+    ),
+    default_value=False,
+    owner="ai",
+)
+
+
 def _register_builtins() -> None:
     """Register Phase 1d platform-level flags at import time."""
     register(RESOURCES_UNIFIED)
@@ -323,6 +338,7 @@ def _register_builtins() -> None:
     register(SETTINGS_MUTATION_PRIMARY)
     register(RESOURCE_PROVISIONING_PRIMARY)
     register(SETTINGS_MANAGER_COG_ENABLED)
+    register(YOUTUBE_CONTEXT_ENABLED)
 
 
 _register_builtins()
