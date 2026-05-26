@@ -5,16 +5,11 @@
       "mcp__codegraph__where",
       "mcp__codegraph__context",
       "mcp__codegraph__query",
-      "mcp__codegraph__execution_flow",
       "mcp__codegraph__fn_impact",
-      "mcp__codegraph__impact_analysis",
-      "mcp__codegraph__structure",
-      "mcp__codegraph__module_map",
       "mcp__codegraph__list_functions",
-      "mcp__codegraph__file_deps",
       "mcp__codegraph__complexity",
-      "mcp__codegraph__semantic_search",
-      "mcp__codegraph__brief",
+      "mcp__codegraph__check",
+      "mcp__codegraph__triage",
       "mcp__codegraph__audit"
     ]
   },

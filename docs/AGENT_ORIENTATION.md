@@ -43,7 +43,7 @@ read **`docs/helper-policy.md`** first.
 
 | Order | Doc | Why |
 |---|---|---|
-| 1 | `.claude/CLAUDE.md` | CodeGraph rules — what the static index can and cannot tell you about this codebase. Auto-loaded. |
+| 1 | `.claude/CLAUDE.md` | Session workflow, CI parity rules, CodeGraph quick-reference, and architecture invariants. Auto-loaded every session. |
 | 2 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
 | 3 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
 | 4 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
@@ -214,8 +214,12 @@ Before proposing or implementing any non-trivial change:
    `utils/`, in `services/`, in `views/base.py`), open
    `docs/helper-policy.md` first.
 4. If CodeGraph and a source file disagree, the **source file wins**
-   (`.claude/CLAUDE.md` § "Source files win"). Re-read the actual file
-   you are about to edit.
+   (`.claude/CLAUDE.md` § "Read first — agent orientation"). Re-read
+   the actual file you are about to edit.
+5. **At the end of every session, create a PR** — do not wait to be
+   asked. Plans span 2–3 PRs max (foundation first, implementation
+   second). Plan approval means full execution in one session — do not
+   stop for confirmation or wait for merges between PRs.
 
 This is not a courtesy — repeated rediscovery is the main reason
 SuperBot accumulates duplicate helpers and orphan plans. The minutes
