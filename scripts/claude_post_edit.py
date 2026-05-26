@@ -18,11 +18,16 @@ from __future__ import annotations
 
 import hashlib
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# CI runs Python 3.10 — match it so formatter/lint behaviour is identical
+# (see CLAUDE.md "Match CI exactly" section and PR #338 post-mortem).
+PY = "python3.10" if shutil.which("python3.10") else sys.executable
 
 
 def _digest(path: Path) -> str:
@@ -51,19 +56,27 @@ def main() -> int:
     errors: list[tuple[str, str]] = []
 
     for cmd in (
-        ["black", "--quiet", str(path)],
-        ["isort", "--quiet", str(path)],
-        ["ruff", "check", "--fix", "--quiet", str(path)],
+        [PY, "-m", "black", "--quiet", str(path)],
+        [PY, "-m", "isort", "--quiet", str(path)],
+        [PY, "-m", "ruff", "check", "--fix", "--quiet", str(path)],
     ):
-        result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True)
+        tool = cmd[2]  # the module name after "-m"
+        try:
+            result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True)
+        except FileNotFoundError:
+            errors.append((tool, f"{PY} not found — hooks require Python 3.10"))
+            continue
         after = _digest(path)
         if after != before:
-            changed_by.append(cmd[0])
+            changed_by.append(tool)
             before = after
         # ruff exits 1 when it applies fixes (not an error); anything > 1 is a problem
-        if result.returncode > 1:
+        # black/isort exit 1 for "module not found" (tool not installed in python3.10 env)
+        if result.returncode > 1 or (
+            result.returncode == 1 and "No module named" in (result.stderr + result.stdout)
+        ):
             msg = (result.stderr.strip() or result.stdout.strip())[:300]
-            errors.append((cmd[0], msg))
+            errors.append((tool, msg))
 
     if changed_by or errors:
         print(
