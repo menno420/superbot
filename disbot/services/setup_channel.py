@@ -49,11 +49,13 @@ operator-named "setup" channels.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
 
 import discord
 
 from core.runtime.guild_resources import ensure_channel, resolve_member
+from services import setup_access
 
 if TYPE_CHECKING:
     from services.setup_session import SetupSession
@@ -381,9 +383,218 @@ async def delete_setup_channel(
     return True
 
 
+CleanupReason = Literal[
+    "ok",
+    "not_complete",
+    "draft_not_empty",
+    "channel_id_mismatch",
+    "channel_renamed",
+    "channel_missing",
+    "unauthorized",
+    "delete_failed",
+]
+
+
+@dataclass(frozen=True)
+class CleanupResult:
+    """Outcome of :func:`cleanup_setup_channel_after_completion`.
+
+    ``reason="ok"`` is the only success state; any other value
+    surfaces an operator-facing explanation of why the cleanup was
+    refused.  ``detail`` is a short human-readable string suitable
+    for an ephemeral reply.
+    """
+
+    reason: CleanupReason
+    detail: str
+
+
+async def cleanup_setup_channel_after_completion(
+    guild: discord.Guild,
+    session: SetupSession | None,
+    *,
+    actor: discord.Member,
+) -> CleanupResult:
+    """Delete ``#superbot-setup`` after a successful Final Review apply.
+
+    Phase 8 of the setup-wizard plan.  Mandatory guards, checked in
+    order — any failure short-circuits with an operator-facing
+    explanation rather than proceeding to the delete:
+
+    1. ``session.setup_status == "complete"`` — the wizard must have
+       finished a Final Review apply.  Without this, the operator
+       hasn't actually applied their staged ops yet.
+    2. ``setup_draft.count(guild_id) == 0`` — partial-recovery state
+       always preserves the draft; an empty draft is the proxy for
+       "no recovery in progress".  Cleaning up mid-recovery would
+       strand the operator without an anchor message.
+    3. ``session.setup_channel_id`` matches the channel id we're
+       about to delete.  Belt-and-braces protection: callers pass
+       the channel id implicitly via the session, but a future
+       caller passing the wrong session would otherwise delete the
+       wrong channel.
+    4. The channel name is still ``#superbot-setup``.  An operator
+       who renamed the channel signaled "this is mine now"; we
+       refuse to delete a renamed channel even if the id still
+       matches (mirrors :func:`delete_setup_channel`'s own guard).
+    5. ``setup_access.can_apply_setup(actor, session)`` — only the
+       server owner or a delegated setup admin can trigger the
+       delete.
+
+    Only if every guard passes:
+
+    * Call :func:`delete_setup_channel` to perform the Discord-side
+      delete (which has its own name guard, kept as defence in
+      depth).
+    * Null both ``setup_channel_id`` and ``setup_message_id`` on the
+      session row so the next ``/setup`` re-creates a fresh channel.
+
+    Returns a typed :class:`CleanupResult`.  The caller (typically
+    the Final Review completion view) surfaces ``detail`` in an
+    ephemeral reply.
+    """
+    if session is None or session.setup_status != "complete":
+        return CleanupResult(
+            reason="not_complete",
+            detail=(
+                "Setup isn't complete yet — finish a Final Review apply "
+                "before deleting the setup channel."
+            ),
+        )
+
+    try:
+        from services import setup_draft as _draft
+
+        pending = await _draft.count(guild.id)
+    except Exception:
+        logger.exception(
+            "cleanup_setup_channel: setup_draft.count failed (guild=%d)",
+            guild.id,
+        )
+        return CleanupResult(
+            reason="delete_failed",
+            detail=(
+                "Couldn't read the staged-ops count — see logs.  Re-run "
+                "Final Review or try again later."
+            ),
+        )
+    if pending > 0:
+        return CleanupResult(
+            reason="draft_not_empty",
+            detail=(
+                f"There are still **{pending}** staged operation(s) — "
+                "Final Review left them in the draft for recovery.  "
+                "Apply them (or run `/setup-reset`) before deleting the "
+                "channel."
+            ),
+        )
+
+    if session.setup_channel_id is None:
+        return CleanupResult(
+            reason="channel_missing",
+            detail=("No setup channel is recorded for this guild — nothing to delete."),
+        )
+
+    channel = guild.get_channel(session.setup_channel_id)
+    if not isinstance(channel, discord.TextChannel):
+        # The channel may have already been deleted out-of-band; null
+        # the pointer for consistency and return a non-error reason.
+        try:
+            await set_session_channel_id(guild.id, None)
+        except Exception:
+            logger.exception(
+                "cleanup_setup_channel: nulling channel id failed (guild=%d)",
+                guild.id,
+            )
+        return CleanupResult(
+            reason="channel_missing",
+            detail=(
+                "The setup channel is already gone — cleared the "
+                "session pointer for you."
+            ),
+        )
+
+    if channel.id != session.setup_channel_id:
+        return CleanupResult(
+            reason="channel_id_mismatch",
+            detail=(
+                "The session's setup_channel_id doesn't match the "
+                "resolved channel; refusing to delete."
+            ),
+        )
+
+    if channel.name != SETUP_CHANNEL_NAME:
+        return CleanupResult(
+            reason="channel_renamed",
+            detail=(
+                f"The channel has been renamed to `#{channel.name}` — "
+                "refusing to delete an operator-renamed channel."
+            ),
+        )
+
+    if not setup_access.can_apply_setup(actor, session):
+        return CleanupResult(
+            reason="unauthorized",
+            detail=(
+                "Only the server owner or a delegated setup admin can "
+                "delete the setup channel."
+            ),
+        )
+
+    deleted = await delete_setup_channel(guild, channel.id)
+    if not deleted:
+        return CleanupResult(
+            reason="delete_failed",
+            detail=(
+                "Discord refused the delete — check the bot's Manage "
+                "Channels permission and see logs."
+            ),
+        )
+
+    try:
+        await set_session_channel_id(guild.id, None)
+    except Exception:
+        logger.exception(
+            "cleanup_setup_channel: nulling channel id failed after delete",
+        )
+    try:
+        await set_session_message_id(guild.id, None)
+    except Exception:
+        logger.exception(
+            "cleanup_setup_channel: nulling message id failed after delete",
+        )
+
+    return CleanupResult(
+        reason="ok",
+        detail="Setup channel deleted.  Re-run `/setup` later to recreate it.",
+    )
+
+
+async def set_session_channel_id(guild_id: int, channel_id: int | None) -> None:
+    """Thin shim around :func:`services.setup_session.set_setup_channel_id`.
+
+    Defined here so the cleanup helper can defer the lazy import to
+    a single seam (avoiding the cyclic-import risk of pulling
+    ``services.setup_session`` at module-load time).
+    """
+    from services import setup_session as svc
+
+    await svc.set_setup_channel_id(guild_id, channel_id)
+
+
+async def set_session_message_id(guild_id: int, message_id: int | None) -> None:
+    """Thin shim around :func:`services.setup_session.set_setup_message_id`."""
+    from services import setup_session as svc
+
+    await svc.set_setup_message_id(guild_id, message_id)
+
+
 __all__ = [
     "PRIVACY_NOTE",
     "SETUP_CHANNEL_NAME",
+    "CleanupReason",
+    "CleanupResult",
+    "cleanup_setup_channel_after_completion",
     "delete_setup_channel",
     "ensure_setup_channel",
     "recompute_setup_channel_overwrites",

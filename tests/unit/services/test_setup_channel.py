@@ -518,3 +518,295 @@ async def test_delete_setup_channel_returns_false_on_forbidden():
 
     ok = await delete_setup_channel(guild, 7000)
     assert ok is False
+
+
+# ---------------------------------------------------------------------------
+# Phase 8 — guarded cleanup after Final Review apply
+# ---------------------------------------------------------------------------
+
+
+def _complete_session(
+    *,
+    channel_id: int | None = 7000,
+    delegated=(),
+):
+    """Session in the 'complete' state — the precondition for cleanup."""
+    return SetupSession(
+        guild_id=1,
+        guild_name="Test",
+        owner_id=99,
+        setup_status="complete",
+        setup_channel_id=channel_id,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=delegated,
+        skipped_sections=frozenset(),
+        depth=None,
+    )
+
+
+def _owner_member(user_id: int = 99) -> MagicMock:
+    m = MagicMock(spec=discord.Member)
+    m.id = user_id
+    m.guild = SimpleNamespace(owner_id=user_id)
+    m.guild_permissions = SimpleNamespace(administrator=False)
+    return m
+
+
+def _random_member(user_id: int = 42) -> MagicMock:
+    m = MagicMock(spec=discord.Member)
+    m.id = user_id
+    m.guild = SimpleNamespace(owner_id=99)
+    m.guild_permissions = SimpleNamespace(administrator=False)
+    return m
+
+
+@pytest.mark.asyncio
+async def test_cleanup_refuses_when_session_not_complete():
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    guild = _make_guild()
+    session = _complete_session()
+    # Force the not-complete branch.
+    session = SetupSession(
+        guild_id=session.guild_id,
+        guild_name=session.guild_name,
+        owner_id=session.owner_id,
+        setup_status="in_progress",  # not complete
+        setup_channel_id=session.setup_channel_id,
+        setup_message_id=session.setup_message_id,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=session.delegated_admins,
+        skipped_sections=frozenset(),
+        depth=None,
+    )
+
+    result = await cleanup_setup_channel_after_completion(
+        guild,
+        session,
+        actor=_owner_member(),
+    )
+    assert result.reason == "not_complete"
+
+
+@pytest.mark.asyncio
+async def test_cleanup_refuses_when_session_is_none():
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    result = await cleanup_setup_channel_after_completion(
+        _make_guild(),
+        None,
+        actor=_owner_member(),
+    )
+    assert result.reason == "not_complete"
+
+
+@pytest.mark.asyncio
+async def test_cleanup_refuses_when_draft_not_empty():
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    guild = _make_guild()
+    session = _complete_session()
+    with patch(
+        "services.setup_draft.count",
+        new_callable=AsyncMock,
+        return_value=3,  # staged ops still in draft
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_owner_member(),
+        )
+    assert result.reason == "draft_not_empty"
+    assert "3" in result.detail
+
+
+@pytest.mark.asyncio
+async def test_cleanup_refuses_when_channel_already_renamed():
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    renamed = _make_text_channel(7000)
+    renamed.name = "operator-took-over"
+    guild = _make_guild(cached_channel=renamed)
+    session = _complete_session(channel_id=7000)
+    with patch(
+        "services.setup_draft.count",
+        new_callable=AsyncMock,
+        return_value=0,
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_owner_member(),
+        )
+    assert result.reason == "channel_renamed"
+
+
+@pytest.mark.asyncio
+async def test_cleanup_refuses_when_unauthorized():
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    channel = _make_text_channel(7000)
+    guild = _make_guild(cached_channel=channel)
+    # Random member, not the owner and not delegated.
+    session = _complete_session(channel_id=7000, delegated=())
+    with patch(
+        "services.setup_draft.count",
+        new_callable=AsyncMock,
+        return_value=0,
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_random_member(),
+        )
+    assert result.reason == "unauthorized"
+
+
+@pytest.mark.asyncio
+async def test_cleanup_refuses_when_channel_missing_from_cache():
+    """Channel cached as None (already deleted out-of-band) returns the
+    channel_missing reason and nulls the session pointer for cleanliness.
+    """
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    guild = _make_guild(cached_channel=None)
+    session = _complete_session(channel_id=7000)
+    with (
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "services.setup_session.set_setup_channel_id",
+            new_callable=AsyncMock,
+        ) as null_mock,
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_owner_member(),
+        )
+    assert result.reason == "channel_missing"
+    null_mock.assert_awaited_once_with(1, None)
+
+
+@pytest.mark.asyncio
+async def test_cleanup_refuses_when_setup_channel_id_not_set():
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    guild = _make_guild()
+    session = _complete_session(channel_id=None)
+    with patch(
+        "services.setup_draft.count",
+        new_callable=AsyncMock,
+        return_value=0,
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_owner_member(),
+        )
+    assert result.reason == "channel_missing"
+
+
+@pytest.mark.asyncio
+async def test_cleanup_succeeds_and_nulls_session_pointers():
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    channel = _make_text_channel(7000)
+    channel.delete = AsyncMock()
+    guild = _make_guild(cached_channel=channel)
+    session = _complete_session(channel_id=7000)
+    with (
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "services.setup_session.set_setup_channel_id",
+            new_callable=AsyncMock,
+        ) as null_channel_mock,
+        patch(
+            "services.setup_session.set_setup_message_id",
+            new_callable=AsyncMock,
+        ) as null_message_mock,
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_owner_member(),
+        )
+    assert result.reason == "ok"
+    channel.delete.assert_awaited_once()
+    # Both session pointers nulled so the next /setup re-creates fresh.
+    null_channel_mock.assert_awaited_once_with(1, None)
+    null_message_mock.assert_awaited_once_with(1, None)
+
+
+@pytest.mark.asyncio
+async def test_cleanup_returns_delete_failed_when_delete_refused():
+    """Discord-side delete refuses → delete_failed reason; pointers stay."""
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    channel = _make_text_channel(7000)
+    channel.delete = AsyncMock(
+        side_effect=discord.Forbidden(MagicMock(), "denied"),
+    )
+    guild = _make_guild(cached_channel=channel)
+    session = _complete_session(channel_id=7000)
+    with (
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "services.setup_session.set_setup_channel_id",
+            new_callable=AsyncMock,
+        ) as null_mock,
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_owner_member(),
+        )
+    assert result.reason == "delete_failed"
+    # No nulling on failure — pointers stay so the operator can retry.
+    null_mock.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_cleanup_delegated_admin_can_trigger_deletion():
+    """Delegated setup admins (not just owners) pass the cleanup gate."""
+    from services.setup_channel import cleanup_setup_channel_after_completion
+
+    channel = _make_text_channel(7000)
+    channel.delete = AsyncMock()
+    guild = _make_guild(cached_channel=channel)
+    session = _complete_session(channel_id=7000, delegated=(42,))
+    with (
+        patch(
+            "services.setup_draft.count",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "services.setup_session.set_setup_channel_id",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "services.setup_session.set_setup_message_id",
+            new_callable=AsyncMock,
+        ),
+    ):
+        result = await cleanup_setup_channel_after_completion(
+            guild,
+            session,
+            actor=_random_member(user_id=42),
+        )
+    assert result.reason == "ok"

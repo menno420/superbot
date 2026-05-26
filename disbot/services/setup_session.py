@@ -230,6 +230,18 @@ async def record_readiness_score(guild_id: int, score: int | None) -> None:
     await db.set_readiness_score(guild_id, score)
 
 
+async def set_setup_channel_id(guild_id: int, channel_id: int | None) -> None:
+    """Persist (or clear) the workspace's setup channel id (Phase 8).
+
+    Used by :func:`services.setup_channel.cleanup_setup_channel_after_completion`
+    after a successful Discord-side delete to null
+    ``session.setup_channel_id`` so the next ``/setup`` re-creates the
+    channel cleanly.  Service-layer wrapper around
+    :func:`utils.db.setup_session.set_setup_channel_id`.
+    """
+    await db.set_setup_channel_id(guild_id, channel_id)
+
+
 async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
     """Persist (or clear) the wizard's anchor message id for ``guild_id``.
 
@@ -472,6 +484,7 @@ __all__ = [
     "resume_session",
     "set_depth",
     "set_purpose",
+    "set_setup_channel_id",
     "set_setup_message_id",
     "start_session",
     "unack_section",

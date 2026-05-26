@@ -272,6 +272,31 @@ async def clear_acknowledged_sections(guild_id: int) -> None:
     )
 
 
+async def set_setup_channel_id(guild_id: int, channel_id: int | None) -> None:
+    """Persist (or clear) the workspace's setup channel id.
+
+    The setup wizard creates ``#superbot-setup`` and remembers its id
+    on ``setup_session.setup_channel_id``; Phase 8's guarded cleanup
+    service calls this with ``channel_id=None`` after a successful
+    ``delete_setup_channel`` so a future ``/setup`` re-creates the
+    channel cleanly rather than reusing the now-stale id.
+
+    A dedicated setter is required because :func:`upsert` COALESCEs
+    its ``setup_channel_id`` argument with the existing value, so
+    the upsert path cannot clear a stale id.
+    """
+    await pool.get().execute(
+        """
+        UPDATE setup_session
+           SET setup_channel_id = $2,
+               updated_at       = NOW()
+         WHERE guild_id = $1
+        """,
+        guild_id,
+        channel_id,
+    )
+
+
 async def set_setup_message_id(guild_id: int, message_id: int | None) -> None:
     """Persist (or clear) the workspace wizard's anchor message id.
 
@@ -380,6 +405,7 @@ __all__ = [
     "set_depth",
     "set_purpose",
     "set_readiness_score",
+    "set_setup_channel_id",
     "set_setup_message_id",
     "set_status",
     "set_step",
