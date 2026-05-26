@@ -31,10 +31,8 @@ from typing import TYPE_CHECKING
 import discord
 
 from core.runtime.ai.contracts import AITask, PolicyDenialReason
+from core.runtime.ai.feature_facts import FeatureFactRequest, FeatureFactsResult
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
-
-if TYPE_CHECKING:
-    from core.runtime.ai.contracts import AIResponse
 from services import (
     ai_context_service,
     ai_conversation_service,
@@ -45,6 +43,11 @@ from services import (
     ai_task_router,
 )
 from services.ai_natural_language_policy import MessageContext
+
+if TYPE_CHECKING:
+    from core.runtime.ai.contracts import AIResponse
+
+_VIDEO_TASKS = frozenset({AITask.VIDEO_DESCRIBE, AITask.VIDEO_COMPARE, AITask.VIDEO_QA})
 
 logger = logging.getLogger("bot.runtime.ai.natural_language_stage")
 
@@ -168,7 +171,52 @@ class AINaturalLanguageStage:
             return StageResult()
 
         try:
-            feature_facts = await _gather_feature_facts(routed.task, text)
+            _fact_req = FeatureFactRequest(
+                task=routed.task,
+                text=text,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                author_id=user_id,
+                message_id=message.id,
+            )
+            feature = await _gather_feature_facts(_fact_req)
+
+            # Video tasks: short-circuit when no grounding facts are available.
+            # Must not call the AI provider with empty video context.
+            if routed.task in _VIDEO_TASKS and not feature.facts:
+                try:
+                    await message.channel.send(
+                        "I couldn't retrieve video information for that link.",
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
+                    await ai_decision_audit_service.record(
+                        guild_id=guild_id,
+                        channel_id=channel_id,
+                        category_id=category_id,
+                        user_id=user_id,
+                        message_id=message.id,
+                        task=routed.task.value,
+                        route=routed.route,
+                        decision="denied",
+                        reason_code=feature.error_reason or "video_grounding_failed",
+                        policy_snapshot_hash=decision.policy_snapshot_hash,
+                    )
+                except discord.HTTPException:
+                    await ai_decision_audit_service.record(
+                        guild_id=guild_id,
+                        channel_id=channel_id,
+                        category_id=category_id,
+                        user_id=user_id,
+                        message_id=message.id,
+                        task=routed.task.value,
+                        route=routed.route,
+                        decision="errored",
+                        reason_code="video_unavailable_reply_send_failed",
+                        policy_snapshot_hash=decision.policy_snapshot_hash,
+                    )
+                ctx.metadata["handled_by"] = STAGE_NAME
+                return StageResult(short_circuit=True)
+
             # Chat memory: gather recent channel turns (with optional
             # Discord history fallback). Best-effort — failure returns
             # an empty list and the stack assembles without recent
@@ -196,7 +244,7 @@ class AINaturalLanguageStage:
                 guild_id=guild_id,
                 user_message=text,
                 profile_ids=decision.instruction_profile_ids,
-                retrieved_facts=feature_facts,
+                retrieved_facts=list(feature.facts),
                 recent_turns=recent_turns,
             )
             correlation_id = uuid.uuid4().hex
@@ -262,8 +310,28 @@ class AINaturalLanguageStage:
             )
             return StageResult()
 
+        from core.runtime.ai import response_renderer_registry
+
+        rendered = await response_renderer_registry.render(
+            routed.task,
+            response,
+            _fact_req,
+            feature.render_context,
+        )
+
         try:
-            await message.channel.send(reply_text)
+            if rendered is not None:
+                await message.channel.send(
+                    content=rendered.content,
+                    embed=rendered.embed,
+                    allowed_mentions=rendered.allowed_mentions
+                    or discord.AllowedMentions.none(),
+                )
+            else:
+                await message.channel.send(
+                    reply_text,
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
         except discord.HTTPException:
             logger.exception(
                 "ai_natural_language_stage: send failed for guild=%s "
@@ -281,7 +349,11 @@ class AINaturalLanguageStage:
                 task=routed.task.value,
                 route=routed.route,
                 decision="errored",
-                reason_code=PolicyDenialReason.PROVIDER_UNAVAILABLE,
+                reason_code=(
+                    "video_response_send_failed"
+                    if routed.task in _VIDEO_TASKS
+                    else "response_send_failed"
+                ),
                 policy_snapshot_hash=decision.policy_snapshot_hash,
                 instruction_profile_ids=list(stack.instruction_profile_ids) or None,
                 provider=response.provider or None,
@@ -321,19 +393,30 @@ class AINaturalLanguageStage:
         return StageResult(short_circuit=True)
 
 
-async def _gather_feature_facts(task: AITask, text: str) -> list[str]:
+async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
     """Hand off to the feature owner for fact retrieval.
 
-    BTD6 routes through :mod:`services.btd6_context_service`. Other
-    tasks return an empty list — the gateway answers from the
-    instruction stack alone.
+    BTD6 routes through btd6_context_service; VIDEO tasks through
+    youtube_context_service (feature-flag gated).  Other tasks return
+    empty facts and the gateway answers from the instruction stack alone.
     """
-    if task is AITask.BTD6_ANSWER:
+    if req.task is AITask.BTD6_ANSWER:
         from services import btd6_context_service
 
-        ctx = await btd6_context_service.build(text)
-        return list(ctx.facts)
-    return []
+        ctx = await btd6_context_service.build(req.text)
+        return FeatureFactsResult(facts=tuple(ctx.facts))
+    if req.task in _VIDEO_TASKS:
+        from services import youtube_context_service
+
+        ctx = await youtube_context_service.build(req)
+        if not ctx.facts:
+            return FeatureFactsResult(
+                facts=(),
+                render_context=None,
+                error_reason=ctx.error_reason,
+            )
+        return FeatureFactsResult(facts=ctx.facts, render_context=ctx)
+    return FeatureFactsResult(facts=())
 
 
 async def _invoke_gateway(

@@ -90,11 +90,23 @@ _VOCABULARY: Final[tuple[tuple[frozenset[str], str, str | None], ...]] = (
                 "ct",
                 "contested territory",
                 "contested territories",
-                "ct tile",
-                "ct tiles",
             },
         ),
         "btd6_ct",
+        None,
+    ),
+    (
+        frozenset(
+            {
+                "ct tile",
+                "ct tiles",
+                "contested territory tile",
+                "contested territory tiles",
+                "relic tile",
+                "relic tiles",
+            },
+        ),
+        "btd6_ct_tile",
         None,
     ),
     (

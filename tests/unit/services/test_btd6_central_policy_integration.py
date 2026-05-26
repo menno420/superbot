@@ -222,8 +222,10 @@ def _stub_services_for_btd6(monkeypatch):
     )
 
     # Replace the feature-fact gather so we don't pull real BTD6 data.
-    async def _no_facts(_task, _text):
-        return []
+    from core.runtime.ai.feature_facts import FeatureFactsResult
+
+    async def _no_facts(_req):
+        return FeatureFactsResult(facts=())
 
     monkeypatch.setattr(mod, "_gather_feature_facts", _no_facts)
 
@@ -239,6 +241,9 @@ def _stub_services_for_btd6(monkeypatch):
         )
 
     monkeypatch.setattr(ai_gateway, "execute", _execute)
+
+    from core.runtime.ai import response_renderer_registry
+    monkeypatch.setattr(response_renderer_registry, "render", AsyncMock(return_value=None))
 
     audit: list[dict] = []
 

@@ -323,6 +323,20 @@ class AICog(commands.Cog):
         else:
             interaction_router.register(AI_ROUTER_PREFIX, handle_ai_interaction)
 
+        # Register YouTube embed renderers. Idempotent — register() replaces
+        # silently so repeated cog_load() is safe. VIDEO_QA is plain-text in M1.
+        from core.runtime.ai import response_renderer_registry
+        from views import youtube_renderers
+
+        response_renderer_registry.register(
+            AITask.VIDEO_DESCRIBE,
+            youtube_renderers.render_describe,
+        )
+        response_renderer_registry.register(
+            AITask.VIDEO_COMPARE,
+            youtube_renderers.render_compare,
+        )
+
     async def cog_unload(self) -> None:
         from core.runtime import message_pipeline
         from core.runtime.ai.natural_language_stage import STAGE_NAME

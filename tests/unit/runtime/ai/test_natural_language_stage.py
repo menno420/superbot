@@ -18,6 +18,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
+import discord
 import pytest
 
 from core.runtime.ai.contracts import (
@@ -171,6 +172,10 @@ def stub_services(monkeypatch):
         return len(audit_calls)
 
     monkeypatch.setattr(mod.ai_decision_audit_service, "record", _capture)
+
+    from core.runtime.ai import response_renderer_registry
+    monkeypatch.setattr(response_renderer_registry, "render", AsyncMock(return_value=None))
+
     return audit_calls
 
 
@@ -248,7 +253,12 @@ async def test_replied_audit_carries_provider_and_model(
     assert row["reason_code"] is PolicyDenialReason.NONE
     assert row["provider"] == "openai"
     assert row["model"] == "gpt-4o-mini"
-    msg.channel.send.assert_awaited_once_with("here is my reply")
+    msg.channel.send.assert_awaited_once()
+    call_args, call_kwargs = msg.channel.send.call_args
+    assert call_args == ("here is my reply",)
+    am = call_kwargs.get("allowed_mentions")
+    assert am is not None
+    assert am.everyone is False
 
 
 @pytest.mark.asyncio
@@ -332,3 +342,130 @@ async def test_gateway_raises_audits_as_errored(monkeypatch, stub_services):
     assert row["decision"] == "errored"
     assert row["reason_code"] is PolicyDenialReason.PROVIDER_UNAVAILABLE
     msg.channel.send.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Renderer seam — PR 6
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_renderer_seam_uses_embed_when_renderer_returns_response(
+    monkeypatch,
+    stub_services,
+):
+    """When the registry returns a RenderedResponse, the stage sends the embed."""
+    from core.runtime.ai import response_renderer_registry
+    from core.runtime.ai.response_renderer_registry import RenderedResponse
+    from services import ai_gateway
+
+    async def fake_execute(_request):
+        return _make_response(text="summary text")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    fake_embed = MagicMock()
+    rendered = RenderedResponse(content=None, embed=fake_embed, allowed_mentions=None)
+    monkeypatch.setattr(
+        response_renderer_registry,
+        "render",
+        AsyncMock(return_value=rendered),
+    )
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    await stage.process(_make_ctx(msg))
+
+    msg.channel.send.assert_awaited_once()
+    call_kwargs = msg.channel.send.call_args
+    assert call_kwargs.kwargs.get("embed") is fake_embed
+    assert call_kwargs.kwargs.get("allowed_mentions") is not None
+
+    assert len(stub_services) == 1
+    assert stub_services[0]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_renderer_seam_plain_text_when_renderer_returns_none(
+    monkeypatch,
+    stub_services,
+):
+    """When the registry returns None, the stage sends plain text with AllowedMentions.none()."""
+    from services import ai_gateway
+
+    async def fake_execute(_request):
+        return _make_response(text="plain text reply")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    await stage.process(_make_ctx(msg))
+
+    msg.channel.send.assert_awaited_once()
+    call_args, call_kwargs = msg.channel.send.call_args
+    assert call_args == ("plain text reply",)
+    am = call_kwargs.get("allowed_mentions")
+    assert am is not None
+    assert am.everyone is False
+
+
+@pytest.mark.asyncio
+async def test_send_failure_video_task_writes_video_send_failed(
+    monkeypatch,
+    stub_services,
+):
+    """Send failure on a VIDEO task writes reason_code='video_response_send_failed'."""
+    from core.runtime.ai import natural_language_stage as mod
+    from core.runtime.ai.feature_facts import FeatureFactsResult
+    from services import ai_gateway
+
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _t: SimpleNamespace(task=AITask.VIDEO_DESCRIBE, route="video.describe"),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_gather_feature_facts",
+        AsyncMock(return_value=FeatureFactsResult(facts=("title: Test Video",), render_context=None)),
+    )
+
+    async def fake_execute(_request):
+        return _make_response(text="video summary")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.channel.send = AsyncMock(side_effect=discord.HTTPException(MagicMock(), "send failed"))
+    await stage.process(_make_ctx(msg))
+
+    assert len(stub_services) == 1
+    row = stub_services[0]
+    assert row["decision"] == "errored"
+    assert row["reason_code"] == "video_response_send_failed"
+
+
+@pytest.mark.asyncio
+async def test_send_failure_non_video_task_writes_response_send_failed(
+    monkeypatch,
+    stub_services,
+):
+    """Send failure on a non-video task writes reason_code='response_send_failed'."""
+    from services import ai_gateway
+
+    async def fake_execute(_request):
+        return _make_response(text="some reply")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.channel.send = AsyncMock(side_effect=discord.HTTPException(MagicMock(), "send failed"))
+    await stage.process(_make_ctx(msg))
+
+    assert len(stub_services) == 1
+    row = stub_services[0]
+    assert row["decision"] == "errored"
+    assert row["reason_code"] == "response_send_failed"

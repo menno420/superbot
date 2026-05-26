@@ -36,6 +36,9 @@ _DEFAULT_MODELS: dict[AITask, str] = {
     AITask.HELP_ANSWER: "gpt-4o-mini",
     AITask.CODE_CONTEXT_EXPLAIN: "gpt-4o-mini",
     AITask.MODERATION_ASSIST: "gpt-4o-mini",
+    AITask.VIDEO_DESCRIBE: "gpt-4o-mini",
+    AITask.VIDEO_COMPARE: "gpt-4o-mini",
+    AITask.VIDEO_QA: "gpt-4o-mini",
 }
 
 

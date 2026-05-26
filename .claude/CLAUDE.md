@@ -25,6 +25,24 @@ by review, not by CI.
 
 <!-- READ_FIRST_END -->
 
+<!-- CI_PARITY_START -->
+## Match CI exactly when running checks locally
+
+CI runs **Python 3.10** (`.github/workflows/code-quality.yml`). Running formatters / mypy / pytest under any other interpreter produces silent false negatives — a missing transitive dependency is typed as `Any` under one version and as an attribute error under another, and the local check passes while CI fails. PR #338 hit this exact trap.
+
+**Rules:**
+
+1. Always run formatters / mypy / pytest via `python3.10 -m <tool>` — never bare `black`, `mypy`, `pytest`, or `python3 -m …`. The Stop hook (`scripts/claude_stop_check.py`) already does this.
+2. Before pushing, run the full pre-PR suite:
+   ```
+   python3.10 scripts/check_quality.py --check-only && python3.10 -m pytest tests/ -q
+   ```
+   The Stop hook prints this same command at end of every turn touching `disbot/*.py`.
+3. The `PostToolUse` hook (`scripts/claude_post_edit.py`) auto-fixes black/isort/ruff on every edit and **prints a loud warning** when it changes the file. Read the warning — it means something landed that wasn't already CI-clean.
+4. Pin third-party packages where the public API has churned (see `youtube-transcript-api<1.0` in `requirements.txt` for the canonical example). Unpinned `>=X.Y` resolves to whatever's latest in CI's fresh install, even if your local env still has the old version cached.
+
+<!-- CI_PARITY_END -->
+
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 
