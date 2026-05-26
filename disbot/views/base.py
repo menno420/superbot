@@ -55,9 +55,13 @@ async def handle_view_error(
     ``on_error`` because they intentionally surface ``type(error).__name__``
     to admins for diagnosability.
     """
+    # response_done distinguishes "raised before first response" from
+    # "raised after defer" — these need different remediation in callbacks
+    # (the former is a missing safe_defer; the latter is a service bug).
+    response_done = interaction.response.is_done()
     logger.error(
         "View error | view=%s item_type=%s custom_id=%r label=%r "
-        "user=%s guild=%s channel=%s message=%s",
+        "user=%s guild=%s channel=%s message=%s response_done=%s",
         type(view).__name__,
         type(item).__name__,
         getattr(item, "custom_id", None),
@@ -66,9 +70,10 @@ async def handle_view_error(
         interaction.guild_id,
         interaction.channel_id,
         interaction.message.id if interaction.message else None,
+        response_done,
         exc_info=error,
     )
-    if not interaction.response.is_done():
+    if not response_done:
         try:
             await interaction.response.send_message(
                 "An error occurred. Please try again.",
