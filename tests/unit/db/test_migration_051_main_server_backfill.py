@@ -76,6 +76,30 @@ def test_migration_attributes_backfill_to_system_via_null_actor():
     """Audit metadata: the backfill is system-driven, not
     operator-driven, so ``updated_by`` and ``created_by`` are
     deliberately NULL rather than seeded with an arbitrary id.
+
+    Each NULL must be explicitly cast to ``bigint`` because Postgres
+    otherwise infers a bare NULL literal in a SELECT projection as
+    ``text``, which clashes with the BIGINT columns and aborts the
+    INSERT at runtime. Pre-fix this took the bot down in production.
     """
-    src = _src()
-    assert "NULL" in src
+    # Strip ``-- ...`` comments so the scan only sees executable SQL.
+    sql_lines = [
+        line.split("--", 1)[0]
+        for line in _src().splitlines()
+        if not line.startswith("--")
+    ]
+    executable_sql = "\n".join(sql_lines)
+
+    # Both NULLs (updated_by + created_by) must be cast, not just one.
+    assert (
+        executable_sql.count("NULL::bigint") >= 2
+    ), "Migration 051 must cast both NULL projections to bigint."
+    # And no bare NULL literal survives in a projection — only the
+    # cast form is acceptable.
+    import re
+
+    bare_nulls = re.findall(r"NULL(?!::)", executable_sql)
+    assert not bare_nulls, (
+        "Bare NULL literal in migration 051 — every NULL in a SELECT "
+        "projection must be cast to bigint to match the BIGINT column."
+    )
