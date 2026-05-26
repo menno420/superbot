@@ -470,7 +470,7 @@ def test_final_review_view_disables_apply_when_empty():
     apply_btn = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button) and c.label == "Apply"
+        if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup"
     )
     assert apply_btn.disabled is True
 
