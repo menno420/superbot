@@ -515,6 +515,9 @@ def build_status_embed(bot: commands.Bot) -> discord.Embed:
     return embed
 
 
+_EMBED_FIELD_CAP = 24  # Discord hard limit is 25; reserve 1 for overflow note.
+
+
 def build_runtime_embed() -> discord.Embed:
     """Build the embed for ``!platform runtime`` (snapshot_all roll-up)."""
     from services import diagnostics_service
@@ -525,10 +528,18 @@ def build_runtime_embed() -> discord.Embed:
         description=f"{len(snap)} provider(s) registered.",
         color=discord.Color.blurple(),
     )
-    for name in sorted(snap):
+    names = sorted(snap)
+    for name in names[:_EMBED_FIELD_CAP]:
         embed.add_field(
             name=name,
             value=_fmt_snapshot_value(snap[name]),
+            inline=False,
+        )
+    if len(names) > _EMBED_FIELD_CAP:
+        overflow = len(names) - _EMBED_FIELD_CAP
+        embed.add_field(
+            name=f"… {overflow} more provider(s) not shown",
+            value="Use `!platform runtime` with a name filter to view them.",
             inline=False,
         )
     return embed
@@ -930,12 +941,26 @@ async def build_identity_embed(
         description=desc,
         color=color,
     )
+    # Reserve 1 slot for the optional heal_counts field.
+    bucket_cap = _EMBED_FIELD_CAP - (1 if heal_counts is not None else 0)
+    shown = 0
+    overflow_buckets = 0
     for bucket, items in findings.items():
         if not items:
+            continue
+        if shown >= bucket_cap:
+            overflow_buckets += 1
             continue
         embed.add_field(
             name=f"{bucket} ({len(items)})",
             value="\n".join(items)[:1024],
+            inline=False,
+        )
+        shown += 1
+    if overflow_buckets:
+        embed.add_field(
+            name=f"… {overflow_buckets} more bucket(s) not shown",
+            value="Run `!platform identity` to see the full report.",
             inline=False,
         )
     if heal_counts is not None:
@@ -1251,8 +1276,18 @@ async def build_setup_readiness_embed(
         )
 
     # Chunk lines into ≤15 per field to stay comfortably under 1024.
+    # Track total fields added so we never exceed Discord's 25-field cap.
     chunk_size = 15
+    fields_used = len(embed.fields)
     for i in range(0, len(lines), chunk_size):
+        if fields_used >= _EMBED_FIELD_CAP:
+            remaining_lines = len(lines) - i
+            embed.add_field(
+                name=f"… {remaining_lines} more subsystem(s) not shown",
+                value="Too many fields for one embed.",
+                inline=False,
+            )
+            break
         chunk = lines[i : i + chunk_size]
         name = (
             f"Subsystems ({i + 1}–{i + len(chunk)})"
@@ -1260,6 +1295,7 @@ async def build_setup_readiness_embed(
             else "Subsystems"
         )
         embed.add_field(name=name, value="\n".join(chunk), inline=False)
+        fields_used += 1
 
     embed.set_footer(
         text=(

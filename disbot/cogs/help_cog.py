@@ -167,14 +167,22 @@ def build_cog_embed(
     )
     emoji = meta.get("emoji", "📖") if meta else "📖"
 
+    _FIELD_CAP = 24  # Discord limit is 25; reserve 1 for overflow note
     embed = discord.Embed(title=f"{emoji} {display}", color=color)
     cmds = _get_visible_commands(cog)
-    for cmd in cmds:
+    for cmd in cmds[:_FIELD_CAP]:
         aliases = f"  *(aliases: {', '.join(cmd.aliases)})*" if cmd.aliases else ""
         sig = f" {cmd.signature}".rstrip() if cmd.signature else ""
         embed.add_field(
             name=f"`{prefix}{cmd.name}`{aliases}",
             value=f"{cmd.help or 'No description.'}\nUsage: `{prefix}{cmd.name}{sig}`",
+            inline=False,
+        )
+    if len(cmds) > _FIELD_CAP:
+        overflow = len(cmds) - _FIELD_CAP
+        embed.add_field(
+            name=f"… {overflow} more command(s)",
+            value=f"Use `{prefix}help {display.lower()}` for the full list.",
             inline=False,
         )
     if not embed.fields:

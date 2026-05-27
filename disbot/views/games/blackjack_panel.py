@@ -264,11 +264,18 @@ async def _spawn_solo(interaction: discord.Interaction, bet: int) -> None:
         )
         return
     if result.view is None:
-        # Natural-blackjack auto-payout: no playable view to attach.
-        await interaction.response.edit_message(
-            embed=result.embed,
-            view=None,
+        # Natural-blackjack auto-payout: no playable hand, but still attach
+        # a result view so Play again and Back remain reachable.
+        from views.blackjack.solo_view import _BlackjackSoloResultView
+
+        result_view = _BlackjackSoloResultView(
+            interaction.user.id,
+            interaction.guild_id or 0,
+            bet,
+            None,
         )
+        await interaction.response.edit_message(embed=result.embed, view=result_view)
+        result_view.message = interaction.message
         return
     await interaction.response.edit_message(
         embed=result.embed,

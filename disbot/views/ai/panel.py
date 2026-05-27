@@ -284,80 +284,86 @@ async def handle_ai_interaction(
 ) -> None:
     """Interaction-router handler for prefix ``"ai"``.
 
-    The View's own ``@discord.ui.button`` callbacks are the primary
-    dispatcher for ``PersistentView`` button clicks — discord.py
-    dispatches them in the connection layer before ``on_interaction``
-    fires. This handler runs only after that path completes, so it
-    bails immediately when the response has already been sent.
+    ``AIPanelView`` (PersistentView) is the primary dispatcher — its
+    button callbacks run concurrently with this handler and usually win
+    the race.  This handler is the post-restart fallback for when the
+    view is not alive in memory.  All response calls are wrapped in
+    try/except so a concurrent view response never surfaces as an ERROR.
     """
-    # PersistentView may already have handled this interaction.
-    # Check is_done() BEFORE any permission check or action handling.
     if interaction.response.is_done():
         return
 
-    # Admin gate — mirrors AIPanelView.interaction_check so the router
-    # path enforces the same authorization as the View path.
     member = interaction.user
     if not getattr(member, "guild_permissions", None) or not (
         member.guild_permissions.administrator  # type: ignore[union-attr]
     ):
-        await interaction.response.send_message(
-            "❌ You need the Administrator permission to use the AI panel.",
-            ephemeral=True,
-        )
+        try:
+            await interaction.response.send_message(
+                "❌ You need the Administrator permission to use the AI panel.",
+                ephemeral=True,
+            )
+        except (discord.InteractionResponded, discord.NotFound):
+            pass
+        except discord.HTTPException as exc:
+            if exc.code != 40060:
+                raise
         return
 
-    # Settings requires an async call to _build_ai_settings_panel; the
-    # synchronous _embed_for_ai_panel_action helper cannot serve it.
-    if action == "settings":
-        from cogs.ai_cog import _build_ai_settings_panel
+    try:
+        if action == "settings":
+            from cogs.ai_cog import _build_ai_settings_panel
 
-        embed, view = await _build_ai_settings_panel(
-            interaction.user,
-            interaction.guild_id,
-        )
-        await interaction.response.edit_message(embed=embed, view=view)
-        return
+            embed, view = await _build_ai_settings_panel(
+                interaction.user,
+                interaction.guild_id,
+            )
+            # Re-check after the async call — the view may have responded
+            # while _build_ai_settings_panel was awaited.
+            if interaction.response.is_done():
+                return
+            await interaction.response.edit_message(embed=embed, view=view)
+            return
 
-    # PR4A: the Policy button opens an ephemeral chooser. The View's
-    # own callback already handles this when the View is alive in
-    # memory; the router-side branch keeps the flow working after a
-    # process restart, when only the persistent prefix survives.
-    if action == "policy":
-        from views.ai.policy.chooser import (
-            PolicyChooserView,
-            build_chooser_embed,
-        )
+        if action == "policy":
+            from views.ai.policy.chooser import (
+                PolicyChooserView,
+                build_chooser_embed,
+            )
 
-        await interaction.response.send_message(
-            embed=build_chooser_embed(),
-            view=PolicyChooserView(),
-            ephemeral=True,
-        )
-        return
+            await interaction.response.send_message(
+                embed=build_chooser_embed(),
+                view=PolicyChooserView(),
+                ephemeral=True,
+            )
+            return
 
-    # PR-C: same shape for the Behavior chooser.
-    if action == "behavior":
-        from views.ai.behavior import (
-            BehaviorChooserView,
-            build_behavior_embed,
-        )
+        if action == "behavior":
+            from views.ai.behavior import (
+                BehaviorChooserView,
+                build_behavior_embed,
+            )
 
-        await interaction.response.send_message(
-            embed=build_behavior_embed(),
-            view=BehaviorChooserView(),
-            ephemeral=True,
-        )
-        return
+            await interaction.response.send_message(
+                embed=build_behavior_embed(),
+                view=BehaviorChooserView(),
+                ephemeral=True,
+            )
+            return
 
-    embed = _embed_for_ai_panel_action(action)
-    if embed is None:
-        await interaction.response.send_message(
-            f"❌ Unknown AI panel action: {action!r}",
-            ephemeral=True,
-        )
-        return
-    await interaction.response.edit_message(embed=embed, view=AIPanelView())
+        embed = _embed_for_ai_panel_action(action)
+        if embed is None:
+            await interaction.response.send_message(
+                f"❌ Unknown AI panel action: {action!r}",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.edit_message(embed=embed, view=AIPanelView())
+
+    except discord.InteractionResponded:
+        pass  # View beat us to it — normal race on PersistentView buttons.
+    except discord.HTTPException as exc:
+        if exc.code != 40060:  # 40060 = already_acknowledged, same race
+            raise
 
 
 __all__ = [

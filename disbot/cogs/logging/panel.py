@@ -41,7 +41,7 @@ async def build_panel_embed(guild: discord.Guild | None) -> discord.Embed:
     The panel always opens to the status view so the operator sees
     the current configuration without an extra click.
     """
-    from cogs.admin_cog import build_logging_status_embed
+    from cogs.logging_cog import build_logging_status_embed
 
     return await build_logging_status_embed(guild)
 

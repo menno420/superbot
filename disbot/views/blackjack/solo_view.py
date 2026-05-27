@@ -259,7 +259,7 @@ class _BlackjackSoloResultView(discord.ui.View):
         user_id: int,
         guild_id: int,
         bet: int,
-        game: _Game,
+        game: _Game | None,
     ) -> None:
         super().__init__(timeout=120)
         self.user_id = user_id
