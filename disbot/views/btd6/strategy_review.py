@@ -30,6 +30,8 @@ from typing import Any
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
+
 logger = logging.getLogger("bot.views.btd6.strategy_review")
 
 _VIEW_TIMEOUT_SECONDS = 300
@@ -92,22 +94,28 @@ async def _refresh_or_followup(
 ) -> None:
     """Re-fetch the strategy and refresh the parent embed, plus an
     ephemeral confirmation so the staff actor sees what happened.
+
+    Assumes the caller has already deferred the interaction so the
+    safe helpers route through ``followup.send`` /
+    ``followup.edit_message``.
     """
     try:
         from utils.db import btd6_strategies as db
 
         refreshed = await db.get_strategy(strategy_id)
-    except Exception as exc:  # noqa: BLE001 — defensive
+    except Exception:  # noqa: BLE001 — defensive
         logger.exception("strategy_review: refresh fetch failed for id=%s", strategy_id)
-        refreshed = None
-        await interaction.followup.send(
-            f"⚠️ {confirm_message} (refresh failed: {type(exc).__name__})",
+        await safe_followup(
+            interaction,
+            f"⚠️ {confirm_message} (refresh failed — the change went through "
+            "but the panel could not reload).",
             ephemeral=True,
         )
         return
 
     if refreshed is None:
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             f"✅ {confirm_message} (the strategy is gone from the table now).",
             ephemeral=True,
         )
@@ -115,8 +123,15 @@ async def _refresh_or_followup(
 
     embed = build_strategy_embed(refreshed)
     view = StrategyReviewView(refreshed)
-    await interaction.response.edit_message(embed=embed, view=view)
-    await interaction.followup.send(f"✅ {confirm_message}", ephemeral=True)
+    edited = await safe_edit(interaction, embed=embed, view=view)
+    if not edited:
+        await safe_followup(
+            interaction,
+            f"⚠️ {confirm_message} but the review panel could not be refreshed.",
+            ephemeral=True,
+        )
+        return
+    await safe_followup(interaction, f"✅ {confirm_message}", ephemeral=True)
 
 
 class StrategyReviewView(discord.ui.View):
@@ -151,22 +166,34 @@ class StrategyReviewView(discord.ui.View):
     ) -> None:
         from services.btd6_strategy_mutation import BTD6StrategyMutationError
 
+        # Defer first (component defer_update — silent ack on the
+        # parent message) so we have the full 15-minute followup
+        # window for the mutation + refresh round-trip.
+        if not await safe_defer(interaction):
+            return
+
         try:
             await action_callable(self.strategy_id, **kwargs)
         except BTD6StrategyMutationError as exc:
-            await interaction.response.send_message(
-                f"❌ {type(exc).__name__}: {exc}",
+            # Typed mutation errors expose the service message but
+            # not the class name — service messages are already
+            # user-facing.
+            await safe_followup(
+                interaction,
+                f"❌ Could not update strategy #{self.strategy_id}: {exc}",
                 ephemeral=True,
             )
             return
-        except Exception as exc:  # noqa: BLE001 — surface unexpected errors
+        except Exception:  # noqa: BLE001 — surface unexpected errors
             logger.exception(
                 "StrategyReviewView: mutation %s raised for strategy=%s",
                 action_callable.__name__,
                 self.strategy_id,
             )
-            await interaction.response.send_message(
-                f"❌ Unexpected error: {type(exc).__name__}: {exc}",
+            await safe_followup(
+                interaction,
+                "❌ Unexpected error while updating this strategy. "
+                "Check logs for details.",
                 ephemeral=True,
             )
             return
@@ -228,8 +255,8 @@ class StrategyReviewView(discord.ui.View):
 
         await self._mutate(
             interaction,
-            action_callable=btd6_strategy_mutation.reject,
-            kwargs={"actor": interaction.user, "actor_kind": "staff"},
+            action_callable=btd6_strategy_mutation.staff_reject,
+            kwargs={"staff_actor": interaction.user},
             confirm=f"Rejected strategy #{self.strategy_id}.",
         )
 

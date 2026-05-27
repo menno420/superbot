@@ -48,13 +48,31 @@ def _strategy(
 
 
 def _staff_interaction(*, manage_guild: bool = True) -> MagicMock:
+    """Build an interaction mock that flips ``response.is_done`` after
+    ``defer()`` is awaited so the safe_* helpers route correctly:
+    pre-defer → ``response.send_message`` / ``response.edit_message``,
+    post-defer → ``followup.send`` / ``followup.edit_message``.
+    """
     interaction = MagicMock()
     interaction.user.guild_permissions.administrator = False
     interaction.user.guild_permissions.manage_guild = manage_guild
     interaction.user.id = 7777
+
+    deferred = {"done": False}
+
+    interaction.response.is_done = lambda: deferred["done"]
+
+    async def _defer(**_kw):
+        deferred["done"] = True
+
+    interaction.response.defer = AsyncMock(side_effect=_defer)
     interaction.response.send_message = AsyncMock()
     interaction.response.edit_message = AsyncMock()
     interaction.followup.send = AsyncMock()
+    interaction.followup.edit_message = AsyncMock()
+    interaction.original_response = AsyncMock()
+    interaction.message = MagicMock()
+    interaction.message.id = 99999
     return interaction
 
 
@@ -163,11 +181,15 @@ async def test_approve_guild_button_calls_staff_approve_guild(monkeypatch):
     await view.approve_guild_btn.callback(interaction)
     assert captured["id"] == 42
     assert captured["actor"] is interaction.user
-    interaction.response.edit_message.assert_awaited_once()
+    # Post-defer: panel update goes through followup.edit_message,
+    # confirmation through followup.send (content is a kwarg because
+    # safe_followup unpacks via **kwargs).
+    interaction.response.defer.assert_awaited_once()
+    interaction.followup.edit_message.assert_awaited_once()
     interaction.followup.send.assert_awaited_once()
-    args, _ = interaction.followup.send.call_args
-    assert "Approved" in args[0]
-    assert "#42" in args[0]
+    content = interaction.followup.send.await_args.kwargs["content"]
+    assert "Approved" in content
+    assert "#42" in content
 
 
 async def test_publish_button_calls_staff_publish(monkeypatch):
@@ -190,22 +212,24 @@ async def test_publish_button_calls_staff_publish(monkeypatch):
     interaction = _staff_interaction()
     await view.publish_btn.callback(interaction)
     assert captured["id"] == 11
-    args, _ = interaction.followup.send.call_args
-    assert "Published" in args[0]
+    content = interaction.followup.send.await_args.kwargs["content"]
+    assert "Published" in content
 
 
-async def test_reject_button_calls_reject_with_staff_actor_kind(monkeypatch):
+async def test_reject_button_calls_staff_reject(monkeypatch):
+    """The reject button must route through staff_reject (the
+    permission-checked variant), not the low-level reject primitive.
+    """
     captured: dict = {}
 
-    async def _capture(strategy_id, *, actor, actor_kind, reason=None):
+    async def _capture(strategy_id, *, staff_actor, reason=None):
         captured["id"] = strategy_id
-        captured["actor"] = actor
-        captured["actor_kind"] = actor_kind
+        captured["actor"] = staff_actor
         result = MagicMock()
         result.action = "rejected"
         return result
 
-    monkeypatch.setattr(btd6_strategy_mutation, "reject", _capture)
+    monkeypatch.setattr(btd6_strategy_mutation, "staff_reject", _capture)
 
     async def _refresh(sid):
         return _strategy(sid=sid, approval_status="rejected")
@@ -216,7 +240,9 @@ async def test_reject_button_calls_reject_with_staff_actor_kind(monkeypatch):
     interaction = _staff_interaction()
     await view.reject_btn.callback(interaction)
     assert captured["id"] == 5
-    assert captured["actor_kind"] == "staff"
+    assert captured["actor"] is interaction.user
+    interaction.response.defer.assert_awaited_once()
+    interaction.followup.edit_message.assert_awaited_once()
 
 
 async def test_unpublish_button_calls_unpublish_on_published_strategy(monkeypatch):
@@ -239,11 +265,16 @@ async def test_unpublish_button_calls_unpublish_on_published_strategy(monkeypatc
     interaction = _staff_interaction()
     await view.unpublish_btn.callback(interaction)
     assert captured["id"] == 99
-    args, _ = interaction.followup.send.call_args
-    assert "Unpublished" in args[0]
+    content = interaction.followup.send.await_args.kwargs["content"]
+    assert "Unpublished" in content
 
 
 async def test_mutation_error_surfaces_as_typed_ephemeral_reply(monkeypatch):
+    """Typed mutation errors route through safe_followup (post-defer)
+    with stable user-facing wording — the service's message is
+    surfaced, but the exception class name is not leaked.
+    """
+
     async def _raise(strategy_id, **kw):
         raise btd6_strategy_mutation.InvalidStrategyValueError("bad value")
 
@@ -252,19 +283,25 @@ async def test_mutation_error_surfaces_as_typed_ephemeral_reply(monkeypatch):
     view = StrategyReviewView(_strategy(sid=42))
     interaction = _staff_interaction()
     await view.publish_btn.callback(interaction)
-    interaction.response.send_message.assert_awaited_once()
-    args, kwargs = interaction.response.send_message.call_args
-    assert "InvalidStrategyValueError" in args[0]
-    assert "bad value" in args[0]
+    interaction.response.defer.assert_awaited_once()
+    interaction.followup.send.assert_awaited_once()
+    kwargs = interaction.followup.send.await_args.kwargs
+    content = kwargs["content"]
+    assert "Could not update strategy #42" in content
+    assert "bad value" in content
+    assert "InvalidStrategyValueError" not in content
     assert kwargs.get("ephemeral") is True
-    # No refresh / followup happened because the mutation failed.
-    interaction.response.edit_message.assert_not_awaited()
-    interaction.followup.send.assert_not_awaited()
+    # No refresh / panel edit happened because the mutation failed.
+    interaction.followup.edit_message.assert_not_awaited()
+    interaction.response.send_message.assert_not_awaited()
 
 
 async def test_unauthorized_mutation_error_uses_ephemeral_branch(monkeypatch):
     """Server-side gate (mutation service) is the source of truth; the
-    view's interaction_check is just a UX courtesy."""
+    view's interaction_check is just a UX courtesy. The error message
+    surfaces the service's text but not the exception class name.
+    """
+
     async def _raise(strategy_id, **kw):
         raise btd6_strategy_mutation.UnauthorizedStrategyMutationError("nope")
 
@@ -277,8 +314,11 @@ async def test_unauthorized_mutation_error_uses_ephemeral_branch(monkeypatch):
     view = StrategyReviewView(_strategy(sid=42))
     interaction = _staff_interaction()
     await view.approve_guild_btn.callback(interaction)
-    args, _ = interaction.response.send_message.call_args
-    assert "UnauthorizedStrategyMutationError" in args[0]
+    interaction.followup.send.assert_awaited_once()
+    content = interaction.followup.send.await_args.kwargs["content"]
+    assert "Could not update strategy #42" in content
+    assert "nope" in content
+    assert "UnauthorizedStrategyMutationError" not in content
 
 
 # ---------------------------------------------------------------------------
@@ -293,7 +333,7 @@ async def test_unauthorized_mutation_error_uses_ephemeral_branch(monkeypatch):
     [
         ("approve_guild_btn", "staff_approve_guild"),
         ("publish_btn", "staff_publish"),
-        ("reject_btn", "reject"),
+        ("reject_btn", "staff_reject"),
     ],
 )
 async def test_button_only_writes_via_mutation_service(
@@ -327,4 +367,170 @@ async def test_button_only_writes_via_mutation_service(
     handler = getattr(view, button_attr)
     await handler.callback(interaction)
     assert called_mutation["hit"] is True
+    db_explode.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# Blocker PR-1: defer-before-work and refresh-failure recovery pins.
+# ---------------------------------------------------------------------------
+
+
+async def test_mutate_defers_before_calling_mutation_service(monkeypatch):
+    """The 3-second token must be acknowledged with defer() BEFORE the
+    mutation service is invoked. Pattern from
+    tests/unit/views/test_shop_select_defer.py.
+    """
+    call_order: list[str] = []
+
+    async def _capture(strategy_id, **kw):
+        call_order.append("mutate")
+        result = MagicMock()
+        result.action = "staff_approved_guild"
+        return result
+
+    monkeypatch.setattr(btd6_strategy_mutation, "staff_approve_guild", _capture)
+
+    async def _refresh(sid):
+        return _strategy(sid=sid, approval_status="approved")
+
+    monkeypatch.setattr(db, "get_strategy", _refresh)
+
+    view = StrategyReviewView(_strategy(sid=42))
+    interaction = _staff_interaction()
+
+    async def _defer(**_kw):
+        call_order.append("defer")
+        # Mirror _staff_interaction's stateful flip so post-defer
+        # routing still works.
+        interaction.response.is_done = lambda: True
+
+    interaction.response.defer.side_effect = _defer
+
+    await view.approve_guild_btn.callback(interaction)
+    assert call_order[:2] == ["defer", "mutate"]
+
+
+async def test_refresh_failure_after_successful_mutation_uses_followup(monkeypatch):
+    """If the post-mutation refresh DB fetch raises, the user still
+    gets a clean ephemeral followup — no raw discord.py exception
+    escapes.
+    """
+
+    async def _ok(strategy_id, **kw):
+        result = MagicMock()
+        result.action = "staff_approved_guild"
+        return result
+
+    monkeypatch.setattr(btd6_strategy_mutation, "staff_approve_guild", _ok)
+
+    async def _fail(sid):
+        raise RuntimeError("db went away")
+
+    monkeypatch.setattr(db, "get_strategy", _fail)
+
+    view = StrategyReviewView(_strategy(sid=42))
+    interaction = _staff_interaction()
+    # Must not raise.
+    await view.approve_guild_btn.callback(interaction)
+
+    interaction.response.defer.assert_awaited_once()
+    interaction.followup.send.assert_awaited_once()
+    kwargs = interaction.followup.send.await_args.kwargs
+    assert "refresh failed" in kwargs["content"]
+    assert kwargs.get("ephemeral") is True
+    interaction.response.send_message.assert_not_awaited()
+
+
+async def test_missing_strategy_refresh_uses_followup(monkeypatch):
+    """If the strategy row is gone post-mutation, the user gets a
+    clean ephemeral acknowledgement via followup.send."""
+
+    async def _ok(strategy_id, **kw):
+        result = MagicMock()
+        result.action = "rejected"
+        return result
+
+    monkeypatch.setattr(btd6_strategy_mutation, "staff_reject", _ok)
+
+    async def _none(sid):
+        return None
+
+    monkeypatch.setattr(db, "get_strategy", _none)
+
+    view = StrategyReviewView(_strategy(sid=42))
+    interaction = _staff_interaction()
+    await view.reject_btn.callback(interaction)
+
+    interaction.followup.send.assert_awaited_once()
+    kwargs = interaction.followup.send.await_args.kwargs
+    assert "gone from the table" in kwargs["content"]
+    assert kwargs.get("ephemeral") is True
+
+
+async def test_safe_edit_failure_still_sends_followup_warning(monkeypatch):
+    """If the panel edit fails (token expired mid-mutation, message
+    deleted, etc.) the user still gets a warning followup so the
+    mutation result is acknowledged.
+    """
+
+    async def _ok(strategy_id, **kw):
+        result = MagicMock()
+        result.action = "staff_approved_guild"
+        return result
+
+    monkeypatch.setattr(btd6_strategy_mutation, "staff_approve_guild", _ok)
+
+    async def _refresh(sid):
+        return _strategy(sid=sid, approval_status="approved")
+
+    monkeypatch.setattr(db, "get_strategy", _refresh)
+
+    from views.btd6 import strategy_review as sr_mod
+
+    async def _edit_fails(*_args, **_kwargs):
+        return False
+
+    monkeypatch.setattr(sr_mod, "safe_edit", _edit_fails)
+
+    view = StrategyReviewView(_strategy(sid=42))
+    interaction = _staff_interaction()
+    await view.approve_guild_btn.callback(interaction)
+
+    interaction.followup.send.assert_awaited_once()
+    content = interaction.followup.send.await_args.kwargs["content"]
+    assert "panel could not be refreshed" in content
+
+
+async def test_mutate_bails_when_defer_fails(monkeypatch):
+    """If safe_defer returns False (token expired before defer
+    reached Discord) the mutation, refresh, and followup paths must
+    all be skipped — there's no usable interaction left.
+    """
+    mutation_called = {"hit": False}
+
+    async def _capture(*_a, **_kw):
+        mutation_called["hit"] = True
+        return MagicMock(action="staff_approved_guild")
+
+    monkeypatch.setattr(btd6_strategy_mutation, "staff_approve_guild", _capture)
+
+    from views.btd6 import strategy_review as sr_mod
+
+    async def _defer_fails(*_args, **_kwargs):
+        return False
+
+    monkeypatch.setattr(sr_mod, "safe_defer", _defer_fails)
+
+    db_explode = AsyncMock(
+        side_effect=AssertionError("DB must not be touched after defer failure"),
+    )
+    monkeypatch.setattr(db, "get_strategy", db_explode)
+
+    view = StrategyReviewView(_strategy(sid=42))
+    interaction = _staff_interaction()
+    await view.approve_guild_btn.callback(interaction)
+
+    assert mutation_called["hit"] is False
+    interaction.followup.send.assert_not_awaited()
+    interaction.followup.edit_message.assert_not_awaited()
     db_explode.assert_not_awaited()

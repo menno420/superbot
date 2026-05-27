@@ -157,3 +157,129 @@ async def test_setup_adds_cog_to_bot():
     await setup(_FakeBot())
     assert len(added) == 1
     assert isinstance(added[0], BTD6Cog)
+
+
+# ---------------------------------------------------------------------------
+# Blocker PR-1: every BTD6 slash command that touches DB must defer
+# BEFORE invoking the builder so the 3-second token window doesn't
+# expire under load.
+# ---------------------------------------------------------------------------
+
+
+def _slash_interaction():
+    """Interaction mock for slash commands. Guild present (for /mine
+    and /pending), defer flips response.is_done so safe_followup
+    routes through followup.send."""
+    interaction = MagicMock()
+    interaction.guild = MagicMock()
+    interaction.guild.id = 555
+    interaction.user = MagicMock()
+    interaction.user.id = 7777
+
+    deferred = {"done": False}
+    interaction.response.is_done = lambda: deferred["done"]
+
+    async def _defer(**_kw):
+        deferred["done"] = True
+
+    interaction.response.defer = AsyncMock(side_effect=_defer)
+    interaction.response.send_message = AsyncMock()
+    interaction.followup.send = AsyncMock()
+    interaction.original_response = AsyncMock()
+    return interaction
+
+
+@pytest.mark.parametrize(
+    ("command_attr", "builder_module", "builder_name", "kwargs", "return_kind"),
+    [
+        (
+            "btd6_pending_slash",
+            "cogs.btd6._builders",
+            "build_pending_review_payload",
+            {"limit": 5},
+            "pending_list",
+        ),
+        (
+            "btd6_source_health_slash",
+            "cogs.btd6._builders",
+            "build_source_health_embed",
+            {"limit": 25},
+            "embed",
+        ),
+        (
+            "btd6_browse_slash",
+            "views.btd6.strategy_browse",
+            "build_browse_embed",
+            {"limit": 10},
+            "embed",
+        ),
+        (
+            "btd6_mine_slash",
+            "views.btd6.strategy_browse",
+            "build_mine_embed",
+            {"limit": 10},
+            "embed",
+        ),
+        (
+            "btd6_strategy_slash",
+            "views.btd6.strategy_browse",
+            "build_detail_embed",
+            {"strategy_id": 1},
+            "embed",
+        ),
+    ],
+)
+@pytest.mark.asyncio
+async def test_slash_command_defers_before_db_work(
+    monkeypatch,
+    command_attr,
+    builder_module,
+    builder_name,
+    kwargs,
+    return_kind,
+):
+    """Every named BTD6 slash command must call ``safe_defer`` before
+    invoking its builder so DB latency doesn't trip the interaction
+    token. Patch targets are the source modules because the cog uses
+    function-body lazy imports — ``from cogs.btd6._builders import
+    build_…`` re-resolves at call time.
+    """
+    import importlib
+
+    builder_mod = importlib.import_module(builder_module)
+
+    call_order: list[str] = []
+
+    async def _build_capture(*_a, **_kw):
+        call_order.append("build")
+        # Match the real return shape per builder so the cog's
+        # downstream branching (e.g. ``isinstance(payload, str)``,
+        # ``for embed, view in payload``) doesn't TypeError.
+        if return_kind == "pending_list":
+            return [(MagicMock(spec=discord.Embed), MagicMock())]
+        return MagicMock(spec=discord.Embed)
+
+    monkeypatch.setattr(builder_mod, builder_name, _build_capture)
+
+    # Patch safe_defer / safe_followup at the cog's import site.
+    from cogs import btd6_cog as cog_mod
+
+    async def _defer_capture(interaction, **_kw):
+        call_order.append("defer")
+        # Mirror the real helper: flip is_done so any subsequent
+        # safe_followup routes through followup.send.
+        interaction.response.is_done = lambda: True
+        return True
+
+    async def _followup_capture(*_a, **_kw):
+        return None
+
+    monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
+    monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
+
+    cog = BTD6Cog(MagicMock())
+    interaction = _slash_interaction()
+    callback = getattr(cog, command_attr).callback
+    await callback(cog, interaction, **kwargs)
+
+    assert call_order[:2] == ["defer", "build"], call_order

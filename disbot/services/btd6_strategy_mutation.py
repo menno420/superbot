@@ -314,6 +314,12 @@ async def reject(
     actor_kind: str = "staff",
     reason: str | None = None,
 ) -> StrategyMutationResult:
+    """Low-level rejection primitive. This function preserves the
+    historical write path and does NOT enforce staff permissions or
+    strategy existence. UI / admin / staff callers must use
+    :func:`staff_reject`. Keep this only for future non-staff actor
+    flows that add their own authorization before calling it.
+    """
     actor_id = _check_actor(actor)
     await db.update_strategy_state(
         strategy_id,
@@ -333,6 +339,49 @@ async def reject(
         strategy_id=strategy_id,
         action="rejected",
         actor_kind=actor_kind,
+    )
+
+
+async def staff_reject(
+    strategy_id: int,
+    *,
+    staff_actor: Any,
+    reason: str | None = None,
+) -> StrategyMutationResult:
+    """Staff rejects a strategy.
+
+    Mirrors :func:`reject`'s write semantics and adds the staff
+    permission + strategy-existence guards that the other staff_*
+    mutations enforce. UI / admin paths must call this rather than
+    :func:`reject` so the chokepoint stays authorized.
+    """
+    actor_id = _check_actor(staff_actor)
+    if not _is_staff(staff_actor):
+        raise UnauthorizedStrategyMutationError(
+            "rejection requires manage_guild or administrator permission",
+        )
+    before = await db.get_strategy(strategy_id)
+    if before is None:
+        raise InvalidStrategyValueError(f"strategy {strategy_id} not found")
+
+    await db.update_strategy_state(
+        strategy_id,
+        approval_status="rejected",
+        bump_version=True,
+        current_guild_id=None,
+    )
+    await db.record_strategy_audit(
+        strategy_id,
+        actor_kind="staff",
+        actor_id=actor_id,
+        action="rejected",
+        detail={"reason": reason} if reason else None,
+    )
+    return StrategyMutationResult(
+        mutation_id=uuid.uuid4().hex,
+        strategy_id=strategy_id,
+        action="rejected",
+        actor_kind="staff",
     )
 
 
@@ -375,6 +424,7 @@ __all__ = [
     "reject",
     "staff_approve_guild",
     "staff_publish",
+    "staff_reject",
     "submit_strategy",
     "unpublish",
 ]
