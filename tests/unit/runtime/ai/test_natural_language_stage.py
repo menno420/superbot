@@ -1079,3 +1079,182 @@ async def test_accessible_channel_ids_for_dm_returns_empty(monkeypatch):
     from core.runtime.ai.natural_language_stage import _accessible_channel_ids_for
 
     assert _accessible_channel_ids_for(MagicMock(), None) == frozenset()
+
+
+# ---------------------------------------------------------------------------
+# BTD6 live-state knowledge block wiring (PR-2 of the AI-data-access plan)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_stage_appends_btd6_live_state_block_for_btd6_answer(
+    monkeypatch, stub_services
+):
+    """When the task router returns BTD6_ANSWER and the text triggers
+    the BTD6-anchor + state heuristic, the new gatherer's block must
+    be present in `bot_knowledge_blocks` passed to `assemble()`."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import (
+        ai_gateway,
+        bot_knowledge_service,
+        btd6_ai_knowledge_block_service,
+    )
+
+    captured: dict = {}
+
+    async def fake_assemble(**kwargs):
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(
+            render_system_prompt=lambda: "sys",
+            render_payload_text=lambda: "p",
+            instruction_profile_ids=(),
+        )
+
+    monkeypatch.setattr(mod.ai_instruction_service, "assemble", fake_assemble)
+
+    # Default fixture routes everything to GENERAL_NL_ANSWER — override.
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _text: SimpleNamespace(
+            task=AITask.BTD6_ANSWER,
+            route="btd6.answer",
+        ),
+    )
+
+    # Bot-knowledge gather still returns its own command-catalog block.
+    monkeypatch.setattr(
+        bot_knowledge_service,
+        "gather",
+        AsyncMock(
+            return_value=(BotKnowledgeBlock(kind="bot_command_catalog", text="cmds"),)
+        ),
+    )
+
+    btd6_block = BotKnowledgeBlock(kind="bot_btd6_live_state", text="boss event: X")
+    monkeypatch.setattr(
+        btd6_ai_knowledge_block_service,
+        "gather_btd6_bot_knowledge_blocks",
+        AsyncMock(return_value=(btd6_block,)),
+    )
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "<@bot> what boss event is on right now?"
+    await stage.process(_make_ctx(msg))
+
+    blocks = captured["kwargs"]["bot_knowledge_blocks"]
+    kinds = {b.kind for b in blocks}
+    assert "bot_btd6_live_state" in kinds
+    assert "bot_command_catalog" in kinds
+
+
+@pytest.mark.asyncio
+async def test_stage_skips_btd6_block_for_non_btd6_task(monkeypatch, stub_services):
+    """For GENERAL_NL_ANSWER (the default) the BTD6 gatherer must NOT
+    run — general-channel chatter shouldn't pay the lookup cost."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import (
+        ai_gateway,
+        bot_knowledge_service,
+        btd6_ai_knowledge_block_service,
+    )
+
+    captured: dict = {}
+
+    async def fake_assemble(**kwargs):
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(
+            render_system_prompt=lambda: "sys",
+            render_payload_text=lambda: "p",
+            instruction_profile_ids=(),
+        )
+
+    monkeypatch.setattr(mod.ai_instruction_service, "assemble", fake_assemble)
+    monkeypatch.setattr(
+        bot_knowledge_service,
+        "gather",
+        AsyncMock(return_value=()),
+    )
+
+    btd6_gather_mock = AsyncMock(return_value=())
+    monkeypatch.setattr(
+        btd6_ai_knowledge_block_service,
+        "gather_btd6_bot_knowledge_blocks",
+        btd6_gather_mock,
+    )
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "<@bot> what's the weather like?"
+    await stage.process(_make_ctx(msg))
+
+    btd6_gather_mock.assert_not_awaited()
+    assert captured["kwargs"]["bot_knowledge_blocks"] == ()
+
+
+@pytest.mark.asyncio
+async def test_stage_continues_when_btd6_gather_raises(monkeypatch, stub_services):
+    """A raise inside the BTD6 gatherer must NOT poison the reply path."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import (
+        ai_gateway,
+        bot_knowledge_service,
+        btd6_ai_knowledge_block_service,
+    )
+
+    captured: dict = {}
+
+    async def fake_assemble(**kwargs):
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(
+            render_system_prompt=lambda: "sys",
+            render_payload_text=lambda: "p",
+            instruction_profile_ids=(),
+        )
+
+    monkeypatch.setattr(mod.ai_instruction_service, "assemble", fake_assemble)
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _text: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
+    )
+    monkeypatch.setattr(
+        bot_knowledge_service,
+        "gather",
+        AsyncMock(return_value=()),
+    )
+
+    async def boom(**_kw):
+        raise RuntimeError("gather broke")
+
+    monkeypatch.setattr(
+        btd6_ai_knowledge_block_service,
+        "gather_btd6_bot_knowledge_blocks",
+        boom,
+    )
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "<@bot> any current boss?"
+    await stage.process(_make_ctx(msg))
+
+    # Stage still finishes; blocks stay as whatever bot_knowledge_service produced.
+    assert captured["kwargs"]["bot_knowledge_blocks"] == ()
+    assert len(stub_services) == 1
+    assert stub_services[0]["decision"] == "replied"

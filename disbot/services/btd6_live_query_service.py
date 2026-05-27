@@ -591,6 +591,114 @@ async def get_active_event_restrictions_for_hero(
     return tuple(race + boss + ody + ch)
 
 
+@dataclass(frozen=True)
+class BroadRestriction:
+    """One restriction emitted by :func:`get_all_active_restrictions`.
+
+    Carries the entity it applies to (id + api key + is_hero), the
+    event context, and the stance bundle. Unlike
+    :class:`TowerRestrictionContext`, this struct is keyed by entity
+    rather than by event, so a single restriction row identifies both
+    "what is restricted" and "where".
+    """
+
+    entity_id: str
+    entity_api_key: str
+    is_hero: bool
+    event_kind: str
+    event_id: str
+    event_name: str
+    end_ms: int | None
+    fetched_at: datetime | None
+    stance: Literal["banned", "limited", "path_blocked", "allowed"]
+    max_count: int | None
+    path1_blocked: int
+    path2_blocked: int
+    path3_blocked: int
+    sentinel_all_heroes_banned: bool = False
+
+
+async def get_all_active_restrictions(
+    *,
+    include_towers: bool = True,
+    include_heroes: bool = True,
+    max_rows: int = 64,
+) -> tuple[BroadRestriction, ...]:
+    """Public broad scan: every restriction across every active event.
+
+    Iterates the known tower / hero id maps and composes the per-entity
+    restriction scans. Deduplicates so the ``ChosenPrimaryHero`` sentinel
+    only appears once per event even when multiple heroes are scanned.
+
+    Bounded by ``max_rows`` (hard cap 256) so a misbehaving fetch can
+    never blow out the AI prompt window. Returns ``()`` on any internal
+    failure rather than raising.
+    """
+    bound = max(1, min(256, int(max_rows)))
+    out: list[BroadRestriction] = []
+    seen_sentinels: set[str] = set()
+    try:
+        if include_towers:
+            for tower_id, api_key in _TOWER_ID_TO_API_KEY.items():
+                for ctx in await get_active_event_restrictions_for_tower(tower_id):
+                    if ctx.stance == "allowed":
+                        continue
+                    out.append(
+                        BroadRestriction(
+                            entity_id=tower_id,
+                            entity_api_key=api_key,
+                            is_hero=False,
+                            event_kind=ctx.event_kind,
+                            event_id=ctx.event_id,
+                            event_name=ctx.event_name,
+                            end_ms=ctx.end_ms,
+                            fetched_at=ctx.fetched_at,
+                            stance=ctx.stance,
+                            max_count=ctx.max_count,
+                            path1_blocked=ctx.path1_blocked,
+                            path2_blocked=ctx.path2_blocked,
+                            path3_blocked=ctx.path3_blocked,
+                            sentinel_all_heroes_banned=False,
+                        ),
+                    )
+                    if len(out) >= bound:
+                        return tuple(out)
+        if include_heroes:
+            for hero_id, api_key in _HERO_ID_TO_API_KEY.items():
+                for ctx in await get_active_event_restrictions_for_hero(hero_id):
+                    if ctx.sentinel_all_heroes_banned:
+                        sentinel_key = f"{ctx.event_kind}:{ctx.event_id}"
+                        if sentinel_key in seen_sentinels:
+                            continue
+                        seen_sentinels.add(sentinel_key)
+                    if ctx.stance == "allowed":
+                        continue
+                    out.append(
+                        BroadRestriction(
+                            entity_id=hero_id,
+                            entity_api_key=api_key,
+                            is_hero=True,
+                            event_kind=ctx.event_kind,
+                            event_id=ctx.event_id,
+                            event_name=ctx.event_name,
+                            end_ms=ctx.end_ms,
+                            fetched_at=ctx.fetched_at,
+                            stance=ctx.stance,
+                            max_count=ctx.max_count,
+                            path1_blocked=ctx.path1_blocked,
+                            path2_blocked=ctx.path2_blocked,
+                            path3_blocked=ctx.path3_blocked,
+                            sentinel_all_heroes_banned=ctx.sentinel_all_heroes_banned,
+                        ),
+                    )
+                    if len(out) >= bound:
+                        return tuple(out)
+    except Exception:  # noqa: BLE001 — degrade gracefully
+        logger.exception("broad active-restriction scan failed")
+        return ()
+    return tuple(out)
+
+
 # ---------------------------------------------------------------------------
 # Leaderboards
 # ---------------------------------------------------------------------------
@@ -697,11 +805,13 @@ async def get_boss_leaderboard(
 
 __all__ = [
     "ActiveEventHeadline",
+    "BroadRestriction",
     "LeaderboardRow",
     "TowerRestrictionContext",
     "get_active_event_restrictions_for_hero",
     "get_active_event_restrictions_for_tower",
     "get_active_events",
+    "get_all_active_restrictions",
     "get_boss_leaderboard",
     "get_newest_active_boss",
     "get_newest_active_race",

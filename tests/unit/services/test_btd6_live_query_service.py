@@ -264,3 +264,202 @@ async def test_unknown_tower_returns_empty():
 async def test_unknown_hero_returns_empty():
     out = await live.get_active_event_restrictions_for_hero("not_a_real_hero")
     assert out == ()
+
+
+# ---------------------------------------------------------------------------
+# get_all_active_restrictions — broad scan used by the AI facade
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_get_all_active_restrictions_iterates_known_entities(monkeypatch):
+    """Walks `_TOWER_ID_TO_API_KEY` + `_HERO_ID_TO_API_KEY`, calls the
+    existing public per-entity helpers, drops `allowed` rows, and
+    deduplicates the all-heroes sentinel across multiple heroes.
+    """
+    from services.btd6_live_query_service import TowerRestrictionContext
+
+    sentinel = TowerRestrictionContext(
+        event_kind="btd6_race",
+        event_id="r1",
+        event_name="Sentinel Race",
+        end_ms=None,
+        fetched_at=datetime.now(tz=timezone.utc),
+        stance="banned",
+        max_count=0,
+        path1_blocked=0,
+        path2_blocked=0,
+        path3_blocked=0,
+        is_hero=True,
+        sentinel_all_heroes_banned=True,
+    )
+    tower_banned = TowerRestrictionContext(
+        event_kind="btd6_boss_difficulty",
+        event_id="boss1_normal",
+        event_name="Boss Banned",
+        end_ms=None,
+        fetched_at=datetime.now(tz=timezone.utc),
+        stance="banned",
+        max_count=0,
+        path1_blocked=0,
+        path2_blocked=0,
+        path3_blocked=0,
+        is_hero=False,
+        sentinel_all_heroes_banned=False,
+    )
+
+    async def _tower(tower_id):
+        if tower_id == "dart_monkey":
+            return (tower_banned,)
+        return ()
+
+    async def _hero(hero_id):
+        # Every hero scan yields the sentinel — dedup must collapse to one row.
+        return (sentinel,)
+
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_tower",
+        _tower,
+    )
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_hero",
+        _hero,
+    )
+
+    out = await live.get_all_active_restrictions()
+    assert any(r.is_hero is False and r.entity_id == "dart_monkey" for r in out)
+    sentinels = [r for r in out if r.sentinel_all_heroes_banned]
+    assert len(sentinels) == 1
+
+
+@pytest.mark.asyncio
+async def test_get_all_active_restrictions_scope_excludes_unwanted_entities(
+    monkeypatch,
+):
+    from services.btd6_live_query_service import TowerRestrictionContext
+
+    tower_banned = TowerRestrictionContext(
+        event_kind="btd6_race",
+        event_id="r1",
+        event_name="R1",
+        end_ms=None,
+        fetched_at=datetime.now(tz=timezone.utc),
+        stance="banned",
+        max_count=0,
+        path1_blocked=0,
+        path2_blocked=0,
+        path3_blocked=0,
+        is_hero=False,
+        sentinel_all_heroes_banned=False,
+    )
+    hero_banned = TowerRestrictionContext(
+        event_kind="btd6_race",
+        event_id="r1",
+        event_name="R1",
+        end_ms=None,
+        fetched_at=datetime.now(tz=timezone.utc),
+        stance="banned",
+        max_count=0,
+        path1_blocked=0,
+        path2_blocked=0,
+        path3_blocked=0,
+        is_hero=True,
+        sentinel_all_heroes_banned=False,
+    )
+    tower_calls: list[str] = []
+    hero_calls: list[str] = []
+
+    async def _tower(tower_id):
+        tower_calls.append(tower_id)
+        return (tower_banned,)
+
+    async def _hero(hero_id):
+        hero_calls.append(hero_id)
+        return (hero_banned,)
+
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_tower",
+        _tower,
+    )
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_hero",
+        _hero,
+    )
+
+    only_towers = await live.get_all_active_restrictions(include_heroes=False)
+    assert hero_calls == []
+    assert all(r.is_hero is False for r in only_towers)
+
+    hero_calls.clear()
+    tower_calls.clear()
+    only_heroes = await live.get_all_active_restrictions(include_towers=False)
+    assert tower_calls == []
+    assert all(r.is_hero is True for r in only_heroes)
+
+
+@pytest.mark.asyncio
+async def test_get_all_active_restrictions_caps_rows(monkeypatch):
+    from services.btd6_live_query_service import TowerRestrictionContext
+
+    ctx = TowerRestrictionContext(
+        event_kind="btd6_race",
+        event_id="r1",
+        event_name="R1",
+        end_ms=None,
+        fetched_at=datetime.now(tz=timezone.utc),
+        stance="banned",
+        max_count=0,
+        path1_blocked=0,
+        path2_blocked=0,
+        path3_blocked=0,
+        is_hero=False,
+        sentinel_all_heroes_banned=False,
+    )
+
+    async def _tower(tower_id):
+        # Each tower yields 5 banned rows — quickly exceeds the cap.
+        return (ctx, ctx, ctx, ctx, ctx)
+
+    async def _hero(hero_id):
+        return ()
+
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_tower",
+        _tower,
+    )
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_hero",
+        _hero,
+    )
+
+    out = await live.get_all_active_restrictions(max_rows=7)
+    assert len(out) == 7
+
+
+@pytest.mark.asyncio
+async def test_get_all_active_restrictions_returns_empty_on_failure(monkeypatch):
+    async def _boom(_):
+        raise RuntimeError("nope")
+
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_tower",
+        _boom,
+    )
+
+    async def _ok(_):
+        return ()
+
+    monkeypatch.setattr(
+        live,
+        "get_active_event_restrictions_for_hero",
+        _ok,
+    )
+    out = await live.get_all_active_restrictions()
+    assert out == ()

@@ -417,6 +417,27 @@ class AINaturalLanguageStage:
                 )
                 bot_knowledge_blocks = ()
 
+            # BTD6 live-state / source-status enrichment: only fires for
+            # BTD6-classified messages so general-channel chatter doesn't
+            # pay the lookup cost. Heuristics live in
+            # services.btd6_ai_knowledge_block_service and require a
+            # BTD6 anchor term, so bare "what event is on" cannot route
+            # here even when the task router lets the message through.
+            if routed.task is AITask.BTD6_ANSWER:
+                try:
+                    from services import btd6_ai_knowledge_block_service
+
+                    btd6_blocks = await btd6_ai_knowledge_block_service.gather_btd6_bot_knowledge_blocks(
+                        user_text=user_text,
+                    )
+                    if btd6_blocks:
+                        bot_knowledge_blocks = bot_knowledge_blocks + btd6_blocks
+                except Exception as exc:  # noqa: BLE001 — defensive
+                    logger.debug(
+                        "ai_natural_language_stage: btd6 knowledge unavailable: %s",
+                        exc,
+                    )
+
             stack = await ai_instruction_service.assemble(
                 guild_id=guild_id,
                 user_message=user_text,

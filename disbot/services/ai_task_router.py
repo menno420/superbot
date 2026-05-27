@@ -35,7 +35,13 @@ def _has_question_intent(text: str) -> bool:
 
 
 # Keep this list short and curated. It biases the router toward BTD6;
-# anything not matched falls through to GENERAL_NL_ANSWER.
+# anything not matched falls through to GENERAL_NL_ANSWER. Every entry
+# must be a BTD6 anchor on its own — bare "event" / "active" / "right
+# now" / "leaderboard" / "stale" / "freshness" do NOT belong here: they
+# would over-route non-BTD6 questions (server events, "is the bot
+# active", XP leaderboard, "is the database stale"). The
+# anchor + state-term heuristic for live-state questions lives in
+# services.btd6_ai_knowledge_block_service.
 _BTD6_KEYWORDS = (
     "btd6",
     "bloons",
@@ -65,9 +71,16 @@ _BTD6_KEYWORDS = (
     "magic only",
     "support only",
     "boss bloon",
+    "boss event",
     "ninja kiwi",
+    "ninjakiwi",
     "monkey",
     "primary monkey",
+    "odyssey",
+    "contested territory",
+    "race ",
+    "banned hero",
+    "banned tower",
 )
 
 
