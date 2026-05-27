@@ -142,6 +142,7 @@ def _expected_parity_names() -> set[str]:
         "source-health",
         "latest-data",
         "grounding",
+        "refresh-source",
         # PR-F additions:
         "browse",
         "mine",

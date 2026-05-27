@@ -52,7 +52,9 @@ def build_btd6_panel_embed() -> discord.Embed:
         title="🐵 BTD6 Assistant",
         description=(
             "Ask BTD6 questions. The buttons below render "
-            "tower / round / mode lookups."
+            "tower / round / mode lookups. The Refresh Panel button "
+            "only redraws this screen; it does not fetch new Ninja "
+            "Kiwi data. Use Source Health to check data freshness."
         ),
         color=_PANEL_COLOR,
     )
@@ -104,7 +106,7 @@ class BTD6PanelView(PersistentView):
         await interaction.response.send_modal(BTD6AskModal())
 
     @discord.ui.button(
-        label="Refresh",
+        label="Refresh Panel",
         style=discord.ButtonStyle.secondary,
         row=0,
         custom_id="btd6:refresh",
