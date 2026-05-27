@@ -605,6 +605,10 @@ def test_refresh_source_or_dependencies_exported_in_all():
 
 @pytest.mark.asyncio
 async def test_refresh_source_or_dependencies_routes_single_source(monkeypatch):
+    # ``nk_btd6_events`` is intentionally NOT in _DEPENDENCY_CHAINS
+    # (no child parsers exist for the events endpoint) so this is the
+    # canonical single-source test case. Don't switch to a chain
+    # parent like ``nk_btd6_maps`` — that would now fan out.
     async def _mock_refresh(
         source_key,
         *,
@@ -621,12 +625,12 @@ async def test_refresh_source_or_dependencies_routes_single_source(monkeypatch):
     )
 
     results = await btd6_ingestion_service.refresh_source_or_dependencies(
-        "nk_btd6_maps",
+        "nk_btd6_events",
         reason="manual",
         started_by_user_id=1,
     )
     assert len(results) == 1
-    assert results[0].source_key == "nk_btd6_maps"
+    assert results[0].source_key == "nk_btd6_events"
 
 
 @pytest.mark.asyncio
@@ -730,7 +734,14 @@ async def test_refresh_source_or_dependencies_propagates_started_by(monkeypatch)
 
 
 @pytest.mark.asyncio
-async def test_refresh_with_dependencies_child_reason_inherits_parent(monkeypatch):
+async def test_refresh_with_dependencies_child_role_is_dependency(monkeypatch):
+    """Child runs always record ``triggered_by="dependency"`` (their role
+    in the chain) regardless of the parent's reason. Operator
+    attribution lives in ``started_by_user_id``.
+
+    This replaces the post-#353 inherit-parent-reason behaviour — see
+    the audit-semantic section in the production-readiness plan.
+    """
     reasons: list[str] = []
 
     async def _mock_refresh(
@@ -764,4 +775,5 @@ async def test_refresh_with_dependencies_child_reason_inherits_parent(monkeypatc
         reason="manual",
         started_by_user_id=1,
     )
-    assert reasons == ["manual", "manual"]
+    # Parent role flows through; child role is "dependency".
+    assert reasons == ["manual", "dependency"]

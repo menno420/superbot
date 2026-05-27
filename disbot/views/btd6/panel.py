@@ -171,6 +171,6 @@ class BTD6PanelView(PersistentView):
         from cogs.btd6._embeds import build_status_embed
 
         await interaction.response.edit_message(
-            embed=build_status_embed(),
+            embed=await build_status_embed(),
             view=self,
         )

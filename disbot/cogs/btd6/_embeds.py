@@ -1,13 +1,18 @@
 """Embed builders for BTD6 (extracted from btd6_cog.py for size).
 
-Pure functions that take BTD6 service output and produce
-:class:`discord.Embed` instances. No DB access, no provider calls.
+Most builders are pure functions over BTD6 service output and never
+touch I/O. The exception is :func:`build_status_embed`, which is
+``async`` and reads ``btd6_facts`` aggregates via
+``btd6_knowledge_service.fact_summary_by_kind`` so the status panel
+reflects live ingestion. No provider calls anywhere.
+
 The cog and the panel view both consume from here so the cog itself
 stays small enough to satisfy the S4.6 cog-size invariant.
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
 import discord
@@ -74,8 +79,112 @@ def response_to_embed(response: Any) -> discord.Embed:
     return embed
 
 
-def build_status_embed() -> discord.Embed:
-    """BTD6 status: data version + entity counts."""
+_BUCKET_EMOJI = {
+    "fresh": "🟢",
+    "aging": "🟡",
+    "stale": "🔴",
+    "never": "⚪",
+}
+
+
+# Useful-first display order for the Live facts block. Kinds not in
+# this tuple are appended alphabetically — operators see the most
+# relevant rotations first as the API grows.
+_LIVE_KIND_ORDER = (
+    "btd6_event",
+    "btd6_map",
+    "btd6_boss",
+    "btd6_race",
+    "btd6_challenge",
+    "btd6_odyssey",
+    "btd6_ct",
+)
+
+
+def _live_kind_sort_key(entity_kind: str) -> tuple[int, str]:
+    """Useful-first ordering for live facts.
+
+    Known kinds get their explicit rank; everything else falls through
+    to an alphabetical tail so new kinds don't disappear from the panel.
+    """
+    try:
+        return (_LIVE_KIND_ORDER.index(entity_kind), entity_kind)
+    except ValueError:
+        return (len(_LIVE_KIND_ORDER), entity_kind)
+
+
+def _short_kind(entity_kind: str) -> str:
+    """Strip the leading ``btd6_`` so the panel doesn't shout it 12 times."""
+    if entity_kind.startswith("btd6_"):
+        return entity_kind[len("btd6_") :]
+    return entity_kind
+
+
+def _format_age(last_fetched_at: datetime | None) -> str:
+    """Render newest-fact age as ``Xm ago`` / ``Xh ago`` / ``Xd ago``.
+
+    ``None`` → ``"never fetched"`` so the placeholder is grammatical.
+    Naive datetimes are interpreted as UTC.
+    """
+    if last_fetched_at is None:
+        return "never fetched"
+    if last_fetched_at.tzinfo is None:
+        last_fetched_at = last_fetched_at.replace(tzinfo=timezone.utc)
+    seconds = int((datetime.now(tz=timezone.utc) - last_fetched_at).total_seconds())
+    if seconds < 0:
+        return "just now"
+    if seconds < 60:
+        return f"{seconds}s ago"
+    if seconds < 3600:
+        return f"{seconds // 60}m ago"
+    if seconds < 86_400:
+        return f"{seconds // 3600}h ago"
+    return f"{seconds // 86_400}d ago"
+
+
+def _format_live_facts_value(
+    summaries: tuple[btd6_knowledge_service.FactKindSummary, ...],
+    *,
+    max_rows: int = 12,
+) -> str:
+    """Render the Live facts field value, ordered useful-first.
+
+    Caps at ``max_rows`` so the embed never exceeds Discord's 1024-char
+    field-value limit even with many kinds; the cap is well below the
+    25-row embed-field maximum.
+    """
+    if not summaries:
+        return (
+            "No facts ingested yet. Run `!btd6 refresh-source <key>` "
+            "or wait for the next supervisor cycle."
+        )
+    ordered = sorted(summaries, key=lambda s: _live_kind_sort_key(s.entity_kind))
+    kept = ordered[:max_rows]
+    lines = []
+    for summary in kept:
+        emoji = _BUCKET_EMOJI.get(summary.bucket, "⚪")
+        age = _format_age(summary.last_fetched_at)
+        count = f"{summary.fact_count} facts" if summary.fact_count != 1 else "1 fact"
+        lines.append(
+            f"{emoji} `{_short_kind(summary.entity_kind):<10}` "
+            f"{count} · newest fact {age}",
+        )
+    dropped = len(ordered) - len(kept)
+    if dropped > 0:
+        lines.append(f"… (+{dropped} more)")
+    return "\n".join(lines)
+
+
+async def build_status_embed() -> discord.Embed:
+    """BTD6 status: seed taxonomy + live ``btd6_facts`` aggregates.
+
+    Two blocks. The "Reference (seed)" block reflects the static
+    fixture set — towers, heroes, modes, rounds — and is what the
+    deterministic resolver answers from. The "Live facts" block
+    aggregates ``btd6_facts`` by ``entity_kind`` and bucketizes the
+    newest-fact age via the central freshness helper. Per-source-key
+    health stays in ``!btd6 source-health``.
+    """
     embed = discord.Embed(
         title="🐵 BTD6 Assistant — Status",
         description=(
@@ -85,34 +194,23 @@ def build_status_embed() -> discord.Embed:
         color=discord.Color.green(),
     )
     embed.add_field(
-        name="Data version",
-        value=btd6_knowledge_service.data_version(),
-        inline=True,
+        name="📚 Reference (seed)",
+        value=(
+            f"Data version: `{btd6_knowledge_service.data_version()}` · "
+            f"Game version: `{btd6_knowledge_service.game_version()}`\n"
+            f"Towers: **{len(btd6_knowledge_service.list_towers())}** · "
+            f"Heroes: **{len(btd6_knowledge_service.list_heroes())}** · "
+            f"Maps: **{len(btd6_knowledge_service.list_maps())}** · "
+            f"Modes: **{len(btd6_knowledge_service.list_modes())}** · "
+            f"Rounds: **{len(btd6_knowledge_service.list_rounds())}**"
+        ),
+        inline=False,
     )
+    summaries = await btd6_knowledge_service.fact_summary_by_kind()
     embed.add_field(
-        name="Game version",
-        value=btd6_knowledge_service.game_version(),
-        inline=True,
-    )
-    embed.add_field(
-        name="Towers",
-        value=str(len(btd6_knowledge_service.list_towers())),
-        inline=True,
-    )
-    embed.add_field(
-        name="Heroes",
-        value=str(len(btd6_knowledge_service.list_heroes())),
-        inline=True,
-    )
-    embed.add_field(
-        name="Maps",
-        value=str(len(btd6_knowledge_service.list_maps())),
-        inline=True,
-    )
-    embed.add_field(
-        name="Rounds",
-        value=str(len(btd6_knowledge_service.list_rounds())),
-        inline=True,
+        name="📊 Live facts (btd6_facts)",
+        value=_format_live_facts_value(summaries),
+        inline=False,
     )
     return embed
 
