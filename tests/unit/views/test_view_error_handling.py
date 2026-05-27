@@ -44,6 +44,7 @@ def _make_interaction(*, responded: bool = False) -> MagicMock:
     interaction.response.edit_message = AsyncMock()
     interaction.followup = MagicMock()
     interaction.followup.send = AsyncMock()
+    interaction.original_response = AsyncMock(return_value=MagicMock())
     return interaction
 
 

@@ -149,9 +149,11 @@ def test_embed_falls_back_when_fields_empty():
         ),
     )
     for f in embed.fields:
-        assert "no detail" in (f.value or "").lower() or "no suggestion" in (
-            f.value or ""
-        ).lower() or "no consequence" in (f.value or "").lower()
+        assert (
+            "no detail" in (f.value or "").lower()
+            or "no suggestion" in (f.value or "").lower()
+            or "no consequence" in (f.value or "").lower()
+        )
 
 
 def test_embed_uses_gold_accent():
@@ -205,9 +207,7 @@ def test_context_from_exception_uses_section_skip_text_when_present():
 def test_view_has_five_buttons():
     view = SectionRecoveryView(_owner_member(), context=_context())
     custom_ids = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
+        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
     }
     assert custom_ids == {
         "setup_recovery:continue",
@@ -261,8 +261,7 @@ async def test_continue_calls_resume_callback():
     btn = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "setup_recovery:continue"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_recovery:continue"
     )
     await btn.callback(interaction)
 
@@ -277,8 +276,7 @@ async def test_continue_without_resume_callback_closes_view():
     btn = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "setup_recovery:continue"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_recovery:continue"
     )
     await btn.callback(interaction)
 
@@ -380,8 +378,7 @@ async def test_skip_writes_mark_section_skipped_and_deletes_provenance_rows():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button)
-            and c.custom_id == "setup_recovery:skip"
+            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_recovery:skip"
         )
         await btn.callback(interaction)
 
@@ -410,8 +407,7 @@ async def test_skip_surfaces_db_failure():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button)
-            and c.custom_id == "setup_recovery:skip"
+            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_recovery:skip"
         )
         await btn.callback(interaction)
 
@@ -445,3 +441,172 @@ async def test_cancel_closes_view_without_side_effects():
     skip_mock.assert_not_awaited()
     delete_mock.assert_not_awaited()
     interaction.response.edit_message.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# Stale-button cleanup — _close_in_place pins the post-stop() contract
+# ---------------------------------------------------------------------------
+
+
+def _btn(view: SectionRecoveryView, custom_id: str) -> discord.ui.Button:
+    return next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == custom_id
+    )
+
+
+def _all_children_disabled(view: SectionRecoveryView) -> bool:
+    return all(getattr(c, "disabled", False) for c in view.children)
+
+
+@pytest.mark.asyncio
+async def test_continue_disables_buttons_when_resume_callback_doesnt_touch_view():
+    """Resume callback that repaints a separate host anchor must NOT
+    leave the recovery view's buttons clickable after ``self.stop()``."""
+
+    async def _resume_without_touching_recovery(_inter):
+        return None  # repaint happens on a different message
+
+    view = SectionRecoveryView(
+        _owner_member(),
+        context=_context(),
+        resume_callback=_resume_without_touching_recovery,
+    )
+    interaction = _interaction(_owner_member())
+
+    await _btn(view, "setup_recovery:continue").callback(interaction)
+
+    assert _all_children_disabled(view)
+    # Without an upstream response, safe_edit routes through
+    # response.edit_message and updates the recovery message in place.
+    interaction.response.edit_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_continue_close_routes_through_followup_when_already_responded():
+    """If the resume callback already consumed the response slot,
+    `_close_in_place` must route through `followup.edit_message`
+    (the post-defer/post-response path) to still disable the buttons."""
+
+    async def _resume_that_responds(inter):
+        inter.response.is_done.return_value = True
+        await inter.response.send_message("repaint happened", ephemeral=True)
+
+    view = SectionRecoveryView(
+        _owner_member(),
+        context=_context(),
+        resume_callback=_resume_that_responds,
+    )
+    interaction = _interaction(_owner_member())
+    interaction.followup.edit_message = AsyncMock()
+
+    await _btn(view, "setup_recovery:continue").callback(interaction)
+
+    assert _all_children_disabled(view)
+    # Once is_done() is True, response.edit_message must NOT be touched —
+    # safe_edit goes through followup.edit_message instead.
+    interaction.followup.edit_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_retry_disables_buttons_after_section_run():
+    """After ``section.run`` (which consumes the response slot via
+    ``response.send_message``), the recovery view's buttons must still
+    be disabled so they don't outlive ``self.stop()``."""
+
+    async def _section_run(inter, _hub):
+        inter.response.is_done.return_value = True
+        await inter.response.send_message("section took it from here")
+
+    section = SetupSection(
+        slug="retry_test",
+        label="Test",
+        style=discord.ButtonStyle.secondary,
+        run=_section_run,
+        op_kinds=frozenset({"bind_channel"}),
+    )
+    view = SectionRecoveryView(_owner_member(), context=_context(section=section))
+    interaction = _interaction(_owner_member())
+    interaction.followup.edit_message = AsyncMock()
+
+    with patch(
+        "views.setup.recovery.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=_session(),
+    ):
+        await _btn(view, "setup_recovery:retry").callback(interaction)
+
+    assert _all_children_disabled(view)
+    interaction.followup.edit_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_skip_with_resume_callback_disables_buttons_and_shows_skip_label():
+    """The plan's B3 bug: skip with resume_callback used to call
+    ``self.stop()`` without disabling the recovery view's buttons.
+    The fix runs ``_close_in_place`` after the resume callback so the
+    recovery message becomes a disabled "⏭ Skipped" shell."""
+
+    captured: dict = {}
+
+    async def _resume(_inter):
+        return None
+
+    async def _safe_edit_spy(_inter, **kw):
+        captured.update(kw)
+        return True
+
+    section = _section("identity")
+    view = SectionRecoveryView(
+        _owner_member(),
+        context=_context(section=section),
+        resume_callback=_resume,
+    )
+    interaction = _interaction(_owner_member())
+
+    with (
+        patch(
+            "views.setup.recovery.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch(
+            "views.setup.recovery.setup_session.mark_section_skipped",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.setup.recovery.setup_draft.list_by_section",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.recovery.safe_edit",
+            AsyncMock(side_effect=_safe_edit_spy),
+        ),
+    ):
+        await _btn(view, "setup_recovery:skip").callback(interaction)
+
+    assert _all_children_disabled(view)
+    assert "Skipped" in (captured.get("content") or "")
+    assert captured.get("view") is view
+
+
+@pytest.mark.asyncio
+async def test_close_in_place_swallows_notfound_when_message_was_deleted():
+    """If the upstream branch deleted/replaced the recovery message,
+    ``safe_edit`` raises (and swallows) ``discord.NotFound`` — the
+    callback must still complete and stop the view."""
+    view = SectionRecoveryView(_owner_member(), context=_context())
+    interaction = _interaction(_owner_member())
+
+    not_found = discord.NotFound(MagicMock(status=404, reason="gone"), "msg gone")
+    interaction.response.edit_message.side_effect = not_found
+
+    # Should not raise even though safe_edit's underlying edit failed.
+    await _btn(view, "setup_recovery:continue").callback(interaction)
+
+    # Buttons are still disabled — local state cleanup happens before
+    # the edit, so the Python-side view is consistent for stop().
+    assert _all_children_disabled(view)
+    assert view.is_finished()

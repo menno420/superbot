@@ -25,7 +25,7 @@ from datetime import timedelta
 import discord
 
 from cogs.moderation._helpers import _can_act_on_interaction
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import safe_defer, safe_followup
 from utils import db
 from utils.helpers import _parse_member
 from utils.settings_keys import WARN_THRESHOLD, WARN_TIMEOUT_MINS
@@ -61,14 +61,16 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
         if err:
             await interaction.response.send_message(err, ephemeral=True)
             return
+        if not await safe_defer(interaction):
+            return
         threshold = int(await db.get_setting(interaction.guild_id, WARN_THRESHOLD, "3"))
         timeout_minutes = int(
             await db.get_setting(interaction.guild_id, WARN_TIMEOUT_MINS, "10"),
         )
         count = await db.add_warning(member.id, interaction.guild_id)
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
-            ephemeral=False,
         )
         await db.log_mod_action(
             interaction.guild_id,
@@ -81,13 +83,15 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             try:
                 until = discord.utils.utcnow() + timedelta(minutes=timeout_minutes)
                 await member.timeout(until, reason=f"{threshold} warnings reached.")
-                await interaction.followup.send(
+                await safe_followup(
+                    interaction,
                     f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
                     f"({threshold} warnings).",
                 )
                 await db.clear_warnings(member.id, interaction.guild_id)
             except discord.Forbidden:
-                await interaction.followup.send(
+                await safe_followup(
+                    interaction,
                     f"⚠️ {threshold} warnings reached but I lack permission to timeout.",
                     ephemeral=True,
                 )
@@ -134,10 +138,13 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[c
         if err:
             await interaction.response.send_message(err, ephemeral=True)
             return
+        if not await safe_defer(interaction):
+            return
         try:
             until = discord.utils.utcnow() + timedelta(minutes=duration)
             await member.timeout(until, reason=reason)
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"⏳ {member.mention} timed out for {duration} minute(s).",
             )
             await db.log_mod_action(
@@ -148,7 +155,8 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[c
                 f"{duration}m: {reason}",
             )
         except discord.Forbidden:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "❌ No permission to timeout that user.",
                 ephemeral=True,
             )
@@ -183,9 +191,12 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
         if err:
             await interaction.response.send_message(err, ephemeral=True)
             return
+        if not await safe_defer(interaction):
+            return
         try:
             await member.kick(reason=reason)
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"👢 {member.mention} kicked. Reason: {reason}",
             )
             await db.log_mod_action(
@@ -196,7 +207,8 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
                 reason,
             )
         except discord.Forbidden:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "❌ No permission to kick that user.",
                 ephemeral=True,
             )
@@ -231,9 +243,12 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
         if err:
             await interaction.response.send_message(err, ephemeral=True)
             return
+        if not await safe_defer(interaction):
+            return
         try:
             await member.ban(reason=reason)
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"🚫 {member.mention} banned. Reason: {reason}",
             )
             await db.log_mod_action(
@@ -244,7 +259,8 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
                 reason,
             )
         except discord.Forbidden:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 "❌ No permission to ban that user.",
                 ephemeral=True,
             )
@@ -311,6 +327,8 @@ class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[ca
                 ephemeral=True,
             )
             return
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         logs = await db.get_mod_logs(member.id, interaction.guild_id, limit=10)
         embed = discord.Embed(
             title=f"📋 Mod Logs — {member.display_name}",
@@ -325,7 +343,7 @@ class _ModLogsModal(discord.ui.Modal, title="View Mod Logs"):  # type: ignore[ca
                     value=f"By <@{entry['moderator_id']}> | {entry['reason']}",
                     inline=False,
                 )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
 
 class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ignore[call-arg]
@@ -345,6 +363,8 @@ class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ig
                 ephemeral=True,
             )
             return
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         await db.clear_warnings(member.id, interaction.guild_id)
         await db.log_mod_action(
             interaction.guild_id,
@@ -353,7 +373,8 @@ class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ig
             interaction.user.id,
             "",
         )
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             f"✅ Warnings cleared for {member.mention}.",
             ephemeral=True,
         )
