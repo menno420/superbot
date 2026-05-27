@@ -27,6 +27,7 @@ from collections.abc import Callable
 import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
+from views.navigation import BackTarget, attach_back_target
 
 ParentBuilder = Callable[
     [discord.Member | discord.User],
@@ -57,6 +58,7 @@ class BackToPanelButton(discord.ui.Button):
         panel_builder: ParentBuilder,
         overview_builder: OverviewEmbedBuilder,
         row: int = 4,
+        grandparent: BackTarget | None = None,
     ) -> None:
         super().__init__(
             label=label,
@@ -66,6 +68,7 @@ class BackToPanelButton(discord.ui.Button):
         )
         self._panel_builder = panel_builder
         self._overview_builder = overview_builder
+        self._grandparent = grandparent
 
     async def callback(self, interaction: discord.Interaction) -> None:
         # Canonical "component defer then edit clicked message" pattern:
@@ -79,6 +82,8 @@ class BackToPanelButton(discord.ui.Button):
         parent_view = self.view
         author = getattr(parent_view, "_author", interaction.user)
         new_view = self._panel_builder(author)
+        if self._grandparent is not None:
+            attach_back_target(new_view, self._grandparent)
         await safe_edit(
             interaction,
             embed=self._overview_builder(),
