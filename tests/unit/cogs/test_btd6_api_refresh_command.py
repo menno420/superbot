@@ -20,7 +20,6 @@ from cogs.btd6._builders import (
 )
 from cogs.btd6_cog import BTD6Cog
 from services import btd6_ingestion_service
-from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -63,27 +62,10 @@ def _slash_interaction() -> MagicMock:
 
 
 # ---------------------------------------------------------------------------
-# Panel button + copy pins
+# (Panel button + copy pins for "Refresh Panel" removed — the button was
+# dropped in the admin-panel restructure. New panel-layout pins live in
+# tests/unit/cogs/test_btd6_panel_admin_button.py.)
 # ---------------------------------------------------------------------------
-
-
-def test_panel_refresh_button_renamed_and_id_stable():
-    view = BTD6PanelView()
-    matched = [
-        child
-        for child in view.children
-        if getattr(child, "custom_id", None) == "btd6:refresh"
-    ]
-    assert len(matched) == 1, "expected exactly one btd6:refresh button"
-    assert matched[0].label == "Refresh Panel"
-
-
-def test_panel_description_mentions_ui_only():
-    embed = build_btd6_panel_embed()
-    description = embed.description or ""
-    assert "Refresh Panel" in description
-    assert "does not fetch" in description
-    assert "Source Health" in description
 
 
 # ---------------------------------------------------------------------------

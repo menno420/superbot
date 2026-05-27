@@ -279,6 +279,21 @@ def build_modes_embed() -> discord.Embed:
     return embed
 
 
+def build_heroes_embed() -> discord.Embed:
+    """Hero catalogue — mirrors build_towers_embed shape."""
+    embed = discord.Embed(
+        title="🐵 BTD6 — Heroes",
+        color=discord.Color.green(),
+    )
+    for hero in btd6_knowledge_service.list_heroes():
+        embed.add_field(
+            name=hero.canonical,
+            value=f"Cost: {hero.base_cost} • {hero.description[:80]}",
+            inline=False,
+        )
+    return embed
+
+
 def build_test_intent_embed(text: str) -> discord.Embed:
     """Resolver introspection — useful for operators tuning the cog."""
     intent = resolve(text)
@@ -318,6 +333,7 @@ def build_test_intent_embed(text: str) -> discord.Embed:
 
 __all__ = [
     "build_diagnostics_embed",
+    "build_heroes_embed",
     "build_modes_embed",
     "build_status_embed",
     "build_test_intent_embed",

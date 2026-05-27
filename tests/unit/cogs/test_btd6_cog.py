@@ -106,11 +106,20 @@ def test_test_intent_embed_renders_resolver_state():
     assert "Rounds" in field_names
 
 
-def test_panel_embed_uses_dataset_versions():
-    embed = build_btd6_panel_embed()
+@pytest.mark.asyncio
+async def test_panel_embed_includes_reference_and_active_blocks(monkeypatch):
+    """Panel embed: seed reference block + 'Currently active' block."""
+    from utils.db import btd6_sources as btd6_db
+
+    async def _empty(_kinds):
+        return {}
+
+    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+    embed = await build_btd6_panel_embed()
     assert isinstance(embed, discord.Embed)
     field_names = {field.name for field in embed.fields}
-    assert {"Data version", "Game version", "Entities"} <= field_names
+    assert any("Reference" in n for n in field_names)
+    assert any("Currently active" in n for n in field_names)
 
 
 def test_persistent_view_registered_under_btd6_subsystem():
