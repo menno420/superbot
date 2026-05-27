@@ -17,6 +17,8 @@ from typing import Any
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_followup
+
 logger = logging.getLogger("bot.views.btd6.strategy_submit")
 
 
@@ -59,17 +61,25 @@ class StrategySubmitModal(discord.ui.Modal, title="Submit BTD6 strategy"):
             submit_strategy,
         )
 
+        # Synchronous guild-context check — fast, no I/O, so respond
+        # immediately without deferring.
         if interaction.guild is None:
             await interaction.response.send_message(
                 "❌ Submitting a strategy requires a guild context.",
                 ephemeral=True,
             )
             return
+
         title = (self.title_input.value or "").strip()
         summary = (self.summary_input.value or "").strip()
         map_name = (self.map_input.value or "").strip() or None
         mode = (self.mode_input.value or "").strip() or None
         hero = (self.hero_input.value or "").strip() or None
+
+        # Defer before the DB insert so the 3-second window doesn't
+        # expire under load.
+        if not await safe_defer(interaction, ephemeral=True):
+            return
 
         try:
             result = await submit_strategy(
@@ -82,23 +92,26 @@ class StrategySubmitModal(discord.ui.Modal, title="Submit BTD6 strategy"):
                 hero=hero,
             )
         except InvalidStrategyValueError as exc:
-            await interaction.response.send_message(
+            await safe_followup(
+                interaction,
                 f"❌ {exc}",
                 ephemeral=True,
             )
             return
-        except Exception as exc:  # noqa: BLE001 — defensive
+        except Exception:  # noqa: BLE001 — defensive
             logger.exception(
                 "StrategySubmitModal: submission failed for guild=%s",
                 interaction.guild.id,
             )
-            await interaction.response.send_message(
-                f"❌ Unexpected error: {type(exc).__name__}: {exc}",
+            await safe_followup(
+                interaction,
+                "❌ Unexpected error while submitting. Check logs for details.",
                 ephemeral=True,
             )
             return
 
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             f"✅ Submitted as strategy `#{result.strategy_id}` "
             f"(`{result.action}`). Staff can review with `!btd6 pending`.",
             ephemeral=True,

@@ -35,6 +35,7 @@ from cogs.btd6._embeds import (
 from cogs.btd6._embeds import response_to_embed as _response_to_embed
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline, tasks
+from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import btd6_ai_service, btd6_ingestion_supervisor
 from services.btd6_resolver_service import resolve
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
@@ -480,10 +481,10 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from cogs.btd6._builders import build_source_health_embed
 
-        await interaction.response.send_message(
-            embed=await build_source_health_embed(limit=limit),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_source_health_embed(limit=limit)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="latest-data",
@@ -542,10 +543,10 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from views.btd6.strategy_browse import build_browse_embed
 
-        await interaction.response.send_message(
-            embed=await build_browse_embed(limit=limit),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_browse_embed(limit=limit)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="mine",
@@ -564,14 +565,14 @@ class BTD6Cog(commands.Cog):
             return
         from views.btd6.strategy_browse import build_mine_embed
 
-        await interaction.response.send_message(
-            embed=await build_mine_embed(
-                interaction.guild.id,
-                interaction.user.id,
-                limit=limit,
-            ),
-            ephemeral=True,
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_mine_embed(
+            interaction.guild.id,
+            interaction.user.id,
+            limit=limit,
         )
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="strategy",
@@ -584,12 +585,14 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from views.btd6.strategy_browse import build_detail_embed
 
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         viewer_guild = interaction.guild.id if interaction.guild else None
         payload = await build_detail_embed(strategy_id, viewer_guild_id=viewer_guild)
         if isinstance(payload, str):
-            await interaction.response.send_message(payload, ephemeral=True)
+            await safe_followup(interaction, payload, ephemeral=True)
         else:
-            await interaction.response.send_message(embed=payload, ephemeral=True)
+            await safe_followup(interaction, embed=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="strategy-audit",
@@ -640,22 +643,23 @@ class BTD6Cog(commands.Cog):
             return
         from cogs.btd6._builders import build_pending_review_payload
 
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         payload = await build_pending_review_payload(
             interaction.guild.id,
             limit=limit,
         )
         if isinstance(payload, str):
-            await interaction.response.send_message(payload, ephemeral=True)
+            await safe_followup(interaction, payload, ephemeral=True)
             return
-        # First embed responds; remaining embeds go as followups.
-        first_embed, first_view = payload[0]
-        await interaction.response.send_message(
-            embed=first_embed,
-            view=first_view,
-            ephemeral=True,
-        )
-        for embed, view in payload[1:]:
-            await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+        # Uniform: every page goes through safe_followup after one defer.
+        for embed, view in payload:
+            await safe_followup(
+                interaction,
+                embed=embed,
+                view=view,
+                ephemeral=True,
+            )
 
     @app_commands.command(name="btd6menu", description="Open the BTD6 panel.")
     async def btd6menu_slash(self, interaction: discord.Interaction) -> None:
