@@ -100,3 +100,37 @@ async def test_no_live_entities_skips_lookup(monkeypatch):
     rows = await btd6_context_service._fetch_live_entity_rows(_Intent())
     assert rows == []
     assert called is False
+
+
+def test_coerce_body_handles_legacy_string_form():
+    """Legacy btd6_facts rows store body_json as a JSON string — the
+    grounding renderer must still decode them so it doesn't fall back
+    to '(no summary)' for every fact in the bundle."""
+    import json as _json
+
+    from services import btd6_context_service
+
+    body = {"name": "Reversed Loop", "type": "race"}
+    assert btd6_context_service._coerce_body(body) is body
+    assert btd6_context_service._coerce_body(_json.dumps(body)) == body
+    assert btd6_context_service._coerce_body("not-json {") == {}
+    assert btd6_context_service._coerce_body(None) == {}
+
+
+def test_render_fact_decodes_legacy_string_body():
+    """When body_json is a JSON-string (legacy double-encoded row),
+    _render_fact must still produce a meaningful headline."""
+    import json as _json
+
+    from services import btd6_context_service
+
+    body = {"name": "Reversed Loop", "type": "race"}
+    row = {
+        "body_json": _json.dumps(body),
+        "source_name": "Ninja Kiwi /races",
+        "fetched_at": datetime(2026, 5, 27, 12, 0, tzinfo=timezone.utc),
+        "version": 1,
+    }
+    rendered = btd6_context_service._render_fact(row)
+    assert "Reversed Loop" in rendered
+    assert "(no summary)" not in rendered
