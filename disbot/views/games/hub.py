@@ -40,7 +40,12 @@ from services.governance_service import GovernanceContext
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
-from views.navigation import attach_back_button
+from views.navigation import (
+    BackTarget,
+    attach_back_button,
+    attach_back_target,
+    chain_back,
+)
 
 logger = logging.getLogger("bot.views.games")
 
@@ -212,6 +217,8 @@ async def build_games_hub_panel(
 def attach_back_to_games_button(
     view: discord.ui.View,
     author: discord.Member | discord.User,
+    *,
+    grandparent: BackTarget | None = None,
 ) -> bool:
     """Append a "↩ Back to Games" control to a child view opened from the hub.
 
@@ -224,6 +231,10 @@ def attach_back_to_games_button(
     :func:`build_games_hub_panel` to apply governance filtering on the
     rebuilt hub.
 
+    When ``grandparent`` is supplied (AB2 — e.g. a Back-to-Help target),
+    :func:`chain_back` wraps the builder so the rebuilt Games hub also
+    re-attaches the grandparent's back button.
+
     Returns ``False`` (no-op) if the view is already at Discord's
     25-component cap — ``attach_back_button`` logs a WARNING in that
     case so operators can see why a panel lost its back nav.
@@ -234,11 +245,13 @@ def attach_back_to_games_button(
     ) -> tuple[discord.Embed, discord.ui.View]:
         return await build_games_hub_panel(author, interaction=interaction)
 
+    builder = chain_back(_build_games_parent, grandparent)
+
     return attach_back_button(
         view,
         label="↩ Back to Games",
         custom_id="games:back",
-        parent_builder=_build_games_parent,
+        parent_builder=builder,
         row=4,
         style=discord.ButtonStyle.secondary,
         error_message="Could not reload the Games hub. Please try again.",
@@ -422,5 +435,8 @@ class GamesHubView(HubView):
             await interaction.response.edit_message(embed=fallback, view=self)
             return
 
-        attach_back_to_games_button(sub_view, self._author)
+        back_target: BackTarget | None = getattr(self, "_back_target", None)
+        attach_back_to_games_button(sub_view, self._author, grandparent=back_target)
+        if back_target is not None:
+            attach_back_target(sub_view, back_target)
         await interaction.response.edit_message(embed=embed, view=sub_view)
