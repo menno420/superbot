@@ -28,11 +28,15 @@ class _RankView(discord.ui.View):
         self.add_item(_RankSelect(self, current_stat))
 
     async def on_timeout(self) -> None:
-        if self.message:
-            try:
-                await self.message.edit(view=None)
-            except Exception:
-                pass
+        if self.message is None:
+            return
+        for item in self.children:
+            item.disabled = True  # type: ignore[attr-defined]
+        try:
+            await self.message.edit(view=self)
+        except Exception:
+            pass
+        self.stop()
 
 
 class _RankSelect(discord.ui.Select):

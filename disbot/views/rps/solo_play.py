@@ -128,6 +128,8 @@ class _RpsView(discord.ui.View):
         await self._play(i, "scissors")
 
     async def on_timeout(self):
+        if self.message is None:
+            return
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         try:
