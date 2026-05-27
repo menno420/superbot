@@ -695,7 +695,334 @@ def build_refresh_source_embed(
     return embed
 
 
+# ---------------------------------------------------------------------------
+# event-detail builder + _towers restriction decoder
+# ---------------------------------------------------------------------------
+
+
+def _render_tower_restrictions(
+    towers: list[dict[str, Any]],
+) -> dict[str, list[str]]:
+    """Group ``_towers`` entries into UI-ready categories.
+
+    The race / boss / odyssey ``_btd6challengedocument`` body carries a
+    ``_towers`` array (43 entries in the Reversed Loop fixture). Each
+    entry has ``tower`` (name), ``max`` (0 = banned, N>=1 = limited,
+    missing = unlimited), ``path1NumBlockedTiers`` / ``path2`` /
+    ``path3`` (top-N tier blocks per path), and ``isHero`` (True for
+    hero entries).
+
+    Returns ``{category: [human strings]}`` covering: ``banned``,
+    ``limited``, ``path_blocked``, ``heroes_banned``. Empty categories
+    are omitted from the result so the caller can `if foo:` cleanly.
+    """
+    banned: list[str] = []
+    limited: list[str] = []
+    path_blocked: list[str] = []
+    heroes_banned: list[str] = []
+
+    for entry in towers:
+        if not isinstance(entry, dict):
+            continue
+        tower = entry.get("tower")
+        if not isinstance(tower, str) or not tower:
+            continue
+        is_hero = bool(entry.get("isHero", False))
+        max_val = entry.get("max")
+        max_int = max_val if isinstance(max_val, int) else None
+        p1 = entry.get("path1NumBlockedTiers") or 0
+        p2 = entry.get("path2NumBlockedTiers") or 0
+        p3 = entry.get("path3NumBlockedTiers") or 0
+
+        if is_hero and max_int == 0:
+            heroes_banned.append(tower)
+            continue
+        if max_int == 0:
+            banned.append(tower)
+            continue
+        if max_int is not None and max_int >= 1:
+            limited.append(f"{tower} (max {max_int})")
+            continue
+        if p1 > 0 or p2 > 0 or p3 > 0:
+            parts = []
+            if p1:
+                parts.append(f"path1 top {p1}")
+            if p2:
+                parts.append(f"path2 top {p2}")
+            if p3:
+                parts.append(f"path3 top {p3}")
+            path_blocked.append(f"{tower} ({', '.join(parts)})")
+            # No `continue` — path-blocked is independent of max,
+            # but we already handled max=0 / max>=1 above.
+
+    out: dict[str, list[str]] = {}
+    if banned:
+        out["banned"] = banned
+    if limited:
+        out["limited"] = limited
+    if path_blocked:
+        out["path_blocked"] = path_blocked
+    if heroes_banned:
+        out["heroes_banned"] = heroes_banned
+    return out
+
+
+_EVENT_KIND_TITLE = {
+    "btd6_race": "🏁 BTD6 Race",
+    "btd6_boss": "👑 BTD6 Boss",
+    "btd6_ct": "🗺️ BTD6 Contested Territory",
+    "btd6_odyssey": "🌊 BTD6 Odyssey",
+    "btd6_event": "🎪 BTD6 Event",
+}
+
+
+def _format_window_status(body: dict[str, Any]) -> str:
+    """Render 'live / ended / upcoming · ends Xh' from start/end ms."""
+    from datetime import datetime, timezone
+
+    now = datetime.now(tz=timezone.utc)
+    start = body.get("start_ms")
+    end = body.get("end_ms")
+    start_dt = (
+        datetime.fromtimestamp(start / 1000.0, tz=timezone.utc)
+        if isinstance(start, (int, float)) and start > 0
+        else None
+    )
+    end_dt = (
+        datetime.fromtimestamp(end / 1000.0, tz=timezone.utc)
+        if isinstance(end, (int, float)) and end > 0
+        else None
+    )
+    if start_dt is None and end_dt is None:
+        return "status: `unknown`"
+    if start_dt is not None and now < start_dt:
+        delta = start_dt - now
+        return f"status: `upcoming` · starts in {delta.days}d {delta.seconds // 3600}h"
+    if end_dt is not None and now > end_dt:
+        return "status: `ended`"
+    if end_dt is not None:
+        delta = end_dt - now
+        h = delta.seconds // 3600
+        return f"status: `live` · ends in {delta.days}d {h}h"
+    return "status: `live`"
+
+
+def build_event_detail_embed(
+    entity_kind: str,
+    entity_key: str,
+    row: dict[str, Any] | None,
+    *,
+    metadata_row: dict[str, Any] | None = None,
+) -> discord.Embed:
+    """Render one specific BTD6 event from ``btd6_facts``.
+
+    ``row`` is the index-fact (carries name + window + scores);
+    ``metadata_row`` is the deeper ``*_metadata`` fact that carries
+    ``_towers`` restrictions and mode flags. Either may be ``None``;
+    the embed degrades gracefully.
+
+    Builders stay synchronous — the cog does both async fetches before
+    calling this function.
+    """
+    title = f"{_EVENT_KIND_TITLE.get(entity_kind, entity_kind)} — {entity_key}"
+
+    if row is None and metadata_row is None:
+        return discord.Embed(
+            title=title,
+            description=(
+                f"No event found for kind=`{entity_kind}` id=`{entity_key}`. "
+                f"Try `!btd6 live {entity_kind.removeprefix('btd6_')}` to "
+                "list active events of this kind."
+            ),
+            color=discord.Color.red(),
+        )
+
+    primary = row if row is not None else metadata_row
+    primary_body = _coerce_body((primary or {}).get("body_json"))
+
+    name = primary_body.get("name") or entity_key
+    embed = discord.Embed(
+        title=f"{_EVENT_KIND_TITLE.get(entity_kind, entity_kind)} — {name}",
+        color=discord.Color.gold(),
+    )
+
+    # Window / status from start_ms+end_ms (in either row or metadata).
+    window_body = primary_body
+    if not window_body.get("start_ms") and metadata_row is not None:
+        window_body = _coerce_body(metadata_row.get("body_json"))
+    embed.add_field(
+        name="Window", value=_format_window_status(window_body), inline=False,
+    )
+
+    # Score fragments from the index row.
+    score_fragments = []
+    if isinstance(primary_body.get("total_scores"), int):
+        score_fragments.append(f"scores={primary_body['total_scores']}")
+    for key, label in (
+        ("total_scores_standard", "standard"),
+        ("total_scores_elite", "elite"),
+    ):
+        v = primary_body.get(key)
+        if isinstance(v, int):
+            score_fragments.append(f"{label}={v}")
+    if isinstance(primary_body.get("boss_type"), str) and primary_body["boss_type"]:
+        score_fragments.append(f"type=`{primary_body['boss_type']}`")
+    if score_fragments:
+        embed.add_field(name="Scores", value=" · ".join(score_fragments), inline=False)
+
+    # Mode flags + round/lives from metadata (when present).
+    if metadata_row is not None:
+        md = _coerce_body(metadata_row.get("body_json"))
+        rules_parts = []
+        if isinstance(md.get("startRound"), int) and isinstance(
+            md.get("endRound"), int,
+        ):
+            rules_parts.append(f"rounds {md['startRound']}–{md['endRound']}")
+        if isinstance(md.get("lives"), int):
+            rules_parts.append(f"lives {md['lives']}")
+        if isinstance(md.get("maxLives"), int):
+            rules_parts.append(f"max lives {md['maxLives']}")
+        if isinstance(md.get("maxTowers"), int):
+            rules_parts.append(f"max towers {md['maxTowers']}")
+        if isinstance(md.get("maxParagons"), int):
+            rules_parts.append(f"max paragons {md['maxParagons']}")
+        if isinstance(md.get("difficulty"), str) and md["difficulty"]:
+            rules_parts.append(f"difficulty `{md['difficulty']}`")
+        if rules_parts:
+            embed.add_field(name="Rules", value=" · ".join(rules_parts), inline=False)
+
+        disabled_flags = []
+        for k, label in (
+            ("disableDoubleCash", "double cash"),
+            ("disableInstas", "instas"),
+            ("disableMK", "MK"),
+            ("disablePowers", "powers"),
+            ("disableSelling", "selling"),
+        ):
+            if md.get(k):
+                disabled_flags.append(label)
+        if disabled_flags:
+            embed.add_field(
+                name="Disabled",
+                value=", ".join(disabled_flags),
+                inline=False,
+            )
+
+        # Tower restrictions decoded from _towers.
+        towers = md.get("_towers")
+        if isinstance(towers, list) and towers:
+            restrictions = _render_tower_restrictions(towers)
+            for category, label in (
+                ("banned", "🚫 Banned towers"),
+                ("limited", "⚠️ Limited towers"),
+                ("path_blocked", "🪜 Path-blocked"),
+                ("heroes_banned", "🧙 Heroes banned"),
+            ):
+                entries = restrictions.get(category)
+                if not entries:
+                    continue
+                value = ", ".join(entries)
+                if len(value) > 1024:
+                    # Truncate to fit the 1024-char field-value cap.
+                    cut: list[str] = []
+                    running = 0
+                    for entry in entries:
+                        sep = ", " if cut else ""
+                        chunk = sep + entry
+                        if running + len(chunk) > 990:
+                            break
+                        cut.append(entry)
+                        running += len(chunk)
+                    dropped = len(entries) - len(cut)
+                    value = ", ".join(cut) + f"… (+{dropped} more)"
+                embed.add_field(name=label, value=value, inline=False)
+
+    when = primary.get("fetched_at") if primary else None
+    if when is not None:
+        embed.set_footer(text=f"fetched={when.isoformat(timespec='minutes')}")
+    return embed
+
+
+# ---------------------------------------------------------------------------
+# admin Fetch-All / Fetch-Selected summary
+# ---------------------------------------------------------------------------
+
+
+def build_admin_refresh_summary_embed(
+    results_by_source: list[tuple[str, list[Any]]],
+    *,
+    title_suffix: str = "",
+) -> discord.Embed:
+    """Aggregate multi-chain refresh results into one embed.
+
+    ``results_by_source`` is a list of ``(source_key, [IngestionResult])``
+    pairs — one entry per top-level chain executed. The embed summarises
+    per-status counts and total facts written, then renders one line per
+    chain so operators can see which ones succeeded / failed.
+    """
+    total_runs = 0
+    total_facts = 0
+    status_counts: dict[str, int] = {}
+    chain_lines: list[str] = []
+
+    for source_key, results in results_by_source:
+        chain_status = "ok"
+        chain_facts = 0
+        chain_errors: list[str] = []
+        for r in results:
+            total_runs += 1
+            total_facts += r.fact_count
+            chain_facts += r.fact_count
+            status_counts[r.status] = status_counts.get(r.status, 0) + 1
+            if r.status in _REFRESH_ERROR_STATUSES:
+                chain_status = "fail"
+                if r.error_code:
+                    chain_errors.append(f"{r.source_key}={r.error_code}")
+        emoji = "✅" if chain_status == "ok" else "⚠️"
+        line = f"{emoji} `{source_key}` · {chain_facts} facts · {len(results)} runs"
+        if chain_errors:
+            line += f"\n   errors: {', '.join(chain_errors[:3])}"
+            if len(chain_errors) > 3:
+                line += f" (+{len(chain_errors) - 3} more)"
+        chain_lines.append(line)
+
+    color = (
+        discord.Color.green()
+        if all(s == "ok" for s in status_counts)
+        else discord.Color.gold() if status_counts.get("ok", 0) else discord.Color.red()
+    )
+    embed = discord.Embed(
+        title=f"🛠️ BTD6 Admin — Refresh Summary{title_suffix}",
+        color=color,
+    )
+    counts_str = " · ".join(f"{n} {s}" for s, n in sorted(status_counts.items()))
+    embed.add_field(
+        name="Aggregate",
+        value=(
+            f"{len(results_by_source)} chains · {total_runs} runs · "
+            f"{total_facts} facts written\n{counts_str}"
+        ),
+        inline=False,
+    )
+    body = "\n".join(chain_lines)
+    # Discord field-value cap.
+    if len(body) > 1024:
+        keep: list[str] = []
+        running = 0
+        for line in chain_lines:
+            if running + len(line) + 1 > 990:
+                break
+            keep.append(line)
+            running += len(line) + 1
+        dropped = len(chain_lines) - len(keep)
+        body = "\n".join(keep) + f"\n… (+{dropped} more chains omitted)"
+    embed.add_field(name="Chains", value=body or "—", inline=False)
+    return embed
+
+
 __all__ = [
+    "build_admin_refresh_summary_embed",
+    "build_event_detail_embed",
     "build_grounding_embed",
     "build_hero_embed",
     "build_latest_data_embed",

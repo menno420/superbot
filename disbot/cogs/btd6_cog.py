@@ -83,7 +83,7 @@ class BTD6Cog(commands.Cog):
     @commands.group(name="btd6", invoke_without_command=True)
     async def btd6_group(self, ctx: commands.Context) -> None:
         """Open the BTD6 panel."""
-        await ctx.send(embed=build_btd6_panel_embed(), view=BTD6PanelView())
+        await ctx.send(embed=await build_btd6_panel_embed(), view=BTD6PanelView())
 
     @btd6_group.command(name="status")  # type: ignore[arg-type]
     async def btd6_status(self, ctx: commands.Context) -> None:
@@ -195,49 +195,6 @@ class BTD6Cog(commands.Cog):
 
         await ctx.send(embed=await build_source_health_embed(limit=limit))
 
-    async def _build_refresh_source_payload(
-        self,
-        source_key: str,
-        *,
-        started_by_user_id: int,
-        include_exception_detail: bool,
-    ) -> discord.Embed:
-        """Shared logic for the prefix + slash refresh-source surfaces.
-
-        Routes through the public orchestration helper so we never reach
-        into ``btd6_ingestion_service._DEPENDENCY_CHAINS``. Exception
-        handling and the unknown-source known-keys fallback are unified
-        here so prefix and slash can't drift.
-        """
-        from cogs.btd6._builders import build_refresh_source_embed
-        from services import btd6_ingestion_service, btd6_source_registry
-
-        try:
-            results = await btd6_ingestion_service.refresh_source_or_dependencies(
-                source_key,
-                reason="manual",
-                started_by_user_id=started_by_user_id,
-            )
-        except Exception as exc:  # noqa: BLE001 — surfaced via embed
-            logger.exception("manual refresh failed for %s", source_key)
-            return build_refresh_source_embed(
-                source_key,
-                results=[],
-                exception=exc,
-                include_exception_detail=include_exception_detail,
-            )
-
-        known_keys: list[str] | None = None
-        if len(results) == 1 and results[0].error_code == "source_not_registered":
-            rows = await btd6_source_registry.list_all()
-            known_keys = [row["source_key"] for row in rows]
-
-        return build_refresh_source_embed(
-            source_key,
-            results,
-            known_source_keys=known_keys,
-        )
-
     @btd6_group.command(name="refresh-source")  # type: ignore[arg-type]
     @commands.has_guild_permissions(manage_guild=True)
     async def btd6_refresh_source(
@@ -251,12 +208,31 @@ class BTD6Cog(commands.Cog):
         sources return one result. Exception detail is suppressed in the
         prefix surface because the embed is posted to the channel.
         """
-        embed = await self._build_refresh_source_payload(
+        from cogs.btd6._event_helpers import build_refresh_source_payload
+
+        embed = await build_refresh_source_payload(
             source_key,
             started_by_user_id=ctx.author.id,
             include_exception_detail=False,
         )
         await ctx.send(embed=embed)
+
+    @btd6_group.command(name="event")  # type: ignore[arg-type]
+    async def btd6_event(
+        self,
+        ctx: commands.Context,
+        kind: str,
+        entity_key: str,
+    ) -> None:
+        """Show one specific BTD6 event with its tower restrictions.
+
+        ``kind`` is one of race / boss / ct / odyssey / event.
+        ``entity_key`` is the event's API id (use ``!btd6 live <kind>``
+        to discover ids).
+        """
+        from cogs.btd6._event_helpers import build_event_payload
+
+        await ctx.send(embed=await build_event_payload(kind, entity_key))
 
     @btd6_group.command(name="latest-data")  # type: ignore[arg-type]
     async def btd6_latest_data(self, ctx: commands.Context) -> None:
@@ -382,7 +358,7 @@ class BTD6Cog(commands.Cog):
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:
         """Open the BTD6 panel (alias for ``!btd6``)."""
-        await ctx.send(embed=build_btd6_panel_embed(), view=BTD6PanelView())
+        await ctx.send(embed=await build_btd6_panel_embed(), view=BTD6PanelView())
 
     # ------------------------------------------------------------------
     # App commands — mirror the prefix surface.
@@ -603,13 +579,32 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         source_key: str,
     ) -> None:
+        from cogs.btd6._event_helpers import build_refresh_source_payload
+
         if not await safe_defer(interaction, ephemeral=True):
             return
-        embed = await self._build_refresh_source_payload(
+        embed = await build_refresh_source_payload(
             source_key,
             started_by_user_id=interaction.user.id,
             include_exception_detail=True,
         )
+        await safe_followup(interaction, embed=embed, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="event",
+        description="Show one specific BTD6 event with tower restrictions.",
+    )
+    async def btd6_event_slash(
+        self,
+        interaction: discord.Interaction,
+        kind: str,
+        entity_key: str,
+    ) -> None:
+        from cogs.btd6._event_helpers import build_event_payload
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_event_payload(kind, entity_key)
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
@@ -775,7 +770,7 @@ class BTD6Cog(commands.Cog):
     @app_commands.command(name="btd6menu", description="Open the BTD6 panel.")
     async def btd6menu_slash(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
-            embed=build_btd6_panel_embed(),
+            embed=await build_btd6_panel_embed(),
             view=BTD6PanelView(),
             ephemeral=True,
         )
@@ -788,7 +783,7 @@ class BTD6Cog(commands.Cog):
         self,
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        return build_btd6_panel_embed(), BTD6PanelView()
+        return await build_btd6_panel_embed(), BTD6PanelView()
 
 
 async def setup(bot: commands.Bot) -> None:

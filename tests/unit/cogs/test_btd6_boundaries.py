@@ -145,6 +145,8 @@ def _expected_parity_names() -> set[str]:
         "refresh-source",
         # Live-event reader (parametrized by kind):
         "live",
+        # Event-detail lookup (parametrized by kind + entity_key):
+        "event",
         # PR-F additions:
         "browse",
         "mine",
@@ -205,8 +207,15 @@ async def test_status_embed_has_no_stale_strings(monkeypatch):
         assert stale not in blob, f"Stale string {stale!r} in status embed"
 
 
-def test_panel_embed_has_no_stale_strings():
-    embed = build_btd6_panel_embed()
+@pytest.mark.asyncio
+async def test_panel_embed_has_no_stale_strings(monkeypatch):
+    from utils.db import btd6_sources as btd6_db
+
+    async def _empty(_kinds):
+        return {}
+
+    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+    embed = await build_btd6_panel_embed()
     blob = (embed.title or "") + " " + (embed.description or "")
     for stale in _STALE_STRINGS:
         assert stale not in blob, f"Stale string {stale!r} in panel embed"

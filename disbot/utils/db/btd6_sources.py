@@ -321,28 +321,77 @@ async def upsert_fact(
 
 
 async def get_latest_fact(
-    fact_type: str,
+    fact_type: str | None,
     entity_kind: str,
     entity_key: str,
 ) -> dict[str, Any] | None:
-    row = await pool.get().fetchrow(
-        """
-        SELECT f.id, f.source_id, f.fact_type, f.entity_kind, f.entity_key,
-               f.body_json, f.game_version, f.fetched_at, f.validated_at,
-               f.confidence, f.version, r.source_key, r.trust_tier
-        FROM btd6_facts f
-        JOIN btd6_source_registry r ON r.id = f.source_id
-        WHERE f.fact_type = $1
-          AND f.entity_kind = $2
-          AND f.entity_key = $3
-        ORDER BY f.version DESC
-        LIMIT 1
-        """,
-        fact_type,
-        entity_kind,
-        entity_key,
-    )
+    """Newest fact for an entity, optionally filtered by ``fact_type``.
+
+    ``fact_type=None`` matches any fact_type for the (entity_kind,
+    entity_key) pair — useful when a caller has the entity but doesn't
+    know which fact_type carries the answer (e.g. index vs metadata).
+    """
+    if fact_type is None:
+        row = await pool.get().fetchrow(
+            """
+            SELECT f.id, f.source_id, f.fact_type, f.entity_kind, f.entity_key,
+                   f.body_json, f.game_version, f.fetched_at, f.validated_at,
+                   f.confidence, f.version, r.source_key, r.trust_tier
+            FROM btd6_facts f
+            JOIN btd6_source_registry r ON r.id = f.source_id
+            WHERE f.entity_kind = $1
+              AND f.entity_key = $2
+            ORDER BY f.fetched_at DESC, f.version DESC
+            LIMIT 1
+            """,
+            entity_kind,
+            entity_key,
+        )
+    else:
+        row = await pool.get().fetchrow(
+            """
+            SELECT f.id, f.source_id, f.fact_type, f.entity_kind, f.entity_key,
+                   f.body_json, f.game_version, f.fetched_at, f.validated_at,
+                   f.confidence, f.version, r.source_key, r.trust_tier
+            FROM btd6_facts f
+            JOIN btd6_source_registry r ON r.id = f.source_id
+            WHERE f.fact_type = $1
+              AND f.entity_kind = $2
+              AND f.entity_key = $3
+            ORDER BY f.version DESC
+            LIMIT 1
+            """,
+            fact_type,
+            entity_kind,
+            entity_key,
+        )
     return dict(row) if row else None
+
+
+async def latest_fact_per_entity_kind(
+    kinds: list[str],
+) -> dict[str, dict[str, Any]]:
+    """For each entity_kind, the single newest fact row.
+
+    One round-trip via DISTINCT ON. Kinds absent from ``btd6_facts``
+    are absent from the returned dict (no ``None`` placeholders).
+    Empty ``kinds`` returns ``{}`` without hitting the DB.
+    """
+    if not kinds:
+        return {}
+    rows = await pool.get().fetch(
+        """
+        SELECT DISTINCT ON (entity_kind)
+               id, source_id, fact_type, entity_kind, entity_key,
+               body_json, game_version, fetched_at, validated_at,
+               confidence, version
+        FROM btd6_facts
+        WHERE entity_kind = ANY($1::text[])
+        ORDER BY entity_kind, fetched_at DESC, version DESC
+        """,
+        kinds,
+    )
+    return {row["entity_kind"]: dict(row) for row in rows}
 
 
 async def aggregate_facts_by_entity_kind() -> list[dict[str, Any]]:
