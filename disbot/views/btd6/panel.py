@@ -181,7 +181,10 @@ async def build_btd6_panel_embed() -> discord.Embed:
         inline=False,
     )
     embed.set_footer(
-        text="!btd6 ask <q> · !btd6 tower <n> · !btd6 round <N> · !btd6 status",
+        text=(
+            "!btd6 ask <q> · !btd6 tower <n> · !btd6 round <N> · "
+            "!btd6 leaderboard <race|boss> · !btd6 status"
+        ),
     )
     return embed
 

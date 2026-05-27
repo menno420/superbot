@@ -216,14 +216,85 @@ async def _fetch_live_entity_rows(
     return rows
 
 
+def _render_restriction_for_grounding(entity_name: str, ctx: Any) -> str:
+    """Render one tower/hero restriction context as a grounding line.
+
+    Bounded by ``_FACT_TEXT_CAP``; provenance label always present.
+    """
+    name = _sanitise(entity_name) or "(unknown)"
+    event_name = _sanitise(getattr(ctx, "event_name", "")) or "(unknown event)"
+    kind = getattr(ctx, "event_kind", "")
+    kind_label = {
+        "btd6_race": "race",
+        "btd6_boss_difficulty": "boss",
+        "btd6_odyssey_difficulty": "odyssey",
+        "btd6_challenge": "challenge",
+    }.get(kind, kind or "event")
+    stance = getattr(ctx, "stance", "allowed")
+    if getattr(ctx, "sentinel_all_heroes_banned", False):
+        body = f"All heroes are banned in {kind_label} '{event_name}'"
+    elif stance == "banned":
+        body = f"{name} is banned in {kind_label} '{event_name}'"
+    elif stance == "limited":
+        body = (
+            f"{name} is limited (max {ctx.max_count}) in "
+            f"{kind_label} '{event_name}'"
+        )
+    elif stance == "path_blocked":
+        body = f"{name} has path tiers blocked in {kind_label} '{event_name}'"
+    else:
+        return ""
+    rel = _relative_time(getattr(ctx, "fetched_at", None))
+    full = f"{body} (source: data.ninjakiwi.com, fetched {rel})"
+    if len(full) > _FACT_TEXT_CAP:
+        full = full[: _FACT_TEXT_CAP - 1] + "…"
+    return full
+
+
+async def _restriction_lines_for_intent(intent: Any) -> list[str]:
+    """Pull active-event restriction strings for towers/heroes in ``intent``.
+
+    Returns an empty list when nothing matches; bounded at 8 lines so a
+    chatty event can't drown the LLM context window.
+    """
+    from services import btd6_live_query_service as btd6_live
+
+    out: list[str] = []
+    for tower in getattr(intent, "towers", ()) or ():
+        if not getattr(tower, "id", None):
+            continue
+        for ctx in await btd6_live.get_active_event_restrictions_for_tower(
+            str(tower.id),
+        ):
+            line = _render_restriction_for_grounding(
+                getattr(tower, "canonical", "") or str(tower.id),
+                ctx,
+            )
+            if line:
+                out.append(line)
+    for hero in getattr(intent, "heroes", ()) or ():
+        if not getattr(hero, "id", None):
+            continue
+        for ctx in await btd6_live.get_active_event_restrictions_for_hero(
+            str(hero.id),
+        ):
+            line = _render_restriction_for_grounding(
+                getattr(hero, "canonical", "") or str(hero.id),
+                ctx,
+            )
+            if line:
+                out.append(line)
+    return out[:8]
+
+
 async def build(message_text: str) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
     The flow is: resolver → queries → fact_store.fetch_for_intent +
-    PR-E live entity lookup → sanitised rendering with provenance.
-    The instruction service wraps the resulting tuple as untrusted
-    data, so adversarial body text reaches the LLM only inside the
-    data envelope.
+    PR-E live entity lookup → tower/hero active-event restrictions →
+    sanitised rendering with provenance. The instruction service wraps
+    the resulting tuple as untrusted data, so adversarial body text
+    reaches the LLM only inside the data envelope.
     """
     facts: list[str] = []
     confidence = 0.0
@@ -241,6 +312,8 @@ async def build(message_text: str) -> BTD6Context:
         rows = rows + live_rows
         for row in rows:
             facts.append(_render_fact(row))
+        # PR 2: tower/hero-specific active-event restriction lines.
+        facts.extend(await _restriction_lines_for_intent(intent))
         if facts:
             source_summary = _DEFAULT_SOURCE_SUMMARY
     except Exception as exc:  # noqa: BLE001 — defensive
