@@ -265,6 +265,18 @@ class BTD6Cog(commands.Cog):
 
         await ctx.send(embed=await build_latest_data_embed())
 
+    @btd6_group.command(name="live")  # type: ignore[arg-type]
+    async def btd6_live(
+        self,
+        ctx: commands.Context,
+        kind: str = "race",
+        limit: int = 5,
+    ) -> None:
+        """Show recent live events for ``kind`` (race / boss / ct / odyssey / event)."""
+        from cogs.btd6._builders import build_live_events_embed
+
+        await ctx.send(embed=await build_live_events_embed(kind, limit=limit))
+
     @btd6_group.command(name="grounding")  # type: ignore[arg-type]
     async def btd6_grounding(
         self,
@@ -562,6 +574,23 @@ class BTD6Cog(commands.Cog):
         if not await safe_defer(interaction, ephemeral=True):
             return
         embed = await build_latest_data_embed()
+        await safe_followup(interaction, embed=embed, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="live",
+        description="Show recent live events (race/boss/ct/odyssey/event).",
+    )
+    async def btd6_live_slash(
+        self,
+        interaction: discord.Interaction,
+        kind: str = "race",
+        limit: int = 5,
+    ) -> None:
+        from cogs.btd6._builders import build_live_events_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_live_events_embed(kind, limit=limit)
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
