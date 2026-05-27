@@ -143,12 +143,37 @@ async def answer_question(
     resolver via the M2 stage). The deterministic baseline is always
     produced first; ``btd6_ai_enabled`` is a no-op shim kept for
     backwards-compatible callers.
+
+    Live grounding from ``btd6_context_service`` is best-effort: any
+    failure leaves the deterministic response unchanged. The bundle is
+    already sanitised + provenance-labelled before reaching this layer.
     """
     intent = resolve(text)
     response = deterministic_answer(intent)
+    response = await _attach_live_grounding(text, response)
     if augment_with_ai and btd6_ai_enabled() and task_enabled(AITask.HELP_ANSWER):
         return await _augment_with_ai(intent, response, guild_id=guild_id)
     return response
+
+
+async def _attach_live_grounding(text: str, response: BTD6Response) -> BTD6Response:
+    """Populate ``response.live_facts`` from ``btd6_context_service``.
+
+    Best-effort: any exception (DB unavailable, context build failure)
+    falls back to the unchanged ``response``. The same service backs
+    the AI Platform natural-language stage so the two surfaces share
+    one grounding pipeline rather than each maintaining its own.
+    """
+    try:
+        from services import btd6_context_service
+
+        ctx = await btd6_context_service.build(text)
+    except Exception:  # noqa: BLE001 — never block on grounding
+        logger.debug("btd6_ai_service: live grounding unavailable", exc_info=True)
+        return response
+    if not ctx.facts:
+        return response
+    return replace(response, live_facts=ctx.facts)
 
 
 def _augmentation_payload(
@@ -180,6 +205,10 @@ def _augmentation_payload(
             "version_sensitivity": response.version_sensitivity,
             "confidence": response.confidence,
         },
+        # Already-sanitised live grounding strings. The provider sees
+        # these only as untrusted data; deterministic fields above stay
+        # authoritative.
+        "live_facts": list(response.live_facts),
     }
 
 
