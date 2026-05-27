@@ -46,6 +46,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from core.runtime.interaction_helpers import safe_edit
 from services import setup_access, setup_draft, setup_session
 from services.setup_sections import SetupSection
 from views.base import BaseView
@@ -218,6 +219,27 @@ class SectionRecoveryView(BaseView):
         cancel.callback = self._on_cancel  # type: ignore[method-assign]
         self.add_item(cancel)
 
+    async def _close_in_place(
+        self,
+        interaction: discord.Interaction,
+        *,
+        content: str | None = None,
+    ) -> None:
+        """Disable all children and edit the recovery message in place.
+
+        Uses ``safe_edit`` so this works whether the upstream branch
+        already consumed the interaction's response slot (resume
+        callback, ``section.run`` ephemeral, ``_gate_apply`` rejection)
+        or not. When the original recovery message has been deleted or
+        replaced by an upstream branch, ``safe_edit`` swallows the
+        resulting ``discord.NotFound`` at WARNING — the user sees the
+        new state from the upstream branch and the recovery view's
+        invisible state cleanup is purely belt-and-braces.
+        """
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        await safe_edit(interaction, content=content, view=self)
+
     async def _gate_apply(self, interaction: discord.Interaction) -> bool:
         member = interaction.user
         if not isinstance(member, discord.Member):
@@ -261,12 +283,14 @@ class SectionRecoveryView(BaseView):
                         "Could not return to the wizard — see logs.",
                         ephemeral=True,
                     )
+            # The resume callback usually repaints a separate host
+            # anchor; the recovery message itself must still become a
+            # disabled shell so its buttons don't outlive `self.stop()`.
+            await self._close_in_place(interaction)
             self.stop()
             return
         # No resume callback: just close the view in place.
-        for child in self.children:
-            child.disabled = True  # type: ignore[attr-defined]
-        await interaction.response.edit_message(view=self)
+        await self._close_in_place(interaction)
         self.stop()
 
     async def _on_retry(self, interaction: discord.Interaction) -> None:
@@ -276,7 +300,10 @@ class SectionRecoveryView(BaseView):
         # responsible for re-opening its own UI (section card, picker
         # view, etc.) and any subsequent failure surfaces as a fresh
         # ephemeral — the recovery view here is intentionally
-        # short-lived.
+        # short-lived.  Sections drive ``interaction.response.*``
+        # themselves, so we let them consume the response slot before
+        # closing the recovery message via ``safe_edit`` (which then
+        # routes through ``followup.edit_message``).
         try:
             await self.context.section.run(interaction, None)  # type: ignore[arg-type]
         except Exception:
@@ -290,6 +317,7 @@ class SectionRecoveryView(BaseView):
                     "again — see logs.  Use Skip section to move on.",
                     ephemeral=True,
                 )
+        await self._close_in_place(interaction)
         self.stop()
 
     async def _on_skip(self, interaction: discord.Interaction) -> None:
@@ -336,24 +364,23 @@ class SectionRecoveryView(BaseView):
                 self.context.section.slug,
             )
 
+        skip_msg = f"⏭ Skipped **{self.context.section.label}**."
+
         # Advance via the resume callback when wired.
         if self._resume_callback is not None:
             try:
                 await self._resume_callback(interaction)
-                self.stop()
-                return
             except Exception:
                 logger.exception("recovery._on_skip: resume failed")
+            # The resume callback may repaint a separate host anchor;
+            # the recovery message itself must still become a disabled
+            # shell so its buttons don't outlive ``self.stop()``.
+            await self._close_in_place(interaction, content=skip_msg)
+            self.stop()
+            return
 
         # Fallback: close in place with a confirmation.
-        for child in self.children:
-            child.disabled = True  # type: ignore[attr-defined]
-        if not interaction.response.is_done():
-            await interaction.response.edit_message(view=self)
-        await interaction.followup.send(
-            f"⏭ Skipped **{self.context.section.label}**.",
-            ephemeral=True,
-        )
+        await self._close_in_place(interaction, content=skip_msg)
         self.stop()
 
     async def _on_customize(self, interaction: discord.Interaction) -> None:
