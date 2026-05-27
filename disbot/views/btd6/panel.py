@@ -19,6 +19,7 @@ from typing import Any
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
 from services import btd6_ai_service, btd6_knowledge_service
 
@@ -57,8 +58,11 @@ class BTD6AskModal(discord.ui.Modal, title="Ask BTD6 Assistant"):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         from cogs.btd6._embeds import response_to_embed
 
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         response = await btd6_ai_service.answer_question(str(self.question.value))
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             embed=response_to_embed(response),
             ephemeral=True,
         )
@@ -177,7 +181,10 @@ async def build_btd6_panel_embed() -> discord.Embed:
         inline=False,
     )
     embed.set_footer(
-        text="!btd6 ask <q> · !btd6 tower <n> · !btd6 round <N> · !btd6 status",
+        text=(
+            "!btd6 ask <q> · !btd6 tower <n> · !btd6 round <N> · "
+            "!btd6 leaderboard <race|boss> · !btd6 status"
+        ),
     )
     return embed
 
@@ -276,10 +283,12 @@ class BTD6PanelView(PersistentView):
     ) -> None:
         from cogs.btd6._embeds import build_status_embed
 
-        await interaction.response.edit_message(
-            embed=await build_status_embed(),
-            view=self,
-        )
+        # Public panel edit — no ephemeral. safe_edit handles both the
+        # pre-defer and post-defer branches via the existing helper.
+        if not await safe_defer(interaction):
+            return
+        embed = await build_status_embed()
+        await safe_edit(interaction, embed=embed, view=self)
 
     # Row 1 — staff actions
     @discord.ui.button(
@@ -301,9 +310,12 @@ class BTD6PanelView(PersistentView):
             return
         from views.btd6.admin_panel import BTD6AdminView, build_admin_embed
 
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         view = await BTD6AdminView.create(interaction.user.id)
         embed = await build_admin_embed()
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             embed=embed,
             view=view,
             ephemeral=True,

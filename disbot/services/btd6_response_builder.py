@@ -14,6 +14,7 @@ query stay empty rather than carrying placeholder prose.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 from services.btd6_data_service import HeroEntry, MapEntry, ModeEntry
 from services.btd6_knowledge_service import (
@@ -22,6 +23,7 @@ from services.btd6_knowledge_service import (
     data_version,
     game_version,
 )
+from services.btd6_live_query_service import TowerRestrictionContext
 from services.btd6_resolver_service import ResolvedIntent
 
 
@@ -51,7 +53,82 @@ def _source_label() -> str:
     return f"BTD6 data v{data_version()} (game v{game_version()})"
 
 
-def for_tower(fact: TowerFact) -> BTD6Response:
+def _event_label(ctx: TowerRestrictionContext) -> str:
+    """Render the event kind + name suffix for restriction lines."""
+    kind_map = {
+        "btd6_race": "race",
+        "btd6_boss_difficulty": "boss",
+        "btd6_odyssey_difficulty": "odyssey",
+        "btd6_challenge": "challenge",
+    }
+    return f"{kind_map.get(ctx.event_kind, ctx.event_kind)} '{ctx.event_name}'"
+
+
+def _ends_in(end_ms: int | None) -> str:
+    """Compact ``ends in Xh`` suffix; empty when ``end_ms`` is unknown / past."""
+    if not isinstance(end_ms, (int, float)) or end_ms <= 0:
+        return ""
+    try:
+        end = datetime.fromtimestamp(end_ms / 1000.0, tz=timezone.utc)
+    except (OverflowError, OSError, ValueError):
+        return ""
+    delta = end - datetime.now(tz=timezone.utc)
+    seconds = int(delta.total_seconds())
+    if seconds <= 0:
+        return ""
+    if seconds < 3600:
+        return f" (ends in {seconds // 60}m)"
+    if seconds < 86_400:
+        return f" (ends in {seconds // 3600}h)"
+    return f" (ends in {seconds // 86_400}d)"
+
+
+def _format_restriction_lines(
+    restrictions: tuple[TowerRestrictionContext, ...],
+) -> tuple[str, ...]:
+    """One line per restricted event; skip stance='allowed'. Sentinel
+    ``sentinel_all_heroes_banned`` renders with explicit
+    'ALL HEROES BANNED' wording so callers can phrase it correctly.
+    """
+    lines: list[str] = []
+    for ctx in restrictions:
+        if ctx.stance == "allowed":
+            continue
+        label = _event_label(ctx)
+        ends = _ends_in(ctx.end_ms)
+        if ctx.sentinel_all_heroes_banned:
+            lines.append(f"{label}: 🚫 ALL HEROES BANNED{ends}")
+            continue
+        if ctx.stance == "banned":
+            lines.append(f"{label}: 🚫 BANNED{ends}")
+        elif ctx.stance == "limited":
+            parts = [f"max {ctx.max_count}"]
+            for label_text, count in (
+                ("path1 top", ctx.path1_blocked),
+                ("path2 top", ctx.path2_blocked),
+                ("path3 top", ctx.path3_blocked),
+            ):
+                if count:
+                    parts.append(f"{label_text} {count}")
+            lines.append(f"{label}: ⚠️ LIMITED ({', '.join(parts)}){ends}")
+        elif ctx.stance == "path_blocked":
+            parts = []
+            for label_text, count in (
+                ("path1 top", ctx.path1_blocked),
+                ("path2 top", ctx.path2_blocked),
+                ("path3 top", ctx.path3_blocked),
+            ):
+                if count:
+                    parts.append(f"{label_text} {count}")
+            lines.append(f"{label}: 🪜 {', '.join(parts)} blocked{ends}")
+    return tuple(lines)
+
+
+def for_tower(
+    fact: TowerFact,
+    *,
+    restrictions: tuple[TowerRestrictionContext, ...] = (),
+) -> BTD6Response:
     tower = fact.tower
     recommended: list[str] = []
     for path, tiers in tower.upgrade_paths.items():
@@ -75,10 +152,15 @@ def for_tower(fact: TowerFact) -> BTD6Response:
         confidence="high",
         sources=(tower.wiki_url, _source_label()),
         follow_up="Ask about a specific upgrade tier with `!btd6 tower <name>`.",
+        live_facts=_format_restriction_lines(restrictions),
     )
 
 
-def for_hero(hero: HeroEntry) -> BTD6Response:
+def for_hero(
+    hero: HeroEntry,
+    *,
+    restrictions: tuple[TowerRestrictionContext, ...] = (),
+) -> BTD6Response:
     abilities = tuple(
         f"L{ability.level}: {ability.name} — {ability.summary}"
         for ability in hero.abilities
@@ -94,6 +176,7 @@ def for_hero(hero: HeroEntry) -> BTD6Response:
         confidence="medium",
         sources=(hero.wiki_url, _source_label()),
         follow_up="Try `!btd6 round <N>` to see what waves the hero faces.",
+        live_facts=_format_restriction_lines(restrictions),
     )
 
 

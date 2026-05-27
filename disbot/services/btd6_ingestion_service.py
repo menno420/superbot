@@ -365,6 +365,9 @@ _DEPENDENCY_CHAINS: dict[str, list[_DependencySpec]] = {
         ),
     ],
     # Bosses: 1-level; difficulty hardcoded (see deferred list above).
+    # Leaderboard fan-out is standard solo only (matches the slash-UX
+    # default in /btd6 leaderboard boss). Elite / multi-team-size
+    # combos are deferred until ingestion fan-out supports them.
     "nk_btd6_bosses": [
         _DependencySpec(
             child_source="nk_btd6_bosses_metadata",
@@ -373,6 +376,15 @@ _DEPENDENCY_CHAINS: dict[str, list[_DependencySpec]] = {
                 "difficulty": "normal",
             },
             max_child_keys=5,
+        ),
+        _DependencySpec(
+            child_source="nk_btd6_bosses_leaderboard",
+            path_param_builder=lambda boss_id: {
+                "bossID": boss_id,
+                "type": "standard",
+                "teamSize": "1",
+            },
+            max_child_keys=3,
         ),
     ],
     # Odyssey: 1-level; difficulty hardcoded.

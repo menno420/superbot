@@ -94,14 +94,54 @@ async def build_why_no_response_payload(
 
 async def build_hero_embed(name: str) -> discord.Embed:
     from cogs.btd6._embeds import response_to_embed as _response_to_embed
-    from services import btd6_ai_service
+    from services import btd6_ai_service, btd6_live_query_service
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_hero
 
     intent = resolve(name)
     if not intent.heroes:
         return _response_to_embed(btd6_ai_service.deterministic_answer(intent))
-    return _response_to_embed(for_hero(intent.heroes[0]))
+    hero = intent.heroes[0]
+    restrictions = await btd6_live_query_service.get_active_event_restrictions_for_hero(
+        str(hero.id),
+    )
+    return _response_to_embed(for_hero(hero, restrictions=restrictions))
+
+
+async def build_round_embed(number: int) -> discord.Embed:
+    """Render the round lookup embed. Static fixture; no DB access."""
+    from cogs.btd6._embeds import response_to_embed as _response_to_embed
+    from services.btd6_knowledge_service import round_fact
+    from services.btd6_resolver_service import resolve
+    from services.btd6_response_builder import for_round, for_unresolved
+
+    fact = round_fact(number)
+    if fact is None:
+        return _response_to_embed(for_unresolved(resolve(f"round {number}")))
+    return _response_to_embed(for_round(fact))
+
+
+async def build_tower_embed(name: str) -> discord.Embed:
+    """Render the tower lookup embed with active-event restriction context."""
+    from cogs.btd6._embeds import response_to_embed as _response_to_embed
+    from services import btd6_ai_service, btd6_live_query_service
+    from services.btd6_knowledge_service import tower_fact
+    from services.btd6_resolver_service import resolve
+    from services.btd6_response_builder import for_tower
+
+    intent = resolve(name)
+    if not intent.towers:
+        return _response_to_embed(btd6_ai_service.deterministic_answer(intent))
+    tower = intent.towers[0]
+    fact = tower_fact(tower.id)
+    if fact is None:
+        return _response_to_embed(btd6_ai_service.deterministic_answer(intent))
+    restrictions = (
+        await btd6_live_query_service.get_active_event_restrictions_for_tower(
+            str(tower.id),
+        )
+    )
+    return _response_to_embed(for_tower(fact, restrictions=restrictions))
 
 
 # ---------------------------------------------------------------------------
@@ -696,75 +736,8 @@ def build_refresh_source_embed(
 
 
 # ---------------------------------------------------------------------------
-# event-detail builder + _towers restriction decoder
+# event-detail builder
 # ---------------------------------------------------------------------------
-
-
-def _render_tower_restrictions(
-    towers: list[dict[str, Any]],
-) -> dict[str, list[str]]:
-    """Group ``_towers`` entries into UI-ready categories.
-
-    The race / boss / odyssey ``_btd6challengedocument`` body carries a
-    ``_towers`` array (43 entries in the Reversed Loop fixture). Each
-    entry has ``tower`` (name), ``max`` (0 = banned, N>=1 = limited,
-    missing = unlimited), ``path1NumBlockedTiers`` / ``path2`` /
-    ``path3`` (top-N tier blocks per path), and ``isHero`` (True for
-    hero entries).
-
-    Returns ``{category: [human strings]}`` covering: ``banned``,
-    ``limited``, ``path_blocked``, ``heroes_banned``. Empty categories
-    are omitted from the result so the caller can `if foo:` cleanly.
-    """
-    banned: list[str] = []
-    limited: list[str] = []
-    path_blocked: list[str] = []
-    heroes_banned: list[str] = []
-
-    for entry in towers:
-        if not isinstance(entry, dict):
-            continue
-        tower = entry.get("tower")
-        if not isinstance(tower, str) or not tower:
-            continue
-        is_hero = bool(entry.get("isHero", False))
-        max_val = entry.get("max")
-        max_int = max_val if isinstance(max_val, int) else None
-        p1 = entry.get("path1NumBlockedTiers") or 0
-        p2 = entry.get("path2NumBlockedTiers") or 0
-        p3 = entry.get("path3NumBlockedTiers") or 0
-
-        if is_hero and max_int == 0:
-            heroes_banned.append(tower)
-            continue
-        if max_int == 0:
-            banned.append(tower)
-            continue
-        if max_int is not None and max_int >= 1:
-            limited.append(f"{tower} (max {max_int})")
-            continue
-        if p1 > 0 or p2 > 0 or p3 > 0:
-            parts = []
-            if p1:
-                parts.append(f"path1 top {p1}")
-            if p2:
-                parts.append(f"path2 top {p2}")
-            if p3:
-                parts.append(f"path3 top {p3}")
-            path_blocked.append(f"{tower} ({', '.join(parts)})")
-            # No `continue` — path-blocked is independent of max,
-            # but we already handled max=0 / max>=1 above.
-
-    out: dict[str, list[str]] = {}
-    if banned:
-        out["banned"] = banned
-    if limited:
-        out["limited"] = limited
-    if path_blocked:
-        out["path_blocked"] = path_blocked
-    if heroes_banned:
-        out["heroes_banned"] = heroes_banned
-    return out
 
 
 _EVENT_KIND_TITLE = {
@@ -851,7 +824,9 @@ def build_event_detail_embed(
     if not window_body.get("start_ms") and metadata_row is not None:
         window_body = _coerce_body(metadata_row.get("body_json"))
     embed.add_field(
-        name="Window", value=_format_window_status(window_body), inline=False,
+        name="Window",
+        value=_format_window_status(window_body),
+        inline=False,
     )
 
     # Score fragments from the index row.
@@ -875,7 +850,8 @@ def build_event_detail_embed(
         md = _coerce_body(metadata_row.get("body_json"))
         rules_parts = []
         if isinstance(md.get("startRound"), int) and isinstance(
-            md.get("endRound"), int,
+            md.get("endRound"),
+            int,
         ):
             rules_parts.append(f"rounds {md['startRound']}–{md['endRound']}")
         if isinstance(md.get("lives"), int):
@@ -911,7 +887,9 @@ def build_event_detail_embed(
         # Tower restrictions decoded from _towers.
         towers = md.get("_towers")
         if isinstance(towers, list) and towers:
-            restrictions = _render_tower_restrictions(towers)
+            from utils.btd6.tower_restrictions import render_tower_restrictions
+
+            restrictions = render_tower_restrictions(towers)
             for category, label in (
                 ("banned", "🚫 Banned towers"),
                 ("limited", "⚠️ Limited towers"),
@@ -1020,17 +998,145 @@ def build_admin_refresh_summary_embed(
     return embed
 
 
+# ---------------------------------------------------------------------------
+# leaderboard builder
+# ---------------------------------------------------------------------------
+
+
+_FRESHNESS_BADGE = {
+    "fresh": "🟢 fresh",
+    "aging": "🟡 aging",
+    "stale": "🔴 stale",
+    "never": "⚪ never",
+}
+
+
+async def build_leaderboard_embed(
+    kind: str,
+    event_id: str | None,
+    *,
+    limit: int = 10,
+) -> discord.Embed:
+    """Render the top-N leaderboard for one race or boss event.
+
+    ``event_id=None`` resolves to the newest active event of that kind
+    via the facade's newest-active helpers. Boss leaderboards default
+    to standard solo (the only combo the supervisor currently fetches).
+    Empty leaderboard hints at the parent-chain refresh source, not
+    the child source (children require path params).
+    """
+    from services import btd6_live_query_service as btd6_live
+    from services.btd6_source_registry import bucket_freshness
+
+    norm = (kind or "").strip().lower()
+    if norm not in {"race", "boss"}:
+        return discord.Embed(
+            title="🐵 BTD6 — Leaderboard",
+            description=(f"Unknown kind `{kind!r}` — use `race` or `boss`."),
+            color=discord.Color.red(),
+        )
+
+    refresh_source = "nk_btd6_races" if norm == "race" else "nk_btd6_bosses"
+    resolved_id = event_id
+    event_name: str | None = None
+    if not resolved_id:
+        active = (
+            await btd6_live.get_newest_active_race()
+            if norm == "race"
+            else await btd6_live.get_newest_active_boss()
+        )
+        if active is None:
+            return discord.Embed(
+                title=f"🐵 BTD6 — {norm.title()} leaderboard",
+                description=(
+                    f"No active {norm} found. Try `!btd6 refresh-source "
+                    f"{refresh_source}` to fetch live data."
+                ),
+                color=discord.Color.gold(),
+            )
+        resolved_id = active.entity_key
+        event_name = active.name
+
+    if norm == "race":
+        rows = await btd6_live.get_race_leaderboard(resolved_id, limit=limit)
+        title_suffix = "Race"
+        footer_hint = ""
+    else:
+        rows = await btd6_live.get_boss_leaderboard(resolved_id, limit=limit)
+        title_suffix = "Boss"
+        footer_hint = (
+            "Showing standard solo leaderboard. "
+            "Elite / team modes are not yet ingested."
+        )
+
+    label = event_name or resolved_id
+    embed = discord.Embed(
+        title=f"🐵 BTD6 — {title_suffix} leaderboard — {label}",
+        color=discord.Color.gold(),
+    )
+    if not rows:
+        embed.description = (
+            f"No leaderboard rows stored for `{resolved_id}` yet. "
+            f"Try `!btd6 refresh-source {refresh_source}`."
+        )
+        embed.set_footer(text=footer_hint or "No rows.")
+        return embed
+
+    lines: list[str] = []
+    latest_fetched = None
+    for row in rows:
+        score_render = ""
+        if row.score is not None:
+            score_render = f"score=`{row.score}`"
+        elif row.score_parts:
+            score_render = "score=" + "/".join(str(p) for p in row.score_parts)
+        lines.append(
+            f"#{row.rank} **{row.display_name or '—'}** · {score_render}".rstrip(" ·"),
+        )
+        # Track latest fetched_at for freshness — the facade strips
+        # fetched_at off the LeaderboardRow shape, but rows are sorted
+        # by rank so we'd need a separate query for that. Skip per-row
+        # freshness for MVP; surface the freshness of the newest active
+        # event we resolved instead via the embed footer below.
+
+    embed.description = "\n".join(lines)
+
+    # Freshness label via the canonical helper. We use the active-event
+    # fetched_at as a proxy for "how stale is this view" — it's the same
+    # signal the panel's "Currently active" block uses.
+    if event_id is None:
+        active_for_freshness = (
+            await btd6_live.get_newest_active_race()
+            if norm == "race"
+            else await btd6_live.get_newest_active_boss()
+        )
+        if active_for_freshness is not None:
+            latest_fetched = active_for_freshness.fetched_at
+    parts: list[str] = []
+    if footer_hint:
+        parts.append(footer_hint)
+    if latest_fetched is not None:
+        bucket = bucket_freshness(latest_fetched)
+        if bucket in ("aging", "stale"):
+            parts.append(f"Data: {_FRESHNESS_BADGE[bucket]}")
+    if parts:
+        embed.set_footer(text=" · ".join(parts))
+    return embed
+
+
 __all__ = [
     "build_admin_refresh_summary_embed",
     "build_event_detail_embed",
     "build_grounding_embed",
     "build_hero_embed",
     "build_latest_data_embed",
+    "build_leaderboard_embed",
     "build_live_events_embed",
     "build_pending_review_payload",
     "build_refresh_source_embed",
     "build_source_health_embed",
     "build_sources_payload",
     "build_strategies_payload",
+    "build_tower_embed",
     "build_why_no_response_payload",
 ]

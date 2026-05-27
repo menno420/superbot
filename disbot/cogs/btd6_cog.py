@@ -37,7 +37,6 @@ from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline, tasks
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import btd6_ai_service, btd6_ingestion_supervisor
-from services.btd6_resolver_service import resolve
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 logger = logging.getLogger("bot")
@@ -101,22 +100,9 @@ class BTD6Cog(commands.Cog):
 
     @btd6_group.command(name="tower")  # type: ignore[arg-type]
     async def btd6_tower(self, ctx: commands.Context, *, name: str) -> None:
-        intent = resolve(name)
-        if not intent.towers:
-            await ctx.send(
-                embed=_response_to_embed(
-                    btd6_ai_service.deterministic_answer(intent),
-                ),
-            )
-            return
-        from services.btd6_knowledge_service import tower_fact
-        from services.btd6_response_builder import for_tower
+        from cogs.btd6._builders import build_tower_embed
 
-        fact = tower_fact(intent.towers[0].id)
-        if fact is None:
-            await ctx.send(content=f"No deterministic data for {name!r}.")
-            return
-        await ctx.send(embed=_response_to_embed(for_tower(fact)))
+        await ctx.send(embed=await build_tower_embed(name))
 
     @btd6_group.command(name="hero")  # type: ignore[arg-type]
     async def btd6_hero(self, ctx: commands.Context, *, name: str) -> None:
@@ -126,15 +112,9 @@ class BTD6Cog(commands.Cog):
 
     @btd6_group.command(name="round")  # type: ignore[arg-type]
     async def btd6_round(self, ctx: commands.Context, number: int) -> None:
-        from services.btd6_knowledge_service import round_fact
-        from services.btd6_response_builder import for_round, for_unresolved
+        from cogs.btd6._builders import build_round_embed
 
-        fact = round_fact(number)
-        if fact is None:
-            intent = resolve(f"round {number}")
-            await ctx.send(embed=_response_to_embed(for_unresolved(intent)))
-            return
-        await ctx.send(embed=_response_to_embed(for_round(fact)))
+        await ctx.send(embed=await build_round_embed(number))
 
     @btd6_group.command(name="test-intent")  # type: ignore[arg-type]
     async def btd6_test_intent(self, ctx: commands.Context, *, text: str) -> None:
@@ -252,6 +232,19 @@ class BTD6Cog(commands.Cog):
         from cogs.btd6._builders import build_live_events_embed
 
         await ctx.send(embed=await build_live_events_embed(kind, limit=limit))
+
+    @btd6_group.command(name="leaderboard")  # type: ignore[arg-type]
+    async def btd6_leaderboard(
+        self,
+        ctx: commands.Context,
+        kind: str,
+        event_id: str | None = None,
+        limit: int = 10,
+    ) -> None:
+        """Top-N race or boss leaderboard. No event_id = newest active."""
+        from cogs.btd6._builders import build_leaderboard_embed
+
+        await ctx.send(embed=await build_leaderboard_embed(kind, event_id, limit=limit))
 
     @btd6_group.command(name="grounding")  # type: ignore[arg-type]
     async def btd6_grounding(
@@ -381,6 +374,7 @@ class BTD6Cog(commands.Cog):
         description="BTD6 dataset diagnostics.",
     )
     async def btd6_diagnostics_slash(self, interaction: discord.Interaction) -> None:
+        # Sync builder — safe to respond directly without defer.
         await interaction.response.send_message(
             embed=build_diagnostics_embed(),
             ephemeral=True,
@@ -392,8 +386,11 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         question: str,
     ) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         response = await btd6_ai_service.answer_question(question)
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             embed=_response_to_embed(response),
             ephemeral=True,
         )
@@ -404,19 +401,12 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         name: str,
     ) -> None:
-        intent = resolve(name)
-        from services.btd6_knowledge_service import tower_fact
-        from services.btd6_response_builder import for_tower, for_unresolved
+        from cogs.btd6._builders import build_tower_embed
 
-        if not intent.towers:
-            response = for_unresolved(intent)
-        else:
-            fact = tower_fact(intent.towers[0].id)
-            response = for_tower(fact) if fact is not None else for_unresolved(intent)
-        await interaction.response.send_message(
-            embed=_response_to_embed(response),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_tower_embed(name)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(name="round", description="Look up a round.")
     async def btd6_round_slash(
@@ -424,19 +414,10 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         number: int,
     ) -> None:
-        from services.btd6_knowledge_service import round_fact
-        from services.btd6_response_builder import for_round, for_unresolved
+        from cogs.btd6._builders import build_round_embed
 
-        fact = round_fact(number)
-        if fact is None:
-            intent = resolve(f"round {number}")
-            response = for_unresolved(intent)
-        else:
-            response = for_round(fact)
-        await interaction.response.send_message(
-            embed=_response_to_embed(response),
-            ephemeral=True,
-        )
+        embed = await build_round_embed(number)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="test-intent",
@@ -447,6 +428,7 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         text: str,
     ) -> None:
+        # Sync resolver work — safe to respond directly without defer.
         await interaction.response.send_message(
             embed=build_test_intent_embed(text),
             ephemeral=True,
@@ -460,10 +442,10 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from cogs.btd6._builders import build_hero_embed
 
-        await interaction.response.send_message(
-            embed=await build_hero_embed(name),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_hero_embed(name)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="why-no-response",
@@ -498,10 +480,10 @@ class BTD6Cog(commands.Cog):
     async def btd6_sources_slash(self, interaction: discord.Interaction) -> None:
         from cogs.btd6._builders import build_sources_payload
 
-        await interaction.response.send_message(
-            await build_sources_payload(),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        payload = await build_sources_payload()
+        await safe_followup(interaction, content=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="strategies",
@@ -516,10 +498,10 @@ class BTD6Cog(commands.Cog):
             return
         from cogs.btd6._builders import build_strategies_payload
 
-        await interaction.response.send_message(
-            await build_strategies_payload(interaction.guild.id),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        payload = await build_strategies_payload(interaction.guild.id)
+        await safe_followup(interaction, content=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="source-health",
@@ -567,6 +549,24 @@ class BTD6Cog(commands.Cog):
         if not await safe_defer(interaction, ephemeral=True):
             return
         embed = await build_live_events_embed(kind, limit=limit)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="leaderboard",
+        description="Show race / boss leaderboard.",
+    )
+    async def btd6_leaderboard_slash(
+        self,
+        interaction: discord.Interaction,
+        kind: str,
+        event_id: str | None = None,
+        limit: int = 10,
+    ) -> None:
+        from cogs.btd6._builders import build_leaderboard_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_leaderboard_embed(kind, event_id, limit=limit)
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
@@ -632,11 +632,13 @@ class BTD6Cog(commands.Cog):
             return
         from cogs.btd6._builders import build_grounding_embed
 
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         payload = await build_grounding_embed(interaction.guild.id, mid)
         if isinstance(payload, str):
-            await interaction.response.send_message(payload, ephemeral=True)
+            await safe_followup(interaction, content=payload, ephemeral=True)
         else:
-            await interaction.response.send_message(embed=payload, ephemeral=True)
+            await safe_followup(interaction, embed=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="browse",
@@ -711,10 +713,10 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from views.btd6.strategy_browse import build_audit_embed
 
-        await interaction.response.send_message(
-            embed=await build_audit_embed(strategy_id),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_audit_embed(strategy_id)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="submit",
@@ -769,11 +771,11 @@ class BTD6Cog(commands.Cog):
 
     @app_commands.command(name="btd6menu", description="Open the BTD6 panel.")
     async def btd6menu_slash(self, interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(
-            embed=await build_btd6_panel_embed(),
-            view=BTD6PanelView(),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_btd6_panel_embed()
+        view = BTD6PanelView()
+        await safe_followup(interaction, embed=embed, view=view, ephemeral=True)
 
     # ------------------------------------------------------------------
     # Help-menu hook
