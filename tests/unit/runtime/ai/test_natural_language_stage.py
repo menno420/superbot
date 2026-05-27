@@ -654,7 +654,10 @@ async def test_summarizable_context_does_not_select_summary(
 
     assert "request" in captured
     system_prompt = captured["request"].system_prompt
-    assert "Do not summarize" in system_prompt
+    # PR1: contract relaxes the no-summarize default; routing still
+    # picks GENERAL_NL_ANSWER for a plain question regardless of the
+    # surrounding context size.
+    assert "Task contract" in system_prompt
 
     # The route the audit row carries reflects the real router's pick.
     assert stub_services[0]["task"] == AITask.GENERAL_NL_ANSWER.value
@@ -877,3 +880,202 @@ async def test_empty_message_after_bot_mention_strip_does_not_call_provider(
     turns = _real_recent_turns(msg.guild.id, msg.channel.id)
     matching = [t for t in turns if t.text == msg_content]
     assert len(matching) == 1
+
+
+# ---------------------------------------------------------------------------
+# PR1 — bot self-knowledge: gather call + accessible-channel gating
+# ---------------------------------------------------------------------------
+
+
+from services.ai_instruction_service import BotKnowledgeBlock  # noqa: E402
+
+
+@pytest.mark.asyncio
+async def test_stage_passes_bot_knowledge_to_assemble(monkeypatch, stub_services):
+    """The stage hands ``bot_knowledge_blocks`` through to assemble()."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import ai_gateway, bot_knowledge_service
+
+    captured: dict = {}
+
+    async def fake_assemble(**kwargs):
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(
+            render_system_prompt=lambda: "sys",
+            render_payload_text=lambda: "p",
+            instruction_profile_ids=(),
+        )
+
+    monkeypatch.setattr(mod.ai_instruction_service, "assemble", fake_assemble)
+
+    expected_block = BotKnowledgeBlock(kind="bot_command_catalog", text="X")
+    monkeypatch.setattr(
+        bot_knowledge_service,
+        "gather",
+        AsyncMock(return_value=(expected_block,)),
+    )
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    await stage.process(_make_ctx(msg))
+
+    assert captured["kwargs"]["bot_knowledge_blocks"] == (expected_block,)
+
+
+@pytest.mark.asyncio
+async def test_stage_continues_when_bot_knowledge_raises(monkeypatch, stub_services):
+    """A raise inside the bot-knowledge gather must NOT poison the reply
+    path — the stage assembles with empty blocks and audits ``replied``."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import ai_gateway, bot_knowledge_service
+
+    captured: dict = {}
+
+    async def fake_assemble(**kwargs):
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(
+            render_system_prompt=lambda: "sys",
+            render_payload_text=lambda: "p",
+            instruction_profile_ids=(),
+        )
+
+    monkeypatch.setattr(mod.ai_instruction_service, "assemble", fake_assemble)
+
+    async def boom(**_kw):
+        raise RuntimeError("gather broke")
+
+    monkeypatch.setattr(bot_knowledge_service, "gather", boom)
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    await stage.process(_make_ctx(msg))
+
+    assert captured["kwargs"]["bot_knowledge_blocks"] == ()
+    assert len(stub_services) == 1
+    assert stub_services[0]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_stage_skips_accessible_channels_for_non_audit_intent(
+    monkeypatch,
+    stub_services,
+):
+    """For a non-audit question, the stage must NOT call
+    ``_accessible_channel_ids_for`` — large guilds otherwise pay a
+    per-channel ``permissions_for`` cost on every AI mention."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import ai_gateway, bot_knowledge_service
+
+    accessible_calls: list[object] = []
+
+    def fake_accessible(member, guild):
+        accessible_calls.append((member, guild))
+        return frozenset({999})
+
+    monkeypatch.setattr(mod, "_accessible_channel_ids_for", fake_accessible)
+
+    gather_calls: list[dict] = []
+
+    async def fake_gather(**kwargs):
+        gather_calls.append(kwargs)
+        return ()
+
+    monkeypatch.setattr(bot_knowledge_service, "gather", fake_gather)
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "hello there"
+    await stage.process(_make_ctx(msg))
+
+    assert accessible_calls == []
+    assert gather_calls[0]["accessible_channel_ids"] == frozenset()
+
+
+@pytest.mark.asyncio
+async def test_stage_computes_accessible_channels_for_audit_intent(
+    monkeypatch,
+    stub_services,
+):
+    """An audit-intent question DOES trigger the accessible-channel walk."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import ai_gateway, bot_knowledge_service
+
+    accessible_calls: list[object] = []
+
+    def fake_accessible(member, guild):
+        accessible_calls.append((member, guild))
+        return frozenset({777})
+
+    monkeypatch.setattr(mod, "_accessible_channel_ids_for", fake_accessible)
+
+    gather_calls: list[dict] = []
+
+    async def fake_gather(**kwargs):
+        gather_calls.append(kwargs)
+        return ()
+
+    monkeypatch.setattr(bot_knowledge_service, "gather", fake_gather)
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "why didn't you reply to me"
+    await stage.process(_make_ctx(msg))
+
+    assert len(accessible_calls) == 1
+    assert gather_calls[0]["accessible_channel_ids"] == frozenset({777})
+
+
+@pytest.mark.asyncio
+async def test_accessible_channel_ids_for_filters_by_view_channel(monkeypatch):
+    """The helper returns only channel ids the member can ``view_channel``."""
+    from core.runtime.ai.natural_language_stage import _accessible_channel_ids_for
+
+    member = MagicMock()
+    visible = MagicMock()
+    visible.id = 1
+    hidden = MagicMock()
+    hidden.id = 2
+
+    def perms_for(m):
+        # Visible channel grants view_channel=True; hidden does not.
+        nonlocal_obj = SimpleNamespace
+        # Member is the same for both — perms_for() differentiates by channel.
+        return (
+            nonlocal_obj(view_channel=True)
+            if m is member
+            else nonlocal_obj(view_channel=False)
+        )
+
+    visible.permissions_for = lambda m: SimpleNamespace(view_channel=True)
+    hidden.permissions_for = lambda m: SimpleNamespace(view_channel=False)
+
+    guild = SimpleNamespace(text_channels=[visible, hidden])
+    assert _accessible_channel_ids_for(member, guild) == frozenset({1})
+
+
+@pytest.mark.asyncio
+async def test_accessible_channel_ids_for_dm_returns_empty(monkeypatch):
+    """No guild → no channels → empty frozenset."""
+    from core.runtime.ai.natural_language_stage import _accessible_channel_ids_for
+
+    assert _accessible_channel_ids_for(MagicMock(), None) == frozenset()
