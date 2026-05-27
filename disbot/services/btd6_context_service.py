@@ -18,21 +18,14 @@ unwrapped.
 from __future__ import annotations
 
 import logging
-import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from typing import Any
 
+from utils.btd6.grounding_format import DEFAULT_CAP as _FACT_TEXT_CAP
+from utils.btd6.grounding_format import relative_time as _relative_time
+from utils.btd6.grounding_format import sanitise as _sanitise_helper
+
 logger = logging.getLogger("bot.services.btd6_context")
-
-# Control characters that could otherwise break out of the
-# untrusted-data envelope or confuse the LLM tokenizer.
-_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
-
-# Maximum chars per rendered fact string. The instruction service
-# treats facts as data, but bounded length keeps total context
-# predictable and prevents one fact from filling the window.
-_FACT_TEXT_CAP = 240
 
 _DEFAULT_SOURCE_SUMMARY = "data.ninjakiwi.com (Tier 1)"
 _FALLBACK_SOURCE_SUMMARY = "no btd6_facts rows for intent"
@@ -50,35 +43,11 @@ class BTD6Context:
 def _sanitise(value: object) -> str:
     """Strip control chars, collapse whitespace, cap at 240 chars.
 
-    Non-strings return an empty string. Used on every value that
-    would otherwise reach the LLM via the untrusted-data envelope.
+    Thin wrapper around :func:`utils.btd6.grounding_format.sanitise`
+    that locks the cap at :data:`_FACT_TEXT_CAP`, so existing callers
+    that read this name continue to behave identically.
     """
-    if not isinstance(value, str):
-        return ""
-    cleaned = _CONTROL_CHARS.sub("", value)
-    cleaned = " ".join(cleaned.split())
-    if len(cleaned) > _FACT_TEXT_CAP:
-        cleaned = cleaned[: _FACT_TEXT_CAP - 1] + "…"
-    return cleaned
-
-
-def _relative_time(fetched_at: datetime | None) -> str:
-    """Render a fetched_at timestamp as ``Ns/Nm/Nh/Nd ago``."""
-    if not isinstance(fetched_at, datetime):
-        return "unknown"
-    if fetched_at.tzinfo is None:
-        fetched_at = fetched_at.replace(tzinfo=timezone.utc)
-    delta = datetime.now(timezone.utc) - fetched_at
-    seconds = int(delta.total_seconds())
-    if seconds < 0:
-        return "just now"
-    if seconds < 60:
-        return f"{seconds}s ago"
-    if seconds < 3600:
-        return f"{seconds // 60}m ago"
-    if seconds < 86400:
-        return f"{seconds // 3600}h ago"
-    return f"{seconds // 86400}d ago"
+    return _sanitise_helper(value, cap=_FACT_TEXT_CAP)
 
 
 # Body keys (in priority order) we try as the human-readable headline.
