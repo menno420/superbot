@@ -10,6 +10,7 @@ fixture set; nothing is invented.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from services.btd6_data_service import (
     HeroEntry,
@@ -24,6 +25,7 @@ from services.btd6_data_service import (
     get_round,
     get_tower,
 )
+from services.btd6_source_registry import FreshnessBucket, bucket_freshness
 
 
 @dataclass(frozen=True)
@@ -106,3 +108,43 @@ def data_version() -> str:
 
 def game_version() -> str:
     return get_dataset().game_version
+
+
+# ---------------------------------------------------------------------------
+# Live fact summary (entity_kind aggregates over ``btd6_facts``)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class FactKindSummary:
+    """One row per entity_kind in ``btd6_facts``.
+
+    ``last_fetched_at`` is the newest ``fetched_at`` across all rows of
+    that kind. ``bucket`` is the centrally-defined freshness bucket so
+    the UI doesn't reinvent thresholds.
+    """
+
+    entity_kind: str
+    fact_count: int
+    last_fetched_at: datetime | None
+    bucket: FreshnessBucket
+
+
+async def fact_summary_by_kind() -> tuple[FactKindSummary, ...]:
+    """Aggregate ``btd6_facts`` by entity_kind for the status panel.
+
+    DB layer returns rows sorted by entity_kind (stable for tests);
+    UI consumers re-sort by useful-first.
+    """
+    from utils.db.btd6_sources import aggregate_facts_by_entity_kind
+
+    rows = await aggregate_facts_by_entity_kind()
+    return tuple(
+        FactKindSummary(
+            entity_kind=row["entity_kind"],
+            fact_count=int(row["fact_count"]),
+            last_fetched_at=row.get("last_fetched_at"),
+            bucket=bucket_freshness(row.get("last_fetched_at")),
+        )
+        for row in rows
+    )

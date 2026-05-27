@@ -345,6 +345,22 @@ async def get_latest_fact(
     return dict(row) if row else None
 
 
+async def aggregate_facts_by_entity_kind() -> list[dict[str, Any]]:
+    """One row per entity_kind in ``btd6_facts`` with count + max(fetched_at).
+
+    Stable SQL ordering (by entity_kind) so unit tests can assert
+    deterministic shape; UI consumers re-order by useful-first.
+    """
+    rows = await pool.get().fetch(
+        "SELECT entity_kind, COUNT(*)::int AS fact_count, "
+        "MAX(fetched_at) AS last_fetched_at "
+        "FROM btd6_facts "
+        "GROUP BY entity_kind "
+        "ORDER BY entity_kind",
+    )
+    return [dict(r) for r in rows]
+
+
 async def search_facts(
     *,
     fact_type: str | None = None,

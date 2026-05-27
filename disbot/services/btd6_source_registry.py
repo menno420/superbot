@@ -34,18 +34,31 @@ _FRESH_THRESHOLD = timedelta(hours=6)
 _AGING_THRESHOLD = timedelta(days=2)
 
 
-def _bucket_for(last_fetched_at: datetime | None) -> FreshnessBucket:
+def bucket_freshness(last_fetched_at: datetime | None) -> FreshnessBucket:
+    """Public freshness bucketing helper.
+
+    Single source of truth for the fresh/aging/stale/never buckets.
+    Source-health (per source key) and the BTD6 fact summary (per
+    entity_kind) both depend on this — do not duplicate thresholds
+    elsewhere.
+
+    Naive datetimes are interpreted as UTC.
+    """
     if last_fetched_at is None:
         return "never"
-    now = datetime.now(tz=timezone.utc)
     if last_fetched_at.tzinfo is None:
         last_fetched_at = last_fetched_at.replace(tzinfo=timezone.utc)
-    age = now - last_fetched_at
+    age = datetime.now(tz=timezone.utc) - last_fetched_at
     if age <= _FRESH_THRESHOLD:
         return "fresh"
     if age <= _AGING_THRESHOLD:
         return "aging"
     return "stale"
+
+
+# Internal alias kept for any in-module readers; new code should call
+# ``bucket_freshness`` directly.
+_bucket_for = bucket_freshness
 
 
 @dataclass(frozen=True)
@@ -145,6 +158,7 @@ async def is_source_usable(source_key: str) -> tuple[bool, str]:
 __all__ = [
     "FreshnessBucket",
     "SourceHealth",
+    "bucket_freshness",
     "get_by_id",
     "get_by_key",
     "is_source_usable",
