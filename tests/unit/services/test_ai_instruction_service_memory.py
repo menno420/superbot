@@ -335,9 +335,9 @@ def test_speaker_label_alphabet_progression(index: int, expected: str) -> None:
 
 
 from services.ai_instruction_service import (  # noqa: E402
+    _TASK_CONTRACT,
     BOT_KNOWLEDGE_KIND_PREFIX,
     BotKnowledgeBlock,
-    _TASK_CONTRACT,
 )
 
 
