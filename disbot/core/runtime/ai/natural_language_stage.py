@@ -56,6 +56,40 @@ STAGE_NAME = "ai_natural_language"
 STAGE_ORDER = 70
 
 
+def _accessible_channel_ids_for(
+    member: object | None,
+    guild: object | None,
+) -> frozenset[int]:
+    """Return the set of text-channel ids ``member`` can view in ``guild``.
+
+    Used by the audit-block path so we only render references to
+    channels the asker can already see. Returns an empty set on any
+    exception so the calling block falls back to "channel unavailable"
+    rather than leaking metadata about a channel the user lacks
+    access to.
+    """
+    if guild is None or member is None:
+        return frozenset()
+    try:
+        channels = list(getattr(guild, "text_channels", ()) or ())
+    except Exception:  # noqa: BLE001 — defensive
+        return frozenset()
+    accessible: set[int] = set()
+    for channel in channels:
+        try:
+            perms_for = channel.permissions_for(member)
+        except Exception:  # noqa: BLE001, S112 — defensive per-channel
+            continue
+        if bool(getattr(perms_for, "view_channel", False)):
+            channel_id = getattr(channel, "id", None)
+            if channel_id is not None:
+                try:
+                    accessible.add(int(channel_id))
+                except (TypeError, ValueError):
+                    continue
+    return frozenset(accessible)
+
+
 def _strip_bot_mention(text: str, *, bot_user_id: int | None) -> str:
     """Remove all mentions of the bot from ``text``.
 
@@ -350,6 +384,39 @@ class AINaturalLanguageStage:
                 include_mentions=True,
             )
 
+            # Bot self-knowledge enrichment: catalog of known commands +
+            # the asker's most recent non-replied audit row. Gated by
+            # intent heuristics so the prompt only grows when the user
+            # actually asks a meta-question. Best-effort — failure
+            # collapses to no bot-knowledge blocks.
+            try:
+                from services import bot_knowledge_service
+
+                if bot_knowledge_service.looks_like_audit_question(user_text):
+                    accessible = _accessible_channel_ids_for(
+                        message.author,
+                        message.guild,
+                    )
+                else:
+                    accessible = frozenset()
+
+                bot_knowledge_blocks = await bot_knowledge_service.gather(
+                    guild_id=guild_id,
+                    channel_id=channel_id,
+                    user_id=user_id,
+                    user_text=user_text,
+                    user_tier=bot_knowledge_service.resolve_user_tier(
+                        message.author,
+                    ),
+                    accessible_channel_ids=accessible,
+                )
+            except Exception as exc:  # noqa: BLE001 — defensive
+                logger.debug(
+                    "ai_natural_language_stage: bot knowledge unavailable: %s",
+                    exc,
+                )
+                bot_knowledge_blocks = ()
+
             stack = await ai_instruction_service.assemble(
                 guild_id=guild_id,
                 user_message=user_text,
@@ -357,6 +424,7 @@ class AINaturalLanguageStage:
                 retrieved_facts=list(feature.facts),
                 recent_turns=recent_turns,
                 bot_user_id=bot_user_id,
+                bot_knowledge_blocks=bot_knowledge_blocks,
             )
             correlation_id = uuid.uuid4().hex
             built = ai_context_service.build(

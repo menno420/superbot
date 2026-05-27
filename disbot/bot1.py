@@ -928,6 +928,21 @@ async def main() -> None:
 
                 startup_outcome.record_failure("command_surface_ledger", exc)
 
+            # Command description catalog — enriches the ledger with
+            # description / signature / display_name so the AI cog can
+            # answer meta-questions accurately. Per-command exception
+            # isolation keeps a single malformed command from failing
+            # startup; failure here only degrades bot self-knowledge.
+            try:
+                from core.runtime import command_descriptions
+
+                command_descriptions.build_catalog(bot)
+            except Exception:
+                logger.exception(
+                    "command_descriptions: catalog build failed;"
+                    " bot self-knowledge will be degraded",
+                )
+
             try:
                 from core.runtime import settings_registry, startup_outcome
 
