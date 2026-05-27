@@ -368,6 +368,147 @@ async def build_grounding_embed(
 
 
 # ---------------------------------------------------------------------------
+# live-event builders (race / boss / ct / odyssey / event)
+# ---------------------------------------------------------------------------
+
+
+def _ms_to_human(ms: Any) -> str:
+    """Render a milliseconds-since-epoch value as ``YYYY-MM-DD HH:MM UTC``.
+
+    Returns ``"—"`` for missing / non-numeric inputs. Live event APIs
+    use ms timestamps consistently across race / boss / odyssey / CT.
+    """
+    if not isinstance(ms, (int, float)) or ms <= 0:
+        return "—"
+    try:
+        from datetime import datetime, timezone
+
+        return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc).strftime(
+            "%Y-%m-%d %H:%M UTC",
+        )
+    except (OverflowError, OSError, ValueError):
+        return "—"
+
+
+def _event_window(body: dict[str, Any]) -> str:
+    """Render ``start_ms`` → ``end_ms`` as a single human window string."""
+    start = _ms_to_human(body.get("start_ms"))
+    end = _ms_to_human(body.get("end_ms"))
+    if start == "—" and end == "—":
+        return "—"
+    return f"{start} → {end}"
+
+
+_LIVE_EVENT_SPECS: dict[str, dict[str, str]] = {
+    # entity_kind → display config
+    "btd6_race": {
+        "title": "🐵 BTD6 — Races",
+        "noun": "race",
+        "source_key": "nk_btd6_races",
+    },
+    "btd6_boss": {
+        "title": "🐵 BTD6 — Bosses",
+        "noun": "boss event",
+        "source_key": "nk_btd6_bosses",
+    },
+    "btd6_ct": {
+        "title": "🐵 BTD6 — Contested Territory",
+        "noun": "CT event",
+        "source_key": "nk_btd6_ct",
+    },
+    "btd6_odyssey": {
+        "title": "🐵 BTD6 — Odysseys",
+        "noun": "odyssey",
+        "source_key": "nk_btd6_odyssey",
+    },
+    "btd6_event": {
+        "title": "🐵 BTD6 — Events",
+        "noun": "event",
+        "source_key": "nk_btd6_events",
+    },
+}
+
+
+async def build_live_events_embed(
+    entity_kind: str,
+    *,
+    limit: int = 5,
+) -> discord.Embed:
+    """Render the most-recent live events for an entity_kind.
+
+    Accepts either the full ``btd6_<kind>`` form or the short ``<kind>``
+    form (race / boss / ct / odyssey / event). Unknown kinds yield a
+    user-facing error embed rather than raising — surfaces just pass
+    user input straight through.
+    """
+    if not entity_kind.startswith("btd6_"):
+        entity_kind = f"btd6_{entity_kind}"
+    spec = _LIVE_EVENT_SPECS.get(entity_kind)
+    if spec is None:
+        return discord.Embed(
+            title="🐵 BTD6 — Unknown kind",
+            description=(
+                f"`{entity_kind}` isn't a known live-event kind. Try one of: "
+                "`race`, `boss`, `ct`, `odyssey`, `event`."
+            ),
+            color=discord.Color.red(),
+        )
+
+    from utils.db import btd6_sources as btd6_db
+
+    rows = await btd6_db.search_facts(entity_kind=entity_kind, limit=limit)
+    embed = discord.Embed(
+        title=spec["title"],
+        description=(
+            f"Most recent {spec['noun']} envelopes from `btd6_facts` "
+            f"(source `{spec['source_key']}`). No provider involvement."
+        ),
+        color=discord.Color.gold(),
+    )
+    if not rows:
+        embed.description = (
+            f"No {spec['noun']} facts recorded yet. Try "
+            f"`!btd6 refresh-source {spec['source_key']}` to fetch live data."
+        )
+        return embed
+
+    for row in rows:
+        body = row.get("body_json") if isinstance(row.get("body_json"), dict) else {}
+        name = body.get("name") or row.get("entity_key") or "—"
+        window = _event_window(body)
+        lines = [
+            f"id=`{row['entity_key']}`",
+            f"window: {window}",
+        ]
+        score_fragments = []
+        if isinstance(body.get("total_scores"), int):
+            score_fragments.append(f"scores={body['total_scores']}")
+        for key, label in (
+            ("total_scores_standard", "standard"),
+            ("total_scores_elite", "elite"),
+        ):
+            value = body.get(key)
+            if isinstance(value, int):
+                score_fragments.append(f"{label}={value}")
+        if isinstance(body.get("boss_type"), str) and body["boss_type"]:
+            score_fragments.append(f"type=`{body['boss_type']}`")
+        if score_fragments:
+            lines.append(" · ".join(score_fragments))
+        when = (
+            row["fetched_at"].isoformat(timespec="minutes")
+            if row.get("fetched_at")
+            else "—"
+        )
+        lines.append(f"fetched=`{when}` · v{row['version']}")
+        embed.add_field(
+            name=str(name)[:256],
+            value="\n".join(lines),
+            inline=False,
+        )
+    return embed
+
+
+# ---------------------------------------------------------------------------
 # refresh-source result builder
 # ---------------------------------------------------------------------------
 
@@ -499,6 +640,7 @@ __all__ = [
     "build_grounding_embed",
     "build_hero_embed",
     "build_latest_data_embed",
+    "build_live_events_embed",
     "build_pending_review_payload",
     "build_refresh_source_embed",
     "build_source_health_embed",

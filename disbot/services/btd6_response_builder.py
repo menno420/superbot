@@ -41,6 +41,10 @@ class BTD6Response:
     fields: tuple[tuple[str, str], tuple[str, str]] | tuple = field(
         default_factory=tuple,
     )
+    # Optional live grounding bundle from btd6_context_service. Already
+    # sanitised + provenance-labelled; the renderer surfaces these as a
+    # dedicated "Live data" field separate from the deterministic body.
+    live_facts: tuple[str, ...] = ()
 
 
 def _source_label() -> str:

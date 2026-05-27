@@ -52,6 +52,21 @@ def response_to_embed(response: Any) -> discord.Embed:
             value=response.version_sensitivity,
             inline=False,
         )
+    live_facts = getattr(response, "live_facts", ()) or ()
+    if live_facts:
+        value = "\n".join(f"• {fact}" for fact in live_facts)
+        if len(value) > 1024:
+            kept: list[str] = []
+            running = 0
+            for fact in live_facts:
+                line = f"• {fact}"
+                if running + len(line) + 1 > 990:
+                    break
+                kept.append(line)
+                running += len(line) + 1
+            dropped = len(live_facts) - len(kept)
+            value = "\n".join(kept) + f"\n… ({dropped} more)"
+        embed.add_field(name="Live data", value=value, inline=False)
     if response.follow_up:
         embed.add_field(name="Follow-up", value=response.follow_up, inline=False)
     if response.sources:
