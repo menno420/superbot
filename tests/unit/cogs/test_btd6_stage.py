@@ -112,18 +112,14 @@ async def test_webhook_message_skipped(stage):
 async def test_system_message_skipped(stage):
     message = _make_message(msg_type=discord.MessageType.pins_add)
     await stage.process(_make_ctx(message))
-    assert (
-        stage.latest_skips(message.channel.id)[-1].reason == REASON_SYSTEM_MESSAGE
-    )
+    assert stage.latest_skips(message.channel.id)[-1].reason == REASON_SYSTEM_MESSAGE
 
 
 @pytest.mark.asyncio
 async def test_command_prefix_message_skipped(stage):
     message = _make_message(content="!btd6 status")
     await stage.process(_make_ctx(message, command_prefix="!"))
-    assert (
-        stage.latest_skips(message.channel.id)[-1].reason == REASON_COMMAND_PREFIX
-    )
+    assert stage.latest_skips(message.channel.id)[-1].reason == REASON_COMMAND_PREFIX
 
 
 @pytest.mark.asyncio
@@ -151,9 +147,7 @@ async def test_already_handled_metadata_skipped(stage, monkeypatch):
     message = _make_message()
     ctx = _make_ctx(message, metadata={"handled_by": "some_other_stage"})
     await stage.process(ctx)
-    assert (
-        stage.latest_skips(message.channel.id)[-1].reason == REASON_ALREADY_HANDLED
-    )
+    assert stage.latest_skips(message.channel.id)[-1].reason == REASON_ALREADY_HANDLED
 
 
 @pytest.mark.asyncio

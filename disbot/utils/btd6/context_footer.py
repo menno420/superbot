@@ -59,12 +59,11 @@ def append_context_footer(
     if marker_idx != -1:
         existing_text = existing_text[:marker_idx]
 
-    if existing_text:
-        new_text = f"{existing_text}{new_segment}"
-    else:
-        # Skip the leading " • " when there was no prior text — the
-        # marker is the entire footer.
-        new_text = f"ctx={context_id}"
+    # When there was no prior text, the marker is the entire footer
+    # (skip the leading " • " separator).
+    new_text = (
+        f"{existing_text}{new_segment}" if existing_text else f"ctx={context_id}"
+    )
 
     embed.set_footer(text=new_text, icon_url=existing_icon)
     return embed

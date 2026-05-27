@@ -132,7 +132,9 @@ class _HeroSelect(discord.ui.Select):
             parent_builder=_rebuild_list,
         )
         await safe_edit(
-            interaction, embed=build_hero_detail_embed(detail_vm), view=detail_view,
+            interaction,
+            embed=build_hero_detail_embed(detail_vm),
+            view=detail_view,
         )
 
 
@@ -169,7 +171,10 @@ async def open_hero_browser(interaction: discord.Interaction) -> None:
     view = HeroBrowserView(interaction.user)
     view.set_vm(vm)
     await safe_followup(
-        interaction, embed=build_hero_list_embed(vm), view=view, ephemeral=True,
+        interaction,
+        embed=build_hero_list_embed(vm),
+        view=view,
+        ephemeral=True,
     )
 
 

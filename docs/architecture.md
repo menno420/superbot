@@ -255,6 +255,21 @@ for **splitting supporting UI** out of a cog when the cog grows past
 panel entry-point convention; see "Subsystem decomposition" below for
 the full splitting checklist.
 
+For **read-heavy subsystems** (the BTD6 cog is the reference pattern),
+prefer the query → view-model → embed sandwich:
+
+* `services/<name>_query_service.py` (or equivalent) returns typed
+  dataclasses from stored data; no view/cog imports.
+* `services/<name>_view_model_service.py` composes query output into
+  display-ready models that carry `freshness` + `context_id`. Embed
+  builders consume VMs, not raw rows.
+* `cogs/<name>/_*.py` + `views/<name>/*.py` hold the rendering and
+  Discord-interaction logic only.
+
+The BTD6 cog wires this through `build_*_view_model` builders in
+`services/btd6_view_model_service.py` and shared rendering helpers in
+`utils/btd6/` (`freshness_render`, `response_embed`, `context_footer`).
+
 ---
 
 ## Subsystem decomposition

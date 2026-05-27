@@ -151,7 +151,9 @@ class _TowerSelect(discord.ui.Select):
             parent_builder=_rebuild_list,
         )
         await safe_edit(
-            interaction, embed=build_tower_detail_embed(detail_vm), view=detail_view,
+            interaction,
+            embed=build_tower_detail_embed(detail_vm),
+            view=detail_view,
         )
 
 

@@ -38,6 +38,7 @@ that service.  No exceptions for cogs or other services.
 | `services/game_state_service.py` | in-flight game state checkpoints (`game_state` table) | call `save`/`load`/`clear`/`list_active_for_subsystem`.  JSONB payload; cogs own their schemas. |
 | `services/governance_service.py` (legacy shim) | the public surface re-exported from `governance/*` | re-exports only.  No business logic should live here. |
 | `governance/writes.py:GovernanceMutationPipeline` | every governance write (subsystem_visibility, cleanup_policies, capability_overrides, audit log) | use the pipeline.  INV-E (`test_apply_template_uses_pipeline`). |
+| `services/btd6_view_model_service.py` | BTD6 view-model construction, the data-freshness contract, and the `context_id` format (`^btd6_[a-z_]+:[A-Za-z0-9_-]+$`) | call `build_*_view_model(...)` instead of reading `btd6_facts` rows directly from cogs/views. The `context_id` regex is the handle a future Team Panel attaches to — never widen it without a migration. Pinned by `tests/unit/cogs/test_btd6_context_id_contract.py`. |
 
 ---
 
