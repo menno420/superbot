@@ -19,6 +19,8 @@ from typing import Any
 
 import discord
 
+from core.runtime.interaction_helpers import safe_defer, safe_followup
+
 logger = logging.getLogger("bot.views.ai.routing.matrix")
 
 _TIMEOUT_SECONDS = 180
@@ -135,10 +137,16 @@ class _MatrixChannelSelect(discord.ui.ChannelSelect):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if interaction.guild is None:
+            # No I/O — direct response stays inside the ack window.
             await interaction.response.send_message(
                 "❌ This requires a guild context.",
                 ephemeral=True,
             )
+            return
+        # build_routing_matrix_embed awaits the policy resolver and the
+        # behavior-preset catalog (both DB-backed). Defer first so the
+        # 3-second ack window never expires before the followup lands.
+        if not await safe_defer(interaction, ephemeral=True, thinking=True):
             return
         picked = self.values[0]
         embed = await build_routing_matrix_embed(
@@ -146,7 +154,7 @@ class _MatrixChannelSelect(discord.ui.ChannelSelect):
             channel_id=picked.id,
             user_id=interaction.user.id,
         )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
 
 class RoutingMatrixSelectView(discord.ui.View):

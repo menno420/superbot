@@ -25,9 +25,11 @@ from services.automation_mutation import (
     InvalidAutomationConfigError,
 )
 from services.automation_templates import (
+    SERVER_PRESETS,
     TEMPLATES,
     AutomationTemplate,
     get_template,
+    is_installable_template,
     known_slugs,
     list_templates_by_category,
 )
@@ -38,9 +40,7 @@ from services.automation_templates import (
 
 
 def test_onboarding_slugs_match_documented_set():
-    onboarding_slugs = {
-        t.slug for t in list_templates_by_category("onboarding")
-    }
+    onboarding_slugs = {t.slug for t in list_templates_by_category("onboarding")}
     assert onboarding_slugs == {
         "welcome-message",
         "rules-channel-binding",
@@ -58,6 +58,45 @@ def test_get_template_returns_match():
 
 def test_get_template_returns_none_for_unknown_slug():
     assert get_template("does-not-exist") is None
+
+
+def test_get_template_can_still_find_hidden_unsupported_template():
+    """Templates whose trigger kind isn't installable yet stay in the
+    source catalog so internal callers (preset preview, future
+    cron-parser PR) can still resolve them by slug. They're only
+    hidden from the operator picker / ``TEMPLATES`` listing.
+    """
+    # ``daily-readiness-reminder`` ships with trigger_kind=scheduled_time.
+    tmpl = get_template("daily-readiness-reminder")
+    assert tmpl is not None
+    assert not is_installable_template(tmpl)
+    # Picker-facing listing excludes it.
+    assert tmpl not in TEMPLATES
+    assert tmpl.slug not in known_slugs()
+
+
+def test_server_presets_do_not_reference_unsupported_templates():
+    """Bundled :data:`SERVER_PRESETS` must not point any ``add_rule``
+    operation at a non-installable template. Otherwise an operator
+    applying the preset would get an ``InvalidAutomationConfigError``
+    from the mutation pipeline mid-apply.
+    """
+    for preset in SERVER_PRESETS:
+        for index, op in enumerate(preset.operations):
+            if op.kind != "add_rule":
+                continue
+            slug = str(op.payload.get("template_slug") or "")
+            tmpl = get_template(slug)
+            assert tmpl is not None, (
+                f"preset {preset.slug!r} operation[{index}] references "
+                f"unknown template slug {slug!r}"
+            )
+            assert is_installable_template(tmpl), (
+                f"preset {preset.slug!r} operation[{index}] references "
+                f"non-installable template {slug!r} (trigger_kind="
+                f"{tmpl.trigger_kind!r}); the apply would fail at the "
+                "mutation-pipeline boundary."
+            )
 
 
 def test_list_templates_by_category_filters():

@@ -141,3 +141,72 @@ def test_matrix_view_admin_gate_allows_admin():
     children = list(view.children)
     # There should be exactly one channel-select child.
     assert any(isinstance(c, discord.ui.ChannelSelect) for c in children)
+
+
+@pytest.mark.asyncio
+async def test_matrix_callback_defers_before_building_embed(monkeypatch):
+    """The channel-select callback must defer the interaction BEFORE
+    awaiting the policy resolver + preset catalog — both DB-backed.
+    Without the defer the 3-second ack window can expire under normal
+    latency, producing "This interaction failed".
+    """
+    from views.ai.routing import matrix as matrix_mod
+
+    call_order: list[str] = []
+
+    async def _build_embed(**_kwargs):
+        call_order.append("build_embed")
+        return discord.Embed(title="x")
+
+    async def _defer(*_args, **_kwargs):
+        call_order.append("defer")
+
+    async def _followup_send(*_args, **_kwargs):
+        call_order.append("followup_send")
+
+    async def _response_send(*_args, **_kwargs):
+        # Should NOT be called on the normal guild path after the fix.
+        call_order.append("response_send_message")
+
+    monkeypatch.setattr(
+        matrix_mod,
+        "build_routing_matrix_embed",
+        _build_embed,
+    )
+
+    interaction = MagicMock()
+    interaction.guild = SimpleNamespace(id=1)
+    interaction.user = SimpleNamespace(id=2)
+    interaction.response = MagicMock()
+    # Model the response lifecycle: is_done flips True once defer is
+    # awaited so the followup helper routes through followup.send (the
+    # production path) rather than retrying response.send_message.
+    deferred = {"flag": False}
+
+    def _is_done() -> bool:
+        return deferred["flag"]
+
+    async def _defer_and_flip(*_args, **_kwargs):
+        await _defer()
+        deferred["flag"] = True
+
+    interaction.response.is_done = _is_done
+    interaction.response.defer = AsyncMock(side_effect=_defer_and_flip)
+    interaction.response.send_message = AsyncMock(side_effect=_response_send)
+    interaction.followup = MagicMock()
+    interaction.followup.send = AsyncMock(side_effect=_followup_send)
+
+    # discord.ui.ChannelSelect.values is a non-settable property on a
+    # real select instance, so invoke the callback function with a
+    # plain stand-in carrying the .values attribute the body reads.
+    select_stub = SimpleNamespace(values=[SimpleNamespace(id=42)])
+    # _MatrixChannelSelect is module-internal; reach it via the view.
+    view = RoutingMatrixSelectView()
+    real_select = next(
+        c for c in view.children if isinstance(c, discord.ui.ChannelSelect)
+    )
+    callback_func = type(real_select).callback
+    await callback_func(select_stub, interaction)
+
+    assert call_order == ["defer", "build_embed", "followup_send"], call_order
+    interaction.response.send_message.assert_not_awaited()

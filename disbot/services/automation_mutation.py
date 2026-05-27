@@ -50,6 +50,7 @@ from services.audit_events import emit_audit_action
 from services.automation_registry import (
     KNOWN_ACTION_KINDS,
     KNOWN_TRIGGER_KINDS,
+    UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS,
     validate_action_config,
     validate_trigger_config,
 )
@@ -131,6 +132,12 @@ class AutomationMutationPipeline:
     ) -> AutomationMutationResult:
         # 1. Input validation.
         self._validate_kinds(trigger_kind, action_kind)
+        if trigger_kind in UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS:
+            raise InvalidAutomationConfigError(
+                f"trigger_kind {trigger_kind!r} is known but not installable yet; "
+                f"{trigger_kind} requires the cron-parser implementation before "
+                "new rules can be created.",
+            )
         errors = list(
             validate_trigger_config(trigger_kind, trigger_config or {}),
         ) + list(validate_action_config(action_kind, action_config or {}))

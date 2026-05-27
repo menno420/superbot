@@ -47,10 +47,7 @@ def test_build_picker_embed_lists_categories_with_counts():
     cat_field = next((f for f in fields if "categories" in f.name.lower()), None)
     assert cat_field is not None
     # At least one of the documented categories appears.
-    assert (
-        "Onboarding" in cat_field.value
-        or "Server pulse" in cat_field.value
-    )
+    assert "Onboarding" in cat_field.value or "Server pulse" in cat_field.value
 
 
 def test_picker_view_seeds_one_select_with_template_options():
@@ -68,9 +65,7 @@ def test_template_config_embed_pre_apply_lists_required_overrides():
     template = next(t for t in TEMPLATES if t.required_overrides)
     embed = build_template_config_embed(template)
     field = next(f for f in embed.fields if "Required" in f.name)
-    assert any(
-        f"`{key}`" in field.value for key in template.required_overrides
-    )
+    assert any(f"`{key}`" in field.value for key in template.required_overrides)
 
 
 def test_template_config_embed_post_apply_success_is_green():
@@ -103,9 +98,7 @@ def test_template_config_embed_post_apply_failure_is_red():
 @pytest.mark.asyncio
 async def test_apply_routes_through_mutation_pipeline_with_disabled_default():
     """Apply must call the pipeline and never pass ``enabled=True``."""
-    template = next(
-        t for t in TEMPLATES if "channel_id" in t.required_overrides
-    )
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
 
     fake_result = AutomationMutationResult(
         mutation_id="m1",
@@ -160,9 +153,7 @@ async def test_apply_routes_through_mutation_pipeline_with_disabled_default():
 
 @pytest.mark.asyncio
 async def test_apply_returns_validation_error_when_pipeline_rejects():
-    template = next(
-        t for t in TEMPLATES if "channel_id" in t.required_overrides
-    )
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
 
     from services.automation_mutation import InvalidAutomationConfigError
 
@@ -193,9 +184,7 @@ async def test_apply_returns_validation_error_when_pipeline_rejects():
 @pytest.mark.asyncio
 async def test_apply_button_short_circuits_when_required_override_missing():
     """Apply with required ``channel_id`` unset must not call the pipeline."""
-    template = next(
-        t for t in TEMPLATES if "channel_id" in t.required_overrides
-    )
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
     view = TemplateConfigView(_author(), template=template)
     # channel_id was never selected.
     assert view.selected_channel_id is None
@@ -220,9 +209,7 @@ async def test_apply_button_short_circuits_when_required_override_missing():
 
 @pytest.mark.asyncio
 async def test_apply_button_calls_pipeline_when_overrides_filled():
-    template = next(
-        t for t in TEMPLATES if "channel_id" in t.required_overrides
-    )
+    template = next(t for t in TEMPLATES if "channel_id" in t.required_overrides)
     view = TemplateConfigView(_author(), template=template)
     view.selected_channel_id = 12345
 
@@ -257,3 +244,25 @@ def test_picker_select_options_never_exceed_25():
     view = TemplatePickerView(_author())
     selects = [c for c in view.children if hasattr(c, "options")]
     assert len(selects[0].options) <= 25
+
+
+def test_picker_omits_unsupported_trigger_kinds():
+    """Templates whose trigger kind isn't installable yet must not
+    appear in the picker — operators would otherwise install a rule
+    the scheduler treats as a 24h-drift placeholder.
+    """
+    from services.automation_registry import (
+        UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS,
+    )
+
+    view = TemplatePickerView(_author())
+    select = next(c for c in view.children if hasattr(c, "options"))
+    listed_slugs = {opt.value for opt in select.options}
+    for slug in listed_slugs:
+        tmpl = get_template(slug)
+        assert tmpl is not None
+        assert tmpl.trigger_kind not in UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS
+    # Belt-and-braces: TEMPLATES (the source of the options) carries no
+    # unsupported kinds either.
+    for tmpl in TEMPLATES:
+        assert tmpl.trigger_kind not in UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS

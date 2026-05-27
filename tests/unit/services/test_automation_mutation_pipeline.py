@@ -120,6 +120,30 @@ async def test_create_rejects_missing_required_config_key(pipeline, _mock_db):
         )
 
 
+@pytest.mark.asyncio
+async def test_create_rule_rejects_scheduled_time(pipeline, _mock_db):
+    # scheduled_time is a registered trigger kind but installation is
+    # gated until the cron parser ships. The rejection MUST happen at
+    # the service boundary, before any DB write, so operators see a
+    # clear validation error rather than a rule that silently misfires.
+    with pytest.raises(
+        InvalidAutomationConfigError,
+        match="not installable",
+    ):
+        await pipeline.create_rule(
+            guild_id=1,
+            guild_owner_id=99,
+            name="x",
+            trigger_kind="scheduled_time",
+            action_kind="send_message",
+            action_config={"channel_id": 555, "template": "hi"},
+            actor_id=99,
+        )
+    _mock_db["insert_rule"].assert_not_awaited()
+    _mock_db["emit_audit"].assert_not_awaited()
+    _mock_db["bus_emit"].assert_not_awaited()
+
+
 # ---------------------------------------------------------------------------
 # Authority
 # ---------------------------------------------------------------------------
@@ -142,7 +166,9 @@ async def test_create_rejects_unknown_actor_type(pipeline, _mock_db):
 
 @pytest.mark.asyncio
 async def test_create_rejects_non_owner(pipeline, _mock_db):
-    with pytest.raises(UnauthorizedAutomationMutationError, match="not the guild owner"):
+    with pytest.raises(
+        UnauthorizedAutomationMutationError, match="not the guild owner"
+    ):
         await pipeline.create_rule(
             guild_id=1,
             guild_owner_id=99,
