@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from services import ai_instruction_service
+from services.ai_instruction_service import _speaker_label
 from utils.db import ai as ai_db
 
 
@@ -34,6 +35,9 @@ async def test_assemble_with_no_recent_turns_unchanged(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_assemble_renders_recent_turns_as_untrusted_data(monkeypatch):
+    """Recent turns are wrapped + pseudonymized; raw user IDs never reach
+    the model-visible block."""
+
     async def _get(_pid):
         return None
 
@@ -49,18 +53,23 @@ async def test_assemble_renders_recent_turns_as_untrusted_data(monkeypatch):
         user_message="follow-up",
         profile_ids=(),
         recent_turns=turns,
+        bot_user_id=999,
     )
-    # The recent-turns block is the FIRST data entry.
     recent_block = stack.data[0]
-    # Untrusted wrapper present.
     assert "UNTRUSTED_DATA__recent_channel_turns__BEGIN" in recent_block
-    # All three rendered.
     assert "prior question" in recent_block
     assert "prior reply" in recent_block
     assert "bystander comment" in recent_block
-    # Role + user_id appears in each line.
-    assert "[user user=10]" in recent_block
-    assert "[assistant user=999]" in recent_block
+    # Pseudonymous labels — bot=999 is 'assistant', the two humans get
+    # user_A / user_B in first-seen order.
+    assert "[assistant] prior reply" in recent_block
+    assert "[user_A] prior question" in recent_block
+    assert "[user_B] bystander comment" in recent_block
+    # Raw user_id metadata is gone.
+    assert "user_id=" not in recent_block
+    assert "user=10" not in recent_block
+    assert "user=20" not in recent_block
+    assert "999" not in recent_block
 
 
 @pytest.mark.asyncio
@@ -96,9 +105,7 @@ async def test_assemble_empty_recent_turns_skipped(monkeypatch):
         profile_ids=(),
         recent_turns=[],
     )
-    assert all(
-        "recent_channel_turns" not in block for block in stack.data
-    )
+    assert all("recent_channel_turns" not in block for block in stack.data)
 
 
 @pytest.mark.asyncio
@@ -121,3 +128,200 @@ async def test_assemble_recent_turns_propagate_into_payload(monkeypatch):
     payload = stack.render_payload_text()
     assert "LOOK_FOR_ME" in payload
     assert "now" in payload  # user message still appended at the end.
+
+
+# ---------------------------------------------------------------------------
+# T3: task contract is included even when the user asks for a summary.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_assemble_renders_task_contract_with_summary_intent(monkeypatch):
+    """Summary intent is handled by prompt language, not by routing.
+
+    The task contract must always be present so the model decides
+    summary-vs-direct-reply from the current_user_message text.
+    """
+
+    async def _get(_pid):
+        return None
+
+    monkeypatch.setattr(ai_db, "get_instruction_profile", _get)
+
+    turns = [
+        SimpleNamespace(user_id=11, role="user", text="alpha"),
+        SimpleNamespace(user_id=22, role="user", text="beta"),
+        SimpleNamespace(user_id=33, role="user", text="gamma"),
+    ]
+    stack = await ai_instruction_service.assemble(
+        guild_id=1,
+        user_message="summarize recent chat",
+        profile_ids=(),
+        recent_turns=turns,
+    )
+    system_prompt = stack.render_system_prompt()
+    payload = stack.render_payload_text()
+
+    assert "Task contract" in system_prompt
+    assert "current_user_message" in system_prompt
+    assert "Do not summarize" in system_prompt
+    # The triggering message is the LAST untrusted span, framed as
+    # current_user_message (not the legacy user_message label).
+    assert "UNTRUSTED_DATA__current_user_message__BEGIN" in payload
+    assert "summarize recent chat" in payload
+    # Recent-turns block precedes the current_user_message block.
+    assert payload.rindex("recent_channel_turns") < payload.rindex(
+        "current_user_message"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T4a: assembler does not render a user_id= field; body-text scrubbing is
+#      redaction's job (tested separately in test_redaction.py).
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_assemble_does_not_render_user_id_field(monkeypatch):
+    async def _get(_pid):
+        return None
+
+    monkeypatch.setattr(ai_db, "get_instruction_profile", _get)
+
+    turns = [
+        SimpleNamespace(
+            user_id=123456789012345678,
+            role="user",
+            text="see <@987654321098765432>",
+        ),
+    ]
+    stack = await ai_instruction_service.assemble(
+        guild_id=1,
+        user_message="hi",
+        profile_ids=(),
+        recent_turns=turns,
+        bot_user_id=999000000000000001,
+    )
+    recent_block = stack.data[0]
+    # Speaker metadata is labelled, not raw.
+    assert "[user_A]" in recent_block
+    assert "user_id=" not in recent_block
+    assert "123456789012345678" not in recent_block
+    # NOTE: <@987654321098765432> inside turn.text is NOT scrubbed by
+    # the assembler — that is the redaction layer's responsibility
+    # (gateway-side inbound + stage-side outbound).
+
+
+# ---------------------------------------------------------------------------
+# T8: pseudonym stability — same speaker → same label across turns.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_speaker_label_stability_within_assemble(monkeypatch):
+    async def _get(_pid):
+        return None
+
+    monkeypatch.setattr(ai_db, "get_instruction_profile", _get)
+
+    turns = [
+        SimpleNamespace(user_id=10, role="user", text="one"),
+        SimpleNamespace(user_id=20, role="user", text="two"),
+        SimpleNamespace(user_id=10, role="user", text="three"),
+        SimpleNamespace(user_id=20, role="user", text="four"),
+        SimpleNamespace(user_id=10, role="user", text="five"),
+    ]
+    stack = await ai_instruction_service.assemble(
+        guild_id=1,
+        user_message="x",
+        profile_ids=(),
+        recent_turns=turns,
+    )
+    block = stack.data[0]
+    # user=10 always renders with the same label; user=20 with a different stable one.
+    assert "[user_A] one" in block
+    assert "[user_B] two" in block
+    assert "[user_A] three" in block
+    assert "[user_B] four" in block
+    assert "[user_A] five" in block
+
+
+# ---------------------------------------------------------------------------
+# T9: bot id mapped to 'assistant' even when it appears before any human.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_bot_id_maps_to_assistant_even_if_appears_first(monkeypatch):
+    async def _get(_pid):
+        return None
+
+    monkeypatch.setattr(ai_db, "get_instruction_profile", _get)
+
+    bot_id = 555000000000000000
+    turns = [
+        SimpleNamespace(user_id=bot_id, role="assistant", text="bot first"),
+        SimpleNamespace(user_id=10, role="user", text="human after"),
+    ]
+    stack = await ai_instruction_service.assemble(
+        guild_id=1,
+        user_message="x",
+        profile_ids=(),
+        recent_turns=turns,
+        bot_user_id=bot_id,
+    )
+    block = stack.data[0]
+    assert "[assistant] bot first" in block
+    # The first non-bot human is user_A (not user_B — the bot does
+    # not consume an index in the user_X sequence).
+    assert "[user_A] human after" in block
+
+
+# ---------------------------------------------------------------------------
+# T10: no bot_user_id → no 'assistant' label is guessed.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_no_bot_user_id_does_not_guess_assistant_label(monkeypatch):
+    async def _get(_pid):
+        return None
+
+    monkeypatch.setattr(ai_db, "get_instruction_profile", _get)
+
+    turns = [
+        SimpleNamespace(user_id=10, role="user", text="one"),
+        SimpleNamespace(user_id=999, role="assistant", text="two"),
+    ]
+    stack = await ai_instruction_service.assemble(
+        guild_id=1,
+        user_message="x",
+        profile_ids=(),
+        recent_turns=turns,
+        bot_user_id=None,
+    )
+    block = stack.data[0]
+    assert "[assistant]" not in block
+    assert "[user_A] one" in block
+    assert "[user_B] two" in block
+
+
+# ---------------------------------------------------------------------------
+# T13: direct unit test for the alphabet helper.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("index", "expected"),
+    [
+        (0, "user_A"),
+        (1, "user_B"),
+        (25, "user_Z"),
+        (26, "user_AA"),
+        (27, "user_AB"),
+        (51, "user_AZ"),
+        (52, "user_BA"),
+    ],
+)
+def test_speaker_label_alphabet_progression(index: int, expected: str) -> None:
+    assert _speaker_label(index) == expected

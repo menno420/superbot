@@ -134,3 +134,33 @@ async def test_stage_skips_empty_text(monkeypatch):
     await stage.process(_make_ctx(msg))
 
     assert ai_conversation_service.recent_turns(99, 1) == []
+
+
+# ---------------------------------------------------------------------------
+# PR 1: the triggering mention is recorded exactly once, NOT via the
+# top-of-process bystander append (which would put it into its own
+# recent_turns and break the "not in own context" invariant).
+# ---------------------------------------------------------------------------
+
+
+def _make_mention_ctx(message, *, bot_id: int = 555000000000000111):
+    bot = MagicMock()
+    bot.user = SimpleNamespace(id=bot_id, mentioned_in=lambda _msg: True)
+    return MessagePipelineContext(bot=bot, message=message)
+
+
+@pytest.mark.asyncio
+async def test_stage_skips_top_path_append_for_mentions_records_once(monkeypatch):
+    """When the message is a bot mention, the top-of-process bystander
+    append is skipped (``include_mentions=False``). The mention enters
+    memory exactly once via the denial-path append (because we patch
+    the resolver to deny here)."""
+    _patch_denied(monkeypatch)
+    stage = AINaturalLanguageStage()
+    msg = _make_message(content="<@555000000000000111> blocked-with-mention")
+    await stage.process(_make_mention_ctx(msg))
+
+    turns = ai_conversation_service.recent_turns(99, 1)
+    matching = [t for t in turns if "blocked-with-mention" in t.text]
+    # Exactly one entry — the top-path append did NOT also fire.
+    assert len(matching) == 1
