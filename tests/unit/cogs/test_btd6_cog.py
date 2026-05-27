@@ -62,8 +62,19 @@ def test_btd6_cog_declares_entry_point_commands():
     assert "btd6menu" in names
 
 
-def test_status_embed_builder_returns_embed():
-    embed = build_status_embed()
+@pytest.mark.asyncio
+async def test_status_embed_builder_returns_embed(monkeypatch):
+    from services import btd6_knowledge_service
+
+    async def _empty_summary():
+        return ()
+
+    monkeypatch.setattr(
+        btd6_knowledge_service,
+        "fact_summary_by_kind",
+        _empty_summary,
+    )
+    embed = await build_status_embed()
     assert isinstance(embed, discord.Embed)
     assert "Status" in (embed.title or "")
 

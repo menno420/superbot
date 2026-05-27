@@ -187,8 +187,19 @@ _STALE_STRINGS = (
 )
 
 
-def test_status_embed_has_no_stale_strings():
-    embed = build_status_embed()
+@pytest.mark.asyncio
+async def test_status_embed_has_no_stale_strings(monkeypatch):
+    from services import btd6_knowledge_service
+
+    async def _empty_summary():
+        return ()
+
+    monkeypatch.setattr(
+        btd6_knowledge_service,
+        "fact_summary_by_kind",
+        _empty_summary,
+    )
+    embed = await build_status_embed()
     blob = (embed.title or "") + " " + (embed.description or "")
     for stale in _STALE_STRINGS:
         assert stale not in blob, f"Stale string {stale!r} in status embed"

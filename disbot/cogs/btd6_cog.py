@@ -87,7 +87,7 @@ class BTD6Cog(commands.Cog):
 
     @btd6_group.command(name="status")  # type: ignore[arg-type]
     async def btd6_status(self, ctx: commands.Context) -> None:
-        await ctx.send(embed=build_status_embed())
+        await ctx.send(embed=await build_status_embed())
 
     @btd6_group.command(name="diagnostics")  # type: ignore[arg-type]
     async def btd6_diagnostics(self, ctx: commands.Context) -> None:
@@ -395,10 +395,10 @@ class BTD6Cog(commands.Cog):
 
     @btd6_app_group.command(name="status", description="BTD6 assistant status.")
     async def btd6_status_slash(self, interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(
-            embed=build_status_embed(),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_status_embed()
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="diagnostics",
