@@ -496,7 +496,8 @@ class BlackjackPanelView(HubView):
         await interaction.response.edit_message(
             embed=build_blackjack_challenge_picker_embed(),
             view=_BlackjackChallengeSelectView(
-                interaction.user, back_target=back_target
+                interaction.user,
+                back_target=back_target,
             ),
         )
 
