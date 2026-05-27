@@ -5,7 +5,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from core.runtime.interaction_helpers import safe_defer
+from core.runtime.interaction_helpers import safe_defer, safe_followup
 from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ECONOMY_COLOR
@@ -176,6 +176,8 @@ class _XpRemoveSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         # Clear XP columns only; preserves any days_required on the same row.
         await db.set_role_xp_threshold(
             interaction.guild.id,
@@ -184,7 +186,8 @@ class _XpRemoveSelect(discord.ui.Select):
             False,
         )
         invalidate_xp_threshold_roles(interaction.guild.id)
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             f"✅ Removed XP threshold for **{self.values[0]}**.",
             ephemeral=True,
         )

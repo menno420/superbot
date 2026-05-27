@@ -17,6 +17,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import resources
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import governance_service
 from services.governance_service import GovernanceContext
 from utils.subsystem_registry import all_subsystems_sorted
@@ -59,13 +60,15 @@ class _ChannelSelectForVisibility(discord.ui.Select):
                 ephemeral=True,
             )
             return
+        if not await safe_defer(interaction):
+            return
         sub = _SubsystemToggleView(
             self.view.ctx,
             channel=channel,  # type: ignore[arg-type]
             manager_message=self.view.manager_message,
         )
         await sub.load(interaction.guild_id)
-        await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
+        await safe_edit(interaction, embed=sub.build_embed(), view=sub)
 
 
 class _VisibilitySubView(BaseView):
@@ -177,6 +180,9 @@ class _SubsystemToggleView(BaseView):
             else:
                 new_val = None
 
+            if not await safe_defer(interaction):
+                return
+
             gctx = GovernanceContext.from_interaction(interaction)
             try:
                 await governance_service.set_subsystem_visibility(
@@ -193,15 +199,15 @@ class _SubsystemToggleView(BaseView):
                     exc,
                     exc_info=True,
                 )
-                if not interaction.response.is_done():
-                    await interaction.response.send_message(
-                        f"Could not update visibility for **{subsystem_name}**: {exc}",
-                        ephemeral=True,
-                    )
+                await safe_followup(
+                    interaction,
+                    f"Could not update visibility for **{subsystem_name}**: {exc}",
+                    ephemeral=True,
+                )
                 return
             self._visibility[subsystem_name] = new_val
             self._rebuild_buttons()
-            await interaction.response.edit_message(embed=self.build_embed(), view=self)
+            await safe_edit(interaction, embed=self.build_embed(), view=self)
 
         return callback
 

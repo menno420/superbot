@@ -12,6 +12,7 @@ from __future__ import annotations
 import discord
 
 from cogs.economy._helpers import SHOP_ITEMS, _build_economy_embed
+from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services import economy_service
 from utils import db
 from utils.helpers import post_log_embed
@@ -85,6 +86,9 @@ class _ShopSelect(discord.ui.Select):
             )
             return
 
+        if not await safe_defer(interaction):
+            return
+
         new_bal = await economy_service.debit(
             gid,
             uid,
@@ -99,7 +103,7 @@ class _ShopSelect(discord.ui.Select):
             description=f"**-{data['price']:,}** 🪙  |  New balance: **{new_bal:,}** 🪙",
             color=SUCCESS_COLOR,
         )
-        await interaction.response.send_message(embed=embed)
+        await safe_followup(interaction, embed=embed)
 
         log_embed = discord.Embed(
             title="🛒 Shop Purchase",
@@ -201,6 +205,9 @@ class _ShopPanelSelect(discord.ui.Select):
             )
             return
 
+        if not await safe_defer(interaction):
+            return
+
         new_bal = await economy_service.debit(
             gid,
             uid,
@@ -218,7 +225,7 @@ class _ShopPanelSelect(discord.ui.Select):
             ),
             color=SUCCESS_COLOR,
         )
-        await interaction.response.edit_message(embed=embed, view=self._shop_view)
+        await safe_edit(interaction, embed=embed, view=self._shop_view)
 
         log_embed = discord.Embed(
             title="🛒 Shop Purchase",
