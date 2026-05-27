@@ -45,6 +45,9 @@ _POSITIVE_CASES = [
         "url_secret_query",
         "&password=[redacted]",
     ),
+    # discord_id — bare 17-20 digit snowflakes
+    ("123456789012345678", "discord_id", "[discord_id:redacted]"),
+    ("12345678901234567890", "discord_id", "[discord_id:redacted]"),
 ]
 
 
@@ -53,12 +56,12 @@ def test_redact_text_matches_known_secret_shapes(
     text: str, label: str, marker: str
 ) -> None:
     result = redact_text(text)
-    assert result.replacements.get(label) == 1, (
-        f"expected one match for {label!r} in {text!r}; got {result.replacements}"
-    )
-    assert marker in result.value, (
-        f"marker {marker!r} missing from redacted output {result.value!r}"
-    )
+    assert (
+        result.replacements.get(label) == 1
+    ), f"expected one match for {label!r} in {text!r}; got {result.replacements}"
+    assert (
+        marker in result.value
+    ), f"marker {marker!r} missing from redacted output {result.value!r}"
 
 
 _NEGATIVE_CASES = [
@@ -71,6 +74,13 @@ _NEGATIVE_CASES = [
     "Hello world.",
     "1234567890",
     "",
+    # discord_id — 16 digits is below the 17-digit threshold, common
+    # domain numbers must not be redacted.
+    "1234567890123456",
+    "round 140",
+    "at 1:23:45",
+    "page 2",
+    "42",
 ]
 
 
@@ -118,3 +128,41 @@ def test_redact_payload_preserves_non_string_leaves() -> None:
     result = redact_payload(payload)
     assert result.value == payload
     assert not result.replacements
+
+
+# ---------------------------------------------------------------------------
+# Discord-mention shapes — the bare-snowflake regex must catch the ID
+# inside each of the standard Discord mention wrappers. The safety
+# invariant is "no raw 17–20 digit snowflake survives"; we deliberately
+# do NOT pin the exact bracket-stripping cosmetic form so the test
+# stays resilient to future regex tweaks.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "<@123456789012345678>",  # user mention
+        "<@!123456789012345678>",  # legacy nickname mention
+        "<#123456789012345678>",  # channel mention
+        "<@&123456789012345678>",  # role mention
+        "Hi <@123456789012345678> see <@!987654321098765432>",
+        "see id 123456789012345678 here",
+    ],
+)
+def test_redact_text_strips_snowflakes_from_discord_mentions(text: str) -> None:
+    result = redact_text(text)
+    assert "123456789012345678" not in result.value
+    assert "987654321098765432" not in result.value
+    assert result.replacements.get("discord_id", 0) >= 1
+
+
+def test_redact_text_precedence_keeps_secret_label_over_snowflake() -> None:
+    """An ``sk-…`` token whose tail looks numeric is still labelled
+    ``api_key_like`` rather than ``discord_id``."""
+    result = redact_text("token sk_live_1234567890123456789")
+    assert result.replacements.get("api_key_like") == 1
+    # The secret pattern consumed the entire blob; the snowflake
+    # pattern should not also match on the same span.
+    assert result.replacements.get("discord_id", 0) == 0
+    assert "[api_key_like:redacted]" in result.value

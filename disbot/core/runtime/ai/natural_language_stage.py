@@ -23,6 +23,7 @@ Every code path through this stage produces exactly one
 from __future__ import annotations
 
 import logging
+import re
 import time
 import uuid
 from dataclasses import dataclass
@@ -55,6 +56,52 @@ STAGE_NAME = "ai_natural_language"
 STAGE_ORDER = 70
 
 
+def _strip_bot_mention(text: str, *, bot_user_id: int | None) -> str:
+    """Remove all mentions of the bot from ``text``.
+
+    Discord mentions are ``<@id>`` or ``<@!id>``. ``re.sub`` replaces
+    every match. The returned string is stripped of surrounding
+    whitespace so a bare-mention message collapses to ``""``.
+    """
+    if bot_user_id is None:
+        return text
+    return re.sub(rf"<@!?{bot_user_id}>", "", text).strip()
+
+
+def _record_user_turn_if_visible(
+    message: discord.Message,
+    text: str,
+    *,
+    guild_id: int,
+    channel_id: int,
+    user_id: int,
+    is_mention: bool,
+    include_mentions: bool,
+) -> bool:
+    """Append ``text`` to the conversation buffer when visibility rules allow.
+
+    Single deterministic owner for memory writes from the stage. The
+    raw ``text`` (not the mention-stripped form) is what gets stored
+    so memory reflects what the user actually typed.
+
+    Returns ``True`` if the turn was appended.
+    """
+    if getattr(message.author, "bot", False):
+        return False
+    if text.startswith("!") or text.startswith("/"):
+        return False
+    if is_mention and not include_mentions:
+        return False
+    ai_conversation_service.append(
+        guild_id,
+        channel_id,
+        user_id=user_id,
+        role="user",
+        text=text,
+    )
+    return True
+
+
 @dataclass
 class AINaturalLanguageStage:
     """Single passive natural-language responder.
@@ -75,8 +122,8 @@ class AINaturalLanguageStage:
         message: discord.Message = ctx.message
 
         # Cheap pre-filter: only flow through when there is text.
-        text = (message.content or "").strip()
-        if not text:
+        raw_text = (message.content or "").strip()
+        if not raw_text:
             return StageResult()
 
         # Earlier stages may already have handled this message.
@@ -93,25 +140,28 @@ class AINaturalLanguageStage:
         )
         user_id = message.author.id
         is_mention = ctx.bot.user is not None and ctx.bot.user.mentioned_in(message)
+        bot_user_id = getattr(getattr(ctx.bot, "user", None), "id", None)
 
-        # Chat memory: record every human message the stage sees,
-        # whether or not the bot ends up replying. Skip command
-        # prefixes so operator typos don't pollute the conversational
-        # context. Bot messages are skipped by the earlier
-        # ``handled_by`` short-circuit + the pipeline's own filtering;
-        # we also guard against ``author.bot`` defensively here.
-        if (
-            not getattr(message.author, "bot", False)
-            and not text.startswith("!")
-            and not text.startswith("/")
-        ):
-            ai_conversation_service.append(
-                guild_id,
-                channel_id,
-                user_id=user_id,
-                role="user",
-                text=text,
-            )
+        # The model sees the message with the bot mention stripped out
+        # so the ``current_user_message`` span is the user's actual
+        # question — never a noisy ``<@id>`` token. Memory still
+        # records the raw form below.
+        user_text = _strip_bot_mention(raw_text, bot_user_id=bot_user_id)
+
+        # Chat memory (bystander pre-record): record non-mention
+        # messages the stage sees, whether or not the bot ends up
+        # replying. The triggering mention is recorded later — once,
+        # after ``gather_recent_turns`` has run — so it cannot appear
+        # in the recent-turn context for its own response.
+        _record_user_turn_if_visible(
+            message,
+            raw_text,
+            guild_id=guild_id,
+            channel_id=channel_id,
+            user_id=user_id,
+            is_mention=is_mention,
+            include_mentions=False,
+        )
 
         snap = await ai_permission_service.snapshot(guild_id, user_id)
 
@@ -131,9 +181,21 @@ class AINaturalLanguageStage:
 
         # Route classification first so the audit row records both
         # the routed task and the resolver decision even when denied.
-        routed = ai_task_router.classify(text)
+        routed = ai_task_router.classify(raw_text)
 
         if not decision.allowed:
+            # Record the triggering mention exactly once before the
+            # denial return so future turns retain context. Non-mention
+            # bystander messages were already recorded above.
+            _record_user_turn_if_visible(
+                message,
+                raw_text,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                is_mention=is_mention,
+                include_mentions=True,
+            )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
                 channel_id=channel_id,
@@ -156,6 +218,15 @@ class AINaturalLanguageStage:
             user_id,
             decision.effective_cooldown,
         ):
+            _record_user_turn_if_visible(
+                message,
+                raw_text,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                is_mention=is_mention,
+                include_mentions=True,
+            )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
                 channel_id=channel_id,
@@ -170,10 +241,39 @@ class AINaturalLanguageStage:
             )
             return StageResult()
 
+        # Bare-mention guard: a message like "<@BOT_ID>" collapses to
+        # empty after mention-stripping. Do not send an empty
+        # current_user_message to the model. Record the mention to
+        # memory and audit a clean skip.
+        if not user_text:
+            _record_user_turn_if_visible(
+                message,
+                raw_text,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                is_mention=is_mention,
+                include_mentions=True,
+            )
+            await ai_decision_audit_service.record(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                category_id=category_id,
+                user_id=user_id,
+                message_id=message.id,
+                task=routed.task.value,
+                route=routed.route,
+                decision="skipped",
+                reason_code=PolicyDenialReason.NO_ROUTE_MATCHED,
+                policy_snapshot_hash=decision.policy_snapshot_hash,
+                instruction_profile_ids=list(decision.instruction_profile_ids) or None,
+            )
+            return StageResult()
+
         try:
             _fact_req = FeatureFactRequest(
                 task=routed.task,
-                text=text,
+                text=raw_text,
                 guild_id=guild_id,
                 channel_id=channel_id,
                 author_id=user_id,
@@ -228,11 +328,7 @@ class AINaturalLanguageStage:
                     guild_id=guild_id,
                     channel_id=channel_id,
                     channel=getattr(message, "channel", None),
-                    bot_user_id=getattr(
-                        getattr(ctx, "bot_user", None),
-                        "id",
-                        None,
-                    ),
+                    bot_user_id=bot_user_id,
                 )
             except Exception as exc:  # noqa: BLE001 — defensive
                 logger.debug(
@@ -240,12 +336,27 @@ class AINaturalLanguageStage:
                     exc,
                 )
                 recent_turns = []
+
+            # Record the triggering mention exactly once, AFTER the
+            # gather above has captured the prior buffer. The mention
+            # therefore cannot appear in its own recent-turn context.
+            _record_user_turn_if_visible(
+                message,
+                raw_text,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                is_mention=is_mention,
+                include_mentions=True,
+            )
+
             stack = await ai_instruction_service.assemble(
                 guild_id=guild_id,
-                user_message=text,
+                user_message=user_text,
                 profile_ids=decision.instruction_profile_ids,
                 retrieved_facts=list(feature.facts),
                 recent_turns=recent_turns,
+                bot_user_id=bot_user_id,
             )
             correlation_id = uuid.uuid4().hex
             built = ai_context_service.build(
@@ -310,6 +421,15 @@ class AINaturalLanguageStage:
             )
             return StageResult()
 
+        # Outbound redaction: scrub Discord snowflakes and other
+        # sensitive-token patterns from the model's reply before it
+        # is sent to Discord OR recorded into conversation memory.
+        # Placed after the empty-reply guard so empty responses still
+        # take the degraded/skipped path above unchanged.
+        from core.runtime.ai.redaction import redact_text
+
+        reply_text = redact_text(reply_text).value
+
         from core.runtime.ai import response_renderer_registry
 
         rendered = await response_renderer_registry.render(
@@ -362,9 +482,9 @@ class AINaturalLanguageStage:
             return StageResult()
 
         ai_permission_service.mark_reply_sent(guild_id, user_id)
-        # The AI cog's on_message listener owns user-message recording
-        # so chat memory captures bystander messages too. The stage
-        # only records its own assistant reply.
+        # User-message recording happens earlier via
+        # ``_record_user_turn_if_visible``. Here the stage records
+        # only its own (sanitized) assistant reply.
         ai_conversation_service.append(
             guild_id,
             channel_id,

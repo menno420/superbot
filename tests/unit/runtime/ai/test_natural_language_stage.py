@@ -35,7 +35,19 @@ from core.runtime.ai.natural_language_stage import (
     _invoke_gateway,
 )
 from core.runtime.message_pipeline import MessagePipelineContext
+
+# Capture the real implementations at import time so the new PR-1
+# tests can restore them after ``stub_services`` swaps them out for
+# mocks. Importing inside a fixture would re-read the (already
+# mocked) module attribute and produce a no-op.
+from services.ai_conversation_service import (  # noqa: E402
+    _reset_for_tests as _real_reset_buffers,
+)
+from services.ai_conversation_service import append as _real_conversation_append
+from services.ai_conversation_service import recent_turns as _real_recent_turns
+from services.ai_instruction_service import assemble as _real_assemble  # noqa: E402
 from services.ai_natural_language_policy import PolicyDecision
+from services.ai_task_router import classify as _real_router_classify  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -174,7 +186,10 @@ def stub_services(monkeypatch):
     monkeypatch.setattr(mod.ai_decision_audit_service, "record", _capture)
 
     from core.runtime.ai import response_renderer_registry
-    monkeypatch.setattr(response_renderer_registry, "render", AsyncMock(return_value=None))
+
+    monkeypatch.setattr(
+        response_renderer_registry, "render", AsyncMock(return_value=None)
+    )
 
     return audit_calls
 
@@ -428,7 +443,11 @@ async def test_send_failure_video_task_writes_video_send_failed(
     monkeypatch.setattr(
         mod,
         "_gather_feature_facts",
-        AsyncMock(return_value=FeatureFactsResult(facts=("title: Test Video",), render_context=None)),
+        AsyncMock(
+            return_value=FeatureFactsResult(
+                facts=("title: Test Video",), render_context=None
+            )
+        ),
     )
 
     async def fake_execute(_request):
@@ -438,7 +457,9 @@ async def test_send_failure_video_task_writes_video_send_failed(
 
     stage = AINaturalLanguageStage()
     msg = _make_message()
-    msg.channel.send = AsyncMock(side_effect=discord.HTTPException(MagicMock(), "send failed"))
+    msg.channel.send = AsyncMock(
+        side_effect=discord.HTTPException(MagicMock(), "send failed")
+    )
     await stage.process(_make_ctx(msg))
 
     assert len(stub_services) == 1
@@ -462,10 +483,397 @@ async def test_send_failure_non_video_task_writes_response_send_failed(
 
     stage = AINaturalLanguageStage()
     msg = _make_message()
-    msg.channel.send = AsyncMock(side_effect=discord.HTTPException(MagicMock(), "send failed"))
+    msg.channel.send = AsyncMock(
+        side_effect=discord.HTTPException(MagicMock(), "send failed")
+    )
     await stage.process(_make_ctx(msg))
 
     assert len(stub_services) == 1
     row = stub_services[0]
     assert row["decision"] == "errored"
     assert row["reason_code"] == "response_send_failed"
+
+
+# ---------------------------------------------------------------------------
+# PR 1 — AI mention-reply bug fixes:
+#   * task contract framing (T1, T2)
+#   * outbound snowflake redaction (T4b, T4c)
+#   * triggering message not duplicated in payload (T5)
+#   * triggering mention recorded exactly once for future context (T6, T7)
+#   * multiple bot mentions stripped (T11)
+#   * bare-mention messages do not call the provider (T12)
+# ---------------------------------------------------------------------------
+
+
+_BOT_ID = 555000000000000111
+
+
+def _make_message_with_mention(content: str, *, user_id: int = 42):
+    """Discord message whose content is exactly ``content``."""
+    msg = _make_message(user_id=user_id)
+    msg.content = content
+    return msg
+
+
+def _make_ctx_with_bot_id(message):
+    """Pipeline context whose ``bot.user`` has both ``mentioned_in`` and ``id``.
+
+    The default ``_make_ctx`` does not give ``bot.user`` an ``id``, so
+    mention-stripping is a no-op there. These tests need the real
+    bot-id plumbing to verify the strip behaviour.
+    """
+    bot = MagicMock()
+    bot.user = SimpleNamespace(
+        id=_BOT_ID,
+        mentioned_in=lambda _msg: True,
+    )
+    return MessagePipelineContext(bot=bot, message=message)
+
+
+def _use_real_assemble(monkeypatch):
+    """Override ``stub_services``'s SimpleNamespace stub of ``assemble`` so
+    the real instruction-service builder runs and the captured request
+    reflects the new task contract + speaker pseudonymization."""
+    from core.runtime.ai import natural_language_stage as mod
+    from utils.db import ai as ai_db
+
+    async def _no_profile(_pid):
+        return None
+
+    monkeypatch.setattr(ai_db, "get_instruction_profile", _no_profile)
+    monkeypatch.setattr(mod.ai_instruction_service, "assemble", _real_assemble)
+
+
+def _use_real_conversation_buffer(monkeypatch):
+    """Re-enable the in-process conversation buffer (``stub_services`` no-ops it)."""
+    from core.runtime.ai import natural_language_stage as mod
+
+    _real_reset_buffers()
+    monkeypatch.setattr(
+        mod.ai_conversation_service, "append", _real_conversation_append
+    )
+
+
+def _gather_recent_turns_returns(monkeypatch, turns):
+    """Force ``ai_memory_service.gather_recent_turns`` to return ``turns``."""
+    from services import ai_memory_service
+
+    async def _gather(**_kw):
+        return list(turns)
+
+    monkeypatch.setattr(ai_memory_service, "gather_recent_turns", _gather)
+
+
+@pytest.mark.asyncio
+async def test_payload_frames_current_user_message_directly(
+    monkeypatch,
+    stub_services,
+):
+    """T1: payload contains the task contract and the triggering
+    message in the ``current_user_message`` span. Recent turns are
+    background-only and precede the current message."""
+    from services import ai_gateway
+
+    _use_real_assemble(monkeypatch)
+    _gather_recent_turns_returns(
+        monkeypatch,
+        [
+            SimpleNamespace(user_id=11, role="user", text="bystander one"),
+            SimpleNamespace(user_id=22, role="user", text="bot-dev chatter"),
+            SimpleNamespace(user_id=33, role="user", text="another aside"),
+        ],
+    )
+
+    captured: dict = {}
+
+    async def fake_execute(request):
+        captured["request"] = request
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message_with_mention(f"<@{_BOT_ID}> are you there")
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    assert "request" in captured
+    system_prompt = captured["request"].system_prompt
+    payload = captured["request"].payload["text"]
+
+    # Task contract is present and names the new spans.
+    assert "Task contract" in system_prompt
+    assert "current_user_message" in system_prompt
+    assert "recent_channel_turns" in system_prompt
+
+    # Triggering message is wrapped as current_user_message and contains
+    # the user's actual question, with the bot mention stripped.
+    assert "UNTRUSTED_DATA__current_user_message__BEGIN" in payload
+    assert "are you there" in payload
+    assert f"<@{_BOT_ID}>" not in payload
+    assert "@SuperBot" not in payload  # no display-form leak either
+
+    # Recent turns precede the current message in the payload.
+    assert payload.index("recent_channel_turns") < payload.index("current_user_message")
+
+
+@pytest.mark.asyncio
+async def test_summarizable_context_does_not_select_summary(
+    monkeypatch,
+    stub_services,
+):
+    """T2: even with a verbose summarizable context, a normal question
+    routes to GENERAL_NL_ANSWER (no summary task exists) and the
+    contract instructs the model not to summarize unless asked."""
+    from services import ai_gateway
+
+    _use_real_assemble(monkeypatch)
+    _gather_recent_turns_returns(
+        monkeypatch,
+        [
+            SimpleNamespace(user_id=i, role="user", text=f"discussion item {i}")
+            for i in range(11, 20)
+        ],
+    )
+
+    captured: dict = {}
+
+    async def fake_execute(request):
+        captured["request"] = request
+        return _make_response(text="response")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    # Drop the SimpleNamespace router stub so the real router runs.
+    from core.runtime.ai import natural_language_stage as mod
+
+    monkeypatch.setattr(mod.ai_task_router, "classify", _real_router_classify)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message_with_mention(f"<@{_BOT_ID}> what is the weather")
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    assert "request" in captured
+    system_prompt = captured["request"].system_prompt
+    assert "Do not summarize" in system_prompt
+
+    # The route the audit row carries reflects the real router's pick.
+    assert stub_services[0]["task"] == AITask.GENERAL_NL_ANSWER.value
+
+
+@pytest.mark.asyncio
+async def test_outbound_reply_redacts_raw_snowflakes(
+    monkeypatch,
+    stub_services,
+):
+    """T4b: snowflakes in the model's reply are scrubbed before the
+    text is sent to Discord."""
+    from services import ai_gateway
+
+    async def fake_execute(_request):
+        return _make_response(
+            text="Hi <@987654321098765432> see 123456789012345678",
+        )
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    await stage.process(_make_ctx(msg))
+
+    msg.channel.send.assert_awaited_once()
+    sent_text = msg.channel.send.call_args.args[0]
+    assert "987654321098765432" not in sent_text
+    assert "123456789012345678" not in sent_text
+
+
+@pytest.mark.asyncio
+async def test_outbound_redacted_text_is_what_lands_in_memory(
+    monkeypatch, stub_services
+):
+    """T4c: the assistant reply written to conversation memory is the
+    sanitized form, not the raw provider output."""
+    from services import ai_gateway
+
+    _use_real_conversation_buffer(monkeypatch)
+
+    async def fake_execute(_request):
+        return _make_response(text="ack <@987654321098765432>")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    await stage.process(_make_ctx(msg))
+
+    turns = _real_recent_turns(msg.guild.id, msg.channel.id)
+    assistant_turns = [t for t in turns if t.role == "assistant"]
+    assert len(assistant_turns) == 1
+    assert "987654321098765432" not in assistant_turns[0].text
+
+
+@pytest.mark.asyncio
+async def test_triggering_message_appears_only_once_in_payload(
+    monkeypatch,
+    stub_services,
+):
+    """T5: a unique sentinel in the triggering message appears exactly
+    once in the rendered payload (no duplication via recent_turns)."""
+    from services import ai_gateway
+
+    _use_real_assemble(monkeypatch)
+    _use_real_conversation_buffer(monkeypatch)
+    # Pre-seed unrelated bystander chatter so recent_turns is non-empty.
+    _real_conversation_append(99, 1, user_id=11, role="user", text="prior unrelated 1")
+    _real_conversation_append(99, 1, user_id=22, role="user", text="prior unrelated 2")
+
+    captured: dict = {}
+
+    async def fake_execute(request):
+        captured["request"] = request
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message_with_mention(f"<@{_BOT_ID}> unique-sentinel-XYZ")
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    payload = captured["request"].payload["text"]
+    assert payload.count("unique-sentinel-XYZ") == 1
+
+
+@pytest.mark.asyncio
+async def test_triggering_mention_recorded_exactly_once_after_success(
+    monkeypatch,
+    stub_services,
+):
+    """T6: after a successful reply, the triggering mention is in
+    conversation memory exactly once, in its raw form."""
+    from services import ai_gateway
+
+    _use_real_conversation_buffer(monkeypatch)
+
+    async def fake_execute(_request):
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg_content = f"<@{_BOT_ID}> unique-sentinel-XYZ"
+    msg = _make_message_with_mention(msg_content)
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    turns = _real_recent_turns(msg.guild.id, msg.channel.id)
+    user_turns = [t for t in turns if t.role == "user"]
+    matching = [t for t in user_turns if "unique-sentinel-XYZ" in t.text]
+    assert len(matching) == 1
+    # Memory stores the raw (unstripped) content.
+    assert matching[0].text == msg_content
+
+
+@pytest.mark.asyncio
+async def test_triggering_mention_recorded_exactly_once_after_denied(monkeypatch):
+    """T7: when the policy denies, the triggering mention is still
+    captured in memory exactly once."""
+    from core.runtime.ai import natural_language_stage as mod
+
+    _real_reset_buffers()
+
+    monkeypatch.setattr(
+        mod.ai_permission_service,
+        "snapshot",
+        AsyncMock(return_value=SimpleNamespace(level=0, is_fresh_user=False)),
+    )
+    monkeypatch.setattr(
+        mod.ai_natural_language_policy,
+        "resolve",
+        AsyncMock(
+            return_value=PolicyDecision(
+                allowed=False,
+                reason_code=PolicyDenialReason.BELOW_MIN_LEVEL,
+                effective_min_level=5,
+                effective_cooldown=0,
+                policy_snapshot_hash="h",
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        mod.ai_decision_audit_service,
+        "record",
+        AsyncMock(return_value=1),
+    )
+
+    stage = AINaturalLanguageStage()
+    msg_content = f"<@{_BOT_ID}> blocked-sentinel"
+    msg = _make_message_with_mention(msg_content)
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    turns = _real_recent_turns(msg.guild.id, msg.channel.id)
+    matching = [t for t in turns if "blocked-sentinel" in t.text]
+    assert len(matching) == 1
+    assert matching[0].text == msg_content
+
+
+@pytest.mark.asyncio
+async def test_multiple_bot_mentions_are_removed_from_current_user_message(
+    monkeypatch,
+    stub_services,
+):
+    """T11: every occurrence of the bot mention is stripped from the
+    text the model sees, not just the first."""
+    from services import ai_gateway
+
+    _use_real_assemble(monkeypatch)
+
+    captured: dict = {}
+
+    async def fake_execute(request):
+        captured["request"] = request
+        return _make_response(text="ok")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message_with_mention(f"<@{_BOT_ID}> are you there <@{_BOT_ID}>")
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    payload = captured["request"].payload["text"]
+    assert "are you there" in payload
+    assert f"<@{_BOT_ID}>" not in payload
+
+
+@pytest.mark.asyncio
+async def test_empty_message_after_bot_mention_strip_does_not_call_provider(
+    monkeypatch,
+    stub_services,
+):
+    """T12: a bare-mention message ('<@BOT>' alone) is recorded to
+    memory but never reaches the provider. Audit row is
+    skipped/NO_ROUTE_MATCHED."""
+    from services import ai_gateway
+
+    _use_real_conversation_buffer(monkeypatch)
+    called = {"v": False}
+
+    async def fake_execute(_request):
+        called["v"] = True
+        return _make_response(text="should not be sent")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg_content = f"<@{_BOT_ID}>"
+    msg = _make_message_with_mention(msg_content)
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    assert called["v"] is False
+    # Audit row is a clean skip.
+    assert len(stub_services) == 1
+    row = stub_services[0]
+    assert row["decision"] == "skipped"
+    assert row["reason_code"] is PolicyDenialReason.NO_ROUTE_MATCHED
+
+    # Raw mention is still in memory for future context.
+    turns = _real_recent_turns(msg.guild.id, msg.channel.id)
+    matching = [t for t in turns if t.text == msg_content]
+    assert len(matching) == 1

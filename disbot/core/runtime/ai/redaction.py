@@ -1,10 +1,16 @@
-"""Redaction helpers for future AI request preparation.
+"""Redaction helpers for AI request preparation and outbound reply scrubbing.
 
-Inert scaffold: not imported by production runtime yet.
+Wired on two hot paths:
 
-The future AI gateway should run payloads through these helpers before
-provider calls.  Keep the helpers deterministic and conservative: they
-should reduce risk without requiring network access or external state.
+* :mod:`core.runtime.ai.gateway` runs every inbound provider payload
+  through :func:`redact_payload` / :func:`redact_text` before calling
+  the model.
+* :mod:`core.runtime.ai.natural_language_stage` runs every outbound
+  AI reply through :func:`redact_text` before sending it to Discord
+  and before recording it in conversation memory.
+
+Keep the helpers deterministic and conservative: they should reduce
+risk without requiring network access or external state.
 """
 
 from __future__ import annotations
@@ -32,6 +38,13 @@ _TOKEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "bearer_token",
         re.compile(r"\bBearer\s+[A-Za-z0-9._\-]+", re.IGNORECASE),
+    ),
+    # Discord snowflakes are 17–20 decimal digits. Placed last so that
+    # genuine secrets which happen to contain a long numeric tail are
+    # still labelled by the more specific patterns above.
+    (
+        "discord_id",
+        re.compile(r"\b\d{17,20}\b"),
     ),
 )
 
