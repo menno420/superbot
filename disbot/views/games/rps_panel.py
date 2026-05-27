@@ -29,6 +29,7 @@ import discord
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.games.common import BackToPanelButton
+from views.navigation import BackTarget, attach_back_target
 from views.rps import _RpsPvpChallengeView, _RpsView
 
 logger = logging.getLogger("bot.views.games.rps_panel")
@@ -201,12 +202,18 @@ def _spawn_solo_view(
 class _RpsBetPresetView(HubView):
     """Bet-preset picker: 10/25/50/100/Custom + Back."""
 
-    def __init__(self, author: discord.Member | discord.User) -> None:
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        back_target: BackTarget | None = None,
+    ) -> None:
         super().__init__(author)
         for preset in _BET_PRESETS:
             self.add_item(_RpsBetPresetButton(preset))
         self.add_item(_RpsBetCustomButton())
-        self.add_item(_make_rps_back_button())
+        self.add_item(_make_rps_back_button(grandparent=back_target))
+        if back_target is not None:
+            attach_back_target(self, back_target)
 
 
 class _RpsBetPresetButton(discord.ui.Button):
@@ -276,10 +283,16 @@ class _RpsCustomBetModal(discord.ui.Modal, title="Custom Bet"):
 class _RpsChallengeSelectView(HubView):
     """User-select picker for PvP challenge target."""
 
-    def __init__(self, author: discord.Member | discord.User) -> None:
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        back_target: BackTarget | None = None,
+    ) -> None:
         super().__init__(author)
         self.add_item(_RpsOpponentSelect())
-        self.add_item(_make_rps_back_button())
+        self.add_item(_make_rps_back_button(grandparent=back_target))
+        if back_target is not None:
+            attach_back_target(self, back_target)
 
 
 class _RpsOpponentSelect(discord.ui.UserSelect):
@@ -339,13 +352,16 @@ class _RpsTournamentSubView(HubView):
         is_admin: bool,
         registration_active: bool,
         tournament_active: bool,
+        back_target: BackTarget | None = None,
     ) -> None:
         super().__init__(author)
         if registration_active and not tournament_active:
             self.add_item(_RpsTournamentJoinButton())
         elif is_admin and not tournament_active:
             self.add_item(_RpsTournamentStartButton())
-        self.add_item(_make_rps_back_button())
+        self.add_item(_make_rps_back_button(grandparent=back_target))
+        if back_target is not None:
+            attach_back_target(self, back_target)
 
 
 class _RpsTournamentStartButton(discord.ui.Button):
@@ -416,7 +432,9 @@ class _RpsTournamentJoinButton(discord.ui.Button):
             )
 
 
-def _make_rps_back_button() -> BackToPanelButton:
+def _make_rps_back_button(
+    grandparent: BackTarget | None = None,
+) -> BackToPanelButton:
     """Return a fresh "◀ Back to RPS" button for any RPS sub-view.
 
     Thin wrapper over the shared :class:`BackToPanelButton` helper —
@@ -429,6 +447,7 @@ def _make_rps_back_button() -> BackToPanelButton:
         custom_id="rps_panel:back",
         panel_builder=RPSPanelView,
         overview_builder=build_rps_overview_embed,
+        grandparent=grandparent,
     )
 
 
@@ -491,7 +510,8 @@ class RPSPanelView(HubView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
-        bet_view = _RpsBetPresetView(interaction.user)
+        back_target: BackTarget | None = getattr(self, "_back_target", None)
+        bet_view = _RpsBetPresetView(interaction.user, back_target=back_target)
         await interaction.response.edit_message(
             embed=build_rps_bet_preset_embed(),
             view=bet_view,
@@ -508,7 +528,8 @@ class RPSPanelView(HubView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
-        select_view = _RpsChallengeSelectView(interaction.user)
+        back_target: BackTarget | None = getattr(self, "_back_target", None)
+        select_view = _RpsChallengeSelectView(interaction.user, back_target=back_target)
         await interaction.response.edit_message(
             embed=build_rps_challenge_picker_embed(),
             view=select_view,
@@ -531,11 +552,13 @@ class RPSPanelView(HubView):
         registration_active = bool(getattr(cog, "registration_active", False))
         tournament_active = bool(getattr(cog, "tournament_active", False))
         player_count = len(getattr(cog, "players", []) or [])
+        back_target: BackTarget | None = getattr(self, "_back_target", None)
         sub_view = _RpsTournamentSubView(
             interaction.user,
             is_admin=is_admin,
             registration_active=registration_active,
             tournament_active=tournament_active,
+            back_target=back_target,
         )
         await interaction.response.edit_message(
             embed=build_rps_tournament_status_embed(

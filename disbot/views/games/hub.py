@@ -410,14 +410,12 @@ class GamesHubView(HubView):
         cog = _cog_for_subsystem(interaction.client, sub_name)  # type: ignore[arg-type]
         if cog is None:
             embed = _build_no_panel_embed(sub_name, dict(meta))
-            attach_back_to_games_button(self, self._author)
             await interaction.response.edit_message(embed=embed, view=self)
             return
 
         build_panel = getattr(cog, "build_help_menu_view", None)
         if not callable(build_panel):
             embed = _build_no_panel_embed(sub_name, dict(meta))
-            attach_back_to_games_button(self, self._author)
             await interaction.response.edit_message(embed=embed, view=self)
             return
 
@@ -431,7 +429,6 @@ class GamesHubView(HubView):
                 exc_info=True,
             )
             fallback = _build_no_panel_embed(sub_name, dict(meta))
-            attach_back_to_games_button(self, self._author)
             await interaction.response.edit_message(embed=fallback, view=self)
             return
 
@@ -439,4 +436,5 @@ class GamesHubView(HubView):
         attach_back_to_games_button(sub_view, self._author, grandparent=back_target)
         if back_target is not None:
             attach_back_target(sub_view, back_target)
+        sub_view._back_target = back_target  # type: ignore[attr-defined]
         await interaction.response.edit_message(embed=embed, view=sub_view)

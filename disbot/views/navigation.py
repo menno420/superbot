@@ -229,16 +229,25 @@ def attach_back_target(view: discord.ui.View, target: BackTarget) -> bool:
             parent_builder=target.builder,
         )
 
+    Also sets ``view._back_target = target`` when the button is added so
+    that views rebuilt via :func:`chain_back` can propagate the back chain
+    to their own children on subsequent navigation (e.g. Games hub rebuilt
+    by Back-to-Games still exposes ``_back_target`` so Blackjack can add
+    "Back to Help").
+
     Returns the same value as :func:`attach_back_button` — ``True`` if
     the button was added, ``False`` if the view was at the 25-component
     cap.
     """
-    return attach_back_button(
+    result = attach_back_button(
         view,
         label=target.label,
         custom_id=target.custom_id,
         parent_builder=target.builder,
     )
+    if result:
+        view._back_target = target  # type: ignore[attr-defined]
+    return result
 
 
 def chain_back(

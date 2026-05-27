@@ -38,6 +38,7 @@ from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.blackjack.embeds import _tourn_embed
 from views.games.common import BackToPanelButton
+from views.navigation import BackTarget, attach_back_target
 
 logger = logging.getLogger("bot.views.games.blackjack_panel")
 
@@ -172,12 +173,18 @@ def build_blackjack_rules_embed() -> discord.Embed:
 class _BlackjackBetPresetView(HubView):
     """Bet-preset picker: 10/25/50/100/Custom + Back."""
 
-    def __init__(self, author: discord.Member | discord.User) -> None:
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        back_target: BackTarget | None = None,
+    ) -> None:
         super().__init__(author)
         for preset in _BET_PRESETS:
             self.add_item(_BlackjackBetPresetButton(preset))
         self.add_item(_BlackjackBetCustomButton())
-        self.add_item(_make_blackjack_back_button())
+        self.add_item(_make_blackjack_back_button(grandparent=back_target))
+        if back_target is not None:
+            attach_back_target(self, back_target)
 
 
 class _BlackjackBetPresetButton(discord.ui.Button):
@@ -286,10 +293,16 @@ async def _spawn_solo(interaction: discord.Interaction, bet: int) -> None:
 
 
 class _BlackjackChallengeSelectView(HubView):
-    def __init__(self, author: discord.Member | discord.User) -> None:
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        back_target: BackTarget | None = None,
+    ) -> None:
         super().__init__(author)
         self.add_item(_BlackjackOpponentSelect())
-        self.add_item(_make_blackjack_back_button())
+        self.add_item(_make_blackjack_back_button(grandparent=back_target))
+        if back_target is not None:
+            attach_back_target(self, back_target)
 
 
 class _BlackjackOpponentSelect(discord.ui.UserSelect):
@@ -341,11 +354,14 @@ class _BlackjackTournamentSubView(HubView):
         *,
         is_admin: bool,
         has_active: bool,
+        back_target: BackTarget | None = None,
     ) -> None:
         super().__init__(author)
         if is_admin and not has_active:
             self.add_item(_BlackjackTournamentOpenButton())
-        self.add_item(_make_blackjack_back_button())
+        self.add_item(_make_blackjack_back_button(grandparent=back_target))
+        if back_target is not None:
+            attach_back_target(self, back_target)
 
 
 class _BlackjackTournamentOpenButton(discord.ui.Button):
@@ -400,7 +416,9 @@ class _BlackjackTournamentOpenButton(discord.ui.Button):
             result.tournament.reg_message = interaction.message
 
 
-def _make_blackjack_back_button() -> BackToPanelButton:
+def _make_blackjack_back_button(
+    grandparent: BackTarget | None = None,
+) -> BackToPanelButton:
     """Return a fresh "◀ Back to Blackjack" button for any Blackjack
     sub-view. Follow-up to PR 7 — Blackjack now uses the shared
     helper from ``views.games.common`` alongside RPS.
@@ -410,6 +428,7 @@ def _make_blackjack_back_button() -> BackToPanelButton:
         custom_id="blackjack_panel:back",
         panel_builder=BlackjackPanelView,
         overview_builder=build_blackjack_overview_embed,
+        grandparent=grandparent,
     )
 
 
@@ -456,9 +475,10 @@ class BlackjackPanelView(HubView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
+        back_target: BackTarget | None = getattr(self, "_back_target", None)
         await interaction.response.edit_message(
             embed=build_blackjack_bet_preset_embed(),
-            view=_BlackjackBetPresetView(interaction.user),
+            view=_BlackjackBetPresetView(interaction.user, back_target=back_target),
         )
 
     @discord.ui.button(
@@ -472,9 +492,13 @@ class BlackjackPanelView(HubView):
         interaction: discord.Interaction,
         _button: discord.ui.Button,
     ) -> None:
+        back_target: BackTarget | None = getattr(self, "_back_target", None)
         await interaction.response.edit_message(
             embed=build_blackjack_challenge_picker_embed(),
-            view=_BlackjackChallengeSelectView(interaction.user),
+            view=_BlackjackChallengeSelectView(
+                interaction.user,
+                back_target=back_target,
+            ),
         )
 
     @discord.ui.button(
@@ -492,6 +516,7 @@ class BlackjackPanelView(HubView):
         is_admin = bool(guild_perms and guild_perms.administrator)
         guild_id = interaction.guild_id or 0
         has_active = get_active_tournament(guild_id) is not None
+        back_target: BackTarget | None = getattr(self, "_back_target", None)
         await interaction.response.edit_message(
             embed=build_blackjack_tournament_overview_embed(
                 is_admin=is_admin,
@@ -501,6 +526,7 @@ class BlackjackPanelView(HubView):
                 interaction.user,
                 is_admin=is_admin,
                 has_active=has_active,
+                back_target=back_target,
             ),
         )
 
