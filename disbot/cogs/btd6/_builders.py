@@ -112,6 +112,7 @@ async def build_hero_embed(name: str) -> discord.Embed:
     from services import btd6_ai_service, btd6_live_query_service
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_hero
+    from utils.btd6.context_footer import append_context_footer
 
     intent = resolve(name)
     if not intent.heroes:
@@ -120,7 +121,8 @@ async def build_hero_embed(name: str) -> discord.Embed:
     restrictions = await btd6_live_query_service.get_active_event_restrictions_for_hero(
         str(hero.id),
     )
-    return _response_to_embed(for_hero(hero, restrictions=restrictions))
+    embed = _response_to_embed(for_hero(hero, restrictions=restrictions))
+    return append_context_footer(embed, f"btd6_hero:{hero.id}")
 
 
 async def build_round_embed(number: int) -> discord.Embed:
@@ -143,6 +145,7 @@ async def build_tower_embed(name: str) -> discord.Embed:
     from services.btd6_knowledge_service import tower_fact
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_tower
+    from utils.btd6.context_footer import append_context_footer
 
     intent = resolve(name)
     if not intent.towers:
@@ -156,7 +159,8 @@ async def build_tower_embed(name: str) -> discord.Embed:
             str(tower.id),
         )
     )
-    return _response_to_embed(for_tower(fact, restrictions=restrictions))
+    embed = _response_to_embed(for_tower(fact, restrictions=restrictions))
+    return append_context_footer(embed, f"btd6_tower:{tower.id}")
 
 
 # ---------------------------------------------------------------------------
@@ -261,9 +265,11 @@ async def build_source_health_embed(
         ),
         color=discord.Color.gold(),
     )
+    from utils.btd6.context_footer import append_context_footer
+
     if not health:
         embed.description = "No BTD6 sources registered yet."
-        return embed
+        return append_context_footer(embed, "btd6_diagnostics:sources")
     for src in health:
         state = "ON" if src.enabled else "off"
         when = (
@@ -280,7 +286,7 @@ async def build_source_health_embed(
             ),
             inline=False,
         )
-    return embed
+    return append_context_footer(embed, "btd6_diagnostics:sources")
 
 
 # ---------------------------------------------------------------------------
@@ -320,7 +326,9 @@ async def build_latest_data_embed(*, limit_per_kind: int = 1) -> discord.Embed:
     )
     if not by_kind:
         embed.description = "No facts recorded yet."
-        return embed
+        from utils.btd6.context_footer import append_context_footer
+
+        return append_context_footer(embed, "btd6_diagnostics:latest_data")
     for kind in sorted(by_kind.keys()):
         latest = by_kind[kind][:limit_per_kind]
         lines = []
@@ -352,7 +360,9 @@ async def build_latest_data_embed(*, limit_per_kind: int = 1) -> discord.Embed:
             value=value,
             inline=False,
         )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_diagnostics:latest_data")
 
 
 # ---------------------------------------------------------------------------
@@ -486,12 +496,17 @@ async def build_live_events_embed(
         ),
         color=discord.Color.gold(),
     )
+    from utils.btd6.context_footer import append_context_footer
+
+    short_kind = entity_kind.removeprefix("btd6_") or "event"
+    context_id = f"btd6_{short_kind}:list"
+
     if not rows:
         embed.description = (
             f"No {spec['noun']} facts recorded yet. Try "
             f"`!btd6 refresh-source {spec['source_key']}` to fetch live data."
         )
-        return embed
+        return append_context_footer(embed, context_id)
 
     for row in rows:
         body = _coerce_body(row.get("body_json"))
@@ -526,7 +541,7 @@ async def build_live_events_embed(
             value="\n".join(lines),
             inline=False,
         )
-    return embed
+    return append_context_footer(embed, context_id)
 
 
 # ---------------------------------------------------------------------------
@@ -847,7 +862,10 @@ def build_event_detail_embed(
     when = primary.get("fetched_at") if primary else None
     if when is not None:
         embed.set_footer(text=f"fetched={when.isoformat(timespec='minutes')}")
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    short_kind = entity_kind.removeprefix("btd6_") or "event"
+    return append_context_footer(embed, f"btd6_{short_kind}:{entity_key}")
 
 
 # ---------------------------------------------------------------------------
@@ -1043,7 +1061,9 @@ async def build_leaderboard_embed(
             parts.append(f"Data: {BUCKET_BADGE[bucket]}")
     if parts:
         embed.set_footer(text=" · ".join(parts))
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, f"btd6_leaderboard:{norm}_{resolved_id}")
 
 
 __all__ = [

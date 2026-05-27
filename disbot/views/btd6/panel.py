@@ -153,6 +153,9 @@ async def build_btd6_panel_embed() -> discord.Embed:
             "!btd6 leaderboard <race|boss> · !btd6 status"
         ),
     )
+    from utils.btd6.context_footer import append_context_footer
+
+    append_context_footer(embed, vm.context.context_id)
     return embed
 
 

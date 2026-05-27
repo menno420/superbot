@@ -146,7 +146,9 @@ async def build_status_embed() -> discord.Embed:
         value=_format_live_facts_value(summaries),
         inline=False,
     )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_status:global")
 
 
 def build_diagnostics_embed() -> discord.Embed:
@@ -179,7 +181,9 @@ def build_diagnostics_embed() -> discord.Embed:
         str(r.round_number) for r in btd6_knowledge_service.list_rounds()
     )
     embed.add_field(name="Rounds tracked", value=rounds, inline=False)
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_diagnostics:catalog")
 
 
 def build_towers_embed() -> discord.Embed:
@@ -193,7 +197,9 @@ def build_towers_embed() -> discord.Embed:
             value=f"Cost: {tower.base_cost} • Category: {tower.category}",
             inline=True,
         )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_tower:catalog")
 
 
 def build_modes_embed() -> discord.Embed:
@@ -210,7 +216,9 @@ def build_modes_embed() -> discord.Embed:
             ),
             inline=False,
         )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_diagnostics:modes_catalog")
 
 
 def build_heroes_embed() -> discord.Embed:
@@ -225,7 +233,9 @@ def build_heroes_embed() -> discord.Embed:
             value=f"Cost: {hero.base_cost} • {hero.description[:80]}",
             inline=False,
         )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_hero:catalog")
 
 
 def build_test_intent_embed(text: str) -> discord.Embed:

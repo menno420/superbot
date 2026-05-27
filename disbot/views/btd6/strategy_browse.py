@@ -19,6 +19,8 @@ from typing import Any
 
 import discord
 
+from utils.btd6.context_footer import append_context_footer
+
 _DEFAULT_PAGE_SIZE = 10
 _MAX_PAGE_SIZE = 25
 
@@ -70,7 +72,7 @@ async def build_browse_embed(*, limit: int = _DEFAULT_PAGE_SIZE) -> discord.Embe
     )
     if not rows:
         embed.description = "No published strategies yet."
-        return embed
+        return append_context_footer(embed, "btd6_strategy:browse")
     for row in rows:
         embed.add_field(
             name=f"#{row['id']} · {_visibility_badge(row)}",
@@ -80,7 +82,7 @@ async def build_browse_embed(*, limit: int = _DEFAULT_PAGE_SIZE) -> discord.Embe
     embed.set_footer(
         text="!btd6 strategy <id> for detail · staff-only commands gate writes.",
     )
-    return embed
+    return append_context_footer(embed, "btd6_strategy:browse")
 
 
 # ---------------------------------------------------------------------------
@@ -111,14 +113,14 @@ async def build_mine_embed(
     )
     if not rows:
         embed.description = "You have not submitted any strategies in this guild."
-        return embed
+        return append_context_footer(embed, "btd6_strategy:mine")
     for row in rows:
         embed.add_field(
             name=f"#{row['id']} · {_visibility_badge(row)}",
             value=_summarize_row(row),
             inline=False,
         )
-    return embed
+    return append_context_footer(embed, "btd6_strategy:mine")
 
 
 # ---------------------------------------------------------------------------
@@ -190,7 +192,7 @@ async def build_detail_embed(
             f"submitted_by={row.get('submitted_by') or '—'}"
         ),
     )
-    return embed
+    return append_context_footer(embed, f"btd6_strategy:{row['id']}")
 
 
 # ---------------------------------------------------------------------------
@@ -209,7 +211,7 @@ async def build_audit_embed(strategy_id: int) -> discord.Embed:
     )
     if not rows:
         embed.description = f"No audit rows for strategy #{strategy_id}."
-        return embed
+        return append_context_footer(embed, f"btd6_strategy:{strategy_id}")
     for r in rows[:_MAX_PAGE_SIZE]:
         when = r.get("created_at")
         when_str = when.isoformat(timespec="minutes") if when else "—"
@@ -218,7 +220,7 @@ async def build_audit_embed(strategy_id: int) -> discord.Embed:
             value=(f"actor_id=`{r.get('actor_id') or '—'}` · at=`{when_str}`"),
             inline=False,
         )
-    return embed
+    return append_context_footer(embed, f"btd6_strategy:{strategy_id}")
 
 
 __all__ = [
