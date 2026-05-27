@@ -399,6 +399,27 @@ def _event_window(body: dict[str, Any]) -> str:
     return f"{start} → {end}"
 
 
+def _coerce_body(value: Any) -> dict[str, Any]:
+    """Normalise ``body_json`` to a dict.
+
+    Defensive shim for rows written by the legacy double-encoded
+    ``json.dumps`` path: those round-trip as a JSON string instead of a
+    dict, so we json.loads them on read. Returns ``{}`` for anything we
+    can't decode (e.g. malformed text, non-mapping JSON).
+    """
+    import json
+
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except (ValueError, TypeError):
+            return {}
+        return decoded if isinstance(decoded, dict) else {}
+    return {}
+
+
 _LIVE_EVENT_SPECS: dict[str, dict[str, str]] = {
     # entity_kind → display config
     "btd6_race": {
@@ -473,7 +494,7 @@ async def build_live_events_embed(
         return embed
 
     for row in rows:
-        body = row.get("body_json") if isinstance(row.get("body_json"), dict) else {}
+        body = _coerce_body(row.get("body_json"))
         name = body.get("name") or row.get("entity_key") or "—"
         window = _event_window(body)
         lines = [
