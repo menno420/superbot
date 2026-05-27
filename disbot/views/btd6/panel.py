@@ -19,7 +19,7 @@ from typing import Any
 
 import discord
 
-from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
+from core.runtime.interaction_helpers import safe_defer, safe_followup
 from core.runtime.persistent_views import PersistentView, register
 from services import btd6_ai_service
 
@@ -163,13 +163,30 @@ async def build_btd6_panel_embed() -> discord.Embed:
 
 @register
 class BTD6PanelView(PersistentView):
-    """BTD6 Assistant panel. Anyone can use the user buttons; the
-    Admin button is gated to ``manage_guild`` / ``administrator``.
+    """BTD6 Assistant panel.
+
+    All non-modal callbacks open ephemeral sub-views via
+    :func:`safe_followup`. The public anchor embed is **never edited**
+    on click — this is a UX upgrade from PR 2 (clicking Towers used to
+    mutate the panel for everyone in the channel).
+
+    Modal exception: the **Ask** button calls
+    ``interaction.response.send_modal`` as the initial response and
+    does no service work before that — modals require the response
+    slot.
+
+    Back-compat: keeps every legacy ``btd6:*`` custom_id so existing
+    panel anchor messages in production keep routing correctly.
+    Discord does not re-render existing anchor messages at restart;
+    the rendered button row is whatever was posted historically. The
+    legacy custom_ids (``btd6:towers`` / ``btd6:heroes`` / ``btd6:modes``)
+    redirect to the new ephemeral browsers.
     """
 
+    # back-compat redirect — drop after 2026-Q3
     SUBSYSTEM = "btd6"
 
-    # Row 0 — user actions (5 buttons fill the row)
+    # Row 0 — primary user actions (5 buttons)
     @discord.ui.button(
         label="Ask",
         style=discord.ButtonStyle.success,
@@ -181,7 +198,26 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        # Modal exception: send_modal must be the initial response.
+        # Do NOT call safe_defer here.
         await interaction.response.send_modal(BTD6AskModal())
+
+    @discord.ui.button(
+        label="Live Events",
+        style=discord.ButtonStyle.primary,
+        row=0,
+        custom_id="btd6:events",
+    )
+    async def events_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        from views.btd6.live_events_view import open_live_events_browser
+
+        await open_live_events_browser(interaction)
 
     @discord.ui.button(
         label="Towers",
@@ -194,12 +230,11 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.btd6._embeds import build_towers_embed
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        from views.btd6.tower_browser_view import open_tower_browser
 
-        await interaction.response.edit_message(
-            embed=build_towers_embed(),
-            view=self,
-        )
+        await open_tower_browser(interaction)
 
     @discord.ui.button(
         label="Heroes",
@@ -212,17 +247,34 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        from cogs.btd6._embeds import build_heroes_embed
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        from views.btd6.hero_browser_view import open_hero_browser
 
-        await interaction.response.edit_message(
-            embed=build_heroes_embed(),
-            view=self,
-        )
+        await open_hero_browser(interaction)
 
     @discord.ui.button(
-        label="Modes",
+        label="Leaderboards",
         style=discord.ButtonStyle.primary,
         row=0,
+        custom_id="btd6:leaderboards",
+    )
+    async def leaderboards_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        from views.btd6.leaderboard_browser_view import open_leaderboard_browser
+
+        await open_leaderboard_browser(interaction)
+
+    # Row 1 — secondary actions + staff
+    @discord.ui.button(
+        label="Modes",
+        style=discord.ButtonStyle.secondary,
+        row=1,
         custom_id="btd6:modes",
     )
     async def modes_btn(
@@ -230,17 +282,23 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
+        # Back-compat redirect: open the modes catalog as an ephemeral.
+        # The old behaviour (editing the public panel in place) was a
+        # UX anti-pattern; PR 2 switches every drill-down to ephemeral.
         from cogs.btd6._embeds import build_modes_embed
 
-        await interaction.response.edit_message(
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        await safe_followup(
+            interaction,
             embed=build_modes_embed(),
-            view=self,
+            ephemeral=True,
         )
 
     @discord.ui.button(
         label="Status",
         style=discord.ButtonStyle.primary,
-        row=0,
+        row=1,
         custom_id="btd6:status",
     )
     async def status_btn(
@@ -250,14 +308,11 @@ class BTD6PanelView(PersistentView):
     ) -> None:
         from cogs.btd6._embeds import build_status_embed
 
-        # Public panel edit — no ephemeral. safe_edit handles both the
-        # pre-defer and post-defer branches via the existing helper.
-        if not await safe_defer(interaction):
+        if not await safe_defer(interaction, ephemeral=True):
             return
         embed = await build_status_embed()
-        await safe_edit(interaction, embed=embed, view=self)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
-    # Row 1 — staff actions
     @discord.ui.button(
         label="🛠️ Admin",
         style=discord.ButtonStyle.secondary,
