@@ -14,6 +14,7 @@ import discord
 import pytest
 
 from cogs.btd6._builders import (
+    _coerce_body,
     _event_window,
     _ms_to_human,
     build_live_events_embed,
@@ -213,6 +214,70 @@ async def test_build_live_events_embed_falls_back_to_entity_key_when_no_name(
 
     embed = await build_live_events_embed("btd6_ct", limit=1)
     assert embed.fields[0].name == "ct_42"
+
+
+# ---------------------------------------------------------------------------
+# body_json defensive coercion
+# ---------------------------------------------------------------------------
+
+
+def test_coerce_body_dict_passes_through():
+    body = {"id": "x", "start_ms": 123}
+    assert _coerce_body(body) is body
+
+
+def test_coerce_body_json_string_decodes():
+    body_text = '{"id": "x", "start_ms": 123}'
+    assert _coerce_body(body_text) == {"id": "x", "start_ms": 123}
+
+
+def test_coerce_body_malformed_string_returns_empty():
+    assert _coerce_body("not json {") == {}
+
+
+def test_coerce_body_non_object_returns_empty():
+    # A JSON-encoded scalar is still valid JSON but not a mapping.
+    assert _coerce_body('"just a string"') == {}
+    assert _coerce_body("42") == {}
+    assert _coerce_body("[1, 2]") == {}
+
+
+def test_coerce_body_none_returns_empty():
+    assert _coerce_body(None) == {}
+
+
+@pytest.mark.asyncio
+async def test_build_live_events_embed_decodes_legacy_string_body(monkeypatch):
+    """Legacy rows store body_json as a JSON string. We must still render."""
+    import json as _json
+
+    from utils.db import btd6_sources as btd6_db
+
+    async def _fake(*, entity_kind=None, fact_type=None, limit=50):
+        row = _fact_row(
+            entity_kind="btd6_race",
+            entity_key="Reversed_Loop_mpbd7tcu",
+            body={
+                "id": "Reversed_Loop_mpbd7tcu",
+                "name": "Reversed Loop",
+                "start_ms": 1779019200000,
+                "end_ms": 1779105600000,
+                "total_scores": 12,
+            },
+        )
+        # Simulate the legacy double-encoded shape: body_json arrives
+        # as a JSON string instead of a dict.
+        row["body_json"] = _json.dumps(row["body_json"])
+        return [row]
+
+    monkeypatch.setattr(btd6_db, "search_facts", _fake)
+
+    embed = await build_live_events_embed("btd6_race", limit=1)
+    field = embed.fields[0]
+    assert field.name == "Reversed Loop"
+    value = field.value or ""
+    assert "scores=12" in value
+    assert "→" in value
 
 
 # ---------------------------------------------------------------------------

@@ -11,7 +11,6 @@ BTD6 facts are global (not guild-scoped) so there is no
 
 from __future__ import annotations
 
-import json
 import logging
 from datetime import datetime
 from typing import Any
@@ -217,9 +216,12 @@ async def record_source_audit(
     guild_id: int | None,
     reason: str | None,
 ) -> int:
-    """Insert one ``btd6_source_audit`` row; returns the new id."""
-    import json
+    """Insert one ``btd6_source_audit`` row; returns the new id.
 
+    ``old_value`` and ``new_value`` are passed as dicts; the JSONB codec
+    on the connection handles encoding. Pre-encoding via ``json.dumps``
+    here would double-wrap them.
+    """
     row = await pool.get().fetchrow(
         """
         INSERT INTO btd6_source_audit (
@@ -232,8 +234,8 @@ async def record_source_audit(
         guild_id,
         source_key,
         action,
-        json.dumps(old_value) if old_value is not None else None,
-        json.dumps(new_value) if new_value is not None else None,
+        old_value,
+        new_value,
         reason,
     )
     return int(row["id"])
@@ -287,8 +289,10 @@ async def upsert_fact(
     confidence: float = 1.0,
     version: int = 1,
 ) -> int:
-    import json
-
+    # body_json is passed as a dict; the JSONB codec on the connection
+    # (utils.db.codec.init_connection) handles json.dumps on the wire.
+    # Don't pre-encode here — doing so double-wraps the value and the
+    # row reads back as a JSON string instead of a dict.
     row = await pool.get().fetchrow(
         """
         INSERT INTO btd6_facts (
@@ -308,7 +312,7 @@ async def upsert_fact(
         fact_type,
         entity_kind,
         entity_key,
-        json.dumps(body_json),
+        body_json,
         game_version,
         confidence,
         version,
@@ -475,7 +479,12 @@ async def insert_ingestion_run(
     path_params_json: dict[str, Any] | None,
     started_by_user_id: int | None,
 ) -> int:
-    """INSERT a new ingestion run row; returns the new id."""
+    """INSERT a new ingestion run row; returns the new id.
+
+    ``path_params_json`` is passed as a dict; the JSONB codec on the
+    connection handles encoding. Pre-encoding via ``json.dumps`` here
+    would double-wrap the value.
+    """
     row = await pool.get().fetchrow(
         """
         INSERT INTO btd6_ingestion_runs (
@@ -487,7 +496,7 @@ async def insert_ingestion_run(
         source_key,
         status,
         triggered_by,
-        json.dumps(path_params_json) if path_params_json is not None else None,
+        path_params_json,
         started_by_user_id,
     )
     return int(row["id"])
