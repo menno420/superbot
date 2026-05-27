@@ -36,8 +36,19 @@ _DEFAULT_INTERVAL_S: int = int(os.getenv("BTD6_INGESTION_DEFAULT_INTERVAL_S", "3
 _STOP_TIMEOUT_S: int = 30
 
 _SOURCE_INTERVALS: dict[str, int] = {
+    # Live rotations — refresh frequently so the bot sees the current
+    # race / boss / odyssey / event within ~one cycle.
+    "nk_btd6_events": 1800,
+    "nk_btd6_races": 1800,
+    "nk_btd6_bosses": 1800,
+    "nk_btd6_odyssey": 1800,
+    # CT runs as a dependency parent: the supervisor calls
+    # refresh_with_dependencies(nk_btd6_ct), which expands into the
+    # per-tile child fetch automatically.
     "nk_btd6_ct": 1800,
-    # races, bosses, odyssey added in later ingestion expansion PRs
+    # Map directory is comparatively static; long backoff decay so a
+    # single failure doesn't pin it offline for the rest of the day.
+    "nk_btd6_maps": 86400,
 }
 
 _BACKOFF_BASE_S: int = 30
