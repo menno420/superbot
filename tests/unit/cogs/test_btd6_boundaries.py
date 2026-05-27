@@ -143,6 +143,8 @@ def _expected_parity_names() -> set[str]:
         "latest-data",
         "grounding",
         "refresh-source",
+        # Live-event reader (parametrized by kind):
+        "live",
         # PR-F additions:
         "browse",
         "mine",
