@@ -632,13 +632,10 @@ def build_refresh_source_embed(
         counts_str = " · ".join(
             f"{count} {status}" for status, count in sorted(status_counts.items())
         )
-        embed.add_field(
-            name="Summary",
-            value=(
-                f"{len(results)} runs · {total_facts} facts written\n" f"{counts_str}"
-            ),
-            inline=False,
+        summary_value = (
+            f"{len(results)} runs · {total_facts} facts written\n{counts_str}"
         )
+        embed.add_field(name="Summary", value=summary_value, inline=False)
 
     # Discord caps embeds at 25 fields. Reserve room for the summary
     # field above (1) plus any trailing "remaining" / "Known source
