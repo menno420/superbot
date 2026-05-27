@@ -381,6 +381,7 @@ class BTD6Cog(commands.Cog):
         description="BTD6 dataset diagnostics.",
     )
     async def btd6_diagnostics_slash(self, interaction: discord.Interaction) -> None:
+        # Sync builder — safe to respond directly without defer.
         await interaction.response.send_message(
             embed=build_diagnostics_embed(),
             ephemeral=True,
@@ -392,8 +393,11 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         question: str,
     ) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         response = await btd6_ai_service.answer_question(question)
-        await interaction.response.send_message(
+        await safe_followup(
+            interaction,
             embed=_response_to_embed(response),
             ephemeral=True,
         )
@@ -447,6 +451,7 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         text: str,
     ) -> None:
+        # Sync resolver work — safe to respond directly without defer.
         await interaction.response.send_message(
             embed=build_test_intent_embed(text),
             ephemeral=True,
@@ -460,10 +465,10 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from cogs.btd6._builders import build_hero_embed
 
-        await interaction.response.send_message(
-            embed=await build_hero_embed(name),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_hero_embed(name)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="why-no-response",
@@ -498,10 +503,10 @@ class BTD6Cog(commands.Cog):
     async def btd6_sources_slash(self, interaction: discord.Interaction) -> None:
         from cogs.btd6._builders import build_sources_payload
 
-        await interaction.response.send_message(
-            await build_sources_payload(),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        payload = await build_sources_payload()
+        await safe_followup(interaction, content=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="strategies",
@@ -516,10 +521,10 @@ class BTD6Cog(commands.Cog):
             return
         from cogs.btd6._builders import build_strategies_payload
 
-        await interaction.response.send_message(
-            await build_strategies_payload(interaction.guild.id),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        payload = await build_strategies_payload(interaction.guild.id)
+        await safe_followup(interaction, content=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="source-health",
@@ -632,11 +637,13 @@ class BTD6Cog(commands.Cog):
             return
         from cogs.btd6._builders import build_grounding_embed
 
+        if not await safe_defer(interaction, ephemeral=True):
+            return
         payload = await build_grounding_embed(interaction.guild.id, mid)
         if isinstance(payload, str):
-            await interaction.response.send_message(payload, ephemeral=True)
+            await safe_followup(interaction, content=payload, ephemeral=True)
         else:
-            await interaction.response.send_message(embed=payload, ephemeral=True)
+            await safe_followup(interaction, embed=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="browse",
@@ -711,10 +718,10 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from views.btd6.strategy_browse import build_audit_embed
 
-        await interaction.response.send_message(
-            embed=await build_audit_embed(strategy_id),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_audit_embed(strategy_id)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="submit",
@@ -769,11 +776,11 @@ class BTD6Cog(commands.Cog):
 
     @app_commands.command(name="btd6menu", description="Open the BTD6 panel.")
     async def btd6menu_slash(self, interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(
-            embed=await build_btd6_panel_embed(),
-            view=BTD6PanelView(),
-            ephemeral=True,
-        )
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_btd6_panel_embed()
+        view = BTD6PanelView()
+        await safe_followup(interaction, embed=embed, view=view, ephemeral=True)
 
     # ------------------------------------------------------------------
     # Help-menu hook

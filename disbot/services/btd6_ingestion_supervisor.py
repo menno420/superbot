@@ -23,7 +23,7 @@ import logging
 import os
 
 from core.runtime import tasks
-from services import btd6_ingestion_service
+from services import btd6_ingestion_service, btd6_ingestion_sources
 from utils.db import btd6_sources as btd6_sources_db
 
 logger = logging.getLogger("bot.services.btd6_ingestion_supervisor")
@@ -35,23 +35,9 @@ _STARTUP_DELAY_S: int = int(os.getenv("BTD6_INGESTION_STARTUP_DELAY_S", "60"))
 _DEFAULT_INTERVAL_S: int = int(os.getenv("BTD6_INGESTION_DEFAULT_INTERVAL_S", "3600"))
 _STOP_TIMEOUT_S: int = 30
 
-_SOURCE_INTERVALS: dict[str, int] = {
-    # Live rotations — refresh frequently so the bot sees the current
-    # race / boss / odyssey / event within ~one cycle.
-    "nk_btd6_events": 1800,
-    "nk_btd6_races": 1800,
-    "nk_btd6_bosses": 1800,
-    "nk_btd6_odyssey": 1800,
-    # CT runs as a dependency parent: the supervisor calls
-    # refresh_with_dependencies(nk_btd6_ct), which expands into the
-    # per-tile child fetch automatically.
-    "nk_btd6_ct": 1800,
-    # Map directory is comparatively static; long backoff decay so a
-    # single failure doesn't pin it offline for the rest of the day.
-    "nk_btd6_maps": 86400,
-    # Challenge directory also rotates daily.
-    "nk_btd6_challenges": 86400,
-}
+# Canonical parent-source list lives in btd6_ingestion_sources so the
+# admin panel can consume it without depending on supervisor internals.
+_SOURCE_INTERVALS: dict[str, int] = btd6_ingestion_sources.source_intervals()
 
 _BACKOFF_BASE_S: int = 30
 _BACKOFF_CAP_S: int = 3600
@@ -149,7 +135,9 @@ async def _run_loop() -> None:
                 )
                 results = await child_task
                 failed = [
-                    r for r in results if r.status in ("fetch_error", "parse_error")
+                    r
+                    for r in results
+                    if r.status in ("fetch_error", "parse_error", "store_error")
                 ]
                 if failed:
                     new_backoff = min(
@@ -157,12 +145,23 @@ async def _run_loop() -> None:
                         _BACKOFF_CAP_S,
                     )
                     _backoff[source_key] = new_backoff
-                    logger.warning(
-                        "source %s failed (%s); backing off %ds",
-                        source_key,
-                        failed[0].error_code,
-                        new_backoff,
-                    )
+                    # Persistent DB-write failures are more dangerous than
+                    # upstream HTTP errors — bump the log level so they
+                    # surface to operators without log spelunking.
+                    if failed[0].status == "store_error":
+                        logger.error(
+                            "source %s store_error (%s); backing off %ds",
+                            source_key,
+                            failed[0].error_code,
+                            new_backoff,
+                        )
+                    else:
+                        logger.warning(
+                            "source %s failed (%s); backing off %ds",
+                            source_key,
+                            failed[0].error_code,
+                            new_backoff,
+                        )
                 else:
                     _backoff.pop(source_key, None)
             except asyncio.CancelledError:

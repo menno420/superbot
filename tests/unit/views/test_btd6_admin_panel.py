@@ -7,11 +7,13 @@ from unittest.mock import AsyncMock, MagicMock
 import discord
 import pytest
 
+from services.btd6_ingestion_sources import parent_source_keys
 from views.btd6.admin_panel import (
-    _PARENT_SOURCES,
     BTD6AdminView,
     build_admin_embed,
 )
+
+_PARENT_SOURCES = parent_source_keys()
 
 # ---------------------------------------------------------------------------
 # build_admin_embed
@@ -191,7 +193,9 @@ async def test_fetch_all_button_runs_each_parent_source(monkeypatch):
         return [_make_result(source_key)]
 
     monkeypatch.setattr(
-        btd6_ingestion_service, "refresh_source_or_dependencies", _stub,
+        btd6_ingestion_service,
+        "refresh_source_or_dependencies",
+        _stub,
     )
 
     view = await BTD6AdminView.create(opener_user_id=42)
@@ -206,7 +210,8 @@ async def test_fetch_all_button_runs_each_parent_source(monkeypatch):
 
     # Find the Fetch All button instance and invoke its callback directly.
     fetch_all = next(
-        c for c in view.children
+        c
+        for c in view.children
         if isinstance(c, discord.ui.Button) and c.label == "Fetch All"
     )
     # discord.py binds the parent view via Item._view; emulate that.
@@ -238,7 +243,9 @@ async def test_fetch_selected_button_uses_dropdown_values(monkeypatch):
         return [_make_result(source_key)]
 
     monkeypatch.setattr(
-        btd6_ingestion_service, "refresh_source_or_dependencies", _stub,
+        btd6_ingestion_service,
+        "refresh_source_or_dependencies",
+        _stub,
     )
 
     view = await BTD6AdminView.create(opener_user_id=42)
@@ -258,7 +265,8 @@ async def test_fetch_selected_button_uses_dropdown_values(monkeypatch):
     interaction.response.send_message = AsyncMock()
 
     fetch_sel = next(
-        c for c in view.children
+        c
+        for c in view.children
         if isinstance(c, discord.ui.Button) and c.label == "Fetch Selected"
     )
     fetch_sel._view = view
@@ -287,7 +295,8 @@ async def test_fetch_selected_button_with_no_picks_complains(monkeypatch):
     interaction.response.send_message = AsyncMock()
 
     fetch_sel = next(
-        c for c in view.children
+        c
+        for c in view.children
         if isinstance(c, discord.ui.Button) and c.label == "Fetch Selected"
     )
     fetch_sel._view = view

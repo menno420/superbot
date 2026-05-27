@@ -23,7 +23,11 @@ from typing import Any
 import discord
 
 from core.runtime.interaction_helpers import safe_defer
-from services import btd6_ingestion_service, btd6_source_registry
+from services import (
+    btd6_ingestion_service,
+    btd6_ingestion_sources,
+    btd6_source_registry,
+)
 from views.btd6.panel import _is_staff
 
 logger = logging.getLogger("bot.views.btd6.admin")
@@ -37,7 +41,7 @@ logger = logging.getLogger("bot.views.btd6.admin")
 async def build_admin_embed() -> discord.Embed:
     """The static admin-panel intro embed.
 
-    Lists the 7 parent sources the supervisor schedules so staff know
+    Lists the parent sources the supervisor schedules so staff know
     what 'Fetch All' will hit, and explains the multi-select.
     """
     embed = discord.Embed(
@@ -49,13 +53,10 @@ async def build_admin_embed() -> discord.Embed:
         ),
         color=discord.Color.blurple(),
     )
+    parent_keys = btd6_ingestion_sources.parent_source_keys()
     embed.add_field(
         name="Parent sources",
-        value=(
-            "`nk_btd6_events` · `nk_btd6_races` · `nk_btd6_bosses` · "
-            "`nk_btd6_odyssey` · `nk_btd6_ct` · `nk_btd6_maps` · "
-            "`nk_btd6_challenges`"
-        ),
+        value=" · ".join(f"`{key}`" for key in parent_keys),
         inline=False,
     )
     embed.set_footer(
@@ -67,20 +68,6 @@ async def build_admin_embed() -> discord.Embed:
 # ---------------------------------------------------------------------------
 # View
 # ---------------------------------------------------------------------------
-
-
-# Parent sources the supervisor schedules. "Fetch All" iterates this
-# list — must stay in sync with
-# ``btd6_ingestion_supervisor._SOURCE_INTERVALS``.
-_PARENT_SOURCES: tuple[str, ...] = (
-    "nk_btd6_events",
-    "nk_btd6_races",
-    "nk_btd6_bosses",
-    "nk_btd6_odyssey",
-    "nk_btd6_ct",
-    "nk_btd6_maps",
-    "nk_btd6_challenges",
-)
 
 
 class BTD6AdminView(discord.ui.View):
@@ -183,7 +170,7 @@ class _FetchAllButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction) -> None:
         await _run_fetch(
             interaction,
-            list(_PARENT_SOURCES),
+            list(btd6_ingestion_sources.parent_source_keys()),
             user_id=interaction.user.id,
             label="Fetch All",
         )
