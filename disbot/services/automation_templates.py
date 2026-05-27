@@ -31,6 +31,7 @@ from typing import Any
 from services.automation_registry import (
     KNOWN_ACTION_KINDS,
     KNOWN_TRIGGER_KINDS,
+    UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS,
     validate_action_config,
     validate_trigger_config,
 )
@@ -346,8 +347,26 @@ _SERVER_PULSE_TEMPLATES: tuple[AutomationTemplate, ...] = (
 )
 
 
-TEMPLATES: tuple[AutomationTemplate, ...] = (
+_ALL_TEMPLATES: tuple[AutomationTemplate, ...] = (
     _ONBOARDING_TEMPLATES + _SERVER_PULSE_TEMPLATES
+)
+
+
+def is_installable_template(template: AutomationTemplate) -> bool:
+    """Return True if the template's trigger kind is currently installable.
+
+    Templates whose trigger kind lands in
+    :data:`services.automation_registry.UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS`
+    stay in :data:`_ALL_TEMPLATES` (so :func:`get_template` and the
+    future cron-parser PR can still find them) but are hidden from the
+    operator picker. Re-enabling them is a one-line change in the
+    registry once the underlying scheduler support ships.
+    """
+    return template.trigger_kind not in UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS
+
+
+TEMPLATES: tuple[AutomationTemplate, ...] = tuple(
+    t for t in _ALL_TEMPLATES if is_installable_template(t)
 )
 
 
@@ -758,7 +777,11 @@ def preview_preset(
 
 
 def get_template(slug: str) -> AutomationTemplate | None:
-    for tmpl in TEMPLATES:
+    # Searches the full source catalog so internal callers (preset
+    # preview, tests) can still resolve hidden templates by slug. The
+    # operator-facing picker lists :data:`TEMPLATES` which is filtered
+    # via :func:`is_installable_template`.
+    for tmpl in _ALL_TEMPLATES:
         if tmpl.slug == slug:
             return tmpl
     return None
@@ -782,6 +805,7 @@ __all__ = [
     "ServerPreset",
     "get_preset",
     "get_template",
+    "is_installable_template",
     "known_preset_slugs",
     "known_slugs",
     "list_templates_by_category",

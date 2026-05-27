@@ -300,14 +300,22 @@ def _in_quiet_hours(rule: dict[str, Any]) -> bool:
 def _compute_next_run_at(rule: dict[str, Any]) -> datetime | None:
     """Compute the rule's next scheduled fire time.
 
-    v1 supports two kinds:
+    v1 supports one installable kind:
 
     * ``interval`` — fire every ``interval_minutes`` minutes.
-    * ``scheduled_time`` — placeholder; returns ``+1 day``
-      until a real cron parser ships.
 
-    Other kinds return ``None`` (rules drop off the schedule
-    queue until something else flips ``next_run_at``).
+    ``scheduled_time`` is not installable for new rules until cron
+    parsing ships (gated by
+    :data:`services.automation_registry.UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS`
+    and enforced in
+    :class:`services.automation_mutation.AutomationMutationPipeline.create_rule`).
+    This branch remains only to avoid crashing the scheduler loop if
+    historical DB rows already exist — it returns ``now + 1 day`` so
+    such rows keep being polled at a coarse cadence without firing in
+    a tight loop.
+
+    Other kinds return ``None`` (rules drop off the schedule queue
+    until something else flips ``next_run_at``).
     """
     trigger_kind = rule.get("trigger_kind")
     cfg = rule.get("trigger_config") or {}
@@ -321,7 +329,8 @@ def _compute_next_run_at(rule: dict[str, Any]) -> datetime | None:
             return None
         return now + timedelta(minutes=minutes)
     if trigger_kind == "scheduled_time":
-        # TODO Track 7 PR 22 — replace with cron parser.
+        # Defensive: tolerate pre-existing rows. New creation is
+        # blocked at the mutation-service boundary.
         return now + timedelta(days=1)
     return None
 

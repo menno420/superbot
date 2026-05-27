@@ -16,29 +16,47 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from services.automation_mutation import AutomationMutationPipeline
+from services.automation_mutation import (
+    AutomationMutationPipeline,
+    InvalidAutomationConfigError,
+)
 from services.automation_templates import (
     AutomationTemplate,
     get_template,
+    is_installable_template,
     list_templates_by_category,
 )
 
-_SERVER_PULSE_SLUGS = {
-    "daily-readiness-reminder",
+# Templates the operator picker should currently surface (every kind
+# the scheduler supports for installation).
+_INSTALLABLE_SERVER_PULSE_SLUGS = {
     "weekly-server-health-summary",
     "weekly-leaderboard",
-    "daily-game-prompt",
     "inactive-channel-nudge",
     "moderation-digest",
     "economy-summary",
-    "tournament-reminder",
     "bot-update-changelog-post",
 }
+# Templates that live in the source catalog (so the cron-parser PR can
+# re-enable them) but are blocked at the mutation-service boundary.
+_NON_INSTALLABLE_SERVER_PULSE_SLUGS = {
+    "daily-readiness-reminder",
+    "daily-game-prompt",
+    "tournament-reminder",
+}
+_SERVER_PULSE_SLUGS = (
+    _INSTALLABLE_SERVER_PULSE_SLUGS | _NON_INSTALLABLE_SERVER_PULSE_SLUGS
+)
 
 
 def test_server_pulse_slug_set_matches_documented():
-    actual = {t.slug for t in list_templates_by_category("server_pulse")}
-    assert actual == _SERVER_PULSE_SLUGS
+    # Picker-facing list only exposes installable templates.
+    actual_listed = {t.slug for t in list_templates_by_category("server_pulse")}
+    assert actual_listed == _INSTALLABLE_SERVER_PULSE_SLUGS
+    # Full catalog still resolves every documented slug via get_template
+    # so internal callers (preset preview, future re-enable) keep working.
+    for slug in _SERVER_PULSE_SLUGS:
+        assert get_template(slug) is not None, slug
 
 
 @pytest.mark.parametrize("slug", sorted(_SERVER_PULSE_SLUGS))
@@ -68,10 +86,11 @@ def test_template_requires_channel_override(slug):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("slug", sorted(_SERVER_PULSE_SLUGS))
-async def test_template_round_trip_through_pipeline(slug):
+@pytest.mark.parametrize("slug", sorted(_INSTALLABLE_SERVER_PULSE_SLUGS))
+async def test_installable_template_round_trip_through_pipeline(slug):
     tmpl = get_template(slug)
     assert tmpl is not None
+    assert is_installable_template(tmpl)
     action_cfg = tmpl.merged_action_config(_meaningful_overrides(tmpl))
     trigger_cfg = tmpl.merged_trigger_config()
     with (
@@ -100,14 +119,51 @@ async def test_template_round_trip_through_pipeline(slug):
     assert result.rule_id == 1
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("slug", sorted(_NON_INSTALLABLE_SERVER_PULSE_SLUGS))
+async def test_non_installable_template_is_rejected_by_pipeline(slug):
+    tmpl = get_template(slug)
+    assert tmpl is not None
+    assert not is_installable_template(tmpl)
+    action_cfg = tmpl.merged_action_config(_meaningful_overrides(tmpl))
+    trigger_cfg = tmpl.merged_trigger_config()
+    with (
+        patch(
+            "services.automation_mutation.db.insert_rule",
+            new_callable=AsyncMock,
+        ) as insert_rule,
+        patch(
+            "services.automation_mutation.emit_audit_action",
+            new_callable=AsyncMock,
+        ),
+        patch("core.events.bus.emit", new_callable=AsyncMock),
+    ):
+        with pytest.raises(InvalidAutomationConfigError):
+            await AutomationMutationPipeline().create_rule(
+                guild_id=10,
+                guild_owner_id=99,
+                name=tmpl.slug,
+                trigger_kind=tmpl.trigger_kind,
+                action_kind=tmpl.action_kind,
+                trigger_config=trigger_cfg,
+                action_config=action_cfg,
+                actor_id=99,
+            )
+        insert_rule.assert_not_awaited()
+
+
 def test_all_server_pulse_templates_default_to_disabled():
     """The mutation pipeline always inserts ``enabled=False`` —
     operators opt in explicitly. The template definitions
     deliberately don't carry an ``enabled`` field so the default
     survives."""
-    # Pin via structure: no template has an "enabled" key in its
-    # default config.
-    for tmpl in list_templates_by_category("server_pulse"):
+    # Pin via structure across the full catalog: no template has an
+    # "enabled" key in its default config — including the hidden
+    # scheduled_time ones so a future re-enable doesn't accidentally
+    # bypass the disabled-by-default invariant.
+    for slug in _SERVER_PULSE_SLUGS:
+        tmpl = get_template(slug)
+        assert tmpl is not None
         assert "enabled" not in tmpl.default_trigger_config
         assert "enabled" not in tmpl.default_action_config
 

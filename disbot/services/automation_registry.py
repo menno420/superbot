@@ -113,6 +113,14 @@ TRIGGERS: tuple[TriggerSpec, ...] = (
 
 KNOWN_TRIGGER_KINDS: frozenset[str] = frozenset(t.kind for t in TRIGGERS)
 
+# Known at the schema/registry level, but temporarily blocked for new
+# rule installation until cron parsing ships. ``automation_mutation``
+# enforces the rejection at the service boundary; ``automation_templates``
+# hides templates whose ``trigger_kind`` lands here from the operator
+# picker but keeps them in the source catalog so the cron-parser PR can
+# re-enable them by removing the kind from this set.
+UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS: frozenset[str] = frozenset({"scheduled_time"})
+
 
 # ---------------------------------------------------------------------------
 # Actions (mirrors migration 032 CHECK)
@@ -254,6 +262,7 @@ __all__ = [
     "KNOWN_ACTION_KINDS",
     "KNOWN_TRIGGER_KINDS",
     "TRIGGERS",
+    "UNSUPPORTED_INSTALLABLE_TRIGGER_KINDS",
     "ActionSpec",
     "TriggerSpec",
     "get_action",
