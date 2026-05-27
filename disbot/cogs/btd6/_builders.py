@@ -15,11 +15,16 @@ builder returns a list of ``(embed, view)`` pairs.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import discord
 
 from core.runtime.ai.contracts import AITask
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from services.btd6_ingestion_service import IngestionResult
 
 # ---------------------------------------------------------------------------
 # why-no-response
@@ -240,10 +245,19 @@ async def build_latest_data_embed(*, limit_per_kind: int = 1) -> discord.Embed:
 
     Reuses :func:`utils.db.btd6_sources.search_facts` to read the most
     recent rows. Pure read; the model is never invoked.
+
+    Each fact is attributed to its ``source_key`` via a single
+    ``btd6_source_registry.list_all()`` call (id→key map built once;
+    missing rows render as ``—`` so the embed is robust to stale or
+    deleted source rows).
     """
+    from services import btd6_source_registry
     from utils.db import btd6_sources as btd6_db
 
     rows = await btd6_db.search_facts(limit=50)
+    source_rows = await btd6_source_registry.list_all()
+    id_to_key = {int(s["id"]): s["source_key"] for s in source_rows}
+
     by_kind: dict[str, list[dict]] = {}
     for row in rows:
         by_kind.setdefault(row["entity_kind"], []).append(row)
@@ -268,12 +282,26 @@ async def build_latest_data_embed(*, limit_per_kind: int = 1) -> discord.Embed:
                 if fact.get("fetched_at")
                 else "—"
             )
+            source_key = id_to_key.get(int(fact["source_id"]), "—")
             lines.append(
-                f"`{fact['entity_key']}` · v{fact['version']} · fetched=`{when}`",
+                f"`{fact['entity_key']}` · source=`{source_key}` · "
+                f"v{fact['version']} · fetched=`{when}`",
             )
+        value = "\n".join(lines) or "—"
+        if len(value) > 1024:
+            kept: list[str] = []
+            running = 0
+            suffix_budget = 32
+            for line in lines:
+                if running + len(line) + 1 > 1024 - suffix_budget:
+                    break
+                kept.append(line)
+                running += len(line) + 1
+            dropped = len(lines) - len(kept)
+            value = "\n".join(kept) + f"\n… ({dropped} more)"
         embed.add_field(
             name=f"`{kind}`",
-            value="\n".join(lines) or "—",
+            value=value,
             inline=False,
         )
     return embed
@@ -339,11 +367,140 @@ async def build_grounding_embed(
     return embed
 
 
+# ---------------------------------------------------------------------------
+# refresh-source result builder
+# ---------------------------------------------------------------------------
+
+
+_REFRESH_ERROR_STATUSES = frozenset(
+    {"fetch_error", "parse_error", "store_error", "disabled", "interrupted"},
+)
+
+
+def _format_known_keys(keys: Sequence[str], *, max_value_chars: int = 1000) -> str:
+    """Join source keys with ` · ` separators, bounded by field-value length.
+
+    Stops before the running length exceeds ``max_value_chars`` (leaving a
+    little headroom under Discord's 1024-char field-value cap) and appends
+    a ``… (+N more)`` suffix when keys are dropped.
+    """
+    rendered: list[str] = []
+    running = 0
+    sep = " · "
+    for key in keys:
+        chunk = f"`{key}`"
+        added = len(chunk) + (len(sep) if rendered else 0)
+        if running + added > max_value_chars:
+            break
+        rendered.append(chunk)
+        running += added
+    body = sep.join(rendered)
+    dropped = len(keys) - len(rendered)
+    if dropped > 0:
+        body = f"{body}{sep}… (+{dropped} more)" if body else f"… (+{dropped} more)"
+    return body or "—"
+
+
+def build_refresh_source_embed(
+    source_key: str,
+    results: list[IngestionResult],
+    *,
+    exception: BaseException | None = None,
+    include_exception_detail: bool = False,
+    known_source_keys: Sequence[str] | None = None,
+) -> discord.Embed:
+    """Render the result of a manual ``refresh-source`` invocation.
+
+    Builders stay synchronous; the cog feeds in ``known_source_keys`` only
+    when it has already fetched the registry (i.e. on unknown-key results)
+    so this function never makes I/O calls.
+    """
+    if exception is not None:
+        color = discord.Color.red()
+    elif results and all(r.status == "ok" for r in results):
+        color = discord.Color.green()
+    elif results and any(r.status in _REFRESH_ERROR_STATUSES for r in results):
+        color = discord.Color.red()
+    elif results and all(r.status == "skipped" for r in results):
+        color = discord.Color.gold()
+    else:
+        color = discord.Color.gold()
+
+    embed = discord.Embed(
+        title=f"🐵 BTD6 — Refresh '{source_key}'",
+        color=color,
+    )
+
+    if exception is not None:
+        if include_exception_detail:
+            detail = str(exception)[:900]
+            embed.add_field(
+                name="Service error",
+                value=f"Service raised `{type(exception).__name__}`: {detail}",
+                inline=False,
+            )
+        else:
+            embed.add_field(
+                name="Service error",
+                value=(
+                    f"Service raised `{type(exception).__name__}` while "
+                    "refreshing this source. Check logs for details."
+                ),
+                inline=False,
+            )
+        return embed
+
+    if not results:
+        embed.add_field(
+            name="No result",
+            value="No result returned by the service.",
+            inline=False,
+        )
+        return embed
+
+    multi = len(results) > 1
+    for idx, result in enumerate(results):
+        prefix = ""
+        if multi:
+            prefix = "parent · " if idx == 0 else "child · "
+        written_preview = ""
+        if result.written_entity_keys:
+            head = ", ".join(f"`{k}`" for k in result.written_entity_keys[:3])
+            extra = len(result.written_entity_keys) - 3
+            written_preview = f" ({head}{', …' if extra > 0 else ''})"
+        value = (
+            f"status=`{result.status}` · facts={result.fact_count} · "
+            f"duration={result.duration_ms}ms\n"
+            f"run_id=`{result.run_id if result.run_id is not None else '—'}` · "
+            f"error=`{result.error_code or '—'}`\n"
+            f"written={len(result.written_entity_keys)}{written_preview}"
+        )
+        embed.add_field(
+            name=f"{prefix}`{result.source_key}`",
+            value=value,
+            inline=False,
+        )
+
+    if (
+        len(results) == 1
+        and results[0].error_code == "source_not_registered"
+        and known_source_keys is not None
+    ):
+        embed.add_field(
+            name="Known source keys",
+            value=_format_known_keys(known_source_keys),
+            inline=False,
+        )
+
+    return embed
+
+
 __all__ = [
     "build_grounding_embed",
     "build_hero_embed",
     "build_latest_data_embed",
     "build_pending_review_payload",
+    "build_refresh_source_embed",
     "build_source_health_embed",
     "build_sources_payload",
     "build_strategies_payload",

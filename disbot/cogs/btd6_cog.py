@@ -195,6 +195,69 @@ class BTD6Cog(commands.Cog):
 
         await ctx.send(embed=await build_source_health_embed(limit=limit))
 
+    async def _build_refresh_source_payload(
+        self,
+        source_key: str,
+        *,
+        started_by_user_id: int,
+        include_exception_detail: bool,
+    ) -> discord.Embed:
+        """Shared logic for the prefix + slash refresh-source surfaces.
+
+        Routes through the public orchestration helper so we never reach
+        into ``btd6_ingestion_service._DEPENDENCY_CHAINS``. Exception
+        handling and the unknown-source known-keys fallback are unified
+        here so prefix and slash can't drift.
+        """
+        from cogs.btd6._builders import build_refresh_source_embed
+        from services import btd6_ingestion_service, btd6_source_registry
+
+        try:
+            results = await btd6_ingestion_service.refresh_source_or_dependencies(
+                source_key,
+                reason="manual",
+                started_by_user_id=started_by_user_id,
+            )
+        except Exception as exc:  # noqa: BLE001 — surfaced via embed
+            logger.exception("manual refresh failed for %s", source_key)
+            return build_refresh_source_embed(
+                source_key,
+                results=[],
+                exception=exc,
+                include_exception_detail=include_exception_detail,
+            )
+
+        known_keys: list[str] | None = None
+        if len(results) == 1 and results[0].error_code == "source_not_registered":
+            rows = await btd6_source_registry.list_all()
+            known_keys = [row["source_key"] for row in rows]
+
+        return build_refresh_source_embed(
+            source_key,
+            results,
+            known_source_keys=known_keys,
+        )
+
+    @btd6_group.command(name="refresh-source")  # type: ignore[arg-type]
+    @commands.has_guild_permissions(manage_guild=True)
+    async def btd6_refresh_source(
+        self,
+        ctx: commands.Context,
+        source_key: str,
+    ) -> None:
+        """Manually refresh one Ninja Kiwi source (staff-only).
+
+        Chains (``nk_btd6_ct``) expand into parent + children; single
+        sources return one result. Exception detail is suppressed in the
+        prefix surface because the embed is posted to the channel.
+        """
+        embed = await self._build_refresh_source_payload(
+            source_key,
+            started_by_user_id=ctx.author.id,
+            include_exception_detail=False,
+        )
+        await ctx.send(embed=embed)
+
     @btd6_group.command(name="latest-data")  # type: ignore[arg-type]
     async def btd6_latest_data(self, ctx: commands.Context) -> None:
         """Show newest fact envelope per entity_kind (PR-D)."""
@@ -496,10 +559,29 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         from cogs.btd6._builders import build_latest_data_embed
 
-        await interaction.response.send_message(
-            embed=await build_latest_data_embed(),
-            ephemeral=True,
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_latest_data_embed()
+        await safe_followup(interaction, embed=embed, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="refresh-source",
+        description="Manually refresh one Ninja Kiwi source (staff-only).",
+    )
+    @app_commands.default_permissions(manage_guild=True)
+    async def btd6_refresh_source_slash(
+        self,
+        interaction: discord.Interaction,
+        source_key: str,
+    ) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await self._build_refresh_source_payload(
+            source_key,
+            started_by_user_id=interaction.user.id,
+            include_exception_detail=True,
         )
+        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="grounding",

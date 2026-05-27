@@ -42,8 +42,11 @@ logger = logging.getLogger("bot.services.btd6_ingestion")
 
 
 # ---------------------------------------------------------------------------
-# Result type
+# Shared types
 # ---------------------------------------------------------------------------
+
+
+IngestionReason = Literal["scheduled", "manual", "dependency"]
 
 
 @dataclass(frozen=True)
@@ -90,7 +93,7 @@ async def refresh_source(
     source_key: str,
     *,
     path_params: dict[str, str] | None = None,
-    reason: Literal["scheduled", "manual", "dependency"] = "scheduled",
+    reason: IngestionReason = "scheduled",
     started_by_user_id: int | None = None,
 ) -> IngestionResult:
     start_ms = time.monotonic()
@@ -312,15 +315,24 @@ _DEPENDENCY_CHAINS: dict[str, list[_DependencySpec]] = {
 async def refresh_with_dependencies(
     source_key: str,
     *,
-    reason: Literal["scheduled", "manual"] = "scheduled",
+    reason: IngestionReason = "scheduled",
+    started_by_user_id: int | None = None,
 ) -> list[IngestionResult]:
     """Refresh a source and any declared child sources.
 
     Child fetches use entity_key values from the current index run —
     not stale DB rows — so only IDs present in the latest fetch are expanded.
+
+    Children inherit the parent's ``reason`` and ``started_by_user_id`` so
+    audit queries against ``btd6_ingestion_runs`` see the whole chain as a
+    single operator-triggered (or scheduled) operation.
     """
     results: list[IngestionResult] = []
-    index_result = await refresh_source(source_key, reason=reason)
+    index_result = await refresh_source(
+        source_key,
+        reason=reason,
+        started_by_user_id=started_by_user_id,
+    )
     results.append(index_result)
     if index_result.status != "ok":
         return results
@@ -331,14 +343,46 @@ async def refresh_with_dependencies(
             child = await refresh_source(
                 spec.child_source,
                 path_params=path_params,
-                reason="dependency",
+                reason=reason,
+                started_by_user_id=started_by_user_id,
             )
             results.append(child)
     return results
 
 
+async def refresh_source_or_dependencies(
+    source_key: str,
+    *,
+    reason: IngestionReason = "scheduled",
+    started_by_user_id: int | None = None,
+) -> list[IngestionResult]:
+    """Single public entry point for command surfaces.
+
+    Sources with a declared dependency chain go through
+    :func:`refresh_with_dependencies` (returning parent + children);
+    others return a one-item list with the direct refresh result. Unknown
+    source keys yield a structured ``status="disabled"`` /
+    ``error_code="source_not_registered"`` result rather than raising.
+    """
+    if source_key in _DEPENDENCY_CHAINS:
+        return await refresh_with_dependencies(
+            source_key,
+            reason=reason,
+            started_by_user_id=started_by_user_id,
+        )
+    return [
+        await refresh_source(
+            source_key,
+            reason=reason,
+            started_by_user_id=started_by_user_id,
+        ),
+    ]
+
+
 __all__ = [
+    "IngestionReason",
     "IngestionResult",
     "refresh_source",
+    "refresh_source_or_dependencies",
     "refresh_with_dependencies",
 ]

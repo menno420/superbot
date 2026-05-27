@@ -74,6 +74,7 @@ async def test_source_health_embed_handles_empty(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_latest_data_embed_groups_by_entity_kind(monkeypatch):
+    from services import btd6_source_registry
     from utils.db import btd6_sources as btd6_db
 
     now = _now()
@@ -108,7 +109,14 @@ async def test_latest_data_embed_groups_by_entity_kind(monkeypatch):
             },
         ]
 
+    async def _list_all(*, limit=100):
+        return [
+            {"id": 1, "source_key": "nk_btd6_races"},
+            {"id": 2, "source_key": "nk_btd6_bosses"},
+        ]
+
     monkeypatch.setattr(btd6_db, "search_facts", _fake)
+    monkeypatch.setattr(btd6_source_registry, "list_all", _list_all)
 
     embed = await build_latest_data_embed()
     names = {f.name for f in embed.fields}
