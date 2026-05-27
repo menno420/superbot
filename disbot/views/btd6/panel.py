@@ -21,7 +21,7 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
-from services import btd6_ai_service, btd6_knowledge_service
+from services import btd6_ai_service
 
 _PANEL_COLOR = discord.Color.green()
 
@@ -73,67 +73,32 @@ class BTD6AskModal(discord.ui.Modal, title="Ask BTD6 Assistant"):
 # ---------------------------------------------------------------------------
 
 
-# Useful-first ordering for the Currently active block.
-_ACTIVE_KINDS: tuple[tuple[str, str, str], ...] = (
-    ("btd6_race", "🏁", "race"),
-    ("btd6_boss", "👑", "boss"),
-    ("btd6_ct", "🗺️", "ct"),
-    ("btd6_odyssey", "🌊", "odyssey"),
-    ("btd6_event", "🎪", "event"),
-)
-
-
-def _format_ends_relative(end_ms: Any) -> str:
-    """Render ``end_ms`` as ``ends Xh / Xd``.
-
-    ``None`` / non-numeric / past timestamps render as the empty
-    string so the line stays compact. Reuses the same ms-since-epoch
-    convention as the live-event reader.
-    """
-    from datetime import datetime, timezone
-
-    if not isinstance(end_ms, (int, float)) or end_ms <= 0:
-        return ""
-    try:
-        end = datetime.fromtimestamp(end_ms / 1000.0, tz=timezone.utc)
-    except (OverflowError, OSError, ValueError):
-        return ""
-    delta = end - datetime.now(tz=timezone.utc)
-    seconds = int(delta.total_seconds())
-    if seconds <= 0:
-        return "· ended"
-    if seconds < 3600:
-        return f"· ends {seconds // 60}m"
-    if seconds < 86_400:
-        return f"· ends {seconds // 3600}h"
-    return f"· ends {seconds // 86_400}d"
-
-
-def _format_currently_active(
-    rows: dict[str, dict[str, Any]],
+def _format_currently_active_from_vm(
+    vm_active: tuple[Any, ...],
 ) -> str:
     """One line per kind in useful-first order; '—' for missing kinds.
 
-    Names pulled from ``body_json.name`` with ``entity_key`` fallback.
-    Renders an end-time hint when ``body_json.end_ms`` is positive.
+    Each line now leads with a per-kind freshness badge (PR 1):
+    ``🟢/🟡/🔴/⚪`` reflects how stale the latest fact for that kind is.
+    Missing kinds render ``⚪`` (never fetched).
     """
-    from cogs.btd6._builders import _coerce_body
+    from cogs.btd6._freshness_render import BUCKET_EMOJI
+    from utils.btd6.event_window import format_ends_relative
 
     lines: list[str] = []
-    for entity_kind, emoji, short in _ACTIVE_KINDS:
-        row = rows.get(entity_kind)
-        if row is None:
-            lines.append(f"{emoji} `{short:<8}` —")
+    for active in vm_active:
+        badge = BUCKET_EMOJI.get(active.freshness.state, "⚪")
+        if active.name is None:
+            lines.append(
+                f"{badge} {active.emoji} `{active.short_kind:<8}` —",
+            )
             continue
-        body = _coerce_body(row.get("body_json"))
-        name = body.get("name") or row.get("entity_key") or "—"
-        ends = _format_ends_relative(body.get("end_ms"))
-        # Cap displayed name so a freakishly long event name doesn't
-        # blow the field-value cap. 60 chars is plenty for any real
-        # NK event name.
-        name_str = str(name)[:60]
+        ends = format_ends_relative(active.end_ms)
+        name_str = str(active.name)[:60]
         suffix = f" {ends}" if ends else ""
-        lines.append(f"{emoji} `{short:<8}` `{name_str}`{suffix}")
+        lines.append(
+            f"{badge} {active.emoji} `{active.short_kind:<8}` `{name_str}`{suffix}",
+        )
     return "\n".join(lines)
 
 
@@ -145,10 +110,15 @@ async def build_btd6_panel_embed() -> discord.Embed:
     * Reference (seed) — data/game version + entity counts; what the
       deterministic resolver answers from.
     * Currently active — the latest race/boss/CT/odyssey/event by name
-      from ``btd6_facts``, so opening ``!btd6`` immediately reflects
-      whether ingestion is producing data.
+      from ``btd6_facts``, prefixed with a per-kind freshness badge so
+      operators see at a glance which sources have gone stale.
+
+    PR 1: now built from :class:`HubViewModel`. The badge is the only
+    user-visible change vs. the previous panel embed.
     """
-    from utils.db import btd6_sources as btd6_db
+    from services.btd6_view_model_service import build_hub_view_model
+
+    vm = await build_hub_view_model()
 
     embed = discord.Embed(
         title="🐵 BTD6 Assistant",
@@ -162,22 +132,19 @@ async def build_btd6_panel_embed() -> discord.Embed:
     embed.add_field(
         name="📚 Reference (seed)",
         value=(
-            f"Data version: `{btd6_knowledge_service.data_version()}` · "
-            f"Game version: `{btd6_knowledge_service.game_version()}`\n"
-            f"{len(btd6_knowledge_service.list_towers())} towers • "
-            f"{len(btd6_knowledge_service.list_heroes())} heroes • "
-            f"{len(btd6_knowledge_service.list_maps())} maps • "
-            f"{len(btd6_knowledge_service.list_modes())} modes • "
-            f"{len(btd6_knowledge_service.list_rounds())} rounds"
+            f"Data version: `{vm.data_version}` · "
+            f"Game version: `{vm.game_version}`\n"
+            f"{vm.tower_count} towers • "
+            f"{vm.hero_count} heroes • "
+            f"{vm.map_count} maps • "
+            f"{vm.mode_count} modes • "
+            f"{vm.round_count} rounds"
         ),
         inline=False,
     )
-    active_rows = await btd6_db.latest_fact_per_entity_kind(
-        [kind for kind, _, _ in _ACTIVE_KINDS],
-    )
     embed.add_field(
         name="🎯 Currently active",
-        value=_format_currently_active(active_rows),
+        value=_format_currently_active_from_vm(vm.active_events),
         inline=False,
     )
     embed.set_footer(

@@ -17,6 +17,7 @@ from typing import Any
 
 import discord
 
+from cogs.btd6._freshness_render import BUCKET_EMOJI as _BUCKET_EMOJI
 from services import btd6_knowledge_service
 from services.btd6_resolver_service import resolve
 
@@ -77,14 +78,6 @@ def response_to_embed(response: Any) -> discord.Embed:
     if response.sources:
         embed.set_footer(text="Sources: " + " · ".join(response.sources))
     return embed
-
-
-_BUCKET_EMOJI = {
-    "fresh": "🟢",
-    "aging": "🟡",
-    "stale": "🔴",
-    "never": "⚪",
-}
 
 
 # Useful-first display order for the Live facts block. Kinds not in

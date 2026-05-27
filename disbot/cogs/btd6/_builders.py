@@ -20,11 +20,26 @@ from typing import TYPE_CHECKING, Any
 import discord
 
 from core.runtime.ai.contracts import AITask
+from utils.btd6.body_coerce import coerce_body as _coerce_body
+from utils.btd6.event_window import format_ms_human as _ms_to_human  # noqa: F401
+from utils.btd6.event_window import format_window_range as _format_window_range
+from utils.btd6.event_window import format_window_status as _format_window_status
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from services.btd6_ingestion_service import IngestionResult
+
+
+def _event_window(body: dict[str, Any]) -> str:
+    """Render ``start_ms`` → ``end_ms`` from a fact body dict.
+
+    Thin wrapper around :func:`utils.btd6.event_window.format_window_range`
+    that preserves the legacy ``(body) -> str`` calling convention used by
+    the existing embed builders.
+    """
+    return _format_window_range(body.get("start_ms"), body.get("end_ms"))
+
 
 # ---------------------------------------------------------------------------
 # why-no-response
@@ -223,14 +238,6 @@ async def build_pending_review_payload(
 # ---------------------------------------------------------------------------
 
 
-_BUCKET_BADGE = {
-    "fresh": "🟢 fresh",
-    "aging": "🟡 aging",
-    "stale": "🔴 stale",
-    "never": "⚪ never",
-}
-
-
 async def build_source_health_embed(
     *,
     limit: int = 25,
@@ -241,6 +248,7 @@ async def build_source_health_embed(
     Freshness buckets are computed in
     :mod:`services.btd6_source_registry`.
     """
+    from cogs.btd6._freshness_render import BUCKET_BADGE
     from services import btd6_source_registry
 
     health = await btd6_source_registry.list_health(limit=limit)
@@ -266,7 +274,7 @@ async def build_source_health_embed(
         embed.add_field(
             name=f"`{src.source_key}` · tier {src.trust_tier}",
             value=(
-                f"{_BUCKET_BADGE[src.bucket]} · {state} · "
+                f"{BUCKET_BADGE[src.bucket]} · {state} · "
                 f"kind=`{src.source_kind}` · facts={src.fact_count}\n"
                 f"last_fetched=`{when}`"
             ),
@@ -410,54 +418,6 @@ async def build_grounding_embed(
 # ---------------------------------------------------------------------------
 # live-event builders (race / boss / ct / odyssey / event)
 # ---------------------------------------------------------------------------
-
-
-def _ms_to_human(ms: Any) -> str:
-    """Render a milliseconds-since-epoch value as ``YYYY-MM-DD HH:MM UTC``.
-
-    Returns ``"—"`` for missing / non-numeric inputs. Live event APIs
-    use ms timestamps consistently across race / boss / odyssey / CT.
-    """
-    if not isinstance(ms, (int, float)) or ms <= 0:
-        return "—"
-    try:
-        from datetime import datetime, timezone
-
-        return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc).strftime(
-            "%Y-%m-%d %H:%M UTC",
-        )
-    except (OverflowError, OSError, ValueError):
-        return "—"
-
-
-def _event_window(body: dict[str, Any]) -> str:
-    """Render ``start_ms`` → ``end_ms`` as a single human window string."""
-    start = _ms_to_human(body.get("start_ms"))
-    end = _ms_to_human(body.get("end_ms"))
-    if start == "—" and end == "—":
-        return "—"
-    return f"{start} → {end}"
-
-
-def _coerce_body(value: Any) -> dict[str, Any]:
-    """Normalise ``body_json`` to a dict.
-
-    Defensive shim for rows written by the legacy double-encoded
-    ``json.dumps`` path: those round-trip as a JSON string instead of a
-    dict, so we json.loads them on read. Returns ``{}`` for anything we
-    can't decode (e.g. malformed text, non-mapping JSON).
-    """
-    import json
-
-    if isinstance(value, dict):
-        return value
-    if isinstance(value, str):
-        try:
-            decoded = json.loads(value)
-        except (ValueError, TypeError):
-            return {}
-        return decoded if isinstance(decoded, dict) else {}
-    return {}
 
 
 _LIVE_EVENT_SPECS: dict[str, dict[str, str]] = {
@@ -749,37 +709,6 @@ _EVENT_KIND_TITLE = {
 }
 
 
-def _format_window_status(body: dict[str, Any]) -> str:
-    """Render 'live / ended / upcoming · ends Xh' from start/end ms."""
-    from datetime import datetime, timezone
-
-    now = datetime.now(tz=timezone.utc)
-    start = body.get("start_ms")
-    end = body.get("end_ms")
-    start_dt = (
-        datetime.fromtimestamp(start / 1000.0, tz=timezone.utc)
-        if isinstance(start, (int, float)) and start > 0
-        else None
-    )
-    end_dt = (
-        datetime.fromtimestamp(end / 1000.0, tz=timezone.utc)
-        if isinstance(end, (int, float)) and end > 0
-        else None
-    )
-    if start_dt is None and end_dt is None:
-        return "status: `unknown`"
-    if start_dt is not None and now < start_dt:
-        delta = start_dt - now
-        return f"status: `upcoming` · starts in {delta.days}d {delta.seconds // 3600}h"
-    if end_dt is not None and now > end_dt:
-        return "status: `ended`"
-    if end_dt is not None:
-        delta = end_dt - now
-        h = delta.seconds // 3600
-        return f"status: `live` · ends in {delta.days}d {h}h"
-    return "status: `live`"
-
-
 def build_event_detail_embed(
     entity_kind: str,
     entity_key: str,
@@ -1003,14 +932,6 @@ def build_admin_refresh_summary_embed(
 # ---------------------------------------------------------------------------
 
 
-_FRESHNESS_BADGE = {
-    "fresh": "🟢 fresh",
-    "aging": "🟡 aging",
-    "stale": "🔴 stale",
-    "never": "⚪ never",
-}
-
-
 async def build_leaderboard_embed(
     kind: str,
     event_id: str | None,
@@ -1025,6 +946,7 @@ async def build_leaderboard_embed(
     Empty leaderboard hints at the parent-chain refresh source, not
     the child source (children require path params).
     """
+    from cogs.btd6._freshness_render import BUCKET_BADGE
     from services import btd6_live_query_service as btd6_live
     from services.btd6_source_registry import bucket_freshness
 
@@ -1118,7 +1040,7 @@ async def build_leaderboard_embed(
     if latest_fetched is not None:
         bucket = bucket_freshness(latest_fetched)
         if bucket in ("aging", "stale"):
-            parts.append(f"Data: {_FRESHNESS_BADGE[bucket]}")
+            parts.append(f"Data: {BUCKET_BADGE[bucket]}")
     if parts:
         embed.set_footer(text=" · ".join(parts))
     return embed
