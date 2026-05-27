@@ -49,6 +49,8 @@ _SOURCE_INTERVALS: dict[str, int] = {
     # Map directory is comparatively static; long backoff decay so a
     # single failure doesn't pin it offline for the rest of the day.
     "nk_btd6_maps": 86400,
+    # Challenge directory also rotates daily.
+    "nk_btd6_challenges": 86400,
 }
 
 _BACKOFF_BASE_S: int = 30

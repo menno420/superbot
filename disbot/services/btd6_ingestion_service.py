@@ -290,7 +290,7 @@ async def _run_ingestion(
 
 
 # ---------------------------------------------------------------------------
-# Dependency chains (PR 3)
+# Dependency chains
 # ---------------------------------------------------------------------------
 
 
@@ -298,55 +298,164 @@ async def _run_ingestion(
 class _DependencySpec:
     child_source: str
     path_param_builder: Callable[[str], dict[str, str]]
+    # Cap on the number of parent entity_keys expanded into child runs.
+    # ``None`` means no cap — use only when the upstream fanout is
+    # bounded by the API itself (e.g. ``nk_btd6_maps`` always returns
+    # 3 filter names).
+    max_child_keys: int | None = None
 
 
+# Two-level chains (parent → filter → one) use one entry per hop;
+# ``refresh_with_dependencies`` is recursive (depth cap ``_MAX_DEPTH``)
+# so the leaf source is reached in a single supervisor cycle.
+#
+# ``difficulty="normal"`` / ``"easy"`` defaults are documented limitations:
+# the boss / odyssey metadata endpoints require a difficulty in the path,
+# and a richer multi-difficulty fan-out needs a typed path-param builder
+# that is deferred to a follow-up PR.
 _DEPENDENCY_CHAINS: dict[str, list[_DependencySpec]] = {
+    # CT: 1-level (parent → per-tile child).
     "nk_btd6_ct": [
         _DependencySpec(
             child_source="nk_btd6_ct_tiles",
             path_param_builder=lambda ct_id: {"ctID": ct_id},
         ),
     ],
-    # nk_btd6_races: added in next PR
-    # nk_btd6_bosses, nk_btd6_odyssey: deferred (multi-param path builders needed)
+    # Maps: 2-level (parent → filter → one).
+    "nk_btd6_maps": [
+        _DependencySpec(
+            child_source="nk_btd6_maps_filter",
+            path_param_builder=lambda filter_name: {"mapFilter": filter_name},
+        ),
+    ],
+    "nk_btd6_maps_filter": [
+        _DependencySpec(
+            child_source="nk_btd6_maps_one",
+            path_param_builder=lambda map_id: {"mapID": map_id},
+            max_child_keys=10,
+        ),
+    ],
+    # Challenges: same 2-level shape as maps.
+    "nk_btd6_challenges": [
+        _DependencySpec(
+            child_source="nk_btd6_challenges_filter",
+            path_param_builder=lambda filter_name: {
+                "challengeFilter": filter_name,
+            },
+        ),
+    ],
+    "nk_btd6_challenges_filter": [
+        _DependencySpec(
+            child_source="nk_btd6_challenges_one",
+            path_param_builder=lambda ch_id: {"challengeID": ch_id},
+            max_child_keys=10,
+        ),
+    ],
+    # Races: 1-level fan-out into two child kinds (metadata + leaderboard).
+    "nk_btd6_races": [
+        _DependencySpec(
+            child_source="nk_btd6_races_metadata",
+            path_param_builder=lambda race_id: {"raceID": race_id},
+            max_child_keys=5,
+        ),
+        _DependencySpec(
+            child_source="nk_btd6_races_leaderboard",
+            path_param_builder=lambda race_id: {"raceID": race_id},
+            max_child_keys=3,
+        ),
+    ],
+    # Bosses: 1-level; difficulty hardcoded (see deferred list above).
+    "nk_btd6_bosses": [
+        _DependencySpec(
+            child_source="nk_btd6_bosses_metadata",
+            path_param_builder=lambda boss_id: {
+                "bossID": boss_id,
+                "difficulty": "normal",
+            },
+            max_child_keys=5,
+        ),
+    ],
+    # Odyssey: 1-level; difficulty hardcoded.
+    "nk_btd6_odyssey": [
+        _DependencySpec(
+            child_source="nk_btd6_odyssey_diff",
+            path_param_builder=lambda odyssey_id: {
+                "odysseyID": odyssey_id,
+                "difficulty": "easy",
+            },
+            max_child_keys=5,
+        ),
+    ],
+    # Events: parent-only — no child parsers exist.
 }
+
+
+# Recursion cap. Depth 0 = top-level parent; depth 1 = first child level;
+# depth 2 = the leaf in the two-level chains (maps_one, challenges_one).
+# Guard is placed AFTER child execution at this depth so the leaf runs.
+_MAX_DEPTH = 2
 
 
 async def refresh_with_dependencies(
     source_key: str,
     *,
+    path_params: dict[str, str] | None = None,
     reason: IngestionReason = "scheduled",
     started_by_user_id: int | None = None,
+    _depth: int = 0,
 ) -> list[IngestionResult]:
-    """Refresh a source and any declared child sources.
+    """Refresh a source and recursively expand declared dependency chains.
 
-    Child fetches use entity_key values from the current index run —
-    not stale DB rows — so only IDs present in the latest fetch are expanded.
+    Child fetches use entity_key values from the current parent run —
+    not stale DB rows — so only IDs present in the latest fetch are
+    expanded. Recursion is capped at ``_MAX_DEPTH`` so the two-level
+    chains (parent → filter → one) reach the leaf but can't run away.
 
-    Children inherit the parent's ``reason`` and ``started_by_user_id`` so
-    audit queries against ``btd6_ingestion_runs`` see the whole chain as a
-    single operator-triggered (or scheduled) operation.
+    The ``_depth`` kwarg is internal; callers must not pass it.
+
+    Child runs always record ``reason="dependency"`` (independent of the
+    parent's reason). Operator attribution flows through
+    ``started_by_user_id``, which is propagated unchanged at every depth.
+    This keeps ``triggered_by`` meaning "this run's role" and lets audit
+    queries distinguish operator-initiated child fan-out from a child
+    that was scheduled as part of a cron cycle.
     """
     results: list[IngestionResult] = []
-    index_result = await refresh_source(
+    parent_result = await refresh_source(
         source_key,
+        path_params=path_params,
         reason=reason,
         started_by_user_id=started_by_user_id,
     )
-    results.append(index_result)
-    if index_result.status != "ok":
+    results.append(parent_result)
+    if parent_result.status != "ok":
         return results
-    specs = _DEPENDENCY_CHAINS.get(source_key, [])
-    for spec in specs:
-        for entity_key in index_result.written_entity_keys:
-            path_params = spec.path_param_builder(entity_key)
-            child = await refresh_source(
+    if _depth >= _MAX_DEPTH:
+        logger.debug(
+            "btd6 ingestion chain depth cap reached at %s (depth=%d)",
+            source_key,
+            _depth,
+        )
+        return results
+    for spec in _DEPENDENCY_CHAINS.get(source_key, []):
+        entity_keys = parent_result.written_entity_keys
+        if spec.max_child_keys is not None:
+            entity_keys = entity_keys[: spec.max_child_keys]
+        for entity_key in entity_keys:
+            child_results = await refresh_with_dependencies(
                 spec.child_source,
-                path_params=path_params,
-                reason=reason,
+                path_params=spec.path_param_builder(entity_key),
+                reason="dependency",
                 started_by_user_id=started_by_user_id,
+                _depth=_depth + 1,
             )
-            results.append(child)
+            results.extend(child_results)
+    if _depth == 0:
+        logger.info(
+            "btd6 ingestion chain parent=%s total=%d",
+            source_key,
+            len(results),
+        )
     return results
 
 
