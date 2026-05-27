@@ -620,8 +620,37 @@ def build_refresh_source_embed(
         )
         return embed
 
+    # Aggregate summary first — gives the operator the big picture
+    # before any per-result drill-down. Always emit this so chain
+    # refreshes are scannable at a glance.
+    if len(results) > 1:
+        status_counts: dict[str, int] = {}
+        total_facts = 0
+        for result in results:
+            status_counts[result.status] = status_counts.get(result.status, 0) + 1
+            total_facts += result.fact_count
+        counts_str = " · ".join(
+            f"{count} {status}" for status, count in sorted(status_counts.items())
+        )
+        embed.add_field(
+            name="Summary",
+            value=(
+                f"{len(results)} runs · {total_facts} facts written\n" f"{counts_str}"
+            ),
+            inline=False,
+        )
+
+    # Discord caps embeds at 25 fields. Reserve room for the summary
+    # field above (1) plus any trailing "remaining" / "Known source
+    # keys" field (up to 1), so render at most 20 per-result fields.
+    # Chain refreshes for nk_btd6_maps / nk_btd6_challenges currently
+    # produce up to 34 results — without this cap, .add_field exceeds
+    # the 25-field limit and Discord rejects the message with 400.
+    max_per_result_fields = 20
+    rendered_results = results[:max_per_result_fields]
+
     multi = len(results) > 1
-    for idx, result in enumerate(results):
+    for idx, result in enumerate(rendered_results):
         prefix = ""
         if multi:
             prefix = "parent · " if idx == 0 else "child · "
@@ -640,6 +669,18 @@ def build_refresh_source_embed(
         embed.add_field(
             name=f"{prefix}`{result.source_key}`",
             value=value,
+            inline=False,
+        )
+
+    truncated = len(results) - len(rendered_results)
+    if truncated > 0:
+        embed.add_field(
+            name="…",
+            value=(
+                f"+{truncated} more child runs omitted to stay within "
+                f"Discord's 25-field embed limit. Run "
+                f"`!btd6 source-health` for the full per-source picture."
+            ),
             inline=False,
         )
 

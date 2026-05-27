@@ -124,10 +124,54 @@ def test_refresh_source_embed_dependency_chain_labels_each_child_by_its_key():
     child = _ok_result(source_key="nk_btd6_ct_tiles")
     embed = build_refresh_source_embed("nk_btd6_ct", [parent, child])
     names = [f.name or "" for f in embed.fields]
-    assert names[0].startswith("parent · ")
-    assert "`nk_btd6_ct`" in names[0]
-    assert names[1].startswith("child · ")
-    assert "`nk_btd6_ct_tiles`" in names[1]
+    # The first field is the aggregate "Summary" when there are >1
+    # results; per-result fields start at index 1.
+    assert names[0] == "Summary"
+    assert names[1].startswith("parent · ")
+    assert "`nk_btd6_ct`" in names[1]
+    assert names[2].startswith("child · ")
+    assert "`nk_btd6_ct_tiles`" in names[2]
+
+
+def test_refresh_source_embed_caps_fields_under_discord_limit():
+    """Chain refreshes for nk_btd6_maps return up to 34 results.
+    Without a cap, embed.fields would exceed Discord's 25-field max
+    and the message would be rejected with HTTP 400. Cap rendered
+    per-result fields and surface the rest in a summary."""
+    parent = _ok_result(source_key="nk_btd6_maps")
+    children = [_ok_result(source_key=f"nk_btd6_maps_one_{i}") for i in range(33)]
+    embed = build_refresh_source_embed("nk_btd6_maps", [parent, *children])
+
+    # Discord's per-embed field limit is 25.
+    assert len(embed.fields) <= 25
+
+    names = [f.name or "" for f in embed.fields]
+    assert names[0] == "Summary"
+    # When truncated, a "…" field explains the omission.
+    assert "…" in names
+    truncation_field = next(f for f in embed.fields if f.name == "…")
+    value = truncation_field.value or ""
+    assert "more child runs omitted" in value
+    assert "source-health" in value
+
+
+def test_refresh_source_embed_summary_aggregates_counts():
+    """Multi-result embeds include a Summary field with status counts."""
+    ok = _ok_result(source_key="nk_btd6_maps")
+    err = btd6_ingestion_service.IngestionResult(
+        source_key="nk_btd6_maps_filter",
+        status="parse_error",
+        fact_count=0,
+        duration_ms=10,
+        error_code="parse_exception",
+        run_id=2,
+    )
+    embed = build_refresh_source_embed("nk_btd6_maps", [ok, err])
+    summary = next(f for f in embed.fields if f.name == "Summary")
+    value = summary.value or ""
+    assert "2 runs" in value
+    assert "1 ok" in value
+    assert "1 parse_error" in value
 
 
 def test_refresh_source_embed_unknown_source_shows_known_keys():
