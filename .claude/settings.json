@@ -24,6 +24,16 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "matcher": "mcp__github__create_pull_request",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3.10 scripts/claude_pr_subscribe_reminder.py",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [
