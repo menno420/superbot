@@ -1,20 +1,24 @@
 {
   "data_version": "1.0",
   "game_version": "41.3",
-  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "source": "hand-curated from public BTD6 reference data",
   "towers": [
     {
       "id": "dart_monkey",
       "canonical": "Dart Monkey",
-      "aliases": ["dart", "darts", "darty"],
+      "aliases": [
+        "dart",
+        "darts",
+        "darty"
+      ],
       "category": "primary",
       "base_cost": 200,
-      "description": "Throws a single dart at the nearest bloon.",
+      "description": "",
       "upgrade_paths": {
         "top": [
           "Sharp Shots",
           "Razor Sharp Shots",
-          "Spike-O-Pult",
+          "Spike-o-pult",
           "Juggernaut",
           "Ultra-Juggernaut"
         ],
@@ -38,10 +42,14 @@
     {
       "id": "boomerang_monkey",
       "canonical": "Boomerang Monkey",
-      "aliases": ["boomer", "boomerang", "boomy"],
+      "aliases": [
+        "boomer",
+        "boomerang",
+        "boomy"
+      ],
       "category": "primary",
-      "base_cost": 325,
-      "description": "Throws boomerangs that curve through tracks.",
+      "base_cost": 315,
+      "description": "",
       "upgrade_paths": {
         "top": [
           "Improved Rangs",
@@ -68,12 +76,52 @@
       "wiki_url": "https://bloons.fandom.com/wiki/Boomerang_Monkey"
     },
     {
+      "id": "bomb_shooter",
+      "canonical": "Bomb Shooter",
+      "aliases": [
+        "bomb",
+        "bombs",
+        "bombshooter"
+      ],
+      "category": "primary",
+      "base_cost": 375,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Bigger Bombs",
+          "Heavy Bombs",
+          "Really Big Bombs",
+          "Bloon Impact",
+          "Bloon Crush"
+        ],
+        "mid": [
+          "Faster Reload",
+          "Missile Launcher",
+          "MOAB Mauler",
+          "MOAB Assassin",
+          "MOAB Eliminator"
+        ],
+        "bot": [
+          "Extra Range",
+          "Frag Bombs",
+          "Cluster Bombs",
+          "Recursive Cluster",
+          "Bomb Blitz"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Bomb_Shooter"
+    },
+    {
       "id": "tack_shooter",
       "canonical": "Tack Shooter",
-      "aliases": ["tack", "tacks", "tackshooter"],
+      "aliases": [
+        "tack",
+        "tacks",
+        "tackshooter"
+      ],
       "category": "primary",
-      "base_cost": 280,
-      "description": "Shoots eight tacks outward in a radial burst.",
+      "base_cost": 260,
+      "description": "",
       "upgrade_paths": {
         "top": [
           "Faster Shooting",
@@ -100,36 +148,647 @@
       "wiki_url": "https://bloons.fandom.com/wiki/Tack_Shooter"
     },
     {
-      "id": "bomb_shooter",
-      "canonical": "Bomb Shooter",
-      "aliases": ["bomb", "bombs", "bombshooter"],
-      "category": "military",
-      "base_cost": 525,
-      "description": "Lobs slow bombs that explode and damage groups of bloons.",
+      "id": "ice_monkey",
+      "canonical": "Ice Monkey",
+      "aliases": [
+        "ice",
+        "icicle"
+      ],
+      "category": "primary",
+      "base_cost": 400,
+      "description": "",
       "upgrade_paths": {
         "top": [
-          "Bigger Bombs",
-          "Heavy Bombs",
-          "Really Big Bombs",
-          "Bloon Impact",
-          "Bloon Crush"
+          "Permafrost",
+          "Cold Snap",
+          "Ice Shards",
+          "Embrittlement",
+          "Super Brittle"
+        ],
+        "mid": [
+          "Enhanced Freeze",
+          "Deep Freeze",
+          "Arctic Wind",
+          "Snowstorm",
+          "Absolute Zero"
+        ],
+        "bot": [
+          "Larger Radius",
+          "Re-Freeze",
+          "Cryo Cannon",
+          "Icicles",
+          "Icicle Impale"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Ice_Monkey"
+    },
+    {
+      "id": "glue_gunner",
+      "canonical": "Glue Gunner",
+      "aliases": [
+        "glue",
+        "gluey"
+      ],
+      "category": "primary",
+      "base_cost": 225,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Glue Soak",
+          "Corrosive Glue",
+          "Bloon Dissolver",
+          "Bloon Liquefier",
+          "The Bloon Solver"
+        ],
+        "mid": [
+          "Bigger Globs",
+          "Glue Splatter",
+          "Glue Hose",
+          "Glue Strike",
+          "Glue Storm"
+        ],
+        "bot": [
+          "Stickier Glue",
+          "Stronger Glue",
+          "MOAB Glue",
+          "Relentless Glue",
+          "Super Glue"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Glue_Gunner"
+    },
+    {
+      "id": "sniper_monkey",
+      "canonical": "Sniper Monkey",
+      "aliases": [
+        "sniper"
+      ],
+      "category": "military",
+      "base_cost": 350,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Full Metal Jacket",
+          "Large Calibre",
+          "Deadly Precision",
+          "Maim MOAB",
+          "Cripple MOAB"
+        ],
+        "mid": [
+          "Night Vision Goggles",
+          "Shrapnel Shot",
+          "Bouncing Bullet",
+          "Supply Drop",
+          "Elite Sniper"
+        ],
+        "bot": [
+          "Fast Firing",
+          "Even Faster Firing",
+          "Semi-Automatic",
+          "Full Auto Rifle",
+          "Elite Defender"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Sniper_Monkey"
+    },
+    {
+      "id": "monkey_sub",
+      "canonical": "Monkey Sub",
+      "aliases": [
+        "sub",
+        "subs",
+        "submarine"
+      ],
+      "category": "military",
+      "base_cost": 325,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Longer Range",
+          "Advanced Intel",
+          "Submerge and Support",
+          "Bloontonium Reactor",
+          "Energizer"
+        ],
+        "mid": [
+          "Barbed Darts",
+          "Heat-tipped Darts",
+          "Ballistic Missile",
+          "First Strike Capability",
+          "Pre-Emptive Strike"
+        ],
+        "bot": [
+          "Twin Guns",
+          "Airburst Darts",
+          "Triple Guns",
+          "Armor Piercing Darts",
+          "Sub Commander"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Sub"
+    },
+    {
+      "id": "monkey_buccaneer",
+      "canonical": "Monkey Buccaneer",
+      "aliases": [
+        "bucc",
+        "buccaneer",
+        "boat",
+        "pirate"
+      ],
+      "category": "military",
+      "base_cost": 400,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Faster Shooting",
+          "Double Shot",
+          "Destroyer",
+          "Aircraft Carrier",
+          "Carrier Flagship"
+        ],
+        "mid": [
+          "Grape Shot",
+          "Hot Shot",
+          "Cannon Ship",
+          "Monkey Pirates",
+          "Pirate Lord"
+        ],
+        "bot": [
+          "Long Range",
+          "Crow's Nest",
+          "Merchantman",
+          "Favored Trades",
+          "Trade Empire"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Buccaneer"
+    },
+    {
+      "id": "monkey_ace",
+      "canonical": "Monkey Ace",
+      "aliases": [
+        "ace",
+        "plane",
+        "monkey plane"
+      ],
+      "category": "military",
+      "base_cost": 800,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Rapid Fire",
+          "Lots More Darts",
+          "Fighter Plane",
+          "Operation: Dart Storm",
+          "Sky Shredder"
+        ],
+        "mid": [
+          "Exploding Pineapple",
+          "Spy Plane",
+          "Bomber Ace",
+          "Ground Zero",
+          "Tsar Bomba"
+        ],
+        "bot": [
+          "Sharper Darts",
+          "Centered Path",
+          "Neva-Miss Targeting",
+          "Spectre",
+          "Flying Fortress"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Ace"
+    },
+    {
+      "id": "heli_pilot",
+      "canonical": "Heli Pilot",
+      "aliases": [
+        "heli",
+        "helicopter",
+        "helipilot"
+      ],
+      "category": "military",
+      "base_cost": 1600,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Quad Darts",
+          "Pursuit",
+          "Razor Rotors",
+          "Apache Dartship",
+          "Apache Prime"
+        ],
+        "mid": [
+          "Bigger Jets",
+          "IFR",
+          "Downdraft",
+          "Support Chinook",
+          "Special Poperations"
+        ],
+        "bot": [
+          "Faster Darts",
+          "Faster Firing",
+          "MOAB Shove",
+          "Comanche Defense",
+          "Comanche Commander"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Heli_Pilot"
+    },
+    {
+      "id": "mortar_monkey",
+      "canonical": "Mortar Monkey",
+      "aliases": [
+        "mortar",
+        "mortars"
+      ],
+      "category": "military",
+      "base_cost": 750,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Bigger Blast",
+          "Bloon Buster",
+          "Shell Shock",
+          "The Big One",
+          "The Biggest One"
         ],
         "mid": [
           "Faster Reload",
-          "Missile Launcher",
-          "MOAB Mauler",
-          "MOAB Assassin",
-          "MOAB Eliminator"
+          "Rapid Reload",
+          "Heavy Shells",
+          "Artillery Battery",
+          "Pop and Awe"
         ],
         "bot": [
-          "Extra Range",
-          "Frag Bombs",
-          "Cluster Bombs",
-          "Recursive Cluster",
-          "Bomb Blitz"
+          "Increased Accuracy",
+          "Burny Stuff",
+          "Signal Flare",
+          "Shattering Shells",
+          "Blooncineration"
         ]
       },
-      "wiki_url": "https://bloons.fandom.com/wiki/Bomb_Shooter"
+      "wiki_url": "https://bloons.fandom.com/wiki/Mortar_Monkey"
+    },
+    {
+      "id": "dartling_gunner",
+      "canonical": "Dartling Gunner",
+      "aliases": [
+        "dartling",
+        "dartlings",
+        "dart gun"
+      ],
+      "category": "military",
+      "base_cost": 850,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Focused Firing",
+          "Laser Shock",
+          "Laser Cannon",
+          "Plasma Accelerator",
+          "Ray of Doom"
+        ],
+        "mid": [
+          "Advanced Targeting",
+          "Faster Barrel Spin",
+          "Hydra Rocket Pods",
+          "Rocket Storm",
+          "M.A.D"
+        ],
+        "bot": [
+          "Faster Swivel",
+          "Powerful Darts",
+          "Buckshot",
+          "Bloon Area Denial System",
+          "Bloon Exclusion Zone"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Dartling_Gunner"
+    },
+    {
+      "id": "wizard_monkey",
+      "canonical": "Wizard Monkey",
+      "aliases": [
+        "wiz",
+        "wizard"
+      ],
+      "category": "magic",
+      "base_cost": 250,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Guided Magic",
+          "Arcane Blast",
+          "Arcane Mastery",
+          "Arcane Spike",
+          "Archmage"
+        ],
+        "mid": [
+          "Fireball",
+          "Wall of Fire",
+          "Dragon's Breath",
+          "Summon Phoenix",
+          "Wizard Lord Phoenix"
+        ],
+        "bot": [
+          "Intense Magic",
+          "Monkey Sense",
+          "Shimmer",
+          "Necromancer: Unpopped Army",
+          "Prince of Darkness"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Wizard_Monkey"
+    },
+    {
+      "id": "super_monkey",
+      "canonical": "Super Monkey",
+      "aliases": [
+        "super",
+        "smonkey",
+        "supermonkey"
+      ],
+      "category": "magic",
+      "base_cost": 2500,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Laser Blasts",
+          "Plasma Blasts",
+          "Sun Avatar",
+          "Sun Temple",
+          "True Sun God"
+        ],
+        "mid": [
+          "Super Range",
+          "Epic Range",
+          "Robo Monkey",
+          "Tech Terror",
+          "The Anti-Bloon"
+        ],
+        "bot": [
+          "Knockback",
+          "Ultravision",
+          "Dark Knight",
+          "Dark Champion",
+          "Legend of the Night"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Super_Monkey"
+    },
+    {
+      "id": "ninja_monkey",
+      "canonical": "Ninja Monkey",
+      "aliases": [
+        "ninja",
+        "ninjas",
+        "shinobi"
+      ],
+      "category": "magic",
+      "base_cost": 400,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Ninja Discipline",
+          "Sharp Shurikens",
+          "Double Shot",
+          "Bloonjitsu",
+          "Grandmaster Ninja"
+        ],
+        "mid": [
+          "Distraction",
+          "Counter-Espionage",
+          "Shinobi Tactics",
+          "Bloon Sabotage",
+          "Grand Saboteur"
+        ],
+        "bot": [
+          "Seeking Shuriken",
+          "Caltrops",
+          "Flash Bomb",
+          "Sticky Bomb",
+          "Master Bomber"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Ninja_Monkey"
+    },
+    {
+      "id": "alchemist",
+      "canonical": "Alchemist",
+      "aliases": [
+        "alch",
+        "alchy",
+        "alchemist"
+      ],
+      "category": "magic",
+      "base_cost": 550,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Larger Potions",
+          "Acidic Mixture Dip",
+          "Berserker Brew",
+          "Stronger Stimulant",
+          "Permanent Brew"
+        ],
+        "mid": [
+          "Stronger Acid",
+          "Perishing Potions",
+          "Unstable Concoction",
+          "Transforming Tonic",
+          "Total Transformation"
+        ],
+        "bot": [
+          "Faster Throwing",
+          "Acid Pool",
+          "Lead To Gold",
+          "Rubber to Gold",
+          "Bloon Master Alchemist"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Alchemist"
+    },
+    {
+      "id": "druid",
+      "canonical": "Druid",
+      "aliases": [
+        "dru",
+        "druids"
+      ],
+      "category": "magic",
+      "base_cost": 400,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Hard Thorns",
+          "Heart of Thunder",
+          "Druid of the Storm",
+          "Ball Lightning",
+          "Monarch of Storms"
+        ],
+        "mid": [
+          "Thorn Swarm",
+          "Heart of Oak",
+          "Druid of the Jungle",
+          "Jungle's Bounty",
+          "Spirit of the Forest"
+        ],
+        "bot": [
+          "Druidic Reach",
+          "Heart of Vengeance",
+          "Druid of Wrath",
+          "Poplust",
+          "Avatar of Wrath"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Druid"
+    },
+    {
+      "id": "banana_farm",
+      "canonical": "Banana Farm",
+      "aliases": [
+        "farm",
+        "farms",
+        "bf",
+        "banana"
+      ],
+      "category": "support",
+      "base_cost": 1250,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Increased Production",
+          "Greater Production",
+          "Banana Plantation",
+          "Banana Research Facility",
+          "Banana Central"
+        ],
+        "mid": [
+          "Long Life Bananas",
+          "Valuable Bananas",
+          "Monkey Bank",
+          "IMF Loan",
+          "Monkey-Nomics"
+        ],
+        "bot": [
+          "EZ Collect",
+          "Banana Salvage",
+          "Marketplace",
+          "Central Market",
+          "Monkey Wall Street"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Banana_Farm"
+    },
+    {
+      "id": "spike_factory",
+      "canonical": "Spike Factory",
+      "aliases": [
+        "spike",
+        "spikes",
+        "spac"
+      ],
+      "category": "support",
+      "base_cost": 1000,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Bigger Stacks",
+          "White Hot Spikes",
+          "Spiked Balls",
+          "Spiked Mines",
+          "Super Mines"
+        ],
+        "mid": [
+          "Faster Production",
+          "Even Faster Production",
+          "MOAB SHREDR",
+          "Spike Storm",
+          "Carpet of Spikes"
+        ],
+        "bot": [
+          "Long Reach",
+          "Smart Spikes",
+          "Long Life Spikes",
+          "Deadly Spikes",
+          "Perma-Spike"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Spike_Factory"
+    },
+    {
+      "id": "monkey_village",
+      "canonical": "Monkey Village",
+      "aliases": [
+        "village",
+        "vil",
+        "monkey vil"
+      ],
+      "category": "support",
+      "base_cost": 1200,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Bigger Radius",
+          "Jungle Drums",
+          "Primary Training",
+          "Primary Mentoring",
+          "Primary Expertise"
+        ],
+        "mid": [
+          "Grow Blocker",
+          "Radar Scanner",
+          "Monkey Intelligence Bureau",
+          "Call To Arms",
+          "Homeland Defense"
+        ],
+        "bot": [
+          "Monkey Business",
+          "Monkey Commerce",
+          "Monkey Town",
+          "Monkey City",
+          "Monkeyopolis"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Village"
+    },
+    {
+      "id": "engineer_monkey",
+      "canonical": "Engineer Monkey",
+      "aliases": [
+        "engi",
+        "engineer",
+        "eng"
+      ],
+      "category": "support",
+      "base_cost": 350,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Sentry Gun",
+          "Faster Engineering",
+          "Sprockets",
+          "Sentry Expert",
+          "Sentry Champion"
+        ],
+        "mid": [
+          "Larger Service Area",
+          "Deconstruction",
+          "Cleansing Foam",
+          "Overclock",
+          "Ultraboost"
+        ],
+        "bot": [
+          "Oversize Nails",
+          "Pin",
+          "Double Gun",
+          "Bloon Trap",
+          "XXXL Trap"
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Engineer_Monkey"
     }
   ]
 }

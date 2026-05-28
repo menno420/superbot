@@ -1,47 +1,402 @@
 {
   "data_version": "1.0",
   "game_version": "41.3",
-  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "source": "hand-curated from public BTD6 reference data",
   "heroes": [
     {
       "id": "quincy",
       "canonical": "Quincy",
-      "aliases": ["q", "default hero"],
+      "aliases": [
+        "q",
+        "default hero"
+      ],
       "base_cost": 540,
-      "description": "Free starter hero. Reliable single-target archer.",
+      "description": "",
       "abilities": [
         {
           "level": 3,
           "name": "Rapid Shot",
-          "summary": "Briefly increased attack speed."
+          "summary": "Triple attack speed for a short time."
         },
         {
           "level": 10,
           "name": "Storm of Arrows",
-          "summary": "Massive AoE arrow rain."
+          "summary": "Covers a large area in a deadly rain of arrows."
         }
       ],
       "wiki_url": "https://bloons.fandom.com/wiki/Quincy"
     },
     {
-      "id": "sauda",
-      "canonical": "Sauda",
-      "aliases": ["saud", "blade master"],
-      "base_cost": 800,
-      "description": "Melee swordmaster, strong vs leads and ceramics in the early-to-mid game.",
+      "id": "gwendolin",
+      "canonical": "Gwendolin",
+      "aliases": [
+        "gwen",
+        "gwendo"
+      ],
+      "base_cost": 725,
+      "description": "",
       "abilities": [
         {
           "level": 3,
-          "name": "Sword Charge",
-          "summary": "Dashes through bloons in a line."
+          "name": "Cocktail of Fire",
+          "summary": "Hurls a flask of flammable liquid, burning Bloons that pass through the fire."
         },
         {
           "level": 10,
-          "name": "Leaping Sword",
-          "summary": "Spinning leap with high damage AoE."
+          "name": "Firestorm",
+          "summary": "Sets the whole screen alight, burning all Bloons and granting the Heat It Up buff to all Monkeys."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Gwendolin"
+    },
+    {
+      "id": "striker_jones",
+      "canonical": "Striker Jones",
+      "aliases": [
+        "striker",
+        "jones"
+      ],
+      "base_cost": 700,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Concussive Shell",
+          "summary": "Shoots a guided shell following target priority, stunning whatever Bloon it hits."
+        },
+        {
+          "level": 10,
+          "name": "Artillery Command",
+          "summary": "Resets cooldown on all Bomb Shooters and Mortar Monkeys."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Striker_Jones"
+    },
+    {
+      "id": "obyn_greenfoot",
+      "canonical": "Obyn Greenfoot",
+      "aliases": [
+        "obyn",
+        "greenfoot"
+      ],
+      "base_cost": 650,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Brambles",
+          "summary": "Creates a spiked bush on the track that can pop 50 bloons. Lasts multiple rounds if not destroyed."
+        },
+        {
+          "level": 10,
+          "name": "Wall of Trees",
+          "summary": "Summons a wall of trees across the track that destroy all Bloons that enter. When full, the trees burst into money."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Obyn_Greenfoot"
+    },
+    {
+      "id": "captain_churchill",
+      "canonical": "Captain Churchill",
+      "aliases": [
+        "churchill",
+        "tank hero"
+      ],
+      "base_cost": 2000,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Armor Piercing Shells",
+          "summary": "Shots can pop Black Bloons and do extra damage to Ceramic Bloons. Duration increases as Churchill levels."
+        },
+        {
+          "level": 10,
+          "name": "MOAB Barrage",
+          "summary": "Launches a barrage of shells at up to 10 MOAB-class Bloons on screen, dealing massive damage each time."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Captain_Churchill"
+    },
+    {
+      "id": "benjamin",
+      "canonical": "Benjamin",
+      "aliases": [
+        "ben",
+        "benji",
+        "hacker hero"
+      ],
+      "base_cost": 1200,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Biohack",
+          "summary": "4 closest Monkeys pop an extra layer per attack for 6 seconds. Affected Monkeys can't attack for 2 seconds after effect ends."
+        },
+        {
+          "level": 10,
+          "name": "Syphon Funding",
+          "summary": "Downgrades most newly spawned Bloons by 1 rank. Cash per pop from affected Bloons is double. Lasts 10 seconds."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Benjamin"
+    },
+    {
+      "id": "ezili",
+      "canonical": "Ezili",
+      "aliases": [
+        "ezi",
+        "voodoo"
+      ],
+      "base_cost": 600,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Heartstopper",
+          "summary": "slow Bloons, allow Purple popping and prevents any regrow from happening for 10 seconds."
+        },
+        {
+          "level": 10,
+          "name": "MOAB Hex",
+          "summary": "places a curse on a MOAB-Class Bloon, it takes damage every second until annihilated."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Ezili"
+    },
+    {
+      "id": "pat_fusty",
+      "canonical": "Pat Fusty",
+      "aliases": [
+        "pat",
+        "fusty",
+        "patrick"
+      ],
+      "base_cost": 800,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Rallying Roar",
+          "summary": "All nearby Monkeys can pop +1 layer for a short time."
+        },
+        {
+          "level": 10,
+          "name": "Big Squeeze",
+          "summary": "Grabs a MOAB, BFB, DDT (if visible), or ZOMG and crushes it to bits over 5 seconds."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Pat_Fusty"
+    },
+    {
+      "id": "adora",
+      "canonical": "Adora",
+      "aliases": [
+        "ado",
+        "sun queen"
+      ],
+      "base_cost": 1000,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "The Long Arm of Light",
+          "summary": "Greatly increases attack range and power for a short time & damages all Bloon Types."
+        },
+        {
+          "level": 10,
+          "name": "Ball of Light",
+          "summary": "Brings forth a powerful ball of energy to strike down the Bloons."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Adora"
+    },
+    {
+      "id": "admiral_brickell",
+      "canonical": "Admiral Brickell",
+      "aliases": [
+        "brickell",
+        "admiral",
+        "mines hero"
+      ],
+      "base_cost": 900,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Naval Tactics",
+          "summary": "greatly increases attack speed of Brickell and nearby water-based Monkeys for a short time."
+        },
+        {
+          "level": 10,
+          "name": "Mega Mine",
+          "summary": "deploys to any water area a devastating Mine that triggers on MOABs and stuns nearby Bloons. Mega Mines last 3 rounds."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Admiral_Brickell"
+    },
+    {
+      "id": "etienne",
+      "canonical": "Etienne",
+      "aliases": [
+        "eti",
+        "drone master"
+      ],
+      "base_cost": 850,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Drone Swarm Ability",
+          "summary": "Etienne launches 4 more temporary drones to wreak some Bloon popping havoc."
+        },
+        {
+          "level": 10,
+          "name": "UCAV ability",
+          "summary": "high altitude surveillance drone becomes devastating combat drone for a short time."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Etienne"
+    },
+    {
+      "id": "sauda",
+      "canonical": "Sauda",
+      "aliases": [
+        "saud",
+        "blade master"
+      ],
+      "base_cost": 600,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Leaping Sword Attack",
+          "summary": "Sauda's dramatic Lead popping leap attack slams down on her targeted Bloons."
+        },
+        {
+          "level": 10,
+          "name": "Sword Charge",
+          "summary": "Sauda slides along the whole track, devastating Bloons as she goes."
         }
       ],
       "wiki_url": "https://bloons.fandom.com/wiki/Sauda"
+    },
+    {
+      "id": "psi",
+      "canonical": "Psi",
+      "aliases": [
+        "psy",
+        "psyc",
+        "psychic"
+      ],
+      "base_cost": 1000,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Psychic Blast",
+          "summary": "Psi unleashes a wave of power that stuns nearby Bloons for a long time."
+        },
+        {
+          "level": 10,
+          "name": "Psionic Scream",
+          "summary": "Psi unleashes a silent scream that throws the Bloons into utter chaos."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Psi"
+    },
+    {
+      "id": "geraldo",
+      "canonical": "Geraldo",
+      "aliases": [
+        "ger",
+        "gera",
+        "wizard merchant"
+      ],
+      "base_cost": 750,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "See Invisibility Potion",
+          "summary": "grants short term camo detection to a Monkey Tower or Hero. Geraldo's attack range increases."
+        },
+        {
+          "level": 10,
+          "name": "Pet Rabbit",
+          "summary": "aww what a cute widdle bunny wabbit!"
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Geraldo"
+    },
+    {
+      "id": "corvus",
+      "canonical": "Corvus",
+      "aliases": [
+        "cor",
+        "raven hero"
+      ],
+      "base_cost": 1025,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Soul Harvest Ability",
+          "summary": "Harvests nearby Bloons in an instant. Learns: Echo, Haste"
+        },
+        {
+          "level": 10,
+          "name": "Dark Ritual ability",
+          "summary": "Harvest a huge number of Bloons near Corvus. Trample does more damage to more Bloons. Learns: Recovery"
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Corvus"
+    },
+    {
+      "id": "rosalia",
+      "canonical": "Rosalia",
+      "aliases": [
+        "rosa"
+      ],
+      "base_cost": 875,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Scatter missile ability",
+          "summary": "Rosalia's workshop launches a missile that rains destruction from above."
+        },
+        {
+          "level": 10,
+          "name": "Kinetic Charge Ability",
+          "summary": "Charge attaches to a Bloon, harnessing energy when the target takes damage. Then releases accumulated energy in a huge detonation."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Rosalia"
+    },
+    {
+      "id": "silas",
+      "canonical": "Silas",
+      "aliases": [
+        "si",
+        "ice hero"
+      ],
+      "base_cost": 850,
+      "description": "",
+      "abilities": [
+        {
+          "level": 3,
+          "name": "Frostbite ability",
+          "summary": "Silas can hit all Bloons while active. When hitting frozen Bloons, target takes extra damage based on remaining freeze time."
+        },
+        {
+          "level": 10,
+          "name": "Frozen Burial ability",
+          "summary": "Immediately freezes and damages all Bloons, dealing far more damage to already frozen Bloons. Then fills the track with Ice Walls."
+        }
+      ],
+      "wiki_url": "https://bloons.fandom.com/wiki/Silas"
     }
   ]
 }
