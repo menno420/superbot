@@ -1,0 +1,117 @@
+{
+  "tower_id": "monkey_village",
+  "canonical": "Monkey Village",
+  "game_version": "",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "base_cost": 1200,
+  "category": "support",
+  "paragon_cost": null,
+  "upgrades": [
+    {
+      "path": 1,
+      "tier": 1,
+      "name": "Bigger Radius",
+      "cost": 400,
+      "xp": 160
+    },
+    {
+      "path": 1,
+      "tier": 2,
+      "name": "Jungle Drums",
+      "cost": 1500,
+      "xp": 1000
+    },
+    {
+      "path": 1,
+      "tier": 3,
+      "name": "Primary Training",
+      "cost": 800,
+      "xp": 2000
+    },
+    {
+      "path": 1,
+      "tier": 4,
+      "name": "Primary Mentoring",
+      "cost": 2500,
+      "xp": 12000
+    },
+    {
+      "path": 1,
+      "tier": 5,
+      "name": "Primary Expertise",
+      "cost": 25000,
+      "xp": 32000
+    },
+    {
+      "path": 2,
+      "tier": 1,
+      "name": "Grow Blocker",
+      "cost": 250,
+      "xp": 150
+    },
+    {
+      "path": 2,
+      "tier": 2,
+      "name": "Radar Scanner",
+      "cost": 2000,
+      "xp": 2500
+    },
+    {
+      "path": 2,
+      "tier": 3,
+      "name": "Monkey Intelligence Bureau",
+      "cost": 7500,
+      "xp": 3500
+    },
+    {
+      "path": 2,
+      "tier": 4,
+      "name": "Call to Arms",
+      "cost": 20000,
+      "xp": 20000
+    },
+    {
+      "path": 2,
+      "tier": 5,
+      "name": "Homeland Defense",
+      "cost": 40000,
+      "xp": 30000
+    },
+    {
+      "path": 3,
+      "tier": 1,
+      "name": "Monkey Business",
+      "cost": 500,
+      "xp": 250
+    },
+    {
+      "path": 3,
+      "tier": 2,
+      "name": "Monkey Commerce",
+      "cost": 500,
+      "xp": 750
+    },
+    {
+      "path": 3,
+      "tier": 3,
+      "name": "Monkey Town",
+      "cost": 10000,
+      "xp": 3000
+    },
+    {
+      "path": 3,
+      "tier": 4,
+      "name": "Monkey City",
+      "cost": 3000,
+      "xp": 15500
+    },
+    {
+      "path": 3,
+      "tier": 5,
+      "name": "Monkeyopolis",
+      "cost": 5000,
+      "xp": 28000
+    }
+  ],
+  "tiers": {}
+}
