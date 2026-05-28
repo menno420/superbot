@@ -66,15 +66,30 @@ def build_tower_detail_embed(vm: TowerDetailViewModel) -> discord.Embed:
     ``response_to_embed`` helper to keep the on-screen format identical
     to ``!btd6 tower <name>``.
     """
-    from services import btd6_ai_service
+    from services import btd6_ai_service, btd6_stats_service
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_tower
+    from utils.btd6.stats_embed import format_normal_stats
 
     if vm.fact is None:
-        return response_to_embed(
+        embed = response_to_embed(
             btd6_ai_service.deterministic_answer(resolve(vm.tower_id)),
         )
-    return response_to_embed(for_tower(vm.fact, restrictions=tuple(vm.restrictions)))
+    else:
+        embed = response_to_embed(
+            for_tower(vm.fact, restrictions=tuple(vm.restrictions)),
+        )
+
+    stats = btd6_stats_service.get_tower_stats(vm.tower_id)
+    if stats is not None and stats.has_combat_stats:
+        base = stats.tier("000")
+        if base is not None:
+            embed.add_field(
+                name="📊 Base stats",
+                value=format_normal_stats(btd6_stats_service.normal_stats(base)),
+                inline=False,
+            )
+    return embed
 
 
 # ---------------------------------------------------------------------------
@@ -139,18 +154,29 @@ class _TowerSelect(discord.ui.Select):
             parent.set_vm(list_vm)
             return build_tower_list_embed(list_vm), parent
 
-        detail_view = TowerDetailView(interaction.user)
-        detail_view.set_vm(detail_vm)
-        attach_back_button(
-            detail_view,
-            label="↩ Back",
-            custom_id=f"btd6_tower_detail:back:{detail_vm.tower_id}",
-            parent_builder=_rebuild_list,
-        )
+        from views.btd6.tower_stats_view import attach_pro_stats_button
+
+        def _build_detail_view() -> TowerDetailView:
+            view = TowerDetailView(interaction.user)
+            view.set_vm(detail_vm)
+            attach_back_button(
+                view,
+                label="↩ Back",
+                custom_id=f"btd6_tower_detail:back:{detail_vm.tower_id}",
+                parent_builder=_rebuild_list,
+            )
+            attach_pro_stats_button(view, detail_vm.tower_id, _rebuild_detail)
+            return view
+
+        async def _rebuild_detail(
+            _i: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            return build_tower_detail_embed(detail_vm), _build_detail_view()
+
         await safe_edit(
             interaction,
             embed=build_tower_detail_embed(detail_vm),
-            view=detail_view,
+            view=_build_detail_view(),
         )
 
 

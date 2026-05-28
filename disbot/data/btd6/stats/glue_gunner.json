@@ -1,0 +1,1740 @@
+{
+  "tower_id": "glue_gunner",
+  "canonical": "Glue Gunner",
+  "game_version": "54.0",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "base_cost": 225,
+  "category": "primary",
+  "paragon_cost": null,
+  "upgrades": [
+    {
+      "path": 1,
+      "tier": 1,
+      "name": "Glue Soak",
+      "cost": 200,
+      "xp": 150
+    },
+    {
+      "path": 1,
+      "tier": 2,
+      "name": "Corrosive Glue",
+      "cost": 300,
+      "xp": 550
+    },
+    {
+      "path": 1,
+      "tier": 3,
+      "name": "Bloon Dissolver",
+      "cost": 2000,
+      "xp": 2500
+    },
+    {
+      "path": 1,
+      "tier": 4,
+      "name": "Bloon Liquefier",
+      "cost": 5000,
+      "xp": 9000
+    },
+    {
+      "path": 1,
+      "tier": 5,
+      "name": "The Bloon Solver",
+      "cost": 22500,
+      "xp": 37500
+    },
+    {
+      "path": 2,
+      "tier": 1,
+      "name": "Bigger Globs",
+      "cost": 100,
+      "xp": 120
+    },
+    {
+      "path": 2,
+      "tier": 2,
+      "name": "Glue Splatter",
+      "cost": 970,
+      "xp": 900
+    },
+    {
+      "path": 2,
+      "tier": 3,
+      "name": "Glue Hose",
+      "cost": 1950,
+      "xp": 2500
+    },
+    {
+      "path": 2,
+      "tier": 4,
+      "name": "Glue Strike",
+      "cost": 4000,
+      "xp": 8500
+    },
+    {
+      "path": 2,
+      "tier": 5,
+      "name": "Glue Storm",
+      "cost": 16000,
+      "xp": 25000
+    },
+    {
+      "path": 3,
+      "tier": 1,
+      "name": "Stickier Glue",
+      "cost": 280,
+      "xp": 130
+    },
+    {
+      "path": 3,
+      "tier": 2,
+      "name": "Stronger Glue",
+      "cost": 400,
+      "xp": 600
+    },
+    {
+      "path": 3,
+      "tier": 3,
+      "name": "MOAB Glue",
+      "cost": 3600,
+      "xp": 2500
+    },
+    {
+      "path": 3,
+      "tier": 4,
+      "name": "Relentless Glue",
+      "cost": 4000,
+      "xp": 8000
+    },
+    {
+      "path": 3,
+      "tier": 5,
+      "name": "Super Glue",
+      "cost": 24000,
+      "xp": 30000
+    }
+  ],
+  "tiers": {
+    "000": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-0.9, 15.74, 8.72",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "000",
+      "crosspath": "0-0-0"
+    },
+    "100": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-0.86, 15.74, 8.72",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 9999999,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "100",
+      "crosspath": "1-0-0"
+    },
+    "200": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-1.35, 14.57, 7.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 9999999,
+                  "glueLevel": 2,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                },
+                {
+                  "name": "Damage over time",
+                  "layers": 9999999,
+                  "lifespan": 11,
+                  "glueLevel": 2,
+                  "applyOnlyIfDamaged": false,
+                  "chance": 0,
+                  "damage": 1,
+                  "damage_type": "Acid",
+                  "cannot_pop": "Cannot damage Glass",
+                  "immuneBloonProperties": 64,
+                  "interval": 2,
+                  "initialDelay": 0,
+                  "triggerImmediate": false,
+                  "distributeToChildren": true
+                }
+              ],
+              "filterInvisible": true,
+              "filterGlueLevel": 2,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterGlueLevel": 2
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "200",
+      "crosspath": "2-0-0"
+    },
+    "300": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.5,
+          "eject": "-1.35, 18, 8.3",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 2,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 9999999,
+                  "glueLevel": 3,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                },
+                {
+                  "name": "Damage over time",
+                  "layers": 9999999,
+                  "lifespan": 11,
+                  "glueLevel": 3,
+                  "applyOnlyIfDamaged": false,
+                  "chance": 0,
+                  "damage": 1,
+                  "damage_type": "Acid",
+                  "cannot_pop": "Cannot damage Glass",
+                  "immuneBloonProperties": 64,
+                  "interval": 0.5,
+                  "initialDelay": 0,
+                  "triggerImmediate": false,
+                  "distributeToChildren": true,
+                  "damageModifierForCeramic": 2
+                }
+              ],
+              "filterInvisible": true,
+              "filterGlueLevel": 3,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterGlueLevel": 3
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "300",
+      "crosspath": "3-0-0"
+    },
+    "400": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.5,
+          "eject": "-1.4, 20, 9.2",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 2,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 9999999,
+                  "glueLevel": 4,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                },
+                {
+                  "name": "Damage over time",
+                  "layers": 9999999,
+                  "lifespan": 11,
+                  "glueLevel": 4,
+                  "applyOnlyIfDamaged": false,
+                  "chance": 0,
+                  "damage": 1,
+                  "damage_type": "Acid",
+                  "cannot_pop": "Cannot damage Glass",
+                  "immuneBloonProperties": 64,
+                  "interval": 0.1,
+                  "initialDelay": 0,
+                  "triggerImmediate": false,
+                  "distributeToChildren": true,
+                  "damageModifierForCeramic": 2
+                }
+              ],
+              "filterInvisible": true,
+              "filterGlueLevel": 4,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Puddle",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 6,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "filterOutBoss": true,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rounds": 0,
+              "lifespan": 7.7
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterGlueLevel": 4
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "400",
+      "crosspath": "4-0-0"
+    },
+    "500": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.25,
+          "eject": "-1.4, 21.96, 7.31",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 4,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 9999999,
+                  "glueLevel": 6,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": true,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                },
+                {
+                  "name": "Damage over time",
+                  "layers": 9999999,
+                  "lifespan": 11,
+                  "glueLevel": 6,
+                  "applyOnlyIfDamaged": false,
+                  "chance": 0,
+                  "damage": 1,
+                  "damage_type": "Acid",
+                  "cannot_pop": "Cannot damage Glass",
+                  "immuneBloonProperties": 64,
+                  "interval": 0.1,
+                  "initialDelay": 0,
+                  "triggerImmediate": false,
+                  "distributeToChildren": false,
+                  "damageModifierForCeramic": 8,
+                  "damageModifierForMoabs": 4
+                }
+              ],
+              "angle": 10,
+              "offset": 0,
+              "count": 2,
+              "filterInvisible": true,
+              "filterGlueLevel": 6,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Splat",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 12,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 9999999,
+                  "glueLevel": 6,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": true,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                },
+                {
+                  "name": "Damage over time",
+                  "layers": 9999999,
+                  "lifespan": 11,
+                  "glueLevel": 6,
+                  "applyOnlyIfDamaged": false,
+                  "chance": 0,
+                  "damage": 1,
+                  "damage_type": "Acid",
+                  "cannot_pop": "Cannot damage Glass",
+                  "immuneBloonProperties": 64,
+                  "interval": 0.1,
+                  "initialDelay": 0,
+                  "triggerImmediate": false,
+                  "distributeToChildren": false,
+                  "damageModifierForCeramic": 8,
+                  "damageModifierForMoabs": 4
+                }
+              ],
+              "filterInvisible": true,
+              "filterGlueLevel": 6,
+              "damageModifierForCeramicOrMoabs": 1,
+              "rounds": 0,
+              "lifespan": 0
+            },
+            {
+              "name": "Puddle",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 6,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "filterOutBoss": true,
+              "damage": 15,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rounds": 0,
+              "lifespan": 7.7
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterGlueLevel": 6
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "500",
+      "crosspath": "5-0-0"
+    },
+    "010": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-0.9, 15.74, 8.72",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 2,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "010",
+      "crosspath": "0-1-0"
+    },
+    "020": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-0.9, 16.74, 8.75",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 4,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Splat",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 13,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "020",
+      "crosspath": "0-2-0"
+    },
+    "030": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.34,
+          "eject": "-2, 11.55, 8.26",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 4,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Splat",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 13,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "030",
+      "crosspath": "0-3-0"
+    },
+    "040": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.34,
+          "eject": "-1.1, 12.29, 8.82",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 4,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Splat",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 13,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Ability",
+          "cooldown": 30,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 2,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 9999999,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 999,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Glue",
+                      "layers": 3,
+                      "glueLevel": 1,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": true,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Glue",
+                      "lifespan": 11,
+                      "multiplier": 0.5,
+                      "lifespanForMoabs": 0
+                    },
+                    {
+                      "name": "Bonus damage",
+                      "collisionPass": 0,
+                      "mutationId": "DamageBoost",
+                      "lifespan": 11,
+                      "perHitDamageAddition": 2,
+                      "layers": 6,
+                      "isUnique": true,
+                      "lastAppliesFirst": false,
+                      "cascadeMutators": true,
+                      "overlayType": "GlueBasic"
+                    },
+                    {
+                      "name": "Remove immunities",
+                      "layers": 6,
+                      "mutationId": "EmbrilttlementDamageBoostSharp",
+                      "lifespan": 11
+                    }
+                  ],
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "",
+              "range": 9999,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0
+            }
+          ],
+          "lifespan": 0.05
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "040",
+      "crosspath": "0-4-0"
+    },
+    "050": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.34,
+          "eject": "-1.05, 15.61, 8.73",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 4,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Splat",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 13,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 11,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Ability",
+          "cooldown": 40,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 9999999,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 999,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Glue",
+                      "layers": 3,
+                      "glueLevel": 1,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": true,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Glue",
+                      "lifespan": 11,
+                      "multiplier": 0.5,
+                      "lifespanForMoabs": 0
+                    },
+                    {
+                      "name": "Bonus damage",
+                      "collisionPass": 0,
+                      "mutationId": "DamageBoost",
+                      "lifespan": 11,
+                      "perHitDamageAddition": 2,
+                      "layers": 6,
+                      "isUnique": true,
+                      "lastAppliesFirst": false,
+                      "cascadeMutators": true,
+                      "overlayType": "GlueBasic"
+                    },
+                    {
+                      "name": "Remove immunities",
+                      "layers": 6,
+                      "mutationId": "EmbrilttlementDamageBoostSharp",
+                      "lifespan": 11
+                    }
+                  ],
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "",
+              "range": 9999,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0
+            }
+          ],
+          "lifespan": 20
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeClose": true,
+      "targetTypeLast": true,
+      "targetTypeStrong": true,
+      "code": "050",
+      "crosspath": "0-5-0"
+    },
+    "001": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-0.98, 15.74, 8.72",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 24,
+                  "multiplier": 0.5,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "001",
+      "crosspath": "0-0-1"
+    },
+    "002": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-0.98, 17.3, 7.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 1,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 24,
+                  "multiplier": 0.25,
+                  "lifespanForMoabs": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutMoabs": true,
+              "filterGlueLevel": 1,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterOutMoabs": true,
+          "filterGlueLevel": 1,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "002",
+      "crosspath": "0-0-2"
+    },
+    "003": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-2.3, 13.27, 8.68",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 5,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 24,
+                  "multiplier": 0.25,
+                  "multiplierForMoabs": 2.5,
+                  "lifespanForMoabs": 9,
+                  "multiplierForBad": 1.6,
+                  "lifespanForBad": 0,
+                  "lifespanForMiniboss": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterGlueLevel": 5,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterGlueLevel": 5,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "003",
+      "crosspath": "0-0-3"
+    },
+    "004": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0.01, 11.42, 8.97",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 7,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 24,
+                  "multiplier": 0.25,
+                  "multiplierForMoabs": 2.5,
+                  "lifespanForMoabs": 12,
+                  "multiplierForBad": 1.6,
+                  "lifespanForBad": 0,
+                  "lifespanForMiniboss": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterGlueLevel": 7,
+              "filterOutBad": true,
+              "filterOutBoss": true,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Splat on pop",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 12,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "layers": 9999999,
+                  "glueLevel": 0,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Stun:Weak",
+                  "lifespan": 1,
+                  "multiplier": 0,
+                  "lifespanForMoab": 0.25,
+                  "lifespanForDdt": 0.2
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutBfb": true,
+              "filterOutZomg": true,
+              "filterOutBoss": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterGlueLevel": 7,
+          "filterOutBad": true,
+          "filterOutBoss": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "004",
+      "crosspath": "0-0-4"
+    },
+    "005": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0.1, 14.8, 9.09",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Glue",
+                  "layers": 3,
+                  "glueLevel": 7,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": true,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Glue",
+                  "lifespan": 24,
+                  "multiplier": 0.25,
+                  "multiplierForMoabs": 2.5,
+                  "lifespanForMoabs": 18,
+                  "multiplierForBad": 1.6,
+                  "lifespanForBad": 0,
+                  "lifespanForMiniboss": 0
+                },
+                {
+                  "name": "Super Glue",
+                  "layers": 3,
+                  "glueLevel": 0,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": true,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "SuperGlue",
+                  "multiplier": 0,
+                  "lifespan": 24,
+                  "multiplierForMoab": 0,
+                  "lifespanForMoab": 5,
+                  "multiplierForDdt": 0,
+                  "lifespanForDdt": 5,
+                  "multiplierForBfb": 0.05,
+                  "lifespanForBfb": 2,
+                  "multiplierForZomg": 0.1,
+                  "lifespanForZomg": 1
+                },
+                {
+                  "name": "Super Glue damage",
+                  "layers": 1,
+                  "lifespan": 0.95,
+                  "glueLevel": 0,
+                  "applyOnlyIfDamaged": false,
+                  "chance": 0,
+                  "filterOutNonMoabs": true,
+                  "damage": 30,
+                  "damage_type": "Acid",
+                  "cannot_pop": "Cannot damage Glass",
+                  "immuneBloonProperties": 64,
+                  "interval": 1,
+                  "initialDelay": 0,
+                  "triggerImmediate": true,
+                  "distributeToChildren": true
+                }
+              ],
+              "filterInvisible": true,
+              "filterGlueLevel": 8,
+              "damage": 1,
+              "maxDamage": 1,
+              "damage_type": "Acid",
+              "cannot_pop": "Cannot damage Glass",
+              "immuneBloonProperties": 64,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.43
+            },
+            {
+              "name": "Splat on pop",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 12,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "layers": 9999999,
+                  "glueLevel": 0,
+                  "isUnique": true,
+                  "dontRefreshDuration": false,
+                  "cascadeMutators": false,
+                  "removeMutatorIfNotMatching": false,
+                  "matchLayersWithDamage": false,
+                  "mutationId": "Stun",
+                  "lifespan": 1,
+                  "multiplier": 0
+                }
+              ],
+              "filterInvisible": true,
+              "filterOutBoss": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true,
+          "filterGlueLevel": 9
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "005",
+      "crosspath": "0-0-5"
+    }
+  }
+}

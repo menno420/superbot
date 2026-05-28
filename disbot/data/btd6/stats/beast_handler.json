@@ -1,0 +1,1616 @@
+{
+  "tower_id": "beast_handler",
+  "canonical": "Beast Handler",
+  "game_version": "54.0",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "base_cost": 250,
+  "category": "support",
+  "paragon_cost": null,
+  "upgrades": [
+    {
+      "path": 1,
+      "tier": 1,
+      "name": "Piranha",
+      "cost": 160,
+      "xp": 250
+    },
+    {
+      "path": 1,
+      "tier": 2,
+      "name": "Barracuda",
+      "cost": 810,
+      "xp": 500
+    },
+    {
+      "path": 1,
+      "tier": 3,
+      "name": "Great White",
+      "cost": 2010,
+      "xp": 1000
+    },
+    {
+      "path": 1,
+      "tier": 4,
+      "name": "Orca",
+      "cost": 12500,
+      "xp": 4250
+    },
+    {
+      "path": 1,
+      "tier": 5,
+      "name": "Megalodon",
+      "cost": 45000,
+      "xp": 100000
+    },
+    {
+      "path": 2,
+      "tier": 1,
+      "name": "Microraptor",
+      "cost": 175,
+      "xp": 250
+    },
+    {
+      "path": 2,
+      "tier": 2,
+      "name": "Adasaurus",
+      "cost": 830,
+      "xp": 500
+    },
+    {
+      "path": 2,
+      "tier": 3,
+      "name": "Velociraptor",
+      "cost": 2065,
+      "xp": 1000
+    },
+    {
+      "path": 2,
+      "tier": 4,
+      "name": "Tyrannosaurus Rex",
+      "cost": 9500,
+      "xp": 5000
+    },
+    {
+      "path": 2,
+      "tier": 5,
+      "name": "Giganotosaurus",
+      "cost": 60000,
+      "xp": 90000
+    },
+    {
+      "path": 3,
+      "tier": 1,
+      "name": "Gyrfalcon",
+      "cost": 190,
+      "xp": 250
+    },
+    {
+      "path": 3,
+      "tier": 2,
+      "name": "Horned Owl",
+      "cost": 860,
+      "xp": 550
+    },
+    {
+      "path": 3,
+      "tier": 3,
+      "name": "Golden Eagle",
+      "cost": 2120,
+      "xp": 1000
+    },
+    {
+      "path": 3,
+      "tier": 4,
+      "name": "Giant Condor",
+      "cost": 9000,
+      "xp": 5500
+    },
+    {
+      "path": 3,
+      "tier": 5,
+      "name": "Pouākai",
+      "cost": 30000,
+      "xp": 110000
+    }
+  ],
+  "tiers": {
+    "000": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 20,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.4,
+          "eject": "14, 4, 7",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterAllExceptTarget": true
+            },
+            {
+              "name": "Splash",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 12,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rounds": 0,
+              "lifespan": 0.4
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 20,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "000",
+      "crosspath": "0-0-0"
+    },
+    "100": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": false,
+          "placeableOnWater": true,
+          "placeableOnTrack": false,
+          "range": 30,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.6,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 1,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Shatter",
+                  "cannot_pop": "Cannot damage Lead",
+                  "immuneBloonProperties": 1,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 30,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.2063,
+          "pierceRange": 8,
+          "damageRange": 2,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "100",
+      "crosspath": "1-0-0"
+    },
+    "200": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": false,
+          "placeableOnWater": true,
+          "placeableOnTrack": false,
+          "range": 35,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.6,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 4,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Knockback",
+                      "multiplier": -0.5,
+                      "multiplierForLead": -0.25,
+                      "multiplierForCeramic": -0.25,
+                      "multiplierForMoabs": 1,
+                      "mutationId": "Knockback",
+                      "lifespan": 0.2
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Shatter",
+                  "cannot_pop": "Cannot damage Lead",
+                  "immuneBloonProperties": 1,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 35,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.2063,
+          "pierceRange": 8,
+          "damageRange": 2,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "200",
+      "crosspath": "2-0-0"
+    },
+    "300": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": false,
+          "placeableOnWater": true,
+          "placeableOnTrack": false,
+          "range": 40,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1.1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Knockback",
+                      "multiplier": -0.5,
+                      "multiplierForLead": -0.25,
+                      "multiplierForCeramic": -0.25,
+                      "multiplierForMoabs": 1,
+                      "mutationId": "Knockback",
+                      "lifespan": 0.2
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                },
+                {
+                  "name": "Thrash projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Knockback",
+                      "multiplier": -0.5,
+                      "multiplierForLead": -0.25,
+                      "multiplierForCeramic": -0.25,
+                      "multiplierForMoabs": 1,
+                      "mutationId": "Knockback",
+                      "lifespan": 0.2
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 40,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "thrashingProjectileRate": 0.6,
+              "rateMin": 1.1
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.38,
+          "pierceRange": 20,
+          "damageRange": 24,
+          "thrashKnockbackLifetimeRange": 0.2,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "300",
+      "crosspath": "3-0-0"
+    },
+    "400": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": false,
+          "placeableOnWater": true,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1.1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 20,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 24,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Knockback",
+                      "multiplier": -0.5,
+                      "multiplierForLead": -0.25,
+                      "multiplierForCeramic": -0.25,
+                      "multiplierForMoabs": 1,
+                      "mutationId": "Knockback",
+                      "lifespan": 0.2
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                },
+                {
+                  "name": "Thrash projectile",
+                  "pierce": 20,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 24,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Knockback",
+                      "multiplier": -1,
+                      "multiplierForLead": -0.75,
+                      "multiplierForCeramic": -0.75,
+                      "multiplierForMoabs": 0.5,
+                      "mutationId": "Knockback",
+                      "lifespan": 0.3
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 30,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "thrashingProjectileRate": 0.6,
+              "rateMin": 1.1
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.38,
+          "pierceRange": 40,
+          "damageRange": 60,
+          "thrashKnockbackLifetimeRange": 0.3,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "400",
+      "crosspath": "4-0-0"
+    },
+    "500": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": false,
+          "placeableOnWater": true,
+          "placeableOnTrack": false,
+          "range": 60,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1.1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 50,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 48,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Knockback",
+                      "multiplier": -0.5,
+                      "multiplierForLead": -0.25,
+                      "multiplierForCeramic": -0.25,
+                      "multiplierForMoabs": 1,
+                      "mutationId": "Knockback",
+                      "lifespan": 0.2
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                },
+                {
+                  "name": "Thrash projectile",
+                  "pierce": 50,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 48,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Knockback",
+                      "multiplier": -1,
+                      "multiplierForLead": -0.75,
+                      "multiplierForCeramic": -0.75,
+                      "multiplierForMoabs": -0.5,
+                      "mutationId": "Knockback",
+                      "lifespan": 0.3
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 600,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 1,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "thrashingProjectileRate": 0.6,
+              "rateMin": 1.1
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.38,
+          "pierceRange": 40,
+          "damageRange": 1200,
+          "thrashKnockbackLifetimeRange": 0.3,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "500",
+      "crosspath": "5-0-0"
+    },
+    "010": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 20,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1,
+              "eject": "0, 0, 7",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "filterAllExceptTarget": true
+                },
+                {
+                  "name": "Splash",
+                  "pierce": 5,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 10,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Sharp",
+                  "cannot_pop": "Cannot damage Lead or frozen",
+                  "immuneBloonProperties": 17,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 20,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.3439,
+          "pierceRange": 12,
+          "damageRange": 2,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "010",
+      "crosspath": "0-1-0"
+    },
+    "020": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 20,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1,
+              "eject": "0, 0, 7",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "filterAllExceptTarget": true
+                },
+                {
+                  "name": "Splash",
+                  "pierce": 8,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForCeramic": 1,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 20,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.3439,
+          "pierceRange": 12,
+          "damageRange": 2,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "020",
+      "crosspath": "0-2-0"
+    },
+    "030": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 24,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1,
+              "eject": "0, 0, 7",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "filterAllExceptTarget": true
+                },
+                {
+                  "name": "Splash",
+                  "pierce": 12,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 18,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForStunned": 3,
+                  "damageModifierForCeramic": 4,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 24,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.3439,
+          "pierceRange": 14,
+          "damageRange": 8,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 3,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "030",
+      "crosspath": "0-3-0"
+    },
+    "040": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 30,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1,
+              "eject": "0, 0, 7",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "filterAllExceptTarget": true
+                },
+                {
+                  "name": "Splash",
+                  "pierce": 22,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 18,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "damage": 20,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForStunned": 8,
+                  "damageModifierForCeramic": 5,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 30,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "abilities": [
+            {
+              "name": "Ability",
+              "cooldown": 40,
+              "maxActivationsPerRound": 9999999,
+              "canActivateBetweenRounds": false,
+              "restrictAbilityAfterMaxRoundTimer": false,
+              "projectiles": [
+                {
+                  "name": "Stomp projectile",
+                  "pierce": 400,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 100,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3,
+                      "lifespanForBfb": 3,
+                      "lifespanForZomg": 2,
+                      "lifespanForDdt": 2
+                    }
+                  ],
+                  "filterInvisible": false,
+                  "damage": 150,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ]
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.3439,
+          "pierceRange": 27,
+          "damageRange": 40,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 3,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "040",
+      "crosspath": "0-4-0"
+    },
+    "050": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 1.25,
+              "eject": "0, 0, 7",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "filterAllExceptTarget": true
+                },
+                {
+                  "name": "Splash",
+                  "pierce": 44,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 24,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "damage": 750,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": true,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForStunned": 250,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "abilities": [
+            {
+              "name": "Ability",
+              "cooldown": 25,
+              "maxActivationsPerRound": 9999999,
+              "canActivateBetweenRounds": false,
+              "restrictAbilityAfterMaxRoundTimer": false,
+              "projectiles": [
+                {
+                  "name": "Stomp projectile",
+                  "pierce": 600,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2000,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 12,
+                      "multiplier": 0,
+                      "lifespanForMoab": 8,
+                      "lifespanForBfb": 6,
+                      "lifespanForZomg": 4,
+                      "lifespanForDdt": 4
+                    }
+                  ],
+                  "filterInvisible": false,
+                  "damage": 300,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ]
+            }
+          ],
+          "footprintRadius": 2,
+          "doesntBlockTowerPlacement": false,
+          "cooldownScaleRange": 0.3439,
+          "pierceRange": 66,
+          "damageRange": 800,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 3,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 0,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "050",
+      "crosspath": "0-5-0"
+    },
+    "001": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 60,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Grab",
+              "count": 1,
+              "targetTypes": "",
+              "range": 60,
+              "attackThroughWalls": true,
+              "fireWithoutTarget": true,
+              "framesBeforeRetarget": 0,
+              "projectiles": [
+                {
+                  "name": "Carry projectile",
+                  "pierce": 3,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 10,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "piercePenaltyForLead": 1,
+                  "piercePenaltyForCeramic": 4,
+                  "piercePenaltyForMoab": 0,
+                  "piercePenaltyForBfb": 0,
+                  "piercePenaltyForZomg": 0,
+                  "piercePenaltyForDdt": 0
+                }
+              ],
+              "rate": 1,
+              "initialDamage": 1,
+              "initialDamageImmuneBloonProperties": 17,
+              "grapplingDamage": 1,
+              "grapplingDamageImmuneBloonProperties": 17,
+              "grapplingDamageRate": 1,
+              "damageModifierForRegrow": 1,
+              "filterInvisible": true,
+              "filterBloonIfDamageType": "Lead",
+              "filterOutMoabs": true,
+              "filterOutCeramic": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "speed": 80,
+          "turningSpeed": 720,
+          "cooldownScaleRange": 0.4,
+          "pierceRange": 6,
+          "damageRange": 1,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 40,
+          "targetTypeGyrfalcon": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "001",
+      "crosspath": "0-0-1"
+    },
+    "002": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 60,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Grab",
+              "count": 1,
+              "targetTypes": "",
+              "range": 60,
+              "attackThroughWalls": true,
+              "fireWithoutTarget": true,
+              "framesBeforeRetarget": 0,
+              "projectiles": [
+                {
+                  "name": "Carry projectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 20,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": false,
+                  "piercePenaltyForLead": 1,
+                  "piercePenaltyForCeramic": 4,
+                  "piercePenaltyForMoab": 0,
+                  "piercePenaltyForBfb": 0,
+                  "piercePenaltyForZomg": 0,
+                  "piercePenaltyForDdt": 0
+                }
+              ],
+              "rate": 1,
+              "initialDamage": 1,
+              "initialDamageImmuneBloonProperties": 17,
+              "grapplingDamage": 1,
+              "grapplingDamageImmuneBloonProperties": 17,
+              "grapplingDamageRate": 1,
+              "damageModifierForRegrow": 1,
+              "filterInvisible": false,
+              "filterBloonIfDamageType": "Lead",
+              "filterOutMoabs": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "speed": 80,
+          "turningSpeed": 720,
+          "cooldownScaleRange": 0.4,
+          "pierceRange": 12,
+          "damageRange": 1,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 40,
+          "targetTypeGyrfalcon": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "002",
+      "crosspath": "0-0-2"
+    },
+    "003": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 60,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Grab",
+              "count": 1,
+              "targetTypes": "",
+              "range": 60,
+              "attackThroughWalls": true,
+              "fireWithoutTarget": true,
+              "framesBeforeRetarget": 0,
+              "projectiles": [
+                {
+                  "name": "Carry projectile",
+                  "pierce": 30,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 25,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": false,
+                  "piercePenaltyForLead": 0,
+                  "piercePenaltyForCeramic": 1,
+                  "piercePenaltyForMoab": 1089,
+                  "piercePenaltyForBfb": 0,
+                  "piercePenaltyForZomg": 0,
+                  "piercePenaltyForDdt": 0
+                }
+              ],
+              "rate": 1,
+              "initialDamage": 1,
+              "initialDamageImmuneBloonProperties": 17,
+              "grapplingDamage": 1,
+              "grapplingDamageImmuneBloonProperties": 17,
+              "grapplingDamageRate": 0.5,
+              "damageModifierForRegrow": 1,
+              "filterInvisible": false,
+              "filterBloonIfDamageType": "Lead",
+              "filterOutMoabs": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "speed": 80,
+          "turningSpeed": 720,
+          "cooldownScaleRange": 0.52,
+          "pierceRange": 60,
+          "damageRange": 2,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 40,
+          "targetTypeGyrfalcon": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "003",
+      "crosspath": "0-0-3"
+    },
+    "004": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 60,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Grab",
+              "count": 1,
+              "targetTypes": "",
+              "range": 60,
+              "attackThroughWalls": true,
+              "fireWithoutTarget": true,
+              "framesBeforeRetarget": 0,
+              "projectiles": [
+                {
+                  "name": "Carry projectile",
+                  "pierce": 30,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 25,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": false,
+                  "piercePenaltyForLead": 0,
+                  "piercePenaltyForCeramic": 1,
+                  "piercePenaltyForMoab": 14,
+                  "piercePenaltyForBfb": 29,
+                  "piercePenaltyForZomg": 59,
+                  "piercePenaltyForDdt": 29
+                }
+              ],
+              "rate": 1,
+              "initialDamage": 2,
+              "initialDamageImmuneBloonProperties": 17,
+              "grapplingDamage": 2,
+              "grapplingDamageImmuneBloonProperties": 17,
+              "grapplingDamageRate": 0.5,
+              "damageModifierForMoabs": 11,
+              "damageModifierForRegrow": 1,
+              "filterInvisible": false,
+              "filterBloonIfDamageType": "Lead",
+              "filterOutBad": true,
+              "filterOutZomg": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "speed": 80,
+          "turningSpeed": 720,
+          "cooldownScaleRange": 0.52,
+          "pierceRange": 60,
+          "damageRange": 4,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 40,
+          "targetTypeGyrfalcon": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "004",
+      "crosspath": "0-0-4"
+    },
+    "005": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "BeastHandler",
+      "subtowers": [
+        {
+          "name": "Beast",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 60,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Grab",
+              "count": 1,
+              "targetTypes": "",
+              "range": 60,
+              "attackThroughWalls": true,
+              "fireWithoutTarget": true,
+              "framesBeforeRetarget": 0,
+              "projectiles": [
+                {
+                  "name": "Carry projectile",
+                  "pierce": 150,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 45,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": false,
+                  "piercePenaltyForLead": 0,
+                  "piercePenaltyForCeramic": 0,
+                  "piercePenaltyForMoab": 14,
+                  "piercePenaltyForBfb": 29,
+                  "piercePenaltyForZomg": 59,
+                  "piercePenaltyForDdt": 29
+                }
+              ],
+              "rate": 0.8,
+              "initialDamage": 10,
+              "initialDamageImmuneBloonProperties": 0,
+              "grapplingDamage": 10,
+              "grapplingDamageImmuneBloonProperties": 0,
+              "grapplingDamageRate": 0.5,
+              "damageModifierForMoabs": 80,
+              "damageModifierForRegrow": 1,
+              "filterInvisible": false,
+              "filterBloonIfDamageType": "Lead"
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "speed": 80,
+          "turningSpeed": 720,
+          "cooldownScaleRange": 0.52,
+          "pierceRange": 300,
+          "damageRange": 80,
+          "thrashKnockbackLifetimeRange": 0,
+          "stunBonusDivideMicroraptor": 0,
+          "damageRangeGrappleGyrfalcon": 0,
+          "speedRangeGyrfalcon": 40,
+          "targetTypeGyrfalcon": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "005",
+      "crosspath": "0-0-5"
+    }
+  }
+}

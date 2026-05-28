@@ -1,0 +1,117 @@
+{
+  "tower_id": "banana_farm",
+  "canonical": "Banana Farm",
+  "game_version": "",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "base_cost": 1250,
+  "category": "support",
+  "paragon_cost": null,
+  "upgrades": [
+    {
+      "path": 1,
+      "tier": 1,
+      "name": "Increased Production",
+      "cost": 500,
+      "xp": 200
+    },
+    {
+      "path": 1,
+      "tier": 2,
+      "name": "Greater Production",
+      "cost": 600,
+      "xp": 750
+    },
+    {
+      "path": 1,
+      "tier": 3,
+      "name": "Banana Plantation",
+      "cost": 3000,
+      "xp": 3000
+    },
+    {
+      "path": 1,
+      "tier": 4,
+      "name": "Banana Research Facility",
+      "cost": 19000,
+      "xp": 20000
+    },
+    {
+      "path": 1,
+      "tier": 5,
+      "name": "Banana Central",
+      "cost": 115000,
+      "xp": 50000
+    },
+    {
+      "path": 2,
+      "tier": 1,
+      "name": "Long Life Bananas",
+      "cost": 300,
+      "xp": 200
+    },
+    {
+      "path": 2,
+      "tier": 2,
+      "name": "Valuable Bananas",
+      "cost": 800,
+      "xp": 1000
+    },
+    {
+      "path": 2,
+      "tier": 3,
+      "name": "Monkey Bank",
+      "cost": 3650,
+      "xp": 3500
+    },
+    {
+      "path": 2,
+      "tier": 4,
+      "name": "IMF Loan",
+      "cost": 7200,
+      "xp": 20000
+    },
+    {
+      "path": 2,
+      "tier": 5,
+      "name": "Monkey-Nomics",
+      "cost": 100000,
+      "xp": 50000
+    },
+    {
+      "path": 3,
+      "tier": 1,
+      "name": "EZ Collect",
+      "cost": 250,
+      "xp": 200
+    },
+    {
+      "path": 3,
+      "tier": 2,
+      "name": "Banana Salvage",
+      "cost": 400,
+      "xp": 950
+    },
+    {
+      "path": 3,
+      "tier": 3,
+      "name": "Marketplace",
+      "cost": 2700,
+      "xp": 3200
+    },
+    {
+      "path": 3,
+      "tier": 4,
+      "name": "Central Market",
+      "cost": 15000,
+      "xp": 20000
+    },
+    {
+      "path": 3,
+      "tier": 5,
+      "name": "Monkey Wall Street",
+      "cost": 70000,
+      "xp": 50000
+    }
+  ],
+  "tiers": {}
+}

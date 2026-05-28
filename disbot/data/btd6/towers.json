@@ -1,6 +1,6 @@
 {
   "data_version": "1.0",
-  "game_version": "54.3",
+  "game_version": "54.0",
   "source": "hand-curated from public BTD6 reference data",
   "towers": [
     {
@@ -39,25 +39,25 @@
       },
       "upgrade_costs": {
         "top": [
+          140,
           200,
-          300,
-          700,
+          320,
           1800,
-          14000
+          15000
         ],
         "mid": [
-          130,
-          150,
-          550,
-          4500,
-          65000
+          100,
+          190,
+          450,
+          7200,
+          45000
         ],
         "bot": [
-          100,
+          90,
           200,
-          850,
-          2250,
-          35000
+          575,
+          2050,
+          21500
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Dart_Monkey"
@@ -98,25 +98,25 @@
       },
       "upgrade_costs": {
         "top": [
-          175,
-          350,
-          2500,
-          22500,
-          30000
+          200,
+          280,
+          600,
+          2000,
+          32500
         ],
         "mid": [
-          100,
-          200,
-          3000,
-          10000,
-          40000
+          175,
+          250,
+          1250,
+          4200,
+          35000
         ],
         "bot": [
           100,
-          250,
-          2250,
-          6500,
-          38000
+          300,
+          1300,
+          2700,
+          50000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Boomerang_Monkey"
@@ -157,25 +157,25 @@
       },
       "upgrade_costs": {
         "top": [
-          300,
-          750,
-          5000,
-          5500,
-          50000
+          250,
+          650,
+          1100,
+          2800,
+          55000
         ],
         "mid": [
-          350,
-          1200,
-          2750,
-          11000,
-          24000
+          250,
+          400,
+          1000,
+          3450,
+          26000
         ],
         "bot": [
           200,
-          600,
-          3000,
-          10000,
-          43000
+          300,
+          700,
+          2500,
+          30000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Bomb_Shooter"
@@ -216,25 +216,25 @@
       },
       "upgrade_costs": {
         "top": [
-          175,
-          350,
-          1500,
-          16000,
-          50000
+          150,
+          300,
+          600,
+          3500,
+          45500
         ],
         "mid": [
-          200,
-          300,
-          1650,
-          4500,
-          40000
+          100,
+          225,
+          550,
+          2700,
+          15000
         ],
         "bot": [
-          100,
-          150,
-          750,
-          3250,
-          45000
+          110,
+          110,
+          450,
+          3200,
+          20000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Tack_Shooter"
@@ -274,25 +274,25 @@
       },
       "upgrade_costs": {
         "top": [
-          200,
-          300,
-          2200,
-          8000,
-          45000
+          150,
+          350,
+          1500,
+          2300,
+          28000
         ],
         "mid": [
           200,
-          500,
-          2200,
-          8500,
-          32000
+          300,
+          2750,
+          4000,
+          21000
         ],
         "bot": [
           150,
-          250,
-          3000,
-          4500,
-          60000
+          200,
+          1900,
+          2750,
+          30000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Ice_Monkey"
@@ -332,28 +332,87 @@
       },
       "upgrade_costs": {
         "top": [
-          150,
+          200,
           300,
-          2800,
-          4500,
-          38000
+          2000,
+          5000,
+          22500
         ],
         "mid": [
           100,
-          250,
-          1200,
-          3200,
-          18000
+          970,
+          1950,
+          4000,
+          16000
         ],
         "bot": [
-          80,
-          150,
-          3000,
-          7200,
-          14000
+          280,
+          400,
+          3600,
+          4000,
+          24000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Glue_Gunner"
+    },
+    {
+      "id": "desperado",
+      "canonical": "Desperado",
+      "aliases": [
+        "des",
+        "cowboy",
+        "gunslinger"
+      ],
+      "category": "primary",
+      "base_cost": 300,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Quickdraw",
+          "Standoff",
+          "Big Iron",
+          "Twin Sixes",
+          "The Blazing Sun"
+        ],
+        "mid": [
+          "Eagle Eye",
+          "Bullseye",
+          "Deadeye",
+          "Bounty Hunter",
+          "Golden Justice"
+        ],
+        "bot": [
+          "Wanderer",
+          "Nomad",
+          "Enforcer",
+          "Avenger",
+          "The Desert Phantom"
+        ]
+      },
+      "upgrade_costs": {
+        "top": [
+          200,
+          200,
+          1200,
+          5800,
+          16500
+        ],
+        "mid": [
+          150,
+          350,
+          3000,
+          6000,
+          42000
+        ],
+        "bot": [
+          220,
+          280,
+          2100,
+          9500,
+          31000
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Desperado"
     },
     {
       "id": "sniper_monkey",
@@ -390,24 +449,24 @@
       "upgrade_costs": {
         "top": [
           350,
-          850,
-          3200,
-          9000,
-          55000
+          1300,
+          2200,
+          6300,
+          32000
         ],
         "mid": [
-          300,
-          800,
-          3200,
-          14500,
-          21000
+          250,
+          450,
+          2100,
+          7600,
+          12000
         ],
         "bot": [
-          250,
-          350,
-          3000,
-          7500,
-          55000
+          450,
+          450,
+          2700,
+          4100,
+          14900
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Sniper_Monkey"
@@ -436,7 +495,7 @@
           "Heat-tipped Darts",
           "Ballistic Missile",
           "First Strike Capability",
-          "Pre-Emptive Strike"
+          "Pre-emptive Strike"
         ],
         "bot": [
           "Twin Guns",
@@ -448,25 +507,25 @@
       },
       "upgrade_costs": {
         "top": [
-          300,
-          400,
-          3200,
-          13000,
-          32000
+          130,
+          500,
+          700,
+          2400,
+          28000
         ],
         "mid": [
-          275,
+          450,
           300,
-          3000,
-          14000,
-          48000
+          1350,
+          13000,
+          29000
         ],
         "bot": [
-          350,
-          500,
-          1400,
-          5250,
-          52000
+          450,
+          1000,
+          1100,
+          2500,
+          25000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Sub"
@@ -508,25 +567,25 @@
       },
       "upgrade_costs": {
         "top": [
-          400,
-          400,
-          4500,
-          15000,
-          60000
+          275,
+          425,
+          3350,
+          8000,
+          26000
         ],
         "mid": [
-          450,
-          700,
-          3000,
-          11000,
-          55000
+          550,
+          500,
+          900,
+          3900,
+          27000
         ],
         "bot": [
           200,
-          400,
-          2000,
-          15000,
-          30000
+          350,
+          2400,
+          5500,
+          23000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Buccaneer"
@@ -567,25 +626,25 @@
       },
       "upgrade_costs": {
         "top": [
-          500,
-          800,
-          3200,
-          14000,
-          70000
+          450,
+          550,
+          1000,
+          3300,
+          42500
         ],
         "mid": [
-          400,
-          700,
-          5000,
-          19000,
-          65000
+          200,
+          350,
+          900,
+          16000,
+          26000
         ],
         "bot": [
           500,
-          500,
-          4600,
-          27000,
-          150000
+          550,
+          2550,
+          23400,
+          85000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Ace"
@@ -599,7 +658,7 @@
         "helipilot"
       ],
       "category": "military",
-      "base_cost": 1600,
+      "base_cost": 1500,
       "description": "",
       "upgrade_paths": {
         "top": [
@@ -626,25 +685,25 @@
       },
       "upgrade_costs": {
         "top": [
-          400,
-          700,
-          3000,
-          20000,
-          85000
+          800,
+          500,
+          1850,
+          19600,
+          45000
         ],
         "mid": [
-          250,
-          350,
+          300,
+          600,
           3500,
-          12000,
-          100000
+          9500,
+          30000
         ],
         "bot": [
-          400,
-          600,
-          2500,
-          32000,
-          90000
+          250,
+          350,
+          3400,
+          8500,
+          35000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Heli_Pilot"
@@ -657,7 +716,7 @@
         "mortars"
       ],
       "category": "military",
-      "base_cost": 750,
+      "base_cost": 600,
       "description": "",
       "upgrade_paths": {
         "top": [
@@ -684,25 +743,25 @@
       },
       "upgrade_costs": {
         "top": [
-          350,
-          600,
-          1400,
-          11000,
-          50000
+          300,
+          500,
+          825,
+          7000,
+          36000
         ],
         "mid": [
-          350,
+          400,
           500,
-          2000,
-          9000,
-          65000
+          900,
+          6500,
+          38000
         ],
         "bot": [
-          550,
-          300,
-          2500,
-          6500,
-          70000
+          200,
+          400,
+          1100,
+          9500,
+          40000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Mortar_Monkey"
@@ -743,25 +802,25 @@
       },
       "upgrade_costs": {
         "top": [
-          800,
-          2500,
-          11000,
-          45000,
-          200000
+          300,
+          900,
+          3000,
+          11750,
+          75000
         ],
         "mid": [
-          500,
-          2000,
-          9000,
-          18000,
-          130000
+          250,
+          950,
+          4500,
+          5000,
+          65000
         ],
         "bot": [
-          500,
-          750,
-          3500,
-          22000,
-          85000
+          150,
+          1200,
+          3000,
+          12000,
+          58000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Dartling_Gunner"
@@ -801,25 +860,25 @@
       },
       "upgrade_costs": {
         "top": [
-          250,
-          700,
-          1650,
-          8000,
+          175,
+          450,
+          1450,
+          10000,
           32000
         ],
         "mid": [
-          400,
-          900,
-          3200,
-          17500,
-          60000
+          300,
+          800,
+          3300,
+          6000,
+          50000
         ],
         "bot": [
-          200,
-          250,
-          2500,
-          6500,
-          55000
+          300,
+          300,
+          1500,
+          2800,
+          26500
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Wizard_Monkey"
@@ -860,25 +919,25 @@
       },
       "upgrade_costs": {
         "top": [
-          3000,
-          4000,
-          25000,
+          2000,
+          2500,
+          20000,
           100000,
-          600000
+          500000
         ],
         "mid": [
-          1200,
-          2000,
-          15000,
-          50000,
-          150000
+          1500,
+          1900,
+          7500,
+          25000,
+          70000
         ],
         "bot": [
-          2000,
           3000,
-          8000,
-          50000,
-          200000
+          1200,
+          5600,
+          55555,
+          165650
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Super_Monkey"
@@ -919,25 +978,25 @@
       },
       "upgrade_costs": {
         "top": [
-          300,
-          500,
-          2000,
-          7000,
-          32000
+          350,
+          350,
+          900,
+          2750,
+          35000
         ],
         "mid": [
           250,
           400,
-          3000,
-          8000,
-          75000
+          1200,
+          5200,
+          22000
         ],
         "bot": [
-          250,
-          400,
-          2000,
-          6500,
-          50000
+          300,
+          450,
+          2250,
+          5000,
+          40000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Ninja_Monkey"
@@ -971,7 +1030,7 @@
         "bot": [
           "Faster Throwing",
           "Acid Pool",
-          "Lead To Gold",
+          "Lead to Gold",
           "Rubber to Gold",
           "Bloon Master Alchemist"
         ]
@@ -979,24 +1038,24 @@
       "upgrade_costs": {
         "top": [
           250,
-          650,
-          2000,
-          8000,
-          60000
+          350,
+          1400,
+          2850,
+          48000
         ],
         "mid": [
-          100,
-          500,
-          3500,
-          15000,
+          250,
+          475,
+          2800,
+          4200,
           45000
         ],
         "bot": [
-          300,
-          500,
-          2500,
-          3000,
-          52000
+          650,
+          450,
+          1000,
+          2750,
+          40000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Alchemist"
@@ -1036,28 +1095,87 @@
       },
       "upgrade_costs": {
         "top": [
-          300,
-          1100,
+          350,
+          850,
+          1700,
           4500,
-          20000,
-          65000
+          60000
         ],
         "mid": [
-          300,
-          700,
-          4500,
-          7500,
-          45000
+          250,
+          350,
+          1050,
+          4900,
+          35000
         ],
         "bot": [
-          200,
-          400,
-          2000,
-          5000,
-          75000
+          100,
+          300,
+          600,
+          2350,
+          45000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Druid"
+    },
+    {
+      "id": "mermonkey",
+      "canonical": "Mermonkey",
+      "aliases": [
+        "merm",
+        "mer monkey",
+        "fishy"
+      ],
+      "category": "magic",
+      "base_cost": 300,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Trident Efficiency",
+          "Trident Swiftness",
+          "Abyss Dweller",
+          "Abyssal Warrior",
+          "Lord of the Abyss"
+        ],
+        "mid": [
+          "Sharper Prongs",
+          "Tidal Chill",
+          "Riptide Champion",
+          "Arctic Knight",
+          "Popseidon"
+        ],
+        "bot": [
+          "Echosense Precision",
+          "Echosense Network",
+          "Alluring Melody",
+          "Symphonic Resonance",
+          "The Final Harmonic"
+        ]
+      },
+      "upgrade_costs": {
+        "top": [
+          150,
+          250,
+          1800,
+          4200,
+          23000
+        ],
+        "mid": [
+          200,
+          225,
+          2000,
+          8000,
+          52000
+        ],
+        "bot": [
+          200,
+          280,
+          2000,
+          7600,
+          25000
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Mermonkey"
     },
     {
       "id": "banana_farm",
@@ -1096,25 +1214,25 @@
       },
       "upgrade_costs": {
         "top": [
-          300,
-          800,
-          2000,
-          10000,
-          90000
+          500,
+          600,
+          3000,
+          19000,
+          115000
         ],
         "mid": [
           300,
-          500,
-          3000,
-          7500,
+          800,
+          3650,
+          7200,
           100000
         ],
         "bot": [
-          100,
-          500,
-          3500,
-          10000,
-          200000
+          250,
+          400,
+          2700,
+          15000,
+          70000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Banana_Farm"
@@ -1155,24 +1273,24 @@
       },
       "upgrade_costs": {
         "top": [
-          300,
-          500,
-          2000,
-          18000,
-          95000
+          800,
+          600,
+          2300,
+          9500,
+          125000
         ],
         "mid": [
-          300,
-          400,
-          2000,
-          10000,
-          55000
+          600,
+          800,
+          2500,
+          7000,
+          41000
         ],
         "bot": [
-          200,
-          300,
-          1200,
-          5000,
+          150,
+          400,
+          1300,
+          3600,
           30000
         ]
       },
@@ -1201,7 +1319,7 @@
           "Grow Blocker",
           "Radar Scanner",
           "Monkey Intelligence Bureau",
-          "Call To Arms",
+          "Call to Arms",
           "Homeland Defense"
         ],
         "bot": [
@@ -1214,25 +1332,25 @@
       },
       "upgrade_costs": {
         "top": [
-          300,
+          400,
+          1500,
           800,
           2500,
-          12000,
-          40000
+          25000
         ],
         "mid": [
-          150,
-          500,
-          7000,
+          250,
+          2000,
+          7500,
           20000,
-          110000
+          40000
         ],
         "bot": [
-          200,
-          700,
-          6000,
-          22000,
-          150000
+          500,
+          500,
+          10000,
+          3000,
+          5000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Monkey_Village"
@@ -1273,28 +1391,87 @@
       },
       "upgrade_costs": {
         "top": [
-          400,
           500,
-          1250,
-          11000,
-          55000
+          400,
+          575,
+          2500,
+          32000
         ],
         "mid": [
-          200,
-          300,
-          2800,
-          12000,
-          120000
+          250,
+          350,
+          900,
+          13500,
+          72000
         ],
         "bot": [
-          150,
-          200,
-          1000,
-          5000,
-          35000
+          450,
+          220,
+          450,
+          3600,
+          45000
         ]
       },
       "wiki_url": "https://bloons.fandom.com/wiki/Engineer_Monkey"
+    },
+    {
+      "id": "beast_handler",
+      "canonical": "Beast Handler",
+      "aliases": [
+        "beast",
+        "handler",
+        "bh"
+      ],
+      "category": "support",
+      "base_cost": 250,
+      "description": "",
+      "upgrade_paths": {
+        "top": [
+          "Piranha",
+          "Barracuda",
+          "Great White",
+          "Orca",
+          "Megalodon"
+        ],
+        "mid": [
+          "Microraptor",
+          "Adasaurus",
+          "Velociraptor",
+          "Tyrannosaurus Rex",
+          "Giganotosaurus"
+        ],
+        "bot": [
+          "Gyrfalcon",
+          "Horned Owl",
+          "Golden Eagle",
+          "Giant Condor",
+          "Pouākai"
+        ]
+      },
+      "upgrade_costs": {
+        "top": [
+          160,
+          810,
+          2010,
+          12500,
+          45000
+        ],
+        "mid": [
+          175,
+          830,
+          2065,
+          9500,
+          60000
+        ],
+        "bot": [
+          190,
+          860,
+          2120,
+          9000,
+          30000
+        ]
+      },
+      "wiki_url": "https://bloons.fandom.com/wiki/Beast_Handler"
     }
   ]
 }

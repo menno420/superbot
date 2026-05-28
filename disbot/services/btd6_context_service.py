@@ -325,7 +325,70 @@ def _render_fixture_tower(entry: Any) -> list[str]:
             ),
         )
 
+    lines.extend(_render_tower_stats(getattr(entry, "id", ""), canonical))
     return lines
+
+
+def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
+    """Per-tier headline stats as ``[btd6_tower_stats normal]`` grounding lines.
+
+    Tagged ``normal`` so the assistant can distinguish the glanceable stats it
+    has here from the deeper Pro breakdown surfaced in the tower UI. Returns
+    nothing for economy towers (no combat stats) or towers without a stats file.
+    """
+    from services import btd6_stats_service
+
+    stats = btd6_stats_service.get_tower_stats(tower_id)
+    if stats is None or not stats.has_combat_stats:
+        return []
+
+    lines: list[str] = []
+    for code in stats.tier_codes():
+        tier = stats.tier(code)
+        if tier is None:
+            continue
+        ns = btd6_stats_service.normal_stats(tier)
+        bits: list[str] = []
+        if ns.damage is not None:
+            dmg = f"{_big(ns.damage)} dmg"
+            if ns.damage_type:
+                dmg += f" ({ns.damage_type})"
+            bits.append(dmg)
+        if ns.pierce is not None:
+            bits.append(f"{_big(ns.pierce)} pierce")
+        if ns.cooldown is not None:
+            bits.append(f"{ns.cooldown}s cooldown")
+        if ns.specials:
+            bits.append("; ".join(ns.specials))
+        if not bits:
+            continue
+        crosspath = "-".join(code)
+        name = "Base" if code == "000" else _tier_name(stats, code)
+        lines.append(
+            _cap(
+                f"[btd6_tower_stats normal] {canonical} {name} ({crosspath}): "
+                f"{_sanitise(', '.join(bits))} (source: bloonswiki)",
+            ),
+        )
+    return lines
+
+
+def _big(value: int) -> str:
+    """Render BTD6's 9,999,999 'infinite' sentinel as ∞."""
+    return "∞" if value >= 9_999_999 else str(value)
+
+
+def _tier_name(stats: Any, code: str) -> str:
+    digits = [int(c) for c in code]
+    path, tier = next((i + 1, d) for i, d in enumerate(digits) if d)
+    return next(
+        (
+            str(u.get("name", ""))
+            for u in stats.upgrades
+            if u.get("path") == path and u.get("tier") == tier
+        ),
+        code,
+    )
 
 
 def _render_fixture_hero(entry: Any) -> list[str]:

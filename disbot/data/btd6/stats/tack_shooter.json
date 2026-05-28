@@ -1,0 +1,1172 @@
+{
+  "tower_id": "tack_shooter",
+  "canonical": "Tack Shooter",
+  "game_version": "52.2",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "base_cost": 260,
+  "category": "primary",
+  "paragon_cost": 200000,
+  "upgrades": [
+    {
+      "path": 1,
+      "tier": 1,
+      "name": "Faster Shooting",
+      "cost": 150,
+      "xp": 150
+    },
+    {
+      "path": 1,
+      "tier": 2,
+      "name": "Even Faster Shooting",
+      "cost": 300,
+      "xp": 550
+    },
+    {
+      "path": 1,
+      "tier": 3,
+      "name": "Hot Shots",
+      "cost": 600,
+      "xp": 2400
+    },
+    {
+      "path": 1,
+      "tier": 4,
+      "name": "Ring of Fire",
+      "cost": 3500,
+      "xp": 9500
+    },
+    {
+      "path": 1,
+      "tier": 5,
+      "name": "Inferno Ring",
+      "cost": 45500,
+      "xp": 32500
+    },
+    {
+      "path": 2,
+      "tier": 1,
+      "name": "Long Range Tacks",
+      "cost": 100,
+      "xp": 140
+    },
+    {
+      "path": 2,
+      "tier": 2,
+      "name": "Super Range Tacks",
+      "cost": 225,
+      "xp": 500
+    },
+    {
+      "path": 2,
+      "tier": 3,
+      "name": "Blade Shooter",
+      "cost": 550,
+      "xp": 2300
+    },
+    {
+      "path": 2,
+      "tier": 4,
+      "name": "Blade Maelstrom",
+      "cost": 2700,
+      "xp": 9000
+    },
+    {
+      "path": 2,
+      "tier": 5,
+      "name": "Super Maelstrom",
+      "cost": 15000,
+      "xp": 28000
+    },
+    {
+      "path": 3,
+      "tier": 1,
+      "name": "More Tacks",
+      "cost": 110,
+      "xp": 150
+    },
+    {
+      "path": 3,
+      "tier": 2,
+      "name": "Even More Tacks",
+      "cost": 110,
+      "xp": 490
+    },
+    {
+      "path": 3,
+      "tier": 3,
+      "name": "Tack Sprayer",
+      "cost": 450,
+      "xp": 2450
+    },
+    {
+      "path": 3,
+      "tier": 4,
+      "name": "Overdrive",
+      "cost": 3200,
+      "xp": 8750
+    },
+    {
+      "path": 3,
+      "tier": 5,
+      "name": "The Tack Zone",
+      "cost": 20000,
+      "xp": 26500
+    }
+  ],
+  "tiers": {
+    "000": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 5.11",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "000",
+      "crosspath": "0-0-0"
+    },
+    "100": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.84,
+          "eject": "0, 0, 5.11",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "100",
+      "crosspath": "1-0-0"
+    },
+    "200": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.63,
+          "eject": "0, 0, 5.11",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "200",
+      "crosspath": "2-0-0"
+    },
+    "300": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.63,
+          "eject": "0, 0, 6.27",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": -1,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "300",
+      "crosspath": "3-0-0"
+    },
+    "400": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.315,
+          "eject": "0, 0, 10.07",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 30,
+              "maxPierce": -1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "filterBloonIfDamageType": "Purple",
+              "damage": 5,
+              "maxDamage": -1,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rounds": 0,
+              "lifespan": 0.05
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "400",
+      "crosspath": "4-0-0"
+    },
+    "500": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 34.5,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.1,
+          "eject": "0, 0, 14.08",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 45,
+              "maxPierce": -1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 36.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "filterBloonIfDamageType": "Purple",
+              "damage": 8,
+              "maxDamage": -1,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 4,
+              "rounds": 0,
+              "lifespan": 0.05
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Close",
+          "range": 34.5,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "Meteor",
+          "rate": 4,
+          "eject": "0, 0, 14.08",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "filterAllExceptTarget": true,
+              "damage": 700,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "seekDistance": 9999999,
+              "trackNewTargets": true,
+              "constantlyAquireNewTarget": false,
+              "maxSeekAngle": 360,
+              "ignoreSeekAngle": false,
+              "overrideRotation": false,
+              "useLifetimeAsDistance": false,
+              "turnRate": 130,
+              "speed": 100,
+              "lifespan": 20,
+              "rounds": 0
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "effects": [
+                {
+                  "name": "Damage over time",
+                  "layers": 9999999,
+                  "lifespan": 4.1,
+                  "glueLevel": 0,
+                  "applyOnlyIfDamaged": true,
+                  "chance": 0,
+                  "damage": 50,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "interval": 1,
+                  "initialDelay": 0,
+                  "triggerImmediate": false,
+                  "distributeToChildren": true
+                }
+              ],
+              "filterInvisible": true,
+              "damage": 50,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 9999999,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "500",
+      "crosspath": "5-0-0"
+    },
+    "010": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 26.91,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 5.11",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 187.2,
+              "lifespan": 0.234
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 26.91,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "010",
+      "crosspath": "0-1-0"
+    },
+    "020": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 30.82,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 7.98",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 4,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 187.2,
+              "lifespan": 0.2631
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 30.82,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "020",
+      "crosspath": "0-2-0"
+    },
+    "030": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 7.75",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Shatter",
+              "cannot_pop": "Cannot damage Lead",
+              "immuneBloonProperties": 1,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 187.2,
+              "lifespan": 0.3419
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "030",
+      "crosspath": "0-3-0"
+    },
+    "040": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 11.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": -1,
+              "damage_type": "Shatter",
+              "cannot_pop": "Cannot damage Lead",
+              "immuneBloonProperties": 1,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 187.2,
+              "lifespan": 0.3419
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Ability",
+          "cooldown": 20,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.045,
+              "eject": "0, 0, 11.9",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 100,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "angle": 180,
+                  "offset": 0,
+                  "count": 2,
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": -1,
+                  "damage_type": "Shatter",
+                  "cannot_pop": "Cannot damage Lead",
+                  "immuneBloonProperties": 1,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 150,
+                  "lifespan": 2
+                }
+              ],
+              "count": 1,
+              "targetTypes": "",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "rotateRate": "-360 deg/s"
+            }
+          ],
+          "lifespan": 3
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "040",
+      "crosspath": "0-4-0"
+    },
+    "050": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 46,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 13.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 5,
+              "maxDamage": -1,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 5,
+              "speed": 187.2,
+              "lifespan": 0.3419
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 46,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Ability",
+          "cooldown": 20,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.045,
+              "eject": "0, 0, 13.9",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 300,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "angle": 360,
+                  "offset": 0,
+                  "count": 4,
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": -1,
+                  "damage_type": "Shatter",
+                  "cannot_pop": "Cannot damage Lead",
+                  "immuneBloonProperties": 1,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForCeramic": 8,
+                  "speed": 150,
+                  "lifespan": 2
+                }
+              ],
+              "count": 1,
+              "targetTypes": "",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "rotateRate": "-360 deg/s"
+            }
+          ],
+          "lifespan": 9
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "050",
+      "crosspath": "0-5-0"
+    },
+    "001": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 5.11",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 10,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "001",
+      "crosspath": "0-0-1"
+    },
+    "002": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 5.11",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 12,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "002",
+      "crosspath": "0-0-2"
+    },
+    "003": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.12,
+          "eject": "0, 0, 4.7",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 2,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 16,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "003",
+      "crosspath": "0-0-3"
+    },
+    "004": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 23,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.3733,
+          "eject": "0, 0, 12.22",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 2,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 16,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 160,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 23,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "004",
+      "crosspath": "0-0-4"
+    },
+    "005": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 30,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.224,
+          "eject": "0, 0, 14.08",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 2,
+              "maxPierce": -1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "angle": 360,
+              "offset": 0,
+              "count": 32,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": -1,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 1,
+              "speed": 240,
+              "lifespan": 0.2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 30,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 6,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeClose": true,
+      "code": "005",
+      "crosspath": "0-0-5"
+    }
+  }
+}
