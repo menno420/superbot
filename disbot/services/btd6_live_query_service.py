@@ -13,12 +13,13 @@ without learning the raw fact-store schema. Architecture-clean:
 
 from __future__ import annotations
 
-import json
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Literal
+
+from utils.btd6.body_coerce import coerce_body as _coerce_body
 
 logger = logging.getLogger("bot.services.btd6_live_query")
 
@@ -97,23 +98,6 @@ _CHOSEN_PRIMARY_HERO_KEY = "ChosenPrimaryHero"
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
-
-
-def _coerce_body(value: Any) -> dict[str, Any]:
-    """Normalise ``body_json`` to a dict.
-
-    Legacy double-encoded rows round-trip as JSON strings; decode them
-    on read so the facade stays working until those rows age out.
-    """
-    if isinstance(value, dict):
-        return value
-    if isinstance(value, str):
-        try:
-            decoded = json.loads(value)
-        except (ValueError, TypeError):
-            return {}
-        return decoded if isinstance(decoded, dict) else {}
-    return {}
 
 
 def _is_active_window(body: dict[str, Any]) -> bool:

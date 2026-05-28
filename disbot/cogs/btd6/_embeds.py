@@ -13,79 +13,13 @@ stays small enough to satisfy the S4.6 cog-size invariant.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
 
 import discord
 
 from services import btd6_knowledge_service
 from services.btd6_resolver_service import resolve
-
-
-def response_to_embed(response: Any) -> discord.Embed:
-    """Convert a :class:`BTD6Response` into a Discord embed."""
-    color = {
-        "high": discord.Color.green(),
-        "medium": discord.Color.gold(),
-        "low": discord.Color.light_grey(),
-    }.get(response.confidence, discord.Color.light_grey())
-    embed = discord.Embed(
-        title=response.title,
-        description=response.short_answer,
-        color=color,
-    )
-    if response.why_it_matters:
-        embed.add_field(
-            name="Why it matters",
-            value=response.why_it_matters,
-            inline=False,
-        )
-    if response.recommended_options:
-        embed.add_field(
-            name="Recommended options",
-            value="\n".join(f"• {opt}" for opt in response.recommended_options),
-            inline=False,
-        )
-    if response.common_mistakes:
-        embed.add_field(
-            name="Common mistakes",
-            value="\n".join(f"• {m}" for m in response.common_mistakes),
-            inline=False,
-        )
-    if response.version_sensitivity:
-        embed.add_field(
-            name="Version sensitivity",
-            value=response.version_sensitivity,
-            inline=False,
-        )
-    live_facts = getattr(response, "live_facts", ()) or ()
-    if live_facts:
-        value = "\n".join(f"• {fact}" for fact in live_facts)
-        if len(value) > 1024:
-            kept: list[str] = []
-            running = 0
-            for fact in live_facts:
-                line = f"• {fact}"
-                if running + len(line) + 1 > 990:
-                    break
-                kept.append(line)
-                running += len(line) + 1
-            dropped = len(live_facts) - len(kept)
-            value = "\n".join(kept) + f"\n… ({dropped} more)"
-        embed.add_field(name="Live data", value=value, inline=False)
-    if response.follow_up:
-        embed.add_field(name="Follow-up", value=response.follow_up, inline=False)
-    if response.sources:
-        embed.set_footer(text="Sources: " + " · ".join(response.sources))
-    return embed
-
-
-_BUCKET_EMOJI = {
-    "fresh": "🟢",
-    "aging": "🟡",
-    "stale": "🔴",
-    "never": "⚪",
-}
-
+from utils.btd6.freshness_render import BUCKET_EMOJI as _BUCKET_EMOJI
+from utils.btd6.response_embed import response_to_embed
 
 # Useful-first display order for the Live facts block. Kinds not in
 # this tuple are appended alphabetically — operators see the most
@@ -212,7 +146,9 @@ async def build_status_embed() -> discord.Embed:
         value=_format_live_facts_value(summaries),
         inline=False,
     )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_status:global")
 
 
 def build_diagnostics_embed() -> discord.Embed:
@@ -245,7 +181,9 @@ def build_diagnostics_embed() -> discord.Embed:
         str(r.round_number) for r in btd6_knowledge_service.list_rounds()
     )
     embed.add_field(name="Rounds tracked", value=rounds, inline=False)
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_diagnostics:catalog")
 
 
 def build_towers_embed() -> discord.Embed:
@@ -259,7 +197,9 @@ def build_towers_embed() -> discord.Embed:
             value=f"Cost: {tower.base_cost} • Category: {tower.category}",
             inline=True,
         )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_tower:catalog")
 
 
 def build_modes_embed() -> discord.Embed:
@@ -276,7 +216,9 @@ def build_modes_embed() -> discord.Embed:
             ),
             inline=False,
         )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_diagnostics:modes_catalog")
 
 
 def build_heroes_embed() -> discord.Embed:
@@ -291,7 +233,9 @@ def build_heroes_embed() -> discord.Embed:
             value=f"Cost: {hero.base_cost} • {hero.description[:80]}",
             inline=False,
         )
-    return embed
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_hero:catalog")
 
 
 def build_test_intent_embed(text: str) -> discord.Embed:

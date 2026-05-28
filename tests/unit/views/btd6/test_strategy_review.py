@@ -443,7 +443,8 @@ async def test_refresh_failure_after_successful_mutation_uses_followup(monkeypat
 
 async def test_missing_strategy_refresh_uses_followup(monkeypatch):
     """If the strategy row is gone post-mutation, the user gets a
-    clean ephemeral acknowledgement via followup.send."""
+    clean ephemeral acknowledgement via followup.send.
+    """
 
     async def _ok(strategy_id, **kw):
         result = MagicMock()

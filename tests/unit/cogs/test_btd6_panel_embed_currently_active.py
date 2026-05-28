@@ -125,3 +125,52 @@ async def test_panel_embed_keeps_seed_reference_block(monkeypatch):
     value = ref_field.value or ""
     assert "towers" in value.lower()
     assert "heroes" in value.lower()
+
+
+# ---------------------------------------------------------------------------
+# PR 1 — per-kind freshness badges in 'Currently active'
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_panel_embed_renders_white_circle_for_never_kinds(monkeypatch):
+    """Every missing kind leads with ⚪ (never fetched)."""
+    from utils.db import btd6_sources as btd6_db
+
+    async def _empty(kinds):
+        return {}
+
+    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+
+    embed = await build_btd6_panel_embed()
+    active_field = next(f for f in embed.fields if "Currently active" in (f.name or ""))
+    value = active_field.value or ""
+    # All 5 kinds render with ⚪ since none have facts.
+    assert value.count("⚪") == 5
+
+
+@pytest.mark.asyncio
+async def test_panel_embed_renders_fresh_badge_for_recent_fact(monkeypatch):
+    """A recently-fetched row leads with 🟢."""
+    from utils.db import btd6_sources as btd6_db
+
+    async def _rows(kinds):
+        return {
+            "btd6_race": _fact_row(
+                entity_kind="btd6_race",
+                entity_key="Reversed_Loop",
+                name="Reversed Loop",
+                end_ms=_now_ms(48),
+            ),
+        }
+
+    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _rows)
+
+    embed = await build_btd6_panel_embed()
+    active_field = next(f for f in embed.fields if "Currently active" in (f.name or ""))
+    value = active_field.value or ""
+    # Race kind has a recent fetch → 🟢. Other four kinds → ⚪.
+    assert "🟢" in value
+    assert value.count("⚪") == 4
+    # Existing layout invariants still hold.
+    assert "Reversed Loop" in value

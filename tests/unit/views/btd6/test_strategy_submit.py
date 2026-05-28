@@ -83,7 +83,8 @@ async def test_submit_calls_chokepoint(monkeypatch):
 @pytest.mark.asyncio
 async def test_submit_requires_guild_context():
     """The guild-context check is synchronous and runs BEFORE defer,
-    so it still uses interaction.response.send_message."""
+    so it still uses interaction.response.send_message.
+    """
     modal = StrategySubmitModal()
     _set_inputs(modal, title="x", summary="y", map="", mode="", hero="")
     interaction = _interaction(guild_id=0)
@@ -100,7 +101,8 @@ async def test_submit_requires_guild_context():
 @pytest.mark.asyncio
 async def test_submit_surfaces_validation_error(monkeypatch):
     """Validation errors come out via safe_followup (post-defer),
-    surfacing the typed exc message but not the class name."""
+    surfacing the typed exc message but not the class name.
+    """
 
     async def _submit(**_kw):
         raise btd6_strategy_mutation.InvalidStrategyValueError("missing field")
