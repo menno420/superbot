@@ -123,12 +123,19 @@ def looks_like_audit_question(text: str) -> bool:
 
 
 def resolve_user_tier(member: object) -> str:
-    """Map a discord.Member to one of {user, moderator, administrator}.
+    """Map a discord.Member to one of {user, moderator, administrator, server_owner}.
 
-    Defaults to 'user' for DMs / webhooks / missing perms. PR1 does
-    not resolve trusted / staff / owner from Discord permissions, so
-    commands at those tiers are always hidden from the catalog.
+    Checks guild ownership first so a server owner who also has the
+    ``administrator`` permission is surfaced as ``server_owner`` (the
+    more specific tier). Defaults to 'user' for DMs / webhooks /
+    missing perms.
     """
+    guild = getattr(member, "guild", None)
+    if guild is not None:
+        owner_id = getattr(guild, "owner_id", None)
+        member_id = getattr(member, "id", None)
+        if owner_id is not None and member_id is not None and owner_id == member_id:
+            return "server_owner"
     perms = getattr(member, "guild_permissions", None)
     if perms is None:
         return "user"
@@ -137,6 +144,18 @@ def resolve_user_tier(member: object) -> str:
     if getattr(perms, "manage_guild", False):
         return "moderator"
     return "user"
+
+
+def _server_owner_identity_block() -> BotKnowledgeBlock:
+    """Inform the AI that the current message sender is the server owner."""
+    return BotKnowledgeBlock(
+        kind="bot_user_identity",
+        text=(
+            "The person asking this question is the owner of this Discord server "
+            "and the operator of this bot. They have full administrative access "
+            "and may ask about bot internals, configuration, or data."
+        ),
+    )
 
 
 async def gather(
@@ -150,6 +169,8 @@ async def gather(
 ) -> tuple[BotKnowledgeBlock, ...]:
     """Compose every applicable bot-knowledge block for one mention."""
     blocks: list[BotKnowledgeBlock] = []
+    if user_tier == "server_owner":
+        blocks.append(_server_owner_identity_block())
     if looks_like_command_question(user_text):
         block = _command_catalog_block(user_tier)
         if block is not None:
