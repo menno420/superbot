@@ -398,56 +398,59 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
 async def build(message_text: str) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
-    The flow is: resolver → queries → fact_store.fetch_for_intent +
-    PR-E live entity lookup → tower/hero active-event restrictions →
-    sanitised rendering with provenance. The instruction service wraps
-    the resulting tuple as untrusted data, so adversarial body text
-    reaches the LLM only inside the data envelope.
+    Three independent passes, each isolated so one failure cannot
+    suppress the others:
 
-    When the DB has no rows for a resolved tower or hero entity the
-    context falls back to the JSON fixture files (btd6_data_service)
-    so cost, category, and upgrade/ability data always reach the LLM.
+    1. Resolver (sync, no DB) — extracts towers/heroes/maps/modes from
+       the text.
+    2. DB-backed facts — live event rows from ``btd6_facts`` +
+       active-event restriction lines.  Skipped silently when the DB is
+       unavailable.
+    3. Fixture fallback (always) — injects cost / upgrade / ability data
+       from the JSON fixture files for every resolved tower/hero entity.
+       This pass is deliberately OUTSIDE the DB try/except so a missing
+       or misconfigured ``btd6_facts`` table never suppresses it.
     """
     facts: list[str] = []
     confidence = 0.0
     source_summary = _FALLBACK_SOURCE_SUMMARY
+
+    # Pass 1: resolve intent (synchronous, no DB required).
+    intent = None
     try:
-        from services import btd6_fact_store, btd6_resolver_service
+        from services import btd6_resolver_service
 
         intent = btd6_resolver_service.resolve(message_text)
         confidence = float(getattr(intent, "confidence", 0.0) or 0.0)
-        queries = _intent_to_queries(intent)
-        rows = await btd6_fact_store.fetch_for_intent(queries) if queries else []
-        # PR-E: also surface live-entity facts (race / boss / CT /
-        # odyssey / challenge / event / leaderboard).
-        live_rows = await _fetch_live_entity_rows(intent)
-        rows = rows + live_rows
-        for row in rows:
-            facts.append(_render_fact(row))
-        # Fixture fallback: when the DB has no rows for a resolved
-        # tower/hero, inject static data from the JSON fixture files
-        # so cost and upgrade/ability info always reach the LLM.
-        db_entity_keys = {(r.get("entity_kind"), r.get("entity_key")) for r in rows}
-        has_db_rows = bool(db_entity_keys - {(None, None)})
-        if not has_db_rows or any(
-            (
-                f"btd6_{ek}",
-                str(getattr(e, "id", "")),
-            )
-            not in db_entity_keys
-            for ek, entities in (
-                ("tower", getattr(intent, "towers", ())),
-                ("hero", getattr(intent, "heroes", ())),
-            )
-            for e in (entities or ())
-        ):
-            facts.extend(_fixture_facts_for_intent(intent))
-        # PR 2: tower/hero-specific active-event restriction lines.
-        facts.extend(await _restriction_lines_for_intent(intent))
-        if facts:
-            source_summary = _DEFAULT_SOURCE_SUMMARY
     except Exception as exc:  # noqa: BLE001 — defensive
-        logger.debug("btd6_context_service: grounding unavailable (%s)", exc)
+        logger.debug("btd6_context_service: resolver unavailable (%s)", exc)
+
+    if intent is not None:
+        # Pass 2: DB-backed live facts + active-event restrictions.
+        try:
+            from services import btd6_fact_store
+
+            queries = _intent_to_queries(intent)
+            rows = await btd6_fact_store.fetch_for_intent(queries) if queries else []
+            # PR-E: race / boss / CT / odyssey / challenge / event /
+            # leaderboard facts.
+            live_rows = await _fetch_live_entity_rows(intent)
+            rows = rows + live_rows
+            for row in rows:
+                facts.append(_render_fact(row))
+            # PR 2: tower/hero active-event restriction lines.
+            facts.extend(await _restriction_lines_for_intent(intent))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug("btd6_context_service: db grounding unavailable (%s)", exc)
+
+        # Pass 3: fixture fallback — always runs so cost, category,
+        # and upgrade/ability data reach the LLM even when the DB has
+        # no rows for tower/hero entities (the common state before live
+        # ingestion populates btd6_facts).
+        facts.extend(_fixture_facts_for_intent(intent))
+
+    if facts:
+        source_summary = _DEFAULT_SOURCE_SUMMARY
     return BTD6Context(
         facts=tuple(facts),
         source_summary=source_summary,

@@ -276,11 +276,86 @@ async def _source_status_block() -> BotKnowledgeBlock | None:
     return BotKnowledgeBlock(kind="bot_btd6_source_status", text="\n".join(lines))
 
 
+# ---------------------------------------------------------------------------
+# BTD6 catalog block
+# ---------------------------------------------------------------------------
+
+_CATALOG_TERMS: tuple[str, ...] = (
+    "list all",
+    "list every",
+    "all towers",
+    "all heroes",
+    "all the towers",
+    "all the heroes",
+    "what do you know",
+    "what data do you have",
+    "what files",
+    "what information do you have",
+    "what can you tell me",
+    "what towers",
+    "what heroes",
+    "your data",
+    "your files",
+    "your knowledge",
+    "show me all",
+    "every tower",
+    "every hero",
+)
+
+
+def looks_like_btd6_catalog_question(text: str) -> bool:
+    """True when the message asks for a list or inventory of BTD6 data."""
+    if not text:
+        return False
+    lowered = text.lower()
+    return any(t in lowered for t in _CATALOG_TERMS)
+
+
+def _btd6_catalog_block() -> BotKnowledgeBlock | None:
+    """Compact tower + hero catalog from the fixture JSON files."""
+    try:
+        from services import btd6_data_service
+
+        dataset = btd6_data_service.get_dataset()
+    except Exception:  # noqa: BLE001 — defensive
+        return None
+
+    if not dataset.towers and not dataset.heroes:
+        return None
+
+    lines: list[str] = [
+        f"BTD6 data available (game version {dataset.game_version}):",
+    ]
+
+    # Group towers by category.
+    by_cat: dict[str, list[str]] = {}
+    for t in dataset.towers:
+        entry = f"{t.canonical} (cost: {t.base_cost})"
+        by_cat.setdefault(t.category, []).append(entry)
+    for cat, entries in sorted(by_cat.items()):
+        lines.append(f"  {cat.title()} towers: {', '.join(entries)}")
+
+    # Heroes.
+    if dataset.heroes:
+        hero_parts = [f"{h.canonical} (cost: {h.base_cost})" for h in dataset.heroes]
+        lines.append(f"  Heroes: {', '.join(hero_parts)}")
+
+    lines.append(
+        "Each tower has upgrade path names; each hero has ability names. "
+        "Ask about a specific tower or hero for full details.",
+    )
+
+    text = "\n".join(lines)
+    if len(text) > 3000:
+        text = text[:2999] + "…"
+    return BotKnowledgeBlock(kind="bot_btd6_catalog", text=text)
+
+
 async def gather_btd6_bot_knowledge_blocks(
     *,
     user_text: str,
 ) -> tuple[BotKnowledgeBlock, ...]:
-    """Emit zero, one, or two BTD6 BotKnowledgeBlocks for ``user_text``.
+    """Emit zero or more BTD6 BotKnowledgeBlocks for ``user_text``.
 
     Best-effort: any failure logs and returns ``()`` rather than
     propagating into the AI stage.
@@ -295,6 +370,10 @@ async def gather_btd6_bot_knowledge_blocks(
             block = await _source_status_block()
             if block is not None:
                 blocks.append(block)
+        if looks_like_btd6_catalog_question(user_text):
+            block = _btd6_catalog_block()
+            if block is not None:
+                blocks.append(block)
     except Exception:  # noqa: BLE001 — defensive
         logger.exception(
             "gather_btd6_bot_knowledge_blocks failed; returning no blocks",
@@ -306,6 +385,7 @@ async def gather_btd6_bot_knowledge_blocks(
 
 __all__ = [
     "gather_btd6_bot_knowledge_blocks",
+    "looks_like_btd6_catalog_question",
     "looks_like_btd6_freshness_question",
     "looks_like_btd6_state_question",
 ]
