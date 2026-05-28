@@ -35,6 +35,9 @@ def response_to_embed(response: Any) -> discord.Embed:
             value=response.why_it_matters,
             inline=False,
         )
+    for name, value in getattr(response, "fields", ()) or ():
+        if value:
+            embed.add_field(name=name, value=value[:1024], inline=False)
     if response.recommended_options:
         embed.add_field(
             name="Recommended options",
