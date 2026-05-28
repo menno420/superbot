@@ -124,6 +124,16 @@ def _format_restriction_lines(
     return tuple(lines)
 
 
+def format_restriction_lines(
+    restrictions: tuple[TowerRestrictionContext, ...],
+) -> tuple[str, ...]:
+    """Public: tower event-restriction display lines (skips ``stance='allowed'``).
+
+    Used by the tower-detail event-status drill-down view.
+    """
+    return _format_restriction_lines(restrictions)
+
+
 _PATH_LABELS = {"top": "Top path", "mid": "Middle path", "bot": "Bottom path"}
 
 
