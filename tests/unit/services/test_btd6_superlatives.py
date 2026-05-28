@@ -43,10 +43,26 @@ def test_cheapest_are_low_tier():
         "what is the most expensive upgrade in btd6",
         "cheapest tower",
         "which upgrade has the highest cost",
+        "whats the most expensive paragon",
+        "what is the most expensive para",  # abbreviation
+        "what is a paragon",
+        "how much does the super monkey cost",  # generic cost + anchor
     ],
 )
-def test_superlative_questions_trigger_catalog_block(q):
-    assert kb.looks_like_btd6_catalog_question(q)
+def test_price_questions_trigger_price_block(q):
+    assert kb.looks_like_btd6_price_question(q)
+
+
+@pytest.mark.parametrize(
+    "q",
+    [
+        "how do i ban a user",
+        "what's the weather",
+        "set the warn threshold",
+    ],
+)
+def test_non_btd6_questions_do_not_trigger_price_block(q):
+    assert not kb.looks_like_btd6_price_question(q)
 
 
 def test_kind_filter_separates_towers_paragons_and_upgrades():
@@ -59,10 +75,18 @@ def test_kind_filter_separates_towers_paragons_and_upgrades():
     assert reg[0].cost < par[0].cost
 
 
-def test_catalog_block_keeps_categories_distinct():
-    text = kb._btd6_catalog_block().text
+def test_price_block_keeps_categories_distinct():
+    text = kb._btd6_price_block().text
     # The three "most expensive" questions are separately labelled.
-    assert "Tower placement cost" in text  # most expensive *tower* (base)
-    assert "Most expensive upgrades (tiers 1-5" in text  # excludes Paragons
-    assert "Most expensive Paragons" in text  # the tier-6 super-upgrade
+    assert "TOWER to place" in text  # most expensive *tower* (base)
+    assert "UPGRADES (tiers 1-5, NOT Paragons)" in text  # excludes Paragons
+    assert "PARAGONS (tier-6)" in text  # the tier-6 super-upgrade
     assert "Cheapest upgrades:" in text
+    # Paragon clarification present so the model stops mislabelling tier-5s.
+    assert "NOT a tier-5" in text
+
+
+def test_price_block_not_in_catalog_block():
+    # Catalog (roster) stays lean; superlatives live in the price block.
+    catalog = kb._btd6_catalog_block().text
+    assert "Most expensive" not in catalog

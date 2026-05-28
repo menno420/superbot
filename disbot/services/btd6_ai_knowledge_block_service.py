@@ -301,18 +301,31 @@ _CATALOG_TERMS: tuple[str, ...] = (
     "show me all",
     "every tower",
     "every hero",
-    # Superlative / ranking questions (answered from the price aggregates).
+)
+
+
+# Cost/ranking signals — strong enough to fire the price block on their own.
+_PRICE_TERMS: tuple[str, ...] = (
     "most expensive",
     "least expensive",
     "cheapest",
     "priciest",
     "costliest",
+    "most costly",
+    "dearest",
     "highest cost",
     "lowest cost",
     "highest price",
     "lowest price",
-    "most costly",
+    "biggest cost",
 )
+
+# BTD6-specific data words — fire the price block alone (paragon questions need
+# the paragon facts, and the model otherwise mislabels tier-5s as Paragons).
+_BTD6_DATA_VOCAB: tuple[str, ...] = ("paragon", "crosspath", "cross-path")
+
+# Generic cost words — only fire alongside a BTD6 anchor (tower/monkey/…).
+_COST_WORDS: tuple[str, ...] = ("cost", "price", "expensive", "cheap", "how much")
 
 
 def looks_like_btd6_catalog_question(text: str) -> bool:
@@ -352,54 +365,6 @@ def _btd6_catalog_block() -> BotKnowledgeBlock | None:
         hero_parts = [f"{h.canonical} (cost: {h.base_cost})" for h in dataset.heroes]
         lines.append(f"  Heroes: {', '.join(hero_parts)}")
 
-    # Price superlatives — kept as three DISTINCT categories so "most expensive
-    # tower" (placement), "most expensive upgrade" (tiers 1-5), and "most
-    # expensive Paragon" never get conflated.
-    try:
-        from services import btd6_knowledge_service
-
-        priced = [t for t in dataset.towers if t.base_cost]
-        if priced:
-            dear = max(priced, key=lambda t: t.base_cost)
-            cheapest = min(priced, key=lambda t: t.base_cost)
-            lines.append(
-                "Tower placement cost (base only, before any upgrades): most "
-                f"expensive = {dear.canonical} (${dear.base_cost:,}), cheapest = "
-                f"{cheapest.canonical} (${cheapest.base_cost:,}).",
-            )
-        reg_top = btd6_knowledge_service.upgrades_by_price(
-            highest=True,
-            limit=3,
-            kind="regular",
-        )
-        reg_low = btd6_knowledge_service.upgrades_by_price(
-            highest=False,
-            limit=3,
-            kind="regular",
-        )
-        if reg_top:
-            lines.append(
-                "Most expensive upgrades (tiers 1-5, excluding Paragons): "
-                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_top),
-            )
-        if reg_low:
-            lines.append(
-                "Cheapest upgrades: "
-                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_low),
-            )
-        paragons = btd6_knowledge_service.upgrades_by_price(
-            highest=True,
-            limit=3,
-            kind="paragon",
-        )
-        if paragons:
-            lines.append(
-                "Most expensive Paragons (the tier-6 super-upgrade): "
-                + "; ".join(f"{u.tower} (${u.cost:,})" for u in paragons),
-            )
-    except Exception:  # noqa: BLE001 — superlatives are best-effort enrichment
-        logger.debug("btd6 catalog superlatives unavailable", exc_info=True)
-
     lines.append(
         "Each tower has upgrade path names; each hero has ability names. "
         "Ask about a specific tower or hero for full details.",
@@ -409,6 +374,88 @@ def _btd6_catalog_block() -> BotKnowledgeBlock | None:
     if len(text) > 3000:
         text = text[:2999] + "…"
     return BotKnowledgeBlock(kind="bot_btd6_catalog", text=text)
+
+
+# ---------------------------------------------------------------------------
+# Price reference — broadly available so cost/Paragon questions never miss
+# ---------------------------------------------------------------------------
+
+
+def looks_like_btd6_price_question(text: str) -> bool:
+    """True for cost / ranking / Paragon questions that need the price facts.
+
+    Deliberately broad: a missed trigger here is what made the bot guess (and
+    mislabel a tier-5 as a Paragon). Strong cost/ranking phrases and BTD6-
+    specific words ("paragon"/"para"/"crosspath") fire on their own; generic
+    cost words only fire alongside a BTD6 anchor.
+    """
+    if not text:
+        return False
+    lowered = text.lower()
+    if any(t in lowered for t in _PRICE_TERMS):
+        return True
+    if any(t in lowered for t in _BTD6_DATA_VOCAB):
+        return True
+    if "para" in _tokenise(lowered):
+        return True
+    return any(w in lowered for w in _COST_WORDS) and _has_btd6_anchor(text)
+
+
+def _btd6_price_block() -> BotKnowledgeBlock | None:
+    """Compact cost reference, keeping tower / upgrade / Paragon distinct."""
+    try:
+        from services import btd6_data_service, btd6_knowledge_service
+
+        dataset = btd6_data_service.get_dataset()
+    except Exception:  # noqa: BLE001 — defensive
+        return None
+
+    lines: list[str] = [
+        "BTD6 cost reference (Medium difficulty). A Paragon (sometimes 'para') "
+        "is the tier-6 super-upgrade — NOT a tier-5 like True Sun God:",
+    ]
+    priced = [t for t in dataset.towers if t.base_cost]
+    if priced:
+        dear = max(priced, key=lambda t: t.base_cost)
+        cheap = min(priced, key=lambda t: t.base_cost)
+        lines.append(
+            "- Most/least expensive TOWER to place (base cost only): "
+            f"{dear.canonical} (${dear.base_cost:,}) / "
+            f"{cheap.canonical} (${cheap.base_cost:,}).",
+        )
+    reg_top = btd6_knowledge_service.upgrades_by_price(
+        highest=True,
+        limit=3,
+        kind="regular",
+    )
+    reg_low = btd6_knowledge_service.upgrades_by_price(
+        highest=False,
+        limit=3,
+        kind="regular",
+    )
+    paragons = btd6_knowledge_service.upgrades_by_price(
+        highest=True,
+        limit=3,
+        kind="paragon",
+    )
+    if reg_top:
+        lines.append(
+            "- Most expensive UPGRADES (tiers 1-5, NOT Paragons): "
+            + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_top),
+        )
+    if reg_low:
+        lines.append(
+            "- Cheapest upgrades: "
+            + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_low),
+        )
+    if paragons:
+        lines.append(
+            "- Most expensive PARAGONS (tier-6): "
+            + "; ".join(f"{u.tower} (${u.cost:,})" for u in paragons),
+        )
+    if len(lines) == 1:
+        return None
+    return BotKnowledgeBlock(kind="bot_btd6_prices", text="\n".join(lines))
 
 
 # ---------------------------------------------------------------------------
@@ -468,6 +515,10 @@ async def gather_btd6_bot_knowledge_blocks(
             block = _btd6_catalog_block()
             if block is not None:
                 blocks.append(block)
+        if looks_like_btd6_price_question(user_text):
+            block = _btd6_price_block()
+            if block is not None:
+                blocks.append(block)
         if looks_like_btd6_crosspath_question(user_text):
             blocks.append(_btd6_answer_guidance_block())
     except Exception:  # noqa: BLE001 — defensive
@@ -483,6 +534,7 @@ __all__ = [
     "gather_btd6_bot_knowledge_blocks",
     "looks_like_btd6_catalog_question",
     "looks_like_btd6_crosspath_question",
+    "looks_like_btd6_price_question",
     "looks_like_btd6_freshness_question",
     "looks_like_btd6_state_question",
 ]
