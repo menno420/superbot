@@ -26,6 +26,7 @@ bot active", XP leaderboard, "is the database stale", …).
 from __future__ import annotations
 
 import logging
+import re
 
 from services import btd6_ai_context_service
 from services.ai_instruction_service import BotKnowledgeBlock
@@ -389,6 +390,40 @@ def _btd6_catalog_block() -> BotKnowledgeBlock | None:
     return BotKnowledgeBlock(kind="bot_btd6_catalog", text=text)
 
 
+# ---------------------------------------------------------------------------
+# Answer guidance — focus on a named upgrade / crosspath
+# ---------------------------------------------------------------------------
+
+# A crosspath like "4-0-0" / "400", or "<word> path" + a tier digit/word.
+_CROSSPATH_RE = re.compile(r"\b[0-5]-[0-5]-[0-5]\b|\b[0-5]{3}\b")
+
+
+def looks_like_btd6_crosspath_question(text: str) -> bool:
+    """True when the user seems to name a specific upgrade tier / crosspath."""
+    if not text:
+        return False
+    lowered = text.lower()
+    if _CROSSPATH_RE.search(lowered):
+        return True
+    return "path" in lowered and (
+        "tier" in lowered or any(c.isdigit() for c in lowered)
+    )
+
+
+def _btd6_answer_guidance_block() -> BotKnowledgeBlock:
+    return BotKnowledgeBlock(
+        kind="bot_btd6_answer_guidance",
+        text=(
+            "Answer guidance: crosspath notation is path1-path2-path3 tier counts, "
+            "so '4-0-0' (a.k.a. '400') means top path tier 4. When the user names a "
+            "specific upgrade or crosspath (e.g. '4-0-0', 'top path tier 4', or an "
+            "upgrade name like 'Bloon Liquefier'), answer about THAT specific "
+            "upgrade/crosspath only — report its stats and do not list the other "
+            "tiers unless asked."
+        ),
+    )
+
+
 async def gather_btd6_bot_knowledge_blocks(
     *,
     user_text: str,
@@ -412,6 +447,8 @@ async def gather_btd6_bot_knowledge_blocks(
             block = _btd6_catalog_block()
             if block is not None:
                 blocks.append(block)
+        if looks_like_btd6_crosspath_question(user_text):
+            blocks.append(_btd6_answer_guidance_block())
     except Exception:  # noqa: BLE001 — defensive
         logger.exception(
             "gather_btd6_bot_knowledge_blocks failed; returning no blocks",
@@ -424,6 +461,7 @@ async def gather_btd6_bot_knowledge_blocks(
 __all__ = [
     "gather_btd6_bot_knowledge_blocks",
     "looks_like_btd6_catalog_question",
+    "looks_like_btd6_crosspath_question",
     "looks_like_btd6_freshness_question",
     "looks_like_btd6_state_question",
 ]
