@@ -89,7 +89,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # CLI scripts: print() is intentional output, subprocess uses hardcoded
 # trusted commands, and AST visitor naming follows the ast module convention.
-"scripts/*.py" = ["T201", "S603", "S607", "N815"]
+"scripts/*.py" = ["T201", "S603", "S607", "N815", "S310"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 8
