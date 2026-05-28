@@ -48,13 +48,13 @@ def format_normal_stats(ns: Any) -> str:
     """Multi-line headline string for the tower-detail embed."""
     line1: list[str] = []
     if ns.damage is not None:
-        dmg = f"**{ns.damage}** dmg"
+        dmg = f"**{_num(ns.damage)}** dmg"
         if ns.damage_type:
             note = "pops everything" if ns.damage_type == "Normal" else ns.cannot_pop
             dmg += f" · {ns.damage_type}" + (f" ({note})" if note else "")
         line1.append(dmg)
     if ns.pierce is not None:
-        line1.append(f"**{ns.pierce}** pierce")
+        line1.append(f"**{_num(ns.pierce)}** pierce")
 
     line2: list[str] = []
     if ns.cooldown is not None:
