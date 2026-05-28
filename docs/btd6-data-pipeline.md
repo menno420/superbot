@@ -150,7 +150,13 @@ does **not** generate cash. See the income gaps below.
   `action=cargofields`)? If yes, clean. If not, parse the page income table or
   derive from base ($80/round) + descriptions.
 
-### 3. Smaller polish (optional)
+### 3. AI tool-calling (the "proper" fix for AI data access)
+The AI currently relies on trigger-gated knowledge blocks; the durable fix is
+to give the model a `btd6_lookup`-style tool it can call on demand. Fully
+scoped (grounded in the real gateway architecture) in
+**`docs/btd6-ai-tool-calling-plan.md`** — plan only, not yet built.
+
+### 4. Smaller polish (optional)
 - Paraphrased tower descriptions (the `description` column is still empty by
   design — CC-BY-SA prose was skipped). Curate short factual blurbs.
 - Show derived per-difficulty costs in the UI (formula already exists).
