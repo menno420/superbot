@@ -44,16 +44,18 @@ def test_tower_upgrade_paths_have_five_tiers():
     dataset = get_dataset()
     for tower in dataset.towers:
         for path_name, tiers in tower.upgrade_paths.items():
-            assert len(tiers) == 5, (
-                f"{tower.id}.{path_name} should have 5 tiers, got {len(tiers)}"
-            )
+            assert (
+                len(tiers) == 5
+            ), f"{tower.id}.{path_name} should have 5 tiers, got {len(tiers)}"
 
 
 def test_chimps_mode_has_no_income_restriction():
     dataset = get_dataset()
     chimps = next((m for m in dataset.modes if m.id == "chimps"), None)
     assert chimps is not None, "CHIMPS mode must be in the fixture"
-    assert any("income" in r.lower() or "farm" in r.lower() for r in chimps.restrictions)
+    assert any(
+        "income" in r.lower() or "farm" in r.lower() for r in chimps.restrictions
+    )
 
 
 def test_alias_collision_fails_loudly(tmp_path):
@@ -141,3 +143,104 @@ def test_missing_required_field_fails_loudly(tmp_path):
     finally:
         data_service.DATA_ROOT = original
         reset_cache()
+
+
+# ---------------------------------------------------------------------------
+# Extended validation: category, base_cost, upgrade-path shape
+# ---------------------------------------------------------------------------
+
+
+def _stage_data(tmp_path: Path) -> Path:
+    """Copy every fixture into a fresh root so tests can mutate one safely."""
+    root = tmp_path / "btd6"
+    root.mkdir()
+    for filename in ("towers", "heroes", "maps", "modes", "rounds"):
+        source = DATA_ROOT / f"{filename}.json"
+        (root / f"{filename}.json").write_text(
+            source.read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+    return root
+
+
+def _expect_validation_error(
+    bad_root: Path,
+    *,
+    match: str,
+) -> None:
+    import services.btd6_data_service as data_service
+
+    original = data_service.DATA_ROOT
+    data_service.DATA_ROOT = bad_root
+    try:
+        reset_cache()
+        with pytest.raises(BTD6DataValidationError, match=match):
+            get_dataset()
+    finally:
+        data_service.DATA_ROOT = original
+        reset_cache()
+
+
+def test_invalid_tower_category_fails(tmp_path):
+    bad_root = _stage_data(tmp_path)
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    towers["towers"][0]["category"] = "primay"  # deliberate typo
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+    _expect_validation_error(bad_root, match="category 'primay'")
+
+
+def test_zero_tower_base_cost_fails(tmp_path):
+    bad_root = _stage_data(tmp_path)
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    towers["towers"][0]["base_cost"] = 0
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+    _expect_validation_error(bad_root, match="base_cost must be > 0")
+
+
+def test_negative_hero_base_cost_fails(tmp_path):
+    bad_root = _stage_data(tmp_path)
+    heroes_path = bad_root / "heroes.json"
+    heroes = json.loads(heroes_path.read_text(encoding="utf-8"))
+    heroes["heroes"][0]["base_cost"] = -100
+    heroes_path.write_text(json.dumps(heroes), encoding="utf-8")
+    _expect_validation_error(bad_root, match="base_cost must be > 0")
+
+
+def test_missing_upgrade_path_key_fails(tmp_path):
+    bad_root = _stage_data(tmp_path)
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    del towers["towers"][0]["upgrade_paths"]["bot"]
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+    _expect_validation_error(bad_root, match="upgrade_paths missing keys")
+
+
+def test_extra_upgrade_path_key_fails(tmp_path):
+    bad_root = _stage_data(tmp_path)
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    towers["towers"][0]["upgrade_paths"]["extra"] = ["x"] * 5
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+    _expect_validation_error(bad_root, match="unexpected keys")
+
+
+def test_wrong_tier_count_fails(tmp_path):
+    bad_root = _stage_data(tmp_path)
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    towers["towers"][0]["upgrade_paths"]["top"] = ["a", "b", "c"]
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+    _expect_validation_error(bad_root, match="must have exactly 5 tiers")
+
+
+def test_empty_upgrade_tier_name_fails(tmp_path):
+    bad_root = _stage_data(tmp_path)
+    towers_path = bad_root / "towers.json"
+    towers = json.loads(towers_path.read_text(encoding="utf-8"))
+    tiers = towers["towers"][0]["upgrade_paths"]["top"]
+    tiers[2] = "   "
+    towers["towers"][0]["upgrade_paths"]["top"] = tiers
+    towers_path.write_text(json.dumps(towers), encoding="utf-8")
+    _expect_validation_error(bad_root, match="tier 3 is empty")

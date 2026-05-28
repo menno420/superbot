@@ -128,6 +128,9 @@ _REQUIRED_TOWER_FIELDS = (
     "upgrade_paths",
     "wiki_url",
 )
+_TOWER_CATEGORIES = frozenset({"primary", "military", "magic", "support"})
+_TOWER_UPGRADE_PATHS = ("top", "mid", "bot")
+_TOWER_UPGRADE_TIERS_PER_PATH = 5
 _REQUIRED_HERO_FIELDS = (
     "id",
     "canonical",
@@ -191,10 +194,32 @@ def _normalise_alias(value: str) -> str:
 
 def _parse_tower(raw: dict[str, Any]) -> TowerEntry:
     _require_keys(raw, _REQUIRED_TOWER_FIELDS, where=f"tower {raw.get('id')!r}")
+    category = str(raw["category"])
+    if category not in _TOWER_CATEGORIES:
+        raise BTD6DataValidationError(
+            f"tower {raw['id']!r}: category {category!r} not one of "
+            f"{sorted(_TOWER_CATEGORIES)}",
+        )
+    base_cost = int(raw["base_cost"])
+    if base_cost <= 0:
+        raise BTD6DataValidationError(
+            f"tower {raw['id']!r}: base_cost must be > 0, got {base_cost}",
+        )
     upgrade_paths_raw = raw["upgrade_paths"]
     if not isinstance(upgrade_paths_raw, dict):
         raise BTD6DataValidationError(
             f"tower {raw['id']!r}: upgrade_paths must be a dict",
+        )
+    missing_paths = [p for p in _TOWER_UPGRADE_PATHS if p not in upgrade_paths_raw]
+    if missing_paths:
+        raise BTD6DataValidationError(
+            f"tower {raw['id']!r}: upgrade_paths missing keys {missing_paths!r}",
+        )
+    extra_paths = [p for p in upgrade_paths_raw if p not in _TOWER_UPGRADE_PATHS]
+    if extra_paths:
+        raise BTD6DataValidationError(
+            f"tower {raw['id']!r}: upgrade_paths has unexpected keys "
+            f"{extra_paths!r}; only {list(_TOWER_UPGRADE_PATHS)} allowed",
         )
     upgrade_paths: dict[str, tuple[str, ...]] = {}
     for path_key, tiers in upgrade_paths_raw.items():
@@ -202,14 +227,28 @@ def _parse_tower(raw: dict[str, Any]) -> TowerEntry:
             raise BTD6DataValidationError(
                 f"tower {raw['id']!r}: upgrade_paths.{path_key} must be a list",
             )
-        upgrade_paths[path_key] = tuple(str(t) for t in tiers)
+        if len(tiers) != _TOWER_UPGRADE_TIERS_PER_PATH:
+            raise BTD6DataValidationError(
+                f"tower {raw['id']!r}: upgrade_paths.{path_key} must have "
+                f"exactly {_TOWER_UPGRADE_TIERS_PER_PATH} tiers, got {len(tiers)}",
+            )
+        tier_tuple: list[str] = []
+        for index, tier in enumerate(tiers, start=1):
+            tier_name = str(tier).strip()
+            if not tier_name:
+                raise BTD6DataValidationError(
+                    f"tower {raw['id']!r}: upgrade_paths.{path_key} tier "
+                    f"{index} is empty",
+                )
+            tier_tuple.append(tier_name)
+        upgrade_paths[path_key] = tuple(tier_tuple)
     aliases = tuple(_normalise_alias(a) for a in raw["aliases"])
     return TowerEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
         aliases=aliases,
-        category=str(raw["category"]),
-        base_cost=int(raw["base_cost"]),
+        category=category,
+        base_cost=base_cost,
         description=str(raw["description"]),
         upgrade_paths=upgrade_paths,
         wiki_url=str(raw["wiki_url"]),
@@ -218,6 +257,11 @@ def _parse_tower(raw: dict[str, Any]) -> TowerEntry:
 
 def _parse_hero(raw: dict[str, Any]) -> HeroEntry:
     _require_keys(raw, _REQUIRED_HERO_FIELDS, where=f"hero {raw.get('id')!r}")
+    base_cost = int(raw["base_cost"])
+    if base_cost <= 0:
+        raise BTD6DataValidationError(
+            f"hero {raw['id']!r}: base_cost must be > 0, got {base_cost}",
+        )
     abilities_raw = raw["abilities"]
     if not isinstance(abilities_raw, list):
         raise BTD6DataValidationError(
@@ -241,7 +285,7 @@ def _parse_hero(raw: dict[str, Any]) -> HeroEntry:
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
         aliases=tuple(_normalise_alias(a) for a in raw["aliases"]),
-        base_cost=int(raw["base_cost"]),
+        base_cost=base_cost,
         description=str(raw["description"]),
         abilities=tuple(abilities),
         wiki_url=str(raw["wiki_url"]),

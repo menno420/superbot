@@ -81,15 +81,53 @@ class LeaderboardRow:
 # self-documenting safety net for irregular future keys (e.g. ``Psi``,
 # ``HeliPilot``, ``BombShooter``).
 _TOWER_ID_TO_API_KEY: dict[str, str] = {
+    # Primary
     "dart_monkey": "DartMonkey",
     "boomerang_monkey": "BoomerangMonkey",
-    "tack_shooter": "TackShooter",
     "bomb_shooter": "BombShooter",
+    "tack_shooter": "TackShooter",
+    "ice_monkey": "IceMonkey",
+    "glue_gunner": "GlueGunner",
+    # Military
+    "sniper_monkey": "SniperMonkey",
+    "monkey_sub": "MonkeySub",
+    "monkey_buccaneer": "MonkeyBuccaneer",
+    "monkey_ace": "MonkeyAce",
+    "heli_pilot": "HeliPilot",
+    "mortar_monkey": "MortarMonkey",
+    "dartling_gunner": "DartlingGunner",
+    # Magic
+    "wizard_monkey": "WizardMonkey",
+    "super_monkey": "SuperMonkey",
+    "ninja_monkey": "NinjaMonkey",
+    "alchemist": "Alchemist",
+    "druid": "Druid",
+    "mermonkey": "Mermonkey",
+    # Support
+    "banana_farm": "BananaFarm",
+    "spike_factory": "SpikeFactory",
+    "monkey_village": "MonkeyVillage",
+    "engineer_monkey": "EngineerMonkey",
+    "beast_handler": "BeastHandler",
 }
 
 _HERO_ID_TO_API_KEY: dict[str, str] = {
     "quincy": "Quincy",
+    "gwendolin": "Gwendolin",
+    "striker_jones": "StrikerJones",
+    "obyn_greenfoot": "ObynGreenfoot",
+    "captain_churchill": "CaptainChurchill",
+    "benjamin": "Benjamin",
+    "ezili": "Ezili",
+    "pat_fusty": "PatFusty",
+    "adora": "Adora",
+    "admiral_brickell": "AdmiralBrickell",
+    "etienne": "Etienne",
     "sauda": "Sauda",
+    "psi": "Psi",
+    "geraldo": "Geraldo",
+    "corvus": "Corvus",
+    "rosalia": "Rosalia",
 }
 
 _CHOSEN_PRIMARY_HERO_KEY = "ChosenPrimaryHero"
