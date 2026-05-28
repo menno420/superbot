@@ -77,7 +77,9 @@ def build_tower_detail_embed(vm: TowerDetailViewModel) -> discord.Embed:
         )
     else:
         embed = response_to_embed(
-            for_tower(vm.fact, restrictions=tuple(vm.restrictions)),
+            # Live event restrictions live in their own drill-down (the
+            # ⚠️ Event status button), not on the overview — keep it uncluttered.
+            for_tower(vm.fact, restrictions=()),
         )
 
     stats = btd6_stats_service.get_tower_stats(vm.tower_id)
@@ -154,6 +156,7 @@ class _TowerSelect(discord.ui.Select):
             parent.set_vm(list_vm)
             return build_tower_list_embed(list_vm), parent
 
+        from views.btd6.tower_events_view import attach_event_status_button
         from views.btd6.tower_stats_view import attach_pro_stats_button
 
         def _build_detail_view() -> TowerDetailView:
@@ -166,6 +169,12 @@ class _TowerSelect(discord.ui.Select):
                 parent_builder=_rebuild_list,
             )
             attach_pro_stats_button(view, detail_vm.tower_id, _rebuild_detail)
+            attach_event_status_button(
+                view,
+                detail_vm.canonical,
+                detail_vm.restrictions,
+                _rebuild_detail,
+            )
             return view
 
         async def _rebuild_detail(

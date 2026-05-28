@@ -148,3 +148,74 @@ async def fact_summary_by_kind() -> tuple[FactKindSummary, ...]:
         )
         for row in rows
     )
+
+
+# ---------------------------------------------------------------------------
+# Price aggregates (superlatives — "most/least expensive")
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class UpgradePrice:
+    """One purchasable upgrade (or Paragon) and its Medium cost."""
+
+    tower: str  # canonical tower name
+    path: str  # top / mid / bot / paragon
+    tier: int  # 1..5; 6 for Paragon
+    name: str
+    cost: int
+
+
+def all_upgrade_prices() -> tuple[UpgradePrice, ...]:
+    """Every purchasable upgrade across all towers, incl. Paragons.
+
+    Paragon costs come from the per-tower stats files; per-tier costs from the
+    catalog. Used to answer superlative ("most/least expensive") questions.
+    """
+    from services import btd6_stats_service
+
+    out: list[UpgradePrice] = []
+    for tower in list_towers():
+        for path, names in tower.upgrade_paths.items():
+            costs = tower.upgrade_costs.get(path, ())
+            for index, name in enumerate(names):
+                cost = costs[index] if index < len(costs) else 0
+                if name and cost > 0:
+                    out.append(
+                        UpgradePrice(tower.canonical, path, index + 1, name, cost),
+                    )
+        stats = btd6_stats_service.get_tower_stats(tower.id)
+        if stats is not None and stats.paragon_cost:
+            out.append(
+                UpgradePrice(
+                    tower.canonical,
+                    "paragon",
+                    6,
+                    f"{tower.canonical} Paragon",
+                    stats.paragon_cost,
+                ),
+            )
+    return tuple(out)
+
+
+def upgrades_by_price(
+    *,
+    highest: bool,
+    limit: int = 3,
+    kind: str = "all",
+) -> tuple[UpgradePrice, ...]:
+    """Top ``limit`` most-/least-expensive upgrades.
+
+    ``kind`` filters the pool so callers can keep the three "most expensive"
+    questions distinct:
+      * ``"regular"`` — tier 1-5 upgrades only (excludes Paragons);
+      * ``"paragon"`` — Paragons only;
+      * ``"all"`` — both (Paragons dominate the top).
+    """
+    prices = all_upgrade_prices()
+    if kind == "regular":
+        prices = tuple(u for u in prices if u.path != "paragon")
+    elif kind == "paragon":
+        prices = tuple(u for u in prices if u.path == "paragon")
+    ordered = sorted(prices, key=lambda u: u.cost, reverse=highest)
+    return tuple(ordered[:limit])

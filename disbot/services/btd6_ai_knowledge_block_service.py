@@ -26,6 +26,7 @@ bot active", XP leaderboard, "is the database stale", …).
 from __future__ import annotations
 
 import logging
+import re
 
 from services import btd6_ai_context_service
 from services.ai_instruction_service import BotKnowledgeBlock
@@ -300,6 +301,17 @@ _CATALOG_TERMS: tuple[str, ...] = (
     "show me all",
     "every tower",
     "every hero",
+    # Superlative / ranking questions (answered from the price aggregates).
+    "most expensive",
+    "least expensive",
+    "cheapest",
+    "priciest",
+    "costliest",
+    "highest cost",
+    "lowest cost",
+    "highest price",
+    "lowest price",
+    "most costly",
 )
 
 
@@ -340,6 +352,54 @@ def _btd6_catalog_block() -> BotKnowledgeBlock | None:
         hero_parts = [f"{h.canonical} (cost: {h.base_cost})" for h in dataset.heroes]
         lines.append(f"  Heroes: {', '.join(hero_parts)}")
 
+    # Price superlatives — kept as three DISTINCT categories so "most expensive
+    # tower" (placement), "most expensive upgrade" (tiers 1-5), and "most
+    # expensive Paragon" never get conflated.
+    try:
+        from services import btd6_knowledge_service
+
+        priced = [t for t in dataset.towers if t.base_cost]
+        if priced:
+            dear = max(priced, key=lambda t: t.base_cost)
+            cheapest = min(priced, key=lambda t: t.base_cost)
+            lines.append(
+                "Tower placement cost (base only, before any upgrades): most "
+                f"expensive = {dear.canonical} (${dear.base_cost:,}), cheapest = "
+                f"{cheapest.canonical} (${cheapest.base_cost:,}).",
+            )
+        reg_top = btd6_knowledge_service.upgrades_by_price(
+            highest=True,
+            limit=3,
+            kind="regular",
+        )
+        reg_low = btd6_knowledge_service.upgrades_by_price(
+            highest=False,
+            limit=3,
+            kind="regular",
+        )
+        if reg_top:
+            lines.append(
+                "Most expensive upgrades (tiers 1-5, excluding Paragons): "
+                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_top),
+            )
+        if reg_low:
+            lines.append(
+                "Cheapest upgrades: "
+                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_low),
+            )
+        paragons = btd6_knowledge_service.upgrades_by_price(
+            highest=True,
+            limit=3,
+            kind="paragon",
+        )
+        if paragons:
+            lines.append(
+                "Most expensive Paragons (the tier-6 super-upgrade): "
+                + "; ".join(f"{u.tower} (${u.cost:,})" for u in paragons),
+            )
+    except Exception:  # noqa: BLE001 — superlatives are best-effort enrichment
+        logger.debug("btd6 catalog superlatives unavailable", exc_info=True)
+
     lines.append(
         "Each tower has upgrade path names; each hero has ability names. "
         "Ask about a specific tower or hero for full details.",
@@ -349,6 +409,40 @@ def _btd6_catalog_block() -> BotKnowledgeBlock | None:
     if len(text) > 3000:
         text = text[:2999] + "…"
     return BotKnowledgeBlock(kind="bot_btd6_catalog", text=text)
+
+
+# ---------------------------------------------------------------------------
+# Answer guidance — focus on a named upgrade / crosspath
+# ---------------------------------------------------------------------------
+
+# A crosspath like "4-0-0" / "400", or "<word> path" + a tier digit/word.
+_CROSSPATH_RE = re.compile(r"\b[0-5]-[0-5]-[0-5]\b|\b[0-5]{3}\b")
+
+
+def looks_like_btd6_crosspath_question(text: str) -> bool:
+    """True when the user seems to name a specific upgrade tier / crosspath."""
+    if not text:
+        return False
+    lowered = text.lower()
+    if _CROSSPATH_RE.search(lowered):
+        return True
+    return "path" in lowered and (
+        "tier" in lowered or any(c.isdigit() for c in lowered)
+    )
+
+
+def _btd6_answer_guidance_block() -> BotKnowledgeBlock:
+    return BotKnowledgeBlock(
+        kind="bot_btd6_answer_guidance",
+        text=(
+            "Answer guidance: crosspath notation is path1-path2-path3 tier counts, "
+            "so '4-0-0' (a.k.a. '400') means top path tier 4. When the user names a "
+            "specific upgrade or crosspath (e.g. '4-0-0', 'top path tier 4', or an "
+            "upgrade name like 'Bloon Liquefier'), answer about THAT specific "
+            "upgrade/crosspath only — report its stats and do not list the other "
+            "tiers unless asked."
+        ),
+    )
 
 
 async def gather_btd6_bot_knowledge_blocks(
@@ -374,6 +468,8 @@ async def gather_btd6_bot_knowledge_blocks(
             block = _btd6_catalog_block()
             if block is not None:
                 blocks.append(block)
+        if looks_like_btd6_crosspath_question(user_text):
+            blocks.append(_btd6_answer_guidance_block())
     except Exception:  # noqa: BLE001 — defensive
         logger.exception(
             "gather_btd6_bot_knowledge_blocks failed; returning no blocks",
@@ -386,6 +482,7 @@ async def gather_btd6_bot_knowledge_blocks(
 __all__ = [
     "gather_btd6_bot_knowledge_blocks",
     "looks_like_btd6_catalog_question",
+    "looks_like_btd6_crosspath_question",
     "looks_like_btd6_freshness_question",
     "looks_like_btd6_state_question",
 ]

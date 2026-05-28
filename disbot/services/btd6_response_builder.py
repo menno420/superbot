@@ -124,6 +124,16 @@ def _format_restriction_lines(
     return tuple(lines)
 
 
+def format_restriction_lines(
+    restrictions: tuple[TowerRestrictionContext, ...],
+) -> tuple[str, ...]:
+    """Public: tower event-restriction display lines (skips ``stance='allowed'``).
+
+    Used by the tower-detail event-status drill-down view.
+    """
+    return _format_restriction_lines(restrictions)
+
+
 _PATH_LABELS = {"top": "Top path", "mid": "Middle path", "bot": "Bottom path"}
 
 
@@ -171,7 +181,7 @@ def for_tower(
             "always confirm against the latest patch notes for competitive play."
         ),
         confidence="high",
-        sources=(tower.wiki_url, _source_label()),
+        sources=(_source_label(),),
         follow_up="Ask about a specific upgrade tier with `!btd6 tower <name>`.",
         live_facts=_format_restriction_lines(restrictions),
     )
@@ -195,7 +205,7 @@ def for_hero(
             "Hero balance changes are common; check patch notes for buffs/nerfs."
         ),
         confidence="medium",
-        sources=(hero.wiki_url, _source_label()),
+        sources=(_source_label(),),
         follow_up="Try `!btd6 round <N>` to see what waves the hero faces.",
         live_facts=_format_restriction_lines(restrictions),
     )
@@ -206,7 +216,7 @@ def for_map(game_map: MapEntry) -> BTD6Response:
         title=f"{game_map.canonical} ({game_map.difficulty})",
         short_answer=game_map.description,
         why_it_matters=game_map.lines_of_sight_notes,
-        sources=(game_map.wiki_url, _source_label()),
+        sources=(_source_label(),),
         confidence="high",
         follow_up="Pair with `!btd6 mode <name>` for mode-specific advice.",
     )

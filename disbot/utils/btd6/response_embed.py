@@ -74,7 +74,7 @@ def response_to_embed(response: Any) -> discord.Embed:
     if response.follow_up:
         embed.add_field(name="Follow-up", value=response.follow_up, inline=False)
     if response.sources:
-        embed.set_footer(text="Sources: " + " · ".join(response.sources))
+        embed.set_footer(text=" · ".join(response.sources))
     return embed
 
 
