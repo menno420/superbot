@@ -598,6 +598,9 @@ class TowerListViewModel:
     items: tuple[TowerListItem, ...]
     total_count: int
     context: ContextHandle
+    page: int = 0
+    total_pages: int = 1
+    category_filter: str | None = None
 
 
 @dataclass(frozen=True)
@@ -609,17 +612,31 @@ class TowerDetailViewModel:
     context: ContextHandle
 
 
+_TOWER_PAGE_SIZE = 8
+
+
 async def build_tower_list_view_model(
     *,
-    max_items: int = 25,
+    page: int = 0,
+    category: str | None = None,
 ) -> TowerListViewModel:
-    """Tower catalog list."""
+    """Tower catalog list with optional pagination and category filter."""
     from services import btd6_knowledge_service
 
-    towers = btd6_knowledge_service.list_towers()
-    capped = towers[:max_items]
+    all_towers = btd6_knowledge_service.list_towers()
+    filtered = (
+        [t for t in all_towers if t.category.lower() == category.lower()]
+        if category
+        else list(all_towers)
+    )
+    total = len(filtered)
+    total_pages = max(1, (total + _TOWER_PAGE_SIZE - 1) // _TOWER_PAGE_SIZE)
+    page = max(0, min(page, total_pages - 1))
+    start = page * _TOWER_PAGE_SIZE
+    page_slice = filtered[start : start + _TOWER_PAGE_SIZE]
+
     items: list[TowerListItem] = []
-    for tower in capped:
+    for tower in page_slice:
         try:
             ctx = make_context_handle("tower", str(tower.id))
         except ValueError:
@@ -635,8 +652,11 @@ async def build_tower_list_view_model(
         )
     return TowerListViewModel(
         items=tuple(items),
-        total_count=len(towers),
+        total_count=total,
         context=make_context_handle("tower", "list"),
+        page=page,
+        total_pages=total_pages,
+        category_filter=category,
     )
 
 
@@ -685,6 +705,8 @@ class HeroListViewModel:
     items: tuple[HeroListItem, ...]
     total_count: int
     context: ContextHandle
+    page: int = 0
+    total_pages: int = 1
 
 
 @dataclass(frozen=True)
@@ -695,17 +717,25 @@ class HeroDetailViewModel:
     context: ContextHandle
 
 
+_HERO_PAGE_SIZE = 8
+
+
 async def build_hero_list_view_model(
     *,
-    max_items: int = 25,
+    page: int = 0,
 ) -> HeroListViewModel:
-    """Hero catalog list."""
+    """Hero catalog list with optional pagination."""
     from services import btd6_knowledge_service
 
-    heroes = btd6_knowledge_service.list_heroes()
-    capped = heroes[:max_items]
+    all_heroes = btd6_knowledge_service.list_heroes()
+    total = len(all_heroes)
+    total_pages = max(1, (total + _HERO_PAGE_SIZE - 1) // _HERO_PAGE_SIZE)
+    page = max(0, min(page, total_pages - 1))
+    start = page * _HERO_PAGE_SIZE
+    page_slice = all_heroes[start : start + _HERO_PAGE_SIZE]
+
     items: list[HeroListItem] = []
-    for hero in capped:
+    for hero in page_slice:
         try:
             ctx = make_context_handle("hero", str(hero.id))
         except ValueError:
@@ -721,8 +751,10 @@ async def build_hero_list_view_model(
         )
     return HeroListViewModel(
         items=tuple(items),
-        total_count=len(heroes),
+        total_count=total,
         context=make_context_handle("hero", "list"),
+        page=page,
+        total_pages=total_pages,
     )
 
 

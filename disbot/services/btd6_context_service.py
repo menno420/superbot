@@ -269,6 +269,132 @@ async def _restriction_lines_for_intent(intent: Any) -> list[str]:
     return out[:8]
 
 
+def _render_fixture_tower(entry: Any) -> list[str]:
+    """Render a TowerEntry as 1-4 grounding lines for the AI context.
+
+    Returns multiple short strings (each within ``_FACT_TEXT_CAP``) so
+    the LLM gets cost, category, and upgrade path names without any
+    single line being truncated.
+    """
+    canonical = _sanitise(
+        getattr(entry, "canonical", "") or str(getattr(entry, "id", "")),
+    )
+    cost = getattr(entry, "base_cost", None)
+    category = _sanitise(str(getattr(entry, "category", "") or ""))
+    description = _sanitise(getattr(entry, "description", "") or "")
+    lines: list[str] = []
+
+    # Line 1: identity + cost
+    cost_str = f"base cost: {cost} (medium difficulty)" if cost else ""
+    cat_str = f"category: {category}" if category else ""
+    meta = " | ".join(p for p in [cost_str, cat_str] if p)
+    lines.append(
+        (
+            _cap(f"[btd6_tower] {canonical} — {meta} (source: fixture/btd6_data)")
+            if meta
+            else _cap(f"[btd6_tower] {canonical} (source: fixture/btd6_data)")
+        ),
+    )
+
+    # Lines 2-4: one per upgrade path
+    upgrade_paths: dict[str, Any] = getattr(entry, "upgrade_paths", {}) or {}
+    for path_name, upgrades in upgrade_paths.items():
+        if not upgrades:
+            continue
+        upgrades_str = ", ".join(str(u) for u in upgrades if u)
+        lines.append(
+            _cap(
+                f"[btd6_tower] {canonical} {path_name} upgrades: "
+                f"{upgrades_str} (source: fixture/btd6_data)",
+            ),
+        )
+
+    if description:
+        lines.append(
+            _cap(
+                f"[btd6_tower] {canonical} — {description} (source: fixture/btd6_data)",
+            ),
+        )
+
+    return lines
+
+
+def _render_fixture_hero(entry: Any) -> list[str]:
+    """Render a HeroEntry as 1-3 grounding lines for the AI context."""
+    canonical = _sanitise(
+        getattr(entry, "canonical", "") or str(getattr(entry, "id", "")),
+    )
+    cost = getattr(entry, "base_cost", None)
+    description = _sanitise(getattr(entry, "description", "") or "")
+    abilities = getattr(entry, "abilities", ()) or ()
+    lines: list[str] = []
+
+    cost_str = f"base cost: {cost} (medium difficulty)" if cost else ""
+    lines.append(
+        (
+            _cap(f"[btd6_hero] {canonical} — {cost_str} (source: fixture/btd6_data)")
+            if cost_str
+            else _cap(f"[btd6_hero] {canonical} (source: fixture/btd6_data)")
+        ),
+    )
+
+    for ability in abilities:
+        name = _sanitise(getattr(ability, "name", "") or "")
+        summary = _sanitise(getattr(ability, "summary", "") or "")
+        level = getattr(ability, "level", "?")
+        if name:
+            ab_str = f"ability@{level}: {name}"
+            if summary:
+                ab_str += f" — {summary}"
+            lines.append(
+                _cap(f"[btd6_hero] {canonical} {ab_str} (source: fixture/btd6_data)"),
+            )
+
+    if description:
+        lines.append(
+            _cap(
+                f"[btd6_hero] {canonical} — {description} (source: fixture/btd6_data)",
+            ),
+        )
+
+    return lines
+
+
+def _cap(text: str) -> str:
+    """Truncate ``text`` to ``_FACT_TEXT_CAP`` characters."""
+    return text if len(text) <= _FACT_TEXT_CAP else text[: _FACT_TEXT_CAP - 1] + "…"
+
+
+def _fixture_facts_for_intent(intent: Any) -> list[str]:
+    """Return fixture-sourced grounding lines for any tower/hero in ``intent``.
+
+    Called when the DB returns no rows for a matched entity so the AI
+    still gets cost, category, and upgrade/ability data from the JSON
+    fixture files.
+    """
+    try:
+        from services import btd6_data_service
+    except Exception:  # noqa: BLE001
+        return []
+
+    lines: list[str] = []
+    for tower in getattr(intent, "towers", ()) or ():
+        tower_id = str(getattr(tower, "id", "") or "")
+        if not tower_id:
+            continue
+        record = btd6_data_service.get_tower(tower_id)
+        if record is not None:
+            lines.extend(_render_fixture_tower(record))
+    for hero in getattr(intent, "heroes", ()) or ():
+        hero_id = str(getattr(hero, "id", "") or "")
+        if not hero_id:
+            continue
+        record = btd6_data_service.get_hero(hero_id)
+        if record is not None:
+            lines.extend(_render_fixture_hero(record))
+    return lines
+
+
 async def build(message_text: str) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
@@ -277,6 +403,10 @@ async def build(message_text: str) -> BTD6Context:
     sanitised rendering with provenance. The instruction service wraps
     the resulting tuple as untrusted data, so adversarial body text
     reaches the LLM only inside the data envelope.
+
+    When the DB has no rows for a resolved tower or hero entity the
+    context falls back to the JSON fixture files (btd6_data_service)
+    so cost, category, and upgrade/ability data always reach the LLM.
     """
     facts: list[str] = []
     confidence = 0.0
@@ -294,6 +424,24 @@ async def build(message_text: str) -> BTD6Context:
         rows = rows + live_rows
         for row in rows:
             facts.append(_render_fact(row))
+        # Fixture fallback: when the DB has no rows for a resolved
+        # tower/hero, inject static data from the JSON fixture files
+        # so cost and upgrade/ability info always reach the LLM.
+        db_entity_keys = {(r.get("entity_kind"), r.get("entity_key")) for r in rows}
+        has_db_rows = bool(db_entity_keys - {(None, None)})
+        if not has_db_rows or any(
+            (
+                f"btd6_{ek}",
+                str(getattr(e, "id", "")),
+            )
+            not in db_entity_keys
+            for ek, entities in (
+                ("tower", getattr(intent, "towers", ())),
+                ("hero", getattr(intent, "heroes", ())),
+            )
+            for e in (entities or ())
+        ):
+            facts.extend(_fixture_facts_for_intent(intent))
         # PR 2: tower/hero-specific active-event restriction lines.
         facts.extend(await _restriction_lines_for_intent(intent))
         if facts:

@@ -101,21 +101,25 @@ def _build_alias_map() -> tuple[
     dataset = get_dataset()
     towers = {}
     for tower in dataset.towers:
+        towers[tower.id] = tower.id
         towers[tower.canonical.lower()] = tower.id
         for alias in tower.aliases:
             towers[alias.lower()] = tower.id
     heroes = {}
     for hero in dataset.heroes:
+        heroes[hero.id] = hero.id
         heroes[hero.canonical.lower()] = hero.id
         for alias in hero.aliases:
             heroes[alias.lower()] = hero.id
     maps = {}
     for game_map in dataset.maps:
+        maps[game_map.id] = game_map.id
         maps[game_map.canonical.lower()] = game_map.id
         for alias in game_map.aliases:
             maps[alias.lower()] = game_map.id
     modes = {}
     for mode in dataset.modes:
+        modes[mode.id] = mode.id
         modes[mode.canonical.lower()] = mode.id
         for alias in mode.aliases:
             modes[alias.lower()] = mode.id
