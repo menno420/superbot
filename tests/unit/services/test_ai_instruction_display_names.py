@@ -25,7 +25,6 @@ from services import ai_instruction_service
 from services.ai_instruction_service import _sanitize_display_name
 from utils.db import ai as ai_db
 
-
 # ---------------------------------------------------------------------------
 # _sanitize_display_name unit cases
 # ---------------------------------------------------------------------------
