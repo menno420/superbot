@@ -5,7 +5,9 @@ structured gameplay data from the Bloons fandom wiki for each entry, and
 writes updated CSVs with the fetched fields filled in.
 
 Fields fetched:
-  towers  — base_cost, top_1..top_5, mid_1..mid_5, bot_1..bot_5
+  towers  — base_cost, top_1..top_5, mid_1..mid_5, bot_1..bot_5,
+             top_1_cost..top_5_cost, mid_1_cost..mid_5_cost,
+             bot_1_cost..bot_5_cost
   heroes  — base_cost, ability_3_name, ability_3_summary,
              ability_10_name, ability_10_summary
 
@@ -173,16 +175,31 @@ def _get_template_param(block: str, param: str) -> str | None:
 # ---------------------------------------------------------------------------
 
 
+def _parse_upgrade_cost(raw: str) -> int:
+    """Extract a medium-difficulty integer cost from a wiki cost string.
+
+    Handles formats like ``$300``, ``$1,500``, ``$300 (Medium)``,
+    and wiki-link forms like ``$300 ([[Medium Difficulty|Medium]])``.
+    Returns 0 when no dollar amount is found.
+    """
+    m = re.search(r"\$([0-9,]+)", raw)
+    return int(m.group(1).replace(",", "")) if m else 0
+
+
 def _extract_tower_data(wikitext: str) -> dict[str, Any]:
-    """Parse cost and all 15 upgrade names from a tower's BTD6 wikitext.
+    """Parse cost, all 15 upgrade names, and 15 upgrade costs from wikitext.
 
     Returns::
 
         {
             "cost": int | None,
             "upgrades": [[top_1..top_5], [mid_1..mid_5], [bot_1..bot_5]] | None,
+            "upgrade_costs": [[top_1..top_5], [mid_1..mid_5], [bot_1..bot_5]] | None,
             "warnings": [str, ...],
         }
+
+    Upgrade costs are per-tier medium-difficulty prices (0 when the
+    wiki template omits the ``cost`` parameter).
     """
     warnings: list[str] = []
     cost = _extract_medium_cost(wikitext)
@@ -203,26 +220,41 @@ def _extract_tower_data(wikitext: str) -> dict[str, Any]:
         warnings.append(
             f"expected 3 Path sections, found {len(path_contents)} — upgrades skipped",
         )
-        return {"cost": cost, "upgrades": None, "warnings": warnings}
+        return {
+            "cost": cost,
+            "upgrades": None,
+            "upgrade_costs": None,
+            "warnings": warnings,
+        }
 
     paths: list[list[str]] = []
+    cost_paths: list[list[int]] = []
     for path_idx, content in enumerate(path_contents[:3], start=1):
         blocks = _find_template_blocks(content, "Upgrade")
         names: list[str] = []
+        costs: list[int] = []
         for block in blocks:
             name = _get_template_param(block, "name")
             if name:
                 # Skip blocks that look like hero level headers (e.g. "Level 3")
                 if re.fullmatch(r"Level\s*\d+", name, re.IGNORECASE):
                     continue
+                cost_raw = _get_template_param(block, "cost") or ""
                 names.append(name)
+                costs.append(_parse_upgrade_cost(cost_raw))
             if len(names) == 5:
                 break
         if len(names) < 5:
             warnings.append(f"Path {path_idx}: expected 5 upgrades, found {len(names)}")
         paths.append(names)
+        cost_paths.append(costs)
 
-    return {"cost": cost, "upgrades": paths, "warnings": warnings}
+    return {
+        "cost": cost,
+        "upgrades": paths,
+        "upgrade_costs": cost_paths,
+        "warnings": warnings,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -313,6 +345,18 @@ def _update_tower_row(
         ):
             for i, name in enumerate(names[:5], start=1):
                 updated[f"{prefix}{i}"] = name
+    upgrade_costs = data.get("upgrade_costs")
+    if upgrade_costs and len(upgrade_costs) == 3:
+        for prefix, costs in (
+            ("top_", upgrade_costs[0]),
+            ("mid_", upgrade_costs[1]),
+            ("bot_", upgrade_costs[2]),
+        ):
+            for i, cost_val in enumerate(costs[:5], start=1):
+                # Only write non-zero costs so existing hand-curated values
+                # are preserved when the wiki template omits the cost param.
+                if cost_val:
+                    updated[f"{prefix}{i}_cost"] = str(cost_val)
     return updated
 
 
@@ -364,11 +408,16 @@ def _write_csv(
 def _print_tower_result(name: str, data: dict[str, Any]) -> None:
     cost = data.get("cost")
     upgrades = data.get("upgrades")
+    upgrade_costs = data.get("upgrade_costs")
     print(f"    base_cost={cost}")
     if upgrades:
         labels = ("top", "mid", "bot")
-        for label, path in zip(labels, upgrades, strict=False):
-            print(f"    {label}: {path}")
+        cost_paths = upgrade_costs or [[], [], []]
+        for label, path, costs in zip(labels, upgrades, cost_paths, strict=True):
+            paired = [
+                f"{n}(${c})" if c else n for n, c in zip(path, costs, strict=True)
+            ]
+            print(f"    {label}: {paired}")
     for w in data.get("warnings", []):
         print(f"    WARN: {w}")
 

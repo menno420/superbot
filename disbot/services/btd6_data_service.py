@@ -50,6 +50,9 @@ class TowerEntry:
     description: str
     upgrade_paths: dict[str, tuple[str, ...]]
     wiki_url: str
+    # Per-upgrade costs (medium difficulty); 0 means not yet populated.
+    # Parallel structure to upgrade_paths: same keys, same length tuples.
+    upgrade_costs: dict[str, tuple[int, ...]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -242,6 +245,19 @@ def _parse_tower(raw: dict[str, Any]) -> TowerEntry:
                 )
             tier_tuple.append(tier_name)
         upgrade_paths[path_key] = tuple(tier_tuple)
+
+    # upgrade_costs is optional; absent or all-zero means "not yet populated".
+    upgrade_costs: dict[str, tuple[int, ...]] = {}
+    costs_raw = raw.get("upgrade_costs")
+    if isinstance(costs_raw, dict):
+        for path_key in _TOWER_UPGRADE_PATHS:
+            raw_list = costs_raw.get(path_key, [])
+            if (
+                isinstance(raw_list, list)
+                and len(raw_list) == _TOWER_UPGRADE_TIERS_PER_PATH
+            ):
+                upgrade_costs[path_key] = tuple(int(c) for c in raw_list)
+
     aliases = tuple(_normalise_alias(a) for a in raw["aliases"])
     return TowerEntry(
         id=str(raw["id"]),
@@ -251,6 +267,7 @@ def _parse_tower(raw: dict[str, Any]) -> TowerEntry:
         base_cost=base_cost,
         description=str(raw["description"]),
         upgrade_paths=upgrade_paths,
+        upgrade_costs=upgrade_costs,
         wiki_url=str(raw["wiki_url"]),
     )
 
