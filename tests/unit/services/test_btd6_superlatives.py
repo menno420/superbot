@@ -49,8 +49,20 @@ def test_superlative_questions_trigger_catalog_block(q):
     assert kb.looks_like_btd6_catalog_question(q)
 
 
-def test_catalog_block_contains_superlatives():
+def test_kind_filter_separates_towers_paragons_and_upgrades():
+    reg = ks.upgrades_by_price(highest=True, limit=5, kind="regular")
+    par = ks.upgrades_by_price(highest=True, limit=5, kind="paragon")
+    assert reg and par
+    assert all(u.path != "paragon" for u in reg)
+    assert all(u.path == "paragon" for u in par)
+    # The priciest regular (tier-5) upgrade is still cheaper than the top Paragon.
+    assert reg[0].cost < par[0].cost
+
+
+def test_catalog_block_keeps_categories_distinct():
     text = kb._btd6_catalog_block().text
-    assert "Most expensive upgrades:" in text
+    # The three "most expensive" questions are separately labelled.
+    assert "Tower placement cost" in text  # most expensive *tower* (base)
+    assert "Most expensive upgrades (tiers 1-5" in text  # excludes Paragons
+    assert "Most expensive Paragons" in text  # the tier-6 super-upgrade
     assert "Cheapest upgrades:" in text
-    assert "Most expensive tower to place:" in text

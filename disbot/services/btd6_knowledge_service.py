@@ -198,7 +198,24 @@ def all_upgrade_prices() -> tuple[UpgradePrice, ...]:
     return tuple(out)
 
 
-def upgrades_by_price(*, highest: bool, limit: int = 3) -> tuple[UpgradePrice, ...]:
-    """Top ``limit`` most- (``highest=True``) or least-expensive upgrades."""
-    ordered = sorted(all_upgrade_prices(), key=lambda u: u.cost, reverse=highest)
+def upgrades_by_price(
+    *,
+    highest: bool,
+    limit: int = 3,
+    kind: str = "all",
+) -> tuple[UpgradePrice, ...]:
+    """Top ``limit`` most-/least-expensive upgrades.
+
+    ``kind`` filters the pool so callers can keep the three "most expensive"
+    questions distinct:
+      * ``"regular"`` — tier 1-5 upgrades only (excludes Paragons);
+      * ``"paragon"`` — Paragons only;
+      * ``"all"`` — both (Paragons dominate the top).
+    """
+    prices = all_upgrade_prices()
+    if kind == "regular":
+        prices = tuple(u for u in prices if u.path != "paragon")
+    elif kind == "paragon":
+        prices = tuple(u for u in prices if u.path == "paragon")
+    ordered = sorted(prices, key=lambda u: u.cost, reverse=highest)
     return tuple(ordered[:limit])

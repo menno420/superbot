@@ -352,29 +352,50 @@ def _btd6_catalog_block() -> BotKnowledgeBlock | None:
         hero_parts = [f"{h.canonical} (cost: {h.base_cost})" for h in dataset.heroes]
         lines.append(f"  Heroes: {', '.join(hero_parts)}")
 
-    # Price superlatives so "most/least expensive" questions can be answered.
+    # Price superlatives — kept as three DISTINCT categories so "most expensive
+    # tower" (placement), "most expensive upgrade" (tiers 1-5), and "most
+    # expensive Paragon" never get conflated.
     try:
         from services import btd6_knowledge_service
 
-        costly = btd6_knowledge_service.upgrades_by_price(highest=True, limit=3)
-        cheap = btd6_knowledge_service.upgrades_by_price(highest=False, limit=3)
-        if costly:
-            lines.append(
-                "Most expensive upgrades: "
-                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in costly),
-            )
-        if cheap:
-            lines.append(
-                "Cheapest upgrades: "
-                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in cheap),
-            )
         priced = [t for t in dataset.towers if t.base_cost]
         if priced:
             dear = max(priced, key=lambda t: t.base_cost)
             cheapest = min(priced, key=lambda t: t.base_cost)
             lines.append(
-                f"Most expensive tower to place: {dear.canonical} (${dear.base_cost:,}); "
-                f"cheapest: {cheapest.canonical} (${cheapest.base_cost:,}).",
+                "Tower placement cost (base only, before any upgrades): most "
+                f"expensive = {dear.canonical} (${dear.base_cost:,}), cheapest = "
+                f"{cheapest.canonical} (${cheapest.base_cost:,}).",
+            )
+        reg_top = btd6_knowledge_service.upgrades_by_price(
+            highest=True,
+            limit=3,
+            kind="regular",
+        )
+        reg_low = btd6_knowledge_service.upgrades_by_price(
+            highest=False,
+            limit=3,
+            kind="regular",
+        )
+        if reg_top:
+            lines.append(
+                "Most expensive upgrades (tiers 1-5, excluding Paragons): "
+                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_top),
+            )
+        if reg_low:
+            lines.append(
+                "Cheapest upgrades: "
+                + "; ".join(f"{u.name} ${u.cost:,} ({u.tower})" for u in reg_low),
+            )
+        paragons = btd6_knowledge_service.upgrades_by_price(
+            highest=True,
+            limit=3,
+            kind="paragon",
+        )
+        if paragons:
+            lines.append(
+                "Most expensive Paragons (the tier-6 super-upgrade): "
+                + "; ".join(f"{u.tower} (${u.cost:,})" for u in paragons),
             )
     except Exception:  # noqa: BLE001 — superlatives are best-effort enrichment
         logger.debug("btd6 catalog superlatives unavailable", exc_info=True)
