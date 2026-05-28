@@ -238,6 +238,7 @@ def _convert_tower_row(
     file: str,
     row_number: int,
     errors: list[ConversionError],
+    allow_empty_descriptions: bool = False,
 ) -> dict[str, Any]:
     tower_id = _validate_required_string(
         row.get("id"),
@@ -278,13 +279,16 @@ def _convert_tower_row(
         field="base_cost",
         errors=errors,
     )
-    description = _validate_required_string(
-        row.get("description"),
-        file=file,
-        row=row_number,
-        field="description",
-        errors=errors,
-    )
+    if allow_empty_descriptions:
+        description = (row.get("description") or "").strip()
+    else:
+        description = _validate_required_string(
+            row.get("description"),
+            file=file,
+            row=row_number,
+            field="description",
+            errors=errors,
+        )
     wiki_url = _validate_required_string(
         row.get("wiki_url"),
         file=file,
@@ -327,6 +331,7 @@ def _convert_hero_row(
     file: str,
     row_number: int,
     errors: list[ConversionError],
+    allow_empty_descriptions: bool = False,
 ) -> dict[str, Any]:
     hero_id = _validate_required_string(
         row.get("id"),
@@ -349,13 +354,16 @@ def _convert_hero_row(
         field="base_cost",
         errors=errors,
     )
-    description = _validate_required_string(
-        row.get("description"),
-        file=file,
-        row=row_number,
-        field="description",
-        errors=errors,
-    )
+    if allow_empty_descriptions:
+        description = (row.get("description") or "").strip()
+    else:
+        description = _validate_required_string(
+            row.get("description"),
+            file=file,
+            row=row_number,
+            field="description",
+            errors=errors,
+        )
     wiki_url = _validate_required_string(
         row.get("wiki_url"),
         file=file,
@@ -514,6 +522,8 @@ def convert(
     heroes_json: Path,
     game_version: str | None,
     check_only: bool,
+    allow_empty_descriptions: bool = False,
+    skip_incomplete: bool = False,
 ) -> int:
     """Run a full CSV→JSON conversion. Return process exit code."""
     errors: list[ConversionError] = []
@@ -525,25 +535,41 @@ def convert(
 
     converted_towers: list[dict[str, Any]] = []
     for offset, row in enumerate(tower_rows):
-        converted_towers.append(
-            _convert_tower_row(
-                row,
-                file=str(towers_csv),
-                row_number=offset + 2,
-                errors=errors,
-            ),
+        row_errors: list[ConversionError] = []
+        entry = _convert_tower_row(
+            row,
+            file=str(towers_csv),
+            row_number=offset + 2,
+            errors=row_errors,
+            allow_empty_descriptions=allow_empty_descriptions,
         )
+        if row_errors and skip_incomplete:
+            print(
+                f"  SKIP towers row {offset + 2} ({row.get('id', '?')}): "
+                + "; ".join(e.reason for e in row_errors),
+            )
+        else:
+            errors.extend(row_errors)
+            converted_towers.append(entry)
 
     converted_heroes: list[dict[str, Any]] = []
     for offset, row in enumerate(hero_rows):
-        converted_heroes.append(
-            _convert_hero_row(
-                row,
-                file=str(heroes_csv),
-                row_number=offset + 2,
-                errors=errors,
-            ),
+        row_errors = []
+        entry = _convert_hero_row(
+            row,
+            file=str(heroes_csv),
+            row_number=offset + 2,
+            errors=row_errors,
+            allow_empty_descriptions=allow_empty_descriptions,
         )
+        if row_errors and skip_incomplete:
+            print(
+                f"  SKIP heroes row {offset + 2} ({row.get('id', '?')}): "
+                + "; ".join(e.reason for e in row_errors),
+            )
+        else:
+            errors.extend(row_errors)
+            converted_heroes.append(entry)
 
     _check_unique_ids(
         converted_towers,
@@ -653,6 +679,24 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Validate without writing.",
     )
+    parser.add_argument(
+        "--allow-empty-descriptions",
+        action="store_true",
+        help=(
+            "Skip the 'description required' check so the import succeeds while "
+            "descriptions are still being written. Empty descriptions become empty "
+            "strings in the JSON output."
+        ),
+    )
+    parser.add_argument(
+        "--skip-incomplete",
+        action="store_true",
+        help=(
+            "Drop rows that are missing any required field (other than description) "
+            "instead of failing the whole import. Prints a SKIP warning for each "
+            "dropped row. Useful when some towers/heroes have no wiki data yet."
+        ),
+    )
     return parser
 
 
@@ -666,6 +710,8 @@ def main(argv: list[str] | None = None) -> int:
         heroes_json=args.heroes_json,
         game_version=args.game_version,
         check_only=args.check,
+        allow_empty_descriptions=args.allow_empty_descriptions,
+        skip_incomplete=args.skip_incomplete,
     )
 
 
