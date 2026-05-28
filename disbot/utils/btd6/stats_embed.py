@@ -118,13 +118,13 @@ def _format_projectile(proj: dict[str, Any]) -> str:
         if proj.get(key):
             parts.append(f"+{proj[key]} vs {label}")
     if proj.get("radius"):
-        parts.append(f"{_num(proj['radius'])}u radius")
+        parts.append(f"{_num(proj['radius'])} units radius")
     if proj.get("speed"):
-        parts.append(f"{_num(proj['speed'])}u/s")
+        parts.append(f"{_num(proj['speed'])} units/sec")
     if proj.get("lifespan"):
         parts.append(f"{_num(proj['lifespan'])}s lifespan")
     if proj.get("pushAmount"):
-        push = f"{proj['pushAmount']}u knockback"
+        push = f"{proj['pushAmount']} units knockback"
         muls = [f"×{proj[k]} {lbl}" for k, lbl in _PUSH_MULTIPLIERS if k in proj]
         if muls:
             push += f" ({', '.join(muls)})"
@@ -162,9 +162,9 @@ def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
     )
     head: list[str] = []
     if tier.get("range") is not None:
-        head.append(f"Range {tier['range']}")
+        head.append(f"Range {tier['range']} units")
     if tier.get("footprintRadius") is not None:
-        head.append(f"Footprint {tier['footprintRadius']}")
+        head.append(f"Footprint {tier['footprintRadius']} units")
     if head:
         embed.description = " · ".join(head)
 
@@ -173,7 +173,7 @@ def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
         if attack.get("rate") is not None:
             lines.append(f"Cooldown {attack['rate']}s")
         if attack.get("range") is not None:
-            lines.append(f"Range {attack['range']}")
+            lines.append(f"Range {attack['range']} units")
         lines.extend(_format_projectile(p) for p in attack.get("projectiles", []))
         value = "\n".join(lines) or "—"
         embed.add_field(
