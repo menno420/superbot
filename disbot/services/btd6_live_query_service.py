@@ -88,6 +88,7 @@ _TOWER_ID_TO_API_KEY: dict[str, str] = {
     "tack_shooter": "TackShooter",
     "ice_monkey": "IceMonkey",
     "glue_gunner": "GlueGunner",
+    "desperado": "Desperado",
     # Military
     "sniper_monkey": "SniperMonkey",
     "monkey_sub": "MonkeySub",
@@ -128,6 +129,7 @@ _HERO_ID_TO_API_KEY: dict[str, str] = {
     "geraldo": "Geraldo",
     "corvus": "Corvus",
     "rosalia": "Rosalia",
+    "silas": "Silas",
 }
 
 _CHOSEN_PRIMARY_HERO_KEY = "ChosenPrimaryHero"
