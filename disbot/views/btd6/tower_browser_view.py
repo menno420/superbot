@@ -30,6 +30,8 @@ from views.navigation import attach_back_button
 
 logger = logging.getLogger("bot.views.btd6.tower_browser")
 
+_CATEGORIES = ("primary", "military", "magic", "support")
+
 
 # ---------------------------------------------------------------------------
 # Embeds
@@ -37,25 +39,18 @@ logger = logging.getLogger("bot.views.btd6.tower_browser")
 
 
 def build_tower_list_embed(vm: TowerListViewModel) -> discord.Embed:
+    cat_label = vm.category_filter.title() if vm.category_filter else "All"
+    page_info = f"Page {vm.page + 1}/{vm.total_pages}"
+    desc = (
+        f"**{cat_label}** towers — showing {len(vm.items)} of {vm.total_count} "
+        f"({page_info}). Select one for details."
+    )
     embed = discord.Embed(
         title="🐵 BTD6 — Towers",
-        description=(
-            f"Showing {len(vm.items)} of {vm.total_count} towers. Pick "
-            "one to view the deterministic fact sheet + any active-event "
-            "restrictions."
-        ),
+        description=desc,
         color=discord.Color.green(),
     )
-    if len(vm.items) < vm.total_count:
-        embed.add_field(
-            name="ℹ️ Pagination",
-            value=(
-                "Discord caps selects at 25 options; refine via "
-                "`/btd6 tower <name>` for off-list towers."
-            ),
-            inline=False,
-        )
-    for item in vm.items[:10]:
+    for item in vm.items:
         embed.add_field(
             name=item.canonical,
             value=f"Cost: {item.base_cost} • {item.category}",
@@ -83,7 +78,7 @@ def build_tower_detail_embed(vm: TowerDetailViewModel) -> discord.Embed:
 
 
 # ---------------------------------------------------------------------------
-# Views
+# Select
 # ---------------------------------------------------------------------------
 
 
@@ -100,7 +95,6 @@ class _TowerSelect(discord.ui.Select):
             for item in vm.items
         ]
         if not options:
-            # Discord requires at least one option; render a disabled placeholder.
             options = [
                 discord.SelectOption(
                     label="(no towers available)",
@@ -134,10 +128,13 @@ class _TowerSelect(discord.ui.Select):
             return
 
         # Rebuild the list as the detail's parent so the Back button works.
+        _page = self._vm.page
+        _cat = self._vm.category_filter
+
         async def _rebuild_list(
             _i: discord.Interaction,
         ) -> tuple[discord.Embed, discord.ui.View]:
-            list_vm = await build_tower_list_view_model()
+            list_vm = await build_tower_list_view_model(page=_page, category=_cat)
             parent = TowerBrowserView(interaction.user)
             parent.set_vm(list_vm)
             return build_tower_list_embed(list_vm), parent
@@ -157,6 +154,76 @@ class _TowerSelect(discord.ui.Select):
         )
 
 
+# ---------------------------------------------------------------------------
+# Navigation and category buttons
+# ---------------------------------------------------------------------------
+
+
+class _NavButton(discord.ui.Button):
+    """Previous / next page button for the tower browser."""
+
+    def __init__(
+        self,
+        label: str,
+        target_page: int,
+        category: str | None,
+        *,
+        disabled: bool = False,
+    ) -> None:
+        super().__init__(
+            label=label,
+            style=discord.ButtonStyle.secondary,
+            disabled=disabled,
+            row=1,
+        )
+        self._target_page = target_page
+        self._category = category
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        vm = await build_tower_list_view_model(
+            page=self._target_page,
+            category=self._category,
+        )
+        view = TowerBrowserView(interaction.user)
+        view.set_vm(vm)
+        await safe_edit(interaction, embed=build_tower_list_embed(vm), view=view)
+
+
+class _CategoryButton(discord.ui.Button):
+    """Filter towers by category."""
+
+    def __init__(
+        self,
+        label: str,
+        category: str | None,
+        *,
+        active: bool = False,
+    ) -> None:
+        super().__init__(
+            label=label,
+            style=(
+                discord.ButtonStyle.primary if active else discord.ButtonStyle.secondary
+            ),
+            row=2,
+        )
+        self._category = category
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        vm = await build_tower_list_view_model(page=0, category=self._category)
+        view = TowerBrowserView(interaction.user)
+        view.set_vm(vm)
+        await safe_edit(interaction, embed=build_tower_list_embed(vm), view=view)
+
+
+# ---------------------------------------------------------------------------
+# Views
+# ---------------------------------------------------------------------------
+
+
 class TowerBrowserView(HubView):
     """Ephemeral list of towers — opened from the BTD6 hub."""
 
@@ -165,12 +232,37 @@ class TowerBrowserView(HubView):
         self._vm: TowerListViewModel | None = None
 
     def set_vm(self, vm: TowerListViewModel) -> None:
-        # Reset items then re-add the select for the supplied VM.
-        # Called after construction so the async builder doesn't block __init__.
         for child in list(self.children):
             self.remove_item(child)
         self._vm = vm
         self.add_item(_TowerSelect(vm))
+
+        # Navigation buttons (row 1)
+        prev_disabled = vm.page <= 0
+        next_disabled = vm.page >= vm.total_pages - 1
+        self.add_item(
+            _NavButton(
+                "◀ Prev",
+                vm.page - 1,
+                vm.category_filter,
+                disabled=prev_disabled,
+            ),
+        )
+        self.add_item(
+            _NavButton(
+                "Next ▶",
+                vm.page + 1,
+                vm.category_filter,
+                disabled=next_disabled,
+            ),
+        )
+
+        # Category filter buttons (row 2): All + one per category
+        self.add_item(_CategoryButton("All", None, active=vm.category_filter is None))
+        for cat in _CATEGORIES:
+            self.add_item(
+                _CategoryButton(cat.title(), cat, active=vm.category_filter == cat),
+            )
 
 
 class TowerDetailView(HubView):

@@ -79,7 +79,11 @@ def test_no_error_message_just_code() -> None:
 def test_ingestion_result_carries_error_message() -> None:
     """The dataclass field exists with a None default for back-compat."""
     r = IngestionResult(
-        source_key="x", status="ok", fact_count=0, duration_ms=0,
-        error_code=None, run_id=None,
+        source_key="x",
+        status="ok",
+        fact_count=0,
+        duration_ms=0,
+        error_code=None,
+        run_id=None,
     )
     assert r.error_message is None

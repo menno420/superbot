@@ -30,28 +30,20 @@ logger = logging.getLogger("bot.views.btd6.hero_browser")
 
 
 def build_hero_list_embed(vm: HeroListViewModel) -> discord.Embed:
+    page_info = f"Page {vm.page + 1}/{vm.total_pages}"
     embed = discord.Embed(
         title="🐵 BTD6 — Heroes",
         description=(
-            f"Showing {len(vm.items)} of {vm.total_count} heroes. Pick "
-            "one to view the seed sheet + any active-event restrictions."
+            f"Showing {len(vm.items)} of {vm.total_count} heroes "
+            f"({page_info}). Select one for details."
         ),
         color=discord.Color.green(),
     )
-    if len(vm.items) < vm.total_count:
-        embed.add_field(
-            name="ℹ️ Pagination",
-            value=(
-                "Discord caps selects at 25 options; refine via "
-                "`/btd6 hero <name>` for off-list heroes."
-            ),
-            inline=False,
-        )
-    for item in vm.items[:10]:
+    for item in vm.items:
         embed.add_field(
             name=item.canonical,
-            value=f"Cost: {item.base_cost} • {item.description[:80]}",
-            inline=False,
+            value=f"Cost: {item.base_cost}",
+            inline=True,
         )
     return embed
 
@@ -69,7 +61,7 @@ def build_hero_detail_embed(vm: HeroDetailViewModel) -> discord.Embed:
 
 
 # ---------------------------------------------------------------------------
-# Views
+# Select
 # ---------------------------------------------------------------------------
 
 
@@ -97,6 +89,7 @@ class _HeroSelect(discord.ui.Select):
             options=options[:25],
             row=0,
         )
+        self._vm = vm
 
     async def callback(self, interaction: discord.Interaction) -> None:
         choice = self.values[0]
@@ -115,10 +108,12 @@ class _HeroSelect(discord.ui.Select):
             await safe_edit(interaction, embed=embed, view=None)
             return
 
+        _page = self._vm.page
+
         async def _rebuild_list(
             _i: discord.Interaction,
         ) -> tuple[discord.Embed, discord.ui.View]:
-            list_vm = await build_hero_list_view_model()
+            list_vm = await build_hero_list_view_model(page=_page)
             parent = HeroBrowserView(interaction.user)
             parent.set_vm(list_vm)
             return build_hero_list_embed(list_vm), parent
@@ -138,6 +133,37 @@ class _HeroSelect(discord.ui.Select):
         )
 
 
+# ---------------------------------------------------------------------------
+# Navigation button
+# ---------------------------------------------------------------------------
+
+
+class _HeroNavButton(discord.ui.Button):
+    """Previous / next page button for the hero browser."""
+
+    def __init__(self, label: str, target_page: int, *, disabled: bool = False) -> None:
+        super().__init__(
+            label=label,
+            style=discord.ButtonStyle.secondary,
+            disabled=disabled,
+            row=1,
+        )
+        self._target_page = target_page
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        vm = await build_hero_list_view_model(page=self._target_page)
+        view = HeroBrowserView(interaction.user)
+        view.set_vm(vm)
+        await safe_edit(interaction, embed=build_hero_list_embed(vm), view=view)
+
+
+# ---------------------------------------------------------------------------
+# Views
+# ---------------------------------------------------------------------------
+
+
 class HeroBrowserView(HubView):
     def __init__(self, author: discord.User | discord.Member) -> None:
         super().__init__(author)
@@ -148,6 +174,11 @@ class HeroBrowserView(HubView):
             self.remove_item(child)
         self._vm = vm
         self.add_item(_HeroSelect(vm))
+
+        prev_disabled = vm.page <= 0
+        next_disabled = vm.page >= vm.total_pages - 1
+        self.add_item(_HeroNavButton("◀ Prev", vm.page - 1, disabled=prev_disabled))
+        self.add_item(_HeroNavButton("Next ▶", vm.page + 1, disabled=next_disabled))
 
 
 class HeroDetailView(HubView):

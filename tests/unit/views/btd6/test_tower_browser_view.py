@@ -24,11 +24,20 @@ def _stub_user() -> discord.User:
     return user
 
 
-def _vm(items: list[TowerListItem], total: int | None = None) -> TowerListViewModel:
+def _vm(
+    items: list[TowerListItem],
+    total: int | None = None,
+    page: int = 0,
+    total_pages: int = 1,
+    category_filter: str | None = None,
+) -> TowerListViewModel:
     return TowerListViewModel(
         items=tuple(items),
         total_count=total if total is not None else len(items),
         context=ContextHandle(context_id="btd6_tower:list", context_type="tower"),
+        page=page,
+        total_pages=total_pages,
+        category_filter=category_filter,
     )
 
 
@@ -54,6 +63,15 @@ def test_view_starts_empty_then_set_vm_adds_select() -> None:
     assert len(selects) == 1
 
 
+def test_set_vm_adds_nav_and_category_buttons() -> None:
+    vm = _vm([_item("dart_monkey")], total=16, total_pages=2)
+    view = TowerBrowserView(_stub_user())
+    view.set_vm(vm)
+    buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
+    # 2 nav buttons + 5 category buttons (All + 4 categories)
+    assert len(buttons) == 7
+
+
 def test_select_caps_at_25_options() -> None:
     items = [_item(f"t{i}") for i in range(40)]
     vm = _vm(items, total=40)
@@ -76,19 +94,21 @@ def test_list_embed_title() -> None:
     vm = _vm([_item("dart_monkey")])
     embed = build_tower_list_embed(vm)
     assert embed.title == "🐵 BTD6 — Towers"
-    assert "1 of 1 towers" in (embed.description or "")
+    assert "1 of 1" in (embed.description or "")
 
 
-def test_list_embed_pagination_hint_when_truncated() -> None:
-    items = [_item(f"t{i}") for i in range(25)]
-    vm = _vm(items, total=40)
+def test_list_embed_shows_page_info() -> None:
+    items = [_item(f"t{i}") for i in range(8)]
+    vm = _vm(items, total=16, page=0, total_pages=2)
     embed = build_tower_list_embed(vm)
-    pagination_field = next(
-        (f for f in embed.fields if "Pagination" in (f.name or "")),
-        None,
-    )
-    assert pagination_field is not None
-    assert "25 options" in (pagination_field.value or "")
+    assert "Page 1/2" in (embed.description or "")
+
+
+def test_list_embed_category_filter_shown() -> None:
+    items = [_item(f"t{i}") for i in range(3)]
+    vm = _vm(items, total=3, category_filter="primary")
+    embed = build_tower_list_embed(vm)
+    assert "Primary" in (embed.description or "")
 
 
 def test_detail_view_has_no_children_at_init() -> None:
