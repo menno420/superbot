@@ -109,12 +109,15 @@ def test_test_intent_embed_renders_resolver_state():
 @pytest.mark.asyncio
 async def test_panel_embed_includes_reference_and_active_blocks(monkeypatch):
     """Panel embed: seed reference block + 'Currently active' block."""
+    from unittest.mock import AsyncMock
+
     from utils.db import btd6_sources as btd6_db
 
-    async def _empty(_kinds):
-        return {}
-
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+    monkeypatch.setattr(
+        btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value={}),
+    )
+    # Hub VM now also calls get_active_events → search_facts.
+    monkeypatch.setattr(btd6_db, "search_facts", AsyncMock(return_value=[]))
     embed = await build_btd6_panel_embed()
     assert isinstance(embed, discord.Embed)
     field_names = {field.name for field in embed.fields}

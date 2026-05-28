@@ -44,6 +44,8 @@ async def test_panel_embed_carries_context_id(monkeypatch) -> None:
         "latest_fact_per_entity_kind",
         AsyncMock(return_value={}),
     )
+    # Hub VM now also calls get_active_events → search_facts.
+    monkeypatch.setattr(btd6_db, "search_facts", AsyncMock(return_value=[]))
     monkeypatch.setattr(btd6_knowledge_service, "data_version", lambda: "1.0")
     monkeypatch.setattr(btd6_knowledge_service, "game_version", lambda: "42.0")
     monkeypatch.setattr(btd6_knowledge_service, "list_towers", lambda: [])
@@ -159,6 +161,7 @@ async def test_hub_view_model_context_id(monkeypatch) -> None:
         "latest_fact_per_entity_kind",
         AsyncMock(return_value={}),
     )
+    monkeypatch.setattr(btd6_db, "search_facts", AsyncMock(return_value=[]))
     monkeypatch.setattr(btd6_knowledge_service, "data_version", lambda: "1.0")
     monkeypatch.setattr(btd6_knowledge_service, "game_version", lambda: "42.0")
     monkeypatch.setattr(btd6_knowledge_service, "list_towers", lambda: [])

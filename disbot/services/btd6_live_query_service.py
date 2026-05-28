@@ -361,9 +361,11 @@ async def _scan_boss_restrictions(
 
     out: list[TowerRestrictionContext] = []
     for boss in await get_active_events(("btd6_boss",)):
-        # Standard / current difficulty fan-out is "normal" (see
-        # ``btd6_ingestion_service._DEPENDENCY_CHAINS``).
-        metadata_key = f"{boss.entity_key}_normal"
+        # Standard / current difficulty fan-out is "standard" (see
+        # ``btd6_ingestion_service._DEPENDENCY_CHAINS``). Must match the
+        # path-param the ingestion supervisor uses, otherwise lookups
+        # find nothing.
+        metadata_key = f"{boss.entity_key}_standard"
         md = await btd6_db.get_latest_fact(
             "btd6.boss_metadata",
             "btd6_boss_difficulty",
