@@ -6,9 +6,13 @@ so pages are copied into local text files and parsed here). It is separate
 from ``fetch_btd6_wiki_data.py`` (the Fandom MediaWiki API fetcher), whose
 cost values proved inaccurate.
 
-Currently handles the **upgrades** page: tower intro, the three upgrade
-paths, and the optional Paragon. For each upgrade it reads the name, XP
-cost, description, and the four difficulty prices.
+Handles two page types (auto-detected — JSON ⇒ stats, else ⇒ upgrades):
+
+* **upgrades** page: tower intro, the three upgrade paths, and the optional
+  Paragon — name, XP cost, description, and the four difficulty prices.
+* **stats** page: the ``Module:BTD6 stats/<tower>/new`` JSON, flattened into
+  per-tier stats with damage types decoded. ``--out`` writes the distilled
+  runtime file.
 
 Robustness — the format varies slightly between towers, so the parser:
 
@@ -229,13 +233,184 @@ def _render_report(result: UpgradesResult) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# Stats pages — Module:BTD6 stats/<tower>/new JSON
+# ---------------------------------------------------------------------------
+
+# The 16 single-path crosspath codes a stats page must define: base + 5 per
+# path. Codes are [Path1][Path2][Path3] tiers; nested crosspath deltas (e.g.
+# "_110") are intentionally dropped — they're pro-extra and need delta-merging.
+_MAIN_CODES: tuple[str, ...] = (
+    "000",
+    "100", "200", "300", "400", "500",
+    "010", "020", "030", "040", "050",
+    "001", "002", "003", "004", "005",
+)  # fmt: skip
+
+
+@dataclass
+class StatsResult:
+    game_version: str
+    tiers: dict[str, dict] = field(default_factory=dict)
+    warnings: list[str] = field(default_factory=list)
+
+    @property
+    def ok(self) -> bool:
+        return not self.warnings
+
+
+def _clean_node(raw: dict) -> dict:
+    """Recursively clean a raw stats node.
+
+    Flattens ``_order``-keyed containers into ordered lists of named children,
+    decodes ``immuneBloonProperties`` into a readable damage type, and drops
+    ``_``-prefixed keys (``_order`` handled here; ``_NNN`` crosspath deltas
+    dropped). Every other field passes through verbatim — pro stats keep full
+    fidelity.
+    """
+    from utils.btd6.damage_types import decode_damage_type
+
+    out: dict = {}
+    for key, value in raw.items():
+        if key.startswith("_"):
+            continue
+        if isinstance(value, dict) and "_order" in value:
+            out[key] = [
+                {"name": child, **_clean_node(value[child])}
+                for child in value["_order"]
+                if isinstance(value.get(child), dict)
+            ]
+        elif key == "immuneBloonProperties":
+            dt = decode_damage_type(value)
+            out["damage_type"] = dt.name
+            out["cannot_pop"] = dt.cannot_pop
+            out["immuneBloonProperties"] = value
+        else:
+            out[key] = value
+    return out
+
+
+def parse_stats_json(text: str) -> StatsResult:
+    """Parse a ``Module:BTD6 stats/<tower>/new`` JSON page.
+
+    Raises ``ValueError`` (via :func:`json.loads`) on malformed JSON — that's
+    the completeness guard against a truncated paste.
+    """
+    data = json.loads(text)
+    game_version = str(data.get("_last_updated", ""))
+    result = StatsResult(game_version=game_version)
+
+    for code in _MAIN_CODES:
+        node = data.get("_" + code)
+        if not isinstance(node, dict):
+            result.warnings.append(f"missing tier {code}")
+            continue
+        cleaned = _clean_node(node)
+        cleaned["code"] = code
+        cleaned["crosspath"] = "-".join(code)
+        result.tiers[code] = cleaned
+
+    if not game_version:
+        result.warnings.append("missing _last_updated (game version)")
+    return result
+
+
+def _headline(tier: dict) -> str:
+    """One-line headline (damage / type / pierce / cooldown / range) for a tier."""
+    attacks = tier.get("attacks", [])
+    best: dict | None = None
+    for attack in attacks:
+        for proj in attack.get("projectiles", []):
+            if (proj.get("damage") or 0) > (best.get("damage", 0) if best else 0):
+                best = proj
+    parts: list[str] = []
+    if best:
+        parts.append(f"dmg {best.get('damage')}")
+        if best.get("damage_type"):
+            parts.append(str(best["damage_type"]))
+        parts.append(f"pierce {best.get('pierce')}")
+    if attacks and attacks[0].get("cooldown") is not None:
+        parts.append(f"cd {attacks[0]['cooldown']}s")
+    if tier.get("range") is not None:
+        parts.append(f"range {tier['range']}")
+    for ability in tier.get("abilities", []):
+        parts.append(f"ability {ability.get('cooldown')}s")
+    return ", ".join(parts)
+
+
+def _render_stats_report(result: StatsResult) -> str:
+    lines = [f"game version: {result.game_version or '?'}", ""]
+    for code in _MAIN_CODES:
+        tier = result.tiers.get(code)
+        if tier is None:
+            continue
+        lines.append(f"  {tier['crosspath']}: {_headline(tier)}")
+    lines.append("")
+    if result.warnings:
+        lines.append(f"⚠ {len(result.warnings)} warning(s):")
+        lines.extend(f"  - {w}" for w in result.warnings)
+    else:
+        lines.append(f"✓ no warnings — all {len(result.tiers)} tiers parsed")
+    return "\n".join(lines)
+
+
+def _looks_like_json(text: str) -> bool:
+    try:
+        json.loads(text)
+    except ValueError:
+        return False
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("path", type=Path, help="Pasted *.upgrades.txt file")
-    parser.add_argument("--json", action="store_true", help="Emit structured JSON")
+    parser.add_argument(
+        "path",
+        type=Path,
+        help="Pasted upgrades (.txt) or stats (.json) file",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit structured JSON (upgrades)",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        help="Write distilled stats JSON here (stats)",
+    )
+    parser.add_argument(
+        "--tower-id",
+        help="Tower id for the distilled file (default: filename stem)",
+    )
     args = parser.parse_args(argv)
 
-    result = parse_upgrades_page(args.path.read_text(encoding="utf-8"))
+    text = args.path.read_text(encoding="utf-8")
+
+    if _looks_like_json(text):
+        stats = parse_stats_json(text)
+        print(_render_stats_report(stats))
+        if args.out:
+            tower_id = args.tower_id or args.path.stem.replace(".stats", "")
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(
+                json.dumps(
+                    {
+                        "tower_id": tower_id,
+                        "game_version": stats.game_version,
+                        "source": "bloonswiki.com Module:BTD6 stats (CC BY-NC-SA)",
+                        "tiers": stats.tiers,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            print(f"\nWrote {args.out}")
+        return 1 if stats.warnings else 0
+
+    result = parse_upgrades_page(text)
     if args.json:
         print(json.dumps(_to_dict(result), indent=2, ensure_ascii=False))
     else:
