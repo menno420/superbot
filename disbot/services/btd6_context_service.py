@@ -296,12 +296,22 @@ def _render_fixture_tower(entry: Any) -> list[str]:
         ),
     )
 
-    # Lines 2-4: one per upgrade path
+    # Lines 2-4: one per upgrade path, including costs when populated.
     upgrade_paths: dict[str, Any] = getattr(entry, "upgrade_paths", {}) or {}
+    upgrade_costs: dict[str, Any] = getattr(entry, "upgrade_costs", {}) or {}
     for path_name, upgrades in upgrade_paths.items():
         if not upgrades:
             continue
-        upgrades_str = ", ".join(str(u) for u in upgrades if u)
+        costs = upgrade_costs.get(path_name, ())
+        has_costs = bool(costs) and any(c for c in costs)
+        if has_costs:
+            parts = [
+                f"{u} (${c})" if c else u
+                for u, c in zip(upgrades, costs)
+            ]
+            upgrades_str = ", ".join(parts)
+        else:
+            upgrades_str = ", ".join(str(u) for u in upgrades if u)
         lines.append(
             _cap(
                 f"[btd6_tower] {canonical} {path_name} upgrades: "
