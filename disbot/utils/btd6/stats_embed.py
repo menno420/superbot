@@ -191,9 +191,7 @@ def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
 
     if not embed.fields:
         embed.description = "This is an economy/support tower — no combat stats."
-    embed.set_footer(
-        text=f"BTD6 stats v{stats.game_version} · bloonswiki (CC BY-NC-SA)",
-    )
+    embed.set_footer(text=f"BTD6 stats v{stats.game_version}")
     return embed
 
 
