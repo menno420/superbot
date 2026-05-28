@@ -78,6 +78,47 @@ _TOWER_COLUMNS: tuple[str, ...] = (
     "bot_3",
     "bot_4",
     "bot_5",
+    "top_1_cost",
+    "top_2_cost",
+    "top_3_cost",
+    "top_4_cost",
+    "top_5_cost",
+    "mid_1_cost",
+    "mid_2_cost",
+    "mid_3_cost",
+    "mid_4_cost",
+    "mid_5_cost",
+    "bot_1_cost",
+    "bot_2_cost",
+    "bot_3_cost",
+    "bot_4_cost",
+    "bot_5_cost",
+    "wiki_url",
+)
+
+# Cost columns are optional — older CSVs without them still import cleanly.
+_TOWER_REQUIRED_COLUMNS: tuple[str, ...] = (
+    "id",
+    "canonical",
+    "category",
+    "aliases",
+    "base_cost",
+    "description",
+    "top_1",
+    "top_2",
+    "top_3",
+    "top_4",
+    "top_5",
+    "mid_1",
+    "mid_2",
+    "mid_3",
+    "mid_4",
+    "mid_5",
+    "bot_1",
+    "bot_2",
+    "bot_3",
+    "bot_4",
+    "bot_5",
     "wiki_url",
 )
 
@@ -313,7 +354,19 @@ def _convert_tower_row(
             tiers.append(tier_value)
         upgrade_paths[path_key] = tiers
 
-    return {
+    # Upgrade costs are optional: absent or zero means "not yet populated".
+    upgrade_costs: dict[str, list[int]] = {}
+    for path_key, prefix in (("top", "top_"), ("mid", "mid_"), ("bot", "bot_")):
+        tier_costs: list[int] = []
+        for tier in range(1, 6):
+            raw = (row.get(f"{prefix}{tier}_cost") or "").strip()
+            try:
+                tier_costs.append(int(raw) if raw else 0)
+            except ValueError:
+                tier_costs.append(0)
+        upgrade_costs[path_key] = tier_costs
+
+    result: dict[str, Any] = {
         "id": tower_id,
         "canonical": canonical,
         "aliases": aliases,
@@ -321,8 +374,10 @@ def _convert_tower_row(
         "base_cost": base_cost,
         "description": description,
         "upgrade_paths": upgrade_paths,
+        "upgrade_costs": upgrade_costs,
         "wiki_url": wiki_url,
     }
+    return result
 
 
 def _convert_hero_row(
@@ -528,7 +583,7 @@ def convert(
     """Run a full CSV→JSON conversion. Return process exit code."""
     errors: list[ConversionError] = []
 
-    tower_rows, header_errors = _read_csv(towers_csv, _TOWER_COLUMNS)
+    tower_rows, header_errors = _read_csv(towers_csv, _TOWER_REQUIRED_COLUMNS)
     errors.extend(header_errors)
     hero_rows, header_errors = _read_csv(heroes_csv, _HERO_COLUMNS)
     errors.extend(header_errors)
