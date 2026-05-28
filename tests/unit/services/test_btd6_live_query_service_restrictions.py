@@ -203,7 +203,7 @@ async def test_boss_metadata_parent_resolution_uses_body_field(monkeypatch):
     from utils.db import btd6_sources as btd6_db
 
     boss_id_with_underscore = "Diamond_back_5"
-    metadata_entity_key = f"{boss_id_with_underscore}_normal"
+    metadata_entity_key = f"{boss_id_with_underscore}_standard"
 
     async def _search(*, fact_type=None, entity_kind=None, limit=50):
         if entity_kind == "btd6_boss":
@@ -227,7 +227,7 @@ async def test_boss_metadata_parent_resolution_uses_body_field(monkeypatch):
                 "fact_type": "btd6.boss_metadata",
                 "body_json": {
                     "boss_id": boss_id_with_underscore,
-                    "difficulty": "normal",
+                    "difficulty": "standard",
                     "_towers": [
                         {"tower": "DartMonkey", "max": 0, "isHero": False},
                     ],

@@ -1,8 +1,11 @@
-"""Pin the new 'Currently active' field on the BTD6 panel embed.
+"""Pin the 'Currently active' field on the BTD6 panel embed.
 
-The plan is to make ``build_btd6_panel_embed`` async and add a field
-that lists the latest race / boss / CT / odyssey / event by name with
-a ``ends Xh/Xd`` hint.
+PR 1 made ``build_btd6_panel_embed`` async and added a field that
+lists the latest race / boss / CT / odyssey / event by name with a
+freshness badge. The follow-up fix switched the source-of-truth to
+``btd6_live_query_service.get_active_events`` with a stricter "has an
+explicit future end_ms" filter so ended events stop showing as
+currently-active.
 """
 
 from __future__ import annotations
@@ -36,32 +39,53 @@ def _fact_row(
     return {
         "entity_kind": entity_kind,
         "entity_key": entity_key,
+        # fact_type must match what get_active_events looks for per kind.
+        "fact_type": f"btd6.{entity_kind.removeprefix('btd6_')}s_index"
+        if entity_kind not in ("btd6_ct", "btd6_odyssey", "btd6_event")
+        else {
+            "btd6_ct": "btd6.ct_index",
+            "btd6_odyssey": "btd6.odyssey_index",
+            "btd6_event": "btd6.events_index",
+        }[entity_kind],
         "body_json": body,
         "fetched_at": datetime.now(tz=timezone.utc),
     }
 
 
-@pytest.mark.asyncio
-async def test_panel_embed_includes_currently_active_field(monkeypatch):
+def _patch_db(monkeypatch, *, latest_rows: dict, search_rows_by_kind: dict | None = None):
+    """Mock both DB paths the hub VM now uses."""
     from utils.db import btd6_sources as btd6_db
 
-    async def _rows(kinds):
-        return {
-            "btd6_race": _fact_row(
-                entity_kind="btd6_race",
-                entity_key="Reversed_Loop",
-                name="Reversed Loop",
-                end_ms=_now_ms(48),
-            ),
-            "btd6_boss": _fact_row(
-                entity_kind="btd6_boss",
-                entity_key="Diamondback5",
-                name="Diamondback v5",
-                end_ms=_now_ms(5),
-            ),
-        }
+    monkeypatch.setattr(
+        btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value=latest_rows),
+    )
+    sources = search_rows_by_kind or {}
 
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _rows)
+    async def _search_facts(*, fact_type=None, entity_kind=None, limit=50):
+        return sources.get(entity_kind, [])
+
+    monkeypatch.setattr(btd6_db, "search_facts", _search_facts)
+
+
+@pytest.mark.asyncio
+async def test_panel_embed_includes_currently_active_field(monkeypatch):
+    race = _fact_row(
+        entity_kind="btd6_race",
+        entity_key="Reversed_Loop",
+        name="Reversed Loop",
+        end_ms=_now_ms(48),
+    )
+    boss = _fact_row(
+        entity_kind="btd6_boss",
+        entity_key="Diamondback5",
+        name="Diamondback v5",
+        end_ms=_now_ms(5),
+    )
+    _patch_db(
+        monkeypatch,
+        latest_rows={"btd6_race": race, "btd6_boss": boss},
+        search_rows_by_kind={"btd6_race": [race], "btd6_boss": [boss]},
+    )
 
     embed = await build_btd6_panel_embed()
     assert isinstance(embed, discord.Embed)
@@ -78,12 +102,7 @@ async def test_panel_embed_includes_currently_active_field(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_panel_embed_renders_dash_for_missing_kinds(monkeypatch):
-    from utils.db import btd6_sources as btd6_db
-
-    async def _empty(kinds):
-        return {}
-
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+    _patch_db(monkeypatch, latest_rows={}, search_rows_by_kind={})
 
     embed = await build_btd6_panel_embed()
     active_field = next(f for f in embed.fields if "Currently active" in (f.name or ""))
@@ -94,14 +113,16 @@ async def test_panel_embed_renders_dash_for_missing_kinds(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_panel_embed_falls_back_to_entity_key_when_no_name(monkeypatch):
-    from utils.db import btd6_sources as btd6_db
-
-    async def _rows(kinds):
-        return {
-            "btd6_ct": _fact_row(entity_kind="btd6_ct", entity_key="ct_abc123"),
-        }
-
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _rows)
+    ct = _fact_row(
+        entity_kind="btd6_ct",
+        entity_key="ct_abc123",
+        end_ms=_now_ms(48),
+    )
+    _patch_db(
+        monkeypatch,
+        latest_rows={"btd6_ct": ct},
+        search_rows_by_kind={"btd6_ct": [ct]},
+    )
 
     embed = await build_btd6_panel_embed()
     active_field = next(f for f in embed.fields if "Currently active" in (f.name or ""))
@@ -111,12 +132,7 @@ async def test_panel_embed_falls_back_to_entity_key_when_no_name(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_panel_embed_keeps_seed_reference_block(monkeypatch):
-    from utils.db import btd6_sources as btd6_db
-
-    async def _empty(kinds):
-        return {}
-
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+    _patch_db(monkeypatch, latest_rows={}, search_rows_by_kind={})
 
     embed = await build_btd6_panel_embed()
     names = [f.name for f in embed.fields]
@@ -135,12 +151,7 @@ async def test_panel_embed_keeps_seed_reference_block(monkeypatch):
 @pytest.mark.asyncio
 async def test_panel_embed_renders_white_circle_for_never_kinds(monkeypatch):
     """Every missing kind leads with ⚪ (never fetched)."""
-    from utils.db import btd6_sources as btd6_db
-
-    async def _empty(kinds):
-        return {}
-
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+    _patch_db(monkeypatch, latest_rows={}, search_rows_by_kind={})
 
     embed = await build_btd6_panel_embed()
     active_field = next(f for f in embed.fields if "Currently active" in (f.name or ""))
@@ -152,19 +163,17 @@ async def test_panel_embed_renders_white_circle_for_never_kinds(monkeypatch):
 @pytest.mark.asyncio
 async def test_panel_embed_renders_fresh_badge_for_recent_fact(monkeypatch):
     """A recently-fetched row leads with 🟢."""
-    from utils.db import btd6_sources as btd6_db
-
-    async def _rows(kinds):
-        return {
-            "btd6_race": _fact_row(
-                entity_kind="btd6_race",
-                entity_key="Reversed_Loop",
-                name="Reversed Loop",
-                end_ms=_now_ms(48),
-            ),
-        }
-
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _rows)
+    race = _fact_row(
+        entity_kind="btd6_race",
+        entity_key="Reversed_Loop",
+        name="Reversed Loop",
+        end_ms=_now_ms(48),
+    )
+    _patch_db(
+        monkeypatch,
+        latest_rows={"btd6_race": race},
+        search_rows_by_kind={"btd6_race": [race]},
+    )
 
     embed = await build_btd6_panel_embed()
     active_field = next(f for f in embed.fields if "Currently active" in (f.name or ""))
@@ -174,3 +183,38 @@ async def test_panel_embed_renders_fresh_badge_for_recent_fact(monkeypatch):
     assert value.count("⚪") == 4
     # Existing layout invariants still hold.
     assert "Reversed Loop" in value
+
+
+@pytest.mark.asyncio
+async def test_panel_embed_hides_ended_race_from_currently_active(monkeypatch):
+    """Regression: an ended race must NOT appear in 'Currently active'.
+
+    Pre-fix, ``latest_fact_per_entity_kind`` picked an arbitrary tied-
+    fetched_at race fact and rendered it without filtering by end_ms.
+    A race that ended a month ago surfaced as the current race because
+    the renderer relied on ``_format_ends_relative`` to slap on a
+    "· ended" suffix — which never fired when end_ms was missing or
+    when the race was simply the wrong choice.
+    """
+    ended = _fact_row(
+        entity_kind="btd6_race",
+        entity_key="Enjoying_the_Hotsprings_mois29mi",
+        name="Enjoying the Hotsprings",
+        end_ms=_now_ms(-24 * 30),  # 30 days in the past
+    )
+    _patch_db(
+        monkeypatch,
+        latest_rows={"btd6_race": ended},
+        search_rows_by_kind={"btd6_race": [ended]},
+    )
+
+    embed = await build_btd6_panel_embed()
+    active_field = next(f for f in embed.fields if "Currently active" in (f.name or ""))
+    value = active_field.value or ""
+    # Ended race name is NOT in the field.
+    assert "Enjoying the Hotsprings" not in value
+    # Race slot renders as "—".
+    assert "race" in value  # row label still present
+    # Freshness still reflects the underlying data being recent (🟢)
+    # even though no race is currently active.
+    assert "🟢" in value

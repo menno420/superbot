@@ -197,20 +197,67 @@ class HubViewModel:
 async def build_hub_view_model() -> HubViewModel:
     """Compose the BTD6 hub view-model.
 
-    Pulls knowledge counts from :mod:`btd6_knowledge_service`, latest
-    fact per kind from :mod:`utils.db.btd6_sources`, and derives the
-    freshness state per kind from the fact's ``fetched_at`` timestamp.
+    Pulls knowledge counts from :mod:`btd6_knowledge_service`, the
+    set of currently-active events from
+    :func:`services.btd6_live_query_service.get_active_events`, and
+    derives per-kind freshness from the latest stored fact for that
+    kind so an empty "Currently active" slot still tells the operator
+    whether ingestion ran recently.
+
+    The hub uses a stricter active-window filter than the facade's
+    default: only events whose ``end_ms`` is **explicitly in the future**
+    surface as currently-active. Events with missing / past ``end_ms``
+    are excluded (the facade's default treats missing ``end_ms`` as
+    active for restriction scanning, which is too permissive for a
+    user-facing "what's running right now" claim).
     """
-    from services import btd6_knowledge_service
+    from datetime import datetime, timezone
+
+    from services import btd6_knowledge_service, btd6_live_query_service
     from utils.db import btd6_sources as btd6_db
 
     rows = await btd6_db.latest_fact_per_entity_kind(
         [kind for kind, _, _, _ in _HUB_ACTIVE_KINDS],
     )
+    headlines = await btd6_live_query_service.get_active_events(
+        tuple(kind for kind, _, _, _ in _HUB_ACTIVE_KINDS),
+    )
+    now_ms = int(datetime.now(tz=timezone.utc).timestamp() * 1000)
+    # Strict filter: only events with an explicit future end_ms count
+    # as "currently active" on the hub.
+    active_by_kind: dict[str, Any] = {}
+    for headline in headlines:
+        if headline.end_ms is None or headline.end_ms <= now_ms:
+            continue
+        # First match wins — get_active_events orders newest-fetched
+        # first within each kind.
+        active_by_kind.setdefault(headline.entity_kind, headline)
+
     active: list[HubActiveEvent] = []
     for entity_kind, emoji, short_kind, source_key in _HUB_ACTIVE_KINDS:
+        live = active_by_kind.get(entity_kind)
         row = rows.get(entity_kind)
+        # Freshness is derived from the latest stored fact for this
+        # kind (i.e. how recently the ingestion supervisor wrote
+        # anything), independently of whether a specific event is
+        # currently active. That keeps the bucket badge meaningful
+        # even when no event is running.
         if row is None:
+            freshness = DataFreshness(
+                state="never",
+                last_success_at=None,
+                last_attempt_at=None,
+                source_key=source_key,
+            )
+        else:
+            freshness = _freshness_from_fetched_at(
+                row.get("fetched_at"),
+                source_key=source_key,
+            )
+
+        if live is None:
+            # Source may have data but no event is currently in its
+            # active window (between rotations). Render as "—".
             active.append(
                 HubActiveEvent(
                     entity_kind=entity_kind,
@@ -218,30 +265,18 @@ async def build_hub_view_model() -> HubViewModel:
                     emoji=emoji,
                     name=None,
                     end_ms=None,
-                    freshness=DataFreshness(
-                        state="never",
-                        last_success_at=None,
-                        last_attempt_at=None,
-                        source_key=source_key,
-                    ),
+                    freshness=freshness,
                     context=None,
                 ),
             )
             continue
-        from utils.btd6.body_coerce import coerce_body
 
-        body = coerce_body(row.get("body_json"))
-        name = body.get("name") or row.get("entity_key") or None
-        end_ms = body.get("end_ms") if isinstance(body.get("end_ms"), int) else None
-        fetched_at = row.get("fetched_at")
-        freshness = _freshness_from_fetched_at(fetched_at, source_key=source_key)
         context: ContextHandle | None = None
-        entity_key = row.get("entity_key")
-        if entity_key:
+        if live.entity_key:
             try:
                 context = make_context_handle(
                     short_kind,  # type: ignore[arg-type]
-                    str(entity_key),
+                    str(live.entity_key),
                 )
             except ValueError:
                 context = None
@@ -250,8 +285,8 @@ async def build_hub_view_model() -> HubViewModel:
                 entity_kind=entity_kind,
                 short_kind=short_kind,
                 emoji=emoji,
-                name=str(name) if name is not None else None,
-                end_ms=end_ms,
+                name=live.name or str(live.entity_key) or None,
+                end_ms=live.end_ms,
                 freshness=freshness,
                 context=context,
             ),

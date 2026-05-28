@@ -902,7 +902,16 @@ def build_admin_refresh_summary_embed(
             if r.status in _REFRESH_ERROR_STATUSES:
                 chain_status = "fail"
                 if r.error_code:
-                    chain_errors.append(f"{r.source_key}={r.error_code}")
+                    # Surface error_message when present (e.g. the
+                    # EnvelopeError detail from a parser) so operators
+                    # don't have to grep the DB to know why
+                    # parse_exception fired. Truncated to keep the
+                    # field-value cap honoured.
+                    detail = f"{r.source_key}={r.error_code}"
+                    if r.error_message:
+                        msg = r.error_message[:120]
+                        detail += f" ({msg})"
+                    chain_errors.append(detail)
         emoji = "✅" if chain_status == "ok" else "⚠️"
         line = f"{emoji} `{source_key}` · {chain_facts} facts · {len(results)} runs"
         if chain_errors:

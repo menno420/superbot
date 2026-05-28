@@ -110,23 +110,33 @@ def test_make_context_handle_all_types_valid() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _stub_knowledge(monkeypatch, **counts) -> None:
+    from services import btd6_knowledge_service
+
+    monkeypatch.setattr(btd6_knowledge_service, "data_version", lambda: "1.0")
+    monkeypatch.setattr(btd6_knowledge_service, "game_version", lambda: "42.0")
+    for fn, n in {
+        "list_towers": counts.get("towers", 0),
+        "list_heroes": counts.get("heroes", 0),
+        "list_maps": counts.get("maps", 0),
+        "list_modes": counts.get("modes", 0),
+        "list_rounds": counts.get("rounds", 0),
+    }.items():
+        monkeypatch.setattr(btd6_knowledge_service, fn, lambda _n=n: [object()] * _n)
+
+
 @pytest.mark.asyncio
 async def test_build_hub_view_model_emits_one_row_per_kind(monkeypatch) -> None:
     """Even with zero facts, the hub VM yields all five kinds."""
-    from services import btd6_knowledge_service
     from services.btd6_view_model_service import build_hub_view_model
     from utils.db import btd6_sources as btd6_db
 
     monkeypatch.setattr(
         btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value={})
     )
-    monkeypatch.setattr(btd6_knowledge_service, "data_version", lambda: "1.0")
-    monkeypatch.setattr(btd6_knowledge_service, "game_version", lambda: "42.0")
-    monkeypatch.setattr(btd6_knowledge_service, "list_towers", lambda: [object()] * 3)
-    monkeypatch.setattr(btd6_knowledge_service, "list_heroes", lambda: [object()] * 4)
-    monkeypatch.setattr(btd6_knowledge_service, "list_maps", lambda: [object()] * 5)
-    monkeypatch.setattr(btd6_knowledge_service, "list_modes", lambda: [object()] * 6)
-    monkeypatch.setattr(btd6_knowledge_service, "list_rounds", lambda: [object()] * 7)
+    # No facts → search_facts returns nothing, so get_active_events is empty.
+    monkeypatch.setattr(btd6_db, "search_facts", AsyncMock(return_value=[]))
+    _stub_knowledge(monkeypatch, towers=3, heroes=4, maps=5, modes=6, rounds=7)
 
     vm = await build_hub_view_model()
     assert vm.context.context_id == "btd6_hub:main"
@@ -147,33 +157,34 @@ async def test_build_hub_view_model_emits_one_row_per_kind(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_build_hub_view_model_marks_fresh_for_recent_fact(monkeypatch) -> None:
-    from services import btd6_knowledge_service
+async def test_build_hub_view_model_marks_fresh_for_active_event(monkeypatch) -> None:
+    """A currently-active event surfaces with its name + fresh badge."""
     from services.btd6_view_model_service import build_hub_view_model
     from utils.db import btd6_sources as btd6_db
 
     now = datetime.now(tz=timezone.utc)
+    future_ms = int((now + timedelta(days=1)).timestamp() * 1000)
+    race_row = {
+        "entity_kind": "btd6_race",
+        "entity_key": "R42",
+        "fact_type": "btd6.races_index",
+        "body_json": {"name": "Reversed Loop", "end_ms": future_ms},
+        "fetched_at": now - timedelta(hours=2),
+    }
+
+    async def _search_facts(*, fact_type=None, entity_kind=None, limit=50):
+        # get_active_events filters by fact_type per kind; only return the
+        # race row for the races_index fact_type, empty for everything else.
+        if entity_kind == "btd6_race":
+            return [race_row]
+        return []
+
+    monkeypatch.setattr(btd6_db, "search_facts", _search_facts)
     monkeypatch.setattr(
-        btd6_db,
-        "latest_fact_per_entity_kind",
-        AsyncMock(
-            return_value={
-                "btd6_race": {
-                    "entity_kind": "btd6_race",
-                    "entity_key": "R42",
-                    "body_json": {"name": "Reversed Loop", "end_ms": 999_999_999_999},
-                    "fetched_at": now - timedelta(hours=2),
-                },
-            },
-        ),
+        btd6_db, "latest_fact_per_entity_kind",
+        AsyncMock(return_value={"btd6_race": race_row}),
     )
-    monkeypatch.setattr(btd6_knowledge_service, "data_version", lambda: "1.0")
-    monkeypatch.setattr(btd6_knowledge_service, "game_version", lambda: "42.0")
-    monkeypatch.setattr(btd6_knowledge_service, "list_towers", lambda: [])
-    monkeypatch.setattr(btd6_knowledge_service, "list_heroes", lambda: [])
-    monkeypatch.setattr(btd6_knowledge_service, "list_maps", lambda: [])
-    monkeypatch.setattr(btd6_knowledge_service, "list_modes", lambda: [])
-    monkeypatch.setattr(btd6_knowledge_service, "list_rounds", lambda: [])
+    _stub_knowledge(monkeypatch)
 
     vm = await build_hub_view_model()
     race = next(a for a in vm.active_events if a.entity_kind == "btd6_race")
@@ -181,6 +192,49 @@ async def test_build_hub_view_model_marks_fresh_for_recent_fact(monkeypatch) -> 
     assert race.freshness.state == "fresh"
     assert race.context is not None
     assert race.context.context_id == "btd6_race:R42"
+
+
+@pytest.mark.asyncio
+async def test_build_hub_view_model_hides_ended_events(monkeypatch) -> None:
+    """Regression: an event whose end_ms is in the past must NOT show as active.
+
+    Previously the hub picked an arbitrary tied-fetched_at race fact via
+    DISTINCT ON; an ended race would appear with no "ended" suffix because
+    the renderer didn't filter for active window. Now the hub only surfaces
+    events with explicitly-future end_ms.
+    """
+    from services.btd6_view_model_service import build_hub_view_model
+    from utils.db import btd6_sources as btd6_db
+
+    now = datetime.now(tz=timezone.utc)
+    past_ms = int((now - timedelta(days=30)).timestamp() * 1000)
+    ended_race = {
+        "entity_kind": "btd6_race",
+        "entity_key": "Enjoying_the_Hotsprings_mois29mi",
+        "fact_type": "btd6.races_index",
+        "body_json": {"name": "Enjoying the Hotsprings", "end_ms": past_ms},
+        "fetched_at": now - timedelta(hours=2),
+    }
+
+    async def _search_facts(*, fact_type=None, entity_kind=None, limit=50):
+        if entity_kind == "btd6_race":
+            return [ended_race]
+        return []
+
+    monkeypatch.setattr(btd6_db, "search_facts", _search_facts)
+    monkeypatch.setattr(
+        btd6_db, "latest_fact_per_entity_kind",
+        AsyncMock(return_value={"btd6_race": ended_race}),
+    )
+    _stub_knowledge(monkeypatch)
+
+    vm = await build_hub_view_model()
+    race = next(a for a in vm.active_events if a.entity_kind == "btd6_race")
+    # No active race — name should be None (rendered as "—").
+    assert race.name is None
+    # But freshness still reflects the stored fact's fetched_at, so the
+    # operator can see ingestion is healthy even when no race is running.
+    assert race.freshness.state == "fresh"
 
 
 # ---------------------------------------------------------------------------

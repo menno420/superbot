@@ -66,6 +66,12 @@ class IngestionResult:
     error_code: str | None
     run_id: int | None
     written_entity_keys: tuple[str, ...] = ()
+    # Free-form exception detail from the failed step (e.g. the
+    # ``EnvelopeError`` message from a parser). Persisted in the
+    # ``btd6_ingestion_runs.error_message`` column; surfaced in the
+    # admin refresh summary so operators don't have to grep the DB
+    # to see why ``parse_exception`` fired.
+    error_message: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -206,6 +212,7 @@ async def _run_ingestion(
             duration_ms=_elapsed(),
             error_code=error_code,
             run_id=run_id,
+            error_message=error_message,
         )
 
     # 5. Fetch.
@@ -309,7 +316,7 @@ class _DependencySpec:
 # ``refresh_with_dependencies`` is recursive (depth cap ``_MAX_DEPTH``)
 # so the leaf source is reached in a single supervisor cycle.
 #
-# ``difficulty="normal"`` / ``"easy"`` defaults are documented limitations:
+# ``difficulty="standard"`` / ``"easy"`` defaults are documented limitations:
 # the boss / odyssey metadata endpoints require a difficulty in the path,
 # and a richer multi-difficulty fan-out needs a typed path-param builder
 # that is deferred to a follow-up PR.
@@ -373,7 +380,7 @@ _DEPENDENCY_CHAINS: dict[str, list[_DependencySpec]] = {
             child_source="nk_btd6_bosses_metadata",
             path_param_builder=lambda boss_id: {
                 "bossID": boss_id,
-                "difficulty": "normal",
+                "difficulty": "standard",
             },
             max_child_keys=5,
         ),

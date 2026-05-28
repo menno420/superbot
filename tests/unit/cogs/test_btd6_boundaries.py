@@ -209,12 +209,15 @@ async def test_status_embed_has_no_stale_strings(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_panel_embed_has_no_stale_strings(monkeypatch):
+    from unittest.mock import AsyncMock
+
     from utils.db import btd6_sources as btd6_db
 
-    async def _empty(_kinds):
-        return {}
-
-    monkeypatch.setattr(btd6_db, "latest_fact_per_entity_kind", _empty)
+    monkeypatch.setattr(
+        btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value={}),
+    )
+    # Hub VM now also calls get_active_events → search_facts.
+    monkeypatch.setattr(btd6_db, "search_facts", AsyncMock(return_value=[]))
     embed = await build_btd6_panel_embed()
     blob = (embed.title or "") + " " + (embed.description or "")
     for stale in _STALE_STRINGS:
