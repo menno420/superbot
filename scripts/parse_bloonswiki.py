@@ -329,8 +329,8 @@ def _headline(tier: dict) -> str:
         if best.get("damage_type"):
             parts.append(str(best["damage_type"]))
         parts.append(f"pierce {best.get('pierce')}")
-    if attacks and attacks[0].get("cooldown") is not None:
-        parts.append(f"cd {attacks[0]['cooldown']}s")
+    if attacks and attacks[0].get("rate") is not None:
+        parts.append(f"cd {attacks[0]['rate']}s")
     if tier.get("range") is not None:
         parts.append(f"range {tier['range']}")
     for ability in tier.get("abilities", []):
