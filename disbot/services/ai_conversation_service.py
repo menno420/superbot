@@ -55,6 +55,14 @@ class ConversationTurn:
     # callers that don't pass it still work; the natural-language
     # stage always passes time.time().
     ts: float = field(default_factory=time.time)
+    # Discord display name as the user appeared at message time
+    # (per-guild nickname if set, else global name, else username).
+    # ``ai_instruction_service`` sanitizes and uses this as the
+    # bracketed speaker label so the model can refer to people by
+    # name instead of opaque ``user_A`` pseudonyms. Defaults to None
+    # for backwards compat with callers that don't yet pass it; in
+    # that case the assembler falls back to a pseudonym.
+    display_name: str | None = None
 
 
 # OrderedDict so we can do channel-level LRU eviction cheaply.
@@ -83,12 +91,17 @@ def append(
     role: str,
     text: str,
     ts: float | None = None,
+    display_name: str | None = None,
 ) -> None:
     """Append one turn to the channel's rolling buffer.
 
     Empty ``text`` and non-``str`` values are dropped silently so the
     central NL stage can call this unconditionally without per-message
-    pre-validation. ``ts`` defaults to ``time.time()``.
+    pre-validation. ``ts`` defaults to ``time.time()``. ``display_name``
+    is the Discord-side speaker name and is preserved verbatim here;
+    sanitization happens later in ``ai_instruction_service.assemble``
+    so the buffer carries raw data and rendering decisions stay in one
+    place.
     """
     if not isinstance(text, str):
         return
@@ -102,6 +115,7 @@ def append(
             role=role,
             text=text,
             ts=ts if ts is not None else time.time(),
+            display_name=display_name,
         ),
     )
 

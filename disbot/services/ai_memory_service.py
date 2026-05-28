@@ -161,6 +161,13 @@ async def _seed_from_history(
             ts_value = float(ts()) if callable(ts) else None
         except Exception:  # noqa: BLE001 — defensive
             ts_value = None
+        # Only carry display_name for non-bot turns; assistant turns
+        # always render as ``[assistant]`` in the assembled prompt.
+        display_name = (
+            None
+            if role == "assistant"
+            else getattr(getattr(msg, "author", None), "display_name", None)
+        )
         ai_conversation_service.append(
             guild_id,
             channel_id,
@@ -168,6 +175,7 @@ async def _seed_from_history(
             role=role,
             text=body,
             ts=ts_value,
+            display_name=display_name,
         )
         appended += 1
     return appended

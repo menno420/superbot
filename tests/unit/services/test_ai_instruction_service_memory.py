@@ -285,7 +285,13 @@ async def test_bot_id_maps_to_assistant_even_if_appears_first(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_no_bot_user_id_does_not_guess_assistant_label(monkeypatch):
+async def test_role_assistant_is_authoritative_even_without_bot_user_id(monkeypatch):
+    """Updated contract: ``turn.role == 'assistant'`` is the canonical
+    writer-side marker. The NL stage stores its own replies with
+    ``role='assistant'`` but ``user_id`` set to the prompter, so
+    relying on ``bot_user_id`` alone was unreliable. With the explicit
+    role field, the assistant label is correct without bot_user_id.
+    """
     async def _get(_pid):
         return None
 
@@ -294,6 +300,34 @@ async def test_no_bot_user_id_does_not_guess_assistant_label(monkeypatch):
     turns = [
         SimpleNamespace(user_id=10, role="user", text="one"),
         SimpleNamespace(user_id=999, role="assistant", text="two"),
+    ]
+    stack = await ai_instruction_service.assemble(
+        guild_id=1,
+        user_message="x",
+        profile_ids=(),
+        recent_turns=turns,
+        bot_user_id=None,
+    )
+    block = stack.data[0]
+    assert "[user_A] one" in block
+    assert "[assistant] two" in block
+
+
+@pytest.mark.asyncio
+async def test_no_role_and_no_bot_user_id_falls_back_to_pseudonym(monkeypatch):
+    """Defensive: if a turn has neither ``role='assistant'`` nor a
+    matching ``bot_user_id``, the assembler does NOT guess — it uses
+    a pseudonym. Prevents accidental assistant labelling of a real
+    user when the role field is missing (e.g. legacy buffer data).
+    """
+    async def _get(_pid):
+        return None
+
+    monkeypatch.setattr(ai_db, "get_instruction_profile", _get)
+
+    turns = [
+        SimpleNamespace(user_id=10, role="user", text="one"),
+        SimpleNamespace(user_id=999, role="user", text="two"),
     ]
     stack = await ai_instruction_service.assemble(
         guild_id=1,
