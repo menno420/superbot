@@ -63,3 +63,48 @@ def test_non_btd6_lookalikes_still_route_to_general(text):
     assert (
         decision.task is AITask.GENERAL_NL_ANSWER
     ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Tower/hero names without explicit BTD6 keywords — these were falling
+    # through to GENERAL_NL_ANSWER before the entity-alias fallback was added,
+    # causing the AI to return no BTD6 facts.
+    [
+        "tell me about the bomb shooter",
+        "what is bomb shooter",
+        "how does bomb shooter work",
+        "tell me about striker jones",
+        "who is striker jones",
+        "who is gwendolin",
+        "how does dart monkey work",
+        "what is the tack shooter",
+        "who is sauda",
+        "tell me about admiral brickell",
+        "how does the heli pilot work",
+    ],
+)
+def test_entity_name_questions_route_to_btd6_answer(text):
+    """Tower/hero name mentions route to BTD6_ANSWER even without 'tower'/'hero'."""
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Generic words that happen to overlap with BTD6 aliases must NOT
+    # route to BTD6 — false positives degrade general chat.
+    [
+        "super cool idea",
+        "the farm is great",
+        "hello how are you",
+    ],
+)
+def test_generic_words_do_not_over_route(text):
+    """Common words that share BTD6 aliases must not trigger BTD6 routing."""
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"

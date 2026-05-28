@@ -13,6 +13,7 @@ real facts to ground against.
 from __future__ import annotations
 
 import re
+import threading
 from dataclasses import dataclass
 
 from core.runtime.ai.contracts import AITask
@@ -92,6 +93,82 @@ _BTD6_KEYWORDS = (
 )
 
 
+# ---------------------------------------------------------------------------
+# Entity-alias cache — lazy, thread-safe, dataset-backed
+# ---------------------------------------------------------------------------
+
+_entity_aliases_lock = threading.Lock()
+_entity_aliases: tuple[frozenset[str], frozenset[str]] | None = None  # (multi, single)
+
+
+def _get_entity_aliases() -> tuple[frozenset[str], frozenset[str]]:
+    """Return (multi_word_phrases, single_word_tokens) from the BTD6 dataset.
+
+    Built once from the fixture JSON on first call and cached for the
+    process lifetime. Falls back to empty sets if the dataset is
+    unavailable, keeping the router lightweight and fault-tolerant.
+
+    Multi-word phrases are matched as substrings; single-word tokens are
+    matched against the whitespace-tokenised word set so generic words
+    like 'ice' or 'bomb' are not treated as BTD6 anchors — only
+    unambiguous hero names (Gwendolin, Sauda, Corvus, …) are included
+    in the single-word set.
+    """
+    global _entity_aliases
+    if _entity_aliases is not None:
+        return _entity_aliases
+    with _entity_aliases_lock:
+        if _entity_aliases is not None:
+            return _entity_aliases
+        try:
+            from services import btd6_data_service
+
+            ds = btd6_data_service.get_dataset()
+        except Exception:
+            _entity_aliases = (frozenset(), frozenset())
+            return _entity_aliases
+
+        multi: set[str] = set()
+        single: set[str] = set()
+
+        for tower in ds.towers:
+            name = tower.canonical.lower()
+            if " " in name:
+                multi.add(name)
+            # Single-word tower aliases are too generic (bomb, ice, glue…) —
+            # skip them to avoid false positives on non-BTD6 messages.
+
+        for hero in ds.heroes:
+            name = hero.canonical.lower()
+            if " " in name:
+                multi.add(name)
+            else:
+                # Hero canonical names are distinctive enough for whole-word
+                # matching (gwendolin, sauda, corvus, quincy, etienne, …).
+                single.add(name)
+            # Include unambiguous aliases too (e.g. "brickell", "fusty").
+            for alias in hero.aliases:
+                al = alias.lower()
+                if " " in al:
+                    multi.add(al)
+                elif len(al) > 4:  # skip ultra-short aliases (q, eti, ado…)
+                    single.add(al)
+
+        _entity_aliases = (frozenset(multi), frozenset(single))
+        return _entity_aliases
+
+
+def _looks_like_btd6_entity(lowered: str) -> bool:
+    """True when the text references a BTD6 tower or hero by name/alias."""
+    multi, single = _get_entity_aliases()
+    if any(phrase in lowered for phrase in multi):
+        return True
+    if not single:
+        return False
+    tokens = frozenset(re.findall(r"[a-z0-9]+", lowered))
+    return bool(tokens & single)
+
+
 @dataclass(frozen=True)
 class RoutedTask:
     task: AITask
@@ -117,6 +194,8 @@ def classify(
     """
     lowered = (message_text or "").lower()
     looks_btd6 = any(keyword in lowered for keyword in _BTD6_KEYWORDS)
+    if not looks_btd6:
+        looks_btd6 = _looks_like_btd6_entity(lowered)
     if channel_is_strategy_intake and looks_btd6:
         return RoutedTask(
             task=AITask.BTD6_STRATEGY_REVIEW,
