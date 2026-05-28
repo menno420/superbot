@@ -120,6 +120,13 @@ def _coerce_body(value: Any) -> dict[str, Any]:
 def _render_fact(row: dict[str, Any]) -> str:
     """Turn one fact row into a single labeled context string.
 
+    The rendered line begins with a ``[entity_kind]`` tag (e.g.
+    ``[btd6_boss]``) so the LLM knows what category the name belongs
+    to. Without this tag, asking "what was the previous boss?" can
+    surface race / event names and the model has no signal to filter
+    them — leading it to fall back to training-data names like
+    "Vortex" instead of using the freshly-fetched grounding.
+
     URL fields (``creator_url``, ``profile_url``, ``metadata_url``,
     ``map_url``, ``boss_type_url``, ``leaderboard_*_url`` etc.) are
     intentionally NOT included; the parser preserves them in the
@@ -149,7 +156,13 @@ def _render_fact(row: dict[str, Any]) -> str:
     rel = _relative_time(row.get("fetched_at"))
     version = row.get("version")
     version_label = f", v{version}" if isinstance(version, int) and version > 1 else ""
-    full = f"{summary} (source: {source_name}{version_label}, fetched {rel})"
+    # Tag with the entity_kind so the model can disambiguate between
+    # race / boss / odyssey / event / tower / hero names when the user
+    # asks about a specific category. The kind is intentionally a
+    # bracketed prefix the task contract teaches the model to read.
+    kind = _sanitise(str(row.get("entity_kind") or ""))
+    kind_tag = f"[{kind}] " if kind else ""
+    full = f"{kind_tag}{summary} (source: {source_name}{version_label}, fetched {rel})"
     if len(full) > _FACT_TEXT_CAP:
         full = full[: _FACT_TEXT_CAP - 1] + "…"
     return full
