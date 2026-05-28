@@ -134,3 +134,42 @@ def test_render_fact_decodes_legacy_string_body():
     rendered = btd6_context_service._render_fact(row)
     assert "Reversed Loop" in rendered
     assert "(no summary)" not in rendered
+
+
+def test_render_fact_prefixes_entity_kind_tag():
+    """Each grounded fact carries a ``[entity_kind]`` tag so the LLM
+    can disambiguate boss / race / event names.
+
+    Regression: a user asking "what was the previous boss?" was
+    getting hallucinated training-data names because the rendered
+    grounding had no kind tags and the model couldn't filter race
+    names out of the candidate set.
+    """
+    from services import btd6_context_service
+
+    row = {
+        "entity_kind": "btd6_boss",
+        "body_json": {"name": "Diamondback5"},
+        "source_name": "Ninja Kiwi /bosses",
+        "fetched_at": datetime(2026, 5, 27, 12, 0, tzinfo=timezone.utc),
+        "version": 1,
+    }
+    rendered = btd6_context_service._render_fact(row)
+    assert rendered.startswith("[btd6_boss] "), (
+        f"expected entity_kind prefix, got: {rendered!r}"
+    )
+    assert "Diamondback5" in rendered
+
+
+def test_render_fact_no_tag_when_kind_missing():
+    """Defensive: rows without ``entity_kind`` render unchanged."""
+    from services import btd6_context_service
+
+    row = {
+        "body_json": {"name": "Mystery"},
+        "fetched_at": datetime(2026, 5, 27, 12, 0, tzinfo=timezone.utc),
+        "version": 1,
+    }
+    rendered = btd6_context_service._render_fact(row)
+    assert not rendered.startswith("[")
+    assert "Mystery" in rendered

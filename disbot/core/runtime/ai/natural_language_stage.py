@@ -132,6 +132,7 @@ def _record_user_turn_if_visible(
         user_id=user_id,
         role="user",
         text=text,
+        display_name=getattr(message.author, "display_name", None),
     )
     return True
 
@@ -573,7 +574,10 @@ class AINaturalLanguageStage:
         ai_permission_service.mark_reply_sent(guild_id, user_id)
         # User-message recording happens earlier via
         # ``_record_user_turn_if_visible``. Here the stage records
-        # only its own (sanitized) assistant reply.
+        # only its own (sanitized) assistant reply. We omit
+        # display_name — the assembler always renders bot turns as
+        # ``[assistant]`` regardless of any guild nickname the bot
+        # might have, so the model has one stable self-label.
         ai_conversation_service.append(
             guild_id,
             channel_id,
