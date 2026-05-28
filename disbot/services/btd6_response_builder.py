@@ -40,9 +40,9 @@ class BTD6Response:
     confidence: str = "medium"
     sources: tuple[str, ...] = ()
     follow_up: str = ""
-    fields: tuple[tuple[str, str], tuple[str, str]] | tuple = field(
-        default_factory=tuple,
-    )
+    # Named (label, value) sections rendered as their own embed fields.
+    # Towers use these for the per-path upgrade-cost breakdown.
+    fields: tuple[tuple[str, str], ...] = field(default_factory=tuple)
     # Optional live grounding bundle from btd6_context_service. Already
     # sanitised + provenance-labelled; the renderer surfaces these as a
     # dedicated "Live data" field separate from the deterministic body.
@@ -124,24 +124,45 @@ def _format_restriction_lines(
     return tuple(lines)
 
 
+_PATH_LABELS = {"top": "Top path", "mid": "Middle path", "bot": "Bottom path"}
+
+
+def _format_upgrade_path(
+    tiers: tuple[str, ...],
+    costs: tuple[int, ...],
+) -> str:
+    """Render one path as ``Name ($cost) → …``; cost ``0`` means unknown."""
+    parts: list[str] = []
+    for index, name in enumerate(tiers):
+        cost = costs[index] if index < len(costs) else 0
+        parts.append(f"{name} (${cost:,})" if cost > 0 else name)
+    return " → ".join(parts)
+
+
 def for_tower(
     fact: TowerFact,
     *,
     restrictions: tuple[TowerRestrictionContext, ...] = (),
 ) -> BTD6Response:
     tower = fact.tower
-    recommended: list[str] = []
+    path_fields: list[tuple[str, str]] = []
     for path, tiers in tower.upgrade_paths.items():
-        recommended.append(
-            f"{path}: "
-            + " → ".join(tiers[:3])
-            + (f" (… {len(tiers) - 3} more)" if len(tiers) > 3 else ""),
-        )
+        if not tiers:
+            continue
+        label = _PATH_LABELS.get(path, f"{path.title()} path")
+        costs = tower.upgrade_costs.get(path, ())
+        path_fields.append((label, _format_upgrade_path(tiers, costs)))
+    short_answer = tower.description or (
+        f"A {tower.category} tower costing ${fact.base_cost:,} to place. "
+        "Upgrade paths and per-tier costs are listed below."
+    )
     return BTD6Response(
         title=f"{tower.canonical} — overview",
-        short_answer=tower.description,
-        why_it_matters=(f"Base cost: {fact.base_cost}. Category: {tower.category}."),
-        recommended_options=tuple(recommended),
+        short_answer=short_answer,
+        why_it_matters=(
+            f"Base cost: ${fact.base_cost:,}. Category: {tower.category.title()}."
+        ),
+        fields=tuple(path_fields),
         common_mistakes=(
             "Buying high-tier upgrades on the wrong path can stall economy.",
         ),

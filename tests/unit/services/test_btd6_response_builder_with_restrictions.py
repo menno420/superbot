@@ -134,6 +134,7 @@ class _StubFact:
         description = "Cheap monkey."
         category = "primary"
         upgrade_paths = {"path1": ("a", "b", "c", "d", "e")}
+        upgrade_costs = {"path1": (100, 200, 300, 400, 500)}
         wiki_url = "https://example.invalid/dart"
 
     tower = _Tower()
@@ -157,6 +158,28 @@ class _StubHero:
 def test_for_tower_no_restrictions_leaves_live_facts_empty():
     resp = for_tower(_StubFact())
     assert resp.live_facts == ()
+
+
+def test_for_tower_renders_per_tier_upgrade_costs():
+    resp = for_tower(_StubFact())
+    # One field per non-empty upgrade path, with per-tier costs inline.
+    assert resp.fields
+    _label, value = resp.fields[0]
+    assert "a ($100)" in value
+    assert "e ($500)" in value
+    assert "→" in value
+
+
+def test_for_tower_falls_back_when_description_empty():
+    class _NoDescFact(_StubFact):
+        class _Tower(_StubFact._Tower):
+            description = ""
+
+        tower = _Tower()
+
+    resp = for_tower(_NoDescFact())
+    assert resp.short_answer
+    assert "$200" in resp.short_answer
 
 
 def test_for_tower_with_restrictions_populates_live_facts():
