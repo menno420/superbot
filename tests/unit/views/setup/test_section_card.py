@@ -612,3 +612,70 @@ async def test_adapter_propagates_builder_exceptions():
             boom,
             guild=MagicMock(),
         )
+
+
+# ---------------------------------------------------------------------------
+# stage_all_recommended — shared "Apply all recommended" helper
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_stage_all_recommended_stages_each_builder_section_and_skips_others():
+    """stage_all_recommended calls each builder section, stages its ops via
+    replace_recommended_for_section, skips sections without a builder, and
+    returns the per-section counts + conflict total."""
+    from services.setup_draft import ReplaceRecommendedResult
+    from views.setup.section_card import stage_all_recommended
+
+    sec_with_builder = SetupSection(
+        slug="cleanup",
+        label="Cleanup",
+        style=discord.ButtonStyle.secondary,
+        run=_noop_run,
+        order=60,
+        op_kinds=frozenset({"set_cleanup_policy"}),
+        recommended_ops_builder=_async_returning(
+            [
+                SetupOperation(
+                    kind="set_cleanup_policy",
+                    subsystem="cleanup",
+                    target_kind="guild",
+                    target_id=1,
+                    value="Light",
+                ),
+            ],
+        ),
+    )
+    sec_no_builder = SetupSection(
+        slug="readonly",
+        label="Read only",
+        style=discord.ButtonStyle.secondary,
+        run=_noop_run,
+        order=70,
+        op_kinds=frozenset(),
+        recommended_ops_builder=None,
+    )
+    guild = MagicMock(spec=discord.Guild)
+    guild.id = 1
+
+    with patch(
+        "services.setup_draft.replace_recommended_for_section",
+        new_callable=AsyncMock,
+        return_value=ReplaceRecommendedResult(
+            inserted_seqs=[1],
+            deleted_count=0,
+            conflicts=[],
+        ),
+    ) as replace_mock:
+        totals, conflicts = await stage_all_recommended(
+            guild=guild,
+            guild_id=1,
+            session=None,
+            sections=[sec_with_builder, sec_no_builder],
+            actor_id=7,
+        )
+
+    assert totals == {"cleanup": 1}
+    assert conflicts == 0
+    replace_mock.assert_awaited_once()
+    assert replace_mock.await_args.args[1] == "cleanup"

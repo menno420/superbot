@@ -247,6 +247,133 @@ def test_view_has_navigation_buttons_in_layout():
     assert "setup_wizard:cancel" in custom_ids
 
 
+def test_view_has_jump_to_section_select():
+    """The wizard exposes a row-2 'Jump to section' select listing every
+    depth-filtered section — the section-jump that folds in the hub's
+    navigation role."""
+    sections = [
+        _section("cleanup", builder=_builder_one_op),
+        _section("channels", order=70),
+    ]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
+    assert len(selects) == 1
+    jump = selects[0]
+    assert jump.custom_id == "setup_wizard:jump"
+    assert {o.value for o in jump.options} == {"0", "1"}
+
+
+@pytest.mark.asyncio
+async def test_jump_select_navigates_to_chosen_step():
+    """Selecting a section re-renders the anchor at that step index."""
+    sections = [
+        _section("cleanup", builder=_builder_one_op),
+        _section("channels", order=70),
+    ]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    jump = next(c for c in view.children if isinstance(c, discord.ui.Select))
+    jump._values = ["1"]  # discord.py reads selected values from here
+    interaction = _interaction(_owner_member())
+    with patch(
+        "views.setup.wizard_nav.render_wizard_step",
+        new_callable=AsyncMock,
+        return_value=True,
+    ) as render_mock:
+        await jump.callback(interaction)
+    assert view.step_index == 1
+    render_mock.assert_awaited_once()
+    assert render_mock.await_args.kwargs["step_index"] == 1
+
+
+def test_view_has_apply_all_recommended_button_when_builder_present():
+    """The wizard renders a row-3 'Apply all recommended' button when at
+    least one depth-filtered section has a recommended builder — the
+    one-click path that used to live on the hub."""
+    sections = [
+        _section("cleanup", builder=_builder_one_op),
+        _section("channels", order=70),
+    ]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    btn = next(
+        (
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_wizard:apply_all_recommended"
+        ),
+        None,
+    )
+    assert btn is not None
+    assert btn.label == "Apply all recommended"
+    assert btn.row == 3
+
+
+def test_view_omits_apply_all_when_no_builder_sections():
+    sections = [_section("readonly", op_kinds=frozenset(), builder=None)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    ids = {
+        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
+    }
+    assert "setup_wizard:apply_all_recommended" not in ids
+
+
+@pytest.mark.asyncio
+async def test_apply_all_recommended_stages_via_helper_and_confirms():
+    """Clicking the wizard's Apply all recommended stages through the
+    shared helper, gives an ephemeral confirmation, and refreshes the
+    anchor."""
+    sections = [_section("cleanup", builder=_builder_one_op)]
+    view = LinearWizardView(
+        _owner_member(),
+        session=_session(),
+        sections=sections,
+        step_index=0,
+    )
+    interaction = _interaction(_owner_member())
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(),
+        ),
+        patch("services.setup_access.can_apply_setup", return_value=True),
+        patch(
+            "views.setup.section_card.stage_all_recommended",
+            new_callable=AsyncMock,
+            return_value=({"cleanup": 1}, 0),
+        ) as stage_mock,
+        patch("views.setup.wizard.push_setup_notice", new_callable=AsyncMock),
+        patch(
+            "views.setup.wizard_nav.render_wizard_step",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        await view._on_apply_all_recommended(interaction)
+    stage_mock.assert_awaited_once()
+    interaction.followup.send.assert_awaited()
+
+
 def test_view_back_button_disabled_on_first_step():
     sections = [
         _section("cleanup", builder=_builder_one_op),

@@ -722,7 +722,7 @@ REGISTRY.register(
             "still bind individual log channels via `!settings` or "
             "the Channels section."
         ),
-        depths=frozenset({"standard", "advanced"}),
+        depths=frozenset({"quick", "standard", "advanced"}),
         recommended_ops_builder=_recommended_logging_ops,
         customize=_customize_run,
         detail_embed_builder=_build_detail_embed,

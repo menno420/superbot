@@ -156,6 +156,33 @@ class SetupLauncherView(discord.ui.View):
             return False
         return True
 
+    async def _gate_apply(
+        self,
+        interaction: discord.Interaction,
+    ) -> bool:
+        """Gate write-capable actions on the owner-or-delegated ladder.
+
+        Mirrors :func:`services.setup_access.can_apply_setup`, matching the
+        wizard / hub / Final Review gates so Smart Suggestions and Choose
+        Preset are reachable by delegated setup admins, not just the owner.
+        """
+        member = interaction.user
+        if not isinstance(member, discord.Member):
+            await self._deny(
+                interaction,
+                "This button must be used inside the server.",
+            )
+            return False
+        session = await self._resolve_session(interaction)
+        if not setup_access.can_apply_setup(member, session):
+            await self._deny(
+                interaction,
+                "Only the server owner or a delegated setup admin can use "
+                "this button. Ask the owner to grant you `/setup-delegate`.",
+            )
+            return False
+        return True
+
     @discord.ui.button(
         label="Start Setup",
         style=discord.ButtonStyle.success,
@@ -258,7 +285,7 @@ class SetupLauncherView(discord.ui.View):
         button: discord.ui.Button,
     ) -> None:
         del button
-        if not await self._gate_owner(interaction):
+        if not await self._gate_apply(interaction):
             return
         guild = interaction.guild
         if guild is None or interaction.guild_id is None:
@@ -313,7 +340,7 @@ class SetupLauncherView(discord.ui.View):
         button: discord.ui.Button,
     ) -> None:
         del button
-        if not await self._gate_owner(interaction):
+        if not await self._gate_apply(interaction):
             return
 
         from views.setup.template_picker import TemplatePickerView, build_picker_embed

@@ -49,6 +49,10 @@ REGISTRY.register(
         style=discord.ButtonStyle.primary,
         run=run,
         order=10,
+        # Read-only diagnostics: keep it out of the lean "quick" path,
+        # which focuses on the steps that actually wire the bot up
+        # (preset + channels + logging).
+        depths=frozenset({"standard", "advanced"}),
     ),
 )
 

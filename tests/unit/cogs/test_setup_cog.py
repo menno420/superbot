@@ -523,16 +523,72 @@ async def test_start_button_requires_guild_context():
 
 
 @pytest.mark.asyncio
-async def test_smart_suggestions_button_owner_only():
+async def test_smart_suggestions_button_denies_plain_admin():
+    """A plain administrator (not owner, not delegated) is rejected; the
+    gate is the owner-or-delegated ladder (can_apply_setup), not owner-only."""
     view = SetupLauncherView()
     interaction = _mock_interaction(_admin_member())
 
-    await view._suggestions.callback(interaction)
+    with patch(
+        "services.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        await view._suggestions.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
-    assert (
-        "server owner" in interaction.response.send_message.await_args.args[0].lower()
+    msg = interaction.response.send_message.await_args.args[0].lower()
+    assert "owner" in msg or "delegate" in msg
+
+
+@pytest.mark.asyncio
+async def test_smart_suggestions_button_allows_delegated_admin():
+    """A delegated (non-owner) setup admin can open Smart Suggestions."""
+    from services.setup_plan import SetupPlanDraft
+    from views.setup.ai_review.main_panel import AIReviewPanelView
+
+    delegated = _random_member(user_id=7)
+    view = SetupLauncherView()
+    interaction = _mock_interaction(delegated)
+    session = SetupSession(
+        guild_id=1,
+        guild_name="x",
+        owner_id=99,
+        setup_status="in_progress",
+        setup_channel_id=None,
+        setup_message_id=None,
+        last_readiness_score=None,
+        current_step=None,
+        delegated_admins=(7,),
     )
+    fake_advisor = MagicMock()
+    fake_advisor.suggest = AsyncMock(
+        return_value=SetupPlanDraft(recommendations=(), source="deterministic"),
+    )
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=session,
+        ),
+        patch(
+            "services.guild_snapshot.collect",
+            new_callable=AsyncMock,
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.setup_ai_advisor.build_advisor",
+            return_value=fake_advisor,
+        ),
+        patch(
+            "services.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ),
+    ):
+        await view._suggestions.callback(interaction)
+
+    sent_view = interaction.response.send_message.await_args.kwargs.get("view")
+    assert isinstance(sent_view, AIReviewPanelView)
 
 
 @pytest.mark.asyncio
@@ -567,6 +623,11 @@ async def test_smart_suggestions_opens_ai_review_for_owner():
 
     with (
         patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
             "services.guild_snapshot.collect",
             new_callable=AsyncMock,
             return_value=fake_snapshot,
@@ -598,6 +659,11 @@ async def test_smart_suggestions_falls_back_when_advisor_raises():
 
     with (
         patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
             "services.guild_snapshot.collect",
             new_callable=AsyncMock,
             side_effect=RuntimeError("snapshot down"),
@@ -611,11 +677,16 @@ async def test_smart_suggestions_falls_back_when_advisor_raises():
 
 
 @pytest.mark.asyncio
-async def test_preset_button_owner_only():
+async def test_preset_button_denies_plain_admin():
     view = SetupLauncherView()
     interaction = _mock_interaction(_admin_member())
 
-    await view._preset.callback(interaction)
+    with patch(
+        "services.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        await view._preset.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
 
@@ -628,7 +699,12 @@ async def test_preset_button_opens_template_picker_for_owner():
     view = SetupLauncherView()
     interaction = _mock_interaction(_owner_member())
 
-    await view._preset.callback(interaction)
+    with patch(
+        "services.setup_session.resume_session",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        await view._preset.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
     kwargs = interaction.response.send_message.await_args.kwargs

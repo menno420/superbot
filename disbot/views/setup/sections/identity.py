@@ -321,7 +321,7 @@ REGISTRY.register(
             "Identity defaults stay at the existing values. You can change "
             "them later in `!settings` without re-running the wizard."
         ),
-        depths=frozenset({"advanced"}),
+        depths=frozenset({"standard", "advanced"}),
         customize=_customize_run,
         detail_embed_builder=_build_detail_embed,
         detail_view_builder=_build_detail_view,

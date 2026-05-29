@@ -20,41 +20,6 @@ logger = logging.getLogger("bot.views.setup.sections.suggestions")
 
 SLUG = "suggestions"
 
-_REVIEW_HEADER = "Smart suggestions are recommendations. Review before applying."
-
-
-def _build_suggestions_embed(draft) -> discord.Embed:
-    if not getattr(draft, "recommendations", ()):
-        return discord.Embed(
-            title="🤖 Smart suggestions",
-            description=(
-                "The deterministic advisor produced no recommendations "
-                "for this guild. Either every binding is already "
-                "configured or the channel/category names did not "
-                "match the rule table."
-            ),
-            color=discord.Color.dark_grey(),
-        )
-    embed = discord.Embed(
-        title="🤖 Smart suggestions",
-        description=(
-            f"_{_REVIEW_HEADER}_\n\n"
-            f"**{len(draft.recommendations)}** recommendation(s) — "
-            "open **Final review** to apply the high-confidence ones."
-        ),
-        color=discord.Color.blurple(),
-    )
-    lines = [
-        f"• `{rec.subsystem}.{rec.binding_name}` → "
-        f"`{rec.target_name}` ({rec.confidence})"
-        for rec in draft.recommendations
-    ]
-    value = "\n".join(lines)
-    if len(value) > 1000:
-        value = value[:997] + "..."
-    embed.add_field(name="Recommendations", value=value, inline=False)
-    return embed
-
 
 async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
     del hub
@@ -73,7 +38,7 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
         snapshot = await collect_snapshot(guild)
         draft = await DeterministicAdvisor().suggest(snapshot)
     except Exception:
-        logger.exception("setup hub: advisor flow failed")
+        logger.exception("setup suggestions: advisor flow failed")
         await interaction.response.send_message(
             "Advisor failed. Try again later or run readiness for a "
             "deterministic baseline.",
@@ -81,12 +46,24 @@ async def run(interaction: discord.Interaction, hub: SetupHubView) -> None:
         )
         return
 
-    embed = _build_suggestions_embed(draft)
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    # Open the AI review panel so the operator can accept recommendations
+    # and stage them into the draft via its "Stage & open Final review"
+    # button — the section is no longer a read-only dead end.
+    from views.setup.ai_review.main_panel import (
+        AIReviewPanelView,
+        build_ai_review_embed,
+    )
+
+    panel = AIReviewPanelView(interaction.user, draft=draft, snapshot=snapshot)
+    await interaction.response.send_message(
+        embed=build_ai_review_embed(draft),
+        view=panel,
+        ephemeral=True,
+    )
     try:
         await setup_session.mark_in_progress(guild.id, step=SLUG)
     except Exception:
-        logger.exception("setup hub: mark_in_progress failed")
+        logger.exception("setup suggestions: mark_in_progress failed")
 
 
 REGISTRY.register(

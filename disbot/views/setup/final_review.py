@@ -18,8 +18,8 @@ Two construction modes:
       2. ``bind_*`` / ``clear_binding``  (binding mutation)
       3. ``set_setting``   (settings mutation)
       4. ``set_cleanup_policy`` / ``set_cog_routing``  (per-feature
-         dispatcher arms; PR 11 wires set_cleanup_policy and
-         set_cog_routing remains a follow-up)
+         dispatcher arms — both wired through
+         :mod:`services.setup_operations`)
       5. ``add_automation_rule``  (created disabled)
       6. ``enable_automation_rule`` / ``disable_automation_rule``
 
@@ -652,12 +652,14 @@ class PartialApplyRecoveryView(BaseView):
       operator can re-open Final review later to retry or edit the
       draft.
 
-    ``Skip failed`` is intentionally omitted in this PR — it
-    requires row-level provenance to identify exactly which draft
-    rows correspond to the failed / skipped summary entries.  That
-    matching is added when the wizard's section UIs start writing
-    ``section_slug`` to the draft (a follow-up PR).  Until then the
-    only safe drop is "everything via Retry succeeds".
+    * **Finish anyway** — drop the remaining staged ops (including the
+      failed / skipped ones) and mark setup complete.  This is the
+      escape hatch for the partial-apply stickiness trap: an op that
+      can never apply (unsupported kind, permanently missing
+      permission) would otherwise keep the wizard on "partially
+      applied" forever, because the draft is only cleared on a fully
+      successful apply.  The already-applied ops stay applied; the
+      operator can re-run ``/setup`` to revisit what was dropped.
     """
 
     def __init__(
@@ -718,6 +720,61 @@ class PartialApplyRecoveryView(BaseView):
                 ephemeral=True,
             )
             return
+
+    @discord.ui.button(label="Finish anyway", style=discord.ButtonStyle.secondary)
+    async def _finish_anyway(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Drop the remaining staged ops and mark setup complete.
+
+        Escape hatch for the partial-apply stickiness trap.  The
+        already-applied ops stay applied; the failed / skipped ones are
+        dropped from the draft so a single un-appliable op cannot keep
+        the wizard stuck on "partially applied" forever.
+        """
+        del button
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Finish requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        if not await _gate_apply(interaction):
+            return
+        try:
+            from services import setup_draft as _draft
+
+            await _draft.clear(guild.id)
+        except Exception:
+            logger.exception(
+                "PartialApplyRecoveryView._finish_anyway: clear failed",
+            )
+        try:
+            from services import setup_session as _session
+
+            await _session.mark_complete(guild.id)
+        except Exception:
+            logger.exception(
+                "PartialApplyRecoveryView._finish_anyway: mark_complete failed",
+            )
+        for child in self.children:
+            child.disabled = True  # type: ignore[attr-defined]
+        dropped = len(self.summary.failed) + len(self.summary.skipped)
+        noun = "operation" if dropped == 1 else "operations"
+        embed = discord.Embed(
+            title="🛰 Setup finished (with skips)",
+            description=(
+                f"Applied **{len(self.summary.applied)}** operation(s). "
+                f"Dropped **{dropped}** un-appliable {noun} from the draft. "
+                "Re-run `/setup` any time to revisit them."
+            ),
+            color=discord.Color.gold(),
+        )
+        await interaction.response.edit_message(embed=embed, view=self)
+        self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
     async def _cancel(

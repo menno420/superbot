@@ -339,6 +339,46 @@ class LinearWizardView(BaseView):
         cancel.callback = self._on_cancel  # type: ignore[method-assign]
         self.add_item(cancel)
 
+        jump = self._build_jump_select()
+        if jump is not None:
+            self.add_item(jump)
+
+        apply_all = self._build_apply_all_button()
+        if apply_all is not None:
+            self.add_item(apply_all)
+
+    def _build_apply_all_button(self) -> discord.ui.Button | None:
+        """Build the row-3 "Apply all recommended" button.
+
+        Stages every depth-filtered section's recommended ops in one
+        click — the one-click path that used to live on the hub.
+        Returns ``None`` when no section in the current depth has a
+        recommended builder, so the button never renders as a no-op.
+        """
+        if not any(s.recommended_ops_builder is not None for s in self.sections):
+            return None
+        button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
+            label="Apply all recommended",
+            style=discord.ButtonStyle.success,
+            custom_id="setup_wizard:apply_all_recommended",
+            row=3,
+        )
+        button.callback = self._on_apply_all_recommended  # type: ignore[method-assign]
+        return button
+
+    def _build_jump_select(self) -> discord.ui.Select | None:
+        """Build the row-2 "Jump to section" select.
+
+        This is the section-jump that folds the standalone hub's
+        navigation role into the wizard anchor: every depth-filtered
+        section is reachable directly from the wizard, so operators no
+        longer need a parallel hub view to skip ahead.  Returns ``None``
+        when there are no sections for the current depth.
+        """
+        if not self.sections:
+            return None
+        return _JumpToSectionSelect(self)
+
     async def _gate_apply(self, interaction: discord.Interaction) -> bool:
         member = interaction.user
         if not isinstance(member, discord.Member):
@@ -599,6 +639,122 @@ class LinearWizardView(BaseView):
                 "wizard._on_apply_recommended: anchor refresh failed",
             )
 
+    async def _on_apply_all_recommended(
+        self,
+        interaction: discord.Interaction,
+    ) -> None:
+        """Stage recommended ops for every depth-filtered builder section.
+
+        The one-click path: iterate the current depth's sections with a
+        ``recommended_ops_builder`` and stage each through the shared
+        :func:`views.setup.section_card.stage_all_recommended` helper.
+        Posts a durable workspace notice, gives the operator an immediate
+        ephemeral confirmation (click-level feedback), and refreshes the
+        anchor so the per-section badges update.
+        """
+        if not await self._gate_apply(interaction):
+            return
+        guild = interaction.guild
+        guild_id = interaction.guild_id
+        if guild is None or guild_id is None:
+            await interaction.response.send_message(
+                "Apply all recommended requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        try:
+            session = await setup_session.resume_session(guild_id)
+        except Exception:
+            logger.exception("wizard._on_apply_all_recommended: resume failed")
+            session = self.session
+        sections = [
+            s
+            for s in _resolve_sections(session)
+            if s.recommended_ops_builder is not None
+        ]
+        if not sections:
+            await interaction.response.send_message(
+                "No section in the current depth has a recommended default — "
+                "use **Customize** on individual steps instead.",
+                ephemeral=True,
+            )
+            return
+
+        if not await safe_defer(interaction):
+            return
+        from views.setup.section_card import stage_all_recommended
+
+        try:
+            section_totals, conflicts_total = await stage_all_recommended(
+                guild=guild,
+                guild_id=guild_id,
+                session=session,
+                sections=sections,
+                actor_id=interaction.user.id,
+            )
+        except Exception:
+            logger.exception("wizard._on_apply_all_recommended: staging failed")
+            await interaction.followup.send(
+                "Could not stage recommended operations — see logs.",
+                ephemeral=True,
+            )
+            return
+
+        total = sum(section_totals.values())
+        word = "operation" if total == 1 else "operations"
+        if not total and not conflicts_total:
+            await interaction.followup.send(
+                "No recommended operations were generated — the guild may "
+                "already cover these, or no channels matched the rules.",
+                ephemeral=True,
+            )
+            return
+
+        lines = "\n".join(
+            f"• `{slug}`: **{count}** op(s)" for slug, count in section_totals.items()
+        )
+        description = (
+            f"Staged **{total} {word}** across {len(section_totals)} "
+            "section(s). Continue to **Final Review** to apply."
+        )
+        if lines:
+            description += f"\n\n{lines}"
+        if conflicts_total:
+            conflict_word = "row" if conflicts_total == 1 else "rows"
+            description += (
+                f"\n\n⚠️ Preserved **{conflicts_total} custom / preset "
+                f"{conflict_word}** at conflicting slot(s); no overwrite."
+            )
+        notice_embed = discord.Embed(
+            title=f"✅ Apply all recommended — {total} {word}",
+            description=description,
+            color=discord.Color.green(),
+        )
+        try:
+            await push_setup_notice(guild, embed=notice_embed)
+        except Exception:
+            logger.exception(
+                "wizard._on_apply_all_recommended: push_setup_notice failed",
+            )
+        # Immediate click-level feedback so the operator does not have to
+        # hunt the workspace channel to confirm the press did something.
+        try:
+            await interaction.followup.send(
+                f"✅ Staged **{total} {word}** across "
+                f"{len(section_totals)} section(s).",
+                ephemeral=True,
+            )
+        except Exception:
+            logger.exception(
+                "wizard._on_apply_all_recommended: followup confirm failed",
+            )
+        try:
+            await self._refresh_and_edit(interaction)
+        except Exception:
+            logger.exception(
+                "wizard._on_apply_all_recommended: anchor refresh failed",
+            )
+
     async def _on_skip(self, interaction: discord.Interaction) -> None:
         if not await self._gate_apply(interaction):
             return
@@ -822,6 +978,45 @@ class LinearWizardView(BaseView):
             embed=build_final_review_embed(final.ops),
             view=final,
         )
+
+
+class _JumpToSectionSelect(discord.ui.Select):
+    """Row-2 "Jump to section" select for :class:`LinearWizardView`.
+
+    Lets a power user jump straight to any depth-filtered section's step
+    in the wizard anchor — the section-jump role that used to require a
+    separate hub view.  On select it re-renders the anchor at the chosen
+    step via the wizard's shared ``_refresh_and_edit`` path.
+    """
+
+    def __init__(self, wizard: LinearWizardView) -> None:
+        self._wizard = wizard
+        current = wizard.current_section
+        options = [
+            discord.SelectOption(
+                label=section.label[:100],
+                value=str(idx),
+                default=(current is not None and section.slug == current.slug),
+            )
+            for idx, section in enumerate(wizard.sections[:25])
+        ]
+        super().__init__(
+            placeholder="Jump to section…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            custom_id="setup_wizard:jump",
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        wizard = self._wizard
+        try:
+            target = int(self.values[0])
+        except (ValueError, IndexError):
+            target = wizard.step_index
+        wizard.step_index = max(0, min(target, len(wizard.sections) - 1))
+        await wizard._refresh_and_edit(interaction)
 
 
 # ---------------------------------------------------------------------------

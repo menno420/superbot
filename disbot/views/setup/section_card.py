@@ -132,6 +132,77 @@ async def call_recommended_ops_builder(
     return await builder(guild, **kwargs)
 
 
+async def stage_all_recommended(
+    *,
+    guild: discord.Guild,
+    guild_id: int,
+    session: SetupSession | None,
+    sections: list[SetupSection],
+    actor_id: int,
+) -> tuple[dict[str, int], int]:
+    """Stage every section's recommended ops into the per-guild draft.
+
+    Iterates ``sections`` (already depth-filtered by the caller), calls
+    each section's ``recommended_ops_builder`` via
+    :func:`call_recommended_ops_builder`, and stages the result through
+    :func:`services.setup_draft.replace_recommended_for_section` (the sole
+    writer of ``staging_kind='recommended'``).  Per-section failures are
+    isolated and logged; custom/preset rows at conflicting slots are
+    preserved, never overwritten.
+
+    Returns ``(section_totals, conflicts_total)`` where ``section_totals``
+    maps section slug → inserted op count and ``conflicts_total`` is the
+    number of conflicting rows preserved.  Shared by the wizard's
+    "Apply all recommended" button so the one-click path lives in exactly
+    one place.
+    """
+    section_totals: dict[str, int] = {}
+    conflicts_total = 0
+    for section in sections:
+        builder = section.recommended_ops_builder
+        if builder is None:
+            continue
+        try:
+            ops = await call_recommended_ops_builder(
+                builder,
+                guild=guild,
+                session=session,
+                purpose=session.purpose if session is not None else None,
+                depth=session.depth if session is not None else None,
+                section_slug=section.slug,
+            )
+        except Exception:
+            logger.exception(
+                "stage_all_recommended: builder failed (slug=%s)",
+                section.slug,
+            )
+            continue
+        if not ops:
+            continue
+        try:
+            result = await setup_draft.replace_recommended_for_section(
+                guild_id,
+                section.slug,
+                ops,
+                actor_id=actor_id,
+                labels={
+                    idx: f"[apply-all] {section.slug}.{op.kind}"
+                    for idx, op in enumerate(ops)
+                },
+            )
+        except Exception:
+            logger.exception(
+                "stage_all_recommended: replace_recommended_for_section "
+                "failed (slug=%s)",
+                section.slug,
+            )
+            continue
+        if result.inserted_seqs:
+            section_totals[section.slug] = len(result.inserted_seqs)
+        conflicts_total += len(result.conflicts)
+    return section_totals, conflicts_total
+
+
 _STATUS_LABELS = {
     "not_started": "Not started",
     "recommended": "Recommended selected",

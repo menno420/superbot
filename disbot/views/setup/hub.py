@@ -127,8 +127,9 @@ def _next_step_hint(
         )
     if has_recommended_path and not_started:
         return (
-            "💡 Hit **Apply all recommended** for a one-click start, or "
-            "open sections individually."
+            "💡 Open the wizard (↩ Back to wizard) and hit **Apply all "
+            "recommended** for a one-click start, or open sections "
+            "individually."
         )
     return "👉 Pick a section to begin."
 
@@ -234,164 +235,10 @@ class SetupHubView(BaseView):
         depth_sections = REGISTRY.for_depth(depth)
         for section in depth_sections:
             self.add_item(self._build_section_button(section))
-        if any(s.recommended_ops_builder is not None for s in depth_sections):
-            self.add_item(self._build_apply_all_recommended_button())
+        # "Apply all recommended" lives on the wizard now (the hub is a
+        # navigation surface, not a parallel apply surface).
         self.add_item(self._build_change_depth_button())
         self.add_item(self._build_back_to_wizard_button())
-
-    def _build_apply_all_recommended_button(self) -> discord.ui.Button:
-        button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
-            label="Apply all recommended",
-            style=discord.ButtonStyle.success,
-            custom_id="setup_hub:apply_all_recommended",
-            row=4,
-        )
-
-        async def _callback(interaction: discord.Interaction) -> None:
-            if not await self._gate_apply(interaction):
-                return
-            if interaction.guild is None or interaction.guild_id is None:
-                await interaction.response.send_message(
-                    "Apply all recommended requires a guild context.",
-                    ephemeral=True,
-                )
-                return
-
-            await self._refresh_session()
-            depth_now = self.session.depth if self.session is not None else None
-            sections = [
-                s
-                for s in REGISTRY.for_depth(depth_now)
-                if s.recommended_ops_builder is not None
-            ]
-            if not sections:
-                await interaction.response.send_message(
-                    "No section in the current depth has a recommended "
-                    "default — pick sections individually instead.",
-                    ephemeral=True,
-                )
-                return
-
-            from core.runtime.interaction_helpers import safe_defer
-
-            if not await safe_defer(interaction, ephemeral=True, thinking=True):
-                return
-            from services import setup_draft
-            from views.setup.section_card import call_recommended_ops_builder
-
-            section_totals: dict[str, int] = {}
-            conflicts_total = 0
-            for section in sections:
-                builder = section.recommended_ops_builder
-                if builder is None:
-                    continue
-                try:
-                    ops = await call_recommended_ops_builder(
-                        builder,
-                        guild=interaction.guild,
-                        session=self.session,
-                        purpose=(
-                            self.session.purpose if self.session is not None else None
-                        ),
-                        depth=(
-                            self.session.depth if self.session is not None else None
-                        ),
-                        section_slug=section.slug,
-                    )
-                except Exception:
-                    logger.exception(
-                        "hub.apply_all_recommended: builder failed (slug=%s)",
-                        section.slug,
-                    )
-                    continue
-                if not ops:
-                    continue
-                # Transactional replace so a repeated press of "Apply
-                # all recommended" doesn't accumulate duplicate rows;
-                # custom / preset / manual / repair rows at the same
-                # slot are preserved.
-                try:
-                    result = await setup_draft.replace_recommended_for_section(
-                        interaction.guild_id,
-                        section.slug,
-                        ops,
-                        actor_id=interaction.user.id,
-                        labels={
-                            idx: f"[apply-all] {section.slug}.{op.kind}"
-                            for idx, op in enumerate(ops)
-                        },
-                    )
-                except Exception:
-                    logger.exception(
-                        "hub.apply_all_recommended: "
-                        "replace_recommended_for_section failed",
-                    )
-                    continue
-                if result.inserted_seqs:
-                    section_totals[section.slug] = len(result.inserted_seqs)
-                conflicts_total += len(result.conflicts)
-
-            if not section_totals and not conflicts_total:
-                # No state change → no durable record needed; keep the
-                # short ephemeral validation notice.
-                await interaction.followup.send(
-                    "No recommended operations were generated. Most likely "
-                    "the guild has no high-confidence channel matches or "
-                    "an existing default already covers every section.",
-                    ephemeral=True,
-                )
-                return
-            total = sum(section_totals.values())
-            lines = "\n".join(
-                f"• `{slug}`: **{count}** op(s)"
-                for slug, count in section_totals.items()
-            )
-            word = "operation" if total == 1 else "operations"
-            description = (
-                f"Staged **{total} {word}** across "
-                f"{len(section_totals)} section(s). Open Final review to apply."
-            )
-            if lines:
-                description += f"\n\n{lines}"
-            if conflicts_total:
-                conflict_word = "row" if conflicts_total == 1 else "rows"
-                description += (
-                    f"\n\n⚠️ Preserved **{conflicts_total} custom / preset "
-                    f"{conflict_word}** at conflicting slot(s); no overwrite. "
-                    "Edit Final review to swap them out if needed."
-                )
-            # Aggressive ephemeral policy: this is durable setup state —
-            # admins need to see what apply-all changed, share it, and
-            # reference it later. Post a workspace notice and ack the
-            # ephemeral defer with a short pointer.
-            notice_embed = discord.Embed(
-                title=f"✅ Apply all recommended — {total} {word}",
-                description=description,
-                color=discord.Color.green(),
-            )
-            posted = False
-            if interaction.guild is not None:
-                try:
-                    posted = await push_setup_notice(
-                        interaction.guild,
-                        embed=notice_embed,
-                    )
-                except Exception:
-                    logger.exception(
-                        "hub.apply_all_recommended: push_setup_notice failed",
-                    )
-            if posted:
-                await interaction.followup.send(
-                    "📋 Apply-all results posted in the setup workspace.",
-                    ephemeral=True,
-                )
-            else:
-                # Fall back to the original ephemeral so the operator
-                # still sees the outcome.
-                await interaction.followup.send(description, ephemeral=True)
-
-        button.callback = _callback  # type: ignore[method-assign]
-        return button
 
     def _build_change_depth_button(self) -> discord.ui.Button:
         button: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]

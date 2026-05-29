@@ -120,12 +120,13 @@ def test_logging_presets_op_kinds_only_resource_kinds():
     assert section.op_kinds <= frozenset({"create_channel", "bind_channel"})
 
 
-def test_logging_presets_runs_in_standard_and_advanced_depths():
-    """Quick depth intentionally omits this step — quick is a 3-step
-    on-ramp, presets are an advanced choice."""
+def test_logging_presets_runs_in_every_depth():
+    """Logging is part of the lean quick path now — preset + channels +
+    logging are the steps that actually wire the bot up, so logging
+    presets appear in quick, standard, and advanced."""
     section = REGISTRY.get(SLUG)
     assert section is not None
-    assert section.depths == frozenset({"standard", "advanced"})
+    assert section.depths == frozenset({"quick", "standard", "advanced"})
 
 
 def test_logging_presets_has_recommended_builder():

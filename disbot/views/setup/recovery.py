@@ -384,15 +384,62 @@ class SectionRecoveryView(BaseView):
         self.stop()
 
     async def _on_customize(self, interaction: discord.Interaction) -> None:
-        """Re-invoke the section's run callback (same path as Retry).
+        """Open the section's detail view directly — distinct from Retry.
 
-        The section's run callback is the canonical entry point for
-        its detail UI; both Retry and Customize call it.  The
-        distinction is operator-facing — Retry says "fix the failure",
-        Customize says "let me handle it manually".  The underlying
-        action is identical.
+        Retry re-runs the section's auto flow (``section.run``), which
+        re-attempts the path that just failed.  Customize instead jumps
+        straight to the section's manual detail view (``detail_embed_builder``
+        + ``detail_view_builder``) on the wizard anchor, so the operator
+        can configure by hand instead of re-triggering the failure.
+
+        Sections without a wizard-native detail view have no separate
+        manual UI, so for them Customize falls back to ``section.run`` —
+        the same single manual entry point Retry uses.
         """
-        await self._on_retry(interaction)
+        if not await self._gate_apply(interaction):
+            return
+        section = self.context.section
+        guild = interaction.guild
+        member = interaction.user
+        has_detail = (
+            section.detail_embed_builder is not None
+            and section.detail_view_builder is not None
+        )
+        if not (
+            has_detail and guild is not None and isinstance(member, discord.Member)
+        ):
+            # No wizard-native detail view — re-enter via the section's
+            # run() callback (the only manual entry it exposes).
+            await self._on_retry(interaction)
+            return
+
+        from views.setup.wizard_nav import render_step_detail
+
+        session = None
+        try:
+            session = await setup_session.resume_session(guild.id)
+        except Exception:
+            logger.exception("recovery._on_customize: resume failed")
+        ok = False
+        try:
+            ok = await render_step_detail(
+                interaction,
+                guild=guild,
+                member=member,
+                session=session,
+                section=section,
+                step_index=max(self.context.step_index, 0),
+            )
+        except Exception:
+            logger.exception("recovery._on_customize: render_step_detail failed")
+            ok = False
+        if not ok and not interaction.response.is_done():
+            await interaction.response.send_message(
+                f"Could not open the detail view for **{section.label}** — "
+                "see logs.",
+                ephemeral=True,
+            )
+        self.stop()
 
     async def _on_cancel(self, interaction: discord.Interaction) -> None:
         for child in self.children:

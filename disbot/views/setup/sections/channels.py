@@ -606,7 +606,7 @@ REGISTRY.register(
             "have a dedicated log channel. Configure these later in "
             "`!settings`."
         ),
-        depths=frozenset({"standard", "advanced"}),
+        depths=frozenset({"quick", "standard", "advanced"}),
         recommended_ops_builder=_recommended_channel_ops,
         customize=_customize_run,
         detail_embed_builder=_build_detail_embed,
