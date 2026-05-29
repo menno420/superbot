@@ -176,6 +176,16 @@ async def test_provider_tool_loop_is_bounded():
     assert "tools" not in client.chat.completions.calls[-1]
 
 
+async def test_provider_forwards_max_output_tokens():
+    # Regression: the adapter previously dropped request.max_output_tokens.
+    client = _FakeClient([_response(_msg(content="ok"))])
+    provider = OpenAIProvider(client=client)
+
+    await provider.execute(_tool_request(), model="m", dispatch=None)
+
+    assert client.chat.completions.calls[0]["max_tokens"] == 800
+
+
 # --- gateway dispatch wiring ------------------------------------------
 
 
