@@ -37,6 +37,7 @@ from core.runtime.ai.contracts import (
 )
 from core.runtime.ai.gateway import AIGateway, get_default_gateway
 from core.runtime.ai.providers.base import Provider
+from core.runtime.ai.routing import default_model_for
 
 # Fixed fake identity for eval requests. Tools are stubbed (see _spy_handlers),
 # so no DB or real service is touched — the harness probes the *model*, not the
@@ -159,7 +160,7 @@ class Scorecard:
             cats = self._group_for(provider)
             for category, (cdone, ctotal) in sorted(cats.items()):
                 lines.append(
-                    f"    {category:<16} {cdone}/{ctotal}  ({_pct(cdone, ctotal)})"
+                    f"    {category:<16} {cdone}/{ctotal}  ({_pct(cdone, ctotal)})",
                 )
             for run in self.runs:
                 if run.provider == provider and not run.passed:
@@ -167,7 +168,7 @@ class Scorecard:
                     lines.append(f"      ✗ {run.case_id} [{mark}] {run.detail[:90]}")
         lines.append("\n" + "-" * 60)
         lines.append(
-            f"TOTAL  {self.passed}/{self.total}  ({_pct(self.passed, self.total)})"
+            f"TOTAL  {self.passed}/{self.total}  ({_pct(self.passed, self.total)})",
         )
         return "\n".join(lines)
 
@@ -243,11 +244,19 @@ async def run_case(
         max_output_tokens=case.max_output_tokens,
         tools=case.tools,
     )
+    # Force the model that the (overridden) provider actually serves, so an
+    # OpenAI run never gets a Claude model name (or vice versa).
+    model_override = (
+        default_model_for(provider_override.name, case.task)
+        if provider_override is not None
+        else None
+    )
     started = time.perf_counter()
     response = await gw.execute(
         request,
         provider_override=provider_override,
         tool_handlers=handlers,
+        model_override=model_override,
     )
     latency_ms = (time.perf_counter() - started) * 1000.0
     outcome = EvalOutcome(
@@ -255,6 +264,10 @@ async def run_case(
         tool_calls=tuple(recorder),
         latency_ms=latency_ms,
     )
+    # A degraded response is a non-answer (timeout / provider error / 404) —
+    # never credit it as a pass, regardless of what the grader would say.
+    if outcome.degraded:
+        return outcome, GradeResult(False, f"degraded: {response.fallback_reason}")
     grade = case.grader(outcome)
     if inspect.isawaitable(grade):
         grade = await grade
