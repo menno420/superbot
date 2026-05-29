@@ -15,6 +15,7 @@ API key is configured. Its existence keeps the gateway boot-safe:
 from __future__ import annotations
 
 from core.runtime.ai.contracts import AIRequest
+from core.runtime.ai.providers.base import ToolDispatch
 
 
 class DeterministicFallbackError(RuntimeError):
@@ -31,7 +32,13 @@ class DeterministicProvider:
 
     name = "deterministic"
 
-    async def execute(self, request: AIRequest, *, model: str) -> str:
+    async def execute(
+        self,
+        request: AIRequest,
+        *,
+        model: str,
+        dispatch: ToolDispatch | None = None,
+    ) -> str:
         raise DeterministicFallbackError(
             "deterministic provider selected; no external call performed",
         )

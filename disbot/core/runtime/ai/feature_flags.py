@@ -16,6 +16,10 @@ Recognised env vars:
   ``AI_TASK_SETUP_SUGGEST_ENABLED``). Default off, except for
   setup-advisor compatibility tasks which respect
   ``SETUP_ADVISOR_PROVIDER`` (legacy).
+* ``AI_TOOLS_ENABLED``           — ``"1"``/``"true"`` to let the
+  gateway offer read-only tools to the model (function calling).
+  Layers under :func:`ai_enabled`; default off, so tool calling is
+  inert until an operator opts in.
 
 Compatibility note: ``SETUP_ADVISOR_PROVIDER`` remains the
 authoritative env var for the setup advisor's provider choice. The
@@ -68,6 +72,19 @@ def task_enabled(task: AITask) -> bool:
         return False
     env_name = f"AI_TASK_{task.name}_ENABLED"
     return _bool_env(env_name, default=True)
+
+
+def ai_tools_enabled() -> bool:
+    """True if the gateway may offer read-only tools to the model.
+
+    Layers on top of :func:`ai_enabled`: the global flag must also be
+    on. When false (the default), the gateway never passes a tool
+    dispatch to the provider, so behaviour is identical to the
+    no-tools path regardless of what tools a caller supplies.
+    """
+    if not ai_enabled():
+        return False
+    return _bool_env("AI_TOOLS_ENABLED", default=False)
 
 
 def setup_advisor_provider() -> str:

@@ -20,9 +20,23 @@ Providers may raise:
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from collections.abc import Awaitable, Callable
+from typing import Any, Protocol, runtime_checkable
 
 from core.runtime.ai.contracts import AIRequest
+
+#: A read-only tool handler: receives parsed arguments and returns a
+#: JSON-serialisable result (or a string). Handlers live in the
+#: services layer; the alias is declared here so the gateway and
+#: providers can reference the type without importing ``services``.
+ToolHandler = Callable[[dict[str, Any]], Awaitable[Any]]
+
+#: Gateway-provided callback a provider invokes during a tool loop.
+#: Given a tool name and parsed arguments, it returns the (already
+#: redacted) tool result as a string to feed back into the model
+#: context. It never raises — tool failures come back as a JSON error
+#: string so the loop can continue and the model can react.
+ToolDispatch = Callable[[str, dict[str, Any]], Awaitable[str]]
 
 
 class ProviderUnavailableError(RuntimeError):
@@ -44,7 +58,13 @@ class Provider(Protocol):
 
     name: str
 
-    async def execute(self, request: AIRequest, *, model: str) -> str:
+    async def execute(
+        self,
+        request: AIRequest,
+        *,
+        model: str,
+        dispatch: ToolDispatch | None = None,
+    ) -> str:
         """Run the provider call and return the raw text response.
 
         Args:
@@ -52,6 +72,13 @@ class Provider(Protocol):
                 the gateway before this is called).
             model: The provider-specific model identifier resolved by
                 :mod:`core.runtime.ai.routing`.
+            dispatch: Optional tool-dispatch callback. When provided
+                *and* ``request.tools`` is non-empty, the provider may
+                offer those tools to the model and run a bounded
+                tool-call loop, invoking ``dispatch`` for each call.
+                When ``None`` (the default), the provider behaves
+                exactly as the no-tools path. Providers that do not
+                support tools ignore this argument.
 
         Returns:
             The raw assistant text. For ``AIResponseMode.JSON`` the
