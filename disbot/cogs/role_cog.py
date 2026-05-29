@@ -262,6 +262,12 @@ class RoleCog(commands.Cog):
                 days_required=row["days_required"],
             )
             for row in thresholds
+            # XP reward roles (xp_auto_assign) are granted by the XP listener
+            # at a level threshold — they are NOT time-based. Excluding them
+            # stops the time-based reconciliation from stripping a level-earned
+            # role from members who haven't met a days_required threshold (the
+            # "lost testrole on restart" regression).
+            if not row.get("xp_auto_assign") and row.get("days_required") is not None
         )
 
         assignments = role_automation.compute_assignments(
@@ -558,6 +564,12 @@ class RoleCog(commands.Cog):
                 days_required=row["days_required"],
             )
             for row in thresholds
+            # XP reward roles (xp_auto_assign) are granted by the XP listener
+            # at a level threshold — they are NOT time-based. Excluding them
+            # stops the time-based reconciliation from stripping a level-earned
+            # role from members who haven't met a days_required threshold (the
+            # "lost testrole on restart" regression).
+            if not row.get("xp_auto_assign") and row.get("days_required") is not None
         )
         plan = role_automation.explain_assignment_for(
             member.guild,

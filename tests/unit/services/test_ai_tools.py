@@ -129,6 +129,19 @@ async def test_btd6_superlative_lookup_answers_cost_rankings():
     )
     assert cheapest["results"][0]["tower_id"] == "dart_monkey"
 
+    # limit lets the model list them all (incl. the Dart Monkey paragon).
+    default_n = await registry.handlers["btd6_superlative_lookup"](
+        {"metric": "paragon_cost", "cheapest": True},
+    )
+    assert len(default_n["results"]) == 3  # default top-3
+    full = await registry.handlers["btd6_superlative_lookup"](
+        {"metric": "paragon_cost", "cheapest": True, "limit": 25},
+    )
+    assert len(full["results"]) > 3
+    assert any(
+        r["tower_id"] == "dart_monkey" and r["cost"] == 150000 for r in full["results"]
+    )
+
     bad = await registry.handlers["btd6_superlative_lookup"]({"metric": "nope"})
     assert bad["found"] is False
 
