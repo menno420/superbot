@@ -328,6 +328,13 @@ _BTD6_SUPERLATIVE_SPEC = AIToolSpec(
                 "type": "boolean",
                 "description": "Least expensive when true (default false).",
             },
+            "limit": {
+                "type": "integer",
+                "description": (
+                    "How many to return (default 3). Use a large value to "
+                    "list them all, e.g. every paragon (max 25)."
+                ),
+            },
         },
         "required": ["metric"],
         "additionalProperties": False,
@@ -351,7 +358,8 @@ async def _btd6_superlative_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     except (TypeError, ValueError):
         tier = None
     cheapest = bool(arguments.get("cheapest", False))
-    hits = sup.rank(metric, tier=tier, cheapest=cheapest)
+    limit = _coerce_limit(arguments.get("limit"), default=3, lo=1, hi=25)
+    hits = sup.rank(metric, tier=tier, cheapest=cheapest, limit=limit)
     return {
         "found": bool(hits),
         "metric": metric,
