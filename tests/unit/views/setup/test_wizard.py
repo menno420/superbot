@@ -374,6 +374,48 @@ async def test_apply_all_recommended_stages_via_helper_and_confirms():
     interaction.followup.send.assert_awaited()
 
 
+def test_wizard_entry_populates_section_registry_in_fresh_process():
+    """Regression: opening the wizard must not depend on the hub having
+    been imported first.
+
+    Runs in a fresh interpreter that imports only the wizard entry path
+    (no hub, no sections package) and asserts ``_resolve_sections``
+    returns the production sections.  Before the registration fix the
+    registry was empty here and the wizard rendered "No setup sections
+    available for this depth".
+    """
+    import os
+    import pathlib
+    import subprocess
+    import sys
+
+    repo_root = pathlib.Path(__file__).resolve().parents[4]
+    disbot_dir = repo_root / "disbot"
+    code = (
+        "import views.setup.wizard as w\n"
+        "secs = w._resolve_sections(None)\n"
+        "assert len(secs) > 0, 'registry empty: wizard resolved 0 sections'\n"
+        "print(len(secs))\n"
+    )
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join(
+        [str(disbot_dir), env.get("PYTHONPATH", "")],
+    ).strip(os.pathsep)
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=str(repo_root),
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, (
+        "fresh-process wizard import resolved no sections "
+        f"(registry not populated):\nstdout={result.stdout!r}\n"
+        f"stderr={result.stderr!r}"
+    )
+    assert int(result.stdout.strip()) >= 1
+
+
 def test_view_back_button_disabled_on_first_step():
     sections = [
         _section("cleanup", builder=_builder_one_op),
@@ -790,6 +832,52 @@ async def test_open_workspace_posts_new_anchor_when_id_missing():
     channel.send.assert_awaited_once()
     set_id_mock.assert_awaited_once_with(1, 5555)
     mark_mock.assert_awaited_once_with(1, step="wizard")
+
+
+@pytest.mark.asyncio
+async def test_open_workspace_shows_depth_picker_when_depth_unset():
+    """First run (no depth picked yet) shows the depth picker on the
+    anchor instead of dropping the operator into every section, and marks
+    the step as 'depth'."""
+    from views.setup.depth_panel import DepthPanelView
+
+    guild = MagicMock(spec=discord.Guild)
+    guild.id = 1
+    member = _owner_member()
+    channel = _make_text_channel()
+    posted_msg = MagicMock(id=4321, jump_url="https://x/y/z")
+    channel.send = AsyncMock(return_value=posted_msg)
+
+    with (
+        patch(
+            "views.setup.wizard.setup_channel.ensure_setup_channel",
+            new_callable=AsyncMock,
+            return_value=(channel, True),
+        ),
+        patch(
+            "views.setup.wizard.setup_draft.list_rows",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "views.setup.wizard.setup_session.set_setup_message_id",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "views.setup.wizard.setup_session.mark_in_progress",
+            new_callable=AsyncMock,
+        ) as mark_mock,
+    ):
+        _ch, _msg, reason = await open_setup_workspace(
+            guild,
+            member=member,
+            session=_session(depth=None, setup_message_id=None),
+        )
+
+    assert reason == "ok"
+    sent_view = channel.send.await_args.kwargs["view"]
+    assert isinstance(sent_view, DepthPanelView)
+    mark_mock.assert_awaited_once_with(1, step="depth")
 
 
 @pytest.mark.asyncio
@@ -1417,7 +1505,7 @@ async def test_resume_picks_session_current_step():
             current_step="zz_two",
             setup_channel_id=channel.id,
             setup_message_id=None,
-            depth=None,
+            depth="standard",
         )
 
         captured: list[LinearWizardView] = []

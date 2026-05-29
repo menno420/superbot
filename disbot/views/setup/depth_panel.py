@@ -91,9 +91,14 @@ class DepthPanelView(BaseView):
         author: discord.Member | discord.User,
         *,
         session: SetupSession | None = None,
+        after: str = "hub",
         timeout: int = 180,
     ) -> None:
         super().__init__(author, timeout=timeout)
+        # Where to go after a depth is chosen: "hub" (default, used by the
+        # hub's Change depth button) or "wizard" (the first-run wizard
+        # entry, which transitions this anchor straight into the steps).
+        self._after = after
         current = session.depth if session is not None else None
         for slug in ("quick", "standard", "advanced"):
             label, _ = _DEPTH_DESCRIPTIONS[slug]
@@ -143,15 +148,41 @@ class DepthPanelView(BaseView):
             )
             return
 
-        # Open the hub at the selected depth.
-        from services import setup_draft
-        from views.setup.hub import SetupHubView, build_hub_embed
-
         try:
             session = await setup_session.resume_session(interaction.guild_id)
         except Exception:
             logger.exception("depth_panel._select: resume_session failed")
             session = None
+
+        if self._after == "wizard":
+            # Transition this same anchor into the linear wizard at the
+            # first step of the chosen depth.
+            member = interaction.user
+            if isinstance(member, discord.Member):
+                from views.setup.wizard_nav import render_wizard_step
+
+                ok = await render_wizard_step(
+                    interaction,
+                    guild=guild,
+                    member=member,
+                    session=session,
+                    step_index=0,
+                )
+                if ok:
+                    self.stop()
+                    return
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "Saved your depth — re-run `/setup` to open the wizard.",
+                    ephemeral=True,
+                )
+            self.stop()
+            return
+
+        # Default: open the hub at the selected depth.
+        from services import setup_draft
+        from views.setup.hub import SetupHubView, build_hub_embed
+
         try:
             draft_ops = await setup_draft.list_ops(interaction.guild_id)
         except Exception:
