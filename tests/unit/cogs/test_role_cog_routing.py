@@ -256,6 +256,54 @@ async def test_on_member_join_skips_when_no_plan():
     apply_mock.assert_not_awaited()
 
 
+@pytest.mark.asyncio
+async def test_on_member_join_excludes_xp_auto_assign_roles():
+    """The join path must also keep XP reward roles out of the time-based
+    reconciliation. The "lost testrole on restart" regression lived in BOTH
+    role_check/_assign_roles AND on_member_join; this is the join-path mirror
+    of test_assign_roles_excludes_xp_auto_assign_roles so neither half can
+    silently re-regress.
+    """
+    bot = MagicMock()
+    cog = RoleCog(bot)
+    member = MagicMock()
+    member.bot = False
+    member.guild = MagicMock(id=1)
+
+    with (
+        patch("cogs.role_cog._ensure_defaults", new_callable=AsyncMock),
+        patch(
+            "cogs.role_cog.db.get_role_thresholds",
+            new_callable=AsyncMock,
+            return_value=[
+                {
+                    "role_name": "Veteran",
+                    "days_required": 30,
+                    "level_required": None,
+                    "xp_auto_assign": False,
+                },
+                {
+                    "role_name": "testrole",
+                    "days_required": 0,
+                    "level_required": 6,
+                    "xp_auto_assign": True,
+                },
+            ],
+        ),
+        patch(
+            "cogs.role_cog.role_automation.explain_assignment_for",
+            return_value=None,
+        ) as explain_mock,
+    ):
+        await cog.on_member_join(member)
+
+    # explain_assignment_for(guild, member, threshold_objs) — args[2] is the
+    # filtered threshold tuple fed into the time-based reconciliation.
+    names = {t.role_name for t in explain_mock.call_args.args[2]}
+    assert "Veteran" in names  # time-based role still reconciled on join
+    assert "testrole" not in names  # XP reward role excluded from join path
+
+
 def test_role_cog_threshold_paths_do_not_call_member_role_apis_directly():
     """Static check: the threshold path must not call Discord member.add_roles
     / member.remove_roles directly. Reaction-role and admin role create/delete
