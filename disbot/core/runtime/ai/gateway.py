@@ -29,12 +29,13 @@ import asyncio
 import json
 import logging
 import time
+from collections.abc import Mapping
 from typing import Any
 
 from core.runtime.ai import redaction
 from core.runtime.ai.contracts import AIRequest, AIResponse, AIResponseMode
 from core.runtime.ai.diagnostics import DiagnosticsCollector, get_default_collector
-from core.runtime.ai.feature_flags import task_enabled
+from core.runtime.ai.feature_flags import ai_tools_enabled, task_enabled
 from core.runtime.ai.providers import (
     DeterministicFallbackError,
     DeterministicProvider,
@@ -42,6 +43,7 @@ from core.runtime.ai.providers import (
     Provider,
     ProviderUnavailableError,
 )
+from core.runtime.ai.providers.base import ToolDispatch, ToolHandler
 from core.runtime.ai.routing import RoutingTarget, resolve
 from core.runtime.ai.safety import precheck
 from services import metrics
@@ -150,8 +152,18 @@ class AIGateway:
         request: AIRequest,
         *,
         provider_override: Provider | None = None,
+        tool_handlers: Mapping[str, ToolHandler] | None = None,
     ) -> AIResponse:
-        """Run a request through the pipeline; never raises."""
+        """Run a request through the pipeline; never raises.
+
+        When ``tool_handlers`` is supplied, ``request.tools`` is
+        non-empty, and ``feature_flags.ai_tools_enabled()`` is true, the
+        gateway hands the provider a redaction-wrapped dispatch callback
+        so the model can call those read-only tools. Tool outputs are
+        redacted before they re-enter the model context, and tool faults
+        are returned to the model as a JSON error string (the gateway's
+        never-raise contract still holds).
+        """
         target = resolve(request.context.task)
         if provider_override is None and request.context.guild_id is not None:
             target = await _overlay_guild_policy(target, request.context.guild_id)
@@ -187,6 +199,7 @@ class AIGateway:
             response_schema=request.response_schema,
             max_output_tokens=request.max_output_tokens,
             timeout_seconds=request.timeout_seconds,
+            tools=request.tools,
         )
 
         provider = provider_override or self._providers.get(target.provider)
@@ -204,14 +217,32 @@ class AIGateway:
             )
 
         self._collector.record_request(provider_active=provider.name)
+        dispatch: ToolDispatch | None = None
+        if tool_handlers is not None and request.tools and ai_tools_enabled():
+            dispatch = self._build_dispatch(
+                redacted_request,
+                tool_handlers,
+                provider.name,
+            )
         timeout = request.timeout_seconds or target.timeout_seconds
         outcome = "success"
         started = time.perf_counter()
         try:
-            raw_text = await asyncio.wait_for(
-                provider.execute(redacted_request, model=target.model),
-                timeout=timeout,
-            )
+            # Only pass ``dispatch`` when tools are active so the no-tools
+            # path stays identical to a provider with the legacy
+            # ``execute(request, *, model)`` signature.
+            if dispatch is None:
+                provider_call = provider.execute(
+                    redacted_request,
+                    model=target.model,
+                )
+            else:
+                provider_call = provider.execute(
+                    redacted_request,
+                    model=target.model,
+                    dispatch=dispatch,
+                )
+            raw_text = await asyncio.wait_for(provider_call, timeout=timeout)
         except asyncio.TimeoutError:
             latency_ms = (time.perf_counter() - started) * 1000.0
             outcome = "timeout"
@@ -348,6 +379,50 @@ class AIGateway:
             degraded=degraded,
             fallback_reason=fallback_reason,
         )
+
+    def _build_dispatch(
+        self,
+        request: AIRequest,
+        tool_handlers: Mapping[str, ToolHandler],
+        provider_name: str,
+    ) -> ToolDispatch:
+        """Wrap ``tool_handlers`` in a redaction- and fault-safe dispatch.
+
+        Only tools actually offered on ``request.tools`` are callable (a
+        model that names an un-offered tool gets an error back). Each
+        result is JSON-encoded and run through redaction before it
+        re-enters the model context. Handler exceptions are converted to
+        a JSON error string so the tool loop never breaks the gateway's
+        never-raise contract.
+        """
+        offered = {spec.name for spec in request.tools}
+
+        async def dispatch(name: str, arguments: dict[str, Any]) -> str:
+            if name not in offered or name not in tool_handlers:
+                return json.dumps({"error": "tool_not_available", "tool": name})
+            try:
+                result = await tool_handlers[name](arguments)
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 — tool faults must not break the loop
+                logger.warning(
+                    "ai gateway: tool %r raised: %s",
+                    name,
+                    exc,
+                    exc_info=True,
+                )
+                self._collector.record_failure(
+                    provider_active=provider_name,
+                    error_type="ToolError",
+                    fallback_reason=f"tool:{name}",
+                )
+                return json.dumps({"error": "tool_failed", "tool": name})
+            payload = (
+                result if isinstance(result, str) else json.dumps(result, default=str)
+            )
+            return _redact_string(payload)
+
+        return dispatch
 
 
 _DEFAULT_GATEWAY: AIGateway | None = None

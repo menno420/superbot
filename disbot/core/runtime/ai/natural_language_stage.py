@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from core.runtime.ai.contracts import AITask, PolicyDenialReason
+from core.runtime.ai.contracts import AIScope, AITask, PolicyDenialReason
 from core.runtime.ai.feature_facts import FeatureFactRequest, FeatureFactsResult
 from core.runtime.message_pipeline import MessagePipelineContext, StageResult
 from services import (
@@ -455,6 +455,7 @@ class AINaturalLanguageStage:
                 actor_id=user_id,
                 channel_id=channel_id,
                 correlation_id=correlation_id,
+                scope=_derive_scope(message),
             )
 
             response = await _invoke_gateway(stack, built, ctx)
@@ -632,6 +633,37 @@ async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
     return FeatureFactsResult(facts=())
 
 
+def _derive_scope(message: discord.Message) -> AIScope:
+    """Map the message author's Discord permissions to an :class:`AIScope`.
+
+    Used only to decide which read-only tools the model may be offered
+    (see :mod:`services.ai_tools`). It does NOT influence whether the bot
+    replies — the policy resolver owns that decision. Anything
+    unrecognised (e.g. a missing permissions object) defaults to ``USER``.
+    """
+    author = getattr(message, "author", None)
+    guild = getattr(message, "guild", None)
+    if (
+        guild is not None
+        and author is not None
+        and getattr(guild, "owner_id", None) == getattr(author, "id", None)
+    ):
+        return AIScope.SERVER_OWNER
+    perms = getattr(author, "guild_permissions", None)
+    if perms is None:
+        return AIScope.USER
+    if getattr(perms, "administrator", False) or getattr(perms, "manage_guild", False):
+        return AIScope.ADMIN
+    if (
+        getattr(perms, "manage_messages", False)
+        or getattr(perms, "kick_members", False)
+        or getattr(perms, "ban_members", False)
+        or getattr(perms, "moderate_members", False)
+    ):
+        return AIScope.MODERATOR
+    return AIScope.USER
+
+
 async def _invoke_gateway(
     stack: ai_instruction_service.InstructionStack,
     built: ai_context_service.BuiltContext,
@@ -645,17 +677,43 @@ async def _invoke_gateway(
     violation and propagates to the outer handler in
     :meth:`AINaturalLanguageStage.process` which audits it as
     ``errored / PROVIDER_UNAVAILABLE``.
+
+    When ``AI_TOOLS_ENABLED`` is on we attach the read-only tool set the
+    caller's scope permits; the gateway decides whether to actually offer
+    them to the model. When off, ``tools`` is empty and ``tool_handlers``
+    is ``None`` — byte-for-byte identical to the no-tools path.
     """
-    from core.runtime.ai.contracts import AIRequest, AIResponseMode
-    from services import ai_gateway
+    from collections.abc import Mapping
+
+    from core.runtime.ai.contracts import AIRequest, AIResponseMode, AIToolSpec
+    from core.runtime.ai.feature_flags import ai_tools_enabled
+    from core.runtime.ai.providers.base import ToolHandler
+    from services import ai_gateway, ai_tools
+
+    ctx = built.request_context
+    specs: tuple[AIToolSpec, ...] = ()
+    handlers: Mapping[str, ToolHandler] | None = None
+    if ai_tools_enabled() and ctx.guild_id is not None and ctx.actor_id is not None:
+        registry = ai_tools.build_registry(
+            scope=ctx.scope,
+            guild_id=ctx.guild_id,
+            actor_id=ctx.actor_id,
+        )
+        specs = registry.specs
+        handlers = registry.handlers
 
     request = AIRequest(
-        context=built.request_context,
+        context=ctx,
         system_prompt=stack.render_system_prompt(),
         payload={"text": stack.render_payload_text()},
         mode=AIResponseMode.TEXT,
+        tools=specs,
     )
-    return await ai_gateway.execute(request)
+    # Pass tool_handlers only when tools are active so the no-tools path
+    # matches the legacy single-argument ``execute(request)`` call.
+    if handlers is None:
+        return await ai_gateway.execute(request)
+    return await ai_gateway.execute(request, tool_handlers=handlers)
 
 
 # Convenience export used by AICog.cog_load when wiring the stage in.

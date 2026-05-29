@@ -115,6 +115,27 @@ class AIRequestContext:
 
 
 @dataclass(frozen=True)
+class AIToolSpec:
+    """Provider-neutral declaration of a read-only tool the model may call.
+
+    Specs are pure data (no handler): they describe the tool to the
+    provider so the model can decide to call it. The live handler is
+    supplied separately to the gateway via ``tool_handlers`` so this
+    contract stays a clean, redaction-safe data object. ``parameters``
+    is a JSON-Schema object describing the tool's arguments.
+
+    ``min_scope`` is the least-privileged :class:`AIScope` allowed to be
+    offered this tool; the natural-language stage filters the offered
+    toolset by the caller's scope before the request is built.
+    """
+
+    name: str
+    description: str
+    parameters: dict[str, Any]
+    min_scope: AIScope = AIScope.USER
+
+
+@dataclass(frozen=True)
 class AIRequest:
     """Provider-neutral request passed to a future AI gateway."""
 
@@ -125,6 +146,7 @@ class AIRequest:
     response_schema: dict[str, Any] | None = None
     max_output_tokens: int = 800
     timeout_seconds: float = 20.0
+    tools: tuple[AIToolSpec, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -188,6 +210,7 @@ __all__ = [
     "AISuggestion",
     "AISuggestionKind",
     "AITask",
+    "AIToolSpec",
     "Confidence",
     "PolicyDenialReason",
     "Severity",
