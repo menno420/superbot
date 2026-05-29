@@ -6,8 +6,10 @@ import pytest
 
 from services import btd6_stats_service as svc
 from utils.btd6.stats_embed import (
+    build_pro_hero_level_embed,
     build_pro_tier_embed,
     format_normal_stats,
+    hero_level_label,
     tier_label,
 )
 
@@ -60,3 +62,28 @@ def test_pro_embed_economy_tower_has_no_combat_fields():
     embed = build_pro_tier_embed(farm, "000")
     assert embed.fields == []
     assert "economy" in (embed.description or "").lower()
+
+
+# --- hero per-level embeds (the 6 heroes with a bloonswiki module) -----------
+
+
+def test_hero_level_label():
+    assert hero_level_label("1") == "Level 1"
+    assert hero_level_label("20") == "Level 20"
+
+
+def test_build_pro_hero_level_embed_quincy():
+    stats = svc.get_hero_stats("quincy")
+    embed = build_pro_hero_level_embed(stats, "20")
+    assert "Quincy" in embed.title
+    assert "Level 20" in embed.title
+    assert embed.fields  # has an attack field
+    assert f"v{stats.game_version}" in (embed.footer.text or "")
+
+
+def test_format_normal_stats_on_hero_level_node():
+    # The shared normal-view renderer works on a hero level node unchanged.
+    stats = svc.get_hero_stats("quincy")
+    text = format_normal_stats(svc.normal_stats(stats.level("1")))
+    assert "pierce" in text.lower()
+    assert "Camo" in text

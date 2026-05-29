@@ -1,0 +1,164 @@
+{
+  "data_version": "1.0",
+  "game_version": "54.0",
+  "source": "bloonswiki-aligned: damage-type immunities derived from utils/btd6/damage_types.py (bloonswiki Template:BTD6 dt port); MOAB-class HP / children are canonical base values pending bloonswiki re-verification.",
+  "bloons": [
+    {
+      "id": "lead",
+      "canonical": "Lead Bloon",
+      "aliases": ["lead", "leads", "lead bloon"],
+      "category": "special",
+      "properties": ["lead"],
+      "immune_to": ["Sharp", "Shatter", "Cold", "Energy"],
+      "popped_by": "Explosion, Fire, Plasma, Glacier, Acid, or Normal damage",
+      "children": "2 Black Bloons",
+      "description": "Immune to Sharp damage, so most basic dart/projectile attacks cannot pop it unupgraded. Needs Explosion, Fire, Plasma, Glacier, Acid, or Normal damage."
+    },
+    {
+      "id": "black",
+      "canonical": "Black Bloon",
+      "aliases": ["black", "blacks", "black bloon"],
+      "category": "special",
+      "properties": ["explosion-immune"],
+      "immune_to": ["Explosion"],
+      "popped_by": "any non-explosive damage (darts, fire, ice, etc.)",
+      "children": "2 Pink Bloons",
+      "description": "Immune to Explosion damage (Bomb Shooter, Mortar, etc.). Any non-explosive damage pops it."
+    },
+    {
+      "id": "white",
+      "canonical": "White Bloon",
+      "aliases": ["white", "whites", "white bloon"],
+      "category": "special",
+      "properties": ["cold-immune"],
+      "immune_to": ["Cold", "Glacier", "Frigid"],
+      "popped_by": "any non-cold damage (darts, explosions, fire, etc.)",
+      "children": "2 Pink Bloons",
+      "description": "Immune to Cold / ice damage (Ice Monkey, etc.). Any non-cold damage pops it."
+    },
+    {
+      "id": "purple",
+      "canonical": "Purple Bloon",
+      "aliases": ["purple", "purples", "purple bloon"],
+      "category": "special",
+      "properties": ["fire-immune", "energy-immune", "plasma-immune"],
+      "immune_to": ["Fire", "Energy", "Plasma", "Frigid"],
+      "popped_by": "Sharp, Explosion, Cold, Glacier, Acid, or Normal damage",
+      "children": "2 Pink Bloons",
+      "description": "Immune to Fire, Energy/Plasma, and Magic damage. Sharp, Explosion, and Cold damage still pop it."
+    },
+    {
+      "id": "zebra",
+      "canonical": "Zebra Bloon",
+      "aliases": ["zebra", "zebras", "zebra bloon"],
+      "category": "special",
+      "properties": ["explosion-immune", "cold-immune"],
+      "immune_to": ["Explosion", "Cold", "Glacier", "Frigid"],
+      "popped_by": "Sharp, Fire, Plasma, Acid, or Normal damage",
+      "children": "1 Black Bloon and 1 White Bloon",
+      "description": "Has both Black and White properties: immune to Explosion and Cold damage. Pops into one Black and one White Bloon."
+    },
+    {
+      "id": "rainbow",
+      "canonical": "Rainbow Bloon",
+      "aliases": ["rainbow", "rainbows", "rainbow bloon"],
+      "category": "special",
+      "properties": [],
+      "immune_to": [],
+      "popped_by": "any damage type",
+      "children": "2 Zebra Bloons",
+      "description": "No damage-type immunity. Pops into two Zebra Bloons."
+    },
+    {
+      "id": "ceramic",
+      "canonical": "Ceramic Bloon",
+      "aliases": ["ceramic", "ceramics", "ceramic bloon", "cerb", "cerbs"],
+      "category": "special",
+      "properties": [],
+      "immune_to": [],
+      "popped_by": "any damage type, but the shell takes 10 hits",
+      "health": 10,
+      "children": "2 Rainbow Bloons",
+      "description": "Tough shell with no damage-type immunity but 10 layers of health; resists single-hit pops. Pops into two Rainbow Bloons."
+    },
+    {
+      "id": "moab",
+      "canonical": "MOAB",
+      "aliases": ["moab", "moabs", "massive ornary air blimp"],
+      "category": "moab_class",
+      "properties": ["moab-class"],
+      "immune_to": [],
+      "health": 200,
+      "children": "4 Ceramic Bloons",
+      "description": "Massive Ornary Air Blimp. MOAB-class blimp with 200 HP and no camo/lead properties. Pops into four Ceramic Bloons."
+    },
+    {
+      "id": "bfb",
+      "canonical": "BFB",
+      "aliases": ["bfb", "bfbs", "brutal floating behemoth"],
+      "category": "moab_class",
+      "properties": ["moab-class"],
+      "immune_to": [],
+      "health": 700,
+      "children": "4 MOABs",
+      "description": "Brutal Floating Behemoth. MOAB-class blimp with 700 HP. Pops into four MOABs."
+    },
+    {
+      "id": "zomg",
+      "canonical": "ZOMG",
+      "aliases": ["zomg", "zomgs", "zeppelin of mighty gargantuaness"],
+      "category": "moab_class",
+      "properties": ["moab-class"],
+      "immune_to": [],
+      "health": 4000,
+      "children": "4 BFBs",
+      "description": "Zeppelin of Mighty Gargantuaness. MOAB-class blimp with 4000 HP. Pops into four BFBs."
+    },
+    {
+      "id": "ddt",
+      "canonical": "DDT",
+      "aliases": ["ddt", "ddts", "dark dirigible titan"],
+      "category": "moab_class",
+      "properties": ["moab-class", "camo", "lead", "black"],
+      "immune_to": ["Sharp", "Shatter", "Cold", "Energy", "Explosion"],
+      "health": 400,
+      "children": "4 Camo Ceramic Bloons",
+      "description": "Dark Dirigible Titan. Has Camo, Lead, and Black properties, so it needs camo detection and is immune to Sharp and Explosion damage. Very fast; 400 HP. Pops into four camo Ceramics."
+    },
+    {
+      "id": "bad",
+      "canonical": "BAD",
+      "aliases": ["bad", "bads", "bad bloon", "big airship of doom"],
+      "category": "moab_class",
+      "properties": ["moab-class", "knockback-immune"],
+      "immune_to": [],
+      "health": 20000,
+      "children": "3 ZOMGs and 2 DDTs",
+      "description": "Big Airship of Doom. Strongest standard blimp at 20000 HP; immune to knockback, stuns, and most status effects. Pops into three ZOMGs and two DDTs."
+    },
+    {
+      "id": "camo",
+      "canonical": "Camo property",
+      "aliases": ["camo", "camos", "camo bloon", "camo bloons"],
+      "category": "modifier",
+      "properties": ["camo"],
+      "description": "A camo modifier: only towers with camo detection (e.g. Ninja Monkey innately, or via support such as Monkey Village 0-2-0 or Alchemist) can target it."
+    },
+    {
+      "id": "regrow",
+      "canonical": "Regrow property",
+      "aliases": ["regrow", "regrowth", "regrows", "regrow bloon"],
+      "category": "modifier",
+      "properties": ["regrow"],
+      "description": "A regrow modifier: the bloon regrows its popped outer layers over time unless it is fully destroyed."
+    },
+    {
+      "id": "fortified",
+      "canonical": "Fortified property",
+      "aliases": ["fortified", "forts", "fortified bloon"],
+      "category": "modifier",
+      "properties": ["fortified"],
+      "description": "A fortified modifier: roughly doubles a bloon's health, and increases MOAB-class HP substantially."
+    }
+  ]
+}

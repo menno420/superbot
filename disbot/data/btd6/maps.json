@@ -9,8 +9,7 @@
       "aliases": ["log"],
       "difficulty": "Beginner",
       "description": "Single river-and-logs track. Heavy water coverage in places.",
-      "lines_of_sight_notes": "Open central area; water tile presence allows naval towers.",
-      "wiki_url": "https://bloons.fandom.com/wiki/Logs"
+      "lines_of_sight_notes": "Open central area; water tile presence allows naval towers."
     },
     {
       "id": "cubism",
@@ -18,8 +17,7 @@
       "aliases": ["cube", "cubes"],
       "difficulty": "Intermediate",
       "description": "Tight quartered paths with cubes obstructing line of sight.",
-      "lines_of_sight_notes": "Cubes block towers; consider towers that ignore LoS or place near gaps.",
-      "wiki_url": "https://bloons.fandom.com/wiki/Cubism"
+      "lines_of_sight_notes": "Cubes block towers; consider towers that ignore LoS or place near gaps."
     },
     {
       "id": "cornfield",
@@ -27,8 +25,7 @@
       "aliases": ["corn"],
       "difficulty": "Beginner",
       "description": "Open field with a winding path. Forgiving placement.",
-      "lines_of_sight_notes": "Open layout; nearly any tower works.",
-      "wiki_url": "https://bloons.fandom.com/wiki/Cornfield"
+      "lines_of_sight_notes": "Open layout; nearly any tower works."
     }
   ]
 }

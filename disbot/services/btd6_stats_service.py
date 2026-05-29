@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 STATS_ROOT = Path(__file__).resolve().parents[1] / "data" / "btd6" / "stats"
+HERO_STATS_ROOT = STATS_ROOT / "heroes"
 
 # Crosspath codes ([P1][P2][P3] tiers) in display order: base, then each path.
 _TIER_CODES: tuple[str, ...] = (
@@ -71,11 +72,39 @@ class TowerStats:
         return tuple(code for code in _TIER_CODES if code in self.tiers)
 
 
+# Hero levels run 1..20. Only the ~6 heroes with a bloonswiki stats module
+# have a file here; the rest are cost/ability-only (no per-level combat stats).
+_HERO_LEVEL_CODES: tuple[str, ...] = tuple(str(n) for n in range(1, 21))
+
+
+@dataclass(frozen=True)
+class HeroStats:
+    """All stored per-level stats for one hero (lazy-loaded)."""
+
+    hero_id: str
+    canonical: str
+    game_version: str
+    base_cost: int | None
+    cost_chimps: int | None
+    levels: dict[str, dict[str, Any]]
+
+    def level(self, code: str) -> dict[str, Any] | None:
+        return self.levels.get(code)
+
+    @property
+    def has_combat_stats(self) -> bool:
+        return bool(self.levels)
+
+    def level_codes(self) -> tuple[str, ...]:
+        return tuple(code for code in _HERO_LEVEL_CODES if code in self.levels)
+
+
 # ---------------------------------------------------------------------------
 # Cached loader
 # ---------------------------------------------------------------------------
 
 _CACHE: dict[str, TowerStats | None] = {}
+_HERO_CACHE: dict[str, HeroStats | None] = {}
 
 
 def _load(tower_id: str) -> TowerStats | None:
@@ -102,9 +131,36 @@ def get_tower_stats(tower_id: str) -> TowerStats | None:
     return _CACHE[tower_id]
 
 
+def _load_hero(hero_id: str) -> HeroStats | None:
+    path = HERO_STATS_ROOT / f"{hero_id}.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return HeroStats(
+        hero_id=data.get("hero_id", hero_id),
+        canonical=data.get("canonical", ""),
+        game_version=str(data.get("game_version", "")),
+        base_cost=data.get("base_cost"),
+        cost_chimps=data.get("cost_chimps"),
+        levels=data.get("levels", {}),
+    )
+
+
+def get_hero_stats(hero_id: str) -> HeroStats | None:
+    """Return a hero's per-level stats, or ``None`` if no stats file exists.
+
+    Only heroes with a bloonswiki stats module (~6 of the roster) have a file;
+    the rest are prose-only and return ``None`` here.
+    """
+    if hero_id not in _HERO_CACHE:
+        _HERO_CACHE[hero_id] = _load_hero(hero_id)
+    return _HERO_CACHE[hero_id]
+
+
 def reset_cache() -> None:
-    """Test seam: drop the loaded-stats cache."""
+    """Test seam: drop the loaded-stats caches."""
     _CACHE.clear()
+    _HERO_CACHE.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -190,8 +246,10 @@ def normal_stats(tier: dict[str, Any]) -> NormalStats:
 
 
 __all__ = [
+    "HeroStats",
     "NormalStats",
     "TowerStats",
+    "get_hero_stats",
     "get_tower_stats",
     "normal_stats",
     "reset_cache",

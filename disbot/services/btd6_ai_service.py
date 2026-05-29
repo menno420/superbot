@@ -194,6 +194,7 @@ def _augmentation_payload(
             "resolved_maps": [m.id for m in intent.maps],
             "resolved_modes": [m.id for m in intent.modes],
             "resolved_rounds": list(intent.candidate_round_numbers),
+            "resolved_bloons": [b.id for b in intent.bloons],
             "resolver_confidence": intent.confidence,
         },
         "deterministic_answer": {

@@ -1,0 +1,2143 @@
+{
+  "hero_id": "adora",
+  "canonical": "Adora",
+  "game_version": "52.2",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "base_cost": 1000,
+  "cost_chimps": 1000,
+  "levels": {
+    "1": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 45,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 5,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 0,
+              "count": 1,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 45,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 1
+    },
+    "2": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 49,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 5,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 0,
+              "count": 1,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 49,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 2
+    },
+    "3": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 49,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 5,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 0,
+              "count": 1,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 49,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 0,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 10
+            }
+          ]
+        }
+      ],
+      "level": 3
+    },
+    "4": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 49,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 5,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 30,
+              "count": 2,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 49,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 0,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 10
+            }
+          ]
+        }
+      ],
+      "level": 4
+    },
+    "5": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 49,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 30,
+              "count": 2,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 49,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 0,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 10
+            }
+          ]
+        }
+      ],
+      "level": 5
+    },
+    "6": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 49,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 60,
+              "count": 3,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 49,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 0,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 10
+            }
+          ]
+        }
+      ],
+      "level": 6
+    },
+    "7": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 49,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 60,
+              "count": 3,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 49,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": true,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "lifespan": 10,
+              "maxStackSize": 15
+            }
+          ]
+        }
+      ],
+      "level": 7
+    },
+    "8": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 49,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 90,
+              "count": 4,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 49,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": true,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "lifespan": 10,
+              "maxStackSize": 15
+            }
+          ]
+        }
+      ],
+      "level": 8
+    },
+    "9": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 90,
+              "count": 4,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": true,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "lifespan": 10,
+              "maxStackSize": 15
+            }
+          ]
+        }
+      ],
+      "level": 9
+    },
+    "10": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 90,
+              "count": 4,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Ball of Light sub-tower",
+          "cooldown": 60,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 3,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 10
+    },
+    "11": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.85,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 90,
+              "count": 4,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Ball of Light sub-tower",
+          "cooldown": 60,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 3,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 11
+    },
+    "12": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.85,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 120,
+              "count": 5,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Ball of Light sub-tower",
+          "cooldown": 60,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 3,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 12
+    },
+    "13": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.85,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 120,
+              "count": 5,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Ball of Light sub-tower",
+          "cooldown": 60,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 3,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 13
+    },
+    "14": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.85,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 150,
+              "count": 6,
+              "filterInvisible": true,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Ball of Light sub-tower",
+          "cooldown": 60,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 3,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 14
+    },
+    "15": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.85,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 150,
+              "count": 6,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Ball of Light sub-tower",
+          "cooldown": 60,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 5,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 5,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 15
+    },
+    "16": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.85,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 150,
+              "count": 6,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 2,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 15
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 5,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 5,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 16
+    },
+    "17": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.7,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 150,
+              "count": 6,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 2,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 15
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 5,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 5,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 17
+    },
+    "18": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 54,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.7,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 210,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 2
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 54,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 2,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 15
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 5,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 5,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 18
+    },
+    "19": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 59,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.7,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 210,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 3
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 59,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "damageAdditive": 2,
+              "pierceMultiplier": 2,
+              "rangeMultiplier": 2,
+              "radiusMultiplier": 1.5,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "lifespan": 15
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 5,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 5,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 12,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 19
+    },
+    "20": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 59,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.7,
+          "eject": "0, 4.2, 7.78",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 11,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "angle": 210,
+              "count": 8,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "rotation": 9,
+              "speed": 70,
+              "maxSpeed": 360,
+              "acceleration": 20,
+              "accelerateInAngle": 5,
+              "startDeceleratingIfAngleGreaterThan": 30,
+              "lifespan": 1.5,
+              "damageModifierForFortified": 3
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 59,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": true,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "buffs": [
+            {
+              "name": "Buff",
+              "lifespan": 60,
+              "maxStackSize": 40
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "Ball of Light",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 9999999,
+          "towerSelectionMenuThemeId": "Default",
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.05,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 11,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 1,
+                  "vsBlockerRadius": 0,
+                  "speed": 0,
+                  "filterInvisible": true,
+                  "damage": 15,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "damageModifierForFortified": 15,
+                  "rounds": 0,
+                  "lifespan": 0.05
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true
+            }
+          ],
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "lifespan": 15,
+          "targetTypeFirst": true,
+          "targetTypeLast": true,
+          "targetTypeClose": true,
+          "targetTypeStrong": true
+        }
+      ],
+      "level": 20
+    }
+  }
+}

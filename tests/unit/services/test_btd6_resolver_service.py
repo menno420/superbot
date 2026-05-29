@@ -62,3 +62,24 @@ def test_resolver_is_case_insensitive():
     lower = resolve("dart monkey on logs")
     assert {t.id for t in upper.towers} == {t.id for t in lower.towers}
     assert {m.id for m in upper.maps} == {m.id for m in lower.maps}
+
+
+def test_resolves_lead_bloon():
+    intent = resolve("are lead bloons immune to darts?")
+    assert any(b.id == "lead" for b in intent.bloons)
+    assert any(t.id == "dart_monkey" for t in intent.towers)
+
+
+def test_resolves_ceramic_and_moab_class_bloons():
+    assert any(
+        b.id == "ceramic"
+        for b in resolve("how much health does a ceramic have?").bloons
+    )
+    assert any(b.id == "ddt" for b in resolve("what is a DDT?").bloons)
+    assert any(b.id == "moab" for b in resolve("best tower for MOABs?").bloons)
+
+
+def test_non_bloon_text_resolves_no_bloons():
+    intent = resolve("hello there friend")
+    assert not intent.bloons
+    assert intent.confidence == 0.0
