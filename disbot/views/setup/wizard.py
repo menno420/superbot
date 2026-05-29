@@ -1089,7 +1089,18 @@ async def open_setup_workspace(
         logger.exception("open_setup_workspace: list_rows failed")
         draft_rows = []
 
-    if sections:
+    depth_unset = session is None or session.depth is None
+    view: discord.ui.View
+    if depth_unset:
+        # First run: ask how deep before showing steps, so the operator
+        # isn't dropped into every section at once. The picker persists
+        # the choice and transitions this same anchor into the wizard.
+        from views.setup.depth_panel import DepthPanelView, build_depth_embed
+
+        embed = build_depth_embed()
+        view = DepthPanelView(member, session=session, after="wizard")
+        anchor_step = "depth"
+    elif sections:
         embed = build_wizard_step_embed(
             session=session,
             section=sections[step_index],
@@ -1097,6 +1108,13 @@ async def open_setup_workspace(
             total_steps=len(sections),
             draft_rows=draft_rows,
         )
+        view = LinearWizardView(
+            member,
+            session=session,
+            sections=sections,
+            step_index=step_index,
+        )
+        anchor_step = "wizard"
     else:
         embed = discord.Embed(
             title=_WIZARD_TITLE,
@@ -1106,13 +1124,13 @@ async def open_setup_workspace(
             ),
             color=discord.Color.dark_grey(),
         )
-
-    view = LinearWizardView(
-        member,
-        session=session,
-        sections=sections,
-        step_index=step_index,
-    )
+        view = LinearWizardView(
+            member,
+            session=session,
+            sections=sections,
+            step_index=step_index,
+        )
+        anchor_step = "wizard"
 
     message: discord.Message | None = None
     existing_id = session.setup_message_id if session is not None else None
@@ -1155,7 +1173,7 @@ async def open_setup_workspace(
             )
 
     try:
-        await setup_session.mark_in_progress(guild.id, step="wizard")
+        await setup_session.mark_in_progress(guild.id, step=anchor_step)
     except Exception:
         logger.exception(
             "open_setup_workspace: mark_in_progress failed",

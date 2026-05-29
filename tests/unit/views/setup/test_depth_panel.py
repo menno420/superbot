@@ -108,6 +108,37 @@ async def test_depth_panel_select_persists_and_opens_hub():
 
 
 @pytest.mark.asyncio
+async def test_depth_panel_select_after_wizard_transitions_to_wizard():
+    """With after='wizard' (the first-run wizard entry), selecting a depth
+    persists it and transitions the anchor into the linear wizard via
+    render_wizard_step — not the hub."""
+    view = DepthPanelView(_owner_member(), session=_session(), after="wizard")
+    interaction = _interaction()
+
+    with (
+        patch(
+            "views.setup.depth_panel.setup_session.set_depth",
+            new_callable=AsyncMock,
+        ) as set_depth_mock,
+        patch(
+            "views.setup.depth_panel.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=_session(depth="quick"),
+        ),
+        patch(
+            "views.setup.wizard_nav.render_wizard_step",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as render_mock,
+    ):
+        await view._select(interaction, "quick")
+
+    set_depth_mock.assert_awaited_once_with(1, "quick")
+    render_mock.assert_awaited_once()
+    assert render_mock.await_args.kwargs["step_index"] == 0
+
+
+@pytest.mark.asyncio
 async def test_depth_panel_select_handles_set_depth_failure():
     view = DepthPanelView(_owner_member(), session=_session())
     interaction = _interaction()
