@@ -317,6 +317,97 @@ class AIReviewPanelView(BaseView):
         )
         await self._refresh(interaction)
 
+    @discord.ui.button(
+        label="Stage & open Final review",
+        style=discord.ButtonStyle.success,
+        row=1,
+    )
+    async def _stage_final(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Stage the accepted recommendations into the per-guild draft and
+        open the draft-driven :class:`FinalReviewView`.
+
+        This is the single apply path: Smart Suggestions no longer dead-ends
+        on an in-memory ``AcceptedSet``.  The accepted recommendations are
+        adapted to :class:`SetupOperation` objects and written through
+        :func:`services.setup_draft.replace_recommended_for_section` (the
+        sole writer of ``staging_kind='recommended'``), so they show up in
+        Final Review alongside anything staged from wizard sections and
+        apply through the same audited dispatcher.
+        """
+        del button
+        guild = interaction.guild
+        guild_id = interaction.guild_id
+        member = interaction.user
+        if guild is None or guild_id is None or not isinstance(member, discord.Member):
+            await interaction.response.send_message(
+                "Staging requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        if not self.accepted.recommendations:
+            await interaction.response.send_message(
+                "Accept at least one suggestion first — use **Accept all "
+                "high-confidence** or **Review one-by-one**.",
+                ephemeral=True,
+            )
+            return
+
+        from services import setup_access, setup_draft, setup_session
+        from services.setup_operations import operations_from_recommendations
+
+        try:
+            session = await setup_session.resume_session(guild_id)
+        except Exception:
+            logger.exception("AIReviewPanelView._stage_final: resume failed")
+            session = None
+        if not setup_access.can_apply_setup(member, session):
+            await interaction.response.send_message(
+                "Only the server owner or a delegated setup admin can stage "
+                "setup operations. Ask the owner to grant you `/setup-delegate`.",
+                ephemeral=True,
+            )
+            return
+
+        ops = operations_from_recommendations(list(self.accepted.recommendations))
+        try:
+            await setup_draft.replace_recommended_for_section(
+                guild_id,
+                "suggestions",
+                ops,
+                actor_id=member.id,
+                labels={
+                    idx: f"[suggestions] {op.subsystem}.{op.kind}"
+                    for idx, op in enumerate(ops)
+                },
+            )
+        except Exception:
+            logger.exception("AIReviewPanelView._stage_final: staging failed")
+            await interaction.response.send_message(
+                "Could not stage the accepted suggestions — see logs.",
+                ephemeral=True,
+            )
+            return
+
+        from views.setup.final_review import (
+            FinalReviewView,
+            build_final_review_embed,
+        )
+
+        try:
+            draft_ops = await setup_draft.list_ops(guild_id)
+        except Exception:
+            logger.exception("AIReviewPanelView._stage_final: list_ops failed")
+            draft_ops = ops
+        final = FinalReviewView(member, ops=draft_ops)
+        await interaction.response.edit_message(
+            embed=build_final_review_embed(final.ops),
+            view=final,
+        )
+
 
 __all__ = [
     "AIReviewPanelView",

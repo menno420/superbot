@@ -339,6 +339,23 @@ class LinearWizardView(BaseView):
         cancel.callback = self._on_cancel  # type: ignore[method-assign]
         self.add_item(cancel)
 
+        jump = self._build_jump_select()
+        if jump is not None:
+            self.add_item(jump)
+
+    def _build_jump_select(self) -> discord.ui.Select | None:
+        """Build the row-2 "Jump to section" select.
+
+        This is the section-jump that folds the standalone hub's
+        navigation role into the wizard anchor: every depth-filtered
+        section is reachable directly from the wizard, so operators no
+        longer need a parallel hub view to skip ahead.  Returns ``None``
+        when there are no sections for the current depth.
+        """
+        if not self.sections:
+            return None
+        return _JumpToSectionSelect(self)
+
     async def _gate_apply(self, interaction: discord.Interaction) -> bool:
         member = interaction.user
         if not isinstance(member, discord.Member):
@@ -822,6 +839,45 @@ class LinearWizardView(BaseView):
             embed=build_final_review_embed(final.ops),
             view=final,
         )
+
+
+class _JumpToSectionSelect(discord.ui.Select):
+    """Row-2 "Jump to section" select for :class:`LinearWizardView`.
+
+    Lets a power user jump straight to any depth-filtered section's step
+    in the wizard anchor — the section-jump role that used to require a
+    separate hub view.  On select it re-renders the anchor at the chosen
+    step via the wizard's shared ``_refresh_and_edit`` path.
+    """
+
+    def __init__(self, wizard: LinearWizardView) -> None:
+        self._wizard = wizard
+        current = wizard.current_section
+        options = [
+            discord.SelectOption(
+                label=section.label[:100],
+                value=str(idx),
+                default=(current is not None and section.slug == current.slug),
+            )
+            for idx, section in enumerate(wizard.sections[:25])
+        ]
+        super().__init__(
+            placeholder="Jump to section…",
+            min_values=1,
+            max_values=1,
+            options=options,
+            custom_id="setup_wizard:jump",
+            row=2,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        wizard = self._wizard
+        try:
+            target = int(self.values[0])
+        except (ValueError, IndexError):
+            target = wizard.step_index
+        wizard.step_index = max(0, min(target, len(wizard.sections) - 1))
+        await wizard._refresh_and_edit(interaction)
 
 
 # ---------------------------------------------------------------------------

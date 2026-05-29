@@ -18,8 +18,8 @@ Two construction modes:
       2. ``bind_*`` / ``clear_binding``  (binding mutation)
       3. ``set_setting``   (settings mutation)
       4. ``set_cleanup_policy`` / ``set_cog_routing``  (per-feature
-         dispatcher arms; PR 11 wires set_cleanup_policy and
-         set_cog_routing remains a follow-up)
+         dispatcher arms — both wired through
+         :mod:`services.setup_operations`)
       5. ``add_automation_rule``  (created disabled)
       6. ``enable_automation_rule`` / ``disable_automation_rule``
 

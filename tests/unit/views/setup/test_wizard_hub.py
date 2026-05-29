@@ -319,13 +319,18 @@ async def test_hub_readiness_button_owner_posts_embed_and_marks_progress():
 
 
 @pytest.mark.asyncio
-async def test_hub_suggestions_button_renders_deterministic_draft_inline():
+async def test_hub_suggestions_button_opens_ai_review_panel():
+    """The suggestions section opens the AIReviewPanelView (which carries
+    the Stage & open Final review button) rather than a read-only embed —
+    so Smart Suggestions routes through the shared draft, not a dead end."""
     import services.guild_snapshot  # noqa: F401
+    from services.setup_plan import SetupPlanDraft
+    from views.setup.ai_review.main_panel import AIReviewPanelView
 
     view = SetupHubView(_owner_member())
     interaction = _interaction(_owner_member())
     fake_snapshot = MagicMock()
-    fake_draft = SimpleNamespace(
+    fake_draft = SetupPlanDraft(
         recommendations=(
             SetupRecommendation(
                 subsystem="logging",
@@ -337,6 +342,7 @@ async def test_hub_suggestions_button_renders_deterministic_draft_inline():
                 reason="x",
             ),
         ),
+        source="deterministic",
     )
     fake_advisor = MagicMock()
     fake_advisor.suggest = AsyncMock(return_value=fake_draft)
@@ -357,8 +363,9 @@ async def test_hub_suggestions_button_renders_deterministic_draft_inline():
     ):
         await _section_button(view, "suggestions").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
-    embed = interaction.response.send_message.await_args.kwargs["embed"]
-    rendered = "\n".join(f.value or "" for f in embed.fields)
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert isinstance(kwargs["view"], AIReviewPanelView)
+    rendered = "\n".join(f.value or "" for f in kwargs["embed"].fields)
     assert "mod_channel" in rendered
 
 

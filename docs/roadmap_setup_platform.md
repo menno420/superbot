@@ -1,5 +1,15 @@
 # SuperBot — Setup + Configuration Wizard Platform Roadmap
 
+> **Status: aspirational roadmap — not a description of shipped behavior.**
+> This document sketches a long-horizon "platform layer / Guild OS" vision in
+> eight phases. The **shipped** setup wizard is a pragmatic subset: a
+> session + draft + operations model (`services/setup_*.py`,
+> `utils/db/setup_*.py`) driving a linear wizard (`views/setup/wizard.py`) with
+> registry-backed sections (`views/setup/sections/`), applied through
+> `services.setup_operations`. Treat the phases below as **direction**, not a
+> checklist of existing features — cross-check `docs/AGENT_ORIENTATION.md` and
+> the source before assuming any phase is implemented.
+
 ## Context
 
 SuperBot has just completed a major stabilization run: a centralized message pipeline (`disbot/core/runtime/message_pipeline.py`), the `GovernanceMutationPipeline` orchestrator (`disbot/governance/writes.py`), a 5-surface identity contract validator (`disbot/utils/subsystem_registry.py:validate_identity_contract`), a unified guild resource resolver (`disbot/core/runtime/guild_resources.py`), version-stamped guild config caching (`disbot/core/runtime/guild_config.py`) with typed accessors (`disbot/utils/guild_config_accessors.py`), a diagnostics provider registry (`disbot/services/diagnostics_service.py`), 14 enforced runtime invariants, and 20 subsystems with rich metadata. The platform is in shape; what is missing is the **declarative layer that lets subsystems be configured at runtime**.

@@ -291,6 +291,70 @@ async def test_rerun_deterministic_refuses_without_snapshot():
     )
 
 
+@pytest.mark.asyncio
+async def test_stage_final_stages_accepted_into_draft_and_opens_final_review():
+    """The Stage & open Final review button adapts the accepted set to
+    SetupOperations, writes them through the recommended-staging helper,
+    and swaps the panel for the draft-driven FinalReviewView — closing the
+    old dead end where accepted suggestions never applied."""
+    import discord
+
+    from views.setup.final_review import FinalReviewView
+
+    rec = _rec(confidence="high")
+    draft = SetupPlanDraft(recommendations=(rec,))
+    accepted = AcceptedSet()
+    accepted.add(rec)
+
+    member = MagicMock(spec=discord.Member)
+    member.id = 99
+    view = AIReviewPanelView(member, draft=draft, accepted=accepted)
+    interaction = _interaction()
+    interaction.user = member
+
+    with (
+        patch(
+            "services.setup_session.resume_session",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch("services.setup_access.can_apply_setup", return_value=True),
+        patch(
+            "services.setup_draft.replace_recommended_for_section",
+            new_callable=AsyncMock,
+        ) as replace_mock,
+        patch(
+            "services.setup_draft.list_ops",
+            new_callable=AsyncMock,
+            return_value=[MagicMock()],
+        ),
+    ):
+        await view._stage_final.callback(interaction)
+
+    replace_mock.assert_awaited_once()
+    assert replace_mock.await_args.args[1] == "suggestions"
+    sent_view = interaction.response.edit_message.await_args.kwargs["view"]
+    assert isinstance(sent_view, FinalReviewView)
+
+
+@pytest.mark.asyncio
+async def test_stage_final_requires_accepted_recommendations():
+    """With nothing accepted, the button nudges the operator instead of
+    staging an empty draft."""
+    import discord
+
+    member = MagicMock(spec=discord.Member)
+    member.id = 99
+    view = AIReviewPanelView(member, draft=SetupPlanDraft(recommendations=(_rec(),)))
+    interaction = _interaction()
+    interaction.user = member
+
+    await view._stage_final.callback(interaction)
+
+    interaction.response.send_message.assert_awaited_once()
+    assert "accept" in interaction.response.send_message.await_args.args[0].lower()
+
+
 # ---------------------------------------------------------------------------
 # PerRecommendationView
 # ---------------------------------------------------------------------------
