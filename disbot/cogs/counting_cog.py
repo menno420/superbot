@@ -19,13 +19,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import random
 from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands
 
-from cogs.counting import handler
+from cogs.counting import game_logic, handler
 from cogs.counting._stage import COUNTING_STAGE_NAME, CountingStage
 from core.runtime import resources, scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
@@ -171,6 +170,7 @@ class CountingCog(commands.Cog):
 
         multiple = None
         custom_sequence = None
+        skip_step = 5
         if mode == "multiples":
             if not args:
                 await ctx.send(
@@ -201,6 +201,17 @@ class CountingCog(commands.Cog):
             except ValueError:
                 await ctx.send(
                     "Invalid sequence. Please provide a comma-separated list of integers.",
+                    delete_after=10,
+                )
+                return
+        elif mode == "skip" and args:
+            try:
+                skip_step = int(args[0])
+                if skip_step < 1:
+                    raise ValueError
+            except ValueError:
+                await ctx.send(
+                    "Skip step must be a positive integer, e.g. `!start_match skip 5`.",
                     delete_after=10,
                 )
                 return
@@ -268,23 +279,26 @@ class CountingCog(commands.Cog):
                 ]
                 else 1000
             )
+            rand_target = rand_lo = rand_hi = None
+            if mode == "random":
+                rand_target, rand_lo, rand_hi = game_logic.start_random_round(
+                    starting_count,
+                )
             channel_config = {
                 "current_count": starting_count,
                 "last_user": None,
                 "taking_turns": False,
                 "leaderboard": {},
                 "mode": mode,
-                "step": 1,
-                "skip_numbers": [5, 10],
-                "random_range": [1, 3],
+                "step": skip_step if mode == "skip" else 1,
                 "multiple": multiple if mode == "multiples" else None,
                 "custom_sequence": custom_sequence if mode == "custom" else None,
                 "sequence_index": 0,
                 "last_count_time": datetime.now(tz=timezone.utc).timestamp(),
                 "reset_on_wrong_count": False,
-                "next_expected": (
-                    starting_count + random.randint(1, 3) if mode == "random" else None
-                ),
+                "next_expected": rand_target,
+                "range_lo": rand_lo,
+                "range_hi": rand_hi,
             }
 
             if mode == "prime":
@@ -293,8 +307,17 @@ class CountingCog(commands.Cog):
             self.count_data[guild_id]["channels"][channel_id] = channel_config
             tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
+        if mode == "skip":
+            extra = (
+                f" Count up by **{skip_step}** — 1, {1 + skip_step}, "
+                f"{1 + 2 * skip_step}, …"
+            )
+        elif mode == "random":
+            extra = f" Guess the secret number — it's between **{rand_lo}–{rand_hi}**."
+        else:
+            extra = ""
         await ctx.send(
-            f"Started a **{mode.capitalize()}** counting match in {channel.mention}!",
+            f"Started a **{mode.capitalize()}** counting match in {channel.mention}!{extra}",
             delete_after=10,
         )
 
@@ -392,8 +415,9 @@ class CountingCog(commands.Cog):
             channel_data["leaderboard"] = {}
             channel_data["last_count_time"] = datetime.now(tz=timezone.utc).timestamp()
             if mode == "random":
-                rand_range = channel_data.get("random_range", [1, 3])
-                channel_data["next_expected"] = start + random.randint(*rand_range)
+                target, lo, hi = game_logic.start_random_round(start)
+                channel_data["next_expected"] = target
+                channel_data["range_lo"], channel_data["range_hi"] = lo, hi
             tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
 
         await ctx.send(
@@ -466,7 +490,18 @@ class CountingCog(commands.Cog):
             value=str(reset_on_wrong_count),
             inline=False,
         )
-        embed.add_field(name="Step", value=str(step), inline=False)
+        if mode == "Random":
+            lo = channel_data.get("range_lo")
+            hi = channel_data.get("range_hi")
+            embed.add_field(
+                name="Secret number is between",
+                value=(f"{lo}–{hi}" if lo is not None and hi is not None else "—"),
+                inline=False,
+            )
+        elif mode == "Skip":
+            embed.add_field(name="Skip step", value=str(step), inline=False)
+        else:
+            embed.add_field(name="Step", value=str(step), inline=False)
 
         await ctx.send(embed=embed)
 
@@ -510,7 +545,7 @@ class CountingCog(commands.Cog):
         *,
         numbers: str = "",
     ):
-        """Sets the skip numbers for 'skip' mode."""
+        """Set the skip step N for a 'skip' match (count climbs 1, 1+N, 1+2N, …)."""
         if not channel:
             channel = ctx.channel
 
@@ -530,24 +565,27 @@ class CountingCog(commands.Cog):
             channel_data = self.count_data[guild_id]["channels"][channel_id]
             if channel_data.get("mode") != "skip":
                 await ctx.send(
-                    "Skip numbers can only be set for 'skip' mode.",
+                    "The skip step can only be set for a 'skip' match.",
                     delete_after=10,
                 )
                 return
 
             try:
-                skip_numbers = [int(num.strip()) for num in numbers.split(",")]
-                channel_data["skip_numbers"] = skip_numbers
-                tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
-                await ctx.send(
-                    f"Skip numbers updated to: {skip_numbers}",
-                    delete_after=10,
-                )
+                step = int(numbers.strip())
+                if step < 1:
+                    raise ValueError
             except ValueError:
                 await ctx.send(
-                    "Invalid input. Please provide a comma-separated list of integers.",
+                    "Please provide a single positive integer, e.g. `!set_skip_numbers 5`.",
                     delete_after=10,
                 )
+                return
+            channel_data["step"] = step
+            tasks.spawn(f"counting:save:{guild_id}", self._save_guild(guild_id))
+            await ctx.send(
+                f"Skip step updated to **{step}** — 1, {1 + step}, {1 + 2 * step}, …",
+                delete_after=10,
+            )
 
     @commands.command(name="toggle_reset_on_wrong_count", aliases=["trwc"])
     @staff_or_owner()

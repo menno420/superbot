@@ -252,14 +252,19 @@ class _NameSelect(discord.ui.Select):
             options=options,
             row=0,
         )
-        self._parent = view
+        # NB: must NOT be ``self._parent``.  discord.py 2.7+ owns
+        # ``Item._parent`` for check propagation — ``View`` dispatch calls
+        # ``item._parent._run_checks(interaction)``.  Shadowing it with the
+        # parent *view* made dispatch call ``View._run_checks`` (which does
+        # not exist) and crashed every select callback with AttributeError.
+        self._owner_view = view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.chosen_name = self.values[0]  # type: ignore[attr-defined]
+        self._owner_view.chosen_name = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
-                view=self._parent,  # type: ignore[attr-defined, arg-type]
+                embed=self._owner_view.build_embed(),  # type: ignore[attr-defined]
+                view=self._owner_view,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             await safe_defer(interaction)
@@ -276,14 +281,14 @@ class _CategorySelect(discord.ui.Select):
             options=options,
             row=1,
         )
-        self._parent = view
+        self._owner_view = view
 
     async def callback(self, interaction: discord.Interaction):
-        self._parent.chosen_cat = self.values[0]  # type: ignore[attr-defined]
+        self._owner_view.chosen_cat = self.values[0]  # type: ignore[attr-defined]
         try:
             await interaction.response.edit_message(
-                embed=self._parent.build_embed(),  # type: ignore[attr-defined]
-                view=self._parent,  # type: ignore[attr-defined, arg-type]
+                embed=self._owner_view.build_embed(),  # type: ignore[attr-defined]
+                view=self._owner_view,  # type: ignore[attr-defined, arg-type]
             )
         except discord.HTTPException:
             await safe_defer(interaction)
