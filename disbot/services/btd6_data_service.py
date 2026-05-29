@@ -81,7 +81,9 @@ class MapEntry:
     difficulty: str
     description: str
     lines_of_sight_notes: str
-    wiki_url: str
+    # Attribution only; never surfaced. Blank rather than the deprecated
+    # Fandom pages — populate from bloonswiki if a verified link is wanted.
+    wiki_url: str = ""
 
 
 @dataclass(frozen=True)
@@ -171,7 +173,6 @@ _REQUIRED_MAP_FIELDS = (
     "difficulty",
     "description",
     "lines_of_sight_notes",
-    "wiki_url",
 )
 _REQUIRED_MODE_FIELDS = (
     "id",
@@ -347,7 +348,7 @@ def _parse_map(raw: dict[str, Any]) -> MapEntry:
         difficulty=str(raw["difficulty"]),
         description=str(raw["description"]),
         lines_of_sight_notes=str(raw["lines_of_sight_notes"]),
-        wiki_url=str(raw["wiki_url"]),
+        wiki_url=str(raw.get("wiki_url", "")),
     )
 
 

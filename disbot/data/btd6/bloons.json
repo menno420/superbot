@@ -1,7 +1,7 @@
 {
   "data_version": "1.0",
   "game_version": "54.0",
-  "source": "bloonswiki-aligned: damage-type immunities derived from utils/btd6/damage_types.py (bloonswiki Template:BTD6 dt port); MOAB-class HP / children are canonical base values pending bloonswiki re-verification. The deprecated Fandom wiki is intentionally not used.",
+  "source": "bloonswiki-aligned: damage-type immunities derived from utils/btd6/damage_types.py (bloonswiki Template:BTD6 dt port); MOAB-class HP / children are canonical base values pending bloonswiki re-verification.",
   "bloons": [
     {
       "id": "lead",
