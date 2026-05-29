@@ -176,6 +176,51 @@ async def test_provider_tool_loop_is_bounded():
     assert "tools" not in client.chat.completions.calls[-1]
 
 
+async def test_provider_forwards_max_output_tokens():
+    # Regression: the adapter previously dropped request.max_output_tokens.
+    client = _FakeClient([_response(_msg(content="ok"))])
+    provider = OpenAIProvider(client=client)
+    request = AIRequest(
+        context=AIRequestContext(
+            task=AITask.GENERAL_NL_ANSWER,
+            scope=AIScope.USER,
+            source="test",
+        ),
+        system_prompt="system",
+        payload={"text": "hi"},
+        mode=AIResponseMode.TEXT,
+        max_output_tokens=1234,
+    )
+
+    await provider.execute(request, model="m", dispatch=None)
+
+    assert client.chat.completions.calls[0]["max_tokens"] == 1234
+
+
+# --- Discord reply chunking -------------------------------------------
+
+
+def test_split_for_discord_hard_splits_and_bounds():
+    text = "x" * 5000
+    chunks = nls._split_for_discord(text)
+    assert all(len(c) <= 2000 for c in chunks)
+    assert "".join(chunks) == text  # no content lost on a boundary-free run
+    assert len(chunks) == 3
+
+
+def test_split_for_discord_prefers_word_boundaries():
+    text = ("word " * 600).strip()  # ~2999 chars, plenty of spaces
+    chunks = nls._split_for_discord(text)
+    assert len(chunks) >= 2
+    assert all(len(c) <= 2000 for c in chunks)
+    # Every original word survives the split (spaces at the cut are dropped).
+    assert set(" ".join(chunks).split()) == {"word"}
+
+
+def test_split_for_discord_short_text_is_single_chunk():
+    assert nls._split_for_discord("hello") == ["hello"]
+
+
 # --- gateway dispatch wiring ------------------------------------------
 
 

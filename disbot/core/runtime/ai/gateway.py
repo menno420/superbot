@@ -33,10 +33,11 @@ from collections.abc import Mapping
 from typing import Any
 
 from core.runtime.ai import redaction
-from core.runtime.ai.contracts import AIRequest, AIResponse, AIResponseMode
+from core.runtime.ai.contracts import AIRequest, AIResponse, AIResponseMode, AITask
 from core.runtime.ai.diagnostics import DiagnosticsCollector, get_default_collector
 from core.runtime.ai.feature_flags import ai_tools_enabled, task_enabled
 from core.runtime.ai.providers import (
+    AnthropicProvider,
     DeterministicFallbackError,
     DeterministicProvider,
     OpenAIProvider,
@@ -44,7 +45,7 @@ from core.runtime.ai.providers import (
     ProviderUnavailableError,
 )
 from core.runtime.ai.providers.base import ToolDispatch, ToolHandler
-from core.runtime.ai.routing import RoutingTarget, resolve
+from core.runtime.ai.routing import RoutingTarget, default_model_for, resolve
 from core.runtime.ai.safety import precheck
 from services import metrics
 from utils.db import ai as ai_db
@@ -86,6 +87,7 @@ def _degraded_response(
 async def _overlay_guild_policy(
     target: RoutingTarget,
     guild_id: int,
+    task: AITask,
 ) -> RoutingTarget:
     """Apply per-guild provider/model overrides from ``ai_guild_policy``.
 
@@ -114,13 +116,23 @@ async def _overlay_guild_policy(
     if not policy:
         return target
 
-    provider = (policy.get("default_provider") or "").strip()
+    provider = (policy.get("default_provider") or "").strip().lower()
     model = (policy.get("default_model") or "").strip()
     if not provider and not model:
         return target
+    resolved_provider = provider or target.provider
+    if model:
+        resolved_model = model
+    elif provider:
+        # Provider overridden without an explicit model — pick that
+        # provider's default for the task so an OpenAI model string never
+        # reaches Anthropic (or vice versa).
+        resolved_model = default_model_for(resolved_provider, task)
+    else:
+        resolved_model = target.model
     return RoutingTarget(
-        provider=(provider or target.provider).lower(),
-        model=model or target.model,
+        provider=resolved_provider,
+        model=resolved_model,
         timeout_seconds=target.timeout_seconds,
     )
 
@@ -136,6 +148,7 @@ class AIGateway:
     ) -> None:
         self._providers: dict[str, Provider] = providers or {
             "openai": OpenAIProvider(),
+            "anthropic": AnthropicProvider(),
             "deterministic": DeterministicProvider(),
         }
         self._collector = collector or get_default_collector()
@@ -166,7 +179,11 @@ class AIGateway:
         """
         target = resolve(request.context.task)
         if provider_override is None and request.context.guild_id is not None:
-            target = await _overlay_guild_policy(target, request.context.guild_id)
+            target = await _overlay_guild_policy(
+                target,
+                request.context.guild_id,
+                request.context.task,
+            )
         provider_name = provider_override.name if provider_override else target.provider
 
         if provider_override is None and not task_enabled(request.context.task):

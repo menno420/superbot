@@ -198,6 +198,10 @@ class OpenAISetupAdvisor:
             payload=_snapshot_to_prompt(snapshot),
             mode=AIResponseMode.JSON,
             response_schema=_RECOMMENDATION_JSON_SCHEMA,
+            # Multi-recommendation plans can be large; give the structured
+            # response generous headroom now that the OpenAI adapter honours
+            # this cap (previously it was silently ignored).
+            max_output_tokens=4096,
         )
 
         gateway = _ai_gateway_service.get_default_gateway()

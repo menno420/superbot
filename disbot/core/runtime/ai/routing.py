@@ -68,6 +68,43 @@ def clear_overrides() -> None:
     _OVERRIDES.clear()
 
 
+# Default per-task Claude model when the resolved provider is Anthropic.
+# Reasoning-heavier tasks → Sonnet; lighter explain / answer tasks → Haiku.
+_ANTHROPIC_DEFAULT_MODELS: dict[AITask, str] = {
+    AITask.SETUP_SUGGEST: "claude-sonnet-4-6",
+    AITask.SETTINGS_PROPOSE: "claude-sonnet-4-6",
+    AITask.LOGS_TRIAGE: "claude-sonnet-4-6",
+    AITask.CODE_CONTEXT_EXPLAIN: "claude-sonnet-4-6",
+    AITask.MODERATION_ASSIST: "claude-sonnet-4-6",
+    AITask.BTD6_ANSWER: "claude-sonnet-4-6",
+    AITask.BTD6_STRATEGY_REVIEW: "claude-sonnet-4-6",
+    AITask.GENERAL_NL_ANSWER: "claude-sonnet-4-6",
+    AITask.SETUP_EXPLAIN: "claude-haiku-4-5",
+    AITask.SETTINGS_EXPLAIN: "claude-haiku-4-5",
+    AITask.PLATFORM_EXPLAIN_STATUS: "claude-haiku-4-5",
+    AITask.PLATFORM_EXPLAIN_CONSISTENCY: "claude-haiku-4-5",
+    AITask.HELP_ANSWER: "claude-haiku-4-5",
+    AITask.VIDEO_DESCRIBE: "claude-haiku-4-5",
+    AITask.VIDEO_COMPARE: "claude-haiku-4-5",
+    AITask.VIDEO_QA: "claude-haiku-4-5",
+}
+
+_OPENAI_FALLBACK_MODEL = "gpt-4o-mini"
+_ANTHROPIC_FALLBACK_MODEL = "claude-sonnet-4-6"
+
+
+def default_model_for(provider: str, task: AITask) -> str:
+    """Return the default model for ``task`` under ``provider``.
+
+    Lets an operator switch provider (via env or guild policy) without
+    also supplying a model: the right vendor-specific default is chosen so
+    an OpenAI model string never reaches Anthropic, or vice versa.
+    """
+    if provider == "anthropic":
+        return _ANTHROPIC_DEFAULT_MODELS.get(task, _ANTHROPIC_FALLBACK_MODEL)
+    return _DEFAULT_MODELS.get(task, _OPENAI_FALLBACK_MODEL)
+
+
 def resolve(task: AITask) -> RoutingTarget:
     """Resolve the provider, model, and timeout for ``task``."""
     if task in _OVERRIDES:
@@ -78,14 +115,16 @@ def resolve(task: AITask) -> RoutingTarget:
     if env_value:
         provider, _, model = env_value.partition(":")
         if provider:
+            provider = provider.strip().lower()
             return RoutingTarget(
-                provider=provider.strip().lower(),
-                model=(model.strip() or _DEFAULT_MODELS.get(task, "gpt-4o-mini")),
+                provider=provider,
+                model=(model.strip() or default_model_for(provider, task)),
                 timeout_seconds=DEFAULT_TIMEOUT_SECONDS,
             )
 
+    provider = ai_default_provider()
     return RoutingTarget(
-        provider=ai_default_provider(),
-        model=_DEFAULT_MODELS.get(task, "gpt-4o-mini"),
+        provider=provider,
+        model=default_model_for(provider, task),
         timeout_seconds=DEFAULT_TIMEOUT_SECONDS,
     )

@@ -144,7 +144,7 @@ class AIRequest:
     payload: dict[str, Any]
     mode: AIResponseMode = AIResponseMode.TEXT
     response_schema: dict[str, Any] | None = None
-    max_output_tokens: int = 800
+    max_output_tokens: int = 1500
     timeout_seconds: float = 20.0
     tools: tuple[AIToolSpec, ...] = ()
 

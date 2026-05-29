@@ -87,6 +87,11 @@ class OpenAIProvider:
         for hop in range(_TOOL_HOP_LIMIT + 1):
             allow_tools = tool_params is not None and hop < _TOOL_HOP_LIMIT
             kwargs: dict[str, Any] = {"model": model, "messages": messages}
+            # Honour the request's output cap (the Anthropic adapter already
+            # does). ``max_tokens`` is the Chat Completions field; the
+            # default model (gpt-4o-mini) and other chat models accept it.
+            if request.max_output_tokens:
+                kwargs["max_tokens"] = request.max_output_tokens
             if response_format is not None:
                 kwargs["response_format"] = response_format
             if allow_tools:
