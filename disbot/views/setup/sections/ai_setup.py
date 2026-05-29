@@ -19,10 +19,6 @@ for now the contract is strict:
   hub / wizard progress badge moves out of ``NOT_STARTED``.
 * The section emits **zero** draft operations.  Final Review never
   consumes anything from here.
-* A disabled "Ask SuperBot" button is reserved (per the plan) so
-  the row layout stays stable when a mutation-capable AI helper
-  eventually lands as its own PR.  It is **not** wired to any
-  callback today.
 """
 
 from __future__ import annotations
@@ -196,19 +192,6 @@ class AISetupView(BaseView):
         skip_btn.callback = self._on_skip  # type: ignore[method-assign]
         self.add_item(skip_btn)
 
-        # Reserved "Ask SuperBot" slot.  Disabled today; a future PR
-        # may wire it to an in-channel AI helper.  Keeping the button
-        # in the layout now prevents row-shift when that lands.
-        ask_btn: discord.ui.Button = discord.ui.Button(  # type: ignore[var-annotated]
-            label="Ask SuperBot (coming soon)",
-            style=discord.ButtonStyle.secondary,
-            emoji="💬",
-            custom_id="setup_ai:ask",
-            disabled=True,
-            row=1,
-        )
-        self.add_item(ask_btn)
-
     async def _gate_apply(self, interaction: discord.Interaction) -> bool:
         member = interaction.user
         if not isinstance(member, discord.Member):
@@ -351,7 +334,7 @@ REGISTRY.register(
             "SuperBot keeps the current AI policy and providers.  You "
             "can revisit `/aimenu` at any time."
         ),
-        depths=frozenset({"quick", "standard", "advanced"}),
+        depths=frozenset({"standard", "advanced"}),
         # No recommended_ops_builder — AI setup has nothing to stage.
     ),
 )

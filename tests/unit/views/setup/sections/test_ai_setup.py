@@ -119,11 +119,12 @@ def test_ai_setup_section_stages_no_ops():
     assert section.op_kinds == frozenset()
 
 
-def test_ai_setup_section_runs_in_every_depth():
-    """AI setup is a universal step; runs in every depth."""
+def test_ai_setup_section_runs_in_standard_and_advanced():
+    """AI setup is omitted from the lean quick path (which focuses on
+    preset + channels + logging) and appears in standard and advanced."""
     section = REGISTRY.get(SLUG)
     assert section is not None
-    assert section.depths == frozenset({"quick", "standard", "advanced"})
+    assert section.depths == frozenset({"standard", "advanced"})
 
 
 def test_ai_setup_has_no_recommended_builder():
@@ -244,7 +245,9 @@ def test_embed_always_notes_zero_staging():
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_open_skip_and_disabled_ask_buttons():
+def test_view_has_open_and_skip_buttons_no_coming_soon_placeholder():
+    """Only the two real actions render — the dead 'Ask SuperBot
+    (coming soon)' placeholder button has been removed."""
     view = AISetupView(_owner_member(), acknowledged=False, skipped=False)
     custom_ids = {
         c.custom_id
@@ -253,13 +256,7 @@ def test_view_has_open_skip_and_disabled_ask_buttons():
     }
     assert "setup_ai:open" in custom_ids
     assert "setup_ai:skip" in custom_ids
-    assert "setup_ai:ask" in custom_ids
-    ask_btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_ai:ask"
-    )
-    assert ask_btn.disabled is True
+    assert "setup_ai:ask" not in custom_ids
 
 
 def test_view_highlights_acknowledged_open_button():
