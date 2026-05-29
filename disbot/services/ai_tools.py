@@ -301,6 +301,68 @@ async def _btd6_capability_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- btd6_superlative_lookup -------------------------------------------
+
+_BTD6_SUPERLATIVE_SPEC = AIToolSpec(
+    name="btd6_superlative_lookup",
+    description=(
+        "Rank BTD6 costs across the whole roster — use for "
+        "'most/least/cheapest/most expensive …' questions. metric: "
+        "'upgrade_cost' (set tier 1-5 to scope it, e.g. 'most expensive tier "
+        "4 upgrade'), 'tower_cost' (base placement cost), or 'paragon_cost'. "
+        "Set cheapest=true for least expensive (default is most expensive). "
+        "Returns the top matches with their cost."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "metric": {
+                "type": "string",
+                "description": "upgrade_cost, tower_cost, or paragon_cost.",
+            },
+            "tier": {
+                "type": "integer",
+                "description": "1-5; only meaningful for upgrade_cost.",
+            },
+            "cheapest": {
+                "type": "boolean",
+                "description": "Least expensive when true (default false).",
+            },
+        },
+        "required": ["metric"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_superlative_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_superlative_service as sup
+
+    metric = str(arguments.get("metric") or "").strip().lower()
+    if metric not in sup.METRICS:
+        return {
+            "found": False,
+            "note": "unsupported metric; supported: " + ", ".join(sup.METRICS),
+        }
+    raw_tier = arguments.get("tier")
+    try:
+        tier = int(raw_tier) if raw_tier is not None else None
+    except (TypeError, ValueError):
+        tier = None
+    cheapest = bool(arguments.get("cheapest", False))
+    hits = sup.rank(metric, tier=tier, cheapest=cheapest)
+    return {
+        "found": bool(hits),
+        "metric": metric,
+        "tier": tier,
+        "cheapest": cheapest,
+        "results": [
+            {"cost": h.cost, "what": h.what, "tower_id": h.tower_id} for h in hits
+        ],
+    }
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -327,6 +389,7 @@ def build_registry(
         (_SERVER_TIME_SPEC, _server_time),
         (_BTD6_LOOKUP_SPEC, _btd6_lookup),
         (_BTD6_CAPABILITY_SPEC, _btd6_capability_lookup),
+        (_BTD6_SUPERLATIVE_SPEC, _btd6_superlative_lookup),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]
