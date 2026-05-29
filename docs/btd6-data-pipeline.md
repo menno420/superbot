@@ -124,20 +124,25 @@ does **not** generate cash. See the income gaps below.
 
 ## Next steps
 
-### 1. Heroes — per-level stats (a real subsystem)
-- Costs: already correct (Cargo `btd6_heroes` verified). No action.
-- Stats: `Module:BTD6_stats/<Hero>/new?action=raw` is keyed by **level**
-  (`_2`..`_20`) and the levels are **deltas over the base** (the wiki's
-  `parse_tower_full` merges them). So this needs:
-  - a hero-stats parser that **merges level deltas** into full per-level stats
-    (different from `parse_stats_json`, which assumes complete crosspath tiers);
-  - hero stats files (`disbot/data/btd6/stats/heroes/<id>.json`?) or extend the
-    existing dir with a `levels` shape;
-  - level-aware variants of `btd6_stats_service` / `stats_embed` / the hero
-    detail view / grounding (or generalise the tower ones over "tier key").
-- Some heroes have **no** stats module (Obyn, Benjamin 404'd) — handle like
-  economy towers (no combat stats). Geraldo has one but no cash field (his cash
-  is shop items).
+### 1. Heroes — per-level stats — DATA + GROUNDING DONE; UI follows
+- Costs: correct for all 17 (Cargo `btd6_heroes` `cost`/`cost_C`).
+- **Coverage reality (verified against the wiki's module index):** only **6 of
+  the 17 roster heroes** have a `Module:BTD6 stats/<Hero>/new` page —
+  **Quincy, Gwendolin, Striker Jones, Adora, Sauda, Geraldo**. The other 11
+  (incl. **Obyn**, who *does* attack — the earlier "Obyn/Benjamin 404'd" note
+  understated this) have **no** stats module and **no** Cargo stats table
+  (`btd6_heroes` carries only cost/XP-scale). Their stats live only in article
+  prose, so they keep cost + abilities and are not given per-level files.
+- Stats pages are keyed by **level** (`_2`..`_20`) as **deltas over the base**;
+  `parse_hero_stats_json` (in `parse_bloonswiki.py`) deep-merges them
+  cumulatively, then cleans each level. `fetch_bloonswiki.py --all-heroes`
+  writes `disbot/data/btd6/stats/heroes/<id>.json` for the 6 that qualify.
+- Runtime: `btd6_stats_service.get_hero_stats(id)` (lazy, reuses `normal_stats`);
+  `btd6_context_service._render_hero_stats` injects `[btd6_hero_stats normal]`
+  grounding for headline levels (1/3/10/20).
+- **Remaining:** the level-aware hero detail UI (base-stats field + a level
+  picker mirroring `tower_stats_view`). If the wiki adds modules for more heroes,
+  re-run `--all-heroes` to pick them up automatically.
 
 ### 2. Economy income (Banana Farm, Monkey Village)
 - These 404 on the stats module (no combat stats). Income lives in:

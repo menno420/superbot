@@ -1,0 +1,2726 @@
+{
+  "hero_id": "striker_jones",
+  "canonical": "Striker Jones",
+  "game_version": "52.2",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "base_cost": 700,
+  "cost_chimps": null,
+  "levels": {
+    "1": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 8,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "speed": 225,
+              "lifespan": 1.2
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 1
+    },
+    "2": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 19,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 2
+    },
+    "3": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 19,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-6.2, 14, 12",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 5,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "filterAllExceptTarget": true,
+                  "speed": 180,
+                  "lifespan": 11.1111,
+                  "seekDistance": 2000,
+                  "trackNewTargets": true,
+                  "constantlyAquireNewTarget": false,
+                  "maxSeekAngle": 180,
+                  "ignoreSeekAngle": true,
+                  "overrideRotation": false,
+                  "useLifetimeAsDistance": false,
+                  "turnRate": 360
+                },
+                {
+                  "name": "Explosion",
+                  "pierce": 36,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 1,
+                      "multiplier": 0,
+                      "lifespanForMoab": 0.6,
+                      "lifespanForBfb": 0.45,
+                      "lifespanForZomg": 0.3,
+                      "lifespanForDdt": 0.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "level": 3
+    },
+    "4": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 19,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-6.2, 14, 12",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 5,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "filterAllExceptTarget": true,
+                  "speed": 180,
+                  "lifespan": 11.1111,
+                  "seekDistance": 2000,
+                  "trackNewTargets": true,
+                  "constantlyAquireNewTarget": false,
+                  "maxSeekAngle": 180,
+                  "ignoreSeekAngle": true,
+                  "overrideRotation": false,
+                  "useLifetimeAsDistance": false,
+                  "turnRate": 360
+                },
+                {
+                  "name": "Explosion",
+                  "pierce": 36,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 1,
+                      "multiplier": 0,
+                      "lifespanForMoab": 0.6,
+                      "lifespanForBfb": 0.45,
+                      "lifespanForZomg": 0.3,
+                      "lifespanForDdt": 0.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Attack speed buff",
+          "isGlobal": true,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rateMultiplier": 0.9,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
+      "level": 4
+    },
+    "5": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 19,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-6.2, 14, 12",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 5,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "filterAllExceptTarget": true,
+                  "speed": 180,
+                  "lifespan": 11.1111,
+                  "seekDistance": 2000,
+                  "trackNewTargets": true,
+                  "constantlyAquireNewTarget": false,
+                  "maxSeekAngle": 180,
+                  "ignoreSeekAngle": true,
+                  "overrideRotation": false,
+                  "useLifetimeAsDistance": false,
+                  "turnRate": 360
+                },
+                {
+                  "name": "Explosion",
+                  "pierce": 36,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 1,
+                      "multiplier": 0,
+                      "lifespanForMoab": 0.6,
+                      "lifespanForBfb": 0.45,
+                      "lifespanForZomg": 0.3,
+                      "lifespanForDdt": 0.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Attack speed buff",
+          "isGlobal": true,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rateMultiplier": 0.9,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 5
+    },
+    "6": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-6.2, 14, 12",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 5,
+                  "vsBlockerRadius": 0,
+                  "filterInvisible": true,
+                  "filterAllExceptTarget": true,
+                  "speed": 180,
+                  "lifespan": 11.1111,
+                  "seekDistance": 2000,
+                  "trackNewTargets": true,
+                  "constantlyAquireNewTarget": false,
+                  "maxSeekAngle": 180,
+                  "ignoreSeekAngle": true,
+                  "overrideRotation": false,
+                  "useLifetimeAsDistance": false,
+                  "turnRate": 360
+                },
+                {
+                  "name": "Explosion",
+                  "pierce": 36,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 1,
+                      "multiplier": 0,
+                      "lifespanForMoab": 0.6,
+                      "lifespanForBfb": 0.45,
+                      "lifespanForZomg": 0.3,
+                      "lifespanForDdt": 0.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Attack speed buff",
+          "isGlobal": true,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rateMultiplier": 0.9,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 6
+    },
+    "7": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "TargetFocus",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Projectile radius buff",
+          "isGlobal": true,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "radiusMultiplier": 1.1,
+          "filterInBaseTowerId": "Mortar Monkey"
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 7
+    },
+    "8": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "TargetFocus",
+          "cooldown": 45,
+          "maxActivationsPerRound": -1,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 8
+    },
+    "9": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-6.2, 14, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-6.2, 14, 12",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 4,
+                      "multiplier": 0,
+                      "lifespanForMoab": 2.4,
+                      "lifespanForBfb": 1.8,
+                      "lifespanForZomg": 1.2,
+                      "lifespanForDdt": 2.4
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 9
+    },
+    "10": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 4,
+                      "multiplier": 0,
+                      "lifespanForMoab": 2.4,
+                      "lifespanForBfb": 1.8,
+                      "lifespanForZomg": 1.2,
+                      "lifespanForDdt": 2.4
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        },
+        {
+          "name": "Artillery Command",
+          "cooldown": 80,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "lifespan": 0
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 10
+    },
+    "11": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.8,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 4,
+                      "multiplier": 0,
+                      "lifespanForMoab": 2.4,
+                      "lifespanForBfb": 1.8,
+                      "lifespanForZomg": 1.2,
+                      "lifespanForDdt": 2.4
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        },
+        {
+          "name": "Artillery Command",
+          "cooldown": 80,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "lifespan": 0
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 11
+    },
+    "12": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.8,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 4,
+                      "multiplier": 0,
+                      "lifespanForMoab": 2.4,
+                      "lifespanForBfb": 1.8,
+                      "lifespanForZomg": 1.2,
+                      "lifespanForDdt": 2.4
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        },
+        {
+          "name": "Artillery Command",
+          "cooldown": 80,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "lifespan": 0
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 12
+    },
+    "13": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.6,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 27,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 4,
+                      "multiplier": 0,
+                      "lifespanForMoab": 2.4,
+                      "lifespanForBfb": 1.8,
+                      "lifespanForZomg": 1.2,
+                      "lifespanForDdt": 2.4
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        },
+        {
+          "name": "Artillery Command",
+          "cooldown": 80,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "lifespan": 0
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 13
+    },
+    "14": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.6,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 16,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 40.5,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3.6,
+                      "lifespanForBfb": 2.7,
+                      "lifespanForZomg": 1.8,
+                      "lifespanForDdt": 3.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 14
+    },
+    "15": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.6,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 11,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 40.5,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3.6,
+                      "lifespanForBfb": 2.7,
+                      "lifespanForZomg": 1.8,
+                      "lifespanForDdt": 3.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 15
+    },
+    "16": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.45,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 11,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 40.5,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3.6,
+                      "lifespanForBfb": 2.7,
+                      "lifespanForZomg": 1.8,
+                      "lifespanForDdt": 3.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 16
+    },
+    "17": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.45,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 11,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 40.5,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3.6,
+                      "lifespanForBfb": 2.7,
+                      "lifespanForZomg": 1.8,
+                      "lifespanForDdt": 3.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Bomb Shooter buff",
+          "isGlobal": false,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 17
+    },
+    "18": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.45,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 11,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 40.5,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3.6,
+                      "lifespanForBfb": 2.7,
+                      "lifespanForZomg": 1.8,
+                      "lifespanForDdt": 3.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Attack speed buff",
+          "isGlobal": true,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rateMultiplier": 0.81,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 0.5
+        }
+      ],
+      "level": 18
+    },
+    "19": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.3,
+          "eject": "-8.6, 15, 16",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 11,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 16",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 40.5,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3.6,
+                      "lifespanForBfb": 2.7,
+                      "lifespanForZomg": 1.8,
+                      "lifespanForDdt": 3.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Attack speed buff",
+          "isGlobal": true,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rateMultiplier": 0.81,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 1
+        }
+      ],
+      "level": 19
+    },
+    "20": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.3,
+          "eject": "-8.6, 15, 17",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 28.5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "pushAmount": 5,
+              "pushTag": "",
+              "pushMultiplierForMoab": 0,
+              "pushMultiplierForBfb": 0,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 0,
+              "pushOnlyIfDamaged": true,
+              "rounds": 0,
+              "lifespan": 0.1
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "abilities": [
+        {
+          "name": "Concussive Shell",
+          "cooldown": 11,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "attacks": [
+            {
+              "name": "Attack",
+              "eject": "-8.6, 15, 17",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Explosion",
+                  "pierce": 48,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 40.5,
+                  "vsBlockerRadius": 0,
+                  "effects": [
+                    {
+                      "name": "Stun (strong)",
+                      "layers": 9999999,
+                      "glueLevel": 0,
+                      "isUnique": true,
+                      "dontRefreshDuration": false,
+                      "cascadeMutators": false,
+                      "removeMutatorIfNotMatching": false,
+                      "matchLayersWithDamage": false,
+                      "mutationId": "Stun:Strong",
+                      "lifespan": 6,
+                      "multiplier": 0,
+                      "lifespanForMoab": 3.6,
+                      "lifespanForBfb": 2.7,
+                      "lifespanForZomg": 1.8,
+                      "lifespanForDdt": 3.6
+                    }
+                  ],
+                  "filterInvisible": true,
+                  "damage": 12,
+                  "maxDamage": 0,
+                  "damage_type": "Normal",
+                  "cannot_pop": "Can damage any Bloon type",
+                  "immuneBloonProperties": 0,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "rounds": 0,
+                  "lifespan": 0.1
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Strong",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "filterInvisible": true,
+              "filterOutBad": true
+            }
+          ]
+        },
+        {
+          "name": "Artillery Command",
+          "cooldown": 80,
+          "maxActivationsPerRound": 9999999,
+          "canActivateBetweenRounds": false,
+          "restrictAbilityAfterMaxRoundTimer": false,
+          "lifespan": 10
+        }
+      ],
+      "buffs": [
+        {
+          "name": "Attack speed buff",
+          "isGlobal": true,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "maxStackSize": 0,
+          "rateMultiplier": 0.81,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
+      "zones": [
+        {
+          "name": "Black resistance modifier",
+          "radius": 9999999,
+          "chance": 1
+        }
+      ],
+      "level": 20
+    }
+  }
+}

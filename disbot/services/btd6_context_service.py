@@ -348,27 +348,7 @@ def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
         if tier is None:
             continue
         ns = btd6_stats_service.normal_stats(tier)
-        bits: list[str] = []
-        if ns.damage is not None:
-            dmg = f"{_big(ns.damage)} dmg"
-            if ns.damage_type:
-                # Fold the immunity note into the damage bit, exactly as the
-                # tower UI does — this is what answers "can it pop Lead?".
-                note = (
-                    "pops everything" if ns.damage_type == "Normal" else ns.cannot_pop
-                )
-                dmg += f" ({ns.damage_type}{f', {note}' if note else ''})"
-            bits.append(dmg)
-        if ns.pierce is not None:
-            bits.append(f"{_big(ns.pierce)} pierce")
-        if ns.cooldown is not None:
-            bits.append(f"{ns.cooldown}s cooldown")
-        # Camo detection is a top-asked grounding fact and was previously
-        # extracted but dropped; surface it on every attacking tier.
-        if ns.damage is not None:
-            bits.append("sees Camo" if ns.can_see_camo else "no Camo detection")
-        if ns.specials:
-            bits.append("; ".join(ns.specials))
+        bits = _normal_stat_bits(ns)
         if not bits:
             continue
         crosspath = "-".join(code)
@@ -376,6 +356,66 @@ def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
         lines.append(
             _cap(
                 f"[btd6_tower_stats normal] {canonical} {name} ({crosspath}): "
+                f"{_sanitise(', '.join(bits))} (source: bloonswiki)",
+            ),
+        )
+    return lines
+
+
+def _normal_stat_bits(ns: Any) -> list[str]:
+    """Shared 'normal view' bits for a tier or hero-level node.
+
+    Damage (with the immunity note folded in, exactly as the tower UI does —
+    this is what answers "can it pop Lead?"), pierce, cooldown, camo detection
+    (previously extracted but dropped from grounding), and headline specials.
+    """
+    bits: list[str] = []
+    if ns.damage is not None:
+        dmg = f"{_big(ns.damage)} dmg"
+        if ns.damage_type:
+            note = "pops everything" if ns.damage_type == "Normal" else ns.cannot_pop
+            dmg += f" ({ns.damage_type}{f', {note}' if note else ''})"
+        bits.append(dmg)
+    if ns.pierce is not None:
+        bits.append(f"{_big(ns.pierce)} pierce")
+    if ns.cooldown is not None:
+        bits.append(f"{ns.cooldown}s cooldown")
+    # Camo detection only matters for attacking tiers; surface it like the UI.
+    if ns.damage is not None:
+        bits.append("sees Camo" if ns.can_see_camo else "no Camo detection")
+    if ns.specials:
+        bits.append("; ".join(ns.specials))
+    return bits
+
+
+# Headline hero levels for AI grounding — start, the two usual ability tiers,
+# and max. Keeps grounding bounded rather than dumping all 20 levels.
+_HERO_GROUNDING_LEVELS: tuple[str, ...] = ("1", "3", "10", "20")
+
+
+def _render_hero_stats(hero_id: str, canonical: str) -> list[str]:
+    """Per-level headline stats as ``[btd6_hero_stats normal]`` grounding lines.
+
+    Returns nothing for heroes without a stats module (the prose-only majority);
+    only the ~6 heroes with a bloonswiki module produce lines here.
+    """
+    from services import btd6_stats_service
+
+    stats = btd6_stats_service.get_hero_stats(hero_id)
+    if stats is None or not stats.has_combat_stats:
+        return []
+
+    lines: list[str] = []
+    for code in _HERO_GROUNDING_LEVELS:
+        node = stats.level(code)
+        if node is None:
+            continue
+        bits = _normal_stat_bits(btd6_stats_service.normal_stats(node))
+        if not bits:
+            continue
+        lines.append(
+            _cap(
+                f"[btd6_hero_stats normal] {canonical} Level {code}: "
                 f"{_sanitise(', '.join(bits))} (source: bloonswiki)",
             ),
         )
@@ -438,6 +478,7 @@ def _render_fixture_hero(entry: Any) -> list[str]:
             ),
         )
 
+    lines.extend(_render_hero_stats(getattr(entry, "id", ""), canonical))
     return lines
 
 

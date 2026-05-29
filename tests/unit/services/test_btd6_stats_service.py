@@ -73,3 +73,34 @@ def test_economy_tower_has_costs_but_no_combat_stats():
     assert farm.base_cost == 1250
     assert farm.has_combat_stats is False
     assert farm.tier_codes() == ()
+
+
+# --- heroes: per-level stats for the ~6 heroes with a bloonswiki module ------
+
+
+def test_loads_quincy_hero_stats():
+    stats = svc.get_hero_stats("quincy")
+    assert stats is not None
+    assert stats.has_combat_stats
+    assert stats.base_cost == 540
+    assert len(stats.level_codes()) == 20
+    assert stats.level_codes()[0] == "1"
+    assert stats.level_codes()[-1] == "20"
+
+
+def test_hero_without_module_returns_none():
+    # Obyn attacks in-game, but bloonswiki has no stats module for him, so
+    # there is no committed file — must degrade to None, not a crash.
+    assert svc.get_hero_stats("obyn_greenfoot") is None
+    assert svc.get_hero_stats("does_not_exist") is None
+
+
+def test_hero_level_progression_uses_normal_stats():
+    stats = svc.get_hero_stats("quincy")
+    # normal_stats consumes a hero level node exactly like a tower tier.
+    l1 = svc.normal_stats(stats.level("1"))
+    l20 = svc.normal_stats(stats.level("20"))
+    assert l1.pierce == 3
+    assert l20.pierce == 9  # pierce climbs with level
+    assert l20.cooldown < l1.cooldown  # attacks faster at max level
+    assert l20.can_see_camo is True  # Quincy gains camo detection by level 20

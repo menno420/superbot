@@ -37,6 +37,7 @@ data model.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 import sys
@@ -309,6 +310,79 @@ def parse_stats_json(text: str) -> StatsResult:
         cleaned["code"] = code
         cleaned["crosspath"] = "-".join(code)
         result.tiers[code] = cleaned
+
+    if not game_version:
+        result.warnings.append("missing _last_updated (game version)")
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Hero stats — Module:BTD6 stats/<Hero>/new JSON (per-LEVEL, delta-encoded)
+# ---------------------------------------------------------------------------
+#
+# Unlike towers (complete `_000`.._005` crosspath tiers), a hero page stores
+# level 1 as the top-level node and `_2`.._20` as *partial deltas* over the
+# running level state. We deep-merge each delta cumulatively (mirroring the
+# wiki's own render) and clean each resulting level. Only ~6 heroes have such
+# a module; the rest are prose-only and have no machine-readable stats.
+
+_HERO_MAX_LEVEL = 20
+
+
+@dataclass
+class HeroStatsResult:
+    game_version: str
+    levels: dict[str, dict] = field(default_factory=dict)  # "1".."20" -> tier
+    warnings: list[str] = field(default_factory=list)
+
+    @property
+    def ok(self) -> bool:
+        return not self.warnings
+
+
+def _deep_merge_raw(base: dict, delta: dict) -> dict:
+    """Recursively merge a raw level delta onto the running base.
+
+    Dicts merge key-by-key; every other value (scalars, lists) overwrites.
+    Hero ``_N`` deltas mirror the base structure (``attacks`` → ``_order``
+    containers → projectiles), so a recursive dict-merge reconstructs the
+    full per-level node before :func:`_clean_node` flattens it.
+    """
+    out = copy.deepcopy(base)
+    for key, value in delta.items():
+        if isinstance(value, dict) and isinstance(out.get(key), dict):
+            out[key] = _deep_merge_raw(out[key], value)
+        else:
+            out[key] = copy.deepcopy(value)
+    return out
+
+
+def parse_hero_stats_json(text: str) -> HeroStatsResult:
+    """Parse a hero ``Module:BTD6 stats/<Hero>/new`` JSON page into per-level
+    stats by cumulatively merging the ``_2``..``_20`` deltas onto the base.
+
+    Raises ``ValueError`` (via :func:`json.loads`) on malformed JSON.
+    """
+    data = json.loads(text)
+    game_version = str(data.get("_last_updated", ""))
+    result = HeroStatsResult(game_version=game_version)
+
+    base_raw = {k: v for k, v in data.items() if not k.startswith("_")}
+    if not base_raw:
+        result.warnings.append("no base (level 1) stats at top level")
+        return result
+
+    running = copy.deepcopy(base_raw)
+    for level in range(1, _HERO_MAX_LEVEL + 1):
+        if level > 1:
+            delta = data.get(f"_{level}")
+            if isinstance(delta, dict):
+                running = _deep_merge_raw(running, delta)
+            # A missing delta means the level changed nothing statistically
+            # (e.g. an ability-only level) — not a warning.
+        cleaned = _clean_node(running)
+        cleaned["level"] = level
+        result.levels[str(level)] = cleaned
 
     if not game_version:
         result.warnings.append("missing _last_updated (game version)")

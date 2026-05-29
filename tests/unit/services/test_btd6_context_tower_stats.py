@@ -60,6 +60,22 @@ def test_camo_detecting_tower_marked_sees_camo():
     assert any("sees Camo" in ln for ln in stat_lines)
 
 
+def test_hero_with_module_emits_per_level_stat_lines():
+    lines = ctx._render_fixture_hero(ds.get_hero("quincy"))
+    stat_lines = [ln for ln in lines if "[btd6_hero_stats normal]" in ln]
+    assert any("Level 1" in ln for ln in stat_lines)
+    assert any("Level 20" in ln for ln in stat_lines)
+    assert all("source: bloonswiki" in ln for ln in stat_lines)
+
+
+def test_hero_without_module_has_cost_and_abilities_but_no_stat_lines():
+    # Obyn attacks in-game but has no bloonswiki stats module → cost + abilities
+    # only, no per-level stat lines (and no crash).
+    lines = ctx._render_fixture_hero(ds.get_hero("obyn_greenfoot"))
+    assert not [ln for ln in lines if "btd6_hero_stats" in ln]
+    assert any("[btd6_hero]" in ln for ln in lines)
+
+
 async def test_grounded_build_surfaces_bloon_immunity_and_tower_facts():
     # End-to-end through the real grounding builder (DB passes degrade to
     # no-ops without a pool; the fixture pass always runs). This is the guard

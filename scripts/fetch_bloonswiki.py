@@ -55,6 +55,8 @@ _DEFAULT_DELAY = 1.0
 
 _DEFAULT_CSV = _REPO_ROOT / "data" / "btd6" / "towers.csv"
 _DEFAULT_STATS_DIR = _REPO_ROOT / "disbot" / "data" / "btd6" / "stats"
+_DEFAULT_HEROES_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "heroes.json"
+_DEFAULT_HERO_STATS_DIR = _DEFAULT_STATS_DIR / "heroes"
 
 _PATH_PREFIX = {1: "top", 2: "mid", 3: "bot"}
 
@@ -179,9 +181,62 @@ def fetch_tower(tower_id: str, canonical: str, *, delay: float) -> TowerData:
     return td
 
 
+@dataclass
+class HeroData:
+    hero_id: str
+    canonical: str
+    base_cost: int | None = None
+    cost_chimps: int | None = None
+    levels: dict[str, dict] = field(default_factory=dict)
+    game_version: str = ""
+    warnings: list[str] = field(default_factory=list)
+
+
+def fetch_hero(hero_id: str, canonical: str, *, delay: float) -> HeroData:
+    """Fetch cost + per-level stats for one hero and assemble :class:`HeroData`.
+
+    Cost comes from Cargo ``btd6_heroes`` (always present). Per-level combat
+    stats come from ``Module:BTD6 stats/<Hero>/new`` — but only ~6 heroes have
+    such a module; the rest 404 and keep cost only (handled like utility towers).
+    """
+    from parse_bloonswiki import parse_hero_stats_json
+
+    hd = HeroData(hero_id=hero_id, canonical=canonical)
+    safe = canonical.replace("'", "\\'")
+
+    rows = _cargo_query("btd6_heroes", "cost,cost_C", f"name='{safe}'")
+    if rows:
+        # Cargo output keys use spaces for underscores (``cost_C`` → ``cost C``).
+        hd.base_cost = _int(rows[0].get("cost"))
+        hd.cost_chimps = _int(rows[0].get("cost C") or rows[0].get("cost_C"))
+    else:
+        hd.warnings.append("no btd6_heroes row (hero not found on wiki)")
+    time.sleep(delay)
+
+    try:
+        stats = parse_hero_stats_json(_fetch_stats_raw(canonical))
+        hd.levels = stats.levels
+        hd.game_version = stats.game_version
+        hd.warnings.extend(f"stats: {w}" for w in stats.warnings)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            hd.warnings.append("no stats module (prose-only hero — cost only)")
+        else:
+            raise
+
+    if hd.base_cost is None:
+        hd.warnings.append("missing base cost")
+    return hd
+
+
 def _writable(td: TowerData) -> bool:
     """Costs are sound enough to commit (stats may legitimately be absent)."""
     return td.base_cost is not None and len(td.upgrades) == 15
+
+
+def _hero_writable(hd: HeroData) -> bool:
+    """Only heroes with a real per-level stats module are worth a stats file."""
+    return bool(hd.levels)
 
 
 def _validate(td: TowerData) -> None:
@@ -230,6 +285,28 @@ def write_stats_file(td: TowerData, stats_dir: Path) -> Path:
     out = stats_dir / f"{td.tower_id}.json"
     out.write_text(
         json.dumps(stats_document(td), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    return out
+
+
+def hero_stats_document(hd: HeroData) -> dict:
+    return {
+        "hero_id": hd.hero_id,
+        "canonical": hd.canonical,
+        "game_version": hd.game_version,
+        "source": "bloonswiki.com (CC BY-NC-SA)",
+        "base_cost": hd.base_cost,
+        "cost_chimps": hd.cost_chimps,
+        "levels": hd.levels,
+    }
+
+
+def write_hero_stats_file(hd: HeroData, heroes_dir: Path) -> Path:
+    heroes_dir.mkdir(parents=True, exist_ok=True)
+    out = heroes_dir / f"{hd.hero_id}.json"
+    out.write_text(
+        json.dumps(hero_stats_document(hd), indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     return out
@@ -304,6 +381,59 @@ def _read_roster(csv_path: Path) -> list[tuple[str, str]]:
         return [(r["id"], r["canonical"]) for r in csv.DictReader(fh)]
 
 
+def _read_hero_roster(heroes_json: Path) -> list[tuple[str, str]]:
+    data = json.loads(heroes_json.read_text(encoding="utf-8"))
+    return [(h["id"], h["canonical"]) for h in data.get("heroes", [])]
+
+
+def _hero_report(hd: HeroData) -> str:
+    lines = [
+        f"{hd.canonical} ({hd.hero_id})",
+        f"  base cost: {hd.base_cost}  chimps: {hd.cost_chimps}  "
+        f"levels: {len(hd.levels)}  version: {hd.game_version or '?'}",
+    ]
+    if hd.warnings:
+        lines.append(f"  ⚠ {len(hd.warnings)} warning(s):")
+        lines.extend(f"    - {w}" for w in hd.warnings)
+    else:
+        lines.append("  ✓ no warnings")
+    return "\n".join(lines)
+
+
+def _run_heroes(args: argparse.Namespace) -> int:
+    """Fetch heroes (one or all) and write per-level stats files for those that
+    have a real stats module. Cost-only heroes are reported but not written.
+    """
+    roster = _read_hero_roster(args.heroes_json)
+    if args.hero:
+        key = args.hero.strip().lower()
+        roster = [
+            (hid, canon) for hid, canon in roster if key in (hid.lower(), canon.lower())
+        ]
+        if not roster:
+            print(f"No hero matching {args.hero!r} in {args.heroes_json}")
+            return 1
+
+    written = 0
+    any_warn = False
+    for hid, canon in roster:
+        try:
+            hd = fetch_hero(hid, canon, delay=args.delay)
+        except Exception as exc:  # noqa: BLE001 - report + continue across roster
+            print(f"{canon} ({hid}): FETCH FAILED — {exc}\n")
+            any_warn = True
+            continue
+        print(_hero_report(hd) + "\n")
+        any_warn = any_warn or bool(hd.warnings)
+        if not args.dry_run and _hero_writable(hd):
+            write_hero_stats_file(hd, args.hero_stats_dir)
+            written += 1
+
+    if not args.dry_run and written:
+        print(f"Wrote {written} hero stats file(s) to {args.hero_stats_dir}")
+    return 1 if any_warn else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
@@ -313,6 +443,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Fetch every tower in the CSV",
     )
+    group.add_argument("--hero", help="Hero id or canonical name to fetch")
+    group.add_argument(
+        "--all-heroes",
+        action="store_true",
+        help="Fetch every hero in heroes.json",
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -321,7 +457,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--delay", type=float, default=_DEFAULT_DELAY)
     parser.add_argument("--csv", type=Path, default=_DEFAULT_CSV)
     parser.add_argument("--stats-dir", type=Path, default=_DEFAULT_STATS_DIR)
+    parser.add_argument("--heroes-json", type=Path, default=_DEFAULT_HEROES_JSON)
+    parser.add_argument(
+        "--hero-stats-dir",
+        type=Path,
+        default=_DEFAULT_HERO_STATS_DIR,
+    )
     args = parser.parse_args(argv)
+
+    if args.hero or args.all_heroes:
+        return _run_heroes(args)
 
     roster = _read_roster(args.csv)
     if args.tower:

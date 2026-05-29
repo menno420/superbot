@@ -38,7 +38,13 @@ def _full_tower(mod, tower_id="bomb_shooter"):
     for path in (1, 2, 3):
         for tier in range(1, 6):
             td.upgrades.append(
-                {"path": path, "tier": tier, "name": f"U{path}{tier}", "cost": path * 100 + tier, "xp": 10},
+                {
+                    "path": path,
+                    "tier": tier,
+                    "name": f"U{path}{tier}",
+                    "cost": path * 100 + tier,
+                    "xp": 10,
+                },
             )
     return td
 
@@ -85,15 +91,43 @@ def test_stats_document_shape(mod):
     assert "CC BY-NC-SA" in doc["source"]
 
 
+def test_hero_writable_requires_levels(mod):
+    with_levels = mod.HeroData(hero_id="quincy", canonical="Quincy", base_cost=540)
+    with_levels.levels = {"1": {"level": 1}}
+    cost_only = mod.HeroData(hero_id="obyn", canonical="Obyn Greenfoot", base_cost=650)
+    assert mod._hero_writable(with_levels) is True
+    assert mod._hero_writable(cost_only) is False  # prose-only hero — no file
+
+
+def test_hero_stats_document_shape(mod):
+    hd = mod.HeroData(
+        hero_id="quincy",
+        canonical="Quincy",
+        base_cost=540,
+        cost_chimps=540,
+        game_version="46.3",
+    )
+    hd.levels = {str(n): {"level": n} for n in range(1, 21)}
+    doc = mod.hero_stats_document(hd)
+    assert doc["hero_id"] == "quincy"
+    assert doc["base_cost"] == 540
+    assert len(doc["levels"]) == 20
+    assert "CC BY-NC-SA" in doc["source"]
+
+
 def test_update_csv_only_touches_matched_rows(mod, tmp_path):
     csv_path = tmp_path / "towers.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=_HEADER)
         writer.writeheader()
         bomb = dict.fromkeys(_HEADER, "")
-        bomb.update({"id": "bomb_shooter", "canonical": "Bomb Shooter", "top_1_cost": "999"})
+        bomb.update(
+            {"id": "bomb_shooter", "canonical": "Bomb Shooter", "top_1_cost": "999"}
+        )
         other = dict.fromkeys(_HEADER, "")
-        other.update({"id": "dart_monkey", "canonical": "Dart Monkey", "top_1_cost": "42"})
+        other.update(
+            {"id": "dart_monkey", "canonical": "Dart Monkey", "top_1_cost": "42"}
+        )
         writer.writerows([bomb, other])
 
     mod.update_csv(csv_path, {"bomb_shooter": _full_tower(mod)})
