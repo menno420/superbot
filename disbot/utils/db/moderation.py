@@ -50,7 +50,12 @@ async def log_mod_action(
 ) -> None:
     from datetime import datetime, timezone
 
-    ts = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    # ``mod_logs.timestamp`` is ``timestamp with time zone``; asyncpg
+    # needs a real ``datetime`` for that column.  Passing a strftime
+    # string raised ``asyncpg.DataError`` at insert time, which silently
+    # broke the mod-action audit log for every action type and crashed
+    # the counting stage's auto-delete path.  Bind the tz-aware datetime.
+    ts = datetime.now(tz=timezone.utc)
     await pool.execute(
         "INSERT INTO mod_logs (timestamp, guild_id, action, target_id, "
         "moderator_id, reason) VALUES ($1, $2, $3, $4, $5, $6)",

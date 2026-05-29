@@ -169,6 +169,32 @@ def build_system_info_embed() -> discord.Embed:
 # ---------------------------------------------------------------------------
 
 
+def _format_table_set(names: set[str], *, limit: int = 1024) -> str:
+    """Render a set of table names as a comma list that fits one embed
+    field.
+
+    Discord caps embed field values at 1024 chars; a raw
+    ``", ".join(...)`` of every table overflowed once the schema grew
+    past ~50 tables and made Discord reject the whole embed (the panel
+    edit then silently failed).  This trims to as many names as fit and
+    appends a ``+N more`` marker.
+    """
+    if not names:
+        return "None"
+    ordered = sorted(names)
+    joined = ", ".join(ordered)
+    if len(joined) <= limit:
+        return joined
+    kept = list(ordered)
+    while kept:
+        suffix = f", … (+{len(ordered) - len(kept)} more)"
+        candidate = ", ".join(kept)
+        if len(candidate) + len(suffix) <= limit:
+            return candidate + suffix
+        kept.pop()
+    return f"(+{len(ordered)} more)"
+
+
 async def build_check_database_embed() -> discord.Embed:
     """Verify expected PostgreSQL tables exist."""
     expected = {
@@ -208,12 +234,12 @@ async def build_check_database_embed() -> discord.Embed:
     embed = discord.Embed(title="Database Schema Check", color=discord.Color.purple())
     embed.add_field(
         name="Missing Tables",
-        value=", ".join(sorted(missing)) or "None",
+        value=_format_table_set(missing),
         inline=False,
     )
     embed.add_field(
-        name="Unexpected Tables",
-        value=", ".join(sorted(extra)) or "None",
+        name=f"Unexpected Tables ({len(extra)})",
+        value=_format_table_set(extra),
         inline=False,
     )
     if not missing:

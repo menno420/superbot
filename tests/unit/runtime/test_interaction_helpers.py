@@ -34,7 +34,9 @@ def _make_interaction(*, responded: bool = False) -> MagicMock:
     interaction.followup = MagicMock()
     interaction.followup.send = AsyncMock(return_value=MagicMock(spec=discord.Message))
     interaction.followup.edit_message = AsyncMock()
-    interaction.original_response = AsyncMock(return_value=MagicMock(spec=discord.Message))
+    interaction.original_response = AsyncMock(
+        return_value=MagicMock(spec=discord.Message)
+    )
     interaction.message = MagicMock()
     interaction.message.id = 99999
     return interaction
@@ -130,3 +132,69 @@ class TestSafeEdit:
         i.response.edit_message.side_effect = discord.NotFound(MagicMock(), "gone")
         ok = await ih.safe_edit(i, content="updated")
         assert ok is False
+
+    @pytest.mark.asyncio
+    async def test_clamps_oversized_embed_before_edit(self):
+        # Regression: a field value > 1024 chars made Discord reject the
+        # whole edit (400 Invalid Form Body) and the panel silently
+        # froze.  safe_edit must clamp before sending.
+        i = _make_interaction(responded=False)
+        embed = discord.Embed(title="x")
+        embed.add_field(name="big", value="A" * 2000, inline=False)
+        ok = await ih.safe_edit(i, embed=embed)
+        assert ok is True
+        sent = i.response.edit_message.await_args.kwargs["embed"]
+        assert len(sent.fields[0].value) == 1024
+
+
+class TestClampEmbed:
+    """Regression tests for clamp_embed (embed size-limit hardening)."""
+
+    def test_wellformed_embed_passes_through_unchanged(self):
+        embed = discord.Embed(title="t", description="d")
+        embed.add_field(name="n", value="v", inline=False)
+        ih.clamp_embed(embed)
+        assert embed.title == "t"
+        assert embed.description == "d"
+        assert embed.fields[0].name == "n"
+        assert embed.fields[0].value == "v"
+
+    def test_field_value_truncated_to_1024(self):
+        embed = discord.Embed()
+        embed.add_field(name="big", value="A" * 5000, inline=False)
+        ih.clamp_embed(embed)
+        assert len(embed.fields[0].value) == 1024
+        assert embed.fields[0].value.endswith("…")
+
+    def test_field_inline_preserved_on_truncation(self):
+        embed = discord.Embed()
+        embed.add_field(name="big", value="A" * 5000, inline=True)
+        ih.clamp_embed(embed)
+        assert embed.fields[0].inline is True
+
+    def test_description_truncated_to_4096(self):
+        embed = discord.Embed(description="D" * 9000)
+        ih.clamp_embed(embed)
+        assert len(embed.description) == 4096
+
+    def test_title_truncated_to_256(self):
+        embed = discord.Embed(title="T" * 400)
+        ih.clamp_embed(embed)
+        assert len(embed.title) == 256
+
+    def test_footer_truncated_to_2048(self):
+        embed = discord.Embed()
+        embed.set_footer(text="F" * 4000)
+        ih.clamp_embed(embed)
+        assert len(embed.footer.text) == 2048
+
+    def test_excess_fields_dropped_to_25(self):
+        embed = discord.Embed()
+        for idx in range(30):
+            embed.add_field(name=f"f{idx}", value=str(idx))
+        ih.clamp_embed(embed)
+        assert len(embed.fields) == 25
+
+    def test_returns_same_embed_instance(self):
+        embed = discord.Embed(title="ok")
+        assert ih.clamp_embed(embed) is embed

@@ -855,6 +855,22 @@ class SetupCompleteView(BaseView):
                 ephemeral=True,
             )
             return
+
+        # ACK the interaction *before* the destructive delete below.
+        # ``cleanup_setup_channel_after_completion`` deletes the very
+        # channel this view's message lives in.  Once that channel is
+        # gone, ``response.edit_message`` 404s (message gone) AND a
+        # not-yet-acknowledged ``followup`` 404s with "Unknown Webhook"
+        # (10015) — the interaction was never ACKed, so its webhook is
+        # invalid.  Deferring ephemerally while the channel + token are
+        # still live keeps the followup webhook alive for the
+        # confirmation message.  (Regression: clicking "Delete now"
+        # crashed with NotFound 404 Unknown Webhook.)
+        from core.runtime.interaction_helpers import safe_defer
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+
         from services import setup_channel as _setup_channel
         from services import setup_session as _setup_session
 
@@ -862,7 +878,7 @@ class SetupCompleteView(BaseView):
             session = await _setup_session.resume_session(guild.id)
         except Exception:
             logger.exception("SetupCompleteView._on_delete: resume failed")
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "Couldn't read the setup session — see logs.",
                 ephemeral=True,
             )
@@ -874,43 +890,30 @@ class SetupCompleteView(BaseView):
             actor=interaction.user,
         )
         if result.reason != "ok":
-            await interaction.response.send_message(
+            # Channel was NOT deleted (typed guard failure).  The original
+            # message + buttons survive; surface the reason ephemerally and
+            # leave the buttons clickable so the operator can retry.
+            await interaction.followup.send(
                 f"⚠️ {result.detail}",
                 ephemeral=True,
             )
             return
 
-        # Success — disable the buttons, flip the embed to a final
-        # "Setup channel deleted" line.  We do NOT call self.stop()
-        # before editing because discord.py won't render a stopped
-        # view; just disable the children.
+        # Success — the setup channel (and this view's message) is gone,
+        # so there is nothing left to edit.  Confirm via an ephemeral
+        # followup and stop the view.
         for child in self.children:
             child.disabled = True  # type: ignore[attr-defined]
-        new_embed = discord.Embed(
-            title="🛰 Setup complete",
-            description=(
-                "**Setup channel deleted.**  "
-                f"Applied **{len(self.summary.applied)}** operation(s); "
-                "the workspace channel is gone.  Re-run `/setup` "
-                "later to recreate it."
-            ),
-            color=discord.Color.green(),
-        )
         try:
-            await interaction.response.edit_message(
-                embed=new_embed,
-                view=self,
+            await interaction.followup.send(
+                "✅ Setup channel deleted.  "
+                f"Applied **{len(self.summary.applied)}** operation(s); "
+                "re-run `/setup` later to recreate it.",
+                ephemeral=True,
             )
         except discord.HTTPException:
-            # Editing the original message may fail because that
-            # message lived in #superbot-setup, which we just
-            # deleted.  Fall back to an ephemeral confirmation.
             logger.info(
-                "SetupCompleteView._on_delete: edit_message failed (channel gone?)",
-            )
-            await interaction.followup.send(
-                "✅ Setup channel deleted.",
-                ephemeral=True,
+                "SetupCompleteView._on_delete: confirmation followup failed",
             )
         self.stop()
 

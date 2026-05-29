@@ -970,8 +970,9 @@ def test_setup_complete_view_has_delete_and_keep_buttons():
 
 @pytest.mark.asyncio
 async def test_setup_complete_delete_calls_cleanup_service():
-    """Pressing Delete invokes the guarded cleanup service and edits the
-    embed to the post-deletion state on success.
+    """Pressing Delete ACKs the interaction (defer) before the
+    destructive delete, invokes the guarded cleanup service, and
+    confirms via an ephemeral followup on success.
     """
     from services.setup_channel import CleanupResult
     from views.setup.final_review import ApplySummary, SetupCompleteView
@@ -1017,11 +1018,15 @@ async def test_setup_complete_delete_calls_cleanup_service():
         await delete_btn.callback(interaction)
 
     cleanup_mock.assert_awaited_once()
-    # Embed flipped to the post-deletion success state.
-    edit_kwargs = interaction.response.edit_message.await_args.kwargs
-    new_embed = edit_kwargs.get("embed")
-    assert new_embed is not None
-    assert "deleted" in (new_embed.description or "").lower()
+    # The interaction is ACKed (deferred) before the destructive delete,
+    # then confirmed via an ephemeral followup.  The setup channel (and
+    # this view's message) is gone, so response.edit_message must NOT be
+    # used — that path 404'd with "Unknown Webhook".
+    interaction.response.defer.assert_awaited_once()
+    interaction.response.edit_message.assert_not_awaited()
+    interaction.followup.send.assert_awaited_once()
+    confirm = interaction.followup.send.await_args.args[0]
+    assert "deleted" in confirm.lower()
 
 
 @pytest.mark.asyncio
@@ -1065,8 +1070,10 @@ async def test_setup_complete_delete_surfaces_guard_failure_as_ephemeral():
         )
         await delete_btn.callback(interaction)
 
-    interaction.response.send_message.assert_awaited_once()
-    msg = interaction.response.send_message.await_args.args[0]
+    # Guard failure is surfaced via an ephemeral followup (the
+    # interaction was deferred first); buttons stay clickable for retry.
+    interaction.followup.send.assert_awaited_once()
+    msg = interaction.followup.send.await_args.args[0]
     assert "renamed" in msg.lower()
 
 

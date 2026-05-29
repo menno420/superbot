@@ -62,6 +62,81 @@ def help_ctx_shim(interaction: discord.Interaction) -> SimpleNamespace:
     )
 
 
+# Discord embed size limits.
+# https://discord.com/developers/docs/resources/message#embed-object-embed-limits
+_EMBED_TITLE_LIMIT = 256
+_EMBED_DESCRIPTION_LIMIT = 4096
+_EMBED_FIELD_NAME_LIMIT = 256
+_EMBED_FIELD_VALUE_LIMIT = 1024
+_EMBED_FOOTER_LIMIT = 2048
+_EMBED_AUTHOR_LIMIT = 256
+_EMBED_MAX_FIELDS = 25
+
+
+def _clip(text: str, limit: int) -> str:
+    """Truncate ``text`` to ``limit`` chars (ellipsis-terminated)."""
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
+
+def clamp_embed(embed: discord.Embed) -> discord.Embed:
+    """Truncate ``embed`` in place to Discord's hard size limits.
+
+    A single over-limit component — most commonly a field ``value``
+    over 1024 chars, but also an over-long ``description`` / title /
+    footer — makes Discord reject the *entire* message with
+    ``400 Invalid Form Body``.  Inside a panel edit that means the edit
+    never lands and the UI silently freezes (observed: the diagnostics
+    "Database" panel, whose "Unexpected Tables" field overflowed once
+    the schema grew past ~50 tables).  Clamping each component to its
+    documented maximum degrades an oversized payload to a
+    truncated-but-rendered panel instead of a hard failure.
+
+    Only mutates when a value actually exceeds its limit, so well-formed
+    embeds pass through unchanged.  Returns the same object for
+    call-site convenience.
+    """
+    if not isinstance(embed, discord.Embed):
+        # Defensive: callers should pass a discord.Embed, but never choke
+        # on a non-embed (e.g. a test double) — just hand it back.
+        return embed
+    if embed.title and len(embed.title) > _EMBED_TITLE_LIMIT:
+        embed.title = _clip(embed.title, _EMBED_TITLE_LIMIT)
+    if embed.description and len(embed.description) > _EMBED_DESCRIPTION_LIMIT:
+        embed.description = _clip(embed.description, _EMBED_DESCRIPTION_LIMIT)
+
+    for idx, field in enumerate(embed.fields):
+        name = field.name or ""
+        value = field.value or ""
+        if len(name) > _EMBED_FIELD_NAME_LIMIT or len(value) > _EMBED_FIELD_VALUE_LIMIT:
+            embed.set_field_at(
+                idx,
+                name=_clip(name, _EMBED_FIELD_NAME_LIMIT),
+                value=_clip(value, _EMBED_FIELD_VALUE_LIMIT),
+                inline=field.inline,
+            )
+
+    # Guard the field-count cap too: drop the overflow rather than let
+    # the API reject the whole embed.
+    while len(embed.fields) > _EMBED_MAX_FIELDS:
+        embed.remove_field(_EMBED_MAX_FIELDS)
+
+    footer = embed.footer
+    if footer.text and len(footer.text) > _EMBED_FOOTER_LIMIT:
+        embed.set_footer(
+            text=_clip(footer.text, _EMBED_FOOTER_LIMIT),
+            icon_url=footer.icon_url,
+        )
+
+    author = embed.author
+    if author.name and len(author.name) > _EMBED_AUTHOR_LIMIT:
+        embed.set_author(
+            name=_clip(author.name, _EMBED_AUTHOR_LIMIT),
+            url=author.url,
+            icon_url=author.icon_url,
+        )
+    return embed
+
+
 async def safe_defer(
     interaction: discord.Interaction,
     *,
@@ -122,7 +197,7 @@ async def safe_followup(
     if content is not None:
         kwargs["content"] = content
     if embed is not None:
-        kwargs["embed"] = embed
+        kwargs["embed"] = clamp_embed(embed)
     if view is not None:
         kwargs["view"] = view
     if ephemeral:
@@ -170,7 +245,7 @@ async def safe_edit(
     if content is not None:
         kwargs["content"] = content
     if embed is not None:
-        kwargs["embed"] = embed
+        kwargs["embed"] = clamp_embed(embed)
     if view is not None:
         kwargs["view"] = view
 
