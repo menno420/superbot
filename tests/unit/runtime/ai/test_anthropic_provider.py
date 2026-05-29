@@ -187,11 +187,21 @@ async def test_system_prompt_is_sent_as_cache_marked_block():
 async def test_max_tokens_is_forwarded_from_request():
     client = _FakeAnthropic([_response([_text_block("ok")])])
     provider = AnthropicProvider(client=client)
+    request = AIRequest(
+        context=AIRequestContext(
+            task=AITask.GENERAL_NL_ANSWER,
+            scope=AIScope.USER,
+            source="test",
+        ),
+        system_prompt="system",
+        payload={"text": "hi"},
+        mode=AIResponseMode.TEXT,
+        max_output_tokens=1234,
+    )
 
-    # AIRequest defaults max_output_tokens to 800.
-    await provider.execute(_request(), model="claude-sonnet-4-6")
+    await provider.execute(request, model="claude-sonnet-4-6")
 
-    assert client.messages.calls[0]["max_tokens"] == 800
+    assert client.messages.calls[0]["max_tokens"] == 1234
 
 
 async def test_json_mode_unwraps_schema_into_output_config():

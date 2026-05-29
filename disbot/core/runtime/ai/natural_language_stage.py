@@ -539,10 +539,11 @@ class AINaturalLanguageStage:
                     or discord.AllowedMentions.none(),
                 )
             else:
-                await message.channel.send(
-                    reply_text,
-                    allowed_mentions=discord.AllowedMentions.none(),
-                )
+                for chunk in _split_for_discord(reply_text):
+                    await message.channel.send(
+                        chunk,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
         except discord.HTTPException:
             logger.exception(
                 "ai_natural_language_stage: send failed for guild=%s "
@@ -631,6 +632,37 @@ async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
             )
         return FeatureFactsResult(facts=ctx.facts, render_context=ctx)
     return FeatureFactsResult(facts=())
+
+
+_DISCORD_MESSAGE_LIMIT = 2000
+
+
+def _split_for_discord(text: str, *, limit: int = _DISCORD_MESSAGE_LIMIT) -> list[str]:
+    """Split ``text`` into chunks no longer than ``limit`` characters.
+
+    Discord rejects a message whose ``content`` exceeds 2000 characters, and
+    this stage sends in a single call — so a long model reply (the cap is in
+    tokens, ~4x characters) would otherwise fail to post entirely. Breaks on
+    the last newline (then space) within the limit so words and lines are not
+    cut mid-token; falls back to a hard cut for a single oversized run.
+    Returns ``[text]`` unchanged when it already fits.
+    """
+    if len(text) <= limit:
+        return [text]
+    chunks: list[str] = []
+    remaining = text
+    while len(remaining) > limit:
+        window = remaining[:limit]
+        cut = window.rfind("\n")
+        if cut == -1:
+            cut = window.rfind(" ")
+        if cut <= 0:
+            cut = limit
+        chunks.append(remaining[:cut])
+        remaining = remaining[cut:].lstrip()
+    if remaining:
+        chunks.append(remaining)
+    return chunks
 
 
 def _derive_scope(message: discord.Message) -> AIScope:
