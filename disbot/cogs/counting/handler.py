@@ -67,6 +67,10 @@ class CountingDecision:
     reply: str | None = None
     add_reaction: str | None = None
     state_mutated: bool = False
+    # Seconds before the bot's reply auto-deletes; ``None`` keeps it.
+    # Random mode's range hints must persist so players can see the
+    # current window between guesses.
+    reply_delete_after: int | None = 5
 
 
 def compute_decision(
@@ -100,6 +104,9 @@ def compute_decision(
                 f"or mathematical expression."
             ),
         )
+
+    if mode == "random":
+        return _decide_random(channel_data, parsed, user_id)
 
     expected = game_logic.calculate_expected_count(channel_data, current_count, mode)
 
@@ -184,6 +191,63 @@ def _reset_channel_data(channel_data: dict[str, Any], mode: str) -> None:
     channel_data["last_count_time"] = datetime.now(tz=timezone.utc).timestamp()
 
 
+def _decide_random(
+    channel_data: dict[str, Any],
+    parsed: int,
+    user_id: str,
+) -> CountingDecision:
+    """Decision for ``random`` mode — a guess-the-secret-number game.
+
+    A hidden ``next_expected`` target sits inside an announced
+    ``[range_lo, range_hi]`` window.  A correct guess advances the count
+    and rolls a fresh target + wide window; a wrong guess halves the
+    window toward the target (min width 10) and re-announces it with a
+    higher/lower hint.  Wrong guesses do NOT reset the count — players
+    keep narrowing until they land it, and their guesses stay in the
+    channel as part of play.
+    """
+    target = channel_data.get("next_expected")
+    lo = channel_data.get("range_lo")
+    hi = channel_data.get("range_hi")
+    if not (isinstance(target, int) and isinstance(lo, int) and isinstance(hi, int)):
+        # Legacy / missing state — (re)initialise a round so play continues.
+        target, lo, hi = game_logic.start_random_round(
+            int(channel_data.get("current_count", 0) or 0),
+        )
+        channel_data["next_expected"] = target
+        channel_data["range_lo"], channel_data["range_hi"] = lo, hi
+
+    if parsed == target:
+        channel_data["current_count"] = parsed
+        channel_data["last_user"] = user_id
+        leaderboard = channel_data.get("leaderboard", {})
+        leaderboard[user_id] = leaderboard.get(user_id, 0) + 1
+        channel_data["leaderboard"] = leaderboard
+        n_target, n_lo, n_hi = game_logic.start_random_round(parsed)
+        channel_data["next_expected"] = n_target
+        channel_data["range_lo"], channel_data["range_hi"] = n_lo, n_hi
+        return CountingDecision(
+            accepted=True,
+            add_reaction="✅",
+            state_mutated=True,
+            reply=(
+                f"✅ Correct — it was **{parsed}**! "
+                f"Next secret number is between **{n_lo}–{n_hi}**."
+            ),
+            reply_delete_after=None,
+        )
+
+    n_lo, n_hi = game_logic.narrow_random_range(lo, hi, target)
+    channel_data["range_lo"], channel_data["range_hi"] = n_lo, n_hi
+    direction = "Higher" if parsed < target else "Lower"
+    return CountingDecision(
+        accepted=False,
+        state_mutated=True,
+        reply=f"❌ Not **{parsed}**. {direction} — it's between **{n_lo}–{n_hi}**.",
+        reply_delete_after=None,
+    )
+
+
 async def apply_decision(
     decision: CountingDecision,
     message: discord.Message,
@@ -207,7 +271,10 @@ async def apply_decision(
         )
     if decision.reply:
         try:
-            await message.channel.send(decision.reply, delete_after=5)
+            await message.channel.send(
+                decision.reply,
+                delete_after=decision.reply_delete_after,
+            )
         except discord.Forbidden:
             pass
     if decision.add_reaction:

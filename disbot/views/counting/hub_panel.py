@@ -8,7 +8,6 @@ preserve the existing concurrency contract.
 
 from __future__ import annotations
 
-import random
 from datetime import datetime, timezone
 
 import discord
@@ -156,8 +155,11 @@ class _CountingHubView(HubView):
             ch_data["leaderboard"] = {}
             ch_data["last_count_time"] = datetime.now(tz=timezone.utc).timestamp()
             if mode == "random":
-                rand_range = ch_data.get("random_range", [1, 3])
-                ch_data["next_expected"] = start + random.randint(*rand_range)
+                # Clear the round; the next guess rolls a fresh target +
+                # window via the handler (avoids a views->cogs import here).
+                ch_data["next_expected"] = None
+                ch_data["range_lo"] = None
+                ch_data["range_hi"] = None
             tasks.spawn(f"counting:save:{gid}", self.cog._save_guild(gid))
         await interaction.response.edit_message(
             embed=await self.build_embed(),
