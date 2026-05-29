@@ -157,6 +157,7 @@ class XpCog(commands.Cog):
             user_id=member.id,
             source="admin:resetxp",
             actor_id=ctx.author.id,
+            actor_type="admin",
         )
         await ctx.send(f"✅ Reset XP for {member.mention}.")
 

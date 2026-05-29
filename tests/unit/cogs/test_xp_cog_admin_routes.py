@@ -162,6 +162,7 @@ async def test_reset_xp_modal_calls_xp_service_reset():
         user_id=member.id,
         source="admin:modal_reset",
         actor_id=interaction.user.id,
+        actor_type="admin",
     )
 
 
@@ -207,6 +208,7 @@ async def test_resetxp_command_calls_xp_service_reset():
         user_id=member.id,
         source="admin:resetxp",
         actor_id=ctx.author.id,
+        actor_type="admin",
     )
 
 

@@ -27,8 +27,10 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from core.events import bus
+from services.audit_events import emit_audit_action
 from utils import db
 
 logger = logging.getLogger("bot.xp_service")
@@ -144,6 +146,7 @@ async def reset(
     *,
     source: str,
     actor_id: int | None = None,
+    actor_type: str = "system",
 ) -> None:
     """Clear all XP for *user_id* in *guild_id* and emit ``EVT_XP_RESET``.
 
@@ -154,9 +157,16 @@ async def reset(
             "admin:modal_reset", ...).  Surfaces in the event payload
             so subscribers can attribute the action.
         actor_id: optional ID of the admin who triggered the reset.
+        actor_type: capability-resolver actor token for the shared audit
+            event ("admin" for operator-initiated resets, "system" for
+            scripted/automated purges).
 
-    Emits ``EVT_XP_RESET`` after the row is deleted so panel-refresh,
-    audit, and level-role subscribers can react.
+    Emits ``EVT_XP_RESET`` after the row is deleted so panel-refresh and
+    level-role subscribers can react, then publishes the generic
+    ``audit.action_recorded`` event via :func:`emit_audit_action` so an
+    XP wipe — a sensitive, operator-initiated mutation — reaches the
+    shared audit stream that feeds server logging (it previously did
+    not).
     """
     await db.delete_xp(user_id, guild_id)
     await bus.emit(
@@ -165,4 +175,18 @@ async def reset(
         user_id=user_id,
         actor_id=actor_id,
         source=source,
+    )
+    occurred_at = datetime.now(tz=timezone.utc)
+    await emit_audit_action(
+        mutation_id=f"xp_reset:{guild_id}:{user_id}:{occurred_at.timestamp()}",
+        subsystem="xp",
+        mutation_type="reset_xp",
+        target=f"member:{user_id}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=None,
+        new_value=None,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=occurred_at,
     )
