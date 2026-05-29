@@ -24,7 +24,12 @@ def test_build_registry_returns_specs_and_matching_handlers():
     registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
 
     spec_names = {spec.name for spec in registry.specs}
-    assert spec_names == {"get_user_standing", "get_server_time", "btd6_lookup"}
+    assert spec_names == {
+        "get_user_standing",
+        "get_server_time",
+        "btd6_lookup",
+        "btd6_capability_lookup",
+    }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
 
@@ -85,6 +90,26 @@ async def test_btd6_lookup_handler_handles_empty_query():
     assert result["found"] is False
 
 
+async def test_btd6_capability_lookup_answers_discovery_questions():
+    # Offered at USER scope; backs "which tower …" questions the resolver
+    # cannot answer. Verified against the real committed stats.
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    assert "btd6_capability_lookup" in registry.handlers
+
+    camo = await registry.handlers["btd6_capability_lookup"](
+        {"capability": "camo_detection", "unupgraded": True},
+    )
+    assert camo["found"] is True
+    ids = {t["id"] for t in camo["towers"]}
+    assert "ninja_monkey" in ids  # the canonical unupgraded camo-detector
+    assert "dart_monkey" not in ids
+
+    unsupported = await registry.handlers["btd6_capability_lookup"](
+        {"capability": "flies"},
+    )
+    assert unsupported["found"] is False
+
+
 def test_admin_scope_offers_all_read_only_tools():
     registry = build_registry(scope=AIScope.ADMIN, guild_id=1, actor_id=2)
 
@@ -93,6 +118,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "get_user_standing",
         "get_server_time",
         "btd6_lookup",
+        "btd6_capability_lookup",
         "get_guild_ai_config",
         "recent_audit",
     }

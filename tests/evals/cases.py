@@ -403,4 +403,30 @@ CASES: list[EvalCase] = [
         tool_results={"btd6_lookup": {"found": False, "facts": []}},
         grader=contains("verified BTD6 data"),
     ),
+    EvalCase(
+        id="tool.btd6_capability_discovery",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        # A 'which tower …' question that names no tower — the model must use
+        # the capability tool, then answer from its result.
+        user_message=(
+            "In Bloons TD 6, which tower can detect camo bloons with no " "upgrades?"
+        ),
+        tools=(_tool("btd6_capability_lookup"),),
+        tool_results={
+            "btd6_capability_lookup": {
+                "found": True,
+                "capability": "camo_detection",
+                "unupgraded": True,
+                "towers": [
+                    {
+                        "id": "ninja_monkey",
+                        "name": "Ninja Monkey",
+                        "detail": "innate (0-0-0)",
+                    },
+                ],
+            },
+        },
+        grader=all_of(tool_called("btd6_capability_lookup"), contains("Ninja")),
+    ),
 ]

@@ -238,6 +238,69 @@ async def _btd6_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     return {"found": bool(facts), "facts": facts, "source": ctx.source_summary}
 
 
+# --- btd6_capability_lookup --------------------------------------------
+
+_BTD6_CAPABILITY_SPEC = AIToolSpec(
+    name="btd6_capability_lookup",
+    description=(
+        "List which BTD6 towers have a capability — use for 'which tower …' "
+        "discovery questions that do NOT name a specific tower. Supported "
+        "capabilities: 'camo_detection' (can target Camo bloons) and "
+        "'lead_popping' (can damage Lead bloons). Set unupgraded=true (the "
+        "default) for base 0-0-0 only — the usual 'without upgrades' question "
+        "— or false to also include towers that gain it from an upgrade. "
+        "Returns the matching towers and where each gets the capability."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "capability": {
+                "type": "string",
+                "description": "One of: camo_detection, lead_popping.",
+            },
+            "unupgraded": {
+                "type": "boolean",
+                "description": (
+                    "Base (0-0-0) only when true (default); include "
+                    "upgrade-granted towers when false."
+                ),
+            },
+        },
+        "required": ["capability"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_capability_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_capability_service
+
+    capability = str(arguments.get("capability") or "").strip().lower()
+    if capability not in btd6_capability_service.CAPABILITIES:
+        return {
+            "found": False,
+            "note": (
+                "unsupported capability; supported: "
+                + ", ".join(btd6_capability_service.CAPABILITIES)
+            ),
+        }
+    raw = arguments.get("unupgraded", True)
+    unupgraded = True if raw is None else bool(raw)
+    hits = btd6_capability_service.towers_with_capability(
+        capability,
+        unupgraded=unupgraded,
+    )
+    return {
+        "found": bool(hits),
+        "capability": capability,
+        "unupgraded": unupgraded,
+        "towers": [
+            {"id": h.tower_id, "name": h.canonical, "detail": h.detail} for h in hits
+        ],
+    }
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -263,6 +326,7 @@ def build_registry(
         (_USER_STANDING_SPEC, _make_user_standing(guild_id, actor_id)),
         (_SERVER_TIME_SPEC, _server_time),
         (_BTD6_LOOKUP_SPEC, _btd6_lookup),
+        (_BTD6_CAPABILITY_SPEC, _btd6_capability_lookup),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]

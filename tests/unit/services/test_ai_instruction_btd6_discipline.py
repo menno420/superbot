@@ -14,7 +14,8 @@ from services import ai_instruction_service as instr
 def test_task_contract_instructs_proactive_btd6_lookup():
     tc = instr._TASK_CONTRACT
     assert "Bloons TD 6" in tc
-    assert "btd6_lookup" in tc  # call the tool when no fact span covers it
+    assert "btd6_lookup" in tc  # named-entity / topic lookups
+    assert "btd6_capability_lookup" in tc  # 'which tower …' discovery lookups
 
 
 def test_task_contract_carries_exact_disclaimer_and_no_fact_claims():
