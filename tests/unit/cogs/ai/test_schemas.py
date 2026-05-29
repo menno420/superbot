@@ -83,13 +83,24 @@ def test_ai_default_provider_is_enum_with_known_values():
     spec = _spec("ai_default_provider")
     assert spec.value_type is str
     assert spec.default == "deterministic"
-    assert spec.allowed_values == ("deterministic", "openai")
+    assert spec.allowed_values == ("deterministic", "openai", "anthropic")
+
+
+def test_ai_default_provider_validator_accepts_supported_providers():
+    """anthropic is a first-class provider (the runtime already supports
+    it via routing + AnthropicProvider); the policy/settings layer must
+    offer it too.
+    """
+    spec = _spec("ai_default_provider")
+    spec.validator("deterministic")  # type: ignore[misc]
+    spec.validator("openai")  # type: ignore[misc]
+    spec.validator("anthropic")  # type: ignore[misc]
 
 
 def test_ai_default_provider_validator_rejects_unknown_provider():
     spec = _spec("ai_default_provider")
     with pytest.raises(ValueError):
-        spec.validator("anthropic")  # type: ignore[misc]
+        spec.validator("gemini")  # type: ignore[misc]
 
 
 def test_ai_minimum_level_default_is_two_with_presets():

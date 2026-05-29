@@ -47,9 +47,10 @@ def _validate_bool(value: object) -> None:
 
 
 def _validate_provider(value: object) -> None:
-    if value not in ("deterministic", "openai"):
+    if value not in ("deterministic", "openai", "anthropic"):
         raise ValueError(
-            f"default_provider must be 'deterministic' or 'openai', got {value!r}",
+            "default_provider must be 'deterministic', 'openai', or "
+            f"'anthropic', got {value!r}",
         )
 
 
@@ -141,10 +142,12 @@ AI_SETTINGS: tuple[SettingSpec, ...] = (
         hint=(
             "Default provider used by AI tasks that don't specify "
             "their own. 'deterministic' keeps responses local; "
-            "'openai' routes through the configured OpenAI account."
+            "'openai' / 'anthropic' route through the configured "
+            "OpenAI / Anthropic account. Leave the model empty so each "
+            "task auto-picks the right model for the provider."
         ),
         validator=_validate_provider,
-        allowed_values=("deterministic", "openai"),
+        allowed_values=("deterministic", "openai", "anthropic"),
     ),
     SettingSpec(
         name="ai_default_model",

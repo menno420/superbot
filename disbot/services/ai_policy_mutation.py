@@ -136,10 +136,10 @@ async def set_guild_policy(
     actor: Any,
 ) -> AIPolicyMutationResult:
     actor_id = _check_admin(actor)
-    if default_provider not in ("deterministic", "openai"):
+    if default_provider not in ("deterministic", "openai", "anthropic"):
         raise InvalidAIPolicyValueError(
-            f"default_provider must be 'deterministic' or 'openai', got "
-            f"{default_provider!r}",
+            "default_provider must be 'deterministic', 'openai', or "
+            f"'anthropic', got {default_provider!r}",
         )
     if minimum_level_default < 0:
         raise InvalidAIPolicyValueError("minimum_level_default must be >= 0")

@@ -84,6 +84,29 @@ def _degraded_response(
     )
 
 
+def _model_matches_provider(provider: str, model: str) -> bool:
+    """True if ``model`` looks like it belongs to ``provider``'s family.
+
+    A crude prefix check used to catch a stored model that can't work
+    with the resolved provider — a stale cross-provider value
+    (``gpt-4o-mini`` under ``anthropic``) or a typo'd id (``sonnet-4-6``
+    instead of ``claude-sonnet-4-6``). Either 404s at the provider and
+    degrades the response.
+
+    Only the two real network providers are constrained; ``deterministic``
+    (and any unknown provider) impose no constraint — deterministic
+    ignores the model entirely. An empty model is treated as a match;
+    "auto-pick" is handled by the caller.
+    """
+    if not model:
+        return True
+    if provider == "anthropic":
+        return model.startswith("claude")
+    if provider == "openai":
+        return model.startswith("gpt")
+    return True
+
+
 async def _overlay_guild_policy(
     target: RoutingTarget,
     guild_id: int,
@@ -130,6 +153,19 @@ async def _overlay_guild_policy(
         resolved_model = default_model_for(resolved_provider, task)
     else:
         resolved_model = target.model
+    # Provider-aware safety net: a stored model that doesn't belong to the
+    # resolved provider's family (stale cross-provider value, or a typo'd
+    # id) would 404 at the provider. Fall back to the per-task default for
+    # the resolved provider rather than forwarding a model that can't work.
+    if not _model_matches_provider(resolved_provider, resolved_model):
+        logger.warning(
+            "ai gateway: guild=%s default_model=%r does not match provider "
+            "%r; using the per-task default instead",
+            guild_id,
+            resolved_model,
+            resolved_provider,
+        )
+        resolved_model = default_model_for(resolved_provider, task)
     return RoutingTarget(
         provider=resolved_provider,
         model=resolved_model,
