@@ -153,22 +153,29 @@ def _format_ability(ability: dict[str, Any]) -> str:
     return " · ".join(parts) if parts else "—"
 
 
-def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
-    """Full per-tier stat breakdown for the Pro view."""
-    tier = stats.tier(code) or {}
-    embed = discord.Embed(
-        title=f"🔬 {stats.canonical} — {tier_label(stats, code)}",
-        color=discord.Color.dark_teal(),
-    )
+def _stat_node_embed(
+    title: str,
+    node: dict[str, Any],
+    game_version: str,
+    *,
+    empty_msg: str,
+) -> discord.Embed:
+    """Shared full-breakdown embed for a tier OR a hero-level stats node.
+
+    Both shapes carry the same ``range`` / ``attacks`` → ``projectiles`` /
+    ``abilities`` structure, so the tower Pro view and the hero Pro view render
+    through one body.
+    """
+    embed = discord.Embed(title=title, color=discord.Color.dark_teal())
     head: list[str] = []
-    if tier.get("range") is not None:
-        head.append(f"Range {tier['range']} units")
-    if tier.get("footprintRadius") is not None:
-        head.append(f"Footprint {tier['footprintRadius']} units")
+    if node.get("range") is not None:
+        head.append(f"Range {node['range']} units")
+    if node.get("footprintRadius") is not None:
+        head.append(f"Footprint {node['footprintRadius']} units")
     if head:
         embed.description = " · ".join(head)
 
-    for attack in tier.get("attacks", []):
+    for attack in node.get("attacks", []):
         lines: list[str] = []
         if attack.get("rate") is not None:
             lines.append(f"Cooldown {attack['rate']}s")
@@ -182,7 +189,7 @@ def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
             inline=False,
         )
 
-    for ability in tier.get("abilities", []):
+    for ability in node.get("abilities", []):
         embed.add_field(
             name=f"✨ Ability: {ability.get('name', 'Ability')}",
             value=_format_ability(ability)[:1024],
@@ -190,13 +197,40 @@ def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
         )
 
     if not embed.fields:
-        embed.description = "This is an economy/support tower — no combat stats."
-    embed.set_footer(text=f"BTD6 stats v{stats.game_version}")
+        embed.description = empty_msg
+    embed.set_footer(text=f"BTD6 stats v{game_version}")
     return embed
 
 
+def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
+    """Full per-tier stat breakdown for the tower Pro view."""
+    return _stat_node_embed(
+        f"🔬 {stats.canonical} — {tier_label(stats, code)}",
+        stats.tier(code) or {},
+        stats.game_version,
+        empty_msg="This is an economy/support tower — no combat stats.",
+    )
+
+
+def hero_level_label(code: str) -> str:
+    """e.g. ``"Level 5"`` — the hero analogue of :func:`tier_label`."""
+    return f"Level {code}"
+
+
+def build_pro_hero_level_embed(stats: Any, code: str) -> discord.Embed:
+    """Full per-level stat breakdown for a hero's Pro view."""
+    return _stat_node_embed(
+        f"🔬 {stats.canonical} — {hero_level_label(code)}",
+        stats.level(code) or {},
+        stats.game_version,
+        empty_msg="No combat stats at this level.",
+    )
+
+
 __all__ = [
+    "build_pro_hero_level_embed",
     "build_pro_tier_embed",
     "format_normal_stats",
+    "hero_level_label",
     "tier_label",
 ]

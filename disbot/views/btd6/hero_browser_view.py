@@ -49,15 +49,30 @@ def build_hero_list_embed(vm: HeroListViewModel) -> discord.Embed:
 
 
 def build_hero_detail_embed(vm: HeroDetailViewModel) -> discord.Embed:
-    from services import btd6_ai_service
+    from services import btd6_ai_service, btd6_stats_service
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_hero
+    from utils.btd6.stats_embed import format_normal_stats
 
     intent = resolve(vm.hero_id)
     if not intent.heroes:
-        return response_to_embed(btd6_ai_service.deterministic_answer(intent))
-    hero = intent.heroes[0]
-    return response_to_embed(for_hero(hero, restrictions=tuple(vm.restrictions)))
+        embed = response_to_embed(btd6_ai_service.deterministic_answer(intent))
+    else:
+        hero = intent.heroes[0]
+        embed = response_to_embed(for_hero(hero, restrictions=tuple(vm.restrictions)))
+
+    # Heroes with a bloonswiki module get a glanceable Level-1 stats field
+    # (the rest are prose-only — cost + abilities, no combat stats).
+    stats = btd6_stats_service.get_hero_stats(vm.hero_id)
+    if stats is not None and stats.has_combat_stats:
+        base = stats.level("1")
+        if base is not None:
+            embed.add_field(
+                name="📊 Level 1 stats",
+                value=format_normal_stats(btd6_stats_service.normal_stats(base)),
+                inline=False,
+            )
+    return embed
 
 
 # ---------------------------------------------------------------------------
@@ -118,18 +133,30 @@ class _HeroSelect(discord.ui.Select):
             parent.set_vm(list_vm)
             return build_hero_list_embed(list_vm), parent
 
-        detail_view = HeroDetailView(interaction.user)
-        detail_view.set_vm(detail_vm)
-        attach_back_button(
-            detail_view,
-            label="↩ Back",
-            custom_id=f"btd6_hero_detail:back:{detail_vm.hero_id}",
-            parent_builder=_rebuild_list,
-        )
+        from views.btd6.hero_stats_view import attach_hero_pro_stats_button
+
+        def _build_detail_view() -> HeroDetailView:
+            view = HeroDetailView(interaction.user)
+            view.set_vm(detail_vm)
+            attach_back_button(
+                view,
+                label="↩ Back",
+                custom_id=f"btd6_hero_detail:back:{detail_vm.hero_id}",
+                parent_builder=_rebuild_list,
+            )
+            # Only present for heroes with a per-level stats module.
+            attach_hero_pro_stats_button(view, detail_vm.hero_id, _rebuild_detail)
+            return view
+
+        async def _rebuild_detail(
+            _i: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            return build_hero_detail_embed(detail_vm), _build_detail_view()
+
         await safe_edit(
             interaction,
             embed=build_hero_detail_embed(detail_vm),
-            view=detail_view,
+            view=_build_detail_view(),
         )
 
 

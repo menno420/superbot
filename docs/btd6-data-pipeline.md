@@ -140,9 +140,13 @@ does **not** generate cash. See the income gaps below.
 - Runtime: `btd6_stats_service.get_hero_stats(id)` (lazy, reuses `normal_stats`);
   `btd6_context_service._render_hero_stats` injects `[btd6_hero_stats normal]`
   grounding for headline levels (1/3/10/20).
-- **Remaining:** the level-aware hero detail UI (base-stats field + a level
-  picker mirroring `tower_stats_view`). If the wiki adds modules for more heroes,
-  re-run `--all-heroes` to pick them up automatically.
+- UI: hero detail shows a `📊 Level 1 stats` field and a `🔬 Pro stats` button
+  (`views/btd6/hero_stats_view.py`, a level picker) — both only for the 6 heroes
+  with a module, mirroring the tower base/Pro views. `stats_embed` shares one
+  `_stat_node_embed` body across towers and heroes.
+- If the wiki adds modules for more heroes, just re-run
+  `fetch_bloonswiki.py --all-heroes` — the runtime/UI pick them up with no code
+  change.
 
 ### 2. Economy income (Banana Farm, Monkey Village)
 - These 404 on the stats module (no combat stats). Income lives in:
