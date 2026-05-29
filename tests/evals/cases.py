@@ -369,4 +369,64 @@ CASES: list[EvalCase] = [
         ),
         grader=all_of(contains("6"), max_chars(15)),
     ),
+    # --- keyword-free BTD6 grounding via the btd6_lookup tool -------------
+    EvalCase(
+        id="tool.btd6_lookup_unkeyworded",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        # No "btd6"/"tower" keyword and no canonical entity name — the model
+        # must recognise this as BTD6 and call the tool on its own.
+        user_message="Does the boomerang guy do anything to those purple ones?",
+        tools=(_tool("btd6_lookup"),),
+        tool_results={
+            "btd6_lookup": {
+                "found": True,
+                "facts": [
+                    "[btd6_bloon] Purple Bloon — immune to Fire, Energy, "
+                    "Plasma (source: fixture/btd6_data)",
+                ],
+            },
+        },
+        grader=tool_called("btd6_lookup"),
+    ),
+    EvalCase(
+        id="grounding.btd6_no_data_disclaimer",
+        category="grounding",
+        task=AITask.BTD6_ANSWER,
+        # An obscure detail the dataset does not have: the tool returns
+        # found=false, so the discipline requires the explicit disclaimer.
+        user_message=(
+            "In Bloons TD 6, what is the exact sell value of a level 7 "
+            "Geraldo's Worn Hammer shop item?"
+        ),
+        tools=(_tool("btd6_lookup"),),
+        tool_results={"btd6_lookup": {"found": False, "facts": []}},
+        grader=contains("verified BTD6 data"),
+    ),
+    EvalCase(
+        id="tool.btd6_capability_discovery",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        # A 'which tower …' question that names no tower — the model must use
+        # the capability tool, then answer from its result.
+        user_message=(
+            "In Bloons TD 6, which tower can detect camo bloons with no " "upgrades?"
+        ),
+        tools=(_tool("btd6_capability_lookup"),),
+        tool_results={
+            "btd6_capability_lookup": {
+                "found": True,
+                "capability": "camo_detection",
+                "unupgraded": True,
+                "towers": [
+                    {
+                        "id": "ninja_monkey",
+                        "name": "Ninja Monkey",
+                        "detail": "innate (0-0-0)",
+                    },
+                ],
+            },
+        },
+        grader=all_of(tool_called("btd6_capability_lookup"), contains("Ninja")),
+    ),
 ]

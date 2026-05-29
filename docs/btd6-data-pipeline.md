@@ -159,11 +159,21 @@ does **not** generate cash. See the income gaps below.
   `action=cargofields`)? If yes, clean. If not, parse the page income table or
   derive from base ($80/round) + descriptions.
 
-### 3. AI tool-calling (the "proper" fix for AI data access)
-The AI currently relies on trigger-gated knowledge blocks; the durable fix is
-to give the model a `btd6_lookup`-style tool it can call on demand. Fully
-scoped (grounded in the real gateway architecture) in
-**`docs/btd6-ai-tool-calling-plan.md`** — plan only, not yet built.
+### 3. AI tool-calling (the "proper" fix for AI data access) — DONE
+The keyword router is no longer the correctness gate. Two read-only tools in
+`services/ai_tools.py` let the model self-ground any BTD6 question:
+- `btd6_lookup(query)` — wraps `btd6_context_service.build` for a named
+  tower/hero/bloon/topic;
+- `btd6_capability_lookup(capability, unupgraded)` — answers "which tower …"
+  discovery questions (camo_detection, lead_popping) from a runtime index over
+  the per-tier stats (`services/btd6_capability_service.py`).
+
+The router (`ai_task_router`) is demoted to a fast-path hint. The BTD6 grounding
+discipline in `ai_instruction_service._TASK_CONTRACT` requires the model to call
+a lookup tool and, if no data is found, to lead with "I don't have verified BTD6
+data on that, but here's my best guess:". Original scope:
+**`docs/btd6-ai-tool-calling-plan.md`**. Extending the capability set beyond
+camo/lead is the natural next increment.
 
 ### 4. Smaller polish (optional)
 - Paraphrased tower descriptions (the `description` column is still empty by
