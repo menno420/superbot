@@ -157,3 +157,58 @@ def test_golden_set_is_well_formed():
     assert {"tool_use", "tool_restraint", "structured", "safety"} <= categories
     for case in CASES:
         assert case.id and case.category and callable(case.grader)
+
+
+class _ModelRecordingProvider:
+    """Fake provider that records the model string it was called with."""
+
+    def __init__(self, name):
+        self.name = name
+        self.model = None
+
+    async def execute(self, request, *, model, dispatch=None):
+        self.model = model
+        return "ok"
+
+
+class _FailingProvider:
+    name = "openai"
+
+    async def execute(self, request, *, model, dispatch=None):
+        raise RuntimeError("boom")
+
+
+async def test_run_case_forces_provider_appropriate_model(monkeypatch):
+    # Regression: forcing a provider must also force a model it serves —
+    # an OpenAI run must never be handed a Claude model name (or vice versa).
+    monkeypatch.setenv("AI_ENABLED", "1")
+    openai_p = _ModelRecordingProvider("openai")
+    anthropic_p = _ModelRecordingProvider("anthropic")
+    gateway = AIGateway(providers={"openai": openai_p, "anthropic": anthropic_p})
+    case = EvalCase(id="m", category="format", user_message="hi", grader=contains("ok"))
+
+    await run_case(case, gateway=gateway, provider_override=openai_p)
+    await run_case(case, gateway=gateway, provider_override=anthropic_p)
+
+    assert openai_p.model == "gpt-4o-mini"
+    assert anthropic_p.model.startswith("claude-")
+
+
+async def test_run_case_treats_degraded_as_failure(monkeypatch):
+    # no_tool_called() would trivially "pass" on an empty/errored response;
+    # the degraded short-circuit must override that so a non-answer fails.
+    monkeypatch.setenv("AI_ENABLED", "1")
+    provider = _FailingProvider()
+    gateway = AIGateway(providers={"openai": provider})
+    case = EvalCase(
+        id="d",
+        category="format",
+        user_message="hi",
+        grader=no_tool_called(),
+    )
+
+    outcome, grade = await run_case(case, gateway=gateway, provider_override=provider)
+
+    assert outcome.degraded is True
+    assert grade.passed is False
+    assert "degraded" in grade.detail

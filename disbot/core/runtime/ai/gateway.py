@@ -166,6 +166,7 @@ class AIGateway:
         *,
         provider_override: Provider | None = None,
         tool_handlers: Mapping[str, ToolHandler] | None = None,
+        model_override: str | None = None,
     ) -> AIResponse:
         """Run a request through the pipeline; never raises.
 
@@ -176,6 +177,11 @@ class AIGateway:
         redacted before they re-enter the model context, and tool faults
         are returned to the model as a JSON error string (the gateway's
         never-raise contract still holds).
+
+        ``model_override`` forces a specific model for this call,
+        independent of routing — used to pair a forced ``provider_override``
+        with a model that provider actually serves (evals, A/B, fallback
+        escalation). Defaults to the routed model.
         """
         target = resolve(request.context.task)
         if provider_override is None and request.context.guild_id is not None:
@@ -185,6 +191,7 @@ class AIGateway:
                 request.context.task,
             )
         provider_name = provider_override.name if provider_override else target.provider
+        effective_model = model_override or target.model
 
         if provider_override is None and not task_enabled(request.context.task):
             return _degraded_response(
@@ -251,12 +258,12 @@ class AIGateway:
             if dispatch is None:
                 provider_call = provider.execute(
                     redacted_request,
-                    model=target.model,
+                    model=effective_model,
                 )
             else:
                 provider_call = provider.execute(
                     redacted_request,
-                    model=target.model,
+                    model=effective_model,
                     dispatch=dispatch,
                 )
             raw_text = await asyncio.wait_for(provider_call, timeout=timeout)
@@ -388,7 +395,7 @@ class AIGateway:
         return AIResponse(
             task=request.context.task,
             provider=provider.name,
-            model=target.model,
+            model=effective_model,
             text=text,
             data=data,
             suggestions=(),
