@@ -295,6 +295,61 @@ async def test_catalog_administrator_does_not_see_owner_tier(monkeypatch) -> Non
 
 
 @pytest.mark.asyncio
+async def test_catalog_lines_carry_subsystem_tag(monkeypatch) -> None:
+    """Each catalog line is tagged [subsystem] so the model can answer
+    'what are the <subsystem> commands?' — previously the rendered lines
+    dropped the subsystem entirely (AI PR3 item 2).
+    """
+    _install_catalog(
+        monkeypatch,
+        (
+            _entry("aichat", subsystem="ai"),
+            _entry("btdstats", subsystem="btd6"),
+        ),
+    )
+
+    block = (
+        await bot_knowledge_service.gather(
+            guild_id=1,
+            channel_id=2,
+            user_id=3,
+            user_text="what commands are there",
+            user_tier="user",
+            accessible_channel_ids=frozenset(),
+        )
+    )[0]
+    assert "[ai] !aichat" in block.text
+    assert "[btd6] !btdstats" in block.text
+
+
+@pytest.mark.asyncio
+async def test_catalog_groups_by_subsystem_so_early_subsystem_survives_cap(
+    monkeypatch,
+) -> None:
+    """With more than the entry cap of commands, grouping by subsystem keeps
+    an alphabetically-early subsystem ('ai') in the block instead of it being
+    truncated out behind a flood of later-subsystem entries.
+    """
+    entries = (_entry("aichat", subsystem="ai"),) + tuple(
+        _entry(f"btd{i}", subsystem="btd6") for i in range(60)
+    )
+    _install_catalog(monkeypatch, entries)
+
+    block = (
+        await bot_knowledge_service.gather(
+            guild_id=1,
+            channel_id=2,
+            user_id=3,
+            user_text="what are the ai commands",
+            user_tier="user",
+            accessible_channel_ids=frozenset(),
+        )
+    )[0]
+    # 'ai' sorts before 'btd6', so the single AI command must survive the cap.
+    assert "[ai] !aichat" in block.text
+
+
+@pytest.mark.asyncio
 async def test_unknown_caller_tier_defaults_to_user_does_not_raise(
     monkeypatch,
 ) -> None:
@@ -384,7 +439,8 @@ async def test_catalog_truncates_at_entry_cap(monkeypatch) -> None:
             accessible_channel_ids=frozenset(),
         )
     )[0]
-    visible_count = block.text.count("\n- !cmd")
+    # Lines are now "- [economy] !cmdNNN — …" (subsystem-tagged).
+    visible_count = block.text.count("] !cmd")
     assert visible_count == 40
     assert "40 of 60" in block.text
 
