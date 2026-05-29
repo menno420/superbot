@@ -695,6 +695,41 @@ async def test_recovery_view_cancel_preserves_draft():
 
 
 @pytest.mark.asyncio
+async def test_recovery_view_finish_anyway_clears_draft_and_marks_complete():
+    """Finish anyway drops the remaining draft and marks setup complete —
+    the escape hatch from the partial-apply stickiness trap so a single
+    un-appliable op can't keep the wizard stuck forever."""
+    from views.setup.final_review import ApplySummary
+
+    recovery = PartialApplyRecoveryView(
+        _owner_member(),
+        ops=[_op("bind_channel")],
+        accepted=[],
+        summary=ApplySummary(applied=["a"], failed=["b: boom"], skipped=["c"]),
+    )
+    interaction = _interaction_with_guild()
+    interaction.response.edit_message = AsyncMock()
+
+    with (
+        patch(
+            "services.setup_draft.clear",
+            new_callable=AsyncMock,
+        ) as clear_mock,
+        patch(
+            "services.setup_session.mark_complete",
+            new_callable=AsyncMock,
+        ) as complete_mock,
+    ):
+        await recovery._finish_anyway.callback(interaction)
+
+    clear_mock.assert_awaited_once_with(1)
+    complete_mock.assert_awaited_once_with(1)
+    interaction.response.edit_message.assert_awaited_once()
+    embed = interaction.response.edit_message.await_args.kwargs["embed"]
+    assert "with skips" in (embed.title or "").lower()
+
+
+@pytest.mark.asyncio
 async def test_recovery_view_retry_rejects_concurrent_press():
     """Retry honours the same single-flight gate as the initial Apply."""
     from services.setup_operations import (
