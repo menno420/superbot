@@ -58,7 +58,11 @@ async def test_overlay_uses_typed_provider_and_model(monkeypatch):
         ),
     )
 
-    result = await _overlay_guild_policy(_target(), guild_id=99)
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.SETUP_SUGGEST,
+    )
 
     assert result.provider == "openai"
     assert result.model == "gpt-4o"
@@ -75,7 +79,11 @@ async def test_overlay_keeps_env_default_when_typed_row_missing(monkeypatch):
         AsyncMock(return_value=None),
     )
 
-    result = await _overlay_guild_policy(_target(), guild_id=99)
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.SETUP_SUGGEST,
+    )
 
     assert result == _target()
 
@@ -92,7 +100,11 @@ async def test_overlay_keeps_env_default_when_typed_fields_empty(monkeypatch):
         ),
     )
 
-    result = await _overlay_guild_policy(_target(), guild_id=99)
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.SETUP_SUGGEST,
+    )
 
     assert result == _target()
 
@@ -110,7 +122,11 @@ async def test_overlay_uses_typed_provider_only(monkeypatch):
         ),
     )
 
-    result = await _overlay_guild_policy(_target(), guild_id=99)
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.SETUP_SUGGEST,
+    )
 
     assert result.provider == "openai"
     assert result.model == "gpt-4o-mini"  # fallback from routing target
@@ -132,7 +148,11 @@ async def test_overlay_uses_typed_model_only(monkeypatch):
         ),
     )
 
-    result = await _overlay_guild_policy(_target(), guild_id=99)
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.SETUP_SUGGEST,
+    )
 
     assert result.provider == "deterministic"  # from routing target
     assert result.model == "gpt-4o-turbo"
@@ -141,7 +161,8 @@ async def test_overlay_uses_typed_model_only(monkeypatch):
 @pytest.mark.asyncio
 async def test_overlay_swallows_db_failure(monkeypatch):
     """A DB read failure must NOT raise — gateway contract requires
-    ``execute`` to never propagate exceptions to callers."""
+    ``execute`` to never propagate exceptions to callers.
+    """
     from utils.db import ai as ai_db
 
     async def _boom(*a, **kw):
@@ -149,7 +170,11 @@ async def test_overlay_swallows_db_failure(monkeypatch):
 
     monkeypatch.setattr(ai_db, "get_guild_policy", _boom)
 
-    result = await _overlay_guild_policy(_target(), guild_id=99)
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.SETUP_SUGGEST,
+    )
 
     assert result == _target()
 
@@ -194,7 +219,8 @@ def _enable_ai(monkeypatch):
 @pytest.mark.asyncio
 async def test_gateway_execute_applies_overlay_for_guild_request(monkeypatch):
     """When ``guild_id`` is set on the request, the gateway threads the
-    typed-policy provider/model down to the provider call."""
+    typed-policy provider/model down to the provider call.
+    """
     from utils.db import ai as ai_db
 
     monkeypatch.setattr(
@@ -221,7 +247,8 @@ async def test_gateway_execute_applies_overlay_for_guild_request(monkeypatch):
 @pytest.mark.asyncio
 async def test_gateway_execute_skips_overlay_when_no_guild_id(monkeypatch):
     """No guild context (e.g. process-level diagnostic) → use the
-    env / task-default routing target as-is."""
+    env / task-default routing target as-is.
+    """
     from utils.db import ai as ai_db
 
     get_guild_policy = AsyncMock(return_value={"default_provider": "openai"})

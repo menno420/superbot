@@ -11,6 +11,7 @@ enforces this rule.
 
 from __future__ import annotations
 
+from core.runtime.ai.providers.anthropic_provider import AnthropicProvider
 from core.runtime.ai.providers.base import Provider, ProviderUnavailableError
 from core.runtime.ai.providers.deterministic_provider import (
     DeterministicFallbackError,
@@ -19,6 +20,7 @@ from core.runtime.ai.providers.deterministic_provider import (
 from core.runtime.ai.providers.openai_provider import OpenAIProvider
 
 __all__ = [
+    "AnthropicProvider",
     "DeterministicFallbackError",
     "DeterministicProvider",
     "OpenAIProvider",
