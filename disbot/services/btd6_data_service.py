@@ -104,6 +104,24 @@ class RoundEntry:
 
 
 @dataclass(frozen=True)
+class BloonEntry:
+    id: str
+    canonical: str
+    aliases: tuple[str, ...]
+    category: str
+    description: str
+    wiki_url: str
+    # Optional grounding extras. ``immune_to`` lists damage-type names
+    # (matching utils.btd6.damage_types) the bloon resists; ``properties``
+    # lists trait tags (camo / lead / fortified / moab-class / …).
+    properties: tuple[str, ...] = ()
+    immune_to: tuple[str, ...] = ()
+    popped_by: str = ""
+    children: str = ""
+    health: int | None = None
+
+
+@dataclass(frozen=True)
 class BTD6DataSet:
     data_version: str
     game_version: str
@@ -113,6 +131,7 @@ class BTD6DataSet:
     maps: tuple[MapEntry, ...] = ()
     modes: tuple[ModeEntry, ...] = ()
     rounds: tuple[RoundEntry, ...] = ()
+    bloons: tuple[BloonEntry, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -163,6 +182,15 @@ _REQUIRED_MODE_FIELDS = (
 )
 _REQUIRED_ROUND_FIELDS = ("round", "summary", "danger", "common_threats")
 _REQUIRED_HERO_ABILITY_FIELDS = ("level", "name", "summary")
+_REQUIRED_BLOON_FIELDS = (
+    "id",
+    "canonical",
+    "aliases",
+    "category",
+    "description",
+    "wiki_url",
+)
+_BLOON_CATEGORIES = frozenset({"basic", "special", "moab_class", "modifier"})
 
 
 def _require_keys(entry: dict[str, Any], keys: tuple[str, ...], where: str) -> None:
@@ -345,6 +373,35 @@ def _parse_round(raw: dict[str, Any]) -> RoundEntry:
     )
 
 
+def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
+    _require_keys(raw, _REQUIRED_BLOON_FIELDS, where=f"bloon {raw.get('id')!r}")
+    category = str(raw["category"])
+    if category not in _BLOON_CATEGORIES:
+        raise BTD6DataValidationError(
+            f"bloon {raw['id']!r}: category {category!r} not one of "
+            f"{sorted(_BLOON_CATEGORIES)}",
+        )
+    health_raw = raw.get("health")
+    health = int(health_raw) if isinstance(health_raw, (int, float)) else None
+    if health is not None and health <= 0:
+        raise BTD6DataValidationError(
+            f"bloon {raw['id']!r}: health must be > 0 when present, got {health}",
+        )
+    return BloonEntry(
+        id=str(raw["id"]),
+        canonical=str(raw["canonical"]),
+        aliases=tuple(_normalise_alias(a) for a in raw["aliases"]),
+        category=category,
+        description=str(raw["description"]),
+        wiki_url=str(raw["wiki_url"]),
+        properties=tuple(str(p) for p in raw.get("properties", ())),
+        immune_to=tuple(str(d) for d in raw.get("immune_to", ())),
+        popped_by=str(raw.get("popped_by", "")),
+        children=str(raw.get("children", "")),
+        health=health,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Loader
 # ---------------------------------------------------------------------------
@@ -361,6 +418,20 @@ def _load_file(name: str) -> dict[str, Any]:
     return raw
 
 
+def _load_file_optional(name: str) -> dict[str, Any] | None:
+    """Like :func:`_load_file` but returns ``None`` when the file is absent.
+
+    Used for fixtures that were added after the original five (towers /
+    heroes / maps / modes / rounds). A missing optional fixture degrades to
+    an empty category instead of aborting the whole dataset load — and keeps
+    the staged-fixture tests, which copy only the original five, green.
+    """
+    path = DATA_ROOT / name
+    if not path.exists():
+        return None
+    return _load_file(name)
+
+
 def _load_dataset() -> BTD6DataSet:
     towers_raw = _load_file("towers.json")
     heroes_raw = _load_file("heroes.json")
@@ -368,11 +439,20 @@ def _load_dataset() -> BTD6DataSet:
     modes_raw = _load_file("modes.json")
     rounds_raw = _load_file("rounds.json")
 
+    # bloons.json is an optional fixture (added after the original five);
+    # absent → empty category, so older staged-fixture sets still load.
+    bloons_raw = _load_file_optional("bloons.json")
+
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
     maps = tuple(_parse_map(m) for m in maps_raw.get("maps", []))
     modes = tuple(_parse_mode(m) for m in modes_raw.get("modes", []))
     rounds = tuple(_parse_round(r) for r in rounds_raw.get("rounds", []))
+    bloons = (
+        tuple(_parse_bloon(b) for b in bloons_raw.get("bloons", []))
+        if bloons_raw is not None
+        else ()
+    )
 
     # Per-category canonical uniqueness.
     _check_unique([t.id for t in towers], where="towers.id")
@@ -384,6 +464,8 @@ def _load_dataset() -> BTD6DataSet:
     _check_unique([m.id for m in modes], where="modes.id")
     _check_unique([m.canonical for m in modes], where="modes.canonical")
     _check_unique([r.round_number for r in rounds], where="rounds.round")
+    _check_unique([b.id for b in bloons], where="bloons.id")
+    _check_unique([b.canonical for b in bloons], where="bloons.canonical")
 
     # Alias collision check across every category — the resolver depends
     # on aliases being globally unique.
@@ -424,22 +506,36 @@ def _load_dataset() -> BTD6DataSet:
                     f"{alias_owners[alias]} and {owner}",
                 )
             alias_owners[alias] = owner
+    for bloon in bloons:
+        for alias in (*bloon.aliases, _normalise_alias(bloon.canonical)):
+            owner = f"bloon:{bloon.id}"
+            if alias in alias_owners and alias_owners[alias] != owner:
+                raise BTD6DataValidationError(
+                    f"alias collision: {alias!r} owned by both "
+                    f"{alias_owners[alias]} and {owner}",
+                )
+            alias_owners[alias] = owner
+
+    sources = {
+        "towers": str(towers_raw["source"]),
+        "heroes": str(heroes_raw["source"]),
+        "maps": str(maps_raw["source"]),
+        "modes": str(modes_raw["source"]),
+        "rounds": str(rounds_raw["source"]),
+    }
+    if bloons_raw is not None:
+        sources["bloons"] = str(bloons_raw["source"])
 
     return BTD6DataSet(
         data_version=str(towers_raw["data_version"]),
         game_version=str(towers_raw["game_version"]),
-        sources={
-            "towers": str(towers_raw["source"]),
-            "heroes": str(heroes_raw["source"]),
-            "maps": str(maps_raw["source"]),
-            "modes": str(modes_raw["source"]),
-            "rounds": str(rounds_raw["source"]),
-        },
+        sources=sources,
         towers=towers,
         heroes=heroes,
         maps=maps,
         modes=modes,
         rounds=rounds,
+        bloons=bloons,
     )
 
 
@@ -497,4 +593,11 @@ def get_round(round_number: int) -> RoundEntry | None:
     for entry in get_dataset().rounds:
         if entry.round_number == round_number:
             return entry
+    return None
+
+
+def get_bloon(bloon_id: str) -> BloonEntry | None:
+    for bloon in get_dataset().bloons:
+        if bloon.id == bloon_id:
+            return bloon
     return None

@@ -244,3 +244,79 @@ def test_empty_upgrade_tier_name_fails(tmp_path):
     towers["towers"][0]["upgrade_paths"]["top"] = tiers
     towers_path.write_text(json.dumps(towers), encoding="utf-8")
     _expect_validation_error(bad_root, match="tier 3 is empty")
+
+
+# ---------------------------------------------------------------------------
+# Bloons (optional fixture added after the original five)
+# ---------------------------------------------------------------------------
+
+
+def test_bloons_load_with_immunities():
+    dataset = get_dataset()
+    assert len(dataset.bloons) >= 10
+    assert "bloons" in dataset.sources
+    lead = next((b for b in dataset.bloons if b.id == "lead"), None)
+    assert lead is not None, "Lead Bloon must be in the fixture"
+    # Lead resists Sharp damage — the fact that answers "can a dart pop lead?".
+    assert "Sharp" in lead.immune_to
+    assert lead.children  # pops into something
+
+
+def test_get_bloon_accessor():
+    from services.btd6_data_service import get_bloon
+
+    assert get_bloon("ceramic") is not None
+    assert get_bloon("ddt").category == "moab_class"
+    assert get_bloon("does_not_exist") is None
+
+
+def test_every_bloon_category_is_valid():
+    from services.btd6_data_service import _BLOON_CATEGORIES
+
+    for bloon in get_dataset().bloons:
+        assert bloon.category in _BLOON_CATEGORIES
+
+
+def test_dataset_loads_when_bloons_fixture_absent(tmp_path):
+    """A missing bloons.json must degrade to an empty category, not abort."""
+    # _stage_data copies only the original five files (no bloons.json).
+    staged = _stage_data(tmp_path)
+    assert not (staged / "bloons.json").exists()
+
+    import services.btd6_data_service as data_service
+
+    original = data_service.DATA_ROOT
+    data_service.DATA_ROOT = staged
+    try:
+        reset_cache()
+        dataset = get_dataset()  # must not raise
+        assert dataset.bloons == ()
+        assert "bloons" not in dataset.sources
+    finally:
+        data_service.DATA_ROOT = original
+        reset_cache()
+
+
+def test_invalid_bloon_category_fails(tmp_path):
+    staged = _stage_data(tmp_path)
+    (staged / "bloons.json").write_text(
+        json.dumps(
+            {
+                "data_version": "1.0",
+                "game_version": "54.0",
+                "source": "test",
+                "bloons": [
+                    {
+                        "id": "x",
+                        "canonical": "X",
+                        "aliases": ["xbloon"],
+                        "category": "not_a_category",
+                        "description": "d",
+                        "wiki_url": "u",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    _expect_validation_error(staged, match="category 'not_a_category'")

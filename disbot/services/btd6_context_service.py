@@ -352,12 +352,21 @@ def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
         if ns.damage is not None:
             dmg = f"{_big(ns.damage)} dmg"
             if ns.damage_type:
-                dmg += f" ({ns.damage_type})"
+                # Fold the immunity note into the damage bit, exactly as the
+                # tower UI does — this is what answers "can it pop Lead?".
+                note = (
+                    "pops everything" if ns.damage_type == "Normal" else ns.cannot_pop
+                )
+                dmg += f" ({ns.damage_type}{f', {note}' if note else ''})"
             bits.append(dmg)
         if ns.pierce is not None:
             bits.append(f"{_big(ns.pierce)} pierce")
         if ns.cooldown is not None:
             bits.append(f"{ns.cooldown}s cooldown")
+        # Camo detection is a top-asked grounding fact and was previously
+        # extracted but dropped; surface it on every attacking tier.
+        if ns.damage is not None:
+            bits.append("sees Camo" if ns.can_see_camo else "no Camo detection")
         if ns.specials:
             bits.append("; ".join(ns.specials))
         if not bits:
@@ -432,17 +441,84 @@ def _render_fixture_hero(entry: Any) -> list[str]:
     return lines
 
 
+def _render_fixture_bloon(entry: Any) -> list[str]:
+    """Render a BloonEntry as 1-3 ``[btd6_bloon]``-tagged grounding lines.
+
+    Surfaces the facts BTD6 reliability questions hinge on: damage-type
+    immunities, trait properties (camo / lead / fortified / MOAB-class),
+    health, and what the bloon pops into.
+    """
+    canonical = _sanitise(
+        getattr(entry, "canonical", "") or str(getattr(entry, "id", "")),
+    )
+    category = _sanitise(str(getattr(entry, "category", "") or ""))
+    description = _sanitise(getattr(entry, "description", "") or "")
+    immune_to = tuple(getattr(entry, "immune_to", ()) or ())
+    properties = tuple(getattr(entry, "properties", ()) or ())
+    popped_by = _sanitise(getattr(entry, "popped_by", "") or "")
+    children = _sanitise(getattr(entry, "children", "") or "")
+    health = getattr(entry, "health", None)
+
+    lines: list[str] = []
+
+    # Line 1: identity + category + immunities (the headline reliability fact).
+    head_bits: list[str] = []
+    if category:
+        head_bits.append(f"category: {category}")
+    if immune_to:
+        head_bits.append(f"immune to {', '.join(_sanitise(d) for d in immune_to)}")
+    elif category not in {"modifier", ""}:
+        head_bits.append("no damage-type immunity")
+    if popped_by:
+        head_bits.append(f"popped by {popped_by}")
+    meta = " | ".join(head_bits)
+    lines.append(
+        _cap(
+            (
+                f"[btd6_bloon] {canonical} — {meta} (source: fixture/btd6_data)"
+                if meta
+                else f"[btd6_bloon] {canonical} (source: fixture/btd6_data)"
+            ),
+        ),
+    )
+
+    # Line 2: stats — properties, health, children.
+    stat_bits: list[str] = []
+    if properties:
+        stat_bits.append(f"properties: {', '.join(_sanitise(p) for p in properties)}")
+    if isinstance(health, int):
+        stat_bits.append(f"health: {health}")
+    if children:
+        stat_bits.append(f"pops into {children}")
+    if stat_bits:
+        lines.append(
+            _cap(
+                f"[btd6_bloon] {canonical} — {' | '.join(stat_bits)} "
+                "(source: fixture/btd6_data)",
+            ),
+        )
+
+    if description:
+        lines.append(
+            _cap(
+                f"[btd6_bloon] {canonical} — {description} (source: fixture/btd6_data)",
+            ),
+        )
+
+    return lines
+
+
 def _cap(text: str) -> str:
     """Truncate ``text`` to ``_FACT_TEXT_CAP`` characters."""
     return text if len(text) <= _FACT_TEXT_CAP else text[: _FACT_TEXT_CAP - 1] + "…"
 
 
 def _fixture_facts_for_intent(intent: Any) -> list[str]:
-    """Return fixture-sourced grounding lines for any tower/hero in ``intent``.
+    """Return fixture-sourced grounding lines for any tower/hero/bloon in ``intent``.
 
     Called when the DB returns no rows for a matched entity so the AI
-    still gets cost, category, and upgrade/ability data from the JSON
-    fixture files.
+    still gets cost, category, upgrade/ability, and bloon-immunity data
+    from the JSON fixture files.
     """
     try:
         from services import btd6_data_service
@@ -464,6 +540,13 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
         record = btd6_data_service.get_hero(hero_id)
         if record is not None:
             lines.extend(_render_fixture_hero(record))
+    for bloon in getattr(intent, "bloons", ()) or ():
+        bloon_id = str(getattr(bloon, "id", "") or "")
+        if not bloon_id:
+            continue
+        record = btd6_data_service.get_bloon(bloon_id)
+        if record is not None:
+            lines.extend(_render_fixture_bloon(record))
     return lines
 
 
@@ -473,15 +556,16 @@ async def build(message_text: str) -> BTD6Context:
     Three independent passes, each isolated so one failure cannot
     suppress the others:
 
-    1. Resolver (sync, no DB) — extracts towers/heroes/maps/modes from
-       the text.
+    1. Resolver (sync, no DB) — extracts towers/heroes/maps/modes/bloons
+       from the text.
     2. DB-backed facts — live event rows from ``btd6_facts`` +
        active-event restriction lines.  Skipped silently when the DB is
        unavailable.
     3. Fixture fallback (always) — injects cost / upgrade / ability data
-       from the JSON fixture files for every resolved tower/hero entity.
-       This pass is deliberately OUTSIDE the DB try/except so a missing
-       or misconfigured ``btd6_facts`` table never suppresses it.
+       for every resolved tower/hero entity and immunity / property data
+       for every resolved bloon, from the JSON fixture files. This pass is
+       deliberately OUTSIDE the DB try/except so a missing or misconfigured
+       ``btd6_facts`` table never suppresses it.
     """
     facts: list[str] = []
     confidence = 0.0

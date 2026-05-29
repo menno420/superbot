@@ -6,8 +6,8 @@ the validated dataset in :mod:`services.btd6_data_service`.
 
 The resolver is intentionally narrow:
 
-* It recognises tower / hero / map / mode references by canonical
-  name or alias (case-insensitive, word-boundary aware).
+* It recognises tower / hero / map / mode / bloon references by
+  canonical name or alias (case-insensitive, word-boundary aware).
 * It extracts an integer round number when the text mentions
   ``round <N>`` or ``r<N>``.
 * It computes a confidence score in ``[0.0, 1.0]`` based on how
@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from services.btd6_data_service import (
+    BloonEntry,
     HeroEntry,
     MapEntry,
     ModeEntry,
@@ -54,6 +55,7 @@ class ResolvedIntent:
     maps: tuple[MapEntry, ...] = ()
     modes: tuple[ModeEntry, ...] = ()
     rounds: tuple[RoundEntry, ...] = ()
+    bloons: tuple[BloonEntry, ...] = ()
     ambiguous_terms: tuple[str, ...] = ()
     candidate_round_numbers: tuple[int, ...] = field(default_factory=tuple)
     # PR-E: live Ninja Kiwi entities (races, bosses, CT, odyssey,
@@ -97,6 +99,7 @@ def _build_alias_map() -> tuple[
     dict[str, str],
     dict[str, str],
     dict[str, str],
+    dict[str, str],
 ]:
     dataset = get_dataset()
     towers = {}
@@ -123,7 +126,13 @@ def _build_alias_map() -> tuple[
         modes[mode.canonical.lower()] = mode.id
         for alias in mode.aliases:
             modes[alias.lower()] = mode.id
-    return towers, heroes, maps, modes
+    bloons = {}
+    for bloon in dataset.bloons:
+        bloons[bloon.id] = bloon.id
+        bloons[bloon.canonical.lower()] = bloon.id
+        for alias in bloon.aliases:
+            bloons[alias.lower()] = bloon.id
+    return towers, heroes, maps, modes, bloons
 
 
 def resolve(text: str) -> ResolvedIntent:
@@ -131,13 +140,14 @@ def resolve(text: str) -> ResolvedIntent:
     if not text or not text.strip():
         return ResolvedIntent(raw_text=text, confidence=0.0)
 
-    tower_map, hero_map, map_map, mode_map = _build_alias_map()
+    tower_map, hero_map, map_map, mode_map, bloon_map = _build_alias_map()
     dataset = get_dataset()
 
     tower_ids, _ = _match_terms(text, tower_map)
     hero_ids, _ = _match_terms(text, hero_map)
     map_ids, _ = _match_terms(text, map_map)
     mode_ids, _ = _match_terms(text, mode_map)
+    bloon_ids, _ = _match_terms(text, bloon_map)
 
     candidate_rounds: list[int] = []
     rounds: list[RoundEntry] = []
@@ -161,6 +171,7 @@ def resolve(text: str) -> ResolvedIntent:
         + len(hero_ids)
         + len(map_ids)
         + len(mode_ids)
+        + len(bloon_ids)
         + len(candidate_rounds)
         + len(live_entities)
     )
@@ -175,6 +186,7 @@ def resolve(text: str) -> ResolvedIntent:
         maps=tuple(m for m in dataset.maps if m.id in map_ids),
         modes=tuple(m for m in dataset.modes if m.id in mode_ids),
         rounds=tuple(rounds),
+        bloons=tuple(b for b in dataset.bloons if b.id in bloon_ids),
         candidate_round_numbers=tuple(candidate_rounds),
         ambiguous_terms=tuple(ambiguous),
         live_entities=tuple(live_entities),
