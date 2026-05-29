@@ -110,7 +110,6 @@ class BloonEntry:
     aliases: tuple[str, ...]
     category: str
     description: str
-    wiki_url: str
     # Optional grounding extras. ``immune_to`` lists damage-type names
     # (matching utils.btd6.damage_types) the bloon resists; ``properties``
     # lists trait tags (camo / lead / fortified / moab-class / …).
@@ -119,6 +118,9 @@ class BloonEntry:
     popped_by: str = ""
     children: str = ""
     health: int | None = None
+    # Attribution only (bloonswiki); never surfaced in grounding. Left blank
+    # rather than reusing the discredited bloons.fandom.com pages.
+    wiki_url: str = ""
 
 
 @dataclass(frozen=True)
@@ -188,7 +190,6 @@ _REQUIRED_BLOON_FIELDS = (
     "aliases",
     "category",
     "description",
-    "wiki_url",
 )
 _BLOON_CATEGORIES = frozenset({"basic", "special", "moab_class", "modifier"})
 
@@ -393,7 +394,7 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
         aliases=tuple(_normalise_alias(a) for a in raw["aliases"]),
         category=category,
         description=str(raw["description"]),
-        wiki_url=str(raw["wiki_url"]),
+        wiki_url=str(raw.get("wiki_url", "")),
         properties=tuple(str(p) for p in raw.get("properties", ())),
         immune_to=tuple(str(d) for d in raw.get("immune_to", ())),
         popped_by=str(raw.get("popped_by", "")),
