@@ -1,0 +1,63 @@
+name: AI Evals (manual)
+
+# Manually-triggered OpenAI-vs-Claude capability comparison.
+#
+# Requires two repository secrets (Settings -> Secrets and variables ->
+# Actions -> New repository secret):
+#   * OPENAI_API_KEY
+#   * ANTHROPIC_API_KEY
+#
+# Makes real, paid API calls — it runs ONLY when you press "Run workflow",
+# never on push or pull_request. The scorecard prints to the run log and to
+# the run Summary page. The job stays green regardless of the pass rate;
+# read the scorecard for the actual result.
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Provider(s) to compare
+        type: choice
+        options:
+          - both
+          - openai
+          - anthropic
+        default: both
+      threshold:
+        description: Pass-rate threshold (0-1), informational only
+        type: string
+        default: "0.8"
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run evals
+        env:
+          RUN_EVALS: "1"
+          # The LLM-as-judge uses the default-routed provider; pin it to
+          # Claude so grading is consistent across both candidate providers.
+          AI_DEFAULT_PROVIDER: anthropic
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PROVIDER: ${{ inputs.provider }}
+          THRESHOLD: ${{ inputs.threshold }}
+        run: |
+          {
+            echo '### AI eval scorecard'
+            echo ''
+            echo '```text'
+            python scripts/run_evals.py --provider "$PROVIDER" --threshold "$THRESHOLD" || true
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
