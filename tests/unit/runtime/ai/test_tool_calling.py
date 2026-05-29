@@ -19,9 +19,11 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
+from core.runtime.ai import natural_language_stage as nls
 from core.runtime.ai.contracts import (
     AIRequest,
     AIRequestContext,
+    AIResponse,
     AIResponseMode,
     AIScope,
     AITask,
@@ -29,6 +31,7 @@ from core.runtime.ai.contracts import (
 )
 from core.runtime.ai.gateway import AIGateway
 from core.runtime.ai.providers.openai_provider import _TOOL_HOP_LIMIT, OpenAIProvider
+from services import ai_context_service
 
 # --- fakes -------------------------------------------------------------
 
@@ -266,3 +269,80 @@ async def test_gateway_end_to_end_tool_loop(monkeypatch):
     assert response.degraded is False
     assert response.text == "Done at noon."
     assert seen.get("called") is True
+
+
+# --- live natural-language-stage wiring -------------------------------
+
+
+def _fake_stack():
+    return SimpleNamespace(
+        render_system_prompt=lambda: "system",
+        render_payload_text=lambda: "hi",
+    )
+
+
+async def test_stage_invoke_gateway_attaches_scoped_tools(monkeypatch):
+    monkeypatch.setenv("AI_ENABLED", "1")
+    monkeypatch.setenv("AI_TOOLS_ENABLED", "1")
+    captured: dict = {}
+
+    async def fake_execute(request, *, tool_handlers=None):
+        captured["tools"] = request.tools
+        captured["handlers"] = tool_handlers
+        return AIResponse(
+            task=request.context.task,
+            provider="x",
+            model="m",
+            text="ok",
+        )
+
+    monkeypatch.setattr("services.ai_gateway.execute", fake_execute)
+    built = ai_context_service.build(
+        task=AITask.GENERAL_NL_ANSWER,
+        guild_id=1,
+        actor_id=2,
+        channel_id=3,
+        correlation_id="c",
+        scope=AIScope.ADMIN,
+    )
+
+    response = await nls._invoke_gateway(_fake_stack(), built, object())
+
+    assert response.text == "ok"
+    names = {spec.name for spec in captured["tools"]}
+    # Admin scope is offered the admin tools too.
+    assert "get_user_standing" in names
+    assert "get_guild_ai_config" in names
+    assert captured["handlers"] is not None
+    assert set(captured["handlers"]) == names
+
+
+async def test_stage_invoke_gateway_no_tools_when_flag_off(monkeypatch):
+    monkeypatch.setenv("AI_ENABLED", "1")
+    monkeypatch.delenv("AI_TOOLS_ENABLED", raising=False)
+    captured: dict = {}
+
+    async def fake_execute(request, *, tool_handlers=None):
+        captured["tools"] = request.tools
+        captured["handlers"] = tool_handlers
+        return AIResponse(
+            task=request.context.task,
+            provider="x",
+            model="m",
+            text="ok",
+        )
+
+    monkeypatch.setattr("services.ai_gateway.execute", fake_execute)
+    built = ai_context_service.build(
+        task=AITask.GENERAL_NL_ANSWER,
+        guild_id=1,
+        actor_id=2,
+        channel_id=3,
+        correlation_id="c",
+        scope=AIScope.ADMIN,
+    )
+
+    await nls._invoke_gateway(_fake_stack(), built, object())
+
+    assert captured["tools"] == ()
+    assert captured["handlers"] is None

@@ -27,7 +27,11 @@ from typing import Any
 
 from core.runtime.ai.contracts import AIScope, AIToolSpec
 from core.runtime.ai.providers.base import ToolHandler
-from services import ai_permission_service
+from services import (
+    ai_config_projection_service,
+    ai_decision_audit_service,
+    ai_permission_service,
+)
 
 # Least-privilege ordering for AIScope. A caller may be offered a tool
 # when their rank is >= the tool's ``min_scope`` rank.
@@ -97,6 +101,96 @@ async def _server_time(_arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- get_guild_ai_config (admin) ---------------------------------------
+
+_GUILD_AI_CONFIG_SPEC = AIToolSpec(
+    name="get_guild_ai_config",
+    description=(
+        "Return this server's AI configuration: whether AI and natural-"
+        "language replies are enabled, the active provider and model, the "
+        "minimum level and cooldown, and the memory window. Admin only. "
+        "Use this to answer questions about how the bot is set up here."
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.ADMIN,
+)
+
+
+def _make_guild_ai_config(guild_id: int) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        snap = await ai_config_projection_service.build_snapshot(guild_id)
+        return {
+            "ai_enabled": snap.policy.enabled,
+            "natural_language_enabled": snap.policy.natural_language_enabled,
+            "provider": snap.policy.default_provider or snap.provider.provider_active,
+            "model": snap.policy.default_model,
+            "minimum_level": snap.policy.minimum_level_default,
+            "cooldown_seconds": snap.policy.cooldown_seconds,
+            "memory_window_minutes": snap.memory.window_minutes,
+        }
+
+    return handler
+
+
+# --- recent_audit (admin) ----------------------------------------------
+
+_RECENT_AUDIT_SPEC = AIToolSpec(
+    name="recent_audit",
+    description=(
+        "Return the most recent AI decision-audit rows for this server — "
+        "what the bot decided to do with recent messages and why. Admin "
+        "only. Use to explain recent AI behaviour, e.g. why the bot did or "
+        "did not reply."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "description": "How many recent rows to return (default 5).",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.ADMIN,
+)
+
+
+def _make_recent_audit(guild_id: int) -> ToolHandler:
+    async def handler(arguments: dict[str, Any]) -> dict[str, Any]:
+        limit = _coerce_limit(arguments.get("limit"), default=5, lo=1, hi=20)
+        rows = await ai_decision_audit_service.query(guild_id, limit=limit)
+        return {"rows": [_audit_row_summary(row) for row in rows]}
+
+    return handler
+
+
+def _coerce_limit(value: Any, *, default: int, lo: int, hi: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(hi, parsed))
+
+
+def _audit_row_summary(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "decision": row.get("decision"),
+        "reason": row.get("reason_code"),
+        "task": row.get("task"),
+        "at": _ts(row.get("created_at")),
+    }
+
+
+def _ts(value: Any) -> str | None:
+    if value is None:
+        return None
+    iso = getattr(value, "isoformat", None)
+    return iso() if callable(iso) else str(value)
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -121,6 +215,8 @@ def build_registry(
     catalog: list[tuple[AIToolSpec, ToolHandler]] = [
         (_USER_STANDING_SPEC, _make_user_standing(guild_id, actor_id)),
         (_SERVER_TIME_SPEC, _server_time),
+        (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
+        (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]
     specs: list[AIToolSpec] = []
     handlers: dict[str, ToolHandler] = {}
