@@ -15,12 +15,22 @@ from __future__ import annotations
 from services import ai_instruction_service as instr
 
 
-def test_task_contract_names_all_three_btd6_lookup_tools():
+def test_task_contract_names_the_btd6_lookup_tools():
     tc = instr._TASK_CONTRACT
     assert "Bloons TD 6" in tc
     assert "btd6_lookup" in tc  # named entity / topic
     assert "btd6_capability_lookup" in tc  # 'which tower …'
     assert "btd6_superlative_lookup" in tc  # 'most/least expensive …'
+    assert "btd6_difficulty_cost" in tc  # Easy/Hard/Impoppable conversion
+
+
+def test_task_contract_teaches_difficulty_scaling_and_faithful_lists():
+    tc = instr._TASK_CONTRACT
+    # Costs vary by difficulty — the bot must not claim they're uniform.
+    assert "scale with difficulty" in tc
+    assert "across difficulties" in tc
+    # Don't invent list entries (the hallucinated "Dart Monkey Paragon").
+    assert "use only the entries it returned" in tc
 
 
 def test_task_contract_scopes_grounding_to_specific_stats():

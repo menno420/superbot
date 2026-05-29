@@ -363,6 +363,50 @@ async def _btd6_superlative_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- btd6_difficulty_cost ----------------------------------------------
+
+_BTD6_DIFFICULTY_COST_SPEC = AIToolSpec(
+    name="btd6_difficulty_cost",
+    description=(
+        "Convert a BTD6 Medium-difficulty cost into all four difficulties. "
+        "BTD6 prices scale with difficulty (Easy is cheaper, Hard/Impoppable "
+        "are pricier), and every other lookup tool returns the MEDIUM figure. "
+        "When the user asks about Easy / Hard / Impoppable pricing, pass the "
+        "Medium cost here to get the exact Easy/Medium/Hard/Impoppable prices "
+        "— do not do the multiplication yourself, and never claim costs are "
+        "the same across difficulties."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "medium_cost": {
+                "type": "integer",
+                "description": "The Medium-difficulty cost to convert.",
+            },
+        },
+        "required": ["medium_cost"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_difficulty_cost(arguments: dict[str, Any]) -> dict[str, Any]:
+    from utils.btd6 import difficulty_costs
+
+    try:
+        medium = int(arguments.get("medium_cost"))
+    except (TypeError, ValueError):
+        return {"found": False, "note": "medium_cost must be an integer"}
+    if medium <= 0:
+        return {"found": False, "note": "medium_cost must be > 0"}
+    return {
+        "found": True,
+        "medium_cost": medium,
+        "costs_by_difficulty": difficulty_costs.all_difficulty_costs(medium),
+    }
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -390,6 +434,7 @@ def build_registry(
         (_BTD6_LOOKUP_SPEC, _btd6_lookup),
         (_BTD6_CAPABILITY_SPEC, _btd6_capability_lookup),
         (_BTD6_SUPERLATIVE_SPEC, _btd6_superlative_lookup),
+        (_BTD6_DIFFICULTY_COST_SPEC, _btd6_difficulty_cost),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]
