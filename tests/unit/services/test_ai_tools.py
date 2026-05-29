@@ -30,6 +30,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_lookup",
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
+        "btd6_difficulty_cost",
     }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
@@ -132,6 +133,25 @@ async def test_btd6_superlative_lookup_answers_cost_rankings():
     assert bad["found"] is False
 
 
+async def test_btd6_difficulty_cost_converts_medium_to_all_difficulties():
+    # The bot previously claimed BTD6 costs don't change by difficulty; this
+    # tool gives the exact per-difficulty figures so it can't make that claim.
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    assert "btd6_difficulty_cost" in registry.handlers
+
+    result = await registry.handlers["btd6_difficulty_cost"]({"medium_cost": 200})
+    assert result["found"] is True
+    costs = result["costs_by_difficulty"]
+    assert costs == {"easy": 170, "medium": 200, "hard": 215, "impoppable": 240}
+
+    assert (await registry.handlers["btd6_difficulty_cost"]({"medium_cost": 0}))[
+        "found"
+    ] is False
+    assert (await registry.handlers["btd6_difficulty_cost"]({"medium_cost": "x"}))[
+        "found"
+    ] is False
+
+
 def test_admin_scope_offers_all_read_only_tools():
     registry = build_registry(scope=AIScope.ADMIN, guild_id=1, actor_id=2)
 
@@ -142,6 +162,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_lookup",
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
+        "btd6_difficulty_cost",
         "get_guild_ai_config",
         "recent_audit",
     }

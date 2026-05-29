@@ -476,4 +476,35 @@ CASES: list[EvalCase] = [
             "fails.",
         ),
     ),
+    EvalCase(
+        id="tool.btd6_difficulty_cost",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        # Costs vary by difficulty — the model must convert via the tool, not
+        # claim the price is the same as Medium.
+        user_message=(
+            "In Bloons TD 6, how much does a Dart Monkey cost on Impoppable?"
+        ),
+        tools=(_tool("btd6_lookup"), _tool("btd6_difficulty_cost")),
+        tool_results={
+            "btd6_lookup": {
+                "found": True,
+                "facts": [
+                    "[btd6_tower] Dart Monkey — base cost: 200 (medium "
+                    "difficulty) (source: fixture/btd6_data)",
+                ],
+            },
+            "btd6_difficulty_cost": {
+                "found": True,
+                "medium_cost": 200,
+                "costs_by_difficulty": {
+                    "easy": 170,
+                    "medium": 200,
+                    "hard": 215,
+                    "impoppable": 240,
+                },
+            },
+        },
+        grader=all_of(tool_called("btd6_difficulty_cost"), contains("240")),
+    ),
 ]
