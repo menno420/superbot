@@ -84,7 +84,18 @@ _FOOTER_HINT = "Nothing changes until Final Review applies the staged operations
 
 
 def _resolve_sections(session: SetupSession | None) -> list[SetupSection]:
-    """Return the depth-filtered section list for ``session``."""
+    """Return the depth-filtered section list for ``session``.
+
+    Imports the sections package for its registration side effect first.
+    The registry is populated when ``views.setup.sections`` is imported,
+    and the wizard entry path (``/setup`` / ``!setup``) does not otherwise
+    import it — historically only the hub did. Without this, a process
+    that opens the wizard before ever touching the hub sees an empty
+    registry and renders "No setup sections available for this depth".
+    The import is idempotent and cached after the first call.
+    """
+    import views.setup.sections  # noqa: F401 — populate REGISTRY
+
     depth = session.depth if session is not None else None
     return REGISTRY.for_depth(depth)
 

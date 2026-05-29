@@ -374,6 +374,48 @@ async def test_apply_all_recommended_stages_via_helper_and_confirms():
     interaction.followup.send.assert_awaited()
 
 
+def test_wizard_entry_populates_section_registry_in_fresh_process():
+    """Regression: opening the wizard must not depend on the hub having
+    been imported first.
+
+    Runs in a fresh interpreter that imports only the wizard entry path
+    (no hub, no sections package) and asserts ``_resolve_sections``
+    returns the production sections.  Before the registration fix the
+    registry was empty here and the wizard rendered "No setup sections
+    available for this depth".
+    """
+    import os
+    import pathlib
+    import subprocess
+    import sys
+
+    repo_root = pathlib.Path(__file__).resolve().parents[4]
+    disbot_dir = repo_root / "disbot"
+    code = (
+        "import views.setup.wizard as w\n"
+        "secs = w._resolve_sections(None)\n"
+        "assert len(secs) > 0, 'registry empty: wizard resolved 0 sections'\n"
+        "print(len(secs))\n"
+    )
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join(
+        [str(disbot_dir), env.get("PYTHONPATH", "")],
+    ).strip(os.pathsep)
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=str(repo_root),
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, (
+        "fresh-process wizard import resolved no sections "
+        f"(registry not populated):\nstdout={result.stdout!r}\n"
+        f"stderr={result.stderr!r}"
+    )
+    assert int(result.stdout.strip()) >= 1
+
+
 def test_view_back_button_disabled_on_first_step():
     sections = [
         _section("cleanup", builder=_builder_one_op),
