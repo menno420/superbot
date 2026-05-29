@@ -37,7 +37,9 @@ async def test_assign_roles_delegates_to_role_automation():
     guild.members = []
 
     fake_apply_result = role_automation.ApplyResult(
-        attempted=2, succeeded=2, failed=0,
+        attempted=2,
+        succeeded=2,
+        failed=0,
     )
 
     with (
@@ -76,6 +78,65 @@ async def test_assign_roles_delegates_to_role_automation():
     # The cog must pass a tuple of RoleThreshold objects, not raw rows.
     threshold_arg = compute_mock.call_args.args[1]
     assert all(isinstance(t, role_automation.RoleThreshold) for t in threshold_arg)
+
+
+@pytest.mark.asyncio
+async def test_assign_roles_excludes_xp_auto_assign_roles():
+    """XP reward roles must NOT be reconciled by the time-based loop.
+
+    Regression: ``role_thresholds`` holds both time-based and XP roles. The
+    time-based ``role_check`` runs on boot; if an ``xp_auto_assign`` role is
+    fed into it, members who hold the level-earned role but don't meet a
+    ``days_required`` threshold get it stripped (the "lost testrole on
+    restart" bug). The XP role must be filtered out before compute_assignments.
+    """
+    bot = MagicMock()
+    cog = RoleCog(bot)
+    guild = MagicMock(id=1)
+    guild.members = []
+
+    with (
+        patch("cogs.role_cog._ensure_defaults", new_callable=AsyncMock),
+        patch(
+            "cogs.role_cog.db.get_role_thresholds",
+            new_callable=AsyncMock,
+            return_value=[
+                {
+                    "role_name": "Veteran",
+                    "days_required": 30,
+                    "level_required": None,
+                    "xp_auto_assign": False,
+                },
+                {
+                    "role_name": "testrole",
+                    "days_required": 0,
+                    "level_required": 6,
+                    "xp_auto_assign": True,
+                },
+            ],
+        ),
+        patch(
+            "cogs.role_cog.db.get_setting",
+            new_callable=AsyncMock,
+            return_value="Admin",
+        ),
+        patch(
+            "cogs.role_cog.role_automation.compute_assignments",
+            return_value=(),
+        ) as compute_mock,
+        patch(
+            "cogs.role_cog.role_automation.apply",
+            new_callable=AsyncMock,
+            return_value=role_automation.ApplyResult(
+                attempted=0, succeeded=0, failed=0
+            ),
+        ),
+    ):
+        await cog._assign_roles(guild)
+
+    names = {t.role_name for t in compute_mock.call_args.args[1]}
+    assert "Veteran" in names  # time-based role still reconciled
+    assert "testrole" not in names  # XP reward role excluded from time-based loop
 
 
 @pytest.mark.asyncio
@@ -210,18 +271,12 @@ def test_role_cog_threshold_paths_do_not_call_member_role_apis_directly():
         _extract_method(src, "on_member_join"),
     ]
     for body in threshold_methods:
-        assert body is not None, (
-            "Expected to find the threshold method in role_cog.py"
-        )
-        assert (
-            "member.add_roles" not in body
-        ), (
+        assert body is not None, "Expected to find the threshold method in role_cog.py"
+        assert "member.add_roles" not in body, (
             "Threshold path must not call member.add_roles directly — "
             "route through services.role_automation.apply (PR-G)."
         )
-        assert (
-            "member.remove_roles" not in body
-        ), (
+        assert "member.remove_roles" not in body, (
             "Threshold path must not call member.remove_roles directly — "
             "route through services.role_automation.apply (PR-G)."
         )
