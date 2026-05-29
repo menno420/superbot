@@ -29,6 +29,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "get_server_time",
         "btd6_lookup",
         "btd6_capability_lookup",
+        "btd6_superlative_lookup",
     }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
@@ -110,6 +111,27 @@ async def test_btd6_capability_lookup_answers_discovery_questions():
     assert unsupported["found"] is False
 
 
+async def test_btd6_superlative_lookup_answers_cost_rankings():
+    # "most expensive tier-4 upgrade" and friends — verified vs real data.
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    assert "btd6_superlative_lookup" in registry.handlers
+
+    tier4 = await registry.handlers["btd6_superlative_lookup"](
+        {"metric": "upgrade_cost", "tier": 4},
+    )
+    assert tier4["found"] is True
+    assert tier4["results"][0]["tower_id"] == "super_monkey"  # Sun Temple, $100k
+    assert tier4["results"][0]["cost"] == 100000
+
+    cheapest = await registry.handlers["btd6_superlative_lookup"](
+        {"metric": "tower_cost", "cheapest": True},
+    )
+    assert cheapest["results"][0]["tower_id"] == "dart_monkey"
+
+    bad = await registry.handlers["btd6_superlative_lookup"]({"metric": "nope"})
+    assert bad["found"] is False
+
+
 def test_admin_scope_offers_all_read_only_tools():
     registry = build_registry(scope=AIScope.ADMIN, guild_id=1, actor_id=2)
 
@@ -119,6 +141,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "get_server_time",
         "btd6_lookup",
         "btd6_capability_lookup",
+        "btd6_superlative_lookup",
         "get_guild_ai_config",
         "recent_audit",
     }

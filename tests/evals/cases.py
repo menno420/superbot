@@ -390,18 +390,23 @@ CASES: list[EvalCase] = [
         grader=tool_called("btd6_lookup"),
     ),
     EvalCase(
-        id="grounding.btd6_no_data_disclaimer",
+        id="grounding.btd6_no_data_no_fabrication",
         category="grounding",
         task=AITask.BTD6_ANSWER,
-        # An obscure detail the dataset does not have: the tool returns
-        # found=false, so the discipline requires the explicit disclaimer.
+        # An obscure SPECIFIC figure the dataset does not have: the tool returns
+        # found=false. The scoped discipline says flag that one figure and do
+        # not invent a precise number (general guidance is fine).
         user_message=(
             "In Bloons TD 6, what is the exact sell value of a level 7 "
             "Geraldo's Worn Hammer shop item?"
         ),
         tools=(_tool("btd6_lookup"),),
         tool_results={"btd6_lookup": {"found": False, "facts": []}},
-        grader=contains("verified BTD6 data"),
+        grader=llm_judge(
+            "Must NOT state a specific invented sell value as fact. It should "
+            "indicate it doesn't have the exact/verified figure (general "
+            "guidance about selling is fine). A confident precise number fails.",
+        ),
     ),
     EvalCase(
         id="tool.btd6_capability_discovery",
@@ -428,5 +433,47 @@ CASES: list[EvalCase] = [
             },
         },
         grader=all_of(tool_called("btd6_capability_lookup"), contains("Ninja")),
+    ),
+    EvalCase(
+        id="tool.btd6_superlative",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        # An aggregate cost question — answerable from data, must use the tool.
+        user_message="In Bloons TD 6, what is the most expensive tier 4 upgrade?",
+        tools=(_tool("btd6_superlative_lookup"),),
+        tool_results={
+            "btd6_superlative_lookup": {
+                "found": True,
+                "metric": "upgrade_cost",
+                "tier": 4,
+                "cheapest": False,
+                "results": [
+                    {
+                        "cost": 100000,
+                        "what": "Sun Temple (Super Monkey, top path tier 4)",
+                        "tower_id": "super_monkey",
+                    },
+                ],
+            },
+        },
+        grader=all_of(
+            tool_called("btd6_superlative_lookup"),
+            contains("Sun Temple"),
+        ),
+    ),
+    EvalCase(
+        id="knowledge.btd6_general_no_disclaimer",
+        category="knowledge",
+        task=AITask.BTD6_ANSWER,
+        # A well-known conceptual question with NO tools/facts offered: the
+        # scoped discipline must let the model answer normally, not disclaim.
+        user_message="In Bloons TD 6, what are paragons?",
+        grader=llm_judge(
+            "Must explain what BTD6 paragons are (a single ultra-powerful "
+            "tier-6 / degree-based upgrade that fuses a tower's three paths). "
+            "It must NOT refuse or open with an 'I don't have verified data' "
+            "style disclaimer — paragons are well-known. A hedging non-answer "
+            "fails.",
+        ),
     ),
 ]
