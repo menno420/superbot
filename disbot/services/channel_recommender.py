@@ -15,7 +15,7 @@ these to:
 The scorer is intentionally simple and deterministic:
 
 * +50 if the channel's name matches a classifier tag the intent
-  cares about (uses :func:`views.setup.scan_panel.classify_channel_name`
+  cares about (uses :func:`utils.channel_classify.classify_channel_name`
   so improvements there flow into recommendations).
 * +20 if the bot has view + send + embed permission.
 * +10 if the bot can view but not send (still helpful for log-only
@@ -33,7 +33,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from services.guild_snapshot import ChannelMeta, GuildSnapshot
-from views.setup.scan_panel import classify_channel_name
+from utils.channel_classify import classify_channel_name
 
 Confidence = Literal["high", "medium", "low"]
 Action = Literal["bind", "create"]

@@ -63,24 +63,6 @@ layers:
 
 # Known module-level violations tracked for follow-up, reported as WARN.
 known_violations:
-  # services → views (the core rule being enforced)
-  - file: services/cleanup_profiles.py
-    import: views.setup.scan_panel
-    reason: >
-      classify_channel_name() lives in views but is needed by this service.
-      Fix: move the function to services/ or utils/.
-    ticket: arch-fix-1
-
-  - file: services/cog_routing_profiles.py
-    import: views.setup.scan_panel
-    reason: Same — classify_channel_name() misplaced in views layer.
-    ticket: arch-fix-1
-
-  - file: services/channel_recommender.py
-    import: views.setup.scan_panel
-    reason: Same — classify_channel_name() misplaced in views layer.
-    ticket: arch-fix-1
-
   # services → cogs
   - file: services/automation_executor.py
     import: cogs.diagnostic._platform_embeds

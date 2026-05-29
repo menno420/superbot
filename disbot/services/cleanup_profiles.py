@@ -19,10 +19,11 @@ channel set → same op order. They never call Discord write APIs
 themselves; ops are staged through
 :func:`services.setup_draft.append` by the caller.
 
-Channel detection re-uses :func:`views.setup.scan_panel.classify_channel_name`
-which is already the canonical name-heuristic surface for the
-wizard. Adding new patterns there is the right place to broaden
-detection — profiles inherit the improvement automatically.
+Channel detection re-uses :func:`utils.channel_classify.classify_channel_name`
+which is the canonical name-heuristic surface shared by the setup
+wizard, cleanup profiles, and channel recommendations. Adding new
+patterns there is the right place to broaden detection — profiles
+inherit the improvement automatically.
 """
 
 from __future__ import annotations
@@ -34,7 +35,7 @@ import discord
 
 from services.cleanup_levels import known_level_names
 from services.setup_operations import SetupOperation
-from views.setup.scan_panel import classify_channel_name
+from utils.channel_classify import classify_channel_name
 
 ProfileBuilder = Callable[[discord.Guild], list[SetupOperation]]
 
