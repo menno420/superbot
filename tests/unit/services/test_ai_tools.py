@@ -24,7 +24,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
     registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
 
     spec_names = {spec.name for spec in registry.specs}
-    assert spec_names == {"get_user_standing", "get_server_time"}
+    assert spec_names == {"get_user_standing", "get_server_time", "btd6_lookup"}
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
 
@@ -60,6 +60,31 @@ async def test_user_standing_handler_reads_permission_snapshot(monkeypatch):
     assert result == {"level": 5, "is_new_user": False}
 
 
+async def test_btd6_lookup_handler_grounds_named_entity_and_reports_misses():
+    # Offered at USER scope so any user's BTD6 question can self-ground without
+    # a keyword router gate. Wraps the real grounding pipeline (DB passes
+    # degrade to no-ops here; the fixture pass still runs).
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    assert "btd6_lookup" in registry.handlers
+
+    hit = await registry.handlers["btd6_lookup"](
+        {"query": "can a dart monkey pop lead?"},
+    )
+    assert hit["found"] is True
+    assert hit["facts"]
+    assert any("Dart Monkey" in line for line in hit["facts"])
+
+    miss = await registry.handlers["btd6_lookup"]({"query": "zzzqqq not a bloon"})
+    assert miss["found"] is False
+    assert miss["facts"] == []
+
+
+async def test_btd6_lookup_handler_handles_empty_query():
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    result = await registry.handlers["btd6_lookup"]({"query": "  "})
+    assert result["found"] is False
+
+
 def test_admin_scope_offers_all_read_only_tools():
     registry = build_registry(scope=AIScope.ADMIN, guild_id=1, actor_id=2)
 
@@ -67,6 +92,7 @@ def test_admin_scope_offers_all_read_only_tools():
     assert names == {
         "get_user_standing",
         "get_server_time",
+        "btd6_lookup",
         "get_guild_ai_config",
         "recent_audit",
     }

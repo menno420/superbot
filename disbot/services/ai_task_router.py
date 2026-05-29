@@ -35,34 +35,32 @@ def _has_question_intent(text: str) -> bool:
     return bool(words & _VIDEO_QUESTION_WORDS)
 
 
-# Keep this list short and curated. It biases the router toward BTD6;
-# anything not matched falls through to GENERAL_NL_ANSWER. Every entry
-# must be a BTD6 anchor on its own — bare "event" / "active" / "right
-# now" / "leaderboard" / "stale" / "freshness" do NOT belong here: they
-# would over-route non-BTD6 questions (server events, "is the bot
-# active", XP leaderboard, "is the database stale"). The
-# anchor + state-term heuristic for live-state questions lives in
-# services.btd6_ai_knowledge_block_service.
+# Fast-path hint, NOT the correctness gate. Anything this list (and the
+# entity-alias matcher below) misses is still handled keyword-free: the model
+# self-identifies BTD6 questions and calls the ``btd6_lookup`` tool, governed
+# by the BTD6 grounding discipline in services.ai_instruction_service. The list
+# exists only so an obvious BTD6 message routes to auto-grounding without a tool
+# round-trip — and as the fallback path when AI_TOOLS_ENABLED is off.
+#
+# Curated to avoid over-routing: bare "event" / "active" / "right now" /
+# "leaderboard" / "stale" must NOT be here (they'd over-route server events,
+# "is the bot active", XP leaderboard, etc.). Individual hero names are omitted
+# on purpose — the entity-alias matcher below already covers them. The live-
+# state phrases (current/what/active boss/race/event/odyssey) are pinned by
+# tests/unit/services/test_ai_task_router_btd6_natural.py because they also gate
+# the richer enrichment in services.btd6_ai_knowledge_block_service.
 _BTD6_KEYWORDS = (
     "btd6",
     "bloons",
     "bloon",
     "moab",
     "ddt",
-    "bad ",
     "bfb",
     "zomg",
     "tower",
     "hero",
-    "obyn",
-    "psi",
-    "ezili",
-    "geraldo",
-    "etienne",
+    "monkey",
     "chimps",
-    "halfcash",
-    "magicmonkeys",
-    "alternate bloons",
     "round ",
     "freeplay",
     "deflation",
@@ -83,8 +81,6 @@ _BTD6_KEYWORDS = (
     "active race",
     "ninja kiwi",
     "ninjakiwi",
-    "monkey",
-    "primary monkey",
     "odyssey",
     "contested territory",
     "race ",
