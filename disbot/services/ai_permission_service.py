@@ -97,6 +97,24 @@ def consume_fresh_allowance(guild_id: int, user_id: int) -> None:
     _FRESH_ALLOWANCE_USED[(guild_id, user_id)] += 1
 
 
+def forget_guild(guild_id: int) -> int:
+    """Drop the process-local cooldown + fresh-allowance entries for
+    ``guild_id``; return the number of entries removed.
+
+    Called from :func:`guild_lifecycle.teardown` when the bot leaves a
+    guild. Without it these ``(guild_id, user_id)``-keyed dicts grow
+    unbounded across the bot's lifetime, and a re-invited guild inherits
+    stale cooldown / mention-allowance state from before it left.
+    """
+    removed = 0
+    for tracker in (_LAST_REPLY_AT, _FRESH_ALLOWANCE_USED):
+        drop = [key for key in tracker if key[0] == guild_id]
+        for key in drop:
+            del tracker[key]
+        removed += len(drop)
+    return removed
+
+
 def _reset_for_tests() -> None:
     _LAST_REPLY_AT.clear()
     _FRESH_ALLOWANCE_USED.clear()
@@ -105,6 +123,7 @@ def _reset_for_tests() -> None:
 __all__ = [
     "UserPermissionSnapshot",
     "consume_fresh_allowance",
+    "forget_guild",
     "fresh_allowance_remaining",
     "is_on_cooldown",
     "mark_reply_sent",

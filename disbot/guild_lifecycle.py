@@ -603,18 +603,21 @@ async def _teardown_ai_platform(guild_id: int) -> None:
     ``ai_decision_audit``, and per-guild ``ai_instruction_profile``
     rows). Global instruction profiles (``guild_id IS NULL``) are
     preserved. Also invalidates the resolver cache and drops the
-    process-local conversation buffers for the guild.
+    process-local conversation buffers AND the permission-service
+    cooldown / fresh-allowance trackers for the guild.
     """
     try:
         from services import (
             ai_conversation_service,
             ai_natural_language_policy,
+            ai_permission_service,
         )
         from utils.db import ai as ai_db
 
         deleted = await ai_db.delete_for_guild(guild_id)
         ai_natural_language_policy.invalidate(guild_id)
         ai_conversation_service.forget_guild(guild_id)
+        ai_permission_service.forget_guild(guild_id)
         if deleted:
             logger.debug(
                 "guild_lifecycle: deleted %d AI Platform row(s) for guild=%d",
