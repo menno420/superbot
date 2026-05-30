@@ -15,7 +15,8 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from core.runtime.ai.contracts import AIScope
-from services import ai_tools, guild_introspection_service as gintro
+from services import ai_tools
+from services import guild_introspection_service as gintro
 
 
 def _perms(**flags):
