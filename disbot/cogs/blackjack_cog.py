@@ -513,17 +513,14 @@ class BlackjackCog(commands.Cog):
         # PR 8 — fall back to the guild-configured default entry fee
         # when the operator did not supply one explicitly.
         if entry_fee is None:
-            from utils.settings_keys import BLACKJACK_DEFAULT_ENTRY_FEE
+            from services.settings_resolution import resolve_value
 
-            raw = await db.get_setting(
+            entry_fee = await resolve_value(
                 ctx.guild.id,
-                BLACKJACK_DEFAULT_ENTRY_FEE,
-                "0",
+                "blackjack",
+                "default_entry_fee",
+                0,
             )
-            try:
-                entry_fee = int(raw)
-            except (TypeError, ValueError):
-                entry_fee = 0
         if entry_fee < 0 or rounds < 1 or duration_mins < 1:
             await ctx.send("Invalid parameters.", delete_after=5)
             return

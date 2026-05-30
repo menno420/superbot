@@ -132,11 +132,10 @@ async def test_rps_register_reads_default_entry_fee_when_omitted():
 
 @pytest.mark.asyncio
 async def test_bjtournament_reads_default_entry_fee_when_omitted():
-    """``!bjtournament`` without an explicit fee must call
-    ``db.get_setting`` with ``BLACKJACK_DEFAULT_ENTRY_FEE``.
+    """``!bjtournament`` without an explicit fee resolves the configured
+    ``blackjack.default_entry_fee`` setting via the scalar resolver.
     """
     from cogs.blackjack_cog import BlackjackCog
-    from utils.settings_keys import BLACKJACK_DEFAULT_ENTRY_FEE
 
     cog = BlackjackCog(MagicMock())
     ctx = MagicMock()
@@ -154,10 +153,10 @@ async def test_bjtournament_reads_default_entry_fee_when_omitted():
         "cogs.blackjack_cog.tournament_state_service.set_active",
         new_callable=AsyncMock,
     ), patch(
-        "utils.db.get_setting",
+        "services.settings_resolution.resolve_value",
         new_callable=AsyncMock,
-        return_value="25",
-    ) as mock_get_setting, patch(
+        return_value=25,
+    ) as mock_resolve_value, patch(
         "cogs.blackjack_cog.tasks.spawn",
         new=lambda _name, _coro: MagicMock(),
     ), patch(
@@ -167,7 +166,7 @@ async def test_bjtournament_reads_default_entry_fee_when_omitted():
         # Bypass discord.py Command wrapping (no bot has loaded the cog).
         await BlackjackCog.bjtournament.callback(cog, ctx)
 
-    mock_get_setting.assert_any_call(99, BLACKJACK_DEFAULT_ENTRY_FEE, "0")
+    mock_resolve_value.assert_any_call(99, "blackjack", "default_entry_fee", 0)
     # The created tournament should carry the setting-driven fee.
     from cogs.blackjack._state import _tournaments
 

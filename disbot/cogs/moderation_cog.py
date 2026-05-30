@@ -10,7 +10,6 @@ from discord.ext import commands
 from cogs.moderation._helpers import _build_mod_panel_embed
 from core.runtime import panel_manager
 from utils import db
-from utils.settings_keys import WARN_THRESHOLD, WARN_TIMEOUT_MINS
 from utils.ui_constants import MOD_COLOR
 
 # Pattern B re-export: importing this triggers @register on ModPanelView
@@ -107,9 +106,22 @@ class ModerationCog(commands.Cog):
         if err:
             await ctx.send(err)
             return
-        threshold = int(await db.get_setting(ctx.guild.id, WARN_THRESHOLD, "3"))
-        timeout_minutes = int(
-            await db.get_setting(ctx.guild.id, WARN_TIMEOUT_MINS, "10"),
+        # Read through the canonical scalar resolver so coercion +
+        # validation are centralised; a malformed stored value falls
+        # back to the SettingSpec default instead of raising.
+        from services.settings_resolution import resolve_value
+
+        threshold = await resolve_value(
+            ctx.guild.id,
+            "moderation",
+            "warn_threshold",
+            3,
+        )
+        timeout_minutes = await resolve_value(
+            ctx.guild.id,
+            "moderation",
+            "warn_timeout_minutes",
+            10,
         )
         count = await db.add_warning(member.id, ctx.guild.id)
         await ctx.send(

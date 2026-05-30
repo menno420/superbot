@@ -317,6 +317,26 @@ For any new service-layer mutation:
 - [ ] Add a regression test that asserts the audit row appears and
       the event fires.
 
+### Settings & platform-flag read/write contract
+
+SuperBot has three operator-config systems; new code must use the
+canonical seam for each rather than reading or writing storage directly:
+
+- **Scalar guild settings** (`guild_settings` KV). Write through
+  `services.settings_mutation.SettingsMutationPipeline.set_value` (typed
+  coercion + validation + audit + cache invalidation + event). Read
+  through `services.settings_resolution.resolve_setting` (the full
+  `SettingResolution` with provenance + validity) or the
+  `resolve_value(guild_id, subsystem, name, fallback)` convenience.
+  Never `int(await db.get_setting(...))` at a call-site — a malformed
+  stored row must degrade to the `SettingSpec` default, not raise.
+- **Feature / platform flags** (`feature_flag_*` tables). Read through
+  `core.runtime.feature_flags.is_enabled` / `resolve_with_provenance`;
+  write through `services.rollout_mutation.RolloutMutationPipeline`.
+- **AI env flags** (`core.runtime.ai.feature_flags`) are env-only and
+  boot-safe; `docs/ai-config-ownership.md` covers how a per-guild AI
+  policy overlays them.
+
 ---
 
 ## 10. Observability contract
