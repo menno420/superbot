@@ -313,8 +313,18 @@ def build_schemas_embed() -> discord.Embed:
     return embed
 
 
-def build_settings_registry_embed() -> discord.Embed:
-    """Build the embed for ``!platform settings-registry`` (S1)."""
+async def build_settings_registry_embed(
+    guild: discord.Guild | None = None,
+) -> discord.Embed:
+    """Build the embed for ``!platform settings-registry`` (S1).
+
+    The header shows catalogue counts + findings. When a ``guild`` is
+    supplied, each subsystem's current per-guild values + provenance are
+    listed too (reusing
+    :func:`services.settings_resolution.resolve_batch`), so the command
+    answers "what is actually configured here" — not just "what settings
+    exist".
+    """
     from services import diagnostics_service
 
     snap = diagnostics_service.snapshot("settings_registry")
@@ -334,7 +344,33 @@ def build_settings_registry_embed() -> discord.Embed:
         color=discord.Color.blurple(),
     )
     by_sub = snap.get("by_subsystem", {})
-    if by_sub:
+    if guild is not None and by_sub:
+        # Per-guild current values + provenance, one field per subsystem.
+        from services.settings_resolution import resolve_batch
+
+        for subsystem in sorted(by_sub):
+            if len(embed.fields) >= 23:  # leave room for the findings field
+                break
+            try:
+                resolutions = await resolve_batch(guild.id, subsystem)
+            except Exception as exc:  # noqa: BLE001 — diagnostics must not raise
+                embed.add_field(
+                    name=subsystem,
+                    value=f"*(resolve error: {type(exc).__name__})*",
+                    inline=False,
+                )
+                continue
+            lines = [
+                f"`{res.name}` = `{res.value}` (src={res.provenance}"
+                f"{'' if res.valid else ' ⚠️invalid'})"
+                for res in resolutions
+            ]
+            embed.add_field(
+                name=subsystem,
+                value=("\n".join(lines)[:1024] if lines else "*(no scalar settings)*"),
+                inline=False,
+            )
+    elif by_sub:
         lines = [
             f"`{name}` — {count} setting(s)" for name, count in sorted(by_sub.items())
         ]
@@ -356,6 +392,66 @@ def build_settings_registry_embed() -> discord.Embed:
                 value="\n".join(finding_lines)[:1024],
                 inline=False,
             )
+    return embed
+
+
+async def build_setting_detail_embed(
+    guild: discord.Guild | None,
+    subsystem: str,
+    name: str,
+) -> discord.Embed:
+    """Build the embed for ``!platform setting <subsystem> <name>``.
+
+    The scalar-settings analogue of the feature-flag detail surface:
+    shows the resolved value, its provenance (``default`` vs
+    ``legacy_kv``), the declared default, validity, the raw stored
+    string, and any resolver diagnostics. Reuses
+    :func:`services.settings_resolution.resolve_setting` so value
+    interpretation stays centralised — this is a pure read.
+    """
+    from services.settings_resolution import resolve_setting
+
+    guild_id = guild.id if guild else 0
+    resolution = await resolve_setting(guild_id, subsystem, name)
+    if resolution is None:
+        return discord.Embed(
+            title="⚙️ Unknown setting",
+            description=(
+                f"No declared setting `{subsystem}.{name}`. "
+                "Use `!platform settings-registry` to list what exists."
+            ),
+            color=discord.Color.red(),
+        )
+    embed = discord.Embed(
+        title=f"⚙️ {subsystem}.{name}",
+        color=(discord.Color.blurple() if resolution.valid else discord.Color.orange()),
+    )
+    embed.add_field(name="Value", value=f"`{resolution.value}`", inline=True)
+    embed.add_field(
+        name="Provenance",
+        value=f"`{resolution.provenance}`",
+        inline=True,
+    )
+    embed.add_field(name="Default", value=f"`{resolution.default}`", inline=True)
+    embed.add_field(
+        name="Valid",
+        value="`yes`" if resolution.valid else "`no — using default`",
+        inline=True,
+    )
+    raw_display = "*(none)*" if resolution.raw is None else f"`{resolution.raw}`"
+    embed.add_field(name="Raw KV", value=raw_display[:1024], inline=True)
+    if resolution.diagnostics:
+        embed.add_field(
+            name="Diagnostics",
+            value="\n".join(resolution.diagnostics)[:1024],
+            inline=False,
+        )
+    embed.set_footer(
+        text=(
+            "default = no KV row / spec default · legacy_kv = a stored value "
+            "drove this (invalid rows fall back to the declared default)."
+        ),
+    )
     return embed
 
 
@@ -1497,6 +1593,7 @@ __all__ = [
     "build_runtime_embed",
     "build_schemas_embed",
     "build_sessions_embed",
+    "build_setting_detail_embed",
     "build_settings_registry_embed",
     "build_setup_readiness_embed",
     "build_slow_embed",
