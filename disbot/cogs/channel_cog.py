@@ -38,7 +38,6 @@ from views.channels import (  # noqa: F401 — backward-compat re-exports
     _CustomNameModal,
     _DeleteConfirmView,
     _DeleteSubView,
-    _NameSelect,
     _RestrictSubView,
     _SubsystemToggleView,
     _VisibilitySubView,

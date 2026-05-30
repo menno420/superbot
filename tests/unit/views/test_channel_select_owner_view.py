@@ -10,6 +10,11 @@ callback crashed with ``AttributeError: ... has no attribute
 
 These pin that the back-reference no longer collides with discord.py's
 internal ``_parent``.
+
+The create panel's *name* picker is now the shared
+``views.selectors.MultiSelect`` (audit P1-10) rather than the old
+single-select ``_NameSelect``; its wiring is covered by
+``test_create_panel_multi.py``.
 """
 
 from __future__ import annotations
@@ -17,11 +22,10 @@ from __future__ import annotations
 import discord
 
 from views.channels._helpers import _ChannelSelect
-from views.channels.create_panel import _CategorySelect, _NameSelect
+from views.channels.create_panel import _CategorySelect
 
 
 class _FakeOwner:
-    chosen_name = None
     chosen_cat = None
     selected_channel_id = None
     selected_channel_name = None
@@ -39,13 +43,6 @@ def test_channel_select_uses_owner_view_not_parent():
     sel = _ChannelSelect([_opt()], owner, placeholder="pick")
     assert sel._owner_view is owner
     # discord.py's own _parent must NOT be shadowed by the parent view.
-    assert getattr(sel, "_parent", None) is not owner
-
-
-def test_name_select_uses_owner_view_not_parent():
-    owner = _FakeOwner()
-    sel = _NameSelect(["alpha", "beta"], owner)
-    assert sel._owner_view is owner
     assert getattr(sel, "_parent", None) is not owner
 
 

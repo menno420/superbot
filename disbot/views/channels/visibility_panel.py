@@ -64,7 +64,7 @@ class _VisibilitySubView(BaseView):
                     label=channel_name[:100],
                     value=str(ch.id),
                     description=f"ID: {ch.id}",
-                )
+                ),
             )
 
         self.channel_select = MultiSelect(

@@ -10,6 +10,10 @@ created under one chosen category in a single pass.  These tests pin:
 - "Create Channel" requires at least one name;
 - create loops over every name under the one category and partitions the
   outcome into created / renamed / permission-denied / failed.
+
+NB: ``create_btn`` calls ``restore_parent_or_send_fresh`` twice — first
+with the *result* embed, then with the manager-panel embed — so tests
+capture every embed and assert against the first (the result).
 """
 
 from __future__ import annotations
@@ -91,10 +95,10 @@ async def test_create_makes_every_channel_under_one_category():
         return ch
 
     interaction.guild.create_text_channel = AsyncMock(side_effect=_create)
-    captured: dict[str, discord.Embed] = {}
+    embeds: list[discord.Embed] = []
 
     async def _restore(*, parent_message, channel, embed, view):  # noqa: ARG001
-        captured["embed"] = embed
+        embeds.append(embed)
         return MagicMock()
 
     with (
@@ -116,7 +120,8 @@ async def test_create_makes_every_channel_under_one_category():
         await _click(view, "Create Channel", interaction)
 
     assert made == ["alpha", "beta"]
-    field_text = " ".join(f.value for f in captured["embed"].fields)
+    # First restore call carries the result embed (second is the manager panel).
+    field_text = " ".join(f.value for f in embeds[0].fields)
     assert "#alpha" in field_text and "#beta" in field_text
 
 
@@ -139,10 +144,10 @@ async def test_create_partitions_partial_failures():
         return ch
 
     interaction.guild.create_text_channel = AsyncMock(side_effect=_create)
-    captured: dict[str, discord.Embed] = {}
+    embeds: list[discord.Embed] = []
 
     async def _restore(*, parent_message, channel, embed, view):  # noqa: ARG001
-        captured["embed"] = embed
+        embeds.append(embed)
         return MagicMock()
 
     with (
@@ -159,7 +164,7 @@ async def test_create_partitions_partial_failures():
     ):
         await _click(view, "Create Channel", interaction)
 
-    fields = {f.name: f.value for f in captured["embed"].fields}
+    fields = {f.name: f.value for f in embeds[0].fields}
     joined = " || ".join(f"{k}={v}" for k, v in fields.items())
     assert "#ok" in joined
     assert "denied" in joined  # permission-denied bucket
