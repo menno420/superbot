@@ -185,8 +185,9 @@ HUBS: tuple[HubEntry, ...] = (
         entry_command="!utilitymenu",
         # PR #3 promotes General to parent_hub of "utility". Help
         # itself stays top-level — it IS the Help surface so it never
-        # surfaces under any hub.
-        primary_children=("general",),
+        # surfaces under any hub. PR #420 adds the 🍃 420 easter-egg
+        # subsystem here too.
+        primary_children=("general", "four_twenty"),
         cross_link_children=(),
         minimum_tier="user",
     ),

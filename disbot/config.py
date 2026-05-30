@@ -58,6 +58,7 @@ INITIAL_EXTENSIONS = [
     "cogs.btd6_cog",
     "cogs.chain_cog",
     "cogs.general_cog",
+    "cogs.four_twenty_cog",
     "cogs.leaderboard_cog",
     "cogs.settings_cog",
     "cogs.logging_cog",
