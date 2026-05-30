@@ -18,6 +18,7 @@ unwrapped.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -30,6 +31,30 @@ logger = logging.getLogger("bot.services.btd6_context")
 
 _DEFAULT_SOURCE_SUMMARY = "data.ninjakiwi.com (Tier 1)"
 _FALLBACK_SOURCE_SUMMARY = "no btd6_facts rows for intent"
+
+# Crosspath codes mentioned in a query, e.g. "0-2-5" or "025". Bounded by
+# non-digit/hyphen edges so it won't fire inside longer numbers (versions etc.).
+_CROSSPATH_RE = re.compile(r"(?<![\d-])([0-5])-?([0-5])-?([0-5])(?![\d-])")
+
+
+def _crosspaths_in_text(text: str, *, limit: int = 3) -> list[str]:
+    """Legal crosspath codes named in ``text`` (single-path tiers excluded).
+
+    The 16 single-path tiers already ship in grounding, so this only surfaces
+    the specific crosspath a user named — never all ~48 per tower.
+    """
+    out: list[str] = []
+    for match in _CROSSPATH_RE.finditer(text or ""):
+        code = "".join(match.groups())
+        if (
+            tier_codes.is_legal(code)
+            and tier_codes.is_crosspath(code)
+            and code not in out
+        ):
+            out.append(code)
+        if len(out) >= limit:
+            break
+    return out
 
 
 @dataclass(frozen=True)
@@ -469,6 +494,33 @@ def _tier_name(stats: Any, code: str) -> str:
     )
 
 
+def _render_tower_crosspath(tower_id: str, canonical: str, code: str) -> list[str]:
+    """One ``[btd6_tower_stats normal]`` line for a specifically-named crosspath.
+
+    Crosspaths are kept out of default grounding for size; when a user names one
+    (e.g. "0-2-5 ninja") this surfaces just that tier's headline stats.
+    """
+    from services import btd6_stats_service
+
+    stats = btd6_stats_service.get_tower_stats(tower_id)
+    if stats is None:
+        return []
+    tier = stats.tier(code)
+    if tier is None:
+        return []
+    bits = _normal_stat_bits(btd6_stats_service.normal_stats(tier))
+    if not bits:
+        return []
+    name = _tier_name(stats, code)
+    return [
+        _cap(
+            f"[btd6_tower_stats normal] {canonical} {name} "
+            f"({tier_codes.format_code(code)}): {_sanitise(', '.join(bits))} "
+            "(source: bloonswiki)",
+        ),
+    ]
+
+
 def _render_fixture_hero(entry: Any) -> list[str]:
     """Render a HeroEntry as 1-3 grounding lines for the AI context."""
     canonical = _sanitise(
@@ -530,6 +582,7 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     health = getattr(entry, "health", None)
     health_fortified = getattr(entry, "health_fortified", None)
     rbe = getattr(entry, "rbe", None)
+    rbe_fortified = getattr(entry, "rbe_fortified", None)
     speed = getattr(entry, "speed", None)
 
     lines: list[str] = []
@@ -565,7 +618,10 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
             hp += f" ({health_fortified} fortified)"
         stat_bits.append(hp)
     if isinstance(rbe, int):
-        stat_bits.append(f"RBE (total hits incl. all spawned children): {rbe}")
+        rbe_bit = f"RBE (total hits incl. all spawned children): {rbe}"
+        if isinstance(rbe_fortified, int):
+            rbe_bit += f" ({rbe_fortified} fortified)"
+        stat_bits.append(rbe_bit)
     if isinstance(speed, (int, float)):
         stat_bits.append(f"speed: {speed}")
     if children:
@@ -590,6 +646,76 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     return lines
 
 
+def _render_fixture_round(entry: Any) -> list[str]:
+    """Render a RoundEntry as 1-3 ``[btd6_round]`` grounding lines.
+
+    Surfaces the facts round questions hinge on: danger, total (children-
+    inclusive) RBE, the exact spawn composition, and any curated strategy note.
+    Only resolver-matched round(s) are rendered, so grounding stays bounded.
+    """
+    from services import btd6_data_service
+
+    number = getattr(entry, "round_number", None)
+    if number is None:
+        return []
+    danger = _sanitise(str(getattr(entry, "danger", "") or ""))
+    rbe = getattr(entry, "rbe", None)
+    threats = tuple(getattr(entry, "common_threats", ()) or ())
+    summary = _sanitise(getattr(entry, "summary", "") or "")
+    groups = tuple(getattr(entry, "groups", ()) or ())
+
+    head: list[str] = []
+    if danger:
+        head.append(f"danger: {danger}")
+    if isinstance(rbe, int):
+        head.append(f"total RBE {rbe:,} (hits to fully clear)")
+    if threats:
+        head.append(f"threats: {', '.join(_sanitise(t) for t in threats)}")
+    headline = " | ".join(head)
+    lines = [
+        _cap(
+            (
+                f"[btd6_round] Round {number} — {headline} (source: fixture/btd6_data)"
+                if headline
+                else f"[btd6_round] Round {number} (source: fixture/btd6_data)"
+            ),
+        ),
+    ]
+
+    # Exact composition: aggregate the ordered spawn groups by bloon + modifiers.
+    aggregated: dict[tuple[str, tuple[str, ...]], int] = {}
+    order: list[tuple[str, tuple[str, ...]]] = []
+    for group in groups:
+        key = (str(group.get("bloon_id", "")), tuple(group.get("modifiers", ()) or ()))
+        if key not in aggregated:
+            aggregated[key] = 0
+            order.append(key)
+        aggregated[key] += int(group.get("count", 0))
+    if order:
+        parts: list[str] = []
+        for bloon_id, modifiers in order:
+            record = btd6_data_service.get_bloon(bloon_id)
+            name = record.canonical if record is not None else bloon_id.title()
+            prefix = " ".join(m.capitalize() for m in modifiers)
+            label = f"{prefix} {name}".strip()
+            parts.append(f"{aggregated[(bloon_id, modifiers)]} {label}")
+        lines.append(
+            _cap(
+                f"[btd6_round] Round {number} composition — "
+                f"{_sanitise(', '.join(parts))} (source: fixture/btd6_data)",
+            ),
+        )
+
+    # Curated strategy blurb (skip the auto-generated "N Lead, M Ceramic…" ones).
+    if summary and not summary[0].isdigit():
+        lines.append(
+            _cap(
+                f"[btd6_round] Round {number} — {summary} (source: fixture/btd6_data)",
+            ),
+        )
+    return lines
+
+
 def _cap(text: str) -> str:
     """Truncate ``text`` to ``_FACT_TEXT_CAP`` characters."""
     return text if len(text) <= _FACT_TEXT_CAP else text[: _FACT_TEXT_CAP - 1] + "…"
@@ -608,6 +734,7 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
         return []
 
     lines: list[str] = []
+    crosspaths = _crosspaths_in_text(str(getattr(intent, "raw_text", "") or ""))
     for tower in getattr(intent, "towers", ()) or ():
         tower_id = str(getattr(tower, "id", "") or "")
         if not tower_id:
@@ -615,6 +742,8 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
         record = btd6_data_service.get_tower(tower_id)
         if record is not None:
             lines.extend(_render_fixture_tower(record))
+            for code in crosspaths:
+                lines.extend(_render_tower_crosspath(tower_id, record.canonical, code))
     for hero in getattr(intent, "heroes", ()) or ():
         hero_id = str(getattr(hero, "id", "") or "")
         if not hero_id:
@@ -629,6 +758,10 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
         record = btd6_data_service.get_bloon(bloon_id)
         if record is not None:
             lines.extend(_render_fixture_bloon(record))
+    # Rounds resolve to full RoundEntry records already (composition + RBE), so
+    # render them directly rather than re-fetching by number.
+    for round_entry in getattr(intent, "rounds", ()) or ():
+        lines.extend(_render_fixture_round(round_entry))
     return lines
 
 

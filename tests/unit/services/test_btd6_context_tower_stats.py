@@ -108,3 +108,39 @@ async def test_grounded_build_surfaces_bloon_immunity_and_tower_facts():
     assert "immune to Sharp" in blob
     # And the tower-side fact that answers the same question.
     assert "Cannot damage Lead" in blob
+
+
+def test_bloon_grounding_includes_fortified_rbe():
+    # The fortified-ZOMG question that prompted this work: fortified RBE must
+    # reach the model, not just the base RBE.
+    zomg = ds.get_bloon("zomg")
+    blob = " ".join(ctx._render_fixture_bloon(zomg))
+    assert "fortified" in blob
+    assert str(zomg.rbe_fortified) in blob
+
+
+def test_round_grounding_has_composition_and_rbe():
+    lines = ctx._render_fixture_round(ds.get_round(63))
+    blob = " ".join(lines)
+    assert "[btd6_round] Round 63" in blob
+    assert "RBE" in blob
+    assert "composition" in blob
+    assert "Lead" in blob and "Ceramic" in blob
+
+
+def test_crosspaths_in_text_is_bounded():
+    cx = ctx._crosspaths_in_text
+    assert cx("0-2-5 ninja") == ["025"]
+    assert cx("025 ninja") == ["025"]
+    assert cx("2-0-5 and 0-5-2") == ["205", "052"]
+    # Single-path codes, round numbers and version strings must not fire.
+    assert cx("200 dart") == []
+    assert cx("round 100 has a bad") == []
+    assert cx("version 54.2 dart") == []
+
+
+async def test_named_crosspath_is_grounded():
+    context = await ctx.build("what's the pierce of a 0-2-5 ninja")
+    blob = "\n".join(context.facts)
+    assert "Ninja Monkey" in blob
+    assert "(0-2-5)" in blob  # the specifically-named crosspath's stats surface
