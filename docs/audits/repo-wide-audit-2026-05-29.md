@@ -39,7 +39,7 @@
 | **P1-7** `validate_answer` dead | ❌ | — | still zero callers in `disbot/` |
 | **P1-8** `_invalidate_cache` no-op + gov orphan-delete bypass | ❌ | — | both unchanged since audit (`binding_mutation.py`, `governance/writes.py:417`) |
 | **P1-9** `ai_permission_service.forget_guild` | ✅ | #401 | added + wired into teardown |
-| **P1-10** multi-select primitive | ❌ | — | still 2 multi vs 62 single-select; shared selectors unadopted. **Picked as next priority.** |
+| **P1-10** multi-select primitive | ⚠️ | (this branch) | primitive added (`views/selectors/multi.py`: `MultiSelect` + `MultiChannelSelector`) + 1st adoption (channel restrict panel, multi-channel lock/unlock). Also fixed the §9.3 visibility-toggle nav dead-end. **Remaining:** adopt in AI policy/behavior, logging routes, setup channels/cog-routing (the other candidate flows) |
 | **P1-11** game/cog/governance tests + coverage floor | ❌ | — | a few targeted tests landed; no `--cov-fail-under`, 18 cogs still bare |
 | **P1-12** stale docs | ⚠️ | #400 | fixed arch count, nav-map, marked ui-view SUPERSEDED. **Open:** ADR-003 §2, `navigation.py` docstring, `runbook.md` ref |
 | **P1-13** deathmatch/blackjack terminal-state dead-ends | ❌ | — | both view files unchanged since audit |
@@ -489,7 +489,8 @@ that lower layers need). Fixing placement (§6 items 1, 3, 7, 13) removes most o
    replay/back); blackjack solo replay→natural-BJ sets `view=None`. RPS/blackjack solo were fixed —
    these two were missed. **[P1]**
 3. **Navigation dead-end:** channel visibility toggle grid (`_SubsystemToggleView`) has no back
-   button despite a comment claiming one. **[P2]**
+   button despite a comment claiming one. **[P2]** — ✅ **FIXED** (Back button re-attached on every
+   `_rebuild_buttons`; alongside the P1-10 multi-select work).
 4. **Controls active after terminal state:** `_TriviaRevealView` reveal button stays enabled
    (repeat reveals); trivia + 8-ball spawn new messages / public replies, breaking the panel
    contract. **[P2]**
@@ -618,7 +619,7 @@ vs 26, isort 5 vs 8, ruff 0.4 vs 0.15, mypy 1.8 vs 2.1); `requirements-dev.txt` 
 | P1-7 ❌ | `validate_answer` (verify-or-disclaim for AI output) dead in main pipeline | `btd6_grounding_service.validate_answer` (no NL-stage caller) | wire it or document the heuristic-only stance | unverified numeric claims unchecked | test stage calls it |
 | P1-8 ❌ | `binding_mutation._invalidate_cache` no-op + `_run_governance_upgrade` orphan-delete bypass | `binding_mutation.py`, `governance/writes.py:418` | implement invalidation; route delete through pipeline | stale binding/visibility cache | test cache cleared post-write |
 | P1-9 ✅ | `ai_permission_service` no `forget_guild` | `ai_permission_service.py:34-35`, `guild_lifecycle` step 20 | add hook + register | unbounded growth; stale cooldowns on re-invite | teardown test |
-| P1-10 ❌ | Multi-select primitive missing | `views/selectors/*` all single-select | add `MultiSelect`/paginated selectors; adopt | repetitive admin UX repo-wide | view tests |
+| P1-10 ⚠️ | Multi-select primitive missing | `views/selectors/*` all single-select | add `MultiSelect`/paginated selectors; adopt | repetitive admin UX repo-wide | view tests | **Primitive added + adopted in channel restrict panel; §9.3 dead-end fixed. Remaining: other candidate flows + paginated variant.** |
 | P1-11 ❌ | Game-view bet callbacks + 18 cogs + governance pipeline untested | §10 | add targeted tests + coverage floor | regressions invisible | CI coverage report |
 | P1-12 ⚠️ | Stale docs (ui-view-adoption, navigation docstring, ADR-003) | §11 | update to current state | agents redo/break shipped work | doc-pin or review |
 | P1-13 ❌ | Deathmatch/blackjack terminal-state dead-ends | `deathmatch_panel._BotDuelView`, `blackjack/solo_view._replay` | add replay+back result view (match RPS) | user stuck on dead panel | view test |
