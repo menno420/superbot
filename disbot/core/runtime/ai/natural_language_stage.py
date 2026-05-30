@@ -126,13 +126,16 @@ def _maybe_typing(channel: object) -> AbstractAsyncContextManager[None]:
 def _strip_bot_mention(text: str, *, bot_user_id: int | None) -> str:
     """Remove all mentions of the bot from ``text``.
 
-    Discord mentions are ``<@id>`` or ``<@!id>``. ``re.sub`` replaces
-    every match. The returned string is stripped of surrounding
-    whitespace so a bare-mention message collapses to ``""``.
+    Discord mentions are ``<@id>`` or ``<@!id>``. Each match plus the
+    spaces/tabs hugging it collapses to a single space so an inline
+    mention like ``"hey <@id> what's up"`` becomes ``"hey what's up"``
+    rather than leaving a double space. Newlines are preserved so the
+    layout of a multi-line question is not flattened. A bare-mention
+    message still collapses to ``""`` after the surrounding strip.
     """
     if bot_user_id is None:
         return text
-    return re.sub(rf"<@!?{bot_user_id}>", "", text).strip()
+    return re.sub(rf"[ \t]*<@!?{bot_user_id}>[ \t]*", " ", text).strip()
 
 
 def _record_user_turn_if_visible(
@@ -436,65 +439,14 @@ class AINaturalLanguageStage:
                 record_mentions=True,
             )
 
-            # Bot self-knowledge enrichment: catalog of known commands +
-            # the asker's most recent non-replied audit row. Gated by
-            # intent heuristics so the prompt only grows when the user
-            # actually asks a meta-question. Best-effort — failure
-            # collapses to no bot-knowledge blocks.
-            try:
-                from services import bot_knowledge_service
-
-                if bot_knowledge_service.looks_like_audit_question(user_text):
-                    accessible = _accessible_channel_ids_for(
-                        message.author,
-                        message.guild,
-                    )
-                else:
-                    accessible = frozenset()
-
-                bot_knowledge_blocks = await bot_knowledge_service.gather(
-                    guild_id=guild_id,
-                    channel_id=channel_id,
-                    user_id=user_id,
-                    user_text=user_text,
-                    user_tier=bot_knowledge_service.resolve_user_tier(
-                        message.author,
-                    ),
-                    accessible_channel_ids=accessible,
-                )
-            except Exception:  # noqa: BLE001 — defensive
-                # Warning, not debug: a failure here means meta-questions
-                # ("what can you do", "why didn't you reply") silently lose
-                # their grounding blocks and get a vaguer answer.
-                logger.warning(
-                    "ai_natural_language_stage: bot knowledge unavailable; "
-                    "replying without self-knowledge blocks (guild=%s channel=%s)",
-                    guild_id,
-                    channel_id,
-                    exc_info=True,
-                )
-                bot_knowledge_blocks = ()
-
-            # BTD6 live-state / source-status enrichment: only fires for
-            # BTD6-classified messages so general-channel chatter doesn't
-            # pay the lookup cost. Heuristics live in
-            # services.btd6_ai_knowledge_block_service and require a
-            # BTD6 anchor term, so bare "what event is on" cannot route
-            # here even when the task router lets the message through.
-            if routed.task is AITask.BTD6_ANSWER:
-                try:
-                    from services import btd6_ai_knowledge_block_service
-
-                    btd6_blocks = await btd6_ai_knowledge_block_service.gather_btd6_bot_knowledge_blocks(
-                        user_text=user_text,
-                    )
-                    if btd6_blocks:
-                        bot_knowledge_blocks = bot_knowledge_blocks + btd6_blocks
-                except Exception as exc:  # noqa: BLE001 — defensive
-                    logger.debug(
-                        "ai_natural_language_stage: btd6 knowledge unavailable: %s",
-                        exc,
-                    )
+            bot_knowledge_blocks = await _gather_bot_knowledge_blocks(
+                message,
+                user_text=user_text,
+                task=routed.task,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+            )
 
             stack = await ai_instruction_service.assemble(
                 guild_id=guild_id,
@@ -694,6 +646,76 @@ class AINaturalLanguageStage:
 
         ctx.metadata["handled_by"] = STAGE_NAME
         return StageResult(short_circuit=True)
+
+
+async def _gather_bot_knowledge_blocks(
+    message: discord.Message,
+    *,
+    user_text: str,
+    task: AITask,
+    guild_id: int,
+    channel_id: int,
+    user_id: int,
+) -> tuple[ai_instruction_service.BotKnowledgeBlock, ...]:
+    """Collect the authoritative bot-knowledge blocks for this turn.
+
+    Two best-effort enrichments, each isolated so a failure in one never
+    suppresses the other or the reply itself:
+
+    * Bot self-knowledge — command catalog + the asker's most recent
+      non-replied audit row, gated by intent heuristics so the prompt
+      only grows when the user actually asks a meta-question. Failure
+      logs at warning (it silently weakens "what can you do" answers).
+    * BTD6 live-state — only for BTD6-classified messages, and only when
+      the message carries a BTD6 anchor term. Absence is routine, so a
+      failure here stays at debug.
+    """
+    try:
+        from services import bot_knowledge_service
+
+        if bot_knowledge_service.looks_like_audit_question(user_text):
+            accessible = _accessible_channel_ids_for(message.author, message.guild)
+        else:
+            accessible = frozenset()
+
+        blocks: tuple[ai_instruction_service.BotKnowledgeBlock, ...] = (
+            await bot_knowledge_service.gather(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                user_text=user_text,
+                user_tier=bot_knowledge_service.resolve_user_tier(message.author),
+                accessible_channel_ids=accessible,
+            )
+        )
+    except Exception:  # noqa: BLE001 — defensive
+        logger.warning(
+            "ai_natural_language_stage: bot knowledge unavailable; replying "
+            "without self-knowledge blocks (guild=%s channel=%s)",
+            guild_id,
+            channel_id,
+            exc_info=True,
+        )
+        blocks = ()
+
+    if task is AITask.BTD6_ANSWER:
+        try:
+            from services import btd6_ai_knowledge_block_service
+
+            btd6_blocks = (
+                await btd6_ai_knowledge_block_service.gather_btd6_bot_knowledge_blocks(
+                    user_text=user_text,
+                )
+            )
+            if btd6_blocks:
+                blocks = blocks + btd6_blocks
+        except Exception as exc:  # noqa: BLE001 — absence is routine here
+            logger.debug(
+                "ai_natural_language_stage: btd6 knowledge unavailable: %s",
+                exc,
+            )
+
+    return blocks
 
 
 async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:

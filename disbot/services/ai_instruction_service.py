@@ -354,6 +354,17 @@ async def assemble(
         seen.add(pid)
         profile = await ai_db.get_instruction_profile(int(pid))
         if profile is None:
+            # A bound profile id that no longer resolves means policy still
+            # references a deleted instruction profile. The reply continues
+            # without that layer, but warn so the dangling binding gets
+            # noticed instead of silently degrading every reply for the guild.
+            logger.warning(
+                "ai_instruction_service.assemble: instruction profile id=%s "
+                "(guild=%s) not found; skipping. Policy may reference a "
+                "deleted profile.",
+                pid,
+                guild_id,
+            )
             continue
         body = str(profile.get("body") or "").strip()
         if not body:

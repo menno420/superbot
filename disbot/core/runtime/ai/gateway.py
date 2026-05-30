@@ -265,6 +265,17 @@ class AIGateway:
         provider = provider_override or self._providers.get(target.provider)
         if provider is None:
             reason = f"provider_missing:{target.provider}"
+            # Surface this loudly: the usual cause is a typo in an
+            # ``AI_ROUTING_*`` / ``AI_DEFAULT_PROVIDER`` env var pointing at
+            # an unregistered provider, which otherwise silently degrades
+            # every reply with no hint as to why.
+            logger.warning(
+                "ai gateway: resolved provider %r is not registered "
+                "(known: %s); degrading. Check AI_DEFAULT_PROVIDER / "
+                "AI_ROUTING_* configuration.",
+                target.provider,
+                ", ".join(sorted(self._providers)),
+            )
             self._collector.record_failure(
                 provider_active=target.provider,
                 error_type="ProviderMissing",
