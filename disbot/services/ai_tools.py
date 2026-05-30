@@ -317,10 +317,13 @@ _BTD6_LOOKUP_SPEC = AIToolSpec(
     name="btd6_lookup",
     description=(
         "Look up verified Bloons TD 6 (BTD6) data: tower and hero stats and "
-        "costs, bloon properties and immunities (camo, lead, ceramic, "
-        "MOAB-class), maps, modes, rounds, and current live events. Call this "
-        "for ANY question about BTD6 before answering — even when no specific "
-        "tower, hero, or bloon is named — so the answer is grounded in real "
+        "costs; bloon properties, immunities, health, what each bloon spawns "
+        "into (the full Red->Blue->Green->Yellow->Pink->...->MOAB-class chain), "
+        "and RBE (Red Bloon Equivalent); maps, modes, rounds, and current live "
+        "events. Call this for ANY question about BTD6 before answering — "
+        "including 'what does X pop into', 'how much health/RBE does X have', "
+        "and questions about the basic bloon tiers — even when no specific "
+        "tower, hero, or bloon is named, so the answer is grounded in real "
         "data instead of memory. Returns found=false when nothing matched; "
         "treat that as 'no verified data available'."
     ),

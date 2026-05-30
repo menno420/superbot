@@ -180,7 +180,7 @@ async def test_overlay_anthropic_with_empty_model_auto_picks_claude(monkeypatch)
     )
 
     assert result.provider == "anthropic"
-    assert result.model == "claude-sonnet-4-6"  # per-task anthropic default
+    assert result.model == "claude-haiku-4-5"  # BTD6_ANSWER is live chat → fast tier
 
 
 @pytest.mark.asyncio
@@ -208,7 +208,7 @@ async def test_overlay_coerces_cross_provider_model_to_default(monkeypatch):
     )
 
     assert result.provider == "anthropic"
-    assert result.model == "claude-sonnet-4-6"
+    assert result.model == "claude-haiku-4-5"  # coerced to BTD6_ANSWER's fast default
 
 
 @pytest.mark.asyncio

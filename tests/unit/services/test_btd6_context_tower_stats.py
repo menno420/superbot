@@ -94,7 +94,7 @@ def test_bloon_grounding_includes_rbe_and_speed():
     # couple of bits per bloon.
     lines = ctx._render_fixture_bloon(ds.get_bloon("ceramic"))
     blob = " ".join(lines)
-    assert "RBE:" in blob
+    assert "RBE" in blob
     assert "speed:" in blob
 
 

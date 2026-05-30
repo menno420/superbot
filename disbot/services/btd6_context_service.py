@@ -565,11 +565,13 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
             hp += f" ({health_fortified} fortified)"
         stat_bits.append(hp)
     if isinstance(rbe, int):
-        stat_bits.append(f"RBE: {rbe}")
+        stat_bits.append(f"RBE (total hits incl. all spawned children): {rbe}")
     if isinstance(speed, (int, float)):
         stat_bits.append(f"speed: {speed}")
     if children:
         stat_bits.append(f"pops into {children}")
+    elif category not in {"modifier", ""}:
+        stat_bits.append("pops into nothing (bottom of the spawn chain)")
     if stat_bits:
         lines.append(
             _cap(

@@ -128,10 +128,11 @@ class BloonEntry:
     popped_by: str = ""
     children: str = ""
     health: int | None = None
-    # Extended bloonswiki facts (btd6_bloons Cargo): RBE (incl. children),
+    # Extended bloonswiki facts (btd6_bloons Cargo): RBE (children-inclusive),
     # fortified variants, speed, layer count, and structured children
     # (bloon_id + count + modifiers — the canonical form; ``children`` is the
-    # legacy display string).
+    # legacy display string). ``rbe`` is recomputed from health + children text
+    # by tests/unit/services/test_btd6_rbe.py, so a typo in either field fails CI.
     rbe: int | None = None
     rbe_fortified: int | None = None
     health_fortified: int | None = None
