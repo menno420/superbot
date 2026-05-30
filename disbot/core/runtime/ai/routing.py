@@ -69,16 +69,28 @@ def clear_overrides() -> None:
 
 
 # Default per-task Claude model when the resolved provider is Anthropic.
-# Reasoning-heavier tasks → Sonnet; lighter explain / answer tasks → Haiku.
+#
+# Routing policy: the user is WAITING on a live reply for the
+# conversational tasks (general chat, BTD6 chat answers), and those are
+# also the heaviest tool users — a slow model there stacks tool-loop
+# round-trips and blows the gateway timeout. So real-time tasks default
+# to fast Haiku; their accuracy comes from the grounding tools + data,
+# not model size. Non-real-time tasks the user is NOT blocked on
+# (strategy review, setup/settings proposals, log triage, code/mod
+# analysis) default to the stronger Sonnet, where a few extra seconds is
+# fine. Lighter explain/answer tasks stay on Haiku.
 _ANTHROPIC_DEFAULT_MODELS: dict[AITask, str] = {
+    # Non-real-time / considered tasks → Sonnet.
     AITask.SETUP_SUGGEST: "claude-sonnet-4-6",
     AITask.SETTINGS_PROPOSE: "claude-sonnet-4-6",
     AITask.LOGS_TRIAGE: "claude-sonnet-4-6",
     AITask.CODE_CONTEXT_EXPLAIN: "claude-sonnet-4-6",
     AITask.MODERATION_ASSIST: "claude-sonnet-4-6",
-    AITask.BTD6_ANSWER: "claude-sonnet-4-6",
     AITask.BTD6_STRATEGY_REVIEW: "claude-sonnet-4-6",
-    AITask.GENERAL_NL_ANSWER: "claude-sonnet-4-6",
+    # Live chat (user is waiting) → fast Haiku.
+    AITask.BTD6_ANSWER: "claude-haiku-4-5",
+    AITask.GENERAL_NL_ANSWER: "claude-haiku-4-5",
+    # Lighter explain / answer tasks → Haiku.
     AITask.SETUP_EXPLAIN: "claude-haiku-4-5",
     AITask.SETTINGS_EXPLAIN: "claude-haiku-4-5",
     AITask.PLATFORM_EXPLAIN_STATUS: "claude-haiku-4-5",

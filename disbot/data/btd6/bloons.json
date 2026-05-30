@@ -1,8 +1,73 @@
 {
-  "data_version": "1.0",
+  "data_version": "1.1",
   "game_version": "54.0",
-  "source": "bloonswiki-aligned: damage-type immunities derived from utils/btd6/damage_types.py (bloonswiki Template:BTD6 dt port); MOAB-class HP / children are canonical base values pending bloonswiki re-verification.",
+  "source": "bloonswiki-aligned: damage-type immunities derived from utils/btd6/damage_types.py (bloonswiki Template:BTD6 dt port); MOAB-class HP / children are canonical base values. RBE (Red Bloon Equivalent) = (health or 1) + sum(child RBE), bottoming out at Red=1; recomputed from children text by tests/unit/services/test_btd6_rbe.py.",
   "bloons": [
+    {
+      "id": "red",
+      "canonical": "Red Bloon",
+      "aliases": ["red", "reds", "red bloon"],
+      "category": "basic",
+      "properties": [],
+      "immune_to": [],
+      "popped_by": "any damage type",
+      "children": "",
+      "health": 1,
+      "rbe": 1,
+      "description": "The most basic bloon: 1 health, no immunities. It is the bottom of the spawn chain — when popped it reveals nothing. The RBE of every other bloon is measured in Red Bloon Equivalents (how many Red-pop-equivalents it takes to fully clear it and everything it spawns)."
+    },
+    {
+      "id": "blue",
+      "canonical": "Blue Bloon",
+      "aliases": ["blue", "blues", "blue bloon"],
+      "category": "basic",
+      "properties": [],
+      "immune_to": [],
+      "popped_by": "any damage type",
+      "children": "1 Red Bloon",
+      "health": 1,
+      "rbe": 2,
+      "description": "Basic bloon with 1 health and no immunities. When popped it reveals 1 Red Bloon."
+    },
+    {
+      "id": "green",
+      "canonical": "Green Bloon",
+      "aliases": ["green", "greens", "green bloon"],
+      "category": "basic",
+      "properties": [],
+      "immune_to": [],
+      "popped_by": "any damage type",
+      "children": "1 Blue Bloon",
+      "health": 1,
+      "rbe": 3,
+      "description": "Basic bloon with 1 health and no immunities. When popped it reveals 1 Blue Bloon."
+    },
+    {
+      "id": "yellow",
+      "canonical": "Yellow Bloon",
+      "aliases": ["yellow", "yellows", "yellow bloon"],
+      "category": "basic",
+      "properties": [],
+      "immune_to": [],
+      "popped_by": "any damage type",
+      "children": "1 Green Bloon",
+      "health": 1,
+      "rbe": 4,
+      "description": "Fast basic bloon with 1 health and no immunities. When popped it reveals 1 Green Bloon."
+    },
+    {
+      "id": "pink",
+      "canonical": "Pink Bloon",
+      "aliases": ["pink", "pinks", "pink bloon"],
+      "category": "basic",
+      "properties": [],
+      "immune_to": [],
+      "popped_by": "any damage type",
+      "children": "1 Yellow Bloon",
+      "health": 1,
+      "rbe": 5,
+      "description": "Fastest basic bloon with 1 health and no immunities. When popped it reveals 1 Yellow Bloon. Pink is NOT the bottom of the chain — it spawns Yellow, which spawns Green, then Blue, then Red."
+    },
     {
       "id": "lead",
       "canonical": "Lead Bloon",
@@ -12,6 +77,8 @@
       "immune_to": ["Sharp", "Shatter", "Cold", "Energy"],
       "popped_by": "Explosion, Fire, Plasma, Glacier, Acid, or Normal damage",
       "children": "2 Black Bloons",
+      "health": 1,
+      "rbe": 23,
       "description": "Immune to Sharp damage, so most basic dart/projectile attacks cannot pop it unupgraded. Needs Explosion, Fire, Plasma, Glacier, Acid, or Normal damage."
     },
     {
@@ -23,6 +90,8 @@
       "immune_to": ["Explosion"],
       "popped_by": "any non-explosive damage (darts, fire, ice, etc.)",
       "children": "2 Pink Bloons",
+      "health": 1,
+      "rbe": 11,
       "description": "Immune to Explosion damage (Bomb Shooter, Mortar, etc.). Any non-explosive damage pops it."
     },
     {
@@ -34,6 +103,8 @@
       "immune_to": ["Cold", "Glacier", "Frigid"],
       "popped_by": "any non-cold damage (darts, explosions, fire, etc.)",
       "children": "2 Pink Bloons",
+      "health": 1,
+      "rbe": 11,
       "description": "Immune to Cold / ice damage (Ice Monkey, etc.). Any non-cold damage pops it."
     },
     {
@@ -45,6 +116,8 @@
       "immune_to": ["Fire", "Energy", "Plasma", "Frigid"],
       "popped_by": "Sharp, Explosion, Cold, Glacier, Acid, or Normal damage",
       "children": "2 Pink Bloons",
+      "health": 1,
+      "rbe": 11,
       "description": "Immune to Fire, Energy/Plasma, and Magic damage. Sharp, Explosion, and Cold damage still pop it."
     },
     {
@@ -56,6 +129,8 @@
       "immune_to": ["Explosion", "Cold", "Glacier", "Frigid"],
       "popped_by": "Sharp, Fire, Plasma, Acid, or Normal damage",
       "children": "1 Black Bloon and 1 White Bloon",
+      "health": 1,
+      "rbe": 23,
       "description": "Has both Black and White properties: immune to Explosion and Cold damage. Pops into one Black and one White Bloon."
     },
     {
@@ -67,6 +142,8 @@
       "immune_to": [],
       "popped_by": "any damage type",
       "children": "2 Zebra Bloons",
+      "health": 1,
+      "rbe": 47,
       "description": "No damage-type immunity. Pops into two Zebra Bloons."
     },
     {
@@ -78,6 +155,7 @@
       "immune_to": [],
       "popped_by": "any damage type, but the shell takes 10 hits",
       "health": 10,
+      "rbe": 104,
       "children": "2 Rainbow Bloons",
       "description": "Tough shell with no damage-type immunity but 10 layers of health; resists single-hit pops. Pops into two Rainbow Bloons."
     },
@@ -89,6 +167,7 @@
       "properties": ["moab-class"],
       "immune_to": [],
       "health": 200,
+      "rbe": 616,
       "children": "4 Ceramic Bloons",
       "description": "Massive Ornary Air Blimp. MOAB-class blimp with 200 HP and no camo/lead properties. Pops into four Ceramic Bloons."
     },
@@ -100,6 +179,7 @@
       "properties": ["moab-class"],
       "immune_to": [],
       "health": 700,
+      "rbe": 3164,
       "children": "4 MOABs",
       "description": "Brutal Floating Behemoth. MOAB-class blimp with 700 HP. Pops into four MOABs."
     },
@@ -111,6 +191,7 @@
       "properties": ["moab-class"],
       "immune_to": [],
       "health": 4000,
+      "rbe": 16656,
       "children": "4 BFBs",
       "description": "Zeppelin of Mighty Gargantuaness. MOAB-class blimp with 4000 HP. Pops into four BFBs."
     },
@@ -122,6 +203,7 @@
       "properties": ["moab-class", "camo", "lead", "black"],
       "immune_to": ["Sharp", "Shatter", "Cold", "Energy", "Explosion"],
       "health": 400,
+      "rbe": 816,
       "children": "4 Camo Ceramic Bloons",
       "description": "Dark Dirigible Titan. Has Camo, Lead, and Black properties, so it needs camo detection and is immune to Sharp and Explosion damage. Very fast; 400 HP. Pops into four camo Ceramics."
     },
@@ -133,6 +215,7 @@
       "properties": ["moab-class", "knockback-immune"],
       "immune_to": [],
       "health": 20000,
+      "rbe": 71600,
       "children": "3 ZOMGs and 2 DDTs",
       "description": "Big Airship of Doom. Strongest standard blimp at 20000 HP; immune to knockback, stuns, and most status effects. Pops into three ZOMGs and two DDTs."
     },

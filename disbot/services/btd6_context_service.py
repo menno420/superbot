@@ -521,6 +521,7 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     popped_by = _sanitise(getattr(entry, "popped_by", "") or "")
     children = _sanitise(getattr(entry, "children", "") or "")
     health = getattr(entry, "health", None)
+    rbe = getattr(entry, "rbe", None)
 
     lines: list[str] = []
 
@@ -551,8 +552,12 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
         stat_bits.append(f"properties: {', '.join(_sanitise(p) for p in properties)}")
     if isinstance(health, int):
         stat_bits.append(f"health: {health}")
+    if isinstance(rbe, int):
+        stat_bits.append(f"RBE (total hits incl. all spawned children): {rbe}")
     if children:
         stat_bits.append(f"pops into {children}")
+    elif category not in {"modifier", ""}:
+        stat_bits.append("pops into nothing (bottom of the spawn chain)")
     if stat_bits:
         lines.append(
             _cap(
