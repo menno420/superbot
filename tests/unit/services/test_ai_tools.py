@@ -31,6 +31,8 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
+        "btd6_paragon_calculate",
+        "btd6_paragon_requirements",
     }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
@@ -176,6 +178,8 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
+        "btd6_paragon_calculate",
+        "btd6_paragon_requirements",
         "get_guild_ai_config",
         "recent_audit",
     }
@@ -255,3 +259,189 @@ async def test_recent_audit_handler_summarises_and_clamps_limit(monkeypatch):
     assert result["rows"][0]["decision"] == "replied"
     assert result["rows"][0]["reason"] == "none"
     assert result["rows"][1]["task"] is None
+
+
+# --- paragon tools (forward + reverse, structured envelopes) ----------------
+
+
+def _canned_paragon_success(degree: int = 74) -> tuple[int, dict]:
+    return (
+        200,
+        {
+            "success": True,
+            "api_version": "1.1",
+            "result": {
+                "degree": degree,
+                "total_power": 147800,
+                "power_for_next_degree": 2053,
+                "next_degree": min(100, degree + 1),
+                "breakdown": {
+                    "pops": {
+                        "power": 44444,
+                        "max_power": 90000,
+                        "capped": False,
+                        "fill_pct": 49.38,
+                    },
+                    "upgrades": {
+                        "power": 6000,
+                        "max_power": 10000,
+                        "capped": False,
+                        "fill_pct": 60.0,
+                    },
+                    "cash": {
+                        "power": 20000,
+                        "max_power": 60000,
+                        "capped": False,
+                        "fill_pct": 33.33,
+                    },
+                    "extra_t5s": {
+                        "power": 6000,
+                        "max_power": 50000,
+                        "capped": False,
+                        "fill_pct": 12.0,
+                    },
+                    "totems": {
+                        "power": 10000,
+                        "max_power": None,
+                        "capped": False,
+                        "fill_pct": None,
+                    },
+                },
+                "warnings": [],
+                "wasted_cash": 0,
+                "paragon": {
+                    "id": "apex_plasma_master",
+                    "name": "Apex Plasma Master",
+                    "tower": "Dart Monkey",
+                    "base_price": 150000,
+                    "difficulty": "medium",
+                    "game_mode": "solo",
+                },
+            },
+            "rate_limit": {
+                "limit": 60,
+                "remaining": 59,
+                "reset_in_seconds": 60,
+                "window": "60s",
+            },
+        },
+    )
+
+
+async def test_paragon_calculate_tool_returns_degree(monkeypatch):
+    from services import paragon_service
+
+    async def fake_post(_payload):
+        return _canned_paragon_success(74)
+
+    monkeypatch.setattr(paragon_service, "_http_post", fake_post)
+    paragon_service._reset_for_tests()
+
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    out = await registry.handlers["btd6_paragon_calculate"](
+        {"tower": "Dart Monkey", "pops": 8_000_000},
+    )
+
+    assert out["success"] is True
+    assert out["error"] is None
+    assert out["estimated"] is False
+    assert out["result"]["degree"] == 74
+    assert set(out["result"]["breakdown"]) == {
+        "pops",
+        "upgrades",
+        "cash",
+        "extra_t5s",
+        "totems",
+    }
+    assert out["result"]["paragon"]["id"] == "apex_plasma_master"
+
+
+async def test_paragon_calculate_tool_missing_tower_is_structured():
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    out = await registry.handlers["btd6_paragon_calculate"]({})
+    assert out["success"] is False
+    assert out["error"]["code"] == "missing_field"
+
+
+async def test_paragon_calculate_tool_unknown_tower_is_structured(monkeypatch):
+    from services import paragon_service
+
+    async def fake_post(_payload):
+        return (
+            400,
+            {
+                "success": False,
+                "error": {"code": "UNKNOWN_TOWER", "message": "no match"},
+                "valid_towers": ["Dart Monkey"],
+            },
+        )
+
+    monkeypatch.setattr(paragon_service, "_http_post", fake_post)
+    paragon_service._reset_for_tests()
+
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    out = await registry.handlers["btd6_paragon_calculate"]({"tower": "zzzqqq"})
+
+    assert out["success"] is False
+    assert out["error"]["code"] == "unknown_tower"
+    assert out["error"]["valid_towers"] == ["Dart Monkey"]
+
+
+async def test_paragon_calculate_tool_rate_limited_is_structured(monkeypatch):
+    from services import paragon_service
+
+    async def fake_post(_payload):
+        return (
+            429,
+            {
+                "success": False,
+                "error": {"code": "RATE_LIMITED", "message": "slow", "retry_after": 12},
+            },
+        )
+
+    monkeypatch.setattr(paragon_service, "_http_post", fake_post)
+    paragon_service._reset_for_tests()
+
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    out = await registry.handlers["btd6_paragon_calculate"]({"tower": "Dart Monkey"})
+
+    assert out["success"] is False
+    assert out["error"]["code"] == "rate_limited"
+    assert out["error"]["retry_after"] == 12
+
+
+async def test_paragon_requirements_tool_returns_build(monkeypatch):
+    from services import paragon_service
+
+    async def fake_post(_payload):
+        return _canned_paragon_success(90)
+
+    monkeypatch.setattr(paragon_service, "_http_post", fake_post)
+    paragon_service._reset_for_tests()
+
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    out = await registry.handlers["btd6_paragon_requirements"](
+        {"tower": "Dart Monkey", "target_degree": 90, "strategy": "least_cash"},
+    )
+
+    assert out["success"] is True
+    result = out["result"]
+    assert result["target_degree"] == 90
+    assert result["strategy"] == "least_cash"
+    assert result["paragon"]["id"] == "apex_plasma_master"
+    assert {
+        "pops",
+        "cash_spent",
+        "upgrade_count",
+        "tier5_count",
+        "geraldo_totems",
+    } <= set(result["recommended_inputs"])
+
+
+async def test_paragon_requirements_tool_validates_target():
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    out = await registry.handlers["btd6_paragon_requirements"](
+        {"tower": "Dart Monkey", "target_degree": 250},
+    )
+    assert out["success"] is False
+    assert out["error"]["code"] == "invalid_target"
