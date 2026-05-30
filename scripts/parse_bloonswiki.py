@@ -606,6 +606,107 @@ def parse_bloon_children(text: str) -> list[dict]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Round composition (Module:BTD6_rounds/Default)
+# ---------------------------------------------------------------------------
+
+# RBE-based danger tiers (highest first); a MOAB-class presence floors at "high".
+_DANGER_TIERS = (
+    (30000, "extreme"),
+    (8000, "very_high"),
+    (1500, "high"),
+    (400, "medium"),
+    (80, "low"),
+)
+
+
+def _group_rbe(
+    bloon_id: str,
+    modifiers: list[str],
+    rbe_map: dict[str, dict],
+) -> int | None:
+    info = rbe_map.get(bloon_id)
+    if not info:
+        return None
+    if "fortified" in modifiers and info.get("rbe_fortified"):
+        return int(info["rbe_fortified"])
+    return int(info["rbe"]) if info.get("rbe") is not None else None
+
+
+def _round_danger(rbe: int, has_moab: bool) -> str:
+    for threshold, label in _DANGER_TIERS:
+        if rbe >= threshold:
+            return label
+    return "high" if has_moab else "trivial"
+
+
+def parse_rounds_json(
+    default_data: dict,
+    *,
+    rbe_map: dict[str, dict],
+    name_map: dict[str, str] | None = None,
+) -> list[dict]:
+    """Parse ``Module:BTD6_rounds/Default`` into per-round composition + RBE.
+
+    ``rbe_map`` maps a bloon id to ``{"rbe", "rbe_fortified"}`` (from bloons.json).
+    RBE is children-inclusive, so a round's RBE is simply the sum of
+    ``count × rbe`` over its top-level spawn groups — children are NOT expanded
+    (a single round-100 BAD is its full 55,760, not BAD + its descendants again).
+    Cash is intentionally not derived (the wiki computes it from per-income Lua
+    functions that don't parse deterministically).
+    """
+    from utils.btd6 import bloon_ids
+
+    names = name_map or {}
+
+    def name_of(bloon_id: str) -> str:
+        return names.get(bloon_id) or bloon_id.replace("_", " ").title()
+
+    out: list[dict] = []
+    for index, groups_raw in enumerate(default_data.get("rounds", []), start=1):
+        groups: list[dict] = []
+        rbe = 0
+        has_moab = False
+        for grp in groups_raw:
+            bloon_id, modifiers = bloon_ids.parse_round_bloon_key(
+                str(grp.get("bloon", "")),
+            )
+            count = int(grp.get("count", 0))
+            groups.append(
+                {
+                    "bloon_id": bloon_id,
+                    "count": count,
+                    "start": grp.get("start", 0),
+                    "duration": grp.get("duration", 0),
+                    "modifiers": modifiers,
+                },
+            )
+            has_moab = has_moab or bloon_id in bloon_ids.MOAB_IDS
+            per = _group_rbe(bloon_id, modifiers, rbe_map)
+            if per is not None:
+                rbe += per * count
+
+        totals: dict[str, int] = {}
+        for group in groups:
+            label = name_of(group["bloon_id"])
+            totals[label] = totals.get(label, 0) + group["count"]
+        top = sorted(totals.items(), key=lambda kv: -kv[1])
+        summary = ", ".join(f"{count} {label}" for label, count in top[:3])
+        threats = [label for label, _ in sorted(totals.items(), key=lambda kv: -kv[1])]
+        out.append(
+            {
+                "round": index,
+                "summary": f"{summary}. RBE {rbe:,}." if summary else f"RBE {rbe:,}.",
+                "danger": _round_danger(rbe, has_moab),
+                "common_threats": threats[:4],
+                "rbe": rbe,
+                "roundset": "default",
+                "groups": groups,
+            },
+        )
+    return out
+
+
 def _looks_like_json(text: str) -> bool:
     try:
         json.loads(text)

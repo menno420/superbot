@@ -51,10 +51,35 @@ def normalize_bloon_name(name: str) -> str:
     return s.strip()
 
 
+# Modifier suffixes as they appear (CamelCase) in round-module spawn keys.
+_ROUND_MODIFIER_SUFFIXES = ("Camo", "Regrow", "Fortified")
+
+
+def parse_round_bloon_key(key: str) -> tuple[str, list[str]]:
+    """Split a round-module spawn key into (canonical id, modifiers).
+
+    e.g. ``"LeadFortifiedCamo"`` -> ``("lead", ["fortified", "camo"])``;
+    ``"CeramicRegrowFortifiedCamo"`` -> ``("ceramic", ["regrow", "fortified", "camo"])``.
+    """
+    remaining = str(key)
+    modifiers: list[str] = []
+    changed = True
+    while changed:
+        changed = False
+        for suffix in _ROUND_MODIFIER_SUFFIXES:
+            if remaining.endswith(suffix) and len(remaining) > len(suffix):
+                modifiers.append(suffix.lower())
+                remaining = remaining[: -len(suffix)]
+                changed = True
+    modifiers.reverse()  # stripped from the end -> restore source order
+    return normalize_bloon_name(remaining), modifiers
+
+
 __all__ = [
     "BASIC_IDS",
     "MOAB_IDS",
     "MODIFIER_TOKENS",
     "normalize_bloon_name",
+    "parse_round_bloon_key",
     "strip_links",
 ]

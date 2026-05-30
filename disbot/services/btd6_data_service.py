@@ -103,6 +103,14 @@ class RoundEntry:
     summary: str
     danger: str
     common_threats: tuple[str, ...]
+    # Extended composition (Module:BTD6_rounds): total RBE (children-inclusive),
+    # the ordered spawn groups ({bloon_id, count, start, duration, modifiers}),
+    # and which round set this is ("default"; ABR is a later addition). ``cash``
+    # is reserved but not yet derived (wiki computes it from per-income Lua).
+    rbe: int | None = None
+    cash: int | None = None
+    roundset: str = "default"
+    groups: tuple[dict[str, Any], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -377,11 +385,24 @@ def _parse_mode(raw: dict[str, Any]) -> ModeEntry:
 
 def _parse_round(raw: dict[str, Any]) -> RoundEntry:
     _require_keys(raw, _REQUIRED_ROUND_FIELDS, where=f"round {raw.get('round')!r}")
+    rbe_raw = raw.get("rbe")
+    rbe = int(rbe_raw) if isinstance(rbe_raw, (int, float)) else None
+    if rbe is not None and rbe < 0:
+        raise BTD6DataValidationError(
+            f"round {raw['round']!r}: rbe must be >= 0 when present, got {rbe}",
+        )
+    cash_raw = raw.get("cash")
+    cash = int(cash_raw) if isinstance(cash_raw, (int, float)) else None
+    groups = tuple(dict(g) for g in raw.get("groups", ()) if isinstance(g, dict))
     return RoundEntry(
         round_number=int(raw["round"]),
         summary=str(raw["summary"]),
         danger=str(raw["danger"]),
         common_threats=tuple(str(t) for t in raw["common_threats"]),
+        rbe=rbe,
+        cash=cash,
+        roundset=str(raw.get("roundset", "default")),
+        groups=groups,
     )
 
 

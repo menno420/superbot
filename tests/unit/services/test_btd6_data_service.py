@@ -333,6 +333,46 @@ def test_invalid_bloon_rbe_fails(tmp_path):
     _expect_validation_error(staged, match="rbe must be > 0")
 
 
+# ---------------------------------------------------------------------------
+# Rounds (full composition from Module:BTD6_rounds)
+# ---------------------------------------------------------------------------
+
+
+def test_rounds_full_composition_loads():
+    from services.btd6_data_service import get_round
+
+    assert len(get_dataset().rounds) == 140
+    r63 = get_round(63)
+    assert r63.rbe and r63.rbe > 0
+    assert any(g["bloon_id"] == "ceramic" for g in r63.groups)
+    assert r63.roundset == "default"
+    assert get_round(100).groups[0]["bloon_id"] == "bad"
+
+
+def test_invalid_round_rbe_fails(tmp_path):
+    staged = _stage_data(tmp_path)
+    (staged / "rounds.json").write_text(
+        json.dumps(
+            {
+                "data_version": "1.0",
+                "game_version": "54.0",
+                "source": "test",
+                "rounds": [
+                    {
+                        "round": 1,
+                        "summary": "s",
+                        "danger": "low",
+                        "common_threats": [],
+                        "rbe": -5,
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    _expect_validation_error(staged, match="rbe must be >= 0")
+
+
 def test_every_bloon_category_is_valid():
     from services.btd6_data_service import _BLOON_CATEGORIES
 

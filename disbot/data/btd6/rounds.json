@@ -1,67 +1,5751 @@
 {
-  "data_version": "1.0",
-  "game_version": "41.3",
-  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "schema_version": 2,
+  "data_version": "2.0",
+  "game_version": "54.0",
+  "source": "bloonswiki.com Module:BTD6_rounds/Default (CC BY-NC-SA)",
   "rounds": [
     {
       "round": 1,
       "summary": "20 Reds. Very easy.",
       "danger": "trivial",
-      "common_threats": []
+      "common_threats": [
+        "Red Bloon"
+      ],
+      "rbe": 20,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 20,
+          "start": 0,
+          "duration": 17.51,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "summary": "35 Red Bloon. RBE 35.",
+      "danger": "trivial",
+      "common_threats": [
+        "Red Bloon"
+      ],
+      "rbe": 35,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 35,
+          "start": 0,
+          "duration": 19,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "summary": "25 Red Bloon, 5 Blue Bloon. RBE 35.",
+      "danger": "trivial",
+      "common_threats": [
+        "Red Bloon",
+        "Blue Bloon"
+      ],
+      "rbe": 35,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 10,
+          "start": 0,
+          "duration": 5.1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 5,
+          "start": 5.7,
+          "duration": 2.25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 15,
+          "start": 9.71,
+          "duration": 7,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "summary": "35 Red Bloon, 18 Blue Bloon. RBE 71.",
+      "danger": "trivial",
+      "common_threats": [
+        "Red Bloon",
+        "Blue Bloon"
+      ],
+      "rbe": 71,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 25,
+          "start": 0,
+          "duration": 12,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 18,
+          "start": 7.9,
+          "duration": 2.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 10,
+          "start": 14.51,
+          "duration": 2.8,
+          "modifiers": []
+        }
+      ]
     },
     {
       "round": 5,
       "summary": "Mix of Reds and Blues.",
       "danger": "trivial",
-      "common_threats": []
+      "common_threats": [
+        "Blue Bloon",
+        "Red Bloon"
+      ],
+      "rbe": 59,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "blue",
+          "count": 12,
+          "start": 0,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 5,
+          "start": 5.7,
+          "duration": 2.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 15,
+          "start": 8.6,
+          "duration": 7.9,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 6,
+      "summary": "15 Red Bloon, 15 Blue Bloon, 4 Green Bloon. RBE 57.",
+      "danger": "trivial",
+      "common_threats": [
+        "Red Bloon",
+        "Blue Bloon",
+        "Green Bloon"
+      ],
+      "rbe": 57,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 4,
+          "start": 0,
+          "duration": 1.71,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 15,
+          "start": 5.33,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 15,
+          "start": 10.8,
+          "duration": 7.9,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 7,
+      "summary": "20 Blue Bloon, 20 Red Bloon, 5 Green Bloon. RBE 75.",
+      "danger": "trivial",
+      "common_threats": [
+        "Blue Bloon",
+        "Red Bloon",
+        "Green Bloon"
+      ],
+      "rbe": 75,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "blue",
+          "count": 10,
+          "start": 0,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 5,
+          "start": 5.7,
+          "duration": 4.95,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 20,
+          "start": 11.81,
+          "duration": 10.84,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 10,
+          "start": 22.81,
+          "duration": 3.99,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 8,
+      "summary": "20 Blue Bloon, 14 Green Bloon, 10 Red Bloon. RBE 92.",
+      "danger": "low",
+      "common_threats": [
+        "Blue Bloon",
+        "Green Bloon",
+        "Red Bloon"
+      ],
+      "rbe": 92,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "blue",
+          "count": 20,
+          "start": 0,
+          "duration": 10.84,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 2,
+          "start": 11.42,
+          "duration": 0.57,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 10,
+          "start": 14.03,
+          "duration": 1.97,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 12,
+          "start": 18.27,
+          "duration": 10.6,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 9,
+      "summary": "30 Green Bloon. RBE 90.",
+      "danger": "low",
+      "common_threats": [
+        "Green Bloon"
+      ],
+      "rbe": 90,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 30,
+          "start": 0,
+          "duration": 18.95,
+          "modifiers": []
+        }
+      ]
     },
     {
       "round": 10,
       "summary": "First Pinks. Pinks are fast — make sure you have something with reach.",
       "danger": "low",
-      "common_threats": ["Pink"]
+      "common_threats": [
+        "Pink"
+      ],
+      "rbe": 204,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "blue",
+          "count": 60,
+          "start": 0,
+          "duration": 35,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 20,
+          "start": 35,
+          "duration": 9,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 22,
+          "start": 44,
+          "duration": 3.99,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 11,
+      "summary": "12 Green Bloon, 10 Blue Bloon, 10 Red Bloon. RBE 78.",
+      "danger": "trivial",
+      "common_threats": [
+        "Green Bloon",
+        "Blue Bloon",
+        "Red Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 78,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "yellow",
+          "count": 3,
+          "start": 0,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 12,
+          "start": 4.47,
+          "duration": 6.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 10,
+          "start": 10.87,
+          "duration": 3.8,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 10,
+          "start": 14.59,
+          "duration": 4.57,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 12,
+      "summary": "15 Blue Bloon, 10 Green Bloon, 5 Yellow Bloon. RBE 80.",
+      "danger": "low",
+      "common_threats": [
+        "Blue Bloon",
+        "Green Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 80,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 10,
+          "start": 0,
+          "duration": 5.13,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 15,
+          "start": 5.7,
+          "duration": 6.07,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 5,
+          "start": 14.27,
+          "duration": 3.12,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 13,
+      "summary": "50 Blue Bloon, 23 Green Bloon. RBE 169.",
+      "danger": "low",
+      "common_threats": [
+        "Blue Bloon",
+        "Green Bloon"
+      ],
+      "rbe": 169,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "blue",
+          "count": 50,
+          "start": 0,
+          "duration": 30,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 23,
+          "start": 2.21,
+          "duration": 30,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 14,
+      "summary": "49 Red Bloon, 15 Blue Bloon, 10 Green Bloon. RBE 145.",
+      "danger": "low",
+      "common_threats": [
+        "Red Bloon",
+        "Blue Bloon",
+        "Green Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 145,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 18,
+          "start": 0,
+          "duration": 9.71,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 5,
+          "start": 2.85,
+          "duration": 1.12,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 5,
+          "start": 5.71,
+          "duration": 1.12,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 4,
+          "start": 8.56,
+          "duration": 0.95,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "red",
+          "count": 31,
+          "start": 9.5,
+          "duration": 17.13,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 10,
+          "start": 15.96,
+          "duration": 1.38,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 5,
+          "start": 19.84,
+          "duration": 1.39,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 5,
+          "start": 23.71,
+          "duration": 1.55,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 15,
+      "summary": "20 Red Bloon, 15 Blue Bloon, 12 Green Bloon. RBE 151.",
+      "danger": "low",
+      "common_threats": [
+        "Red Bloon",
+        "Blue Bloon",
+        "Green Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 151,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 20,
+          "start": 0,
+          "duration": 25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 15,
+          "start": 2.78,
+          "duration": 20,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 12,
+          "start": 5.68,
+          "duration": 15,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 10,
+          "start": 8.87,
+          "duration": 12,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "pink",
+          "count": 5,
+          "start": 17.55,
+          "duration": 3,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 16,
+      "summary": "40 Green Bloon, 8 Yellow Bloon. RBE 152.",
+      "danger": "low",
+      "common_threats": [
+        "Green Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 152,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 20,
+          "start": 0,
+          "duration": 10.85,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 20,
+          "start": 0.2,
+          "duration": 10.85,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 8,
+          "start": 14.59,
+          "duration": 1.43,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 17,
+      "summary": "12 Yellow Bloon. RBE 48.",
+      "danger": "trivial",
+      "common_threats": [
+        "Yellow Bloon"
+      ],
+      "rbe": 48,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "yellow",
+          "count": 12,
+          "start": 0,
+          "duration": 5,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 18,
+      "summary": "80 Green Bloon. RBE 240.",
+      "danger": "low",
+      "common_threats": [
+        "Green Bloon"
+      ],
+      "rbe": 240,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 60,
+          "start": 0,
+          "duration": 25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 20,
+          "start": 25,
+          "duration": 1.82,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 19,
+      "summary": "15 Pink Bloon, 10 Green Bloon, 9 Yellow Bloon. RBE 141.",
+      "danger": "low",
+      "common_threats": [
+        "Pink Bloon",
+        "Green Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 141,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 10,
+          "start": 0,
+          "duration": 2.89,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 5,
+          "start": 2.85,
+          "duration": 2.33,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "pink",
+          "count": 15,
+          "start": 5.96,
+          "duration": 7.62,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 4,
+          "start": 13.48,
+          "duration": 2.28,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 20,
+      "summary": "6 Black Bloon. RBE 66.",
+      "danger": "trivial",
+      "common_threats": [
+        "Black Bloon"
+      ],
+      "rbe": 66,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "black",
+          "count": 6,
+          "start": 0,
+          "duration": 5.25,
+          "modifiers": []
+        }
+      ]
     },
     {
       "round": 21,
       "summary": "First Lead bloons in a fast wave. Need sharp-piercing damage or explosive.",
       "danger": "medium",
-      "common_threats": ["Lead"]
+      "common_threats": [
+        "Lead"
+      ],
+      "rbe": 230,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "yellow",
+          "count": 40,
+          "start": 0.09,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "pink",
+          "count": 10,
+          "start": 10.84,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "pink",
+          "count": 4,
+          "start": 16.68,
+          "duration": 1.44,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 22,
+      "summary": "16 White Bloon. RBE 176.",
+      "danger": "low",
+      "common_threats": [
+        "White Bloon"
+      ],
+      "rbe": 176,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "white",
+          "count": 16,
+          "start": 0,
+          "duration": 8,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 23,
+      "summary": "7 Black Bloon, 7 White Bloon. RBE 154.",
+      "danger": "low",
+      "common_threats": [
+        "Black Bloon",
+        "White Bloon"
+      ],
+      "rbe": 154,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "black",
+          "count": 7,
+          "start": 0,
+          "duration": 2.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "white",
+          "count": 7,
+          "start": 4.82,
+          "duration": 2,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 24,
+      "summary": "20 Blue Bloon, 1 Green Bloon. RBE 43.",
+      "danger": "trivial",
+      "common_threats": [
+        "Blue Bloon",
+        "Green Bloon"
+      ],
+      "rbe": 43,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 1,
+          "start": 0,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "blue",
+          "count": 20,
+          "start": 3,
+          "duration": 6,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 25,
+      "summary": "25 Yellow Bloon, 10 Purple Bloon. RBE 210.",
+      "danger": "low",
+      "common_threats": [
+        "Yellow Bloon",
+        "Purple Bloon"
+      ],
+      "rbe": 210,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "yellow",
+          "count": 25,
+          "start": 0,
+          "duration": 14,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 10,
+          "start": 17.14,
+          "duration": 4,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 26,
+      "summary": "23 Pink Bloon, 4 Zebra Bloon. RBE 207.",
+      "danger": "low",
+      "common_threats": [
+        "Pink Bloon",
+        "Zebra Bloon"
+      ],
+      "rbe": 207,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "pink",
+          "count": 23,
+          "start": 0,
+          "duration": 8.7,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 4,
+          "start": 11.08,
+          "duration": 3.43,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 27,
+      "summary": "100 Red Bloon, 60 Blue Bloon, 45 Green Bloon. RBE 535.",
+      "danger": "medium",
+      "common_threats": [
+        "Red Bloon",
+        "Blue Bloon",
+        "Green Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 535,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 100,
+          "start": 0.02,
+          "duration": 12,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 60,
+          "start": 11.54,
+          "duration": 8,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 45,
+          "start": 19.05,
+          "duration": 7.35,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 45,
+          "start": 26.53,
+          "duration": 7.72,
+          "modifiers": []
+        }
+      ]
     },
     {
       "round": 28,
       "summary": "First Ceramic rush. Need consistent ceramic damage.",
       "danger": "medium",
-      "common_threats": ["Ceramic"]
+      "common_threats": [
+        "Ceramic"
+      ],
+      "rbe": 138,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "lead",
+          "count": 6,
+          "start": 0,
+          "duration": 5,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 29,
+      "summary": "65 Yellow Bloon. RBE 260.",
+      "danger": "low",
+      "common_threats": [
+        "Yellow Bloon"
+      ],
+      "rbe": 260,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "yellow",
+          "count": 50,
+          "start": 0,
+          "duration": 11,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 15,
+          "start": 12.75,
+          "duration": 2.5,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 30,
+      "summary": "9 Lead Bloon. RBE 207.",
+      "danger": "low",
+      "common_threats": [
+        "Lead Bloon"
+      ],
+      "rbe": 207,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "lead",
+          "count": 9,
+          "start": 0,
+          "duration": 13.07,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 31,
+      "summary": "10 Zebra Bloon, 8 Black Bloon, 8 White Bloon. RBE 406.",
+      "danger": "medium",
+      "common_threats": [
+        "Zebra Bloon",
+        "Black Bloon",
+        "White Bloon"
+      ],
+      "rbe": 406,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "black",
+          "count": 8,
+          "start": 0,
+          "duration": 5.09,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "white",
+          "count": 8,
+          "start": 0.35,
+          "duration": 5.09,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 8,
+          "start": 6.16,
+          "duration": 5.09,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 2,
+          "start": 14.2,
+          "duration": 1.71,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 32,
+      "summary": "20 White Bloon, 15 Black Bloon, 10 Purple Bloon. RBE 495.",
+      "danger": "medium",
+      "common_threats": [
+        "White Bloon",
+        "Black Bloon",
+        "Purple Bloon"
+      ],
+      "rbe": 495,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "black",
+          "count": 15,
+          "start": 0,
+          "duration": 9,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "white",
+          "count": 20,
+          "start": 10.34,
+          "duration": 11,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 10,
+          "start": 21.96,
+          "duration": 6,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 33,
+      "summary": "20 Red Bloon, 13 Yellow Bloon. RBE 72.",
+      "danger": "trivial",
+      "common_threats": [
+        "Red Bloon",
+        "Yellow Bloon"
+      ],
+      "rbe": 72,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "red",
+          "count": 20,
+          "start": 0,
+          "duration": 5,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 13,
+          "start": 5.34,
+          "duration": 20,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 34,
+      "summary": "160 Yellow Bloon, 6 Zebra Bloon. RBE 778.",
+      "danger": "medium",
+      "common_threats": [
+        "Yellow Bloon",
+        "Zebra Bloon"
+      ],
+      "rbe": 778,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "yellow",
+          "count": 160,
+          "start": 0,
+          "duration": 36,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 6,
+          "start": 8.62,
+          "duration": 18.08,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 35,
+      "summary": "35 Pink Bloon, 30 Black Bloon, 25 White Bloon. RBE 1,015.",
+      "danger": "medium",
+      "common_threats": [
+        "Pink Bloon",
+        "Black Bloon",
+        "White Bloon",
+        "Rainbow Bloon"
+      ],
+      "rbe": 1015,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "white",
+          "count": 25,
+          "start": 0,
+          "duration": 10.03,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 5,
+          "start": 14.35,
+          "duration": 2.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "pink",
+          "count": 35,
+          "start": 19.21,
+          "duration": 7,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "black",
+          "count": 30,
+          "start": 26.76,
+          "duration": 7,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 36,
+      "summary": "140 Pink Bloon, 20 Green Bloon. RBE 760.",
+      "danger": "medium",
+      "common_threats": [
+        "Pink Bloon",
+        "Green Bloon"
+      ],
+      "rbe": 760,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "pink",
+          "count": 40,
+          "start": 0,
+          "duration": 1.51,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 10,
+          "start": 4.01,
+          "duration": 1.35,
+          "modifiers": [
+            "regrow",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "pink",
+          "count": 40,
+          "start": 8.49,
+          "duration": 1.35,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 10,
+          "start": 12.67,
+          "duration": 1.35,
+          "modifiers": [
+            "regrow",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "pink",
+          "count": 60,
+          "start": 16.99,
+          "duration": 4,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 37,
+      "summary": "32 White Bloon, 25 Black Bloon, 15 Lead Bloon. RBE 1,202.",
+      "danger": "medium",
+      "common_threats": [
+        "White Bloon",
+        "Black Bloon",
+        "Lead Bloon",
+        "Zebra Bloon"
+      ],
+      "rbe": 1202,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "black",
+          "count": 25,
+          "start": 0,
+          "duration": 10.85,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "white",
+          "count": 25,
+          "start": 11.42,
+          "duration": 10.85,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 15,
+          "start": 22.84,
+          "duration": 7.99,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 10,
+          "start": 31.41,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "white",
+          "count": 7,
+          "start": 41.92,
+          "duration": 1.59,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 38,
+      "summary": "42 Pink Bloon, 17 White Bloon, 14 Lead Bloon. RBE 1,157.",
+      "danger": "medium",
+      "common_threats": [
+        "Pink Bloon",
+        "White Bloon",
+        "Lead Bloon",
+        "Zebra Bloon"
+      ],
+      "rbe": 1157,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "white",
+          "count": 17,
+          "start": 0,
+          "duration": 3.6,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "pink",
+          "count": 42,
+          "start": 2,
+          "duration": 23.41,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 14,
+          "start": 4.83,
+          "duration": 8.56,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 10,
+          "start": 12.09,
+          "duration": 6.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 2,
+          "start": 27.06,
+          "duration": 2,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 39,
+      "summary": "20 Zebra Bloon, 20 Rainbow Bloon, 10 Black Bloon. RBE 1,620.",
+      "danger": "high",
+      "common_threats": [
+        "Zebra Bloon",
+        "Rainbow Bloon",
+        "Black Bloon",
+        "White Bloon"
+      ],
+      "rbe": 1620,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "black",
+          "count": 10,
+          "start": 0,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "white",
+          "count": 10,
+          "start": 5.71,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 20,
+          "start": 12.79,
+          "duration": 10.85,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 18,
+          "start": 24.79,
+          "duration": 9.71,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 2,
+          "start": 35.93,
+          "duration": 2,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
     },
     {
       "round": 40,
       "summary": "First BAD-class threat in Standard Easy ending — first BFB on Medium/Hard. Bring serious DPS.",
       "danger": "high",
-      "common_threats": ["BFB"]
+      "common_threats": [
+        "BFB"
+      ],
+      "rbe": 616,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 0,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 41,
+      "summary": "60 Black Bloon, 60 Zebra Bloon. RBE 2,040.",
+      "danger": "high",
+      "common_threats": [
+        "Black Bloon",
+        "Zebra Bloon"
+      ],
+      "rbe": 2040,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "black",
+          "count": 60,
+          "start": 0,
+          "duration": 18.77,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 60,
+          "start": 18.85,
+          "duration": 27.36,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 42,
+      "summary": "11 Rainbow Bloon. RBE 517.",
+      "danger": "medium",
+      "common_threats": [
+        "Rainbow Bloon"
+      ],
+      "rbe": 517,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 6,
+          "start": 0,
+          "duration": 5,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 5,
+          "start": 6.6,
+          "duration": 5,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 43,
+      "summary": "10 Rainbow Bloon, 7 Ceramic Bloon. RBE 1,198.",
+      "danger": "medium",
+      "common_threats": [
+        "Rainbow Bloon",
+        "Ceramic Bloon"
+      ],
+      "rbe": 1198,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 10,
+          "start": 0,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 7,
+          "start": 3.55,
+          "duration": 5.71,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 44,
+      "summary": "50 Zebra Bloon. RBE 1,150.",
+      "danger": "medium",
+      "common_threats": [
+        "Zebra Bloon"
+      ],
+      "rbe": 1150,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zebra",
+          "count": 10,
+          "start": 0,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 10,
+          "start": 9.92,
+          "duration": 7,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 10,
+          "start": 16.83,
+          "duration": 4,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 10,
+          "start": 20.75,
+          "duration": 2,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 10,
+          "start": 22.67,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 45,
+      "summary": "180 Pink Bloon, 25 Rainbow Bloon, 10 Purple Bloon. RBE 2,289.",
+      "danger": "high",
+      "common_threats": [
+        "Pink Bloon",
+        "Rainbow Bloon",
+        "Purple Bloon",
+        "Lead Bloon"
+      ],
+      "rbe": 2289,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 25,
+          "start": 0,
+          "duration": 13.7,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 10,
+          "start": 14.35,
+          "duration": 3,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "pink",
+          "count": 180,
+          "start": 18.08,
+          "duration": 35,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 4,
+          "start": 50.6,
+          "duration": 2.5,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 46,
+      "summary": "6 Ceramic Bloon. RBE 684.",
+      "danger": "medium",
+      "common_threats": [
+        "Ceramic Bloon"
+      ],
+      "rbe": 684,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 6,
+          "start": 0,
+          "duration": 7,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 47,
+      "summary": "70 Pink Bloon, 12 Ceramic Bloon. RBE 1,598.",
+      "danger": "high",
+      "common_threats": [
+        "Pink Bloon",
+        "Ceramic Bloon"
+      ],
+      "rbe": 1598,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 12,
+          "start": 0,
+          "duration": 6.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "pink",
+          "count": 70,
+          "start": 6.5,
+          "duration": 18.15,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 48,
+      "summary": "40 Pink Bloon, 40 Rainbow Bloon, 30 Purple Bloon. RBE 2,752.",
+      "danger": "high",
+      "common_threats": [
+        "Pink Bloon",
+        "Rainbow Bloon",
+        "Purple Bloon",
+        "Ceramic Bloon"
+      ],
+      "rbe": 2752,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "pink",
+          "count": 40,
+          "start": 0,
+          "duration": 15,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 30,
+          "start": 15.29,
+          "duration": 15,
+          "modifiers": [
+            "regrow",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 40,
+          "start": 30.54,
+          "duration": 20,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 3,
+          "start": 51.72,
+          "duration": 4,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 49,
+      "summary": "343 Green Bloon, 30 Rainbow Bloon, 20 Zebra Bloon. RBE 4,771.",
+      "danger": "high",
+      "common_threats": [
+        "Green Bloon",
+        "Rainbow Bloon",
+        "Zebra Bloon",
+        "Ceramic Bloon"
+      ],
+      "rbe": 4771,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "green",
+          "count": 343,
+          "start": 0,
+          "duration": 50,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 10,
+          "start": 4,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 18,
+          "start": 15.5,
+          "duration": 6.54,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 20,
+          "start": 29.27,
+          "duration": 3.51,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 10,
+          "start": 40.1,
+          "duration": 5.14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 10,
+          "start": 41.38,
+          "duration": 5.14,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 50,
+      "summary": "20 Red Bloon, 20 Ceramic Bloon, 8 Lead Bloon. RBE 3,540.",
+      "danger": "high",
+      "common_threats": [
+        "Red Bloon",
+        "Ceramic Bloon",
+        "Lead Bloon",
+        "MOAB"
+      ],
+      "rbe": 3540,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 0,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 8,
+          "start": 3.06,
+          "duration": 4,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "red",
+          "count": 20,
+          "start": 9.89,
+          "duration": 1.34,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 20,
+          "start": 16.56,
+          "duration": 10.85,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 27.98,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 51,
+      "summary": "15 Ceramic Bloon, 10 Rainbow Bloon. RBE 2,030.",
+      "danger": "high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "Rainbow Bloon"
+      ],
+      "rbe": 2030,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 15,
+          "start": 0,
+          "duration": 18,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 10,
+          "start": 19,
+          "duration": 5.14,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 52,
+      "summary": "25 Rainbow Bloon, 10 Ceramic Bloon, 2 MOAB. RBE 3,447.",
+      "danger": "high",
+      "common_threats": [
+        "Rainbow Bloon",
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 3447,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 25,
+          "start": 0,
+          "duration": 13.7,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 14.27,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 5,
+          "start": 14.85,
+          "duration": 2.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 17.7,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 5,
+          "start": 18.27,
+          "duration": 2.28,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 53,
+      "summary": "80 Pink Bloon, 3 MOAB. RBE 2,248.",
+      "danger": "high",
+      "common_threats": [
+        "Pink Bloon",
+        "MOAB"
+      ],
+      "rbe": 2248,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "pink",
+          "count": 80,
+          "start": 0,
+          "duration": 35,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 19.61,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 27.07,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 31.08,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 54,
+      "summary": "35 Ceramic Bloon, 2 MOAB. RBE 4,872.",
+      "danger": "high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 4872,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 35,
+          "start": 0,
+          "duration": 19.41,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 6.23,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 11.99,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 55,
+      "summary": "45 Ceramic Bloon, 1 MOAB. RBE 5,296.",
+      "danger": "high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 5296,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 10,
+          "start": 0,
+          "duration": 1.16,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 10,
+          "start": 7.83,
+          "duration": 1.47,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 10,
+          "start": 14.42,
+          "duration": 1.47,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 15,
+          "start": 22.17,
+          "duration": 0.91,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 28.78,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 56,
+      "summary": "40 Rainbow Bloon, 1 MOAB. RBE 2,496.",
+      "danger": "high",
+      "common_threats": [
+        "Rainbow Bloon",
+        "MOAB"
+      ],
+      "rbe": 2496,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 40,
+          "start": 0,
+          "duration": 12,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 15.18,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 57,
+      "summary": "40 Rainbow Bloon, 4 MOAB. RBE 4,344.",
+      "danger": "high",
+      "common_threats": [
+        "Rainbow Bloon",
+        "MOAB"
+      ],
+      "rbe": 4344,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 2,
+          "start": 0,
+          "duration": 0.57,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 40,
+          "start": 0.97,
+          "duration": 25.26,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 2,
+          "start": 12.56,
+          "duration": 0.57,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 58,
+      "summary": "25 Ceramic Bloon, 5 MOAB. RBE 5,780.",
+      "danger": "high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 5780,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 5,
+          "start": 0,
+          "duration": 43.98,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 15,
+          "start": 0,
+          "duration": 22,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 10,
+          "start": 23.53,
+          "duration": 20,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 59,
+      "summary": "50 Lead Bloon, 30 Ceramic Bloon. RBE 4,270.",
+      "danger": "high",
+      "common_threats": [
+        "Lead Bloon",
+        "Ceramic Bloon"
+      ],
+      "rbe": 4270,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 20,
+          "start": 0,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 50,
+          "start": 10.17,
+          "duration": 7.45,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 10,
+          "start": 18.16,
+          "duration": 8,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 60,
+      "summary": "1 BFB. RBE 3,164.",
+      "danger": "high",
+      "common_threats": [
+        "BFB"
+      ],
+      "rbe": 3164,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 1,
+          "start": 0,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 61,
+      "summary": "150 Zebra Bloon, 5 MOAB. RBE 6,530.",
+      "danger": "high",
+      "common_threats": [
+        "Zebra Bloon",
+        "MOAB"
+      ],
+      "rbe": 6530,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zebra",
+          "count": 150,
+          "start": 0,
+          "duration": 20,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 5,
+          "start": 1.92,
+          "duration": 14.03,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 62,
+      "summary": "250 Purple Bloon, 15 Rainbow Bloon, 7 MOAB. RBE 8,247.",
+      "danger": "very_high",
+      "common_threats": [
+        "Purple Bloon",
+        "Rainbow Bloon",
+        "MOAB"
+      ],
+      "rbe": 8247,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "purple",
+          "count": 250,
+          "start": 0,
+          "duration": 40,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 5,
+          "start": 1.08,
+          "duration": 20,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 2,
+          "start": 32.14,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 15,
+          "start": 40.3,
+          "duration": 7.99,
+          "modifiers": [
+            "regrow",
+            "camo"
+          ]
+        }
+      ]
     },
     {
       "round": 63,
       "summary": "Long Ceramic-Lead wave with Camo Lead mixed in. Pierce-heavy ceramic answers AND camo detection both required.",
       "danger": "high",
-      "common_threats": ["Ceramic", "Camo Lead"]
+      "common_threats": [
+        "Ceramic",
+        "Camo Lead"
+      ],
+      "rbe": 14413,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "lead",
+          "count": 75,
+          "start": 0,
+          "duration": 42.25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 40,
+          "start": 3.88,
+          "duration": 0.2,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 40,
+          "start": 20.08,
+          "duration": 0.2,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 42,
+          "start": 36.42,
+          "duration": 0.2,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 64,
+      "summary": "9 MOAB. RBE 6,264.",
+      "danger": "high",
+      "common_threats": [
+        "MOAB"
+      ],
+      "rbe": 6264,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 6,
+          "start": 0,
+          "duration": 4,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 3,
+          "start": 5.53,
+          "duration": 4,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 65,
+      "summary": "100 Zebra Bloon, 70 Rainbow Bloon, 50 Ceramic Bloon. RBE 18,966.",
+      "danger": "very_high",
+      "common_threats": [
+        "Zebra Bloon",
+        "Rainbow Bloon",
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 18966,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zebra",
+          "count": 100,
+          "start": 0,
+          "duration": 32.36,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "rainbow",
+          "count": 70,
+          "start": 32.6,
+          "duration": 14.31,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 50,
+          "start": 47.32,
+          "duration": 10.85,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 3,
+          "start": 58.57,
+          "duration": 0.57,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 2,
+          "start": 60,
+          "duration": 2,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 66,
+      "summary": "11 MOAB. RBE 7,496.",
+      "danger": "high",
+      "common_threats": [
+        "MOAB"
+      ],
+      "rbe": 7496,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 2,
+          "start": 0,
+          "duration": 0.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 2,
+          "start": 7,
+          "duration": 0.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 4,
+          "start": 13.92,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 3,
+          "start": 20.75,
+          "duration": 2,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 67,
+      "summary": "13 Ceramic Bloon, 8 MOAB. RBE 6,410.",
+      "danger": "high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 6410,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 4,
+          "start": 0,
+          "duration": 2.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 13,
+          "start": 9.1,
+          "duration": 7.99,
+          "modifiers": [
+            "regrow",
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 4,
+          "start": 24.15,
+          "duration": 2.28,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 68,
+      "summary": "4 MOAB, 1 BFB. RBE 5,628.",
+      "danger": "high",
+      "common_threats": [
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 5628,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 4,
+          "start": 0,
+          "duration": 1.71,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 1,
+          "start": 7.44,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 69,
+      "summary": "50 Ceramic Bloon, 40 Lead Bloon, 40 Black Bloon. RBE 6,680.",
+      "danger": "high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "Lead Bloon",
+        "Black Bloon"
+      ],
+      "rbe": 6680,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "lead",
+          "count": 40,
+          "start": 0,
+          "duration": 16.56,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "black",
+          "count": 40,
+          "start": 5.46,
+          "duration": 10,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 50,
+          "start": 17.13,
+          "duration": 25,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 70,
+      "summary": "200 Rainbow Bloon, 120 White Bloon, 4 MOAB. RBE 13,184.",
+      "danger": "very_high",
+      "common_threats": [
+        "Rainbow Bloon",
+        "White Bloon",
+        "MOAB"
+      ],
+      "rbe": 13184,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 200,
+          "start": 0,
+          "duration": 40,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "white",
+          "count": 120,
+          "start": 0,
+          "duration": 38,
+          "modifiers": [
+            "regrow",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 4,
+          "start": 40,
+          "duration": 1.14,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 71,
+      "summary": "30 Ceramic Bloon, 10 MOAB. RBE 9,280.",
+      "danger": "very_high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 9280,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 30,
+          "start": 0,
+          "duration": 16.55,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 10,
+          "start": 4.42,
+          "duration": 5,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 72,
+      "summary": "38 Ceramic Bloon, 2 BFB. RBE 10,280.",
+      "danger": "very_high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "BFB"
+      ],
+      "rbe": 10280,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 38,
+          "start": 0,
+          "duration": 21.7,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 1,
+          "start": 3.42,
+          "duration": 0.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 1,
+          "start": 16.12,
+          "duration": 0.5,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 73,
+      "summary": "8 MOAB, 2 BFB. RBE 11,256.",
+      "danger": "very_high",
+      "common_threats": [
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 11256,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 7,
+          "start": 0,
+          "duration": 2.28,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 2,
+          "start": 13.4,
+          "duration": 3,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 26.38,
+          "duration": 0.57,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 74,
+      "summary": "135 Ceramic Bloon, 1 BFB. RBE 18,054.",
+      "danger": "very_high",
+      "common_threats": [
+        "Ceramic Bloon",
+        "BFB"
+      ],
+      "rbe": 18054,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 50,
+          "start": 0,
+          "duration": 20,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 25,
+          "start": 21.14,
+          "duration": 20,
+          "modifiers": [
+            "regrow",
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 1,
+          "start": 43.93,
+          "duration": 0.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 60,
+          "start": 54.86,
+          "duration": 27.52,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 75,
+      "summary": "28 Lead Bloon, 7 BFB, 3 MOAB. RBE 25,402.",
+      "danger": "very_high",
+      "common_threats": [
+        "Lead Bloon",
+        "BFB",
+        "MOAB"
+      ],
+      "rbe": 25402,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 1,
+          "start": 0,
+          "duration": 0.1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 14,
+          "start": 0.57,
+          "duration": 7.42,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 1,
+          "start": 8.72,
+          "duration": 0.57,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 3,
+          "start": 9.71,
+          "duration": 0.1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 14,
+          "start": 10.28,
+          "duration": 7.42,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 2,
+          "start": 18.27,
+          "duration": 3,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 3,
+          "start": 22.49,
+          "duration": 0.1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 76,
+      "summary": "60 Ceramic Bloon. RBE 6,240.",
+      "danger": "high",
+      "common_threats": [
+        "Ceramic Bloon"
+      ],
+      "rbe": 6240,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 60,
+          "start": 0,
+          "duration": 1.78,
+          "modifiers": [
+            "regrow"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 77,
+      "summary": "11 MOAB, 5 BFB. RBE 22,596.",
+      "danger": "very_high",
+      "common_threats": [
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 22596,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 11,
+          "start": 0,
+          "duration": 58.92,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 5,
+          "start": 26.67,
+          "duration": 4.55,
+          "modifiers": []
+        }
+      ]
     },
     {
       "round": 78,
       "summary": "Two BADs back-to-back. Need at least one tower or hero capable of high DPS to BAD-class bloons.",
       "danger": "very_high",
-      "common_threats": ["BAD"]
+      "common_threats": [
+        "BAD"
+      ],
+      "rbe": 26382,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 150,
+          "start": 0,
+          "duration": 90,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 75,
+          "start": 10,
+          "duration": 1.17,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 1,
+          "start": 44.08,
+          "duration": 1.71,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 80,
+          "start": 64.4,
+          "duration": 15,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 72,
+          "start": 77.92,
+          "duration": 1.2,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 79,
+      "summary": "500 Rainbow Bloon, 6 BFB. RBE 45,804.",
+      "danger": "extreme",
+      "common_threats": [
+        "Rainbow Bloon",
+        "BFB"
+      ],
+      "rbe": 45804,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "rainbow",
+          "count": 500,
+          "start": 0,
+          "duration": 60,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 4,
+          "start": 3.17,
+          "duration": 35,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 2,
+          "start": 47.22,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 80,
+      "summary": "1 ZOMG. RBE 16,656.",
+      "danger": "very_high",
+      "common_threats": [
+        "ZOMG"
+      ],
+      "rbe": 16656,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 1,
+          "start": 0,
+          "duration": 2,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 81,
+      "summary": "17 BFB. RBE 53,788.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB"
+      ],
+      "rbe": 53788,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 9,
+          "start": 0,
+          "duration": 20,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 21.47,
+          "duration": 5,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 82,
+      "summary": "15 BFB. RBE 55,760.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB"
+      ],
+      "rbe": 55760,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 0,
+          "duration": 20,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 5,
+          "start": 21.68,
+          "duration": 14,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 83,
+      "summary": "120 Ceramic Bloon, 30 MOAB. RBE 31,360.",
+      "danger": "extreme",
+      "common_threats": [
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 31360,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 40,
+          "start": 0,
+          "duration": 60,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 40,
+          "start": 0.1,
+          "duration": 60,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 40,
+          "start": 0.2,
+          "duration": 60,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 30,
+          "start": 24.94,
+          "duration": 10,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 84,
+      "summary": "50 MOAB, 10 BFB. RBE 62,440.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 62440,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 50,
+          "start": 0,
+          "duration": 25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 5,
+          "duration": 20,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 85,
+      "summary": "2 ZOMG. RBE 33,312.",
+      "danger": "extreme",
+      "common_threats": [
+        "ZOMG"
+      ],
+      "rbe": 33312,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "start": 0,
+          "duration": 10,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 86,
+      "summary": "5 BFB. RBE 24,120.",
+      "danger": "very_high",
+      "common_threats": [
+        "BFB"
+      ],
+      "rbe": 24120,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 5,
+          "start": -0.15,
+          "duration": 21,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 87,
+      "summary": "4 ZOMG. RBE 66,624.",
+      "danger": "extreme",
+      "common_threats": [
+        "ZOMG"
+      ],
+      "rbe": 66624,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 4,
+          "start": 0,
+          "duration": 10,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 88,
+      "summary": "18 MOAB, 8 BFB, 2 ZOMG. RBE 69,712.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 69712,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 0,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 5.84,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "start": 11.55,
+          "duration": 3,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 89,
+      "summary": "20 MOAB, 8 BFB. RBE 55,712.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 55712,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 20,
+          "start": 0,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 10.74,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 90,
+      "summary": "50 Lead Bloon, 3 DDT. RBE 3,748.",
+      "danger": "high",
+      "common_threats": [
+        "Lead Bloon",
+        "DDT"
+      ],
+      "rbe": 3748,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "lead",
+          "count": 50,
+          "start": 0,
+          "duration": 10,
+          "modifiers": [
+            "regrow",
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 3,
+          "start": 10.4,
+          "duration": 1.5,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 91,
+      "summary": "100 Ceramic Bloon, 20 BFB. RBE 74,680.",
+      "danger": "extreme",
+      "common_threats": [
+        "Ceramic Bloon",
+        "BFB"
+      ],
+      "rbe": 74680,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 100,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 20,
+          "start": 7.38,
+          "duration": 10,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 92,
+      "summary": "50 MOAB, 4 ZOMG. RBE 109,424.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "ZOMG"
+      ],
+      "rbe": 109424,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 50,
+          "start": 0,
+          "duration": 35,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 4,
+          "start": 12.96,
+          "duration": 6,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 93,
+      "summary": "10 BFB, 6 DDT. RBE 53,136.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB",
+        "DDT"
+      ],
+      "rbe": 53136,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 0,
+          "duration": 20,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 12.35,
+          "duration": 2,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 94,
+      "summary": "25 BFB, 6 ZOMG. RBE 179,036.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 179036,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 25,
+          "start": 0,
+          "duration": 15,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 6,
+          "start": 1.61,
+          "duration": 13,
+          "modifiers": []
+        }
+      ]
     },
     {
       "round": 95,
       "summary": "Lots of DDTs in waves. Camo lead detection essential; sharp/shatter damage helpful.",
       "danger": "very_high",
-      "common_threats": ["DDT"]
+      "common_threats": [
+        "DDT"
+      ],
+      "rbe": 79280,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "purple",
+          "count": 500,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "regrow",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "lead",
+          "count": 250,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "regrow",
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 30,
+          "start": 30.81,
+          "duration": 20,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 50,
+          "start": 30.81,
+          "duration": 20,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 96,
+      "summary": "40 MOAB, 30 BFB, 6 ZOMG. RBE 229,096.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 229096,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 0,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 20,
+          "start": 5.5,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 10.74,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 20,
+          "start": 16.04,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 21.62,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 6,
+          "start": 27.12,
+          "duration": 5,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 97,
+      "summary": "2 ZOMG. RBE 54,592.",
+      "danger": "extreme",
+      "common_threats": [
+        "ZOMG"
+      ],
+      "rbe": 54592,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "start": 0,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 98,
+      "summary": "30 BFB, 8 ZOMG. RBE 277,968.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 277968,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 30,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 8,
+          "start": 0,
+          "duration": 5,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 99,
+      "summary": "60 MOAB, 9 DDT. RBE 48,264.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "DDT"
+      ],
+      "rbe": 48264,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 60,
+          "start": 0,
+          "duration": 12,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 6.51,
+          "duration": 5,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        }
+      ]
     },
     {
       "round": 100,
       "summary": "BAD + heavy support. The hardest standard freeplay round most players reach.",
       "danger": "extreme",
-      "common_threats": ["BAD", "DDT"]
+      "common_threats": [
+        "BAD",
+        "DDT"
+      ],
+      "rbe": 55760,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bad",
+          "count": 1,
+          "start": 0,
+          "duration": 0.1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 101,
+      "summary": "450 Purple Bloon, 50 Ceramic Bloon, 10 MOAB. RBE 19,210.",
+      "danger": "very_high",
+      "common_threats": [
+        "Purple Bloon",
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 19210,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "purple",
+          "count": 250,
+          "start": 0,
+          "duration": 6,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 10,
+          "start": 5,
+          "duration": 2,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 50,
+          "start": 7,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 200,
+          "start": 7.5,
+          "duration": 2,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 102,
+      "summary": "30 DDT, 6 BFB, 4 ZOMG. RBE 152,268.",
+      "danger": "extreme",
+      "common_threats": [
+        "DDT",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 152268,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 1,
+          "start": 0,
+          "duration": 0.1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 1,
+          "start": 9.5,
+          "duration": 0.1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 18,
+          "start": 10,
+          "duration": 31,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 3,
+          "start": 12,
+          "duration": 0.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "start": 19,
+          "duration": 0.1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 12,
+          "start": 19.5,
+          "duration": 27,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 3,
+          "start": 21.5,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 103,
+      "summary": "198 Purple Bloon, 150 MOAB, 10 ZOMG. RBE 379,538.",
+      "danger": "extreme",
+      "common_threats": [
+        "Purple Bloon",
+        "MOAB",
+        "ZOMG"
+      ],
+      "rbe": 379538,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 10,
+          "start": 0,
+          "duration": 7,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 100,
+          "start": 5,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 64,
+          "start": 6,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 50,
+          "start": 6.5,
+          "duration": 8.5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 66,
+          "start": 12,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 68,
+          "start": 18,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 104,
+      "summary": "200 Lead Bloon, 200 Purple Bloon, 200 Ceramic Bloon. RBE 318,636.",
+      "danger": "extreme",
+      "common_threats": [
+        "Lead Bloon",
+        "Purple Bloon",
+        "Ceramic Bloon",
+        "MOAB"
+      ],
+      "rbe": 318636,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 150,
+          "start": 0,
+          "duration": 22,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 0,
+          "duration": 15,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 100,
+          "start": 0,
+          "duration": 2.5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 2.5,
+          "duration": 11.75,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 100,
+          "start": 2.5,
+          "duration": 2.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 7,
+          "start": 5,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 100,
+          "start": 5,
+          "duration": 2.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 5,
+          "start": 7.5,
+          "duration": 6.75,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "lead",
+          "count": 100,
+          "start": 7.5,
+          "duration": 2.5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 4,
+          "start": 10,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 100,
+          "start": 10,
+          "duration": 2.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 5,
+          "start": 12.5,
+          "duration": 2.5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 100,
+          "start": 12.5,
+          "duration": 2.5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 25,
+          "start": 18,
+          "duration": 4,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 105,
+      "summary": "400 Ceramic Bloon, 30 BFB, 25 Lead Bloon. RBE 140,170.",
+      "danger": "extreme",
+      "common_threats": [
+        "Ceramic Bloon",
+        "BFB",
+        "Lead Bloon"
+      ],
+      "rbe": 140170,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 100,
+          "start": 0,
+          "duration": 4,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "lead",
+          "count": 25,
+          "start": 0,
+          "duration": 9,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 30,
+          "start": 4,
+          "duration": 3,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 300,
+          "start": 7,
+          "duration": 2,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 106,
+      "summary": "93 DDT. RBE 87,768.",
+      "danger": "extreme",
+      "common_threats": [
+        "DDT"
+      ],
+      "rbe": 87768,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ddt",
+          "count": 21,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 18,
+          "start": 5,
+          "duration": 25,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 15,
+          "start": 10,
+          "duration": 20,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 12,
+          "start": 15,
+          "duration": 15,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 20,
+          "duration": 10,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 25,
+          "duration": 5,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 12,
+          "start": 33,
+          "duration": 0.5,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 107,
+      "summary": "444 Purple Bloon, 100 Ceramic Bloon, 10 ZOMG. RBE 289,244.",
+      "danger": "extreme",
+      "common_threats": [
+        "Purple Bloon",
+        "Ceramic Bloon",
+        "ZOMG"
+      ],
+      "rbe": 289244,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ceramic",
+          "count": 100,
+          "start": 0,
+          "duration": 9,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 444,
+          "start": 1,
+          "duration": 9,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 10,
+          "start": 2,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 108,
+      "summary": "19 ZOMG. RBE 422,864.",
+      "danger": "extreme",
+      "common_threats": [
+        "ZOMG"
+      ],
+      "rbe": 422864,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 9,
+          "start": 0,
+          "duration": 15,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 10,
+          "start": 14,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 109,
+      "summary": "30 BFB, 30 MOAB, 15 ZOMG. RBE 395,505.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB",
+        "MOAB",
+        "ZOMG",
+        "Purple Bloon"
+      ],
+      "rbe": 395505,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 15,
+          "start": 0,
+          "duration": 18,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 15,
+          "start": 0,
+          "duration": 18,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 15,
+          "start": 0,
+          "duration": 18,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 15,
+          "start": 0,
+          "duration": 18,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 15,
+          "start": 0,
+          "duration": 18,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 15,
+          "start": 0,
+          "duration": 18,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 110,
+      "summary": "30 DDT, 25 BFB. RBE 108,860.",
+      "danger": "extreme",
+      "common_threats": [
+        "DDT",
+        "BFB"
+      ],
+      "rbe": 108860,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 25,
+          "start": 0,
+          "duration": 36,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 0,
+          "duration": 12,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 12,
+          "duration": 10,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 22,
+          "duration": 8,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 30,
+          "duration": 6,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 111,
+      "summary": "31 ZOMG. RBE 612,096.",
+      "danger": "extreme",
+      "common_threats": [
+        "ZOMG"
+      ],
+      "rbe": 612096,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 17,
+          "start": 0,
+          "duration": 13,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 9,
+          "start": 7,
+          "duration": 6,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 5,
+          "start": 16.5,
+          "duration": 2,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 112,
+      "summary": "27 BFB, 21 DDT. RBE 156,624.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB",
+        "DDT"
+      ],
+      "rbe": 156624,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 27,
+          "start": 0,
+          "duration": 20,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 21,
+          "start": 7,
+          "duration": 13,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 113,
+      "summary": "84 Ceramic Bloon, 75 MOAB, 15 BFB. RBE 145,716.",
+      "danger": "extreme",
+      "common_threats": [
+        "Ceramic Bloon",
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 145716,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 75,
+          "start": 0,
+          "duration": 17.5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 15,
+          "start": 7,
+          "duration": 14,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 42,
+          "start": 14,
+          "duration": 1.5,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 42,
+          "start": 20,
+          "duration": 1.5,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 114,
+      "summary": "60 MOAB, 20 BFB, 15 DDT. RBE 302,208.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "DDT",
+        "ZOMG"
+      ],
+      "rbe": 302208,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 36,
+          "start": 0,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 2.5,
+          "duration": 27.5,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 24,
+          "start": 5,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 12,
+          "start": 10,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 15,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 5,
+          "start": 20,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 25,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 115,
+      "summary": "60 MOAB, 20 BFB, 15 DDT. RBE 302,208.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "DDT",
+        "ZOMG"
+      ],
+      "rbe": 302208,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 0,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 2.5,
+          "duration": 27.5,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 5,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 5,
+          "start": 5,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 12,
+          "start": 10,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 24,
+          "start": 15,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 36,
+          "start": 20,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 116,
+      "summary": "400 Purple Bloon, 18 BFB, 8 ZOMG. RBE 309,600.",
+      "danger": "extreme",
+      "common_threats": [
+        "Purple Bloon",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 309600,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 8,
+          "start": 0,
+          "duration": 3,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 18,
+          "start": 5,
+          "duration": 10,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 100,
+          "start": 5,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 100,
+          "start": 8,
+          "duration": 7,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 200,
+          "start": 11,
+          "duration": 4,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 117,
+      "summary": "250 Lead Bloon, 45 DDT. RBE 50,390.",
+      "danger": "extreme",
+      "common_threats": [
+        "Lead Bloon",
+        "DDT"
+      ],
+      "rbe": 50390,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "lead",
+          "count": 250,
+          "start": 0,
+          "duration": 14,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 27,
+          "start": 3,
+          "duration": 11,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 18,
+          "start": 3,
+          "duration": 11,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 118,
+      "summary": "30 DDT, 12 ZOMG. RBE 237,552.",
+      "danger": "extreme",
+      "common_threats": [
+        "DDT",
+        "ZOMG"
+      ],
+      "rbe": 237552,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 12,
+          "start": 0,
+          "duration": 16,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 30,
+          "start": 7.5,
+          "duration": 7,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 119,
+      "summary": "3 BAD. RBE 167,280.",
+      "danger": "extreme",
+      "common_threats": [
+        "BAD"
+      ],
+      "rbe": 167280,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bad",
+          "count": 2,
+          "start": 0,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bad",
+          "count": 1,
+          "start": 25,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 120,
+      "summary": "24 MOAB, 12 ZOMG, 12 BFB. RBE 258,384.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "ZOMG",
+        "BFB"
+      ],
+      "rbe": 258384,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 12,
+          "start": 0,
+          "duration": 45,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 12,
+          "start": 1.5,
+          "duration": 45,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 24,
+          "start": 6,
+          "duration": 45,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 121,
+      "summary": "28 MOAB, 14 BFB, 6 ZOMG. RBE 255,280.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 255280,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 14,
+          "start": 0,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 28,
+          "start": 5,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 6,
+          "start": 10,
+          "duration": 5,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 122,
+      "summary": "225 Lead Bloon, 60 BFB. RBE 228,890.",
+      "danger": "extreme",
+      "common_threats": [
+        "Lead Bloon",
+        "BFB"
+      ],
+      "rbe": 228890,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 40,
+          "start": 0,
+          "duration": 0.2,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 20,
+          "start": 0.1,
+          "duration": 0,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "lead",
+          "count": 75,
+          "start": 5,
+          "duration": 15,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "lead",
+          "count": 75,
+          "start": 5,
+          "duration": 15,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "lead",
+          "count": 75,
+          "start": 5,
+          "duration": 15,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 123,
+      "summary": "200 MOAB, 8 ZOMG. RBE 341,568.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "ZOMG"
+      ],
+      "rbe": 341568,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 8,
+          "start": 0,
+          "duration": 40,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 200,
+          "start": 0,
+          "duration": 40,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 124,
+      "summary": "75 BFB. RBE 361,800.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB"
+      ],
+      "rbe": 361800,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 75,
+          "start": 0,
+          "duration": 30,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 125,
+      "summary": "63 MOAB, 42 BFB, 21 ZOMG. RBE 521,472.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 521472,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 6,
+          "start": 0,
+          "duration": 25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 5,
+          "start": 5,
+          "duration": 20,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 12,
+          "start": 5,
+          "duration": 25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 9.55,
+          "duration": 20.45,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 4,
+          "start": 10,
+          "duration": 15,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 14.1,
+          "duration": 15.9,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 15,
+          "duration": 25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 15,
+          "duration": 10,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 6,
+          "start": 18.65,
+          "duration": 11.35,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 15,
+          "start": 19.42,
+          "duration": 20.58,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "start": 20,
+          "duration": 5,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 4,
+          "start": 23.2,
+          "duration": 6.8,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 12,
+          "start": 23.83,
+          "duration": 16.17,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 1,
+          "start": 25,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 2,
+          "start": 27.75,
+          "duration": 2.25,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 9,
+          "start": 28.25,
+          "duration": 11.75,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 6,
+          "start": 32.66,
+          "duration": 7.33,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 3,
+          "start": 37.08,
+          "duration": 2.92,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 126,
+      "summary": "99 DDT, 1 Lead Bloon. RBE 80,810.",
+      "danger": "extreme",
+      "common_threats": [
+        "DDT",
+        "Lead Bloon"
+      ],
+      "rbe": 80810,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "lead",
+          "count": 1,
+          "start": 0,
+          "duration": 1,
+          "modifiers": [
+            "regrow",
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 99,
+          "start": 6,
+          "duration": 21,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 127,
+      "summary": "48 MOAB, 24 BFB. RBE 105,504.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 105504,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 48,
+          "start": 0,
+          "duration": 7,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 24,
+          "start": 5,
+          "duration": 9,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 128,
+      "summary": "200 Ceramic Bloon, 39 DDT, 30 BFB. RBE 166,704.",
+      "danger": "extreme",
+      "common_threats": [
+        "Ceramic Bloon",
+        "DDT",
+        "BFB"
+      ],
+      "rbe": 166704,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ddt",
+          "count": 39,
+          "start": 0,
+          "duration": 18,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 200,
+          "start": 9,
+          "duration": 4.5,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 30,
+          "start": 10,
+          "duration": 18,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 129,
+      "summary": "77 Lead Bloon, 77 Purple Bloon, 77 Ceramic Bloon. RBE 333,209.",
+      "danger": "extreme",
+      "common_threats": [
+        "Lead Bloon",
+        "Purple Bloon",
+        "Ceramic Bloon",
+        "DDT"
+      ],
+      "rbe": 333209,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 7,
+          "start": 0,
+          "duration": 17,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "lead",
+          "count": 77,
+          "start": 4,
+          "duration": 1,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 77,
+          "start": 6,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ceramic",
+          "count": 77,
+          "start": 8,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 7,
+          "start": 10,
+          "duration": 0,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 17,
+          "duration": 0,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 3,
+          "start": 21,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 3,
+          "start": 24,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 3,
+          "start": 27,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 130,
+      "summary": "150 MOAB, 54 DDT. RBE 154,944.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "DDT"
+      ],
+      "rbe": 154944,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 12,
+          "start": 0,
+          "duration": 0,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 27,
+          "start": 4,
+          "duration": 16,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 9,
+          "start": 4,
+          "duration": 0,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 12,
+          "start": 8,
+          "duration": 0,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 9,
+          "start": 12,
+          "duration": 0,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 12,
+          "start": 16,
+          "duration": 0,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 9,
+          "start": 20,
+          "duration": 0,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 48,
+          "start": 24,
+          "duration": 16,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 3,
+          "start": 24,
+          "duration": 0,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 28,
+          "duration": 0,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 3,
+          "start": 32,
+          "duration": 0,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 6,
+          "start": 36,
+          "duration": 0,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 48,
+          "start": 40,
+          "duration": 0,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 131,
+      "summary": "18 ZOMG. RBE 491,328.",
+      "danger": "extreme",
+      "common_threats": [
+        "ZOMG"
+      ],
+      "rbe": 491328,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 18,
+          "start": 0,
+          "duration": 39,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 132,
+      "summary": "200 Purple Bloon, 24 ZOMG. RBE 465,784.",
+      "danger": "extreme",
+      "common_threats": [
+        "Purple Bloon",
+        "ZOMG"
+      ],
+      "rbe": 465784,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 5,
+          "start": 0,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 4,
+          "start": 5,
+          "duration": 0,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 10,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 100,
+          "start": 15,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 5,
+          "start": 25,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 4,
+          "start": 30,
+          "duration": 0,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 35,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "purple",
+          "count": 100,
+          "start": 40,
+          "duration": 1,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 133,
+      "summary": "39 MOAB, 39 BFB, 13 ZOMG. RBE 429,308.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 429308,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 6,
+          "start": 0,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 6,
+          "start": 0,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "start": 0,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 6,
+          "start": 12,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 6,
+          "start": 12,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "start": 12,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 9,
+          "start": 24,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 9,
+          "start": 24,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 24,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 9,
+          "start": 36,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 9,
+          "start": 36,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 36,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 9,
+          "start": 42,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 9,
+          "start": 42,
+          "duration": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 3,
+          "start": 42,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 134,
+      "summary": "40 BFB. RBE 146,480.",
+      "danger": "extreme",
+      "common_threats": [
+        "BFB"
+      ],
+      "rbe": 146480,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bfb",
+          "count": 12,
+          "start": 0,
+          "duration": 24,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 10,
+          "start": 4.36,
+          "duration": 19.64,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 8,
+          "start": 8.74,
+          "duration": 15.26,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 6,
+          "start": 13.1,
+          "duration": 10.9,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 4,
+          "start": 17.46,
+          "duration": 6.55,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 135,
+      "summary": "21 DDT, 14 ZOMG. RBE 408,520.",
+      "danger": "extreme",
+      "common_threats": [
+        "DDT",
+        "ZOMG"
+      ],
+      "rbe": 408520,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 7,
+          "start": 0,
+          "duration": 24,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "zomg",
+          "count": 7,
+          "start": 0,
+          "duration": 24,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 7,
+          "start": 0,
+          "duration": 24,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 7,
+          "start": 0,
+          "duration": 24,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 7,
+          "start": 0,
+          "duration": 24,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 136,
+      "summary": "96 MOAB, 24 BFB. RBE 158,112.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB"
+      ],
+      "rbe": 158112,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 96,
+          "start": 0,
+          "duration": 45,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 24,
+          "start": 0,
+          "duration": 45,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 137,
+      "summary": "48 MOAB, 24 BFB, 18 ZOMG. RBE 405,312.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB",
+        "BFB",
+        "ZOMG"
+      ],
+      "rbe": 405312,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "zomg",
+          "count": 18,
+          "start": 0,
+          "duration": 0.1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "bfb",
+          "count": 24,
+          "start": 2,
+          "duration": 0.1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 48,
+          "start": 8,
+          "duration": 0.1,
+          "modifiers": []
+        }
+      ]
+    },
+    {
+      "round": 138,
+      "summary": "126 DDT. RBE 138,456.",
+      "danger": "extreme",
+      "common_threats": [
+        "DDT"
+      ],
+      "rbe": 138456,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "ddt",
+          "count": 33,
+          "start": 0,
+          "duration": 40,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 27,
+          "start": 7,
+          "duration": 33,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 21,
+          "start": 14,
+          "duration": 26,
+          "modifiers": [
+            "fortified",
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 18,
+          "start": 21,
+          "duration": 19,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 15,
+          "start": 28,
+          "duration": 12,
+          "modifiers": [
+            "camo"
+          ]
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 12,
+          "start": 35,
+          "duration": 5,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 139,
+      "summary": "253 MOAB. RBE 173,128.",
+      "danger": "extreme",
+      "common_threats": [
+        "MOAB"
+      ],
+      "rbe": 173128,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "moab",
+          "count": 109,
+          "start": 0,
+          "duration": 45,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 5,
+          "duration": 4,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 9,
+          "duration": 4,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 13,
+          "duration": 8,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 21,
+          "duration": 4,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 25,
+          "duration": 4,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 29,
+          "duration": 4,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 33,
+          "duration": 8,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "moab",
+          "count": 18,
+          "start": 41,
+          "duration": 4,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 140,
+      "summary": "2 BAD. RBE 154,120.",
+      "danger": "extreme",
+      "common_threats": [
+        "BAD"
+      ],
+      "rbe": 154120,
+      "roundset": "default",
+      "groups": [
+        {
+          "bloon_id": "bad",
+          "count": 1,
+          "start": 0,
+          "duration": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        },
+        {
+          "bloon_id": "bad",
+          "count": 1,
+          "start": 45,
+          "duration": 1,
+          "modifiers": []
+        }
+      ]
     }
   ]
 }

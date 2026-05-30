@@ -58,6 +58,7 @@ _DEFAULT_STATS_DIR = _REPO_ROOT / "disbot" / "data" / "btd6" / "stats"
 _DEFAULT_HEROES_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "heroes.json"
 _DEFAULT_HERO_STATS_DIR = _DEFAULT_STATS_DIR / "heroes"
 _DEFAULT_BLOONS_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "bloons.json"
+_DEFAULT_ROUNDS_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "rounds.json"
 _CATALOG_GAME_VERSION = "54.0"
 
 # btd6_bloons Cargo fields. Cargo output keys use spaces ("rbe fort", "parent of").
@@ -645,6 +646,99 @@ def _run_bloons(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Rounds (Module:BTD6_rounds/Default -> rounds.json)
+# ---------------------------------------------------------------------------
+
+
+def _load_bloon_rbe(bloons_json: Path) -> tuple[dict[str, dict], dict[str, str]]:
+    """Read bloons.json into (id -> {rbe, rbe_fortified}, id -> canonical name)."""
+    if not bloons_json.exists():
+        return {}, {}
+    data = json.loads(bloons_json.read_text(encoding="utf-8"))
+    rbe_map: dict[str, dict] = {}
+    name_map: dict[str, str] = {}
+    for bloon in data.get("bloons", []):
+        bloon_id = bloon.get("id")
+        if not bloon_id:
+            continue
+        rbe_map[bloon_id] = {
+            "rbe": bloon.get("rbe"),
+            "rbe_fortified": bloon.get("rbe_fortified"),
+        }
+        name_map[bloon_id] = bloon.get("canonical", bloon_id)
+    return rbe_map, name_map
+
+
+def _load_curated_rounds(path: Path) -> dict[int, dict]:
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {int(r["round"]): r for r in data.get("rounds", []) if "round" in r}
+
+
+def fetch_rounds(rounds_json: Path, bloons_json: Path, *, delay: float) -> list[dict]:
+    """Fetch Module:BTD6_rounds/Default -> per-round composition + RBE.
+
+    Curated summary / danger / common_threats from the existing rounds.json are
+    kept where present (the strategic blurbs); composition (groups) and the
+    derived RBE are added to every one of the 140 rounds.
+    """
+    from parse_bloonswiki import parse_rounds_json
+
+    rbe_map, name_map = _load_bloon_rbe(bloons_json)
+    if not rbe_map:
+        print("  ! bloons.json has no RBE data — run --all-bloons first")
+    default_data = json.loads(_get(f"{_BASE}/Module:BTD6_rounds/Default?action=raw"))
+    time.sleep(delay)
+    parsed = parse_rounds_json(default_data, rbe_map=rbe_map, name_map=name_map)
+
+    curated = _load_curated_rounds(rounds_json)
+    for entry in parsed:
+        cur = curated.get(entry["round"])
+        if not cur:
+            continue
+        if cur.get("summary"):
+            entry["summary"] = cur["summary"]
+        if cur.get("danger"):
+            entry["danger"] = cur["danger"]
+        if cur.get("common_threats"):
+            entry["common_threats"] = list(cur["common_threats"])
+    return parsed
+
+
+def write_rounds_file(rounds: list[dict], path: Path, *, game_version: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc = {
+        "schema_version": 2,
+        "data_version": "2.0",
+        "game_version": game_version,
+        "source": "bloonswiki.com Module:BTD6_rounds/Default (CC BY-NC-SA)",
+        "rounds": rounds,
+    }
+    path.write_text(
+        json.dumps(doc, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def _run_rounds(args: argparse.Namespace) -> int:
+    rounds = fetch_rounds(args.rounds_json, args.bloons_json, delay=args.delay)
+    print(f"parsed {len(rounds)} rounds")
+    for number in (1, 40, 63, 100):
+        entry = next((r for r in rounds if r["round"] == number), None)
+        if entry:
+            print(
+                f"  R{number}: {entry['summary']} "
+                f"danger={entry['danger']} threats={entry['common_threats']}",
+            )
+    if not args.dry_run:
+        write_rounds_file(rounds, args.rounds_json, game_version=args.game_version)
+        print(f"Wrote {len(rounds)} rounds to {args.rounds_json}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
@@ -665,6 +759,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Fetch the btd6_bloons table -> bloons.json",
     )
+    group.add_argument(
+        "--all-rounds",
+        action="store_true",
+        help="Fetch Module:BTD6_rounds/Default -> rounds.json",
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -680,11 +779,15 @@ def main(argv: list[str] | None = None) -> int:
         default=_DEFAULT_HERO_STATS_DIR,
     )
     parser.add_argument("--bloons-json", type=Path, default=_DEFAULT_BLOONS_JSON)
+    parser.add_argument("--rounds-json", type=Path, default=_DEFAULT_ROUNDS_JSON)
     parser.add_argument("--game-version", default=_CATALOG_GAME_VERSION)
     args = parser.parse_args(argv)
 
     if args.all_bloons:
         return _run_bloons(args)
+
+    if args.all_rounds:
+        return _run_rounds(args)
 
     if args.hero or args.all_heroes:
         return _run_heroes(args)

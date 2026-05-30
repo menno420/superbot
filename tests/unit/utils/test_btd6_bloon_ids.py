@@ -23,3 +23,17 @@ def test_strip_links():
 def test_constants():
     assert "red" in bi.BASIC_IDS and "moab" in bi.MOAB_IDS
     assert set(bi.MODIFIER_TOKENS) == {"camo", "regrow", "fortified"}
+
+
+def test_parse_round_bloon_key():
+    assert bi.parse_round_bloon_key("Red") == ("red", [])
+    assert bi.parse_round_bloon_key("Zomg") == ("zomg", [])
+    assert bi.parse_round_bloon_key("DdtCamo") == ("ddt", ["camo"])
+    assert bi.parse_round_bloon_key("LeadFortifiedCamo") == (
+        "lead",
+        ["fortified", "camo"],
+    )
+    assert bi.parse_round_bloon_key("CeramicRegrowFortifiedCamo") == (
+        "ceramic",
+        ["regrow", "fortified", "camo"],
+    )
