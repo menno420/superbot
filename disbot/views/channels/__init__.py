@@ -28,7 +28,6 @@ from views.channels.create_panel import (
     _CategorySelect,
     _CreateSubView,
     _CustomNameModal,
-    _NameSelect,
 )
 from views.channels.delete_panel import _DeleteConfirmView, _DeleteSubView
 from views.channels.main_panel import _ChannelManagerView
@@ -48,7 +47,6 @@ __all__ = [
     "_CustomNameModal",
     "_DeleteConfirmView",
     "_DeleteSubView",
-    "_NameSelect",
     "_RestrictSubView",
     "_SubsystemToggleView",
     "_VisibilitySubView",
