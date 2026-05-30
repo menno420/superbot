@@ -6,6 +6,7 @@
   "base_cost": 400,
   "category": "magic",
   "paragon_cost": 500000,
+  "paragon_name": "Ascended Shadow",
   "upgrades": [
     {
       "path": 1,

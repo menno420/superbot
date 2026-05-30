@@ -6,6 +6,7 @@
   "base_cost": 250,
   "category": "magic",
   "paragon_cost": 800000,
+  "paragon_name": "Magus Perfectus",
   "upgrades": [
     {
       "path": 1,

@@ -6,6 +6,7 @@
   "base_cost": 200,
   "category": "primary",
   "paragon_cost": 150000,
+  "paragon_name": "Apex Plasma Master",
   "upgrades": [
     {
       "path": 1,

@@ -6,6 +6,7 @@
   "base_cost": 260,
   "category": "primary",
   "paragon_cost": 200000,
+  "paragon_name": "Crucible of Steel and Flame",
   "upgrades": [
     {
       "path": 1,

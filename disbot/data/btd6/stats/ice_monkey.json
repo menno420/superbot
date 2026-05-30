@@ -6,6 +6,7 @@
   "base_cost": 400,
   "category": "primary",
   "paragon_cost": 300000,
+  "paragon_name": "Herald of Everfrost",
   "upgrades": [
     {
       "path": 1,

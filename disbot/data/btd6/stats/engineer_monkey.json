@@ -6,6 +6,7 @@
   "base_cost": 350,
   "category": "support",
   "paragon_cost": 650000,
+  "paragon_name": "Master Builder",
   "upgrades": [
     {
       "path": 1,

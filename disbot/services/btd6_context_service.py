@@ -325,8 +325,30 @@ def _render_fixture_tower(entry: Any) -> list[str]:
             ),
         )
 
+    lines.extend(_render_paragon(getattr(entry, "id", ""), canonical))
     lines.extend(_render_tower_stats(getattr(entry, "id", ""), canonical))
     return lines
+
+
+def _render_paragon(tower_id: str, canonical: str) -> list[str]:
+    """One grounding line naming this tower's Paragon (tier 6) + Medium cost.
+
+    Returns nothing for the towers that have no paragon. Tagged
+    ``[btd6_paragon]`` so the assistant uses the verified name instead of
+    guessing one (or claiming a paragon for a tower that has none).
+    """
+    from services import btd6_stats_service
+
+    stats = btd6_stats_service.get_tower_stats(tower_id)
+    if stats is None or not stats.paragon_cost:
+        return []
+    name = stats.paragon_name or f"{canonical} Paragon"
+    return [
+        _cap(
+            f"[btd6_paragon] {canonical}'s Paragon (tier 6) is {name}, costing "
+            f"{stats.paragon_cost} on Medium (source: bloonswiki)",
+        ),
+    ]
 
 
 def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:

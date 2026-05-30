@@ -6,6 +6,7 @@
   "base_cost": 400,
   "category": "military",
   "paragon_cost": 550000,
+  "paragon_name": "Navarch of the Seas",
   "upgrades": [
     {
       "path": 1,

@@ -62,10 +62,15 @@ def _paragon_rows() -> list[SuperlativeHit]:
     for tower in btd6_data_service.get_dataset().towers:
         stats = btd6_stats_service.get_tower_stats(tower.id)
         if stats is not None and stats.paragon_cost:
+            label = (
+                f"{stats.paragon_name} ({tower.canonical} Paragon)"
+                if stats.paragon_name
+                else f"{tower.canonical} Paragon"
+            )
             rows.append(
                 SuperlativeHit(
                     cost=int(stats.paragon_cost),
-                    what=f"{tower.canonical} Paragon",
+                    what=label,
                     tower_id=tower.id,
                 ),
             )

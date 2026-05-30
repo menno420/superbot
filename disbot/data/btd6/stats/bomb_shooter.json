@@ -6,6 +6,7 @@
   "base_cost": 375,
   "category": "primary",
   "paragon_cost": 600000,
+  "paragon_name": "Ballistic Obliteration Missile Bunker",
   "upgrades": [
     {
       "path": 1,

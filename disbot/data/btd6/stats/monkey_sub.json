@@ -6,6 +6,7 @@
   "base_cost": 325,
   "category": "military",
   "paragon_cost": 400000,
+  "paragon_name": "Nautic Siege Core",
   "upgrades": [
     {
       "path": 1,
