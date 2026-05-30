@@ -13,7 +13,7 @@ existing dispatcher routes each through
 ``services.command_routing.set_policy`` at Final Review time.
 
 Channel detection re-uses
-:func:`views.setup.scan_panel.classify_channel_name` — the same
+:func:`utils.channel_classify.classify_channel_name` — the same
 heuristic that powers cleanup profiles and channel recommendations.
 """
 
@@ -25,7 +25,7 @@ from dataclasses import dataclass
 import discord
 
 from services.setup_operations import SetupOperation
-from views.setup.scan_panel import classify_channel_name
+from utils.channel_classify import classify_channel_name
 
 ProfileBuilder = Callable[[discord.Guild], list[SetupOperation]]
 
