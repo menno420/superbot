@@ -7,7 +7,7 @@ view lives here.  Modules:
   create_panel      — CreateSubView, NameSelect, CategorySelect, CustomNameModal
   delete_panel      — DeleteSubView, DeleteConfirmView
   restrict_panel    — RestrictSubView
-  visibility_panel  — VisibilitySubView, ChannelSelectForVisibility, SubsystemToggleView
+  visibility_panel  — VisibilitySubView, SubsystemToggleView
   _helpers          — _NAME_PRESETS, _CATEGORY_PRESETS,
                       _build_channel_options, _ChannelSelect
 
@@ -28,13 +28,11 @@ from views.channels.create_panel import (
     _CategorySelect,
     _CreateSubView,
     _CustomNameModal,
-    _NameSelect,
 )
 from views.channels.delete_panel import _DeleteConfirmView, _DeleteSubView
 from views.channels.main_panel import _ChannelManagerView
 from views.channels.restrict_panel import _RestrictSubView
 from views.channels.visibility_panel import (
-    _ChannelSelectForVisibility,
     _SubsystemToggleView,
     _VisibilitySubView,
 )
@@ -45,12 +43,10 @@ __all__ = [
     "_CategorySelect",
     "_ChannelManagerView",
     "_ChannelSelect",
-    "_ChannelSelectForVisibility",
     "_CreateSubView",
     "_CustomNameModal",
     "_DeleteConfirmView",
     "_DeleteSubView",
-    "_NameSelect",
     "_RestrictSubView",
     "_SubsystemToggleView",
     "_VisibilitySubView",
