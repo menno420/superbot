@@ -119,6 +119,7 @@ class TowerData:
     base_cost: int | None = None
     category: str | None = None
     paragon_cost: int | None = None
+    paragon_name: str | None = None
     upgrades: list[dict] = field(default_factory=list)
     tiers: dict[str, dict] = field(default_factory=dict)
     game_version: str = ""
@@ -159,9 +160,10 @@ def fetch_tower(tower_id: str, canonical: str, *, delay: float) -> TowerData:
         )
     time.sleep(delay)
 
-    paragons = _cargo_query("btd6_paragons", "cost", f"tower='{safe}'")
+    paragons = _cargo_query("btd6_paragons", "name,cost", f"tower='{safe}'")
     if paragons:
         td.paragon_cost = _int(paragons[0].get("cost"))
+        td.paragon_name = str(paragons[0].get("name", "")).strip() or None
     time.sleep(delay)
 
     try:
@@ -275,6 +277,7 @@ def stats_document(td: TowerData) -> dict:
         "base_cost": td.base_cost,
         "category": td.category,
         "paragon_cost": td.paragon_cost,
+        "paragon_name": td.paragon_name,
         "upgrades": td.upgrades,
         "tiers": td.tiers,
     }

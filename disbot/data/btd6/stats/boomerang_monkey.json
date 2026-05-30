@@ -6,6 +6,7 @@
   "base_cost": 315,
   "category": "primary",
   "paragon_cost": 375000,
+  "paragon_name": "Glaive Dominus",
   "upgrades": [
     {
       "path": 1,

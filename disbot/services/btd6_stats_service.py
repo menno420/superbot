@@ -58,6 +58,7 @@ class TowerStats:
     base_cost: int | None
     category: str | None
     paragon_cost: int | None
+    paragon_name: str | None
     upgrades: tuple[dict[str, Any], ...]
     tiers: dict[str, dict[str, Any]]
 
@@ -119,6 +120,7 @@ def _load(tower_id: str) -> TowerStats | None:
         base_cost=data.get("base_cost"),
         category=data.get("category"),
         paragon_cost=data.get("paragon_cost"),
+        paragon_name=data.get("paragon_name"),
         upgrades=tuple(data.get("upgrades", ())),
         tiers=data.get("tiers", {}),
     )
