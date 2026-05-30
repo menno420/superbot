@@ -28,6 +28,7 @@ def _build_role_hub_embed() -> discord.Embed:
             ("⚡ XP Roles", "Level-based auto-assignment", True),
             ("💬 Reaction Roles", "Emoji reaction role bindings", True),
             ("🔧 Diagnostics", "System status & debug tools", True),
+            ("🚫 Exemptions", "Exempt roles from XP/time automation", True),
         ],
         ROLE_COLOR,
     )
@@ -207,11 +208,43 @@ class RoleHubPanelView(PersistentView):
             view=panel,
         )
 
+    @discord.ui.button(
+        label="🚫 Exemptions",
+        style=discord.ButtonStyle.grey,
+        row=2,
+        custom_id="role:exemptions",
+    )
+    async def exemptions_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not interaction.user.guild_permissions.administrator:  # type: ignore[union-attr]
+            await interaction.response.send_message(
+                "❌ You need **Administrator** permission.",
+                ephemeral=True,
+            )
+            return
+        from views.roles.exemptions_panel import RoleExemptionsPanel
+
+        self.message = interaction.message
+        panel = RoleExemptionsPanel(_CtxAdapter(interaction), parent=self)
+        panel.message = interaction.message
+        await interaction.response.edit_message(
+            embed=await panel.build_embed(),
+            view=panel,
+        )
+
 
 class RoleCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.role_check.start()
+
+    async def cog_load(self) -> None:
+        from cogs.role.schemas import register_schemas
+
+        register_schemas()  # role-automation stacking toggles (Settings hub).
 
     def cog_unload(self) -> None:
         self.role_check.cancel()
@@ -250,11 +283,10 @@ class RoleCog(commands.Cog):
                 await ctx.send("✅ Role check complete — 0 assignment(s) made.")
             return 0
 
-        skip_role_names = tuple(
-            n.strip()
-            for n in (await db.get_setting(guild.id, "skip_roles", "Admin")).split(",")
-            if n.strip()
-        )
+        from services import role_exemption_service
+
+        exempt = await role_exemption_service.get_exempt_role_ids(guild.id)
+        keep_previous = await role_exemption_service.time_roles_stack(guild.id)
 
         threshold_objs = tuple(
             role_automation.RoleThreshold(
@@ -273,7 +305,8 @@ class RoleCog(commands.Cog):
         assignments = role_automation.compute_assignments(
             guild,
             threshold_objs,
-            skip_role_names=skip_role_names,
+            exempt_role_ids=exempt.time,
+            keep_previous_tier=keep_previous,
         )
         result = await role_automation.apply(
             guild,
@@ -571,10 +604,16 @@ class RoleCog(commands.Cog):
             # "lost testrole on restart" regression).
             if not row.get("xp_auto_assign") and row.get("days_required") is not None
         )
+        from services import role_exemption_service
+
+        exempt = await role_exemption_service.get_exempt_role_ids(member.guild.id)
+        keep_previous = await role_exemption_service.time_roles_stack(member.guild.id)
         plan = role_automation.explain_assignment_for(
             member.guild,
             member,
             threshold_objs,
+            exempt_role_ids=exempt.time,
+            keep_previous_tier=keep_previous,
         )
         if plan is None:
             return

@@ -117,7 +117,7 @@ def test_compute_assignments_skips_bots_and_missing_joined_at():
     assert plans == ()
 
 
-def test_compute_assignments_skips_members_in_skip_roles():
+def test_compute_assignments_skips_members_with_time_exempt_role():
     admin = _role(99, "Admin")
     threshold_role = _role(100, "Veteran")
     member = _member(
@@ -130,9 +130,35 @@ def test_compute_assignments_skips_members_in_skip_roles():
     plans = compute_assignments(
         g,
         [RoleThreshold("Veteran", 30)],
-        skip_role_names=("Admin",),
+        exempt_role_ids=frozenset({99}),  # Admin role id is time-exempt
     )
     assert plans == ()
+
+
+def test_compute_assignments_keeps_previous_tier_when_stacking():
+    """With keep_previous_tier=True (time_roles_stack ON), promotion adds the
+    new tier but does NOT remove the previous one.
+    """
+    veteran = _role(100, "Veteran", position=2)
+    legendary = _role(101, "Legendary", position=3)
+    member = _member(
+        mid=1,
+        display="u1",
+        roles=[veteran],
+        joined_days_ago=120,
+    )
+    g = _guild(roles=[veteran, legendary], members=[member])
+    plans = compute_assignments(
+        g,
+        [
+            RoleThreshold("Veteran", 30),
+            RoleThreshold("Legendary", 90),
+        ],
+        keep_previous_tier=True,
+    )
+    assert len(plans) == 1
+    assert plans[0].add_role_name == "Legendary"
+    assert plans[0].remove_role_names == ()  # Veteran kept (stacking on)
 
 
 def test_compute_assignments_promotes_member_who_crosses_threshold():

@@ -3,16 +3,16 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
 from utils import db
-from utils.settings_keys import SKIP_ROLES
 from utils.ui_constants import WARNING_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
 
 
 class DiagnosticsPanel(BaseView):
-    """Role system diagnostics — counts, skip_roles, member cache status."""
+    """Role system diagnostics — counts, exemptions, member cache status."""
 
     def __init__(self, ctx: commands.Context, parent: BaseView | None = None) -> None:
         super().__init__(ctx.author, timeout=300)
@@ -39,7 +39,7 @@ class DiagnosticsPanel(BaseView):
         thresholds = await db.get_role_thresholds(guild.id)
         xp_rows = [r for r in thresholds if r.get("level_required") is not None]
         reaction_rows = await db.get_all_reaction_roles(guild.id)
-        skip_roles = await db.get_setting(guild.id, SKIP_ROLES, "Admin")
+        exemptions = await db.get_role_exemptions(guild.id)
 
         embed = discord.Embed(title="🔧 Role System Diagnostics", color=WARNING_COLOR)
         embed.add_field(name="Time Thresholds", value=str(len(thresholds)), inline=True)
@@ -49,7 +49,24 @@ class DiagnosticsPanel(BaseView):
             value=str(len(reaction_rows)),
             inline=True,
         )
-        embed.add_field(name="Skip Roles", value=skip_roles or "*(none)*", inline=False)
+        if exemptions:
+            exempt_lines = []
+            for row in exemptions:
+                role = resources.resolve_role(guild, role_id=row["role_id"])
+                rname = role.name if role else f"id:{row['role_id']}"
+                tags = [
+                    tag
+                    for tag, on in (
+                        ("xp", row["exempt_xp"]),
+                        ("time", row["exempt_time"]),
+                    )
+                    if on
+                ]
+                exempt_lines.append(f"{rname} ({', '.join(tags)})")
+            exempt_value = "\n".join(exempt_lines)[:1024]
+        else:
+            exempt_value = "*(none)*"
+        embed.add_field(name="Role Exemptions", value=exempt_value, inline=False)
         embed.add_field(
             name="Members Cached",
             value=str(len([m for m in guild.members if not m.bot])),

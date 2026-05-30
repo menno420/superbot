@@ -26,6 +26,25 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _ROLE_COG = _REPO_ROOT / "disbot" / "cogs" / "role_cog.py"
 
 
+@pytest.fixture(autouse=True)
+def _stub_role_exemptions():
+    """Stub the role-exemption reads (DB-backed) so the routing tests stay
+    pure. ``_assign_roles`` / ``on_member_join`` now consult
+    ``role_exemption_service`` for the time-exempt set + stacking toggle.
+    """
+    from services import role_exemption_service as res
+
+    with (
+        patch.object(
+            res,
+            "get_exempt_role_ids",
+            new=AsyncMock(return_value=res.ExemptRoleIds(frozenset(), frozenset())),
+        ),
+        patch.object(res, "time_roles_stack", new=AsyncMock(return_value=False)),
+    ):
+        yield
+
+
 @pytest.mark.asyncio
 async def test_assign_roles_delegates_to_role_automation():
     """_assign_roles must call compute_assignments + apply, not Discord directly."""

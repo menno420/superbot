@@ -48,7 +48,7 @@ from utils.settings_keys.logging import (
     LOGGING_MOD_CHANNEL,
 )
 from utils.settings_keys.moderation import WARN_THRESHOLD, WARN_TIMEOUT_MINS
-from utils.settings_keys.role import SKIP_ROLES
+from utils.settings_keys.role import SKIP_ROLES, TIME_ROLES_STACK, XP_ROLES_STACK
 from utils.settings_keys.xp import (
     XP_ANNOUNCE_CHANNEL,
     XP_COOLDOWN,
@@ -84,6 +84,8 @@ __all__ = [
     "LOGGING_MOD_CHANNEL",
     "RPS_DEFAULT_ENTRY_FEE",
     "SKIP_ROLES",
+    "TIME_ROLES_STACK",
+    "XP_ROLES_STACK",
     "TRUSTED_TIER_ROLE_ID",
     "WARN_THRESHOLD",
     "WARN_TIMEOUT_MINS",

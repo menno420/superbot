@@ -114,12 +114,15 @@ from utils.db.moderation import (
 from utils.db.pool import close, execute, fetchall, fetchone, get, init
 from utils.db.roles import (
     add_reaction_role,
+    clear_role_exemption,
     get_all_reaction_roles,
     get_reaction_role,
+    get_role_exemptions,
     get_role_thresholds,
     get_xp_threshold_roles,
     remove_reaction_role,
     remove_role_threshold,
+    set_role_exemption,
     set_role_threshold,
     set_role_xp_threshold,
 )
@@ -162,12 +165,15 @@ __all__ = [
     "set_setting",
     # roles
     "add_reaction_role",
+    "clear_role_exemption",
     "get_all_reaction_roles",
     "get_reaction_role",
+    "get_role_exemptions",
     "get_role_thresholds",
     "get_xp_threshold_roles",
     "remove_reaction_role",
     "remove_role_threshold",
+    "set_role_exemption",
     "set_role_threshold",
     "set_role_xp_threshold",
     # moderation

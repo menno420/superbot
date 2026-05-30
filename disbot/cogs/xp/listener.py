@@ -191,35 +191,75 @@ async def _apply_xp_threshold_roles(
     is at most one DB read per (TTL × guild) instead of per-level-up.
     """
     try:
-        xp_roles = await get_xp_threshold_roles(message.guild.id)
+        from services import role_exemption_service
+
+        guild = message.guild
+        member = message.author
+        member_role_ids = {r.id for r in getattr(member, "roles", ())}
+
+        exempt = await role_exemption_service.get_exempt_role_ids(guild.id)
+        if member_role_ids & exempt.xp:
+            return  # member holds an XP-exempt role — grant nothing
+
+        xp_roles = await get_xp_threshold_roles(guild.id)
+        qualifying: list = []  # earned roles (level_required <= new_level)
+        configured: list = []  # every configured XP role that resolves
         for role_cfg in xp_roles:
+            discord_role = resources.resolve_role(guild, name=role_cfg["role_name"])
+            if discord_role is None:
+                continue
+            configured.append(discord_role)
             if role_cfg["level_required"] <= new_level:
-                discord_role = resources.resolve_role(
-                    message.guild,
-                    name=role_cfg["role_name"],
+                qualifying.append(discord_role)
+        if not qualifying:
+            return
+
+        member_roles = member.roles  # type: ignore[union-attr]
+        if await role_exemption_service.xp_roles_stack(guild.id):
+            to_add = [r for r in qualifying if r not in member_roles]
+            to_remove: list = []
+        else:
+            # Single-role mode: keep only the highest earned level role
+            # (xp_roles is ordered by level_required ascending).
+            target = qualifying[-1]
+            to_add = [] if target in member_roles else [target]
+            to_remove = [r for r in configured if r != target and r in member_roles]
+
+        if to_add:
+            try:
+                await member.add_roles(  # type: ignore[union-attr]
+                    *to_add,
+                    reason=f"XP level-up: reached level {new_level}",
                 )
-                if (
-                    discord_role
-                    and discord_role not in message.author.roles  # type: ignore[union-attr]
-                ):
-                    try:
-                        await message.author.add_roles(  # type: ignore[union-attr]
-                            discord_role,
-                            reason=f"XP level-up: reached level {new_level}",
-                        )
-                        logger.info(
-                            "XP role assigned: %s → %s (level %d)",
-                            message.author.display_name,
-                            discord_role.name,
-                            new_level,
-                        )
-                    except (discord.Forbidden, discord.HTTPException) as role_err:
-                        logger.warning(
-                            "Could not assign XP role %s to %s: %s",
-                            discord_role.name,
-                            message.author.display_name,
-                            role_err,
-                        )
+                logger.info(
+                    "XP roles assigned: %s → %s (level %d)",
+                    member.display_name,
+                    [r.name for r in to_add],
+                    new_level,
+                )
+            except (discord.Forbidden, discord.HTTPException) as role_err:
+                logger.warning(
+                    "Could not assign XP roles to %s: %s",
+                    member.display_name,
+                    role_err,
+                )
+        if to_remove:
+            try:
+                await member.remove_roles(  # type: ignore[union-attr]
+                    *to_remove,
+                    reason=f"XP single-role mode: level {new_level}",
+                )
+                logger.info(
+                    "XP roles removed (single-role mode): %s → %s",
+                    member.display_name,
+                    [r.name for r in to_remove],
+                )
+            except (discord.Forbidden, discord.HTTPException) as role_err:
+                logger.warning(
+                    "Could not remove XP roles from %s: %s",
+                    member.display_name,
+                    role_err,
+                )
     except Exception:
         logger.error(
             "XP role assignment check failed for guild %d",
