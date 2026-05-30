@@ -13,6 +13,43 @@
 
 ---
 
+## ⏱ Remediation Status — updated 2026-05-30 (post-#414)
+
+> Added by a follow-up review (session on `claude/sleepy-fermi-Bsc0d`). **Original findings below are
+> left verbatim** so the "what was wrong" stays visible — this banner only overlays current status.
+> Legend: ✅ fixed · ⚠️ partly fixed / reframed · ❌ still open. Each claim was **re-verified against
+> `main` at commit `8b40bb4`**, not taken from PR titles.
+>
+> **Only the audit's PR-1 (Foundation & safety) slice was executed** — tagged PRs #395–#401 + #405.
+> Audit PRs 2–6 (shared helpers, cog cleanup, UX/multi-select, tests/docs, BTD6/automation) were **not
+> started**. The other post-audit PRs (#402–#404, #406–#414) executed *unrelated* plans (AI-grounding
+> fix, settings/flags clarity) and are **not** audit remediation — though #414 incidentally fixed a
+> moderation read-path crash (separate from P1-2).
+
+| Item | Status | PR | Note |
+|---|---|---|---|
+| **P0-1** services→views (`classify_channel_name`) | ✅ | #395 | moved to `utils/channel_classify.py`; arch-fix-1 removed |
+| **P0-2** `DeathmatchProvider` guild scope | ✅ | #396 | fixed **both** read+write; the audit's literal read-only fix would have left the board permanently blank |
+| **P1-1** economy/xp/mod skip `emit_audit_action` | ⚠️ | #397 | **xp slice only.** economy still open; moderation reframed (already emits `moderation.action_taken`) |
+| **P1-2** mod modals bypass `moderation_service` | ❌ | — | `views/moderation/modals.py` still writes directly (its #414 change was the unrelated read-path fix) |
+| **P1-3** XP-roles-on-boot regression test | ✅ | #399 | boot-loop test already existed; #399 added the missing join-path mirror |
+| **P1-4** `task_enabled` doc vs default | ✅ | #398 | docs-only; `default=True` confirmed intentional, not a bug |
+| **P1-5** automation event-triggers never fire | ❌ | — | `_compute_next_run_at` still returns `None` for them; PR-6 track |
+| **P1-6** BTD6 freshness 7 d vs 2 d | ❌ | — | `btd6_knowledge_api.py:189` still `> 7*24*3600` |
+| **P1-7** `validate_answer` dead | ❌ | — | still zero callers in `disbot/` |
+| **P1-8** `_invalidate_cache` no-op + gov orphan-delete bypass | ❌ | — | both unchanged since audit (`binding_mutation.py`, `governance/writes.py:417`) |
+| **P1-9** `ai_permission_service.forget_guild` | ✅ | #401 | added + wired into teardown |
+| **P1-10** multi-select primitive | ❌ | — | still 2 multi vs 62 single-select; shared selectors unadopted. **Picked as next priority.** |
+| **P1-11** game/cog/governance tests + coverage floor | ❌ | — | a few targeted tests landed; no `--cov-fail-under`, 18 cogs still bare |
+| **P1-12** stale docs | ⚠️ | #400 | fixed arch count, nav-map, marked ui-view SUPERSEDED. **Open:** ADR-003 §2, `navigation.py` docstring, `runbook.md` ref |
+| **P1-13** deathmatch/blackjack terminal-state dead-ends | ❌ | — | both view files unchanged since audit |
+| **`emit_audit_action` AST invariant** (§8/§10) | ❌ | — | `architecture_rules/canonical_helpers.yaml` still `auto_checked: false` |
+| **P2 / P3** | ❌ | — | only §9.9 (`chain_cog ?→!`, #405) done; embed factory, paginator, selectors, dedup, dead-code removal all open |
+
+**Still open from the critical PR-1 safety slice:** P1-1 (economy), P1-2, P1-8, + the `emit_audit_action` AST invariant.
+
+---
+
 ## 1. Executive Summary
 
 **Overall architecture health: strong skeleton, accreting drift at the edges.** SuperBot has
@@ -553,7 +590,7 @@ vs 26, isort 5 vs 8, ruff 0.4 vs 0.15, mypy 1.8 vs 2.1); `requirements-dev.txt` 
 
 ### P0 — broken / dangerous / blocks future work
 
-**P0-1 · Zero-tolerance `services/ → views/` imports**
+**P0-1 · Zero-tolerance `services/ → views/` imports** — ✅ **FIXED (#395)**
 - *Evidence:* `services/channel_recommender.py:36`, `cleanup_profiles.py:37`, `cog_routing_profiles.py:28`
   → `from views.setup.scan_panel import classify_channel_name`.
 - *Fix:* move `classify_channel_name` (pure text logic) to `utils/channel_classify.py`; update 3 imports.
@@ -561,7 +598,7 @@ vs 26, isort 5 vs 8, ruff 0.4 vs 0.15, mypy 1.8 vs 2.1); `requirements-dev.txt` 
   crash service imports; normalizes the worst boundary breach.
 - *Verify:* `grep -rn "from views" disbot/services` returns nothing; `python3.10 scripts/check_architecture.py --mode strict` clean.
 
-**P0-2 · `DeathmatchProvider` always queries `guild_id=0`**
+**P0-2 · `DeathmatchProvider` always queries `guild_id=0`** — ✅ **FIXED (#396, read+write)**
 - *Evidence:* `services/rank_providers.py:206,222` call `db.get_deathmatch_leaderboard()` (defaults
   `guild_id=0`); real guilds get an empty leaderboard.
 - *Fix:* pass `guild.id`.
@@ -572,19 +609,19 @@ vs 26, isort 5 vs 8, ruff 0.4 vs 0.15, mypy 1.8 vs 2.1); `requirements-dev.txt` 
 
 | ID | Issue | Evidence | Fix | Risk | Verify |
 |---|---|---|---|---|---|
-| P1-1 | economy/xp/moderation skip `emit_audit_action` | `economy_service`, `xp_service.reset`, `moderation_service`/modals | route through `services.audit_events` | sensitive mutations invisible to server logging | assert `audit.action_recorded` fires |
-| P1-2 | Moderation modals/prefix bypass `moderation_service` | `views/moderation/modals.py` (7 modals), `moderation_cog` | call the service | no `moderation.action_taken`; duplicated logic | test modal → service call |
-| P1-3 | Missing regression test for "XP roles stripped on boot" | bugfix `b13ed56`, `role_cog`/`xp` boot path | add `on_ready` role-retention test | silent re-regression | new test fails pre-fix |
-| P1-4 | `feature_flags.task_enabled` default True vs "default off" docstring | `core/runtime/ai/feature_flags.py:16,74` | fix docstring (or default), add test | operator enables `AI_ENABLED` and silently gets all tasks | test asserts default |
-| P1-5 | Automation event-triggers never fire | `automation_scheduler._compute_next_run_at`, registry/templates | wire a dispatcher or hide unsupported triggers | installable rules silently dead | integration test member_join→executor |
-| P1-6 | BTD6 freshness threshold conflict (7 d vs 2 d) | `btd6_knowledge_api.py:189` vs `btd6_source_registry` | use the registry authority | AI presents stale facts as fresh | test consistency |
-| P1-7 | `validate_answer` (verify-or-disclaim for AI output) dead in main pipeline | `btd6_grounding_service.validate_answer` (no NL-stage caller) | wire it or document the heuristic-only stance | unverified numeric claims unchecked | test stage calls it |
-| P1-8 | `binding_mutation._invalidate_cache` no-op + `_run_governance_upgrade` orphan-delete bypass | `binding_mutation.py`, `governance/writes.py:418` | implement invalidation; route delete through pipeline | stale binding/visibility cache | test cache cleared post-write |
-| P1-9 | `ai_permission_service` no `forget_guild` | `ai_permission_service.py:34-35`, `guild_lifecycle` step 20 | add hook + register | unbounded growth; stale cooldowns on re-invite | teardown test |
-| P1-10 | Multi-select primitive missing | `views/selectors/*` all single-select | add `MultiSelect`/paginated selectors; adopt | repetitive admin UX repo-wide | view tests |
-| P1-11 | Game-view bet callbacks + 18 cogs + governance pipeline untested | §10 | add targeted tests + coverage floor | regressions invisible | CI coverage report |
-| P1-12 | Stale docs (ui-view-adoption, navigation docstring, ADR-003) | §11 | update to current state | agents redo/break shipped work | doc-pin or review |
-| P1-13 | Deathmatch/blackjack terminal-state dead-ends | `deathmatch_panel._BotDuelView`, `blackjack/solo_view._replay` | add replay+back result view (match RPS) | user stuck on dead panel | view test |
+| P1-1 ⚠️ | economy/xp/moderation skip `emit_audit_action` | `economy_service`, `xp_service.reset`, `moderation_service`/modals | route through `services.audit_events` | sensitive mutations invisible to server logging | assert `audit.action_recorded` fires |
+| P1-2 ❌ | Moderation modals/prefix bypass `moderation_service` | `views/moderation/modals.py` (7 modals), `moderation_cog` | call the service | no `moderation.action_taken`; duplicated logic | test modal → service call |
+| P1-3 ✅ | Missing regression test for "XP roles stripped on boot" | bugfix `b13ed56`, `role_cog`/`xp` boot path | add `on_ready` role-retention test | silent re-regression | new test fails pre-fix |
+| P1-4 ✅ | `feature_flags.task_enabled` default True vs "default off" docstring | `core/runtime/ai/feature_flags.py:16,74` | fix docstring (or default), add test | operator enables `AI_ENABLED` and silently gets all tasks | test asserts default |
+| P1-5 ❌ | Automation event-triggers never fire | `automation_scheduler._compute_next_run_at`, registry/templates | wire a dispatcher or hide unsupported triggers | installable rules silently dead | integration test member_join→executor |
+| P1-6 ❌ | BTD6 freshness threshold conflict (7 d vs 2 d) | `btd6_knowledge_api.py:189` vs `btd6_source_registry` | use the registry authority | AI presents stale facts as fresh | test consistency |
+| P1-7 ❌ | `validate_answer` (verify-or-disclaim for AI output) dead in main pipeline | `btd6_grounding_service.validate_answer` (no NL-stage caller) | wire it or document the heuristic-only stance | unverified numeric claims unchecked | test stage calls it |
+| P1-8 ❌ | `binding_mutation._invalidate_cache` no-op + `_run_governance_upgrade` orphan-delete bypass | `binding_mutation.py`, `governance/writes.py:418` | implement invalidation; route delete through pipeline | stale binding/visibility cache | test cache cleared post-write |
+| P1-9 ✅ | `ai_permission_service` no `forget_guild` | `ai_permission_service.py:34-35`, `guild_lifecycle` step 20 | add hook + register | unbounded growth; stale cooldowns on re-invite | teardown test |
+| P1-10 ❌ | Multi-select primitive missing | `views/selectors/*` all single-select | add `MultiSelect`/paginated selectors; adopt | repetitive admin UX repo-wide | view tests |
+| P1-11 ❌ | Game-view bet callbacks + 18 cogs + governance pipeline untested | §10 | add targeted tests + coverage floor | regressions invisible | CI coverage report |
+| P1-12 ⚠️ | Stale docs (ui-view-adoption, navigation docstring, ADR-003) | §11 | update to current state | agents redo/break shipped work | doc-pin or review |
+| P1-13 ❌ | Deathmatch/blackjack terminal-state dead-ends | `deathmatch_panel._BotDuelView`, `blackjack/solo_view._replay` | add replay+back result view (match RPS) | user stuck on dead panel | view test |
 
 ### P2 — important cleanup / UX / tests / simplification
 Embed factory + `format_coins` + `AI_COLOR`/`BTD6_COLOR` consolidation; migrate 6 settings
