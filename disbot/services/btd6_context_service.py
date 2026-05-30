@@ -528,6 +528,9 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     popped_by = _sanitise(getattr(entry, "popped_by", "") or "")
     children = _sanitise(getattr(entry, "children", "") or "")
     health = getattr(entry, "health", None)
+    health_fortified = getattr(entry, "health_fortified", None)
+    rbe = getattr(entry, "rbe", None)
+    speed = getattr(entry, "speed", None)
 
     lines: list[str] = []
 
@@ -552,12 +555,19 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
         ),
     )
 
-    # Line 2: stats — properties, health, children.
+    # Line 2: stats — properties, health/RBE/speed, children.
     stat_bits: list[str] = []
     if properties:
         stat_bits.append(f"properties: {', '.join(_sanitise(p) for p in properties)}")
     if isinstance(health, int):
-        stat_bits.append(f"health: {health}")
+        hp = f"health: {health}"
+        if isinstance(health_fortified, int):
+            hp += f" ({health_fortified} fortified)"
+        stat_bits.append(hp)
+    if isinstance(rbe, int):
+        stat_bits.append(f"RBE: {rbe}")
+    if isinstance(speed, (int, float)):
+        stat_bits.append(f"speed: {speed}")
     if children:
         stat_bits.append(f"pops into {children}")
     if stat_bits:

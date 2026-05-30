@@ -120,6 +120,16 @@ class BloonEntry:
     popped_by: str = ""
     children: str = ""
     health: int | None = None
+    # Extended bloonswiki facts (btd6_bloons Cargo): RBE (incl. children),
+    # fortified variants, speed, layer count, and structured children
+    # (bloon_id + count + modifiers — the canonical form; ``children`` is the
+    # legacy display string).
+    rbe: int | None = None
+    rbe_fortified: int | None = None
+    health_fortified: int | None = None
+    speed: float | None = None
+    layers: int | None = None
+    children_list: tuple[dict[str, Any], ...] = ()
     # Attribution only (bloonswiki); never surfaced in grounding. Left blank
     # rather than reusing the discredited bloons.fandom.com pages.
     wiki_url: str = ""
@@ -383,12 +393,32 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
             f"bloon {raw['id']!r}: category {category!r} not one of "
             f"{sorted(_BLOON_CATEGORIES)}",
         )
-    health_raw = raw.get("health")
-    health = int(health_raw) if isinstance(health_raw, (int, float)) else None
-    if health is not None and health <= 0:
+
+    def _opt_pos_int(key: str) -> int | None:
+        value = raw.get(key)
+        if not isinstance(value, (int, float)):
+            return None
+        as_int = int(value)
+        if as_int <= 0:
+            raise BTD6DataValidationError(
+                f"bloon {raw['id']!r}: {key} must be > 0 when present, got {as_int}",
+            )
+        return as_int
+
+    health = _opt_pos_int("health")
+    rbe = _opt_pos_int("rbe")
+    rbe_fortified = _opt_pos_int("rbe_fortified")
+    health_fortified = _opt_pos_int("health_fortified")
+    layers = _opt_pos_int("layers")
+    speed_raw = raw.get("speed")
+    speed = float(speed_raw) if isinstance(speed_raw, (int, float)) else None
+    if speed is not None and speed <= 0:
         raise BTD6DataValidationError(
-            f"bloon {raw['id']!r}: health must be > 0 when present, got {health}",
+            f"bloon {raw['id']!r}: speed must be > 0 when present, got {speed}",
         )
+    children_list = tuple(
+        dict(c) for c in raw.get("children_list", ()) if isinstance(c, dict)
+    )
     return BloonEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
@@ -401,6 +431,12 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
         popped_by=str(raw.get("popped_by", "")),
         children=str(raw.get("children", "")),
         health=health,
+        rbe=rbe,
+        rbe_fortified=rbe_fortified,
+        health_fortified=health_fortified,
+        speed=speed,
+        layers=layers,
+        children_list=children_list,
     )
 
 

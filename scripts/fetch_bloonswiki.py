@@ -57,6 +57,14 @@ _DEFAULT_CSV = _REPO_ROOT / "data" / "btd6" / "towers.csv"
 _DEFAULT_STATS_DIR = _REPO_ROOT / "disbot" / "data" / "btd6" / "stats"
 _DEFAULT_HEROES_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "heroes.json"
 _DEFAULT_HERO_STATS_DIR = _DEFAULT_STATS_DIR / "heroes"
+_DEFAULT_BLOONS_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "bloons.json"
+_CATALOG_GAME_VERSION = "54.0"
+
+# btd6_bloons Cargo fields. Cargo output keys use spaces ("rbe fort", "parent of").
+_BLOON_FIELDS = (
+    "id,name,rbe,rbe_fort,health,health_fort,speed,layers,immunity,parent_of,is_moab"
+)
+_BLOON_CATEGORY_ORDER = {"basic": 0, "special": 1, "moab_class": 2, "modifier": 3}
 
 _PATH_PREFIX = {1: "top", 2: "mid", 3: "bot"}
 
@@ -66,10 +74,34 @@ _PATH_PREFIX = {1: "top", 2: "mid", 3: "bot"}
 # ---------------------------------------------------------------------------
 
 
-def _get(url: str) -> str:
+def _get(url: str, *, retries: int = 4) -> str:
+    """GET ``url`` with the pinned UA, retrying transient network/TLS errors.
+
+    Real HTTP statuses (404 etc.) are re-raised immediately so callers can act on
+    them (e.g. economy towers 404 on the stats module). Transient hiccups — TLS
+    handshake blips, rate limits (429), 5xx — back off and retry so a single
+    flaky edge node doesn't abort a whole ``--all`` run.
+    """
     req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
-    with urllib.request.urlopen(req, timeout=25) as resp:  # noqa: S310 (https only)
-        return resp.read().decode("utf-8")
+    delay = 2.0
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, timeout=25) as resp:  # noqa: S310 (https)
+                return resp.read().decode("utf-8")
+        except urllib.error.HTTPError as exc:
+            if exc.code in (429, 500, 502, 503, 504) and attempt < retries - 1:
+                time.sleep(delay)
+                delay *= 2
+                continue
+            raise
+        except urllib.error.URLError:
+            # Wraps transient TLS / connection errors (incl. clock-skew certs).
+            if attempt < retries - 1:
+                time.sleep(delay)
+                delay *= 2
+                continue
+            raise
+    raise RuntimeError("unreachable")  # pragma: no cover
 
 
 def _cargo_query(
@@ -105,6 +137,14 @@ def _int(value: object) -> int | None:
         return int(str(value).replace(",", ""))
     except (TypeError, ValueError):
         return None
+
+
+def _float(value: object) -> float | int | None:
+    try:
+        number = float(str(value).replace(",", ""))
+    except (TypeError, ValueError):
+        return None
+    return int(number) if number.is_integer() else number
 
 
 # ---------------------------------------------------------------------------
@@ -437,6 +477,174 @@ def _run_heroes(args: argparse.Namespace) -> int:
     return 1 if any_warn else 0
 
 
+# ---------------------------------------------------------------------------
+# Bloons (btd6_bloons Cargo -> merged bloons.json)
+# ---------------------------------------------------------------------------
+
+
+def _bloon_category(bloon_id: str, is_moab: bool) -> str:
+    from utils.btd6 import bloon_ids
+
+    if is_moab:
+        return "moab_class"
+    if bloon_id in bloon_ids.BASIC_IDS:
+        return "basic"
+    return "special"
+
+
+def _bloon_properties(is_moab: bool, status: list[str]) -> list[str]:
+    props: list[str] = []
+    if is_moab:
+        props.append("moab-class")
+    if any(s.lower() == "knockback" for s in status):
+        props.append("knockback-immune")
+    return props
+
+
+def _children_string(children: list[dict], name_by_id: dict[str, str]) -> str:
+    parts: list[str] = []
+    for child in children:
+        name = name_by_id.get(child["bloon_id"]) or child["bloon_id"].title()
+        prefix = " ".join(m.capitalize() for m in child["modifiers"])
+        label = f"{prefix} {name}".strip()
+        if child["count"] > 1:
+            label += "s"
+        parts.append(f"{child['count']} {label}")
+    if len(parts) <= 1:
+        return parts[0] if parts else ""
+    return ", ".join(parts[:-1]) + " and " + parts[-1]
+
+
+def _default_bloon_aliases(bloon_id: str, canonical: str) -> list[str]:
+    aliases = [bloon_id, f"{bloon_id}s"]
+    canon = canonical.strip().lower()
+    if canon and canon not in aliases:
+        aliases.append(canon)
+    return list(dict.fromkeys(aliases))
+
+
+def _load_curated_bloons(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {b["id"]: b for b in data.get("bloons", []) if "id" in b}
+
+
+def fetch_bloons(bloons_json: Path, *, delay: float) -> list[dict]:
+    """Fetch btd6_bloons and merge with the curated file.
+
+    Numbers (rbe / health / speed / layers / immunities / children) come from
+    the wiki and win; curated aliases / descriptions / trait properties are
+    preserved, and the synthesised modifier entries (camo / regrow / fortified,
+    absent from Cargo) are carried through unchanged.
+    """
+    from parse_bloonswiki import parse_bloon_children, parse_bloon_immunity
+
+    from utils.btd6 import bloon_ids
+
+    rows = _cargo_query("btd6_bloons", _BLOON_FIELDS, "id LIKE '%'", order_by="rbe")
+    time.sleep(delay)
+    name_by_id = {
+        bloon_ids.normalize_bloon_name(r.get("id", "")): str(r.get("name", "")).strip()
+        for r in rows
+    }
+    curated = _load_curated_bloons(bloons_json)
+
+    merged: list[dict] = []
+    for row in rows:
+        raw_id = str(row.get("id", "")).strip()
+        if raw_id.startswith("TestBloon"):
+            continue
+        bloon_id = bloon_ids.normalize_bloon_name(raw_id)
+        if not bloon_id:
+            continue
+        immune, status = parse_bloon_immunity(str(row.get("immunity", "")))
+        children = parse_bloon_children(str(row.get("parent of", "")))
+        is_moab = str(row.get("is moab", "")).strip() not in ("", "0")
+        canonical = str(row.get("name", "")).strip() or raw_id
+        entry: dict = {
+            "id": bloon_id,
+            "canonical": canonical,
+            "category": _bloon_category(bloon_id, is_moab),
+            "immune_to": immune,
+            "children": _children_string(children, name_by_id),
+            "children_list": children,
+            "properties": _bloon_properties(is_moab, status),
+        }
+        for key, field_name in (
+            ("rbe", "rbe"),
+            ("rbe_fortified", "rbe fort"),
+            ("health", "health"),
+            ("health_fortified", "health fort"),
+            ("layers", "layers"),
+        ):
+            value = _int(row.get(field_name))
+            if value is not None:
+                entry[key] = value
+        speed = _float(row.get("speed"))
+        if speed is not None:
+            entry["speed"] = speed
+
+        cur = curated.get(bloon_id)
+        if cur:
+            entry["aliases"] = cur.get("aliases") or _default_bloon_aliases(
+                bloon_id,
+                canonical,
+            )
+            entry["description"] = cur.get("description", "")
+            if cur.get("popped_by"):
+                entry["popped_by"] = cur["popped_by"]
+            entry["properties"] = list(
+                dict.fromkeys([*cur.get("properties", []), *entry["properties"]]),
+            )
+        else:
+            entry["aliases"] = _default_bloon_aliases(bloon_id, canonical)
+            entry["description"] = ""
+        merged.append(entry)
+
+    # Carry forward the synthesised modifier entries (camo/regrow/fortified).
+    merged.extend(cur for cur in curated.values() if cur.get("category") == "modifier")
+    merged.sort(
+        key=lambda e: (
+            _BLOON_CATEGORY_ORDER.get(e.get("category"), 9),
+            e.get("rbe") or 0,
+            e.get("id", ""),
+        ),
+    )
+    return merged
+
+
+def write_bloons_file(bloons: list[dict], path: Path, *, game_version: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc = {
+        "schema_version": 2,
+        "data_version": "2.0",
+        "game_version": game_version,
+        "source": "bloonswiki.com Cargo btd6_bloons (CC BY-NC-SA)",
+        "bloons": bloons,
+    }
+    path.write_text(
+        json.dumps(doc, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def _run_bloons(args: argparse.Namespace) -> int:
+    bloons = fetch_bloons(args.bloons_json, delay=args.delay)
+    basics = [b["id"] for b in bloons if b.get("category") == "basic"]
+    print(f"fetched {len(bloons)} bloons (basics: {', '.join(basics) or 'none'})")
+    for b in bloons[:6]:
+        print(
+            f"  {b['id']}: rbe={b.get('rbe')} speed={b.get('speed')} "
+            f"immune={b.get('immune_to')} -> {b.get('children') or '(none)'}",
+        )
+    if not args.dry_run:
+        write_bloons_file(bloons, args.bloons_json, game_version=args.game_version)
+        print(f"Wrote {len(bloons)} bloons to {args.bloons_json}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
@@ -452,6 +660,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Fetch every hero in heroes.json",
     )
+    group.add_argument(
+        "--all-bloons",
+        action="store_true",
+        help="Fetch the btd6_bloons table -> bloons.json",
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -466,7 +679,12 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=_DEFAULT_HERO_STATS_DIR,
     )
+    parser.add_argument("--bloons-json", type=Path, default=_DEFAULT_BLOONS_JSON)
+    parser.add_argument("--game-version", default=_CATALOG_GAME_VERSION)
     args = parser.parse_args(argv)
+
+    if args.all_bloons:
+        return _run_bloons(args)
 
     if args.hero or args.all_heroes:
         return _run_heroes(args)

@@ -542,6 +542,70 @@ def _render_stats_report(result: StatsResult) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# Bloon Cargo parsing (btd6_bloons: immunity + children wikitext)
+# ---------------------------------------------------------------------------
+
+_BLOON_COUNT_RE = re.compile(r"×\s*(\d+)")
+_DT_BLOCK_RE = re.compile(r"\[\[\s*damage type\s*\|([^\]]+)\]\]", re.IGNORECASE)
+_BRACKET_TOKEN_RE = re.compile(r"\[\[([^\]|]+)\]\]")
+
+
+def parse_bloon_immunity(text: str) -> tuple[list[str], list[str]]:
+    """Parse a ``btd6_bloons.immunity`` value into (damage types, status tokens).
+
+    Handles the three shapes seen on the wiki:
+      * ``[[damage type|Sharp, Shatter, Cold, Energy]]`` (also ``Damage type``);
+      * a bare comma list ``Energy, Plasma, Acid`` (Glass Bloon);
+      * status immunities ``[[Slow]], [[blowback]], [[knockback]]`` (BAD etc.).
+    """
+    text = (text or "").strip()
+    if not text:
+        return [], []
+    immune: list[str] = []
+    status: list[str] = []
+    block = _DT_BLOCK_RE.search(text)
+    if block:
+        immune = [t.strip() for t in block.group(1).split(",") if t.strip()]
+    bracket_tokens = [t.strip() for t in _BRACKET_TOKEN_RE.findall(text)]
+    for tok in bracket_tokens:
+        if tok.lower() != "damage type":
+            status.append(tok)
+    if not immune and not bracket_tokens and "[[" not in text:
+        immune = [t.strip() for t in text.split(",") if t.strip()]
+    return immune, status
+
+
+def parse_bloon_children(text: str) -> list[dict]:
+    """Parse a ``btd6_bloons.parent_of`` value into structured children.
+
+    Returns ``[{"bloon_id", "count", "modifiers"}]``. Leading Camo/Regrow/
+    Fortified tokens become ``modifiers``; the remaining text names the child
+    bloon (which may itself be unlinked, as in Glass Bloon's children).
+    """
+    from utils.btd6 import bloon_ids
+
+    text = (text or "").strip()
+    if not text:
+        return []
+    out: list[dict] = []
+    for part in text.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        count_match = _BLOON_COUNT_RE.search(part)
+        count = int(count_match.group(1)) if count_match else 1
+        plain = bloon_ids.strip_links(_BLOON_COUNT_RE.sub("", part))
+        tokens = plain.split()
+        modifiers: list[str] = []
+        while tokens and tokens[0].lower() in bloon_ids.MODIFIER_TOKENS:
+            modifiers.append(tokens.pop(0).lower())
+        bloon_id = bloon_ids.normalize_bloon_name(" ".join(tokens))
+        if bloon_id:
+            out.append({"bloon_id": bloon_id, "count": count, "modifiers": modifiers})
+    return out
+
+
 def _looks_like_json(text: str) -> bool:
     try:
         json.loads(text)

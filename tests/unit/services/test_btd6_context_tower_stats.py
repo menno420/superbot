@@ -89,6 +89,15 @@ def test_hero_without_module_has_cost_and_abilities_but_no_stat_lines():
     assert any("[btd6_hero]" in ln for ln in lines)
 
 
+def test_bloon_grounding_includes_rbe_and_speed():
+    # The new structured bloon facts (RBE / speed) reach the model, bounded to a
+    # couple of bits per bloon.
+    lines = ctx._render_fixture_bloon(ds.get_bloon("ceramic"))
+    blob = " ".join(lines)
+    assert "RBE:" in blob
+    assert "speed:" in blob
+
+
 async def test_grounded_build_surfaces_bloon_immunity_and_tower_facts():
     # End-to-end through the real grounding builder (DB passes degrade to
     # no-ops without a pool; the fixture pass always runs). This is the guard

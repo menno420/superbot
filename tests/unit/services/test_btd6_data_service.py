@@ -270,6 +270,69 @@ def test_get_bloon_accessor():
     assert get_bloon("does_not_exist") is None
 
 
+def test_bloons_include_basics_and_rbe():
+    from services.btd6_data_service import get_bloon
+
+    ids = {b.id for b in get_dataset().bloons}
+    # The basics the old hand-curated file lacked are now present...
+    assert {"red", "blue", "green", "yellow", "pink"} <= ids
+    # ...and the wiki's test bloons are filtered out.
+    assert not any(b.id.startswith("test") for b in get_dataset().bloons)
+    ceramic = get_bloon("ceramic")
+    assert ceramic.rbe and ceramic.rbe > 0
+    assert ceramic.speed and ceramic.speed > 0
+    moab = get_bloon("moab")
+    # RBE is children-inclusive: a MOAB = its 200 layers + four full Ceramics.
+    assert moab.rbe == moab.health + 4 * ceramic.rbe
+    assert moab.health_fortified and moab.health_fortified > moab.health
+
+
+def test_bloon_children_list_is_structured():
+    from services.btd6_data_service import get_bloon
+
+    assert get_bloon("lead").children_list == (
+        {"bloon_id": "black", "count": 2, "modifiers": []},
+    )
+    ddt_child = get_bloon("ddt").children_list[0]
+    assert ddt_child["bloon_id"] == "ceramic" and ddt_child["count"] == 4
+    assert "camo" in ddt_child["modifiers"]
+
+
+def test_curated_aliases_and_modifier_entries_preserved():
+    from services.btd6_data_service import get_bloon
+
+    # A curated alias survived the regen (resolver lookups must not regress)...
+    assert "cerb" in get_bloon("ceramic").aliases
+    # ...and the synthesised modifier entries (absent from Cargo) are kept.
+    assert get_bloon("camo") is not None
+    assert get_bloon("fortified") is not None
+
+
+def test_invalid_bloon_rbe_fails(tmp_path):
+    staged = _stage_data(tmp_path)
+    (staged / "bloons.json").write_text(
+        json.dumps(
+            {
+                "data_version": "1.0",
+                "game_version": "54.0",
+                "source": "test",
+                "bloons": [
+                    {
+                        "id": "x",
+                        "canonical": "X",
+                        "aliases": ["xbloon"],
+                        "category": "special",
+                        "description": "d",
+                        "rbe": 0,
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    _expect_validation_error(staged, match="rbe must be > 0")
+
+
 def test_every_bloon_category_is_valid():
     from services.btd6_data_service import _BLOON_CATEGORIES
 
