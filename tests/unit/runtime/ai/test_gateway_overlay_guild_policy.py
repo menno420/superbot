@@ -159,6 +159,115 @@ async def test_overlay_uses_typed_model_only(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_overlay_anthropic_with_empty_model_auto_picks_claude(monkeypatch):
+    """Recommended path: provider=anthropic, model empty → the per-task
+    claude model is auto-picked (no operator model typing required).
+    """
+    from utils.db import ai as ai_db
+
+    monkeypatch.setattr(
+        ai_db,
+        "get_guild_policy",
+        AsyncMock(
+            return_value={"default_provider": "anthropic", "default_model": ""},
+        ),
+    )
+
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.BTD6_ANSWER,
+    )
+
+    assert result.provider == "anthropic"
+    assert result.model == "claude-sonnet-4-6"  # per-task anthropic default
+
+
+@pytest.mark.asyncio
+async def test_overlay_coerces_cross_provider_model_to_default(monkeypatch):
+    """A stale openai model under anthropic would 404 — coerce it to the
+    per-task claude default instead of forwarding it.
+    """
+    from utils.db import ai as ai_db
+
+    monkeypatch.setattr(
+        ai_db,
+        "get_guild_policy",
+        AsyncMock(
+            return_value={
+                "default_provider": "anthropic",
+                "default_model": "gpt-4o-mini",
+            },
+        ),
+    )
+
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.BTD6_ANSWER,
+    )
+
+    assert result.provider == "anthropic"
+    assert result.model == "claude-sonnet-4-6"
+
+
+@pytest.mark.asyncio
+async def test_overlay_coerces_typo_model_to_default(monkeypatch):
+    """A typo'd claude id (missing the ``claude-`` prefix) 404s — coerce
+    it to the per-task default rather than forwarding the typo.
+    """
+    from utils.db import ai as ai_db
+
+    monkeypatch.setattr(
+        ai_db,
+        "get_guild_policy",
+        AsyncMock(
+            return_value={
+                "default_provider": "anthropic",
+                "default_model": "sonnet-4-6",
+            },
+        ),
+    )
+
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.HELP_ANSWER,
+    )
+
+    assert result.provider == "anthropic"
+    assert result.model == "claude-haiku-4-5"  # HELP_ANSWER anthropic default
+
+
+@pytest.mark.asyncio
+async def test_overlay_coerces_claude_model_under_openai(monkeypatch):
+    """The mirror case: a claude model stored under openai is coerced to
+    the openai per-task default.
+    """
+    from utils.db import ai as ai_db
+
+    monkeypatch.setattr(
+        ai_db,
+        "get_guild_policy",
+        AsyncMock(
+            return_value={
+                "default_provider": "openai",
+                "default_model": "claude-sonnet-4-6",
+            },
+        ),
+    )
+
+    result = await _overlay_guild_policy(
+        _target(),
+        guild_id=99,
+        task=AITask.SETUP_SUGGEST,
+    )
+
+    assert result.provider == "openai"
+    assert result.model == "gpt-4o-mini"
+
+
+@pytest.mark.asyncio
 async def test_overlay_swallows_db_failure(monkeypatch):
     """A DB read failure must NOT raise — gateway contract requires
     ``execute`` to never propagate exceptions to callers.
