@@ -49,7 +49,7 @@ import os
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 logger = logging.getLogger("bot.feature_flags")
 
@@ -138,6 +138,20 @@ class FeatureFlag:
         Optional human-readable hint for when the flag should be
         retired (e.g. ``"Phase 7 stable"``).  Empty for permanent
         flags.
+    audience:
+        ``"operator"`` for flags an operator is meant to toggle;
+        ``"internal"`` (default) for migration / kill-switch gates that
+        are platform-internal.  Drives the operator/internal split in
+        ``!platform flags`` and is surfaced in the flag-detail view.
+    db_editable:
+        ``False`` for flags whose per-guild DB override the evaluator
+        ignores (e.g. the env-only ``feature_flag.primary`` meta-flag).
+        The flag-manager UI refuses to write overrides for these so it
+        never offers a no-op control.
+    label:
+        Optional plain-language operator-facing name.  Falls back to the
+        dotted ``name`` when empty.  Display-only — the ``name`` stays
+        the stable key used for storage, env vars, and audit.
     """
 
     name: str
@@ -147,6 +161,9 @@ class FeatureFlag:
     rollout_policy: RolloutPolicy | None = None
     owner: str = "platform"
     removal_target: str = ""
+    audience: Literal["operator", "internal"] = "internal"
+    db_editable: bool = True
+    label: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -209,6 +226,7 @@ RESOURCES_UNIFIED = FeatureFlag(
     default_value=False,
     owner="platform",
     removal_target="Phase 2a stable",
+    label="Unified resource discovery (internal rollout gate)",
 )
 
 # Phase 2b flag — flipped after binding backfill verifies on production guilds.
@@ -221,6 +239,7 @@ BINDINGS_PRIMARY = FeatureFlag(
     default_value=False,
     owner="platform",
     removal_target="Phase 2b stable",
+    label="Bindings as primary source (internal rollout gate)",
 )
 
 # Phase 2c flag — flipped after participation tables verify on owner guild.
@@ -230,6 +249,7 @@ PARTICIPATION_ENABLED = FeatureFlag(
     default_value=False,
     owner="platform",
     removal_target="Phase 2c stable",
+    label="Participation runtime (internal rollout gate)",
 )
 
 # Phase 2d meta-flag — bootstrapped via env var until itself flipped.
@@ -242,6 +262,10 @@ FEATURE_FLAG_PRIMARY = FeatureFlag(
     default_value=False,
     owner="platform",
     removal_target="Phase 2d stable",
+    # Env-only meta-flag: the evaluator never reads a DB override for it
+    # (see resolve_with_provenance), so the editor must not offer one.
+    db_editable=False,
+    label="Feature-flag runtime gate (env-only, internal)",
 )
 
 # S4 flag — kill-switch infrastructure for future Settings Manager UI
@@ -260,6 +284,7 @@ SETTINGS_MUTATION_PRIMARY = FeatureFlag(
     default_value=False,
     owner="platform",
     removal_target="S5+ stable",
+    label="Settings mutation pipeline primary (internal kill-switch)",
 )
 
 # S4.5 flag — kill-switch infrastructure for future ResourceProvisioning
@@ -280,6 +305,7 @@ RESOURCE_PROVISIONING_PRIMARY = FeatureFlag(
     default_value=False,
     owner="platform",
     removal_target="S10+ stable",
+    label="Resource provisioning pipeline primary (internal kill-switch)",
 )
 
 # S5 flag — gates the user-facing Settings Manager cog (!settings).
@@ -311,6 +337,8 @@ SETTINGS_MANAGER_COG_ENABLED = FeatureFlag(
     default_value=True,
     owner="platform",
     removal_target="S11 stable",
+    audience="operator",
+    label="Settings menu (!settings)",
 )
 
 
@@ -326,6 +354,8 @@ YOUTUBE_CONTEXT_ENABLED = FeatureFlag(
     ),
     default_value=False,
     owner="ai",
+    audience="operator",
+    label="YouTube context for AI replies",
 )
 
 
@@ -721,6 +751,7 @@ def _feature_flags_snapshot() -> dict[str, Any]:
     return {
         "declared_total": len(flags),
         "by_owner": _flags_by_owner(flags),
+        "by_audience": _flags_by_audience(flags),
         "cache_size": len(_CACHE),
         "bootstrap_fallback_count": _BOOTSTRAP_FALLBACK_COUNT,
         "by_name": {
@@ -729,6 +760,9 @@ def _feature_flags_snapshot() -> dict[str, Any]:
                 "default_value": flag.default_value,
                 "owner": flag.owner,
                 "removal_target": flag.removal_target,
+                "audience": flag.audience,
+                "db_editable": flag.db_editable,
+                "label": flag.label,
                 "tier_gate": (
                     flag.rollout_policy.tier_gate.value
                     if flag.rollout_policy
@@ -745,6 +779,13 @@ def _flags_by_owner(flags: dict[str, FeatureFlag]) -> dict[str, int]:
     for flag in flags.values():
         by_owner[flag.owner] = by_owner.get(flag.owner, 0) + 1
     return dict(sorted(by_owner.items()))
+
+
+def _flags_by_audience(flags: dict[str, FeatureFlag]) -> dict[str, int]:
+    by_audience: dict[str, int] = {}
+    for flag in flags.values():
+        by_audience[flag.audience] = by_audience.get(flag.audience, 0) + 1
+    return dict(sorted(by_audience.items()))
 
 
 def _register_diagnostics_providers() -> None:

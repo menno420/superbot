@@ -220,18 +220,19 @@ class _ChallengeView(discord.ui.View):
         duel = _Duel(self.challenger, self.opponent)
         self.cog.active_duels[self.duel_key] = duel
         # PR 8 — read the per-guild turn timeout setting. Falls back to
-        # the historical 60s default when unset or unparseable.
-        from utils.settings_keys import DEATHMATCH_TURN_TIMEOUT
+        # the historical 60s default when unset or unparseable (the
+        # resolver coerces + validates and degrades invalid rows to the
+        # SettingSpec default).
+        from services.settings_resolution import resolve_value
 
-        raw = await db.get_setting(
-            interaction.guild_id or 0,
-            DEATHMATCH_TURN_TIMEOUT,
-            "60",
+        turn_timeout = float(
+            await resolve_value(
+                interaction.guild_id or 0,
+                "deathmatch",
+                "turn_timeout",
+                60,
+            ),
         )
-        try:
-            turn_timeout = float(int(raw))
-        except (TypeError, ValueError):
-            turn_timeout = 60.0
         duel_view = _DuelView(
             self.cog,
             duel,

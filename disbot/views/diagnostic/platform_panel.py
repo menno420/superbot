@@ -195,7 +195,7 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
     if name == "schemas":
         return build_schemas_embed()
     if name == "settings-registry":
-        return build_settings_registry_embed()
+        return await build_settings_registry_embed(guild)
     if name == "customization":
         return build_customization_embed()
     if name == "provisioning":

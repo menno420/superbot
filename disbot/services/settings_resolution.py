@@ -361,6 +361,32 @@ async def resolve_batch(
     return tuple(results)
 
 
+async def resolve_value(
+    guild_id: int,
+    subsystem: str,
+    name: str,
+    fallback: Any,
+) -> Any:
+    """Resolve a single scalar setting to its typed value.
+
+    Thin convenience over :func:`resolve_setting` for the common consumer
+    call-site that just wants the value, not the full
+    :class:`SettingResolution`. The resolved value already falls back to
+    the declared :class:`SettingSpec` default when the KV row is missing
+    or fails coercion/validation, so ``fallback`` is returned **only**
+    when ``(subsystem, name)`` is not a declared spec — a programmer
+    error rather than a missing row.
+
+    Consumers replace ad-hoc ``int(await db.get_setting(...))`` reads with
+    this so coercion, validation, and provenance stay centralised in one
+    place (and a malformed stored value can no longer raise).
+    """
+    resolution = await resolve_setting(guild_id, subsystem, name)
+    if resolution is None:
+        return fallback
+    return resolution.value
+
+
 # ---------------------------------------------------------------------------
 # Diagnostics provider — registers at import time
 # ---------------------------------------------------------------------------
@@ -388,4 +414,5 @@ __all__ = [
     "counters_snapshot",
     "resolve_batch",
     "resolve_setting",
+    "resolve_value",
 ]

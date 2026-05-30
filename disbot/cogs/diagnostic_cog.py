@@ -34,6 +34,7 @@ from cogs.diagnostic._platform_embeds import (
     build_runtime_embed,
     build_schemas_embed,
     build_sessions_embed,
+    build_setting_detail_embed,
     build_settings_registry_embed,
     build_slow_embed,
     build_status_embed,
@@ -407,8 +408,22 @@ class DiagnosticCog(commands.Cog):
     @platform_grp.command(name="settings-registry")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_settings_registry(self, ctx):
-        """Frozen catalogue of every declared SettingSpec (S1)."""
-        await ctx.send(embed=build_settings_registry_embed())
+        """Declared SettingSpec catalogue + this guild's current values (S1)."""
+        await ctx.send(embed=await build_settings_registry_embed(ctx.guild))
+
+    @platform_grp.command(name="setting")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_setting(self, ctx, subsystem: str, name: str):
+        """Explain one scalar setting for this guild.
+
+        Shows the resolved value, its provenance (default vs legacy_kv),
+        the declared default, validity, the raw stored string, and any
+        resolver diagnostics — the "why is this value?" answer that
+        feature flags already have via ``!platform flag``.
+        """
+        await ctx.send(
+            embed=await build_setting_detail_embed(ctx.guild, subsystem, name),
+        )
 
     @platform_grp.command(name="customization")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)

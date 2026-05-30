@@ -144,7 +144,10 @@ AI_SETTINGS: tuple[SettingSpec, ...] = (
             "their own. 'deterministic' keeps responses local; "
             "'openai' / 'anthropic' route through the configured "
             "OpenAI / Anthropic account. Leave the model empty so each "
-            "task auto-picks the right model for the provider."
+            "task auto-picks the right model for the provider. This "
+            "per-guild setting wins over the AI_DEFAULT_PROVIDER "
+            "environment default for this server (see "
+            "docs/ai-config-ownership.md § provider precedence)."
         ),
         validator=_validate_provider,
         allowed_values=("deterministic", "openai", "anthropic"),

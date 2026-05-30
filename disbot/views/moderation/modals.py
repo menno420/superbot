@@ -28,7 +28,6 @@ from cogs.moderation._helpers import _can_act_on_interaction
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from utils import db
 from utils.helpers import _parse_member
-from utils.settings_keys import WARN_THRESHOLD, WARN_TIMEOUT_MINS
 from utils.ui_constants import MOD_COLOR
 
 
@@ -63,9 +62,22 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             return
         if not await safe_defer(interaction):
             return
-        threshold = int(await db.get_setting(interaction.guild_id, WARN_THRESHOLD, "3"))
-        timeout_minutes = int(
-            await db.get_setting(interaction.guild_id, WARN_TIMEOUT_MINS, "10"),
+        # Read through the canonical scalar resolver so coercion +
+        # validation are centralised; a malformed stored value falls
+        # back to the SettingSpec default instead of raising.
+        from services.settings_resolution import resolve_value
+
+        threshold = await resolve_value(
+            interaction.guild_id,
+            "moderation",
+            "warn_threshold",
+            3,
+        )
+        timeout_minutes = await resolve_value(
+            interaction.guild_id,
+            "moderation",
+            "warn_timeout_minutes",
+            10,
         )
         count = await db.add_warning(member.id, interaction.guild_id)
         await safe_followup(

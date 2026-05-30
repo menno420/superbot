@@ -111,3 +111,49 @@ def test_diagnostics_provider_registered():
     snap = diagnostics_service.snapshot("feature_flags")
     assert snap["declared_total"] >= 4
     assert "platform" in snap["by_owner"]
+
+
+# ---------------------------------------------------------------------------
+# PR2 — audience / db_editable / label
+# ---------------------------------------------------------------------------
+
+
+def test_audience_and_db_editable_defaults(_clean_flags):
+    """A flag is internal + DB-editable + label-less unless told otherwise."""
+    register(FeatureFlag(name="x", description="x", default_value=False))
+    fetched = get("x")
+    assert fetched.audience == "internal"
+    assert fetched.db_editable is True
+    assert fetched.label == ""
+
+
+def test_only_operator_flags_carry_operator_audience():
+    """Exactly the two operator-facing flags are tagged audience=operator."""
+    operator = {
+        name for name, flag in all_flags().items() if flag.audience == "operator"
+    }
+    assert operator == {
+        "settings.manager_cog.enabled",
+        "youtube.context.enabled",
+    }
+
+
+def test_meta_flag_is_not_db_editable():
+    """feature_flag.primary is env-only — its DB override is ignored, so the
+    editor must treat it as non-editable. The rollout gates stay editable.
+    """
+    assert get("feature_flag.primary").db_editable is False
+    assert get("bindings.primary").db_editable is True
+
+
+def test_snapshot_exposes_audience_editable_label():
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot("feature_flags")
+    assert "by_audience" in snap
+    assert snap["by_audience"].get("operator", 0) >= 2
+    info = snap["by_name"]["settings.manager_cog.enabled"]
+    assert info["audience"] == "operator"
+    assert info["db_editable"] is True
+    assert info["label"]  # non-empty operator-facing label
+    assert snap["by_name"]["feature_flag.primary"]["db_editable"] is False

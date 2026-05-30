@@ -221,6 +221,19 @@ do not relitigate them.
   guild button with a tooltip explaining the restriction; the service
   raises `GuildScopeNotSupportedError` if a caller asks for it (PR-6).
   Apply `mention_only` to a category or channel instead.
+- **Provider precedence (env vs. per-guild).** `ai_default_provider`
+  exists both as the `AI_DEFAULT_PROVIDER` environment default and as a
+  per-guild scalar setting. They do **not** conflict. Routing
+  (`core.runtime.ai.routing.resolve`) starts from the env default, then
+  `core.runtime.ai.gateway` overlays the per-guild
+  `ai_guild_policy.default_provider` — which the settings-UI write to
+  `ai_default_provider` feeds via `services.ai_policy_mutation` /
+  `services.ai_config_projection_service`. A per-task
+  `AI_ROUTING_<TASK>` env override, if set, wins outright. Effective
+  order: `AI_ROUTING_<TASK>` → per-guild policy (the settings-UI value)
+  → `AI_DEFAULT_PROVIDER` → `"deterministic"`. So editing the setting
+  **does** take effect for that guild; the env var is only the
+  cross-guild fallback.
 
 ---
 

@@ -150,17 +150,20 @@ async def test_warn_modal_happy_path_defers_before_db_io():
         ),
         patch("views.moderation.modals.safe_defer", tracker.defer()),
         patch("views.moderation.modals.safe_followup", tracker.followup()),
+        patch(
+            "services.settings_resolution.resolve_value",
+            tracker.slow("resolve_value", return_value=3),
+        ),
         patch("views.moderation.modals.db") as mock_db,
     ):
-        mock_db.get_setting = tracker.slow("get_setting", return_value="3")
         mock_db.add_warning = tracker.slow("add_warning", return_value=1)
         mock_db.log_mod_action = tracker.slow("log_mod_action")
         await modal.on_submit(interaction)
 
     assert (
         tracker.calls[0] == "defer"
-    ), f"defer must come before any DB I/O; got {tracker.calls!r}"
-    assert "get_setting" in tracker.calls
+    ), f"defer must come before any settings/DB I/O; got {tracker.calls!r}"
+    assert "resolve_value" in tracker.calls
     assert "add_warning" in tracker.calls
     assert "followup" in tracker.calls
     interaction.response.send_message.assert_not_called()
@@ -196,9 +199,12 @@ async def test_warn_modal_threshold_branch_uses_followup_after_timeout():
             "views.moderation.modals.safe_followup",
             AsyncMock(side_effect=_capture_followup),
         ),
+        patch(
+            "services.settings_resolution.resolve_value",
+            AsyncMock(return_value=3),
+        ),
         patch("views.moderation.modals.db") as mock_db,
     ):
-        mock_db.get_setting = AsyncMock(return_value="3")
         # Third warning trips the threshold.
         mock_db.add_warning = AsyncMock(return_value=3)
         mock_db.log_mod_action = AsyncMock()

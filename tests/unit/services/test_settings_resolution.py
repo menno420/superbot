@@ -18,6 +18,7 @@ from services.settings_resolution import (
     counters_snapshot,
     resolve_batch,
     resolve_setting,
+    resolve_value,
 )
 from utils import db as db_pkg
 from utils.db import settings as settings_db
@@ -553,3 +554,71 @@ async def test_diagnostics_provider_exposes_counters(_reset_state):
     counters = snap["counters"]
     assert counters["calls_total"] >= 1
     assert counters["by_provenance"]["legacy_kv"] >= 1
+
+
+# ---------------------------------------------------------------------------
+# resolve_value — thin convenience wrapper used by migrated read-paths
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_resolve_value_returns_coerced_kv_value(_reset_state):
+    _register(
+        "moderation",
+        SettingSpec(
+            name="warn_threshold",
+            value_type=int,
+            default=3,
+            settings_key="warn_threshold",
+        ),
+    )
+    _reset_state["kv"][(1, "warn_threshold")] = "7"
+    value = await resolve_value(1, "moderation", "warn_threshold", 3)
+    assert value == 7
+    assert isinstance(value, int)
+
+
+@pytest.mark.asyncio
+async def test_resolve_value_returns_spec_default_when_missing(_reset_state):
+    _register(
+        "moderation",
+        SettingSpec(
+            name="warn_threshold",
+            value_type=int,
+            default=3,
+            settings_key="warn_threshold",
+        ),
+    )
+    # No KV row → spec default, NOT the fallback arg.
+    value = await resolve_value(1, "moderation", "warn_threshold", 999)
+    assert value == 3
+
+
+@pytest.mark.asyncio
+async def test_resolve_value_returns_spec_default_when_malformed(_reset_state):
+    """Malformed legacy value falls back to the spec default — never raises."""
+
+    def _positive_int(value: object) -> None:
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError("expected positive int")
+
+    _register(
+        "moderation",
+        SettingSpec(
+            name="warn_threshold",
+            value_type=int,
+            default=3,
+            settings_key="warn_threshold",
+            validator=_positive_int,
+        ),
+    )
+    _reset_state["kv"][(1, "warn_threshold")] = "not-a-number"
+    value = await resolve_value(1, "moderation", "warn_threshold", 999)
+    assert value == 3  # spec default, not the fallback, and no exception
+
+
+@pytest.mark.asyncio
+async def test_resolve_value_returns_fallback_for_undeclared_spec():
+    # Undeclared (subsystem, name) → resolve_setting returns None → fallback.
+    value = await resolve_value(1, "no_such_subsystem", "nope", 42)
+    assert value == 42

@@ -88,9 +88,9 @@ def test_flag_manager_does_not_call_db_mutations_directly():
         "delete_guild_override",
         "delete_global_override",
     ):
-        assert forbidden not in src, (
-            f"flag_manager.py contains forbidden DB mutation call {forbidden!r}"
-        )
+        assert (
+            forbidden not in src
+        ), f"flag_manager.py contains forbidden DB mutation call {forbidden!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -156,9 +156,7 @@ def test_view_lists_every_declared_flag_in_select():
 def test_view_exposes_expected_button_set():
     view = fm.FlagManagerView(_author(), guild_id=42)
     custom_ids = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
+        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
     }
     assert custom_ids == {
         "flag_manager:enable",
@@ -174,11 +172,7 @@ def test_view_omits_reset_button_until_pipeline_supports_it():
     the omission so a future re-introduction is deliberate.
     """
     view = fm.FlagManagerView(_author(), guild_id=42)
-    button_labels = {
-        c.label
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-    }
+    button_labels = {c.label for c in view.children if isinstance(c, discord.ui.Button)}
     assert not any("reset" in (label or "").lower() for label in button_labels)
 
 
@@ -246,13 +240,16 @@ async def test_enable_calls_pipeline_set_flag_state_with_guild_scope():
         "removal_target": "",
         "has_guild_override": True,
     }
-    with patch(
-        "services.rollout_mutation.RolloutMutationPipeline",
-        return_value=fake_pipeline,
-    ), patch.object(
-        fm,
-        "_resolve_flag_details",
-        AsyncMock(return_value=fake_details),
+    with (
+        patch(
+            "services.rollout_mutation.RolloutMutationPipeline",
+            return_value=fake_pipeline,
+        ),
+        patch.object(
+            fm,
+            "_resolve_flag_details",
+            AsyncMock(return_value=fake_details),
+        ),
     ):
         btn = next(
             c
@@ -291,18 +288,22 @@ async def test_disable_calls_pipeline_with_state_off():
         "removal_target": "",
         "has_guild_override": True,
     }
-    with patch(
-        "services.rollout_mutation.RolloutMutationPipeline",
-        return_value=fake_pipeline,
-    ), patch.object(
-        fm,
-        "_resolve_flag_details",
-        AsyncMock(return_value=fake_details),
+    with (
+        patch(
+            "services.rollout_mutation.RolloutMutationPipeline",
+            return_value=fake_pipeline,
+        ),
+        patch.object(
+            fm,
+            "_resolve_flag_details",
+            AsyncMock(return_value=fake_details),
+        ),
     ):
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button) and c.custom_id == "flag_manager:disable"
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "flag_manager:disable"
         )
         await btn.callback(interaction)  # type: ignore[union-attr,misc]
 
@@ -434,7 +435,8 @@ async def test_refresh_after_selection_resolves_again():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button) and c.custom_id == "flag_manager:refresh"
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "flag_manager:refresh"
         )
         await btn.callback(interaction)  # type: ignore[union-attr,misc]
     fake_resolve.assert_awaited_once_with("platform.bindings.primary", 42)
@@ -478,3 +480,61 @@ def test_platform_flags_read_only_command_still_exists():
 
     sub = DiagnosticCog.platform_grp.get_command("flags")
     assert sub is not None
+
+
+# ---------------------------------------------------------------------------
+# PR2 — audience / db_editable surfaces + editor guard
+# ---------------------------------------------------------------------------
+
+
+def test_detail_embed_renders_audience_and_editable():
+    details = {
+        "name": "feature_flag.primary",
+        "default": "off",
+        "effective": "off",
+        "source": "default",
+        "owner": "platform",
+        "description": "meta",
+        "removal_target": "",
+        "has_guild_override": False,
+        "audience": "internal",
+        "db_editable": False,
+        "label": "Feature-flag runtime gate (env-only, internal)",
+    }
+    embed = fm.build_flag_detail_embed(details)
+    field_names = [f.name for f in embed.fields]
+    assert "Key" in field_names
+    assert "Audience" in field_names
+    assert "Editable" in field_names
+    editable_field = next(f for f in embed.fields if f.name == "Editable")
+    assert "env-only" in editable_field.value
+    # Title uses the operator label, not the dotted key.
+    assert "Feature-flag runtime" in (embed.title or "")
+
+
+@pytest.mark.asyncio
+async def test_enable_refuses_non_db_editable_flag():
+    """A real env-only / internal gate (``feature_flag.primary``, declared
+    ``db_editable=False``) cannot be toggled in the UI — the override would be
+    a no-op, so the view refuses and never calls the pipeline.
+    """
+    view = fm.FlagManagerView(_author(), guild_id=42)
+    view.selected_flag = "feature_flag.primary"
+    interaction = _interaction()
+
+    fake_pipeline = MagicMock()
+    fake_pipeline.set_flag_state = AsyncMock()
+    with patch(
+        "services.rollout_mutation.RolloutMutationPipeline",
+        return_value=fake_pipeline,
+    ):
+        btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button) and c.custom_id == "flag_manager:enable"
+        )
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    interaction.response.send_message.assert_awaited_once()
+    fake_pipeline.set_flag_state.assert_not_called()
+    interaction.response.edit_message.assert_not_called()

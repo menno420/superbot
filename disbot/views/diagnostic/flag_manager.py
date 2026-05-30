@@ -76,6 +76,9 @@ async def _resolve_flag_details(
             "description": "Flag is no longer declared.",
             "removal_target": "",
             "has_guild_override": False,
+            "audience": "internal",
+            "db_editable": False,
+            "label": "",
         }
     try:
         decision = await feature_flags.resolve_with_provenance(flag_name, guild_id)
@@ -107,6 +110,9 @@ async def _resolve_flag_details(
         "description": flag.description,
         "removal_target": flag.removal_target,
         "has_guild_override": has_guild_override,
+        "audience": flag.audience,
+        "db_editable": flag.db_editable,
+        "label": flag.label,
     }
 
 
@@ -134,9 +140,21 @@ def build_flag_manager_overview_embed() -> discord.Embed:
 def build_flag_detail_embed(details: dict[str, Any]) -> discord.Embed:
     """Render a flag's read-only details as the manager embed."""
     color = ADMIN_COLOR
-    title = f"🚩 {details['name']}"
+    label = details.get("label") or details["name"]
+    title = f"🚩 {label}"
     description = details.get("description") or "_No description._"
     embed = discord.Embed(title=title, description=description, color=color)
+    embed.add_field(name="Key", value=f"`{details['name']}`", inline=True)
+    embed.add_field(
+        name="Audience",
+        value=f"`{details.get('audience', 'internal')}`",
+        inline=True,
+    )
+    embed.add_field(
+        name="Editable",
+        value="`per-guild`" if details.get("db_editable", True) else "`env-only`",
+        inline=True,
+    )
     embed.add_field(name="Default", value=f"`{details['default']}`", inline=True)
     embed.add_field(name="Effective", value=f"`{details['effective']}`", inline=True)
     embed.add_field(name="Source", value=f"`{details['source']}`", inline=True)
@@ -259,6 +277,23 @@ class FlagManagerView(HubView):
         if self.guild_id is None:
             await interaction.response.send_message(
                 "Guild context is required to set a per-guild override.",
+                ephemeral=True,
+            )
+            return
+
+        # Refuse to write an override the evaluator would ignore. Env-only
+        # / internal gates (e.g. ``feature_flag.primary``) carry
+        # ``db_editable=False``; offering Enable/Disable for them would be a
+        # silent no-op. Point the operator at the env var instead.
+        from core.runtime import feature_flags
+
+        flag = feature_flags.get(self.selected_flag)
+        if flag is not None and not flag.db_editable:
+            await interaction.response.send_message(
+                f"`{self.selected_flag}` is an env-only / internal gate — its "
+                "per-guild override is ignored by the evaluator, so this "
+                "control would do nothing. Use the matching `SUPERBOT_FF_*` "
+                "environment variable instead.",
                 ephemeral=True,
             )
             return

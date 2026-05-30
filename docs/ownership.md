@@ -97,6 +97,26 @@ writes must come from the owning cog or a shared service.
 
 ---
 
+## Settings & platform-flag ownership
+
+Operator configuration spans three systems. Each has one canonical write
+seam and one canonical read seam; cogs and views never touch the
+underlying storage directly.
+
+| Config kind | Storage | Write seam | Read seam |
+|---|---|---|---|
+| Scalar guild settings | `guild_settings` KV + `settings_mutation_audit` | `services.settings_mutation.SettingsMutationPipeline` | `services.settings_resolution.resolve_setting` / `resolve_value` |
+| Feature / platform flags | `feature_flag_global_overrides`, `feature_flag_guild_overrides`, `environment_tiers`, `feature_flag_audit` | `services.rollout_mutation.RolloutMutationPipeline` | `core.runtime.feature_flags.is_enabled` / `resolve_with_provenance` |
+| AI env flags | environment only (no DB) | n/a (env-driven) | `core.runtime.ai.feature_flags` |
+
+Scalar settings are declared as `SettingSpec`s in
+`cogs/<subsystem>/schemas.py` and catalogued read-only by
+`core.runtime.settings_registry`. Flags are declared in
+`core.runtime.feature_flags`. `docs/settings-customization-roadmap.md`
+is the authority on the three lanes (settings / binding / provisioning).
+
+---
+
 ## Event ownership
 
 The catalogue (`core/events_catalogue.KNOWN_EVENTS`) lists every
