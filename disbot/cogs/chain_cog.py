@@ -70,7 +70,7 @@ class ChainCog(commands.Cog):
         Use subcommands to create, delete, set limits, or list chains.
         """
         await ctx.send(
-            "❓ Please specify a subcommand. Use `?chain create`, `?chain delete`, `?chain setlimit`, `?chain removelimit`, or `?chain list`.",
+            "❓ Please specify a subcommand. Use `!chain create`, `!chain delete`, `!chain setlimit`, `!chain removelimit`, or `!chain list`.",
         )
 
     @chain.command(name="create")  # type: ignore[arg-type]
@@ -86,11 +86,11 @@ class ChainCog(commands.Cog):
 
         Only the specified word will be allowed in that channel. All other messages will be deleted.
 
-        **Usage:** `?chain create [channel] <word>`
+        **Usage:** `!chain create [channel] <word>`
         """
         if word is None:
             await ctx.send(
-                "❌ Please specify the word to enforce in the chain.\n**Usage:** `?chain create [channel] <word>`",
+                "❌ Please specify the word to enforce in the chain.\n**Usage:** `!chain create [channel] <word>`",
             )
             return
 
@@ -126,7 +126,7 @@ class ChainCog(commands.Cog):
     async def delete_chain(self, ctx, channel: discord.TextChannel = None):
         """Delete a chain from a specified channel or the current channel if none is provided.
 
-        **Usage:** `?chain delete [channel]`
+        **Usage:** `!chain delete [channel]`
         """
         target_channel = channel or ctx.channel
         channel_id = target_channel.id
@@ -163,11 +163,11 @@ class ChainCog(commands.Cog):
     ):
         """Set a word limit in a specified channel or the current channel if none is provided.
 
-        **Usage:** `?chain setlimit [channel] <number>`
+        **Usage:** `!chain setlimit [channel] <number>`
         """
         if limit is None or limit <= 0:
             await ctx.send(
-                "❌ Please specify a valid word limit greater than 0.\n**Usage:** `?chain setlimit [channel] <number>`",
+                "❌ Please specify a valid word limit greater than 0.\n**Usage:** `!chain setlimit [channel] <number>`",
             )
             return
 
@@ -177,7 +177,7 @@ class ChainCog(commands.Cog):
         existing = await db.get_chain_channel(channel_id)
         if not existing:
             await ctx.send(
-                f"❌ No active chain found in {target_channel.mention}. Create one first with `?chain create`.",
+                f"❌ No active chain found in {target_channel.mention}. Create one first with `!chain create`.",
             )
             return
 
@@ -205,7 +205,7 @@ class ChainCog(commands.Cog):
     async def remove_limit(self, ctx, channel: discord.TextChannel = None):
         """Remove the word limit from a specified channel or the current channel if none is provided.
 
-        **Usage:** `?chain removelimit [channel]`
+        **Usage:** `!chain removelimit [channel]`
         """
         target_channel = channel or ctx.channel
         channel_id = target_channel.id
@@ -254,7 +254,7 @@ class ChainCog(commands.Cog):
     async def list_chains(self, ctx):
         """List all active chains and word limits in the server.
 
-        **Usage:** `?chain list`
+        **Usage:** `!chain list`
         """
         channels = await db.get_all_chain_channels(ctx.guild.id)
 
