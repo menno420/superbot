@@ -69,15 +69,16 @@ def test_committed_hub_set_matches_promoted_hubs():
 
 def test_utility_hub_uses_existing_panel():
     """Post-PR-#3: the Utility hub routes to the existing utility_cog
-    ``build_help_menu_view`` (UtilityHubView). ``general`` is now its
-    primary child via ``parent_hub="utility"``; ``help`` itself stays
-    top-level — it IS the Help surface.
+    ``build_help_menu_view`` (UtilityHubView). ``general`` is its
+    primary child via ``parent_hub="utility"``; PR #420 adds the 🍃
+    ``four_twenty`` easter-egg subsystem as a second utility child.
+    ``help`` itself stays top-level — it IS the Help surface.
     """
     utility = get_hub("utility")
     assert utility is not None
     assert utility.entry_command == "!utilitymenu"
     assert utility.minimum_tier == "user"
-    assert utility.primary_children == ("general",)
+    assert utility.primary_children == ("general", "four_twenty")
     assert utility.cross_link_children == ()
     assert utility.panel_available is True
 
@@ -164,9 +165,9 @@ def test_hub_keys_resolve_to_real_subsystems():
     ``_cog_for_subsystem(hub.key)`` can find the host cog.
     """
     for hub in HUBS:
-        assert hub.key in SUBSYSTEMS, (
-            f"hub key {hub.key!r} has no matching SUBSYSTEMS entry"
-        )
+        assert (
+            hub.key in SUBSYSTEMS
+        ), f"hub key {hub.key!r} has no matching SUBSYSTEMS entry"
 
 
 def test_games_hub_primary_children_match_parent_hub_filter():
@@ -178,13 +179,11 @@ def test_games_hub_primary_children_match_parent_hub_filter():
     assert games is not None
     declared = set(games.primary_children)
     actual = {
-        name
-        for name, meta in SUBSYSTEMS.items()
-        if meta.get("parent_hub") == "games"
+        name for name, meta in SUBSYSTEMS.items() if meta.get("parent_hub") == "games"
     }
-    assert declared == actual, (
-        f"Games primary_children {declared} != parent_hub filter {actual}"
-    )
+    assert (
+        declared == actual
+    ), f"Games primary_children {declared} != parent_hub filter {actual}"
 
 
 def test_every_hub_primary_children_match_parent_hub_filter():

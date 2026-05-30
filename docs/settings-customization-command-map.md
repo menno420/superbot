@@ -889,6 +889,37 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 24. **recommended_PR_phase**: post-S11.
 
 
+### four_twenty
+
+1. **cog_module**: `disbot/cogs/four_twenty_cog.py`
+2. **subsystem**: `four_twenty`
+3. **current_commands**: `!420` (aliases `!fourtwenty`, `!fourtwenty420`).
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `420`.
+6. **help_menu_discoverable**: Yes (Utility hub child; `build_help_menu_view`).
+7. **dedicated_panel_command**: `420`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capability
+    `four_twenty.panel.view`. Passive `FourTwentyStage` (message-pipeline,
+    observe-only, per-channel cooldown) 🍃-reacts to `420` mentions.
+14. **hardcoded_or_env_only_behavior**: wisdom / fact pools loaded from
+    `data/json/four_twenty_content.json`.
+15. **missing_customization_commands**: per-guild egg toggle (out of scope).
+16. **missing_settings_pages**: none planned (intentionally a fixed easter egg).
+17. **missing_menu_buttons_selects_modals**: none.
+18. **setting_class_per_value**: none.
+19. **target_Settings_Manager_page**: none (no configurable surface by design).
+20. **target_mutation_path**: none (read-only; no state mutation).
+21. **target_help_or_menu_route**: Help direct-nav.
+22. **provisionable_resources**: none.
+23. **priority**: `P3`.
+24. **recommended_PR_phase**: PR #420.
+
+
 ### help
 
 1. **cog_module**: `disbot/cogs/help_cog.py`
