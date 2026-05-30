@@ -75,6 +75,47 @@ async def set_role_xp_threshold(
 
 
 # ---------------------------------------------------------------------------
+# Role-automation exemptions (per-role, id-keyed) — migration 052
+# ---------------------------------------------------------------------------
+
+
+async def get_role_exemptions(guild_id: int) -> list[dict]:
+    """Return every exemption row for ``guild_id`` (role_id + both flags)."""
+    return await pool.fetchall(
+        "SELECT role_id, exempt_xp, exempt_time "
+        "FROM role_automation_exemptions WHERE guild_id=$1 ORDER BY role_id",
+        (guild_id,),
+    )
+
+
+async def set_role_exemption(
+    guild_id: int,
+    role_id: int,
+    *,
+    exempt_xp: bool,
+    exempt_time: bool,
+) -> None:
+    """Upsert the exemption flags for a single role."""
+    await pool.execute(
+        """INSERT INTO role_automation_exemptions
+               (guild_id, role_id, exempt_xp, exempt_time)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (guild_id, role_id) DO UPDATE SET
+               exempt_xp = EXCLUDED.exempt_xp,
+               exempt_time = EXCLUDED.exempt_time""",
+        (guild_id, role_id, exempt_xp, exempt_time),
+    )
+
+
+async def clear_role_exemption(guild_id: int, role_id: int) -> None:
+    """Delete the exemption row for a role (used when both flags clear)."""
+    await pool.execute(
+        "DELETE FROM role_automation_exemptions WHERE guild_id=$1 AND role_id=$2",
+        (guild_id, role_id),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Reaction roles
 # ---------------------------------------------------------------------------
 

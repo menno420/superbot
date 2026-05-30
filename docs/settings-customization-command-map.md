@@ -375,23 +375,30 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: none.
-10. **existing_settings_keys**: `SKIP_ROLES`
+9. **existing_SettingSpec_declarations**: `time_roles_stack`,
+   `xp_roles_stack` (`disbot/cogs/role/schemas.py`).
+10. **existing_settings_keys**: `SKIP_ROLES` (legacy — no longer read at
+    runtime), `TIME_ROLES_STACK`, `XP_ROLES_STACK`
     (`disbot/utils/settings_keys/role.py`).
 11. **existing_BindingSpec_entries**: none.
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=administrator`;
-    capabilities `role.threshold.configure`, `role.assignment.manage`,
-    `role.reaction.manage`.
-14. **hardcoded_or_env_only_behavior**: time-based role thresholds, default
-    self-role list, reaction-role channels.
+    capabilities `role.settings.configure`, `role.threshold.configure`,
+    `role.assignment.manage`, `role.reaction.manage`.
+14. **hardcoded_or_env_only_behavior**: time-based role thresholds;
+    reaction-role channels. Per-role XP/time exemptions are stored in the
+    `role_automation_exemptions` table (migration 052), edited via the
+    Roles → Exemptions panel.
 15. **missing_customization_commands**: `!settings role thresholds set ...`,
-    self-role list editor, reaction-role manager UI.
-16. **missing_settings_pages**: Settings Manager role page.
-17. **missing_menu_buttons_selects_modals**: SKIP_ROLES list editor,
-    default-role RoleSelectView, role_menu_channel BindingSelectView.
-18. **setting_class_per_value**: SKIP_ROLES → list; thresholds → scalar /
-    list; default_role → binding; role_menu_channel → binding.
+    reaction-role manager UI.
+16. **missing_settings_pages**: thresholds editor page (stacking toggles +
+    exemptions shipped).
+17. **missing_menu_buttons_selects_modals**: time/XP threshold editor
+    parity; reaction-role manager.
+18. **setting_class_per_value**: `time_roles_stack` / `xp_roles_stack` →
+    scalar bool (Settings hub toggle); per-role `exempt_xp` / `exempt_time`
+    → typed `role_automation_exemptions` rows (Roles → Exemptions panel);
+    thresholds → scalar / list.
 19. **target_Settings_Manager_page**: `!settings subsystem role`.
 20. **target_mutation_path**: `SettingsMutationPipeline` (scalars / lists);
     `BindingMutationPipeline` (role / channel bindings);

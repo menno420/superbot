@@ -223,6 +223,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "ui_priority": 70,
         "parent_hub": "community",
         "capabilities": [
+            "role.settings.configure",
             "role.threshold.configure",
             "role.assignment.manage",
             "role.reaction.manage",

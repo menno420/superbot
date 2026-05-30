@@ -119,13 +119,20 @@ def compute_assignments(
     guild: Any,
     thresholds: list[RoleThreshold] | tuple[RoleThreshold, ...],
     *,
-    skip_role_names: tuple[str, ...] = (),
+    exempt_role_ids: frozenset[int] = frozenset(),
+    keep_previous_tier: bool = False,
     now: datetime | None = None,
 ) -> tuple[Assignment, ...]:
     """Walk ``guild.members`` and produce planned operations.
 
     Pure: no Discord API mutation, no DB writes. The result is what
     :func:`apply` would do if invoked with ``dry_run=False``.
+
+    ``exempt_role_ids`` — members holding any of these roles are skipped
+    entirely (the time-exempt set from ``role_automation_exemptions``).
+    ``keep_previous_tier`` — when ``True`` the previously-earned tier
+    roles are kept instead of being removed on promotion (the
+    ``time_roles_stack`` toggle).
     """
     if now is None:
         now = datetime.now(tz=timezone.utc)
@@ -135,15 +142,14 @@ def compute_assignments(
     role_map = {t.role_name: t.days_required for t in thresholds}
     progression = sorted(role_map, key=lambda r: role_map[r])
 
-    skip_roles = tuple(
-        r for n in skip_role_names if (r := _resolve_role(guild, n)) is not None
-    )
-
     out: list[Assignment] = []
     for member in getattr(guild, "members", ()) or ():
         if getattr(member, "bot", False):
             continue
-        if any(role in getattr(member, "roles", ()) for role in skip_roles):
+        if any(
+            getattr(r, "id", None) in exempt_role_ids
+            for r in getattr(member, "roles", ())
+        ):
             continue
         joined_at = getattr(member, "joined_at", None)
         if joined_at is None:
@@ -181,12 +187,16 @@ def compute_assignments(
         ):
             continue  # never demote
 
-        to_remove = [
-            r
-            for r in member_roles
-            if any(_normalize(r.name) == _normalize(n) for n in role_map)
-            and r != target_role
-        ]
+        to_remove = (
+            []
+            if keep_previous_tier
+            else [
+                r
+                for r in member_roles
+                if any(_normalize(r.name) == _normalize(n) for n in role_map)
+                and r != target_role
+            ]
+        )
 
         add_role_id = target_role.id if target_role else None
         add_role_name = target_role.name if target_role else None
@@ -240,7 +250,8 @@ def explain_assignment_for(
     member: Any,
     thresholds: list[RoleThreshold] | tuple[RoleThreshold, ...],
     *,
-    skip_role_names: tuple[str, ...] = (),
+    exempt_role_ids: frozenset[int] = frozenset(),
+    keep_previous_tier: bool = False,
     now: datetime | None = None,
 ) -> Assignment | None:
     """Return the planned operation for one member, or ``None`` if
@@ -250,7 +261,8 @@ def explain_assignment_for(
     plans = compute_assignments(
         fake_guild,
         thresholds,
-        skip_role_names=skip_role_names,
+        exempt_role_ids=exempt_role_ids,
+        keep_previous_tier=keep_previous_tier,
         now=now,
     )
     return plans[0] if plans else None

@@ -176,6 +176,36 @@ def invalidate_xp_threshold_roles(guild_id: int) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Role-automation exemptions — consumed by the XP listener (hot) + role_cog
+# ---------------------------------------------------------------------------
+
+
+def _role_exemptions_loader(
+    guild_id: int,
+) -> Callable[[], Awaitable[list[dict]]]:
+    async def _load() -> list[dict]:
+        return await db.get_role_exemptions(guild_id)
+
+    return _load
+
+
+_role_exemptions_accessor: TypedAccessor[list[dict]] = TypedAccessor(
+    cache_key="role_exemptions",
+    loader_factory=_role_exemptions_loader,
+)
+
+
+async def get_role_exemptions(guild_id: int) -> list[dict]:
+    """Return cached role-automation exemption rows for ``guild_id``."""
+    return await _role_exemptions_accessor.get(guild_id)
+
+
+def invalidate_role_exemptions(guild_id: int) -> None:
+    """Drop cached exemptions — call from every exemption write."""
+    _role_exemptions_accessor.invalidate(guild_id)
+
+
+# ---------------------------------------------------------------------------
 # SettingSpec scalar lane — consumed by services/settings_resolution (S3)
 # ---------------------------------------------------------------------------
 
