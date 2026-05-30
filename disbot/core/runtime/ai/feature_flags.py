@@ -11,11 +11,15 @@ Recognised env vars:
   platform globally. Default off.
 * ``AI_DEFAULT_PROVIDER``        — provider name; one of
   ``deterministic`` / ``openai``. Default ``deterministic``.
-* ``AI_TASK_<NAME>_ENABLED``     — per-:class:`AITask` opt-in. The
+* ``AI_TASK_<NAME>_ENABLED``     — per-:class:`AITask` override. The
   ``<NAME>`` portion is the uppercase enum name (e.g.
-  ``AI_TASK_SETUP_SUGGEST_ENABLED``). Default off, except for
-  setup-advisor compatibility tasks which respect
-  ``SETUP_ADVISOR_PROVIDER`` (legacy).
+  ``AI_TASK_SETUP_SUGGEST_ENABLED``). Once the global ``AI_ENABLED``
+  gate is on, each task defaults to **enabled**; set this var to a
+  falsey value to selectively *disable* a single task. The per-task
+  flags are a kill-switch, not the opt-in gate — boot safety comes
+  from the two layers above (``AI_ENABLED`` defaults off, and the
+  default provider is ``deterministic`` so no external call is made
+  by accident even when the platform is enabled).
 * ``AI_TOOLS_ENABLED``           — ``"1"``/``"true"`` to let the
   gateway offer read-only tools to the model (function calling).
   Layers under :func:`ai_enabled`; default off, so tool calling is
@@ -67,10 +71,19 @@ def task_enabled(task: AITask) -> bool:
     Per-task gating layers on top of :func:`ai_enabled`: the global
     flag must also be on. When ``ai_enabled()`` is false this
     function returns false regardless of the task flag.
+
+    Once the global gate is on, individual tasks default to *enabled*
+    (the per-task flag is a selective kill-switch, not an opt-in gate
+    — see the module docstring for the boot-safety model).
     """
     if not ai_enabled():
         return False
     env_name = f"AI_TASK_{task.name}_ENABLED"
+    # default=True is intentional: the opt-in gate is ai_enabled() above
+    # (plus the deterministic default provider). Pinned by
+    # tests/unit/runtime/ai/test_feature_flags.py::test_task_enabled_default_when_global_on
+    # — do NOT flip to False without updating that contract and the
+    # gateway's expectations (gateway.py:196 gates calls on this).
     return _bool_env(env_name, default=True)
 
 

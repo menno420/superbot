@@ -41,6 +41,12 @@ def test_task_disabled_when_global_off(monkeypatch):
 
 
 def test_task_enabled_default_when_global_on(monkeypatch):
+    """Contract: per-task flags are a selective kill-switch, not an
+    opt-in. With the global ``AI_ENABLED`` gate on and no per-task var
+    set, a task defaults to enabled. Boot safety is provided by
+    ``AI_ENABLED`` (default off) + the deterministic default provider,
+    not by this flag — the module docstring must match this default.
+    """
     monkeypatch.setenv("AI_ENABLED", "1")
     monkeypatch.delenv("AI_TASK_SETUP_SUGGEST_ENABLED", raising=False)
     assert task_enabled(AITask.SETUP_SUGGEST) is True
