@@ -22,16 +22,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from utils.btd6 import tier_codes
+
 STATS_ROOT = Path(__file__).resolve().parents[1] / "data" / "btd6" / "stats"
 HERO_STATS_ROOT = STATS_ROOT / "heroes"
-
-# Crosspath codes ([P1][P2][P3] tiers) in display order: base, then each path.
-_TIER_CODES: tuple[str, ...] = (
-    "000",
-    "100", "200", "300", "400", "500",
-    "010", "020", "030", "040", "050",
-    "001", "002", "003", "004", "005",
-)  # fmt: skip
 
 
 @dataclass(frozen=True)
@@ -70,7 +64,30 @@ class TowerStats:
         return bool(self.tiers)
 
     def tier_codes(self) -> tuple[str, ...]:
-        return tuple(code for code in _TIER_CODES if code in self.tiers)
+        """Present tiers in display order: the canonical 16, then crosspaths."""
+        return tier_codes.ordered_codes(self.tiers.keys())
+
+    def crosspaths_for(self, single_code: str) -> tuple[str, ...]:
+        """Present crosspath codes built on a single-path tier.
+
+        e.g. ``crosspaths_for("200")`` -> present crosspaths whose path-1 tier is
+        2 (``201``, ``202``, ``210``, ``220`` …). Empty for the base, a crosspath
+        argument, or an old 16-tier file with no crosspath data.
+        """
+        if not tier_codes.is_single_path(single_code):
+            return ()
+        path = tier_codes.primary_path(single_code)
+        if path is None:
+            return ()
+        tier = tier_codes.digits(single_code)[path - 1]
+        present = [
+            code
+            for code in self.tiers
+            if tier_codes.is_valid_code(code)
+            and tier_codes.is_crosspath(code)
+            and tier_codes.digits(code)[path - 1] == tier
+        ]
+        return tier_codes.ordered_codes(present)
 
 
 # Hero levels run 1..20. Only the ~6 heroes with a bloonswiki stats module

@@ -19,11 +19,24 @@ def _fresh():
 
 
 def test_combat_tower_emits_tagged_stat_lines():
+    import re
+
+    from utils.btd6 import tier_codes
+
     lines = ctx._render_fixture_tower(ds.get_tower("bomb_shooter"))
     stat_lines = [ln for ln in lines if "[btd6_tower_stats normal]" in ln]
     assert len(stat_lines) == 16  # base + 15 single-path tiers
     assert all("source: bloonswiki" in ln for ln in stat_lines)
     assert any("Bloon Crush" in ln and "Normal" in ln for ln in stat_lines)
+    # Grounding stays bounded: only single-path tiers reach the model, never the
+    # ~48 reconstructed crosspaths (which would bloat the prompt).
+    codes = [
+        m.replace("-", "")
+        for ln in stat_lines
+        for m in re.findall(r"\((\d-\d-\d)\)", ln)
+    ]
+    assert codes
+    assert all(c in tier_codes.SINGLE_PATH_CODES for c in codes)
 
 
 def test_income_and_infinity_render():

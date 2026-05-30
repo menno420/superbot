@@ -21,6 +21,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
+from utils.btd6 import tier_codes
 from utils.btd6.grounding_format import DEFAULT_CAP as _FACT_TEXT_CAP
 from utils.btd6.grounding_format import relative_time as _relative_time
 from utils.btd6.grounding_format import sanitise as _sanitise_helper
@@ -366,6 +367,10 @@ def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
 
     lines: list[str] = []
     for code in stats.tier_codes():
+        # Grounding stays bounded to the 16 single-path tiers; crosspaths are a
+        # UI / Pro-view concern and would bloat the prompt with ~64 lines.
+        if not (tier_codes.is_base(code) or tier_codes.is_single_path(code)):
+            continue
         tier = stats.tier(code)
         if tier is None:
             continue
@@ -450,8 +455,10 @@ def _big(value: int) -> str:
 
 
 def _tier_name(stats: Any, code: str) -> str:
-    digits = [int(c) for c in code]
-    path, tier = next((i + 1, d) for i, d in enumerate(digits) if d)
+    path = tier_codes.primary_path(code)
+    if path is None:
+        return code
+    tier = tier_codes.digits(code)[path - 1]
     return next(
         (
             str(u.get("name", ""))

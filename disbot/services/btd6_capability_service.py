@@ -14,6 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from services import btd6_data_service, btd6_stats_service
+from utils.btd6 import tier_codes
 
 # Supported capability keys (kept small and well-defined — these are the
 # cross-entity questions the resolver path cannot answer on its own).
@@ -85,9 +86,10 @@ def towers_with_capability(
             continue
         if unupgraded:
             continue
-        # Earliest single-path tier that grants the capability.
+        # Earliest single-path tier that grants the capability (crosspaths are a
+        # presentation concern; capability discovery stays on the 16 tiers).
         for code in stats.tier_codes():
-            if code == "000":
+            if code == "000" or not tier_codes.is_single_path(code):
                 continue
             tier = stats.tier(code)
             if tier is not None and _tier_has_capability(capability, tier):

@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from services import btd6_stats_service as svc
+from utils.btd6 import tier_codes
 
 
 @pytest.fixture(autouse=True)
@@ -21,8 +22,10 @@ def test_loads_bomb_shooter():
     assert stats.base_cost == 375
     assert stats.paragon_cost == 600000
     assert len(stats.upgrades) == 15
-    assert stats.tier_codes()[0] == "000"
-    assert len(stats.tier_codes()) == 16
+    codes = stats.tier_codes()
+    # The 16 single-path tiers come first (in canonical order), then crosspaths.
+    assert codes[:16] == tier_codes.SINGLE_PATH_CODES
+    assert len(codes) > 16  # crosspath tiers are now reconstructed and kept
 
 
 def test_missing_tower_returns_none():
@@ -73,6 +76,41 @@ def test_economy_tower_has_costs_but_no_combat_stats():
     assert farm.base_cost == 1250
     assert farm.has_combat_stats is False
     assert farm.tier_codes() == ()
+
+
+# --- crosspaths (reconstructed) + back-compat ---------------------------------
+
+
+def test_crosspaths_for_returns_tier_crosspaths():
+    stats = svc.get_tower_stats("bomb_shooter")
+    cps = stats.crosspaths_for("200")
+    # Crosspaths built on path-1 tier-2 (all present for Bomb Shooter).
+    assert set(cps) >= {"201", "202", "210", "220"}
+    assert all(tier_codes.digits(c)[0] == 2 for c in cps)
+    assert all(tier_codes.is_crosspath(c) for c in cps)
+
+
+def test_crosspaths_for_base_or_crosspath_is_empty():
+    stats = svc.get_tower_stats("bomb_shooter")
+    assert stats.crosspaths_for("000") == ()  # base has none
+    assert stats.crosspaths_for("220") == ()  # not a single-path code
+
+
+def test_old_style_16_tier_file_back_compat():
+    # Beast Handler's module exposes no crosspath deltas — a real 16-tier file.
+    # The service must degrade gracefully, not assume crosspath data exists.
+    bh = svc.get_tower_stats("beast_handler")
+    assert bh is not None and bh.has_combat_stats
+    assert bh.tier_codes()[0] == "000"
+    assert bh.crosspaths_for("100") == ()
+
+
+def test_normal_stats_works_on_a_crosspath_node():
+    stats = svc.get_tower_stats("bomb_shooter")
+    node = stats.tier("202")
+    assert node is not None
+    ns = svc.normal_stats(node)  # must not crash on a crosspath tier
+    assert ns.damage is not None
 
 
 # --- heroes: per-level stats for the ~6 heroes with a bloonswiki module ------

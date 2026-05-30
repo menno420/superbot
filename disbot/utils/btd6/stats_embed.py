@@ -18,6 +18,8 @@ from typing import Any
 
 import discord
 
+from utils.btd6 import tier_codes
+
 # Damage-modifier field -> short label (the bloon class the bonus applies to).
 _DAMAGE_MODIFIERS: tuple[tuple[str, str], ...] = (
     ("damageModifierForLead", "Lead"),
@@ -77,12 +79,19 @@ def format_normal_stats(ns: Any) -> str:
 
 
 def tier_label(stats: Any, code: str) -> str:
-    """e.g. ``"Bloon Crush (5-0-0)"`` / ``"Base (0-0-0)"``."""
-    crosspath = "-".join(code)
-    if code == "000":
-        return f"Base ({crosspath})"
-    digits = [int(c) for c in code]
-    path, tier = next((i + 1, d) for i, d in enumerate(digits) if d)
+    """e.g. ``"Bloon Crush (5-0-0)"`` / ``"Crossbow (0-3-2)"`` / ``"Base (0-0-0)"``.
+
+    The name comes from the *primary* (highest-tier) path — correct for
+    crosspaths, unlike the old first-non-zero-digit shortcut that mislabelled
+    e.g. ``2-0-2``. See :mod:`utils.btd6.tier_codes`.
+    """
+    label = tier_codes.format_code(code)
+    if tier_codes.is_base(code):
+        return f"Base ({label})"
+    path = tier_codes.primary_path(code)
+    if path is None:
+        return label
+    tier = tier_codes.digits(code)[path - 1]
     name = next(
         (
             u.get("name", "")
@@ -91,7 +100,7 @@ def tier_label(stats: Any, code: str) -> str:
         ),
         "",
     )
-    return f"{name} ({crosspath})" if name else crosspath
+    return f"{name} ({label})" if name else label
 
 
 def _num(value: Any) -> str:
@@ -212,6 +221,52 @@ def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:
     )
 
 
+def _headline(node: dict[str, Any]) -> str:
+    """Compact damage / pierce / cooldown / range line for the compare view."""
+    best: dict[str, Any] | None = None
+    for attack in node.get("attacks", []):
+        for proj in attack.get("projectiles", []):
+            if (proj.get("damage") or 0) > (best.get("damage", 0) if best else 0):
+                best = proj
+    parts: list[str] = []
+    if best:
+        dmg = f"{_num(best['damage'])} dmg"
+        if best.get("damage_type"):
+            dmg += f" ({best['damage_type']})"
+        parts.append(dmg)
+        if best.get("pierce") is not None:
+            parts.append(f"{_num(best['pierce'])} pierce")
+    attacks = node.get("attacks", [])
+    if attacks and attacks[0].get("rate") is not None:
+        parts.append(f"{attacks[0]['rate']}s cooldown")
+    if node.get("range") is not None:
+        parts.append(f"{node['range']} range")
+    return " · ".join(parts) or "—"
+
+
+def build_crosspath_compare_embed(
+    stats: Any,
+    code_a: str,
+    code_b: str,
+) -> discord.Embed:
+    """Side-by-side headline stats for two tiers / crosspaths of one tower."""
+    embed = discord.Embed(
+        title=(
+            f"⚖ {stats.canonical} — "
+            f"{tier_codes.format_code(code_a)} vs {tier_codes.format_code(code_b)}"
+        ),
+        color=discord.Color.dark_teal(),
+    )
+    for code in (code_a, code_b):
+        embed.add_field(
+            name=tier_label(stats, code)[:256],
+            value=_headline(stats.tier(code) or {})[:1024],
+            inline=True,
+        )
+    embed.set_footer(text=f"BTD6 stats v{stats.game_version}")
+    return embed
+
+
 def hero_level_label(code: str) -> str:
     """e.g. ``"Level 5"`` — the hero analogue of :func:`tier_label`."""
     return f"Level {code}"
@@ -228,6 +283,7 @@ def build_pro_hero_level_embed(stats: Any, code: str) -> discord.Embed:
 
 
 __all__ = [
+    "build_crosspath_compare_embed",
     "build_pro_hero_level_embed",
     "build_pro_tier_embed",
     "format_normal_stats",
