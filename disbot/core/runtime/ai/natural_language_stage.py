@@ -110,7 +110,7 @@ def _record_user_turn_if_visible(
     channel_id: int,
     user_id: int,
     is_mention: bool,
-    include_mentions: bool,
+    record_mentions: bool,
 ) -> bool:
     """Append ``text`` to the conversation buffer when visibility rules allow.
 
@@ -118,13 +118,25 @@ def _record_user_turn_if_visible(
     raw ``text`` (not the mention-stripped form) is what gets stored
     so memory reflects what the user actually typed.
 
+    ``record_mentions`` selects which message *kind* this call owns, so
+    a single message is never recorded twice across the two recording
+    phases in :meth:`AINaturalLanguageStage.process`:
+
+    * ``record_mentions=False`` — the bystander pre-record. Records only
+      NON-mention messages (the mention is recorded later, after the
+      recent-turn buffer has been gathered, so it cannot appear in the
+      context for its own reply).
+    * ``record_mentions=True`` — the triggering-mention record. Records
+      only mention messages; non-mentions were already captured by the
+      bystander phase.
+
     Returns ``True`` if the turn was appended.
     """
     if getattr(message.author, "bot", False):
         return False
     if text.startswith("!") or text.startswith("/"):
         return False
-    if is_mention and not include_mentions:
+    if is_mention != record_mentions:
         return False
     ai_conversation_service.append(
         guild_id,
@@ -195,7 +207,7 @@ class AINaturalLanguageStage:
             channel_id=channel_id,
             user_id=user_id,
             is_mention=is_mention,
-            include_mentions=False,
+            record_mentions=False,
         )
 
         snap = await ai_permission_service.snapshot(guild_id, user_id)
@@ -229,7 +241,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -260,7 +272,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -288,7 +300,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -299,7 +311,7 @@ class AINaturalLanguageStage:
                 task=routed.task.value,
                 route=routed.route,
                 decision="skipped",
-                reason_code=PolicyDenialReason.NO_ROUTE_MATCHED,
+                reason_code=PolicyDenialReason.EMPTY_MESSAGE,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
                 instruction_profile_ids=list(decision.instruction_profile_ids) or None,
             )
@@ -382,7 +394,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
 
             # Bot self-knowledge enrichment: catalog of known commands +
@@ -574,6 +586,12 @@ class AINaturalLanguageStage:
             return StageResult()
 
         ai_permission_service.mark_reply_sent(guild_id, user_id)
+        # Spend one unit of the fresh-user mention allowance only when a
+        # reply was actually delivered (not per attempt), so a brand-new
+        # user gets a bounded number of below-level replies before the
+        # level floor applies again.
+        if decision.used_fresh_allowance:
+            ai_permission_service.consume_fresh_allowance(guild_id, user_id)
         # User-message recording happens earlier via
         # ``_record_user_turn_if_visible``. Here the stage records
         # only its own (sanitized) assistant reply. We omit
@@ -726,10 +744,16 @@ async def _invoke_gateway(
     specs: tuple[AIToolSpec, ...] = ()
     handlers: Mapping[str, ToolHandler] | None = None
     if ai_tools_enabled() and ctx.guild_id is not None and ctx.actor_id is not None:
+        # Pass the live guild + asking member so the server-introspection
+        # tools can read roles / channels / overview. ``build_registry``
+        # omits those tools when ``guild`` is None.
+        message = getattr(_ctx, "message", None)
         registry = ai_tools.build_registry(
             scope=ctx.scope,
             guild_id=ctx.guild_id,
             actor_id=ctx.actor_id,
+            guild=getattr(message, "guild", None),
+            member=getattr(message, "author", None),
         )
         specs = registry.specs
         handlers = registry.handlers

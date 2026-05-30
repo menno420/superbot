@@ -24,6 +24,10 @@ Recognised env vars:
   gateway offer read-only tools to the model (function calling).
   Layers under :func:`ai_enabled`; default off, so tool calling is
   inert until an operator opts in.
+* ``AI_SERVER_MEMBER_LOOKUP_ENABLED`` — ``"1"``/``"true"`` to let the
+  server-introspection tools expose member-level data (member lookup
+  and aggregate member count). Layers under :func:`ai_tools_enabled`;
+  default off. Roles / channels / overview need no opt-in.
 
 Compatibility note: ``SETUP_ADVISOR_PROVIDER`` remains the
 authoritative env var for the setup advisor's provider choice. The
@@ -98,6 +102,21 @@ def ai_tools_enabled() -> bool:
     if not ai_enabled():
         return False
     return _bool_env("AI_TOOLS_ENABLED", default=False)
+
+
+def ai_server_member_lookup_enabled() -> bool:
+    """True if the AI tools may expose member-level guild data.
+
+    Layers on top of :func:`ai_tools_enabled`: tool calling must also be
+    on. Default **off** — roles, channels, and the high-level server
+    overview are always available to the model (all operator-visible),
+    but member *enumeration* and the aggregate member count are the
+    sensitive tier and stay opt-in, mirroring the "members excluded by
+    default" stance in :mod:`services.guild_snapshot`.
+    """
+    if not ai_tools_enabled():
+        return False
+    return _bool_env("AI_SERVER_MEMBER_LOOKUP_ENABLED", default=False)
 
 
 def setup_advisor_provider() -> str:
