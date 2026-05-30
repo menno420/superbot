@@ -136,7 +136,10 @@ class _SubsystemToggleView(BaseView):
         self._rebuild_buttons()
 
     def _rebuild_buttons(self) -> None:
-        # Remove all items except the static back button
+        # Rebuild from scratch each refresh: clear all items, re-add the
+        # toggle grid (rows 1-4), then re-attach the Back button (row 0).
+        # The back nav must be re-added every rebuild because remove_item
+        # drops it along with the toggles.
         for item in list(self.children):
             self.remove_item(item)
 
@@ -168,6 +171,32 @@ class _SubsystemToggleView(BaseView):
             )
             btn.callback = self._make_toggle_callback(name)  # type: ignore[method-assign]
             self.add_item(btn)
+
+        self._attach_back_button()
+
+    def _attach_back_button(self) -> None:
+        """Re-add Back nav to the channel picker (audit §9.3 dead-end fix).
+
+        Without this the toggle grid is a navigation dead-end — the panel
+        comment long claimed a "static back button" that was never added.
+        """
+
+        async def _build_parent(
+            _interaction: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            parent = _VisibilitySubView(
+                self.ctx,
+                manager_message=self.manager_message,
+            )
+            return parent.build_embed(), parent
+
+        attach_back_button(
+            self,
+            label="↩ Back",
+            custom_id="channels:visibility:toggle:back",
+            parent_builder=_build_parent,
+            row=0,
+        )
 
     def _make_toggle_callback(self, subsystem_name: str):
         async def callback(interaction: discord.Interaction):

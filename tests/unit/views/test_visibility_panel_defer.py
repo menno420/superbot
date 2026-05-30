@@ -202,3 +202,40 @@ async def test_toggle_callback_error_path_uses_safe_followup():
     # State must not be mutated on failure.
     assert view._visibility["economy"] is None
     interaction.response.send_message.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Navigation dead-end fix (audit §9.3): the toggle grid must keep a Back button
+# ---------------------------------------------------------------------------
+
+
+def test_toggle_view_rebuild_keeps_a_back_button():
+    """`_rebuild_buttons` wipes all children every refresh; it must
+    re-attach the Back nav so the grid is not a dead-end."""
+    view = _build_toggle_view()
+    view._visibility = {}
+    view._rebuild_buttons()
+
+    back_buttons = [
+        child
+        for child in view.children
+        if getattr(child, "custom_id", None) == "channels:visibility:toggle:back"
+    ]
+    assert len(back_buttons) == 1, "toggle grid lost its Back button (dead-end)"
+
+
+def test_toggle_view_back_button_survives_repeated_rebuilds():
+    """Toggling cycles call `_rebuild_buttons` repeatedly — the Back
+    button must not duplicate or vanish across refreshes."""
+    view = _build_toggle_view()
+    view._visibility = {}
+    view._rebuild_buttons()
+    view._rebuild_buttons()
+    view._rebuild_buttons()
+
+    back_buttons = [
+        child
+        for child in view.children
+        if getattr(child, "custom_id", None) == "channels:visibility:toggle:back"
+    ]
+    assert len(back_buttons) == 1

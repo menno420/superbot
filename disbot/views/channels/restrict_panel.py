@@ -1,8 +1,12 @@
 """Channel-restriction sub-panel.
 
-Pick a channel, then lock (deny send_messages for @everyone) or unlock
-(restore send_messages).  Auto-returns to the manager hub after the
-action lands.
+Pick one or more channels, then lock (deny send_messages for @everyone)
+or unlock (restore send_messages).  Auto-returns to the manager hub
+after the action lands.
+
+The channel picker is the shared ``views.selectors.MultiSelect``
+primitive (repo-wide audit P1-10): admins routinely lock/unlock a batch
+of channels at once, so forcing one-at-a-time was needless friction.
 """
 
 from __future__ import annotations
@@ -18,14 +22,14 @@ from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followu
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR
 from views.base import BaseView
-from views.channels._helpers import _ChannelSelect
 from views.navigation import attach_back_button
+from views.selectors import MultiSelect
 
 logger = logging.getLogger("bot")
 
 
 class _RestrictSubView(BaseView):
-    """Restriction management: pick a channel, then choose lock or unlock."""
+    """Restriction management: pick channel(s), then choose lock or unlock."""
 
     def __init__(
         self,
@@ -37,13 +41,22 @@ class _RestrictSubView(BaseView):
         super().__init__(ctx.author, timeout=120)
         self.ctx = ctx
         self.manager_message = manager_message
-        self.selected_channel_id: int | None = None
-        self.selected_channel_name: str | None = None
+        self.selected_channel_ids: list[int] = []
+        # id -> display name, sourced from the option labels so the result
+        # embed can name channels without re-resolving each one.
+        self._option_names: dict[int, str] = {}
+        for opt in options:
+            try:
+                self._option_names[int(opt.value)] = opt.label
+            except ValueError:
+                continue
 
-        self.channel_select = _ChannelSelect(
+        self.channel_select = MultiSelect(
             options,
-            self,
-            placeholder="Select a channel to manage…",
+            self._on_channels_selected,
+            placeholder="Select one or more channels to manage…",
+            min_values=1,
+            row=0,
         )
         self.add_item(self.channel_select)
 
@@ -64,6 +77,20 @@ class _RestrictSubView(BaseView):
             row=2,
         )
 
+    async def _on_channels_selected(
+        self,
+        interaction: discord.Interaction,
+        channel_ids: list[int],
+    ) -> None:
+        self.selected_channel_ids = channel_ids
+        try:
+            await interaction.response.edit_message(
+                embed=self.build_embed(),
+                view=self,
+            )
+        except discord.HTTPException:
+            await safe_defer(interaction)
+
     async def on_error(
         self,
         interaction: discord.Interaction,
@@ -80,23 +107,25 @@ class _RestrictSubView(BaseView):
         msg = f"❌ {type(error).__name__}: {error}"
         await safe_followup(interaction, msg, ephemeral=True)
 
+    def _selected_names(self) -> list[str]:
+        return [
+            self._option_names.get(cid, str(cid)) for cid in self.selected_channel_ids
+        ]
+
     def build_embed(self) -> discord.Embed:
         embed = discord.Embed(
             title="🔒 Manage Restrictions",
             description=(
-                "Select a channel, then choose a restriction action.\n\n"
+                "Select one or more channels, then choose a restriction action.\n\n"
                 "**🔒 Lock** — disable send messages for @everyone\n"
                 "**🔓 Unlock** — restore send messages for @everyone"
             ),
             color=CHANNEL_COLOR,
         )
+        names = self._selected_names()
         embed.add_field(
-            name="Selected channel",
-            value=(
-                f"`{self.selected_channel_name}`"
-                if self.selected_channel_name
-                else "*(none)*"
-            ),
+            name=f"Selected channel{'s' if len(names) != 1 else ''}",
+            value=(", ".join(f"`{n}`" for n in names) if names else "*(none)*"),
             inline=False,
         )
         return embed
@@ -110,57 +139,57 @@ class _RestrictSubView(BaseView):
         past_tense: str,
         embed_color: discord.Color,
     ) -> None:
-        if not self.selected_channel_id:
+        if not self.selected_channel_ids:
             await interaction.response.send_message(
-                "Please select a channel first.",
+                "Please select at least one channel first.",
                 ephemeral=True,
             )
             return
 
-        channel = resources.resolve_channel(
-            interaction.guild,
-            channel_id=self.selected_channel_id,
-            kind="any",
-        )
-        if channel is None:
-            await interaction.response.send_message(
-                f"Channel `{self.selected_channel_name}` not found.",
-                ephemeral=True,
-            )
-            return
-
-        # Defer before the Discord permission write: set_permissions is
-        # not instant under load and the subsequent edit_message would
-        # race the 3 s interaction token.
+        # Defer before the Discord permission writes: set_permissions is
+        # not instant under load and across several channels the subsequent
+        # edit_message would race the 3 s interaction token.
         if not await safe_defer(interaction):
             return
 
-        try:
-            await channel.set_permissions(
-                interaction.guild.default_role,
-                send_messages=send_messages,
+        succeeded: list[str] = []
+        forbidden: list[str] = []
+        failed: list[str] = []
+        for channel_id in self.selected_channel_ids:
+            name = self._option_names.get(channel_id, str(channel_id))
+            channel = resources.resolve_channel(
+                interaction.guild,
+                channel_id=channel_id,
+                kind="any",
             )
-        except discord.Forbidden:
-            await safe_followup(
-                interaction,
-                "❌ I don't have permission to change that channel's permissions.",
-                ephemeral=True,
-            )
-            return
-        except discord.HTTPException as exc:
-            await safe_followup(
-                interaction,
-                f"❌ Failed to update permissions: {exc}",
-                ephemeral=True,
-            )
-            return
+            if channel is None:
+                failed.append(name)
+                continue
+            try:
+                await channel.set_permissions(
+                    interaction.guild.default_role,
+                    send_messages=send_messages,
+                )
+            except discord.Forbidden:
+                forbidden.append(name)
+            except discord.HTTPException as exc:
+                logger.warning(
+                    "Restrict apply failed | channel=%r exc=%s",
+                    name,
+                    exc,
+                )
+                failed.append(name)
+            else:
+                succeeded.append(name)
 
-        result_embed = discord.Embed(
-            title=f"{action_label} Applied",
-            description=f"`{self.selected_channel_name}` has been {past_tense}.",
-            color=embed_color,
+        result_embed = self._build_result_embed(
+            action_label=action_label,
+            past_tense=past_tense,
+            embed_color=embed_color,
+            succeeded=succeeded,
+            forbidden=forbidden,
+            failed=failed,
         )
-        result_embed.set_footer(text="Returning to the management panel…")
 
         for item in self.children:
             item.disabled = True
@@ -180,6 +209,43 @@ class _RestrictSubView(BaseView):
         )
         if restored is not None:
             manager.message = restored
+
+    def _build_result_embed(
+        self,
+        *,
+        action_label: str,
+        past_tense: str,
+        embed_color: discord.Color,
+        succeeded: list[str],
+        forbidden: list[str],
+        failed: list[str],
+    ) -> discord.Embed:
+        # All failed and nothing succeeded → show an error-coloured embed.
+        any_ok = bool(succeeded)
+        embed = discord.Embed(
+            title=f"{action_label} Applied" if any_ok else f"{action_label} Failed",
+            color=embed_color if any_ok else ERROR_COLOR,
+        )
+        if succeeded:
+            embed.add_field(
+                name=f"✅ {past_tense.capitalize()}",
+                value=", ".join(f"`{n}`" for n in succeeded),
+                inline=False,
+            )
+        if forbidden:
+            embed.add_field(
+                name="🚫 Missing permission",
+                value=", ".join(f"`{n}`" for n in forbidden),
+                inline=False,
+            )
+        if failed:
+            embed.add_field(
+                name="⚠️ Not found / failed",
+                value=", ".join(f"`{n}`" for n in failed),
+                inline=False,
+            )
+        embed.set_footer(text="Returning to the management panel…")
+        return embed
 
     @discord.ui.button(label="Lock", style=discord.ButtonStyle.red, emoji="🔒", row=1)
     async def lock_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
