@@ -44,11 +44,30 @@ def _has_question_intent(text: str) -> bool:
 #
 # Curated to avoid over-routing: bare "event" / "active" / "right now" /
 # "leaderboard" / "stale" must NOT be here (they'd over-route server events,
-# "is the bot active", XP leaderboard, etc.). Individual hero names are omitted
-# on purpose — the entity-alias matcher below already covers them. The live-
+# "is the bot active", XP leaderboard, etc.). Most hero names are omitted on
+# purpose — the entity-alias matcher below already covers them. The live-
 # state phrases (current/what/active boss/race/event/odyssey) are pinned by
 # tests/unit/services/test_ai_task_router_btd6_natural.py because they also gate
 # the richer enrichment in services.btd6_ai_knowledge_block_service.
+#
+# Specific entries below are explicit because the entity-alias matcher provably
+# misses them (verified against the dataset):
+#   * "obyn"      — the hero is "Obyn Greenfoot"; the bare "obyn" alias is 4
+#                   chars and dropped by the matcher's ``len(al) > 4`` filter.
+#   * "desperado" — a real tower, but the matcher skips single-word tower names
+#                   as too generic, so "desperado" alone never matched.
+#   * "impoppable" / "half cash" — difficulty / mode tokens (same class as
+#                   "deflation" / "apopalypse" already here) that route a clear
+#                   BTD6 question to auto-grounding.
+# "paragon" is deliberately NOT here — it is legitimate English ("a paragon of
+# virtue") so a bare substring would over-route; paragon questions usually name
+# a tower ("paragon dart monkey" → "monkey") or fall to the tool path.
+# NOTE: multi-word upgrade and paragon *proper names* (e.g. "grand saboteur",
+# "apex plasma master") are still not in the fast-path — many upgrade names are
+# generic ("triple shot", "quick shots") so loading them wholesale would
+# over-route. Those questions rely on the model's ``btd6_lookup`` tool call
+# (reliable on Claude after AI PR1); a curated distinctive-name pass is a
+# follow-up.
 _BTD6_KEYWORDS = (
     "btd6",
     "bloons",
@@ -65,6 +84,8 @@ _BTD6_KEYWORDS = (
     "freeplay",
     "deflation",
     "apopalypse",
+    "impoppable",
+    "half cash",
     "primary only",
     "military only",
     "magic only",
@@ -86,6 +107,8 @@ _BTD6_KEYWORDS = (
     "race ",
     "banned hero",
     "banned tower",
+    "obyn",
+    "desperado",
 )
 
 

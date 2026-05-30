@@ -108,3 +108,49 @@ def test_generic_words_do_not_over_route(text):
     assert (
         decision.task is AITask.GENERAL_NL_ANSWER
     ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Distinctive BTD6 terms the entity-alias matcher provably MISSES, so
+    # they fell through to GENERAL_NL_ANSWER (no grounding) — the AI PR2
+    # grounding-gating regression. Verified against the dataset:
+    #   * "obyn"      — hero "Obyn Greenfoot"; bare 4-char alias dropped by
+    #                   the matcher's len(al) > 4 filter.
+    #   * "desperado" — a real tower; single-word tower names are skipped.
+    #   * impoppable / half cash — difficulty / mode.
+    [
+        "how do I use obyn",
+        "is obyn good on chimps",
+        "is desperado a sniper upgrade",
+        "tell me about desperado",
+        "impoppable tips",
+        "half cash strategy",
+    ],
+)
+def test_rewidened_btd6_terms_route_to_answer(text):
+    """Re-widen #388's over-slim: these route back to BTD6_ANSWER so the
+    grounding context is injected even when the model doesn't call the
+    btd6_lookup tool.
+    """
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # The re-widened terms must not over-route nearby general chatter.
+    # "paragon" was deliberately left OUT of the keyword set precisely so
+    # this legitimate English usage stays general.
+    [
+        "she is a paragon of virtue",
+        "i only have half my cash left",  # not the exact 'half cash' phrase
+    ],
+)
+def test_rewidened_terms_do_not_over_route_general_chat(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
