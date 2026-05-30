@@ -1,247 +1,768 @@
 {
-  "data_version": "1.1",
+  "schema_version": 2,
+  "data_version": "2.0",
   "game_version": "54.0",
-  "source": "bloonswiki-aligned: damage-type immunities derived from utils/btd6/damage_types.py (bloonswiki Template:BTD6 dt port); MOAB-class HP / children are canonical base values. RBE (Red Bloon Equivalent) = (health or 1) + sum(child RBE), bottoming out at Red=1; recomputed from children text by tests/unit/services/test_btd6_rbe.py.",
+  "source": "bloonswiki.com Cargo btd6_bloons (CC BY-NC-SA)",
   "bloons": [
     {
       "id": "red",
       "canonical": "Red Bloon",
-      "aliases": ["red", "reds", "red bloon"],
       "category": "basic",
-      "properties": [],
       "immune_to": [],
-      "popped_by": "any damage type",
       "children": "",
-      "health": 1,
+      "children_list": [],
+      "properties": [],
       "rbe": 1,
-      "description": "The most basic bloon: 1 health, no immunities. It is the bottom of the spawn chain — when popped it reveals nothing. The RBE of every other bloon is measured in Red Bloon Equivalents (how many Red-pop-equivalents it takes to fully clear it and everything it spawns)."
+      "health": 1,
+      "layers": 1,
+      "speed": 25,
+      "aliases": [
+        "red",
+        "reds",
+        "red bloon"
+      ],
+      "description": ""
     },
     {
       "id": "blue",
       "canonical": "Blue Bloon",
-      "aliases": ["blue", "blues", "blue bloon"],
       "category": "basic",
-      "properties": [],
       "immune_to": [],
-      "popped_by": "any damage type",
       "children": "1 Red Bloon",
-      "health": 1,
+      "children_list": [
+        {
+          "bloon_id": "red",
+          "count": 1,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
       "rbe": 2,
-      "description": "Basic bloon with 1 health and no immunities. When popped it reveals 1 Red Bloon."
+      "health": 1,
+      "layers": 2,
+      "speed": 35,
+      "aliases": [
+        "blue",
+        "blues",
+        "blue bloon"
+      ],
+      "description": ""
     },
     {
       "id": "green",
       "canonical": "Green Bloon",
-      "aliases": ["green", "greens", "green bloon"],
       "category": "basic",
-      "properties": [],
       "immune_to": [],
-      "popped_by": "any damage type",
       "children": "1 Blue Bloon",
-      "health": 1,
+      "children_list": [
+        {
+          "bloon_id": "blue",
+          "count": 1,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
       "rbe": 3,
-      "description": "Basic bloon with 1 health and no immunities. When popped it reveals 1 Blue Bloon."
+      "health": 1,
+      "layers": 3,
+      "speed": 45,
+      "aliases": [
+        "green",
+        "greens",
+        "green bloon"
+      ],
+      "description": ""
     },
     {
       "id": "yellow",
       "canonical": "Yellow Bloon",
-      "aliases": ["yellow", "yellows", "yellow bloon"],
       "category": "basic",
-      "properties": [],
       "immune_to": [],
-      "popped_by": "any damage type",
       "children": "1 Green Bloon",
-      "health": 1,
+      "children_list": [
+        {
+          "bloon_id": "green",
+          "count": 1,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
       "rbe": 4,
-      "description": "Fast basic bloon with 1 health and no immunities. When popped it reveals 1 Green Bloon."
+      "health": 1,
+      "layers": 4,
+      "speed": 80,
+      "aliases": [
+        "yellow",
+        "yellows",
+        "yellow bloon"
+      ],
+      "description": ""
     },
     {
       "id": "pink",
       "canonical": "Pink Bloon",
-      "aliases": ["pink", "pinks", "pink bloon"],
       "category": "basic",
-      "properties": [],
       "immune_to": [],
-      "popped_by": "any damage type",
       "children": "1 Yellow Bloon",
-      "health": 1,
+      "children_list": [
+        {
+          "bloon_id": "yellow",
+          "count": 1,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
       "rbe": 5,
-      "description": "Fastest basic bloon with 1 health and no immunities. When popped it reveals 1 Yellow Bloon. Pink is NOT the bottom of the chain — it spawns Yellow, which spawns Green, then Blue, then Red."
-    },
-    {
-      "id": "lead",
-      "canonical": "Lead Bloon",
-      "aliases": ["lead", "leads", "lead bloon"],
-      "category": "special",
-      "properties": ["lead"],
-      "immune_to": ["Sharp", "Shatter", "Cold", "Energy"],
-      "popped_by": "Explosion, Fire, Plasma, Glacier, Acid, or Normal damage",
-      "children": "2 Black Bloons",
       "health": 1,
-      "rbe": 23,
-      "description": "Immune to Sharp damage, so most basic dart/projectile attacks cannot pop it unupgraded. Needs Explosion, Fire, Plasma, Glacier, Acid, or Normal damage."
+      "layers": 5,
+      "speed": 87.5,
+      "aliases": [
+        "pink",
+        "pinks",
+        "pink bloon"
+      ],
+      "description": ""
     },
     {
       "id": "black",
       "canonical": "Black Bloon",
-      "aliases": ["black", "blacks", "black bloon"],
       "category": "special",
-      "properties": ["explosion-immune"],
-      "immune_to": ["Explosion"],
-      "popped_by": "any non-explosive damage (darts, fire, ice, etc.)",
+      "immune_to": [
+        "Explosion"
+      ],
       "children": "2 Pink Bloons",
-      "health": 1,
+      "children_list": [
+        {
+          "bloon_id": "pink",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "explosion-immune"
+      ],
       "rbe": 11,
-      "description": "Immune to Explosion damage (Bomb Shooter, Mortar, etc.). Any non-explosive damage pops it."
-    },
-    {
-      "id": "white",
-      "canonical": "White Bloon",
-      "aliases": ["white", "whites", "white bloon"],
-      "category": "special",
-      "properties": ["cold-immune"],
-      "immune_to": ["Cold", "Glacier", "Frigid"],
-      "popped_by": "any non-cold damage (darts, explosions, fire, etc.)",
-      "children": "2 Pink Bloons",
       "health": 1,
-      "rbe": 11,
-      "description": "Immune to Cold / ice damage (Ice Monkey, etc.). Any non-cold damage pops it."
+      "layers": 6,
+      "speed": 45,
+      "aliases": [
+        "black",
+        "blacks",
+        "black bloon"
+      ],
+      "description": "Immune to Explosion damage (Bomb Shooter, Mortar, etc.). Any non-explosive damage pops it.",
+      "popped_by": "any non-explosive damage (darts, fire, ice, etc.)"
     },
     {
       "id": "purple",
       "canonical": "Purple Bloon",
-      "aliases": ["purple", "purples", "purple bloon"],
       "category": "special",
-      "properties": ["fire-immune", "energy-immune", "plasma-immune"],
-      "immune_to": ["Fire", "Energy", "Plasma", "Frigid"],
-      "popped_by": "Sharp, Explosion, Cold, Glacier, Acid, or Normal damage",
+      "immune_to": [
+        "Energy",
+        "Plasma",
+        "Fire",
+        "Frigid"
+      ],
       "children": "2 Pink Bloons",
-      "health": 1,
+      "children_list": [
+        {
+          "bloon_id": "pink",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "fire-immune",
+        "energy-immune",
+        "plasma-immune"
+      ],
       "rbe": 11,
-      "description": "Immune to Fire, Energy/Plasma, and Magic damage. Sharp, Explosion, and Cold damage still pop it."
+      "health": 1,
+      "layers": 6,
+      "speed": 75,
+      "aliases": [
+        "purple",
+        "purples",
+        "purple bloon"
+      ],
+      "description": "Immune to Fire, Energy/Plasma, and Magic damage. Sharp, Explosion, and Cold damage still pop it.",
+      "popped_by": "Sharp, Explosion, Cold, Glacier, Acid, or Normal damage"
+    },
+    {
+      "id": "white",
+      "canonical": "White Bloon",
+      "category": "special",
+      "immune_to": [
+        "Cold",
+        "Glacier",
+        "Frigid"
+      ],
+      "children": "2 Pink Bloons",
+      "children_list": [
+        {
+          "bloon_id": "pink",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "cold-immune"
+      ],
+      "rbe": 11,
+      "health": 1,
+      "layers": 6,
+      "speed": 50,
+      "aliases": [
+        "white",
+        "whites",
+        "white bloon"
+      ],
+      "description": "Immune to Cold / ice damage (Ice Monkey, etc.). Any non-cold damage pops it.",
+      "popped_by": "any non-cold damage (darts, explosions, fire, etc.)"
+    },
+    {
+      "id": "lead",
+      "canonical": "Lead Bloon",
+      "category": "special",
+      "immune_to": [
+        "Sharp",
+        "Shatter",
+        "Cold",
+        "Energy"
+      ],
+      "children": "2 Black Bloons",
+      "children_list": [
+        {
+          "bloon_id": "black",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "lead"
+      ],
+      "rbe": 23,
+      "rbe_fortified": 26,
+      "health": 1,
+      "health_fortified": 4,
+      "layers": 7,
+      "speed": 25,
+      "aliases": [
+        "lead",
+        "leads",
+        "lead bloon"
+      ],
+      "description": "Immune to Sharp damage, so most basic dart/projectile attacks cannot pop it unupgraded. Needs Explosion, Fire, Plasma, Glacier, Acid, or Normal damage.",
+      "popped_by": "Explosion, Fire, Plasma, Glacier, Acid, or Normal damage"
     },
     {
       "id": "zebra",
       "canonical": "Zebra Bloon",
-      "aliases": ["zebra", "zebras", "zebra bloon"],
       "category": "special",
-      "properties": ["explosion-immune", "cold-immune"],
-      "immune_to": ["Explosion", "Cold", "Glacier", "Frigid"],
-      "popped_by": "Sharp, Fire, Plasma, Acid, or Normal damage",
-      "children": "1 Black Bloon and 1 White Bloon",
-      "health": 1,
+      "immune_to": [
+        "Explosion",
+        "Cold",
+        "Glacier",
+        "Frigid"
+      ],
+      "children": "1 White Bloon and 1 Black Bloon",
+      "children_list": [
+        {
+          "bloon_id": "white",
+          "count": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "black",
+          "count": 1,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "explosion-immune",
+        "cold-immune"
+      ],
       "rbe": 23,
-      "description": "Has both Black and White properties: immune to Explosion and Cold damage. Pops into one Black and one White Bloon."
+      "health": 1,
+      "layers": 7,
+      "speed": 45,
+      "aliases": [
+        "zebra",
+        "zebras",
+        "zebra bloon"
+      ],
+      "description": "Has both Black and White properties: immune to Explosion and Cold damage. Pops into one Black and one White Bloon.",
+      "popped_by": "Sharp, Fire, Plasma, Acid, or Normal damage"
     },
     {
       "id": "rainbow",
       "canonical": "Rainbow Bloon",
-      "aliases": ["rainbow", "rainbows", "rainbow bloon"],
       "category": "special",
-      "properties": [],
       "immune_to": [],
-      "popped_by": "any damage type",
       "children": "2 Zebra Bloons",
-      "health": 1,
+      "children_list": [
+        {
+          "bloon_id": "zebra",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
       "rbe": 47,
-      "description": "No damage-type immunity. Pops into two Zebra Bloons."
+      "health": 1,
+      "layers": 8,
+      "speed": 55,
+      "aliases": [
+        "rainbow",
+        "rainbows",
+        "rainbow bloon"
+      ],
+      "description": "No damage-type immunity. Pops into two Zebra Bloons.",
+      "popped_by": "any damage type"
+    },
+    {
+      "id": "dynamite",
+      "canonical": "Dynamite Bloon",
+      "category": "special",
+      "immune_to": [],
+      "children": "3 Regrow Red Bloons and 2 Black Bloons",
+      "children_list": [
+        {
+          "bloon_id": "red",
+          "count": 3,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "black",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
+      "rbe": 55,
+      "health": 30,
+      "layers": 7,
+      "speed": 25,
+      "aliases": [
+        "dynamite",
+        "dynamites",
+        "dynamite bloon"
+      ],
+      "description": ""
+    },
+    {
+      "id": "aura",
+      "canonical": "Aura Bloon",
+      "category": "special",
+      "immune_to": [],
+      "children": "3 Red Bloons, 3 Blue Bloons, 3 Green Bloons, 3 Yellow Bloons and 3 Pink Bloons",
+      "children_list": [
+        {
+          "bloon_id": "red",
+          "count": 3,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "blue",
+          "count": 3,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "green",
+          "count": 3,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "yellow",
+          "count": 3,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "pink",
+          "count": 3,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
+      "rbe": 85,
+      "health": 40,
+      "layers": 6,
+      "speed": 25,
+      "aliases": [
+        "aura",
+        "auras",
+        "aura bloon"
+      ],
+      "description": ""
+    },
+    {
+      "id": "glass",
+      "canonical": "Glass Bloon",
+      "category": "special",
+      "immune_to": [
+        "Energy",
+        "Plasma",
+        "Acid"
+      ],
+      "children": "1 Zebra Bloon, 1 Regrow Zebra Bloon and 1 Camo Zebra Bloon",
+      "children_list": [
+        {
+          "bloon_id": "zebra",
+          "count": 1,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 1,
+          "modifiers": [
+            "regrow"
+          ]
+        },
+        {
+          "bloon_id": "zebra",
+          "count": 1,
+          "modifiers": [
+            "camo"
+          ]
+        }
+      ],
+      "properties": [],
+      "rbe": 89,
+      "health": 20,
+      "layers": 9,
+      "speed": 88,
+      "aliases": [
+        "glass",
+        "glasss",
+        "glass bloon"
+      ],
+      "description": ""
     },
     {
       "id": "ceramic",
       "canonical": "Ceramic Bloon",
-      "aliases": ["ceramic", "ceramics", "ceramic bloon", "cerb", "cerbs"],
       "category": "special",
-      "properties": [],
       "immune_to": [],
-      "popped_by": "any damage type, but the shell takes 10 hits",
-      "health": 10,
-      "rbe": 104,
       "children": "2 Rainbow Bloons",
-      "description": "Tough shell with no damage-type immunity but 10 layers of health; resists single-hit pops. Pops into two Rainbow Bloons."
+      "children_list": [
+        {
+          "bloon_id": "rainbow",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
+      "rbe": 104,
+      "rbe_fortified": 114,
+      "health": 10,
+      "health_fortified": 20,
+      "layers": 9,
+      "speed": 62.5,
+      "aliases": [
+        "ceramic",
+        "ceramics",
+        "ceramic bloon",
+        "cerb",
+        "cerbs"
+      ],
+      "description": "Tough shell with no damage-type immunity but 10 layers of health; resists single-hit pops. Pops into two Rainbow Bloons.",
+      "popped_by": "any damage type, but the shell takes 10 hits"
+    },
+    {
+      "id": "retribution",
+      "canonical": "Retribution Bloon",
+      "category": "special",
+      "immune_to": [],
+      "children": "4 Yellow Bloons and 2 Purple Bloons",
+      "children_list": [
+        {
+          "bloon_id": "yellow",
+          "count": 4,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "purple",
+          "count": 2,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "knockback-immune"
+      ],
+      "rbe": 138,
+      "health": 100,
+      "layers": 9,
+      "speed": 15,
+      "aliases": [
+        "retribution",
+        "retributions",
+        "retribution bloon"
+      ],
+      "description": ""
+    },
+    {
+      "id": "ringleader",
+      "canonical": "Ringleader Bloon",
+      "category": "special",
+      "immune_to": [],
+      "children": "3 Rainbow Bloons",
+      "children_list": [
+        {
+          "bloon_id": "rainbow",
+          "count": 3,
+          "modifiers": []
+        }
+      ],
+      "properties": [],
+      "rbe": 171,
+      "health": 30,
+      "layers": 9,
+      "speed": 25,
+      "aliases": [
+        "ringleader",
+        "ringleaders",
+        "ringleader bloon"
+      ],
+      "description": ""
+    },
+    {
+      "id": "diamond",
+      "canonical": "Diamond Bloon",
+      "category": "special",
+      "immune_to": [],
+      "children": "1 Fortified Ceramic Bloon",
+      "children_list": [
+        {
+          "bloon_id": "ceramic",
+          "count": 1,
+          "modifiers": [
+            "fortified"
+          ]
+        }
+      ],
+      "properties": [
+        "knockback-immune"
+      ],
+      "rbe": 194,
+      "health": 80,
+      "layers": 10,
+      "speed": 30,
+      "aliases": [
+        "diamond",
+        "diamonds",
+        "diamond bloon"
+      ],
+      "description": ""
     },
     {
       "id": "moab",
       "canonical": "MOAB",
-      "aliases": ["moab", "moabs", "massive ornary air blimp"],
       "category": "moab_class",
-      "properties": ["moab-class"],
       "immune_to": [],
-      "health": 200,
-      "rbe": 616,
       "children": "4 Ceramic Bloons",
+      "children_list": [
+        {
+          "bloon_id": "ceramic",
+          "count": 4,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "moab-class"
+      ],
+      "rbe": 616,
+      "rbe_fortified": 856,
+      "health": 200,
+      "health_fortified": 400,
+      "layers": 10,
+      "speed": 25,
+      "aliases": [
+        "moab",
+        "moabs",
+        "massive ornary air blimp"
+      ],
       "description": "Massive Ornary Air Blimp. MOAB-class blimp with 200 HP and no camo/lead properties. Pops into four Ceramic Bloons."
+    },
+    {
+      "id": "ddt",
+      "canonical": "DDT",
+      "category": "moab_class",
+      "immune_to": [
+        "Sharp",
+        "Shatter",
+        "Cold",
+        "Energy",
+        "Explosion"
+      ],
+      "children": "4 Camo Regrow Ceramic Bloons",
+      "children_list": [
+        {
+          "bloon_id": "ceramic",
+          "count": 4,
+          "modifiers": [
+            "camo",
+            "regrow"
+          ]
+        }
+      ],
+      "properties": [
+        "moab-class",
+        "camo",
+        "lead",
+        "black"
+      ],
+      "rbe": 816,
+      "rbe_fortified": 1256,
+      "health": 400,
+      "health_fortified": 800,
+      "layers": 10,
+      "speed": 66,
+      "aliases": [
+        "ddt",
+        "ddts",
+        "dark dirigible titan"
+      ],
+      "description": "Dark Dirigible Titan. Has Camo, Lead, and Black properties, so it needs camo detection and is immune to Sharp and Explosion damage. Very fast; 400 HP. Pops into four camo Ceramics."
     },
     {
       "id": "bfb",
       "canonical": "BFB",
-      "aliases": ["bfb", "bfbs", "brutal floating behemoth"],
       "category": "moab_class",
-      "properties": ["moab-class"],
       "immune_to": [],
-      "health": 700,
-      "rbe": 3164,
       "children": "4 MOABs",
+      "children_list": [
+        {
+          "bloon_id": "moab",
+          "count": 4,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "moab-class"
+      ],
+      "rbe": 3164,
+      "rbe_fortified": 4824,
+      "health": 700,
+      "health_fortified": 1400,
+      "layers": 11,
+      "speed": 6.25,
+      "aliases": [
+        "bfb",
+        "bfbs",
+        "brutal floating behemoth"
+      ],
       "description": "Brutal Floating Behemoth. MOAB-class blimp with 700 HP. Pops into four MOABs."
     },
     {
       "id": "zomg",
       "canonical": "ZOMG",
-      "aliases": ["zomg", "zomgs", "zeppelin of mighty gargantuaness"],
       "category": "moab_class",
-      "properties": ["moab-class"],
       "immune_to": [],
-      "health": 4000,
-      "rbe": 16656,
       "children": "4 BFBs",
+      "children_list": [
+        {
+          "bloon_id": "bfb",
+          "count": 4,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "moab-class"
+      ],
+      "rbe": 16656,
+      "rbe_fortified": 27296,
+      "health": 4000,
+      "health_fortified": 8000,
+      "layers": 12,
+      "speed": 4.5,
+      "aliases": [
+        "zomg",
+        "zomgs",
+        "zeppelin of mighty gargantuaness"
+      ],
       "description": "Zeppelin of Mighty Gargantuaness. MOAB-class blimp with 4000 HP. Pops into four BFBs."
-    },
-    {
-      "id": "ddt",
-      "canonical": "DDT",
-      "aliases": ["ddt", "ddts", "dark dirigible titan"],
-      "category": "moab_class",
-      "properties": ["moab-class", "camo", "lead", "black"],
-      "immune_to": ["Sharp", "Shatter", "Cold", "Energy", "Explosion"],
-      "health": 400,
-      "rbe": 816,
-      "children": "4 Camo Ceramic Bloons",
-      "description": "Dark Dirigible Titan. Has Camo, Lead, and Black properties, so it needs camo detection and is immune to Sharp and Explosion damage. Very fast; 400 HP. Pops into four camo Ceramics."
     },
     {
       "id": "bad",
       "canonical": "BAD",
-      "aliases": ["bad", "bads", "bad bloon", "big airship of doom"],
       "category": "moab_class",
-      "properties": ["moab-class", "knockback-immune"],
       "immune_to": [],
+      "children": "2 ZOMGs and 3 DDTs",
+      "children_list": [
+        {
+          "bloon_id": "zomg",
+          "count": 2,
+          "modifiers": []
+        },
+        {
+          "bloon_id": "ddt",
+          "count": 3,
+          "modifiers": []
+        }
+      ],
+      "properties": [
+        "moab-class",
+        "knockback-immune"
+      ],
+      "rbe": 55760,
+      "rbe_fortified": 98360,
       "health": 20000,
-      "rbe": 71600,
-      "children": "3 ZOMGs and 2 DDTs",
+      "health_fortified": 40000,
+      "layers": 13,
+      "speed": 4.5,
+      "aliases": [
+        "bad",
+        "bads",
+        "bad bloon",
+        "big airship of doom"
+      ],
       "description": "Big Airship of Doom. Strongest standard blimp at 20000 HP; immune to knockback, stuns, and most status effects. Pops into three ZOMGs and two DDTs."
     },
     {
       "id": "camo",
       "canonical": "Camo property",
-      "aliases": ["camo", "camos", "camo bloon", "camo bloons"],
+      "aliases": [
+        "camo",
+        "camos",
+        "camo bloon",
+        "camo bloons"
+      ],
       "category": "modifier",
-      "properties": ["camo"],
+      "properties": [
+        "camo"
+      ],
       "description": "A camo modifier: only towers with camo detection (e.g. Ninja Monkey innately, or via support such as Monkey Village 0-2-0 or Alchemist) can target it."
-    },
-    {
-      "id": "regrow",
-      "canonical": "Regrow property",
-      "aliases": ["regrow", "regrowth", "regrows", "regrow bloon"],
-      "category": "modifier",
-      "properties": ["regrow"],
-      "description": "A regrow modifier: the bloon regrows its popped outer layers over time unless it is fully destroyed."
     },
     {
       "id": "fortified",
       "canonical": "Fortified property",
-      "aliases": ["fortified", "forts", "fortified bloon"],
+      "aliases": [
+        "fortified",
+        "forts",
+        "fortified bloon"
+      ],
       "category": "modifier",
-      "properties": ["fortified"],
+      "properties": [
+        "fortified"
+      ],
       "description": "A fortified modifier: roughly doubles a bloon's health, and increases MOAB-class HP substantially."
+    },
+    {
+      "id": "regrow",
+      "canonical": "Regrow property",
+      "aliases": [
+        "regrow",
+        "regrowth",
+        "regrows",
+        "regrow bloon"
+      ],
+      "category": "modifier",
+      "properties": [
+        "regrow"
+      ],
+      "description": "A regrow modifier: the bloon regrows its popped outer layers over time unless it is fully destroyed."
     }
   ]
 }

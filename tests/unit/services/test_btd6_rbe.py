@@ -32,36 +32,45 @@ def _name_lookup() -> dict[str, str]:
     return lookup
 
 
-def _resolve_child(name: str, lookup: dict[str, str]) -> str:
-    """Resolve a child phrase like 'Camo Ceramic Bloons' to a bloon id."""
+def _resolve_child(name: str, lookup: dict[str, str]) -> tuple[str, bool]:
+    """Resolve a child phrase to (bloon id, is_fortified).
+
+    e.g. 'Camo Ceramic Bloons' -> ('ceramic', False);
+    'Fortified Ceramic Bloon' -> ('ceramic', True).
+    """
     tokens = [t for t in re.split(r"\s+", name.strip().lower()) if t]
-    # Drop trailing 'bloon' / 'bloons' and any leading modifier words.
+    # Drop trailing 'bloon' / 'bloons'; capture then drop modifier words.
     tokens = [t for t in tokens if t not in {"bloon", "bloons"}]
+    fortified = "fortified" in tokens
     tokens = [t for t in tokens if t not in _MODIFIER_WORDS]
     candidate = " ".join(tokens)
     if candidate in lookup:
-        return lookup[candidate]
+        return lookup[candidate], fortified
     # Fall back to the last token (handles 'massive ... blimp' style names
     # never appearing in children, but keeps the resolver robust).
     if tokens and tokens[-1] in lookup:
-        return lookup[tokens[-1]]
+        return lookup[tokens[-1]], fortified
     raise AssertionError(f"could not resolve child bloon from {name!r}")
 
 
-def _parse_children(text: str, lookup: dict[str, str]) -> list[tuple[int, str]]:
-    """Parse 'N <Bloon>, M <Bloon> and K <Bloon>' into (count, id) pairs."""
+def _parse_children(
+    text: str,
+    lookup: dict[str, str],
+) -> list[tuple[int, str, bool]]:
+    """Parse 'N <Bloon>, M <Bloon> and K <Bloon>' into (count, id, fortified)."""
     text = (text or "").strip()
     if not text:
         return []
     parts = re.split(r"\s+and\s+|,", text)
-    out: list[tuple[int, str]] = []
+    out: list[tuple[int, str, bool]] = []
     for part in parts:
         part = part.strip()
         if not part:
             continue
         m = re.match(r"(\d+)\s+(.*)", part)
         assert m, f"unparseable child phrase {part!r}"
-        out.append((int(m.group(1)), _resolve_child(m.group(2), lookup)))
+        cid, fortified = _resolve_child(m.group(2), lookup)
+        out.append((int(m.group(1)), cid, fortified))
     return out
 
 
@@ -70,9 +79,7 @@ def _compute_rbe() -> dict[str, int]:
     dataset = get_dataset()
     lookup = _name_lookup()
     bloons = {b.id: b for b in dataset.bloons if b.category != "modifier"}
-    children = {
-        bid: _parse_children(b.children, lookup) for bid, b in bloons.items()
-    }
+    children = {bid: _parse_children(b.children, lookup) for bid, b in bloons.items()}
     computed: dict[str, int] = {}
     # Iterate to a fixpoint; the spawn graph is a DAG bottoming at Red.
     for _ in range(len(bloons) + 1):
@@ -81,10 +88,18 @@ def _compute_rbe() -> dict[str, int]:
             if bid in computed:
                 continue
             kids = children[bid]
-            if any(cid not in computed for _, cid in kids):
+            if any(cid not in computed for _, cid, _ in kids):
                 continue
             layer_hits = b.health if isinstance(b.health, int) else 1
-            computed[bid] = layer_hits + sum(n * computed[cid] for n, cid in kids)
+            total = layer_hits
+            for count, cid, fortified in kids:
+                # A fortified child contributes its fortified RBE (e.g. a
+                # Diamond pops one fortified Ceramic: 114, not 104).
+                child_rbe = computed[cid]
+                if fortified and isinstance(bloons[cid].rbe_fortified, int):
+                    child_rbe = bloons[cid].rbe_fortified
+                total += count * child_rbe
+            computed[bid] = total
             progressed = True
         if not progressed:
             break
@@ -126,7 +141,9 @@ def test_known_rbe_values():
         "bfb": 3164,
         "zomg": 16656,
         "ddt": 816,
-        "bad": 71600,
+        # BAD spawns 2 ZOMGs + 3 DDTs per bloonswiki's extracted data
+        # (rbe column + parent_of agree): 20000 + 2*16656 + 3*816 = 55760.
+        "bad": 55760,
     }
     for bid, rbe in expected.items():
         assert by_id[bid].rbe == rbe

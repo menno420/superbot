@@ -6,6 +6,7 @@ import pytest
 
 from services import btd6_stats_service as svc
 from utils.btd6.stats_embed import (
+    build_crosspath_compare_embed,
     build_pro_hero_level_embed,
     build_pro_tier_embed,
     format_normal_stats,
@@ -36,6 +37,26 @@ def test_tier_label_uses_upgrade_names():
     assert tier_label(stats, "000") == "Base (0-0-0)"
     assert tier_label(stats, "500") == "Bloon Crush (5-0-0)"
     assert tier_label(stats, "040") == "MOAB Assassin (0-4-0)"
+
+
+def test_tier_label_crosspath_uses_primary_path_name():
+    # 0-2-5: the label must name the PRIMARY (tier-5 path-3) upgrade, not the
+    # first-non-zero (tier-2 path-2) one — the crosspath label bug fix.
+    stats = svc.get_tower_stats("bomb_shooter")
+    label = tier_label(stats, "025")
+    assert label.endswith("(0-2-5)")
+    p3t5 = next(u["name"] for u in stats.upgrades if u["path"] == 3 and u["tier"] == 5)
+    p2t2 = next(u["name"] for u in stats.upgrades if u["path"] == 2 and u["tier"] == 2)
+    assert p3t5 in label
+    assert p2t2 not in label
+
+
+def test_crosspath_compare_embed_renders_two_tiers():
+    stats = svc.get_tower_stats("bomb_shooter")
+    embed = build_crosspath_compare_embed(stats, "025", "052")
+    assert "0-2-5" in embed.title and "0-5-2" in embed.title
+    assert len(embed.fields) == 2
+    assert all(f.value and f.value != "—" for f in embed.fields)
 
 
 def test_pro_embed_bloon_crush():

@@ -238,9 +238,10 @@ def _render_report(result: UpgradesResult) -> str:
 # Stats pages — Module:BTD6 stats/<tower>/new JSON
 # ---------------------------------------------------------------------------
 
-# The 16 single-path crosspath codes a stats page must define: base + 5 per
-# path. Codes are [Path1][Path2][Path3] tiers; nested crosspath deltas (e.g.
-# "_110") are intentionally dropped — they're pro-extra and need delta-merging.
+# The 16 single-path codes a stats page must define: base + 5 per path. Codes
+# are [Path1][Path2][Path3] tiers. Nested crosspath deltas (e.g. "_110") live
+# inside these nodes; _clean_node strips them when flattening a single-path
+# tier, and _reconstruct_crosspaths merges them back into full crosspath tiers.
 _MAIN_CODES: tuple[str, ...] = (
     "000",
     "100", "200", "300", "400", "500",
@@ -311,9 +312,112 @@ def parse_stats_json(text: str) -> StatsResult:
         cleaned["crosspath"] = "-".join(code)
         result.tiers[code] = cleaned
 
+    _reconstruct_crosspaths(data, result)
+
     if not game_version:
         result.warnings.append("missing _last_updated (game version)")
     return result
+
+
+def _canonical(node: dict) -> str:
+    """Stable string for comparing two reconstructions of the same crosspath.
+
+    Ignores dict key order and the int/float spelling of equal numbers, plus the
+    synthetic ``code``/``crosspath`` labels, so a real stat divergence is the
+    only thing that registers.
+    """
+
+    def norm(value: object) -> object:
+        if isinstance(value, dict):
+            return {
+                k: norm(v)
+                for k, v in sorted(value.items())
+                if k not in ("code", "crosspath")
+            }
+        if isinstance(value, list):
+            items = [norm(v) for v in value]
+            # Named children (attacks/projectiles/effects/abilities/subtowers)
+            # are merged append-only, so the two bases can list the same set in a
+            # different order. Compare them as a set keyed by name, not by index.
+            if items and all(isinstance(it, dict) and "name" in it for it in items):
+                items = sorted(items, key=lambda d: str(d.get("name", "")))
+            return items
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return value
+
+    return json.dumps(norm(node), sort_keys=True, ensure_ascii=False)
+
+
+def _reconstruct_crosspaths(data: dict, result: StatsResult) -> None:
+    """Reconstruct full crosspath tiers from the nested ``_NNN`` deltas.
+
+    Faithful to the wiki's own renderer (``Module:BTD6 stats`` ``upgrade_crosspaths``):
+    a single-path base node carries its crosspath deltas nested by full code, and
+    they are applied **cumulatively** along the cross path. For base ``_200`` the
+    path-2 chain is ``_210`` then ``_220``, so ``220`` = ``_200 ∘ _210 ∘ _220`` —
+    *not* ``_200 ∘ _220`` (which would skip the tier-1 step and lose its stats).
+
+    A crosspath is nested under whichever base path holds the higher tier; equal
+    tiers (e.g. ``220`` under both ``_200`` and ``_020``) appear under both. Those
+    are reconstructed from each base via its own chain, the cleaned results are
+    compared, divergence is warned, and the deterministic preferred base wins. We
+    only ever build legal codes (one path 0-5, the cross path 1-2), so a wiki-side
+    helper/test node can never become committed data.
+    """
+    from utils.btd6 import tier_codes
+
+    discovered: dict[str, dict[str, dict]] = {}  # code -> {base_code: cleaned}
+    for base_code in _MAIN_CODES:
+        if tier_codes.is_base(base_code):
+            continue
+        base_raw = data.get("_" + base_code)
+        if not isinstance(base_raw, dict):
+            continue
+        primary = tier_codes.primary_path(base_code)
+        if primary is None:
+            continue
+        main_tier = tier_codes.digits(base_code)[primary - 1]
+        for cross_path in (1, 2, 3):
+            if cross_path == primary:
+                continue
+            acc = base_raw
+            # Cumulative cross-path chain: tiers 1..2, but only those this base
+            # owns (cross_tier <= main_tier), exactly as the wiki nests them.
+            for cross_tier in (1, 2):
+                if cross_tier > main_tier:
+                    break
+                code_digits = [0, 0, 0]
+                code_digits[primary - 1] = main_tier
+                code_digits[cross_path - 1] = cross_tier
+                code = "".join(str(d) for d in code_digits)
+                delta = base_raw.get("_" + code)
+                if not isinstance(delta, dict):
+                    continue
+                acc = _deep_merge_raw(acc, delta)
+                discovered.setdefault(code, {})[base_code] = _clean_node(acc)
+
+    for code, by_base in discovered.items():
+        preferred = tier_codes.preferred_parent(by_base.keys())
+        baseline = _canonical(by_base[preferred])
+        if any(
+            _canonical(node) != baseline
+            for base_code, node in by_base.items()
+            if base_code != preferred
+        ):
+            # The two reconstruction orders disagree on a stat the final delta
+            # doesn't reconcile — a genuine, non-commutative ambiguity. We can't
+            # verify the in-game value offline, so drop it rather than commit a
+            # coin-flip: trustworthy data over complete data.
+            result.warnings.append(
+                f"crosspath {code} diverges between bases {sorted(by_base)} "
+                f"— dropped (cannot verify offline)",
+            )
+            continue
+        chosen = dict(by_base[preferred])
+        chosen["code"] = code
+        chosen["crosspath"] = "-".join(code)
+        result.tiers[code] = chosen
 
 
 # ---------------------------------------------------------------------------
@@ -350,7 +454,17 @@ def _deep_merge_raw(base: dict, delta: dict) -> dict:
     """
     out = copy.deepcopy(base)
     for key, value in delta.items():
-        if isinstance(value, dict) and isinstance(out.get(key), dict):
+        if (
+            key == "_order"
+            and isinstance(value, list)
+            and isinstance(out.get(key), list)
+        ):
+            # An `_order` list enumerates which named children exist; a partial
+            # delta (e.g. a crosspath that only re-states one attack) must
+            # *extend* the parent's order, not replace it — otherwise a
+            # multi-attack tower loses the siblings the delta didn't mention.
+            out[key] = list(out[key]) + [c for c in value if c not in out[key]]
+        elif isinstance(value, dict) and isinstance(out.get(key), dict):
             out[key] = _deep_merge_raw(out[key], value)
         else:
             out[key] = copy.deepcopy(value)
@@ -426,6 +540,171 @@ def _render_stats_report(result: StatsResult) -> str:
     else:
         lines.append(f"✓ no warnings — all {len(result.tiers)} tiers parsed")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Bloon Cargo parsing (btd6_bloons: immunity + children wikitext)
+# ---------------------------------------------------------------------------
+
+_BLOON_COUNT_RE = re.compile(r"×\s*(\d+)")
+_DT_BLOCK_RE = re.compile(r"\[\[\s*damage type\s*\|([^\]]+)\]\]", re.IGNORECASE)
+_BRACKET_TOKEN_RE = re.compile(r"\[\[([^\]|]+)\]\]")
+
+
+def parse_bloon_immunity(text: str) -> tuple[list[str], list[str]]:
+    """Parse a ``btd6_bloons.immunity`` value into (damage types, status tokens).
+
+    Handles the three shapes seen on the wiki:
+      * ``[[damage type|Sharp, Shatter, Cold, Energy]]`` (also ``Damage type``);
+      * a bare comma list ``Energy, Plasma, Acid`` (Glass Bloon);
+      * status immunities ``[[Slow]], [[blowback]], [[knockback]]`` (BAD etc.).
+    """
+    text = (text or "").strip()
+    if not text:
+        return [], []
+    immune: list[str] = []
+    status: list[str] = []
+    block = _DT_BLOCK_RE.search(text)
+    if block:
+        immune = [t.strip() for t in block.group(1).split(",") if t.strip()]
+    bracket_tokens = [t.strip() for t in _BRACKET_TOKEN_RE.findall(text)]
+    for tok in bracket_tokens:
+        if tok.lower() != "damage type":
+            status.append(tok)
+    if not immune and not bracket_tokens and "[[" not in text:
+        immune = [t.strip() for t in text.split(",") if t.strip()]
+    return immune, status
+
+
+def parse_bloon_children(text: str) -> list[dict]:
+    """Parse a ``btd6_bloons.parent_of`` value into structured children.
+
+    Returns ``[{"bloon_id", "count", "modifiers"}]``. Leading Camo/Regrow/
+    Fortified tokens become ``modifiers``; the remaining text names the child
+    bloon (which may itself be unlinked, as in Glass Bloon's children).
+    """
+    from utils.btd6 import bloon_ids
+
+    text = (text or "").strip()
+    if not text:
+        return []
+    out: list[dict] = []
+    for part in text.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        count_match = _BLOON_COUNT_RE.search(part)
+        count = int(count_match.group(1)) if count_match else 1
+        plain = bloon_ids.strip_links(_BLOON_COUNT_RE.sub("", part))
+        tokens = plain.split()
+        modifiers: list[str] = []
+        while tokens and tokens[0].lower() in bloon_ids.MODIFIER_TOKENS:
+            modifiers.append(tokens.pop(0).lower())
+        bloon_id = bloon_ids.normalize_bloon_name(" ".join(tokens))
+        if bloon_id:
+            out.append({"bloon_id": bloon_id, "count": count, "modifiers": modifiers})
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Round composition (Module:BTD6_rounds/Default)
+# ---------------------------------------------------------------------------
+
+# RBE-based danger tiers (highest first); a MOAB-class presence floors at "high".
+_DANGER_TIERS = (
+    (30000, "extreme"),
+    (8000, "very_high"),
+    (1500, "high"),
+    (400, "medium"),
+    (80, "low"),
+)
+
+
+def _group_rbe(
+    bloon_id: str,
+    modifiers: list[str],
+    rbe_map: dict[str, dict],
+) -> int | None:
+    info = rbe_map.get(bloon_id)
+    if not info:
+        return None
+    if "fortified" in modifiers and info.get("rbe_fortified"):
+        return int(info["rbe_fortified"])
+    return int(info["rbe"]) if info.get("rbe") is not None else None
+
+
+def _round_danger(rbe: int, has_moab: bool) -> str:
+    for threshold, label in _DANGER_TIERS:
+        if rbe >= threshold:
+            return label
+    return "high" if has_moab else "trivial"
+
+
+def parse_rounds_json(
+    default_data: dict,
+    *,
+    rbe_map: dict[str, dict],
+    name_map: dict[str, str] | None = None,
+) -> list[dict]:
+    """Parse ``Module:BTD6_rounds/Default`` into per-round composition + RBE.
+
+    ``rbe_map`` maps a bloon id to ``{"rbe", "rbe_fortified"}`` (from bloons.json).
+    RBE is children-inclusive, so a round's RBE is simply the sum of
+    ``count × rbe`` over its top-level spawn groups — children are NOT expanded
+    (a single round-100 BAD is its full 55,760, not BAD + its descendants again).
+    Cash is intentionally not derived (the wiki computes it from per-income Lua
+    functions that don't parse deterministically).
+    """
+    from utils.btd6 import bloon_ids
+
+    names = name_map or {}
+
+    def name_of(bloon_id: str) -> str:
+        return names.get(bloon_id) or bloon_id.replace("_", " ").title()
+
+    out: list[dict] = []
+    for index, groups_raw in enumerate(default_data.get("rounds", []), start=1):
+        groups: list[dict] = []
+        rbe = 0
+        has_moab = False
+        for grp in groups_raw:
+            bloon_id, modifiers = bloon_ids.parse_round_bloon_key(
+                str(grp.get("bloon", "")),
+            )
+            count = int(grp.get("count", 0))
+            groups.append(
+                {
+                    "bloon_id": bloon_id,
+                    "count": count,
+                    "start": grp.get("start", 0),
+                    "duration": grp.get("duration", 0),
+                    "modifiers": modifiers,
+                },
+            )
+            has_moab = has_moab or bloon_id in bloon_ids.MOAB_IDS
+            per = _group_rbe(bloon_id, modifiers, rbe_map)
+            if per is not None:
+                rbe += per * count
+
+        totals: dict[str, int] = {}
+        for group in groups:
+            label = name_of(group["bloon_id"])
+            totals[label] = totals.get(label, 0) + group["count"]
+        top = sorted(totals.items(), key=lambda kv: -kv[1])
+        summary = ", ".join(f"{count} {label}" for label, count in top[:3])
+        threats = [label for label, _ in sorted(totals.items(), key=lambda kv: -kv[1])]
+        out.append(
+            {
+                "round": index,
+                "summary": f"{summary}. RBE {rbe:,}." if summary else f"RBE {rbe:,}.",
+                "danger": _round_danger(rbe, has_moab),
+                "common_threats": threats[:4],
+                "rbe": rbe,
+                "roundset": "default",
+                "groups": groups,
+            },
+        )
+    return out
 
 
 def _looks_like_json(text: str) -> bool:

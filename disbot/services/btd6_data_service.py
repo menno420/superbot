@@ -103,6 +103,14 @@ class RoundEntry:
     summary: str
     danger: str
     common_threats: tuple[str, ...]
+    # Extended composition (Module:BTD6_rounds): total RBE (children-inclusive),
+    # the ordered spawn groups ({bloon_id, count, start, duration, modifiers}),
+    # and which round set this is ("default"; ABR is a later addition). ``cash``
+    # is reserved but not yet derived (wiki computes it from per-income Lua).
+    rbe: int | None = None
+    cash: int | None = None
+    roundset: str = "default"
+    groups: tuple[dict[str, Any], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -120,13 +128,17 @@ class BloonEntry:
     popped_by: str = ""
     children: str = ""
     health: int | None = None
-    # Red Bloon Equivalent: total hits to fully clear this bloon AND every
-    # bloon it spawns down to Red. The canonical "how much does this bloon
-    # really cost to clear" figure. ``rbe = (health or 1) + sum(child RBE)``;
-    # the chain bottoms out at Red (rbe=1). Verified values pinned by
-    # tests/unit/services/test_btd6_rbe.py, which recomputes them from the
-    # ``children`` text so a typo in either field fails CI.
+    # Extended bloonswiki facts (btd6_bloons Cargo): RBE (children-inclusive),
+    # fortified variants, speed, layer count, and structured children
+    # (bloon_id + count + modifiers — the canonical form; ``children`` is the
+    # legacy display string). ``rbe`` is recomputed from health + children text
+    # by tests/unit/services/test_btd6_rbe.py, so a typo in either field fails CI.
     rbe: int | None = None
+    rbe_fortified: int | None = None
+    health_fortified: int | None = None
+    speed: float | None = None
+    layers: int | None = None
+    children_list: tuple[dict[str, Any], ...] = ()
     # Attribution only (bloonswiki); never surfaced in grounding. Left blank
     # rather than reusing the discredited bloons.fandom.com pages.
     wiki_url: str = ""
@@ -374,11 +386,24 @@ def _parse_mode(raw: dict[str, Any]) -> ModeEntry:
 
 def _parse_round(raw: dict[str, Any]) -> RoundEntry:
     _require_keys(raw, _REQUIRED_ROUND_FIELDS, where=f"round {raw.get('round')!r}")
+    rbe_raw = raw.get("rbe")
+    rbe = int(rbe_raw) if isinstance(rbe_raw, (int, float)) else None
+    if rbe is not None and rbe < 0:
+        raise BTD6DataValidationError(
+            f"round {raw['round']!r}: rbe must be >= 0 when present, got {rbe}",
+        )
+    cash_raw = raw.get("cash")
+    cash = int(cash_raw) if isinstance(cash_raw, (int, float)) else None
+    groups = tuple(dict(g) for g in raw.get("groups", ()) if isinstance(g, dict))
     return RoundEntry(
         round_number=int(raw["round"]),
         summary=str(raw["summary"]),
         danger=str(raw["danger"]),
         common_threats=tuple(str(t) for t in raw["common_threats"]),
+        rbe=rbe,
+        cash=cash,
+        roundset=str(raw.get("roundset", "default")),
+        groups=groups,
     )
 
 
@@ -390,18 +415,32 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
             f"bloon {raw['id']!r}: category {category!r} not one of "
             f"{sorted(_BLOON_CATEGORIES)}",
         )
-    health_raw = raw.get("health")
-    health = int(health_raw) if isinstance(health_raw, (int, float)) else None
-    if health is not None and health <= 0:
+
+    def _opt_pos_int(key: str) -> int | None:
+        value = raw.get(key)
+        if not isinstance(value, (int, float)):
+            return None
+        as_int = int(value)
+        if as_int <= 0:
+            raise BTD6DataValidationError(
+                f"bloon {raw['id']!r}: {key} must be > 0 when present, got {as_int}",
+            )
+        return as_int
+
+    health = _opt_pos_int("health")
+    rbe = _opt_pos_int("rbe")
+    rbe_fortified = _opt_pos_int("rbe_fortified")
+    health_fortified = _opt_pos_int("health_fortified")
+    layers = _opt_pos_int("layers")
+    speed_raw = raw.get("speed")
+    speed = float(speed_raw) if isinstance(speed_raw, (int, float)) else None
+    if speed is not None and speed <= 0:
         raise BTD6DataValidationError(
-            f"bloon {raw['id']!r}: health must be > 0 when present, got {health}",
+            f"bloon {raw['id']!r}: speed must be > 0 when present, got {speed}",
         )
-    rbe_raw = raw.get("rbe")
-    rbe = int(rbe_raw) if isinstance(rbe_raw, (int, float)) else None
-    if rbe is not None and rbe <= 0:
-        raise BTD6DataValidationError(
-            f"bloon {raw['id']!r}: rbe must be > 0 when present, got {rbe}",
-        )
+    children_list = tuple(
+        dict(c) for c in raw.get("children_list", ()) if isinstance(c, dict)
+    )
     return BloonEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
@@ -415,6 +454,11 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
         children=str(raw.get("children", "")),
         health=health,
         rbe=rbe,
+        rbe_fortified=rbe_fortified,
+        health_fortified=health_fortified,
+        speed=speed,
+        layers=layers,
+        children_list=children_list,
     )
 
 

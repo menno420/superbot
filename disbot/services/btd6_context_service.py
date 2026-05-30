@@ -21,6 +21,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
+from utils.btd6 import tier_codes
 from utils.btd6.grounding_format import DEFAULT_CAP as _FACT_TEXT_CAP
 from utils.btd6.grounding_format import relative_time as _relative_time
 from utils.btd6.grounding_format import sanitise as _sanitise_helper
@@ -366,6 +367,10 @@ def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
 
     lines: list[str] = []
     for code in stats.tier_codes():
+        # Grounding stays bounded to the 16 single-path tiers; crosspaths are a
+        # UI / Pro-view concern and would bloat the prompt with ~64 lines.
+        if not (tier_codes.is_base(code) or tier_codes.is_single_path(code)):
+            continue
         tier = stats.tier(code)
         if tier is None:
             continue
@@ -450,8 +455,10 @@ def _big(value: int) -> str:
 
 
 def _tier_name(stats: Any, code: str) -> str:
-    digits = [int(c) for c in code]
-    path, tier = next((i + 1, d) for i, d in enumerate(digits) if d)
+    path = tier_codes.primary_path(code)
+    if path is None:
+        return code
+    tier = tier_codes.digits(code)[path - 1]
     return next(
         (
             str(u.get("name", ""))
@@ -521,7 +528,9 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     popped_by = _sanitise(getattr(entry, "popped_by", "") or "")
     children = _sanitise(getattr(entry, "children", "") or "")
     health = getattr(entry, "health", None)
+    health_fortified = getattr(entry, "health_fortified", None)
     rbe = getattr(entry, "rbe", None)
+    speed = getattr(entry, "speed", None)
 
     lines: list[str] = []
 
@@ -546,14 +555,19 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
         ),
     )
 
-    # Line 2: stats — properties, health, children.
+    # Line 2: stats — properties, health/RBE/speed, children.
     stat_bits: list[str] = []
     if properties:
         stat_bits.append(f"properties: {', '.join(_sanitise(p) for p in properties)}")
     if isinstance(health, int):
-        stat_bits.append(f"health: {health}")
+        hp = f"health: {health}"
+        if isinstance(health_fortified, int):
+            hp += f" ({health_fortified} fortified)"
+        stat_bits.append(hp)
     if isinstance(rbe, int):
         stat_bits.append(f"RBE (total hits incl. all spawned children): {rbe}")
+    if isinstance(speed, (int, float)):
+        stat_bits.append(f"speed: {speed}")
     if children:
         stat_bits.append(f"pops into {children}")
     elif category not in {"modifier", ""}:
