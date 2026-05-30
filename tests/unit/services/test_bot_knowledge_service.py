@@ -187,6 +187,65 @@ def test_resolve_user_tier_dm_member_has_no_guild_permissions() -> None:
     assert resolve_user_tier(bare) == "user"
 
 
+def test_resolve_user_tier_server_owner() -> None:
+    owner = SimpleNamespace(
+        id=777,
+        guild=SimpleNamespace(owner_id=777),
+        guild_permissions=SimpleNamespace(administrator=True, manage_guild=True),
+    )
+    assert resolve_user_tier(owner) == "server_owner"
+
+
+# ---------------------------------------------------------------------------
+# User standing block — the asker's resolved server role
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("tier", "keyword"),
+    [
+        ("server_owner", "OWNER"),
+        ("administrator", "ADMINISTRATOR"),
+        ("moderator", "MODERATOR"),
+        ("user", "regular member"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_gather_includes_standing_block_for_every_tier(tier, keyword) -> None:
+    """Every resolvable tier yields a bot_user_identity standing block so the
+    bot can answer 'what is my permission' instead of claiming it can't see
+    Discord roles.
+    """
+    blocks = await bot_knowledge_service.gather(
+        guild_id=1,
+        channel_id=2,
+        user_id=7,
+        user_text="do you know my permission in this server",
+        user_tier=tier,
+        accessible_channel_ids=frozenset(),
+    )
+    identity = [b for b in blocks if b.kind == "bot_user_identity"]
+    assert len(identity) == 1
+    assert keyword in identity[0].text
+
+
+@pytest.mark.asyncio
+async def test_administrator_gets_standing_block_regression() -> None:
+    """Regression: a server owner whose guild owner_id is uncached resolves to
+    'administrator'. That tier previously produced NO standing block, so the
+    bot went blind to the asker's permissions. It must now get one.
+    """
+    blocks = await bot_knowledge_service.gather(
+        guild_id=1,
+        channel_id=2,
+        user_id=7,
+        user_text="do you know my permission",
+        user_tier="administrator",
+        accessible_channel_ids=frozenset(),
+    )
+    assert any(b.kind == "bot_user_identity" for b in blocks)
+
+
 # ---------------------------------------------------------------------------
 # Catalog block — tier filtering, bounds, subsystem rules
 # ---------------------------------------------------------------------------

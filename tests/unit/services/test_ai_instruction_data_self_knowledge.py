@@ -33,3 +33,12 @@ def test_task_contract_does_not_overclaim_attachment_access():
     """It must not claim it can read arbitrary uploads / full history."""
     tc = instr._TASK_CONTRACT
     assert "cannot read uploaded attachments" in tc
+
+
+def test_task_contract_treats_user_standing_span_as_authoritative():
+    """The bot must answer 'what is my permission / am I the owner' from the
+    bot_user_identity span instead of claiming it can't see Discord roles.
+    """
+    tc = instr._TASK_CONTRACT
+    assert "bot_user_identity" in tc
+    assert "am i the owner" in tc.lower()

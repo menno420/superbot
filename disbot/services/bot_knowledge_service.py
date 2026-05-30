@@ -122,6 +122,45 @@ def looks_like_audit_question(text: str) -> bool:
     return any(t in lower for t in _AUDIT_SUBSTRING_TRIGGERS)
 
 
+# Permission-question triggers — the asker asking about their OWN standing.
+_PERMISSION_SUBSTRING_TRIGGERS: tuple[str, ...] = (
+    "my permission",
+    "my permissions",
+    "my role",
+    "my roles",
+    "my server role",
+    "my discord role",
+    "my access",
+    "my standing",
+    "am i the owner",
+    "am i owner",
+    "am i an owner",
+    "am i the server owner",
+    "am i admin",
+    "am i an admin",
+    "am i administrator",
+    "am i an administrator",
+    "am i a mod",
+    "am i a moderator",
+    "who am i in this server",
+    "do you know who i am",
+)
+
+
+def looks_like_permission_question(text: str) -> bool:
+    """Public: True if the message asks about the sender's OWN server
+    standing / permissions ('what is my permission', 'am I the owner').
+
+    Gates the user-standing block so it only joins the prompt when the
+    asker is actually asking about their access — mirroring how the
+    command catalog and audit blocks are intent-gated.
+    """
+    if not text:
+        return False
+    lower = text.lower()
+    return any(t in lower for t in _PERMISSION_SUBSTRING_TRIGGERS)
+
+
 def resolve_user_tier(member: object) -> str:
     """Map a discord.Member to one of {user, moderator, administrator, server_owner}.
 
@@ -146,16 +185,44 @@ def resolve_user_tier(member: object) -> str:
     return "user"
 
 
-def _server_owner_identity_block() -> BotKnowledgeBlock:
-    """Inform the AI that the current message sender is the server owner."""
-    return BotKnowledgeBlock(
-        kind="bot_user_identity",
-        text=(
-            "The person asking this question is the owner of this Discord server "
-            "and the operator of this bot. They have full administrative access "
-            "and may ask about bot internals, configuration, or data."
-        ),
-    )
+_STANDING_TEXT: dict[str, str] = {
+    "server_owner": (
+        "The person asking is the OWNER of this Discord server and the operator "
+        "of this bot. They have full administrative access and may ask about bot "
+        "internals, configuration, or data."
+    ),
+    "administrator": (
+        "The person asking is an ADMINISTRATOR of this Discord server (they hold "
+        "the Administrator permission) and so have full server-management access. "
+        "Note: a server owner who has the Administrator permission can also appear "
+        "at this tier when the guild's owner record is not cached."
+    ),
+    "moderator": (
+        "The person asking is a MODERATOR of this Discord server (they hold the "
+        "Manage Server permission)."
+    ),
+    "user": (
+        "The person asking is a regular member of this server with no elevated "
+        "server-management permissions."
+    ),
+}
+
+
+def _user_standing_block(user_tier: str) -> BotKnowledgeBlock | None:
+    """Tell the AI the asker's resolved server standing.
+
+    Lets the bot answer "what is my permission" / "am I the owner" from an
+    authoritative fact instead of claiming it cannot see Discord roles. Covers
+    every tier :func:`resolve_user_tier` can return, so an owner whose guild
+    ``owner_id`` is momentarily uncached (and who therefore resolves to
+    ``administrator``) still gets an accurate standing block — previously only
+    ``server_owner`` produced one, so admins/mods and owners-seen-as-admins got
+    nothing and the bot reported it could not see their permissions.
+    """
+    text = _STANDING_TEXT.get(user_tier)
+    if text is None:
+        return None
+    return BotKnowledgeBlock(kind="bot_user_identity", text=text)
 
 
 async def gather(
@@ -169,8 +236,10 @@ async def gather(
 ) -> tuple[BotKnowledgeBlock, ...]:
     """Compose every applicable bot-knowledge block for one mention."""
     blocks: list[BotKnowledgeBlock] = []
-    if user_tier == "server_owner":
-        blocks.append(_server_owner_identity_block())
+    if looks_like_permission_question(user_text):
+        standing = _user_standing_block(user_tier)
+        if standing is not None:
+            blocks.append(standing)
     if looks_like_command_question(user_text):
         block = _command_catalog_block(user_tier)
         if block is not None:
@@ -386,5 +455,6 @@ __all__ = [
     "gather",
     "looks_like_audit_question",
     "looks_like_command_question",
+    "looks_like_permission_question",
     "resolve_user_tier",
 ]
