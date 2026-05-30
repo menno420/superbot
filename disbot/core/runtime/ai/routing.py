@@ -105,6 +105,17 @@ def default_model_for(provider: str, task: AITask) -> str:
     return _DEFAULT_MODELS.get(task, _OPENAI_FALLBACK_MODEL)
 
 
+def fallback_provider() -> str:
+    """Optional secondary provider name for the gateway's fault cascade.
+
+    Read from ``AI_FALLBACK_PROVIDER`` (e.g. ``openai`` when the primary
+    is ``anthropic``). Empty / unset means no fallback — the gateway
+    keeps its single-attempt behaviour. The gateway ignores a fallback
+    equal to the primary provider.
+    """
+    return os.getenv("AI_FALLBACK_PROVIDER", "").strip().lower()
+
+
 def resolve(task: AITask) -> RoutingTarget:
     """Resolve the provider, model, and timeout for ``task``."""
     if task in _OVERRIDES:

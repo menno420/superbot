@@ -39,6 +39,14 @@ logger = logging.getLogger("bot.services.ai_memory")
 # bloat one reply path. 30 covers ~ 2h of moderate activity.
 _SCAN_LIMIT: int = 30
 
+# Upper bound on how many recent turns we hand the prompt assembler,
+# independent of the configured window. The per-channel buffer holds up
+# to 200 turns; on a busy channel a wide window would otherwise dump all
+# of them into a single request, inflating cost and risking truncation
+# of the actual question. The most recent N turns carry the conversational
+# context that matters; older turns add noise.
+_MAX_PROMPT_TURNS: int = 40
+
 # Validated window choices — mirrors the SettingSpec in
 # ``cogs/ai/schemas.py``. Anything else from the DB is treated as
 # disabled.
@@ -91,6 +99,7 @@ async def gather_recent_turns(
         guild_id,
         channel_id,
         window_minutes=window,
+        limit=_MAX_PROMPT_TURNS,
     )
     # Decide whether the buffer is short enough to warrant a scan.
     # We only scan when the operator has opted in AND the buffer

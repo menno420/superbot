@@ -26,6 +26,7 @@ import logging
 import re
 import time
 import uuid
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -88,6 +89,38 @@ def _accessible_channel_ids_for(
                 except (TypeError, ValueError):
                     continue
     return frozenset(accessible)
+
+
+class _NullAsyncContext:
+    """Async no-op context — the fallback when a channel has no typing().
+
+    ``contextlib.nullcontext`` only implements the *sync* protocol, so it
+    cannot stand in for ``async with``; this tiny class does.
+    """
+
+    async def __aenter__(self) -> None:
+        return None
+
+    async def __aexit__(self, *exc: object) -> bool:
+        return False
+
+
+def _maybe_typing(channel: object) -> AbstractAsyncContextManager[None]:
+    """Return ``channel.typing()`` if available, else an async no-op.
+
+    Showing the typing indicator while the (potentially multi-second)
+    provider call runs makes the bot feel responsive instead of silent.
+    Best-effort: a channel type without ``typing()`` (or a duck-typed
+    test channel) falls back to a null context so the stage never
+    depends on it.
+    """
+    typing = getattr(channel, "typing", None)
+    if callable(typing):
+        try:
+            return typing()  # type: ignore[no-any-return]
+        except Exception:  # noqa: BLE001 — never let UX polish break a reply
+            return _NullAsyncContext()
+    return _NullAsyncContext()
 
 
 def _strip_bot_mention(text: str, *, bot_user_id: int | None) -> str:
@@ -377,10 +410,16 @@ class AINaturalLanguageStage:
                     channel=getattr(message, "channel", None),
                     bot_user_id=bot_user_id,
                 )
-            except Exception as exc:  # noqa: BLE001 — defensive
-                logger.debug(
-                    "ai_natural_language_stage: memory unavailable: %s",
-                    exc,
+            except Exception:  # noqa: BLE001 — defensive
+                # Warning, not debug: the reply still proceeds without
+                # recent context, but a persistent failure here silently
+                # degrades every reply, so it must be visible in prod logs.
+                logger.warning(
+                    "ai_natural_language_stage: memory unavailable; replying "
+                    "without recent context (guild=%s channel=%s)",
+                    guild_id,
+                    channel_id,
+                    exc_info=True,
                 )
                 recent_turns = []
 
@@ -423,10 +462,16 @@ class AINaturalLanguageStage:
                     ),
                     accessible_channel_ids=accessible,
                 )
-            except Exception as exc:  # noqa: BLE001 — defensive
-                logger.debug(
-                    "ai_natural_language_stage: bot knowledge unavailable: %s",
-                    exc,
+            except Exception:  # noqa: BLE001 — defensive
+                # Warning, not debug: a failure here means meta-questions
+                # ("what can you do", "why didn't you reply") silently lose
+                # their grounding blocks and get a vaguer answer.
+                logger.warning(
+                    "ai_natural_language_stage: bot knowledge unavailable; "
+                    "replying without self-knowledge blocks (guild=%s channel=%s)",
+                    guild_id,
+                    channel_id,
+                    exc_info=True,
                 )
                 bot_knowledge_blocks = ()
 
@@ -470,7 +515,10 @@ class AINaturalLanguageStage:
                 scope=_derive_scope(message),
             )
 
-            response = await _invoke_gateway(stack, built, ctx)
+            # Show "Bot is typing…" while the provider call runs so a
+            # multi-second reply does not look like a dropped message.
+            async with _maybe_typing(message.channel):
+                response = await _invoke_gateway(stack, built, ctx)
         except Exception:
             logger.exception(
                 "ai_natural_language_stage: feature pipeline raised "
@@ -535,12 +583,28 @@ class AINaturalLanguageStage:
 
         from core.runtime.ai import response_renderer_registry
 
-        rendered = await response_renderer_registry.render(
-            routed.task,
-            response,
-            _fact_req,
-            feature.render_context,
-        )
+        # A registered renderer may raise (bad render_context, embed
+        # construction error). Fall back to the plain-text path rather
+        # than discarding the model's reply: a degraded presentation
+        # beats no reply at all.
+        try:
+            rendered = await response_renderer_registry.render(
+                routed.task,
+                response,
+                _fact_req,
+                feature.render_context,
+            )
+        except Exception:  # noqa: BLE001 — renderer faults degrade to plain text
+            logger.warning(
+                "ai_natural_language_stage: renderer for task=%s raised; "
+                "falling back to plain text (guild=%s channel=%s message=%s)",
+                routed.task.value,
+                guild_id,
+                channel_id,
+                message.id,
+                exc_info=True,
+            )
+            rendered = None
 
         try:
             if rendered is not None:
@@ -551,10 +615,16 @@ class AINaturalLanguageStage:
                     or discord.AllowedMentions.none(),
                 )
             else:
-                for chunk in _split_for_discord(reply_text):
+                # Reply to the triggering message on the first chunk so the
+                # answer is visibly threaded to the question in a busy
+                # channel. ``fail_if_not_exists=False`` degrades to a plain
+                # send if the original was deleted mid-flight.
+                reference = message.to_reference(fail_if_not_exists=False)
+                for index, chunk in enumerate(_split_for_discord(reply_text)):
                     await message.channel.send(
                         chunk,
                         allowed_mentions=discord.AllowedMentions.none(),
+                        reference=reference if index == 0 else None,
                     )
         except discord.HTTPException:
             logger.exception(

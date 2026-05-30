@@ -265,3 +265,78 @@ async def test_gateway_provider_override_bypasses_feature_flag():
     response = await gateway.execute(_make_request(), provider_override=provider)
     assert response.degraded is False
     assert provider.received_request is not None
+
+
+# ---------------------------------------------------------------------------
+# Provider-fault fallback cascade (AI_FALLBACK_PROVIDER)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_fallback_used_when_primary_degrades(monkeypatch):
+    """A transport fault on the primary retries the configured fallback."""
+    monkeypatch.setenv("AI_FALLBACK_PROVIDER", "backup")
+    primary = _FakeProvider(exc=ProviderUnavailableError("primary down"))
+    primary.name = "deterministic"
+    backup = _FakeProvider(text="recovered answer")
+    backup.name = "backup"
+    gateway = AIGateway(
+        providers={"deterministic": primary, "backup": backup},
+        collector=DiagnosticsCollector(),
+    )
+    # Route resolves to "deterministic" by default; no provider_override so
+    # the fallback path is eligible.
+    response = await gateway.execute(
+        _make_request(mode=AIResponseMode.TEXT),
+    )
+    assert response.degraded is False
+    assert response.provider == "backup"
+    assert response.text == "recovered answer"
+    assert backup.received_request is not None
+
+
+@pytest.mark.asyncio
+async def test_no_fallback_without_env(monkeypatch):
+    """With no AI_FALLBACK_PROVIDER the degraded primary response stands."""
+    monkeypatch.delenv("AI_FALLBACK_PROVIDER", raising=False)
+    primary = _FakeProvider(exc=ProviderUnavailableError("primary down"))
+    gateway = AIGateway(
+        providers={"deterministic": primary},
+        collector=DiagnosticsCollector(),
+    )
+    response = await gateway.execute(_make_request(mode=AIResponseMode.TEXT))
+    assert response.degraded is True
+    assert "primary down" in (response.fallback_reason or "")
+
+
+@pytest.mark.asyncio
+async def test_provider_override_disables_fallback(monkeypatch):
+    """The test/injection seam (provider_override) never triggers fallback."""
+    monkeypatch.setenv("AI_FALLBACK_PROVIDER", "backup")
+    primary = _FakeProvider(exc=RuntimeError("boom"))
+    backup = _FakeProvider(text="should not be used")
+    gateway = AIGateway(
+        providers={"backup": backup},
+        collector=DiagnosticsCollector(),
+    )
+    response = await gateway.execute(
+        _make_request(mode=AIResponseMode.TEXT), provider_override=primary,
+    )
+    assert response.degraded is True
+    assert backup.received_request is None
+
+
+@pytest.mark.asyncio
+async def test_bad_json_does_not_trigger_fallback(monkeypatch):
+    """A bad-JSON degrade is a model-output issue, not an outage."""
+    monkeypatch.setenv("AI_FALLBACK_PROVIDER", "backup")
+    primary = _FakeProvider(text="not json {{")
+    backup = _FakeProvider(text='{"ok": true}')
+    gateway = AIGateway(
+        providers={"deterministic": primary, "backup": backup},
+        collector=DiagnosticsCollector(),
+    )
+    response = await gateway.execute(_make_request(mode=AIResponseMode.JSON))
+    assert response.degraded is True
+    assert "invalid_json" in (response.fallback_reason or "")
+    assert backup.received_request is None
