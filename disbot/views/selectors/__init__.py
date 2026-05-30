@@ -10,6 +10,8 @@ Public surface:
     role.RoleSelector           — guild-role picker
     scope.ScopeSelector         — governance scope picker (guild/category/channel)
     subsystem.SubsystemSelector — registered-subsystem picker
+    multi.MultiSelect           — generic multi-select over caller options
+    multi.MultiChannelSelector  — multi-select channel picker (returns ids)
 
 Adopt these instead of building bespoke ``discord.ui.Select`` widgets
 in cogs.  Adoption is mechanical: replace the local Select subclass
@@ -19,12 +21,15 @@ with a configured selector that calls back into the cog's handler.
 from __future__ import annotations
 
 from views.selectors.channel import ChannelSelector
+from views.selectors.multi import MultiChannelSelector, MultiSelect
 from views.selectors.role import RoleSelector
 from views.selectors.scope import ScopeSelector
 from views.selectors.subsystem import SubsystemSelector
 
 __all__ = [
     "ChannelSelector",
+    "MultiChannelSelector",
+    "MultiSelect",
     "RoleSelector",
     "ScopeSelector",
     "SubsystemSelector",
