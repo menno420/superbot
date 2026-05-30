@@ -80,9 +80,19 @@ class _RestrictSubView(BaseView):
     async def _on_channels_selected(
         self,
         interaction: discord.Interaction,
-        channel_ids: list[int],
+        values: list[str],
     ) -> None:
-        self.selected_channel_ids = channel_ids
+        # ``MultiSelect`` hands back option *value* strings; our options
+        # carry int channel ids, so coerce. ``_option_names`` is int-keyed
+        # — without this the "Selected" field and result embeds fall back
+        # to raw ids instead of channel names.
+        ids: list[int] = []
+        for v in values:
+            try:
+                ids.append(int(v))
+            except (TypeError, ValueError):
+                continue
+        self.selected_channel_ids = ids
         try:
             await interaction.response.edit_message(
                 embed=self.build_embed(),

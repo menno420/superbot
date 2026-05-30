@@ -259,42 +259,62 @@ class TestBackCallbackErrorHandling:
 
 
 class TestSubsystemToggleViewErrorHandling:
-    """Toggle callback must send ephemeral on governance failure."""
+    """Toggle callback surfaces governance failures (now multi-channel).
+
+    The toggle moved to a multi-channel model (audit P1-10): it takes a
+    ``channels=[(id, name)]`` list and ``_channel_rows`` (per-channel
+    visibility), applies each write via ``governance_service`` and routes
+    feedback through ``safe_followup`` / ``safe_edit`` rather than
+    ``interaction.response.*`` directly.
+    """
 
     @pytest.mark.asyncio
     async def test_set_visibility_failure_sends_ephemeral(self):
         import discord
 
-        # The view moved from cogs.channel_cog to views.channels.visibility_panel
-        # in D2; the cog re-exports it for backwards compatibility.
+        # The view moved from cogs.channel_cog to views.channels.visibility_panel;
+        # the cog re-exports it for backwards compatibility.
         from cogs.channel_cog import _SubsystemToggleView
-        from services.governance_service import GovernanceContext  # noqa: F401
 
         ctx = MagicMock()
         ctx.author = MagicMock(spec=discord.Member)
         ctx.author.id = 1
-        channel = MagicMock(spec=discord.TextChannel)
-        channel.id = 777
-        channel.name = "test-chan"
 
-        view = _SubsystemToggleView(ctx, channel=channel, manager_message=None)
-        view._visibility = {"general": None}
+        view = _SubsystemToggleView(
+            ctx, channels=[(777, "#test-chan")], manager_message=None
+        )
+        view._channel_rows = [{"general": None}]
 
         interaction = _make_interaction(responded=False)
         interaction.guild = MagicMock()
 
-        with patch(
-            "views.channels.visibility_panel.governance_service.set_subsystem_visibility",
-            side_effect=Exception("authority denied"),
+        with (
+            patch(
+                "views.channels.visibility_panel.safe_defer",
+                new_callable=AsyncMock,
+                return_value=True,
+            ),
+            patch("views.channels.visibility_panel.safe_edit", new_callable=AsyncMock),
+            patch(
+                "views.channels.visibility_panel.safe_followup",
+                new_callable=AsyncMock,
+            ) as mock_followup,
+            patch(
+                "views.channels.visibility_panel.GovernanceContext.from_interaction",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "views.channels.visibility_panel.governance_service.set_subsystem_visibility",
+                side_effect=Exception("authority denied"),
+            ),
         ):
             callback = view._make_toggle_callback("general")
             await callback(interaction)
 
-        interaction.response.send_message.assert_awaited_once()
-        assert (
-            interaction.response.send_message.call_args.kwargs.get("ephemeral") is True
-        )
-        interaction.response.edit_message.assert_not_awaited()
+        mock_followup.assert_awaited_once()
+        assert mock_followup.await_args.kwargs.get("ephemeral") is True
+        # State must not be mutated for a channel whose write failed.
+        assert view._channel_rows[0] == {"general": None}
 
     @pytest.mark.asyncio
     async def test_set_visibility_success_calls_edit_message(self):
@@ -305,17 +325,29 @@ class TestSubsystemToggleViewErrorHandling:
         ctx = MagicMock()
         ctx.author = MagicMock(spec=discord.Member)
         ctx.author.id = 1
-        channel = MagicMock(spec=discord.TextChannel)
-        channel.id = 777
-        channel.name = "test-chan"
 
-        view = _SubsystemToggleView(ctx, channel=channel, manager_message=None)
-        view._visibility = {"general": None}
+        view = _SubsystemToggleView(
+            ctx, channels=[(777, "#test-chan")], manager_message=None
+        )
+        view._channel_rows = [{"general": None}]
 
         interaction = _make_interaction(responded=False)
         interaction.guild = MagicMock()
 
         with (
+            patch(
+                "views.channels.visibility_panel.safe_defer",
+                new_callable=AsyncMock,
+                return_value=True,
+            ),
+            patch(
+                "views.channels.visibility_panel.safe_edit",
+                new_callable=AsyncMock,
+            ) as mock_edit,
+            patch(
+                "views.channels.visibility_panel.safe_followup",
+                new_callable=AsyncMock,
+            ) as mock_followup,
             patch(
                 "views.channels.visibility_panel.governance_service.set_subsystem_visibility",
                 new_callable=AsyncMock,
@@ -329,8 +361,8 @@ class TestSubsystemToggleViewErrorHandling:
             await callback(interaction)
 
         mock_set.assert_awaited_once()
-        interaction.response.edit_message.assert_awaited_once()
-        interaction.response.send_message.assert_not_awaited()
+        mock_edit.assert_awaited_once()
+        mock_followup.assert_not_awaited()
 
 
 # ---------------------------------------------------------------------------
