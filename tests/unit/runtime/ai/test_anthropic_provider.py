@@ -242,7 +242,10 @@ def test_routing_picks_claude_models_for_anthropic(monkeypatch):
 
     nl = resolve(AITask.GENERAL_NL_ANSWER)
     assert nl.provider == "anthropic"
-    assert nl.model == "claude-sonnet-4-6"  # reasoning tier
+    assert nl.model == "claude-haiku-4-5"  # live chat → fast tier
+
+    proposed = resolve(AITask.SETTINGS_PROPOSE)
+    assert proposed.model == "claude-sonnet-4-6"  # non-real-time → reasoning tier
 
     helped = resolve(AITask.HELP_ANSWER)
     assert helped.model == "claude-haiku-4-5"  # light tier
@@ -282,6 +285,6 @@ async def test_gateway_end_to_end_tool_loop_via_anthropic(monkeypatch):
 
     assert response.degraded is False
     assert response.provider == "anthropic"
-    assert response.model == "claude-sonnet-4-6"
+    assert response.model == "claude-haiku-4-5"  # GENERAL_NL_ANSWER → fast tier
     assert response.text == "Done at noon."
     assert seen.get("called") is True
