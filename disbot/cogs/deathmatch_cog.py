@@ -87,7 +87,11 @@ class _DuelView(discord.ui.View):
         opponent = duel.player2 if duel.turn == duel.player1 else duel.player1
         duel.is_over = True
         self.cog.active_duels.pop(self.duel_key, None)
-        await self.cog.update_leaderboard(winner_id=opponent.id, loser_id=duel.turn.id)
+        await self.cog.update_leaderboard(
+            winner_id=opponent.id,
+            loser_id=duel.turn.id,
+            guild_id=self.ctx.guild.id if self.ctx.guild else 0,
+        )
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
@@ -144,7 +148,11 @@ class _DuelView(discord.ui.View):
         if winner:
             duel.is_over = True
             self.cog.active_duels.pop(self.duel_key, None)
-            await self.cog.update_leaderboard(winner_id=winner.id, loser_id=loser.id)
+            await self.cog.update_leaderboard(
+                winner_id=winner.id,
+                loser_id=loser.id,
+                guild_id=self.ctx.guild.id if self.ctx.guild else 0,
+            )
             for item in self.children:
                 item.disabled = True  # type: ignore[attr-defined]
             embed = discord.Embed(
@@ -315,8 +323,13 @@ class Deathmatch(commands.Cog):
         view = _ChallengeView(self, ctx.author, opponent, duel_key, ctx)  # type: ignore[arg-type]
         view.message = await ctx.send(embed=embed, view=view)
 
-    async def update_leaderboard(self, winner_id: int, loser_id: int) -> None:
-        await db.update_deathmatch(winner_id, loser_id)
+    async def update_leaderboard(
+        self,
+        winner_id: int,
+        loser_id: int,
+        guild_id: int = 0,
+    ) -> None:
+        await db.update_deathmatch(winner_id, loser_id, guild_id)
 
     @challenge.error
     async def challenge_error(self, ctx, error):

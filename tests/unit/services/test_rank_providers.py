@@ -214,6 +214,28 @@ async def test_deathmatch_member_rank_finds_w_l_record():
 
 
 @pytest.mark.asyncio
+async def test_deathmatch_top_forwards_guild_id():
+    """Regression (audit P0-2): the deathmatch board must query the
+    caller's guild, not the global ``guild_id=0`` pool.
+    """
+    provider = get_provider("deathmatch")
+    mock_lb = AsyncMock(return_value=[])
+    with patch("services.rank_providers.db.get_deathmatch_leaderboard", mock_lb):
+        await provider.top(_guild())
+    mock_lb.assert_awaited_once_with(42)
+
+
+@pytest.mark.asyncio
+async def test_deathmatch_member_rank_forwards_guild_id():
+    """Regression (audit P0-2): member_rank must also scope by guild."""
+    provider = get_provider("deathmatch")
+    mock_lb = AsyncMock(return_value=[])
+    with patch("services.rank_providers.db.get_deathmatch_leaderboard", mock_lb):
+        await provider.member_rank(_guild(), 7)
+    mock_lb.assert_awaited_once_with(42)
+
+
+@pytest.mark.asyncio
 async def test_rps_top_uses_pre_resolved_name():
     provider = get_provider("rps")
     rows = [{"name": "Bob", "wins": 4, "losses": 1, "ties": 2}]

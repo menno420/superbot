@@ -203,7 +203,7 @@ class DeathmatchProvider(RankProvider):
     )
 
     async def top(self, guild: discord.Guild) -> list[RankEntry]:
-        rows = await db.get_deathmatch_leaderboard()
+        rows = await db.get_deathmatch_leaderboard(guild.id)
         return [
             RankEntry(
                 label=(
@@ -219,7 +219,7 @@ class DeathmatchProvider(RankProvider):
         guild: discord.Guild,
         user_id: int,
     ) -> tuple[int | None, str | None]:
-        rows = await db.get_deathmatch_leaderboard()
+        rows = await db.get_deathmatch_leaderboard(guild.id)
         for i, row in enumerate(rows):
             if row["user_id"] == user_id:
                 return i + 1, f"{row['wins']}W / {row['losses']}L"
