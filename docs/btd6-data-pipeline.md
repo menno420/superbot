@@ -6,6 +6,33 @@
 >
 > Tracking PR: **#374** (`claude/youthful-wozniak-gsu57`).
 
+## Update — crosspaths, structured bloons, round composition
+
+Three follow-on additions (branch `claude/zealous-allen-fCdCi`):
+
+1. **Tower crosspath stats** — the nested `_NNN` deltas are no longer dropped.
+   `parse_bloonswiki._reconstruct_crosspaths` rebuilds full crosspath tiers by
+   applying the deltas **cumulatively** along each path chain (faithful to the
+   wiki's `Module:BTD6 stats` `upgrade_crosspaths`), so each tower now carries
+   ~64 tiers. A crosspath reachable from two bases is reconstructed from each and
+   compared; genuinely divergent ones are dropped (not guessed). The legal-code
+   rule + primary-path logic live in `utils/btd6/tier_codes.py`. Pro UI is a
+   two-step tier→crosspath picker; AI grounding stays bounded to the 16 single-
+   path tiers.
+2. **Structured bloons** — `fetch_bloonswiki --all-bloons` fetches the
+   `btd6_bloons` Cargo table into `bloons.json` (RBE incl. fortified, health,
+   speed, layers, parsed immunities, and structured `children_list`). Includes
+   the basic bloons the curated file lacked; curated aliases/descriptions and the
+   synthesised camo/regrow/fortified modifier entries are preserved. Canonical
+   ids in `utils/btd6/bloon_ids.py`.
+3. **Round composition** — `fetch_bloonswiki --all-rounds` fetches all 140
+   standard rounds from `Module:BTD6_rounds/Default` (ordered spawn groups +
+   children-inclusive RBE). Curated round blurbs are kept. **Cash is deferred**
+   (the wiki computes it from per-income Lua functions that don't parse
+   deterministically). `roundset` is stamped now so ABR can be added later.
+
+`_get` now retries transient TLS/429/5xx so a flaky edge node doesn't abort a run.
+
 ## Goal
 
 Make the BTD6 cog a **trustable info & strategy source**: every tower's costs and
@@ -35,7 +62,8 @@ Cargo API shape: `https://www.bloonswiki.com/api.php?action=cargoquery&format=js
 
 Stats JSON shape (towers): top-level keys are `_000` (base) + 15 single-path
 crosspath codes `[P1][P2][P3]` (`_100`..`_500`, `_010`..`_050`, `_001`..`_005`);
-nested `_NNN` keys inside a tier are crosspath **deltas** (dropped for now).
+nested `_NNN` keys inside a tier are crosspath **deltas** (reconstructed
+cumulatively into full crosspath tiers — see `_reconstruct_crosspaths`).
 Each tier has `attacks` → `projectiles` → `effects`, plus `abilities`, each as
 `{"_order": [...], "<Name>": {...}}` containers. `_last_updated` = game version.
 
@@ -179,8 +207,8 @@ camo/lead is the natural next increment.
 - Paraphrased tower descriptions (the `description` column is still empty by
   design — CC-BY-SA prose was skipped). Curate short factual blurbs.
 - Show derived per-difficulty costs in the UI (formula already exists).
-- Surface crosspath-delta stats in the Pro view (data is in the module; deltas
-  currently dropped on ingest).
+- ~~Surface crosspath-delta stats in the Pro view~~ — **done** (see the update
+  section at the top; reconstructed cumulatively, two-step picker).
 
 ## Gotchas
 
