@@ -213,19 +213,32 @@ def _command_catalog_block(user_tier: str) -> BotKnowledgeBlock | None:
     if not visible:
         return None
 
+    # Group by subsystem before the entry cap so a "what are the <subsystem>
+    # commands?" question sees a coherent run (and so an alphabetically-early
+    # subsystem like "ai" survives the _MAX_CATALOG_ENTRIES cap rather than
+    # being truncated out behind, e.g., the BTD6 entries). The per-line
+    # [subsystem] tag below then lets the model filter — previously the
+    # rendered lines dropped the subsystem entirely, so the model could not
+    # tell, e.g., AI commands from BTD6 ones.
+    visible.sort(key=lambda e: ((e.subsystem or "").lower(), e.display_name or ""))
+
     n_visible = len(visible)
     truncated = False
     if n_visible > _MAX_CATALOG_ENTRIES:
         visible = visible[:_MAX_CATALOG_ENTRIES]
         truncated = True
 
-    header = "Commands you can ask about (filtered by your access):"
+    header = (
+        "Commands you can ask about (filtered by your access). Each line is"
+        " tagged with its [subsystem] — use that tag to answer questions about"
+        " a specific subsystem's commands:"
+    )
     lines: list[str] = []
     total_chars = len(header)
     for entry in visible:
         sig = f" {entry.signature}" if entry.signature else ""
         desc = entry.description or "(no description)"
-        line = f"- {entry.display_name}{sig} — {desc}"
+        line = f"- [{entry.subsystem}] {entry.display_name}{sig} — {desc}"
         if total_chars + len(line) + 1 > _MAX_CATALOG_CHARS:
             truncated = True
             break
