@@ -1062,7 +1062,8 @@ async def build_flags_embed(guild: discord.Guild | None) -> discord.Embed:
 
     snap = diagnostics_service.snapshot("feature_flags")
     guild_id = guild.id if guild else None
-    rows: list[str] = []
+    operator_rows: list[str] = []
+    internal_rows: list[str] = []
     for name in sorted(snap.get("by_name", {})):
         info = snap["by_name"][name]
         try:
@@ -1075,27 +1076,43 @@ async def build_flags_embed(guild: discord.Guild | None) -> discord.Embed:
         except Exception as exc:  # noqa: BLE001 — diagnostics must not raise
             effective = "?"
             source = f"error:{type(exc).__name__}"
-        rows.append(
-            f"`{name}` default={info['default_value']} "
-            f"effective={effective} src={source} owner=`{info['owner']}`",
+        label = info.get("label") or name
+        row = (
+            f"`{name}` — {label} · "
+            f"default={info['default_value']} eff={effective} src={source}"
         )
+        if info.get("audience") == "operator":
+            operator_rows.append(row)
+        else:
+            internal_rows.append(row)
+    by_audience = snap.get("by_audience", {})
     embed = discord.Embed(
         title="🚩 Feature flags",
         description=(
-            f"{snap['declared_total']} declared  ·  "
+            f"{snap['declared_total']} declared "
+            f"({by_audience.get('operator', 0)} operator · "
+            f"{by_audience.get('internal', 0)} internal)  ·  "
             f"cache={snap.get('cache_size', 0)}  ·  "
             f"bootstrap_fallback={snap.get('bootstrap_fallback_count', 0)}"
         ),
         color=discord.Color.blurple(),
     )
-    if rows:
-        embed.add_field(
-            name="Flags",
-            value="\n".join(rows)[:1024],
-            inline=False,
-        )
-    else:
-        embed.add_field(name="Flags", value="*(none)*", inline=False)
+    embed.add_field(
+        name="Operator flags",
+        value=("\n".join(operator_rows)[:1024] if operator_rows else "*(none)*"),
+        inline=False,
+    )
+    internal_value = (
+        "_Migration & kill-switch gates — not user-facing features._\n"
+        + "\n".join(internal_rows)
+        if internal_rows
+        else "*(none)*"
+    )
+    embed.add_field(
+        name="Internal / platform gates",
+        value=internal_value[:1024],
+        inline=False,
+    )
     return embed
 
 
