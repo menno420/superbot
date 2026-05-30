@@ -32,6 +32,7 @@ _NEW_CUSTOM_IDS = frozenset(
     {
         "btd6:events",
         "btd6:leaderboards",
+        "btd6:paragon",
     },
 )
 

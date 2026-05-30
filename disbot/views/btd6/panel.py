@@ -317,6 +317,23 @@ class BTD6PanelView(PersistentView):
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @discord.ui.button(
+        label="🔮 Paragon",
+        style=discord.ButtonStyle.primary,
+        row=1,
+        custom_id="btd6:paragon",
+    )
+    async def paragon_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        from views.btd6.paragon_view import open_paragon_calculator
+
+        await open_paragon_calculator(interaction)
+
+    @discord.ui.button(
         label="🛠️ Admin",
         style=discord.ButtonStyle.secondary,
         row=1,
