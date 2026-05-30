@@ -93,3 +93,36 @@ async def test_snapshot_zero_xp_but_real_row_is_not_fresh():
         snap = await ai_permission_service.snapshot(guild_id=1, user_id=7)
     assert snap.level == 0
     assert snap.is_fresh_user is False
+
+
+def test_forget_guild_removes_only_that_guilds_trackers():
+    """guild_lifecycle teardown must drop a departed guild's cooldown +
+    fresh-allowance entries without touching other guilds (audit P1-9 —
+    prevents unbounded dict growth + stale state on re-invite).
+    """
+    ai_permission_service._reset_for_tests()
+    # Guild 100 — two users; one also consumed a fresh-mention allowance.
+    ai_permission_service.mark_reply_sent(100, 1)
+    ai_permission_service.mark_reply_sent(100, 2)
+    ai_permission_service.consume_fresh_allowance(100, 1)
+    # Guild 200 — must survive the sweep.
+    ai_permission_service.mark_reply_sent(200, 3)
+    ai_permission_service.consume_fresh_allowance(200, 3)
+
+    removed = ai_permission_service.forget_guild(100)
+
+    # 2 cooldown rows + 1 allowance row for guild 100.
+    assert removed == 3
+    # Membership checks only — `in` does not trip the defaultdict factory.
+    assert (100, 1) not in ai_permission_service._LAST_REPLY_AT
+    assert (100, 2) not in ai_permission_service._LAST_REPLY_AT
+    assert (100, 1) not in ai_permission_service._FRESH_ALLOWANCE_USED
+    # Guild 200 untouched.
+    assert (200, 3) in ai_permission_service._LAST_REPLY_AT
+    assert (200, 3) in ai_permission_service._FRESH_ALLOWANCE_USED
+    ai_permission_service._reset_for_tests()
+
+
+def test_forget_guild_returns_zero_for_unknown_guild():
+    ai_permission_service._reset_for_tests()
+    assert ai_permission_service.forget_guild(999) == 0
