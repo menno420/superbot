@@ -93,6 +93,10 @@ async def test_reset_under_concurrency_emits_per_call():
             "services.xp_service.bus.emit",
             new_callable=AsyncMock,
         ) as emit,
+        patch(
+            "services.xp_service.emit_audit_action",
+            new_callable=AsyncMock,
+        ),
     ):
         await asyncio.gather(
             *(

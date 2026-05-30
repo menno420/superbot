@@ -101,6 +101,10 @@ async def test_reset_deletes_row_and_emits_event():
             "services.xp_service.bus.emit",
             new_callable=AsyncMock,
         ) as emit,
+        patch(
+            "services.xp_service.emit_audit_action",
+            new_callable=AsyncMock,
+        ),
     ):
         await xp_service.reset(
             guild_id=42,
@@ -125,7 +129,41 @@ async def test_reset_actor_defaults_to_none():
     with (
         patch("services.xp_service.db.delete_xp", new_callable=AsyncMock),
         patch("services.xp_service.bus.emit", new_callable=AsyncMock) as emit,
+        patch("services.xp_service.emit_audit_action", new_callable=AsyncMock),
     ):
         await xp_service.reset(guild_id=1, user_id=2, source="system:purge")
 
     assert emit.await_args.kwargs["actor_id"] is None
+
+
+@pytest.mark.asyncio
+async def test_reset_emits_audit_action_for_server_logging():
+    """An XP wipe must reach the shared ``audit.action_recorded`` stream
+    (audit P1-1) so server logging is no longer blind to it.
+    """
+    with (
+        patch("services.xp_service.db.delete_xp", new_callable=AsyncMock),
+        patch("services.xp_service.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.xp_service.emit_audit_action",
+            new_callable=AsyncMock,
+        ) as audit,
+    ):
+        await xp_service.reset(
+            guild_id=42,
+            user_id=7,
+            source="admin:resetxp",
+            actor_id=99,
+            actor_type="admin",
+        )
+
+    audit.assert_awaited_once()
+    kwargs = audit.await_args.kwargs
+    assert kwargs["subsystem"] == "xp"
+    assert kwargs["mutation_type"] == "reset_xp"
+    assert kwargs["target"] == "member:7"
+    assert kwargs["scope"] == "guild"
+    assert kwargs["guild_id"] == 42
+    assert kwargs["actor_id"] == 99
+    assert kwargs["actor_type"] == "admin"
+    assert kwargs["new_value"] is None

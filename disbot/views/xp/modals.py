@@ -189,6 +189,7 @@ class _ResetXpModal(discord.ui.Modal, title="Reset XP"):  # type: ignore[call-ar
             user_id=member.id,
             source="admin:modal_reset",
             actor_id=interaction.user.id,
+            actor_type="admin",
         )
         await interaction.response.send_message(
             f"✅ Reset XP for {member.mention}.",
