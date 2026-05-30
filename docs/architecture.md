@@ -38,7 +38,7 @@ platform concerns the cog simply *uses*.
          ┌──────────────────────────────┴────────────────────────────┐
          │                                                           │
    ┌─────▼─────────────┐    ┌──────────────────────┐    ┌────────────▼────────┐
-   │   cogs/  (×20)    │    │  core/runtime/       │    │   governance/      │
+   │   cogs/  (×28)    │    │  core/runtime/       │    │   governance/      │
    │  thin dispatchers │◀──▶│  platform primitives │◀──▶│   policy engine    │
    └─────┬─────────────┘    └──────────┬───────────┘    └──────────┬─────────┘
          │                             │                            │

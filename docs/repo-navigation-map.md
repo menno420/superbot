@@ -35,7 +35,7 @@ superbot/
 ├── tests/                   # pytest tree, mirrors disbot/ layout
 ├── .claude/                 # Claude Code config (CLAUDE.md, settings.json)
 ├── .codegraph/              # CodeGraph index (built artifact; not in git)
-├── .github/workflows/       # CI (one file: code-quality.yml)
+├── .github/workflows/       # CI (code-quality.yml + ai-evals.yml)
 ├── pyproject.toml           # black, isort, ruff, mypy, pytest config
 ├── requirements.txt         # runtime deps
 └── Procfile                 # process declaration (deployment)

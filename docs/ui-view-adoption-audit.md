@@ -1,7 +1,12 @@
 # SuperBot — UI / View Adoption Audit
 
-> **Status:** inventory snapshot, dated 2026-05-24, `main` at
-> `948f539` (post-PR-#289).
+> **Status:** ⚠️ SUPERSEDED inventory snapshot, dated 2026-05-24, `main` at
+> `948f539` (post-PR-#289). The PR 1–7 backlog in §7 / §9.3 has all
+> shipped; **`docs/audits/repo-wide-audit-2026-05-29.md` reconciles this
+> snapshot against current code and supersedes its open backlog.** Do
+> not action items from this doc without re-verifying against the
+> source — e.g. `views/economy/work_panel.py:86` is no longer "bare"
+> (it now defers before I/O).
 > Companion to `docs/helper-policy.md`, `docs/building-roadmap/hub-ui-standard.md`,
 > `docs/help-command-surface-map.md`, and `docs/helper-debt-inventory.md`.
 >
