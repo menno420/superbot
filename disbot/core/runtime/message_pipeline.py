@@ -30,6 +30,42 @@ Stages should be pure-Python objects (a dataclass or hand-rolled
 class).  The orchestrator never instantiates them — register an
 already-constructed instance via :func:`register`.
 
+Canonical stage-order table
+---------------------------
+
+**This is the single source of truth for stage ordering.**  Stages run
+in ascending ``order``; the value lives next to each stage class as a
+``*_STAGE_ORDER`` constant.  Tiers are spaced so new stages slot in
+without renumbering, and every value is distinct so ordering never
+depends on cog load order (enforced by
+``tests/unit/runtime/test_message_pipeline.py::
+test_registered_stage_orders_are_distinct``).
+
+==========  =====  =========================================  ============
+order       tier   stage (constant)                           short-circuits?
+==========  =====  =========================================  ============
+10          auto-mod   cleanup    (``CLEANUP_STAGE_ORDER``)    on delete
+15          auto-mod   counting   (``COUNTING_STAGE_ORDER``)   on delete
+20          auto-mod   chain      (``CHAIN_STAGE_ORDER``)      on delete
+30          rewards    xp         (``XP_STAGE_ORDER``)         no
+40          rewards    rps        (``RPS_STAGE_ORDER``)        no
+50          passive    four_twenty(``FOUR_TWENTY_STAGE_ORDER``) no
+70          conv.      ai_nl      (``ai…STAGE_ORDER``)         on bot mention
+80          conv.      btd6       (``btd6…STAGE_ORDER``)       on handle
+==========  =====  =========================================  ============
+
+Tier rationale:
+
+* **auto-mod (10–20)** — may delete the message; cleanup runs first so a
+  banned word is gone before counting/chain validate it.
+* **rewards (30–40)** — award/capture; must run after auto-mod so a
+  deleted message is never rewarded.
+* **passive (50–69)** — observe-only side effects (e.g. the 🍃 egg).
+  Must precede any short-circuiting conversational stage so a message
+  the AI consumes still gets passive treatment.
+* **conversational (70+)** — may *handle* the message and short-circuit
+  (AI reply, BTD6 assistant).
+
 Built-in pre-filter
 -------------------
 

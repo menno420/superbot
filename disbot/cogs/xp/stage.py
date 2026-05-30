@@ -5,14 +5,10 @@ Wraps the existing ``cogs.xp.listener.handle_message`` body as a
 registers an instance of this class in ``cog_load`` and unregisters
 on ``cog_unload`` so hot reloads remain clean.
 
-Order: 20.  Per the plan §3.2, XP runs in the *rewards* tier (after
-*moderation* at order=10).  This means once auto-mod stages migrate,
-XP will no longer reward a message that was deleted by an upstream
-stage in the same dispatch — that's the intended behavior shift.
-
-In this PR only XP has migrated, so order=20 has no other neighbors;
-the value is set per the plan so future migrations slot in without
-re-numbering.
+Order: 30.  XP runs in the *rewards* tier, after the auto-mod tier
+(cleanup=10, counting=15, chain=20), so XP never rewards a message that
+an upstream stage deleted in the same dispatch.  See the canonical
+stage-order table in ``core/runtime/message_pipeline.py``.
 """
 
 from __future__ import annotations
@@ -23,7 +19,7 @@ from core.runtime.message_pipeline import (
 )
 
 XP_STAGE_NAME = "xp"
-XP_STAGE_ORDER = 20
+XP_STAGE_ORDER = 30
 
 
 class XpStage:

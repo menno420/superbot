@@ -21,7 +21,10 @@ from utils.ui_constants import ADMIN_COLOR
 from views.base import HubView, send_panel
 
 CLEANUP_STAGE_NAME = "cleanup"
-CLEANUP_STAGE_ORDER = 10  # moderation tier per plan §3.2
+# Auto-mod tier — runs first within the tier so a banned word is deleted
+# before counting/chain try to validate the same message. See the canonical
+# stage-order table in core/runtime/message_pipeline.py.
+CLEANUP_STAGE_ORDER = 10
 MAX_CLEANUP_HISTORY_LIMIT = 1000
 SPAM_DUPLICATE_WINDOW_SECONDS = 15
 HELPER_DELETE_DELAY_SECONDS = 3

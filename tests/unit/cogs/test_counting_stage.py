@@ -24,7 +24,7 @@ class TestCountingStage:
     def test_metadata(self):
         stage = CountingStage(MagicMock())
         assert stage.name == COUNTING_STAGE_NAME == "counting"
-        assert stage.order == COUNTING_STAGE_ORDER == 10
+        assert stage.order == COUNTING_STAGE_ORDER == 15
 
     @pytest.mark.asyncio
     async def test_delete_short_circuits(self):

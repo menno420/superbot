@@ -46,7 +46,9 @@ from services.btd6_resolver_service import resolve
 logger = logging.getLogger("bot.cogs.btd6.stage")
 
 STAGE_NAME = "btd6_assistant"
-STAGE_ORDER = 80  # after cleanup/counting; before observability stages
+# Conversational tier, after the AI natural-language stage (70). See the
+# canonical stage-order table in core/runtime/message_pipeline.py.
+STAGE_ORDER = 80
 
 _TRUTHY = frozenset({"1", "true", "yes", "on"})
 _DEFAULT_CONFIDENCE_THRESHOLD = 0.34  # ≥ 1 of 3 entities matched

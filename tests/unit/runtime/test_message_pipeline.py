@@ -339,3 +339,72 @@ class TestSetup:
         message_pipeline.setup(bot)
         # Second call should be a no-op — listener registered only once.
         assert bot.listen.call_count == 1
+
+
+# ---------------------------------------------------------------------------
+# Canonical stage-order contract
+# ---------------------------------------------------------------------------
+
+
+class TestStageOrderContract:
+    """Pin the canonical stage-order table documented in the module
+    docstring. Every registered stage must have a DISTINCT order so the
+    run sequence never depends on cog load order (the pre-pipeline bug
+    these tests guard against), and the documented tier relationships
+    must hold.
+    """
+
+    def _all_orders(self) -> dict[str, int]:
+        """Import every stage-order constant by its canonical name."""
+        from cogs.btd6.stage import STAGE_ORDER as BTD6
+        from cogs.chain_cog import CHAIN_STAGE_ORDER as CHAIN
+        from cogs.cleanup_cog import CLEANUP_STAGE_ORDER as CLEANUP
+        from cogs.counting._stage import COUNTING_STAGE_ORDER as COUNTING
+        from cogs.four_twenty_cog import FOUR_TWENTY_STAGE_ORDER as FOUR_TWENTY
+        from cogs.rps_tournament._stage import RPS_STAGE_ORDER as RPS
+        from cogs.xp.stage import XP_STAGE_ORDER as XP
+        from core.runtime.ai.natural_language_stage import STAGE_ORDER as AI
+
+        return {
+            "cleanup": CLEANUP,
+            "counting": COUNTING,
+            "chain": CHAIN,
+            "xp": XP,
+            "rps": RPS,
+            "four_twenty": FOUR_TWENTY,
+            "ai": AI,
+            "btd6": BTD6,
+        }
+
+    def test_registered_stage_orders_are_distinct(self):
+        orders = self._all_orders()
+        values = list(orders.values())
+        assert len(values) == len(set(values)), (
+            f"stage orders must be distinct so run order never depends on "
+            f"cog load order — got duplicates in {orders}"
+        )
+
+    def test_tier_relationships_hold(self):
+        o = self._all_orders()
+        # auto-mod tier, cleanup first (deletes a banned word before
+        # counting/chain validate it).
+        assert o["cleanup"] < o["counting"] < o["chain"]
+        # rewards run after every auto-mod stage (never reward a deleted msg).
+        assert o["chain"] < o["xp"] < o["rps"]
+        # passive observe-only sits after rewards, before conversational.
+        assert o["rps"] < o["four_twenty"] < o["ai"]
+        # the regression that started this: passive 🍃 must precede the
+        # short-circuiting AI stage or bot-mentions never get leafed.
+        assert o["four_twenty"] < o["ai"] < o["btd6"]
+
+    def test_orders_match_documented_table(self):
+        assert self._all_orders() == {
+            "cleanup": 10,
+            "counting": 15,
+            "chain": 20,
+            "xp": 30,
+            "rps": 40,
+            "four_twenty": 50,
+            "ai": 70,
+            "btd6": 80,
+        }

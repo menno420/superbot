@@ -18,7 +18,9 @@ from utils import db
 from views.base import HubView, send_panel
 
 CHAIN_STAGE_NAME = "chain"
-CHAIN_STAGE_ORDER = 10  # moderation tier per plan §3.2
+# Auto-mod tier — last within the tier (after cleanup=10, counting=15). See
+# the canonical stage-order table in core/runtime/message_pipeline.py.
+CHAIN_STAGE_ORDER = 20
 
 logger = logging.getLogger("bot.cogs.chain")
 
@@ -26,7 +28,7 @@ logger = logging.getLogger("bot.cogs.chain")
 class ChainStage:
     """Message-pipeline stage enforcing chain rules + word limits.
 
-    Auto-mod tier (order=10).  Short-circuits the pipeline when a
+    Auto-mod tier (order=20).  Short-circuits the pipeline when a
     message is deleted so xp / game_input stages skip a removed
     message.
 

@@ -8,8 +8,13 @@ Two surfaces, no cross-cog reach and no state mutation:
   (``FourTwentyStage``) watches every message and drops a 🍃 reaction +
   one-liner when someone types ``420`` / ``4:20`` / ``blaze it`` /
   ``four twenty``.  The stage is **observe-only**: it never deletes,
-  never short-circuits, runs after the game/mod stages, and self-rate-
-  limits per channel so it can never become noise.
+  never short-circuits, and self-rate-limits per channel so it can never
+  become noise.  It runs at ``order=50`` (the passive tier) — after the
+  auto-mod (10/15/20) and rewards (30/40) tiers so it never leafs a
+  message that's about to be deleted, but **before** the AI
+  natural-language stage (``order=70``), which
+  short-circuits the pipeline on a bot mention.  Sitting ahead of it is
+  what lets ``@bot … 420 …`` messages still get their 🍃.
 
 Design notes
 ------------
@@ -58,11 +63,16 @@ _CONTENT_PATH = os.path.join(
 _FOUR_TWENTY_COLOR = discord.Color.from_rgb(0x4C, 0xAF, 0x50)  # leafy green
 _LEAF = "🍃"
 
-# Stage ordering: observe-only, so it sits at the very back behind every
-# game / moderation / XP stage. A high number keeps it last regardless of
-# future stage additions in the 10–90 band.
+# Stage ordering: observe-only, so it can sit anywhere — but it must run
+# BEFORE the AI natural-language stage (order=70), which short-circuits the
+# pipeline when it handles a bot mention.  At the old order=95 a message
+# like "@bot blaze it" was consumed by AI before we ever saw it, so the
+# egg silently never fired on mentions.  order=50 (the "passive" tier) keeps
+# us after the auto-mod (10/15/20) and rewards (30/40) tiers — so we never
+# leaf a message counting/cleanup is about to delete — yet ahead of AI.
+# See the canonical stage-order table in core/runtime/message_pipeline.py.
 FOUR_TWENTY_STAGE_NAME = "four_twenty"
-FOUR_TWENTY_STAGE_ORDER = 95
+FOUR_TWENTY_STAGE_ORDER = 50
 
 # Per-channel cooldown (seconds) so the easter egg can never be spammed
 # into noise — at most one wink per channel per window.
