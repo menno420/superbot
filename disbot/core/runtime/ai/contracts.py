@@ -57,6 +57,7 @@ class PolicyDenialReason(str, Enum):
     NO_MENTION_REQUIRED = "no_mention_required"
     NOT_A_QUESTION = "not_a_question"
     NO_ROUTE_MATCHED = "no_route_matched"
+    EMPTY_MESSAGE = "empty_message"
     PROVIDER_UNAVAILABLE = "provider_unavailable"
     GROUNDING_FAILED = "grounding_failed"
     GUILD_NOT_CONFIGURED = "guild_not_configured"

@@ -265,6 +265,17 @@ class AIGateway:
         provider = provider_override or self._providers.get(target.provider)
         if provider is None:
             reason = f"provider_missing:{target.provider}"
+            # Surface this loudly: the usual cause is a typo in an
+            # ``AI_ROUTING_*`` / ``AI_DEFAULT_PROVIDER`` env var pointing at
+            # an unregistered provider, which otherwise silently degrades
+            # every reply with no hint as to why.
+            logger.warning(
+                "ai gateway: resolved provider %r is not registered "
+                "(known: %s); degrading. Check AI_DEFAULT_PROVIDER / "
+                "AI_ROUTING_* configuration.",
+                target.provider,
+                ", ".join(sorted(self._providers)),
+            )
             self._collector.record_failure(
                 provider_active=target.provider,
                 error_type="ProviderMissing",
@@ -276,6 +287,81 @@ class AIGateway:
                 reason=reason,
             )
 
+        timeout = request.timeout_seconds or target.timeout_seconds
+        response = await self._attempt(
+            request,
+            redacted_request,
+            provider=provider,
+            model=effective_model,
+            timeout=timeout,
+            tool_handlers=tool_handlers,
+        )
+
+        # Provider-fault fallback. When no explicit ``provider_override``
+        # pins the provider and a distinct ``AI_FALLBACK_PROVIDER`` is
+        # configured, retry once on a transport fault (timeout /
+        # unavailable / provider exception) so a single-provider outage
+        # does not take AI down for the whole guild. A bad-JSON degrade is
+        # a model-output problem, not an outage, so it is not retried.
+        if (
+            provider_override is None
+            and response.degraded
+            and not (response.fallback_reason or "").startswith("invalid_json")
+        ):
+            fallback = self._resolve_fallback(target.provider, request.context.task)
+            if fallback is not None:
+                fb_provider, fb_model = fallback
+                fb_response = await self._attempt(
+                    request,
+                    redacted_request,
+                    provider=fb_provider,
+                    model=fb_model,
+                    timeout=timeout,
+                    tool_handlers=tool_handlers,
+                )
+                if not fb_response.degraded:
+                    return fb_response
+        return response
+
+    def _resolve_fallback(
+        self,
+        primary_provider: str,
+        task: AITask,
+    ) -> tuple[Provider, str] | None:
+        """Resolve the configured fallback provider + model, or ``None``.
+
+        Returns ``None`` when no fallback is configured, when it equals the
+        primary provider, or when the named provider is not registered.
+        """
+        from core.runtime.ai.routing import fallback_provider
+
+        name = fallback_provider()
+        if not name or name == primary_provider:
+            return None
+        provider = self._providers.get(name)
+        if provider is None:
+            logger.warning(
+                "ai gateway: AI_FALLBACK_PROVIDER=%r is not a registered "
+                "provider; skipping fallback",
+                name,
+            )
+            return None
+        return provider, default_model_for(name, task)
+
+    async def _attempt(
+        self,
+        request: AIRequest,
+        redacted_request: AIRequest,
+        *,
+        provider: Provider,
+        model: str,
+        timeout: float,
+        tool_handlers: Mapping[str, ToolHandler] | None,
+    ) -> AIResponse:
+        """Run one provider attempt and convert every fault to a degraded
+        :class:`AIResponse`. Never raises — this is where the gateway's
+        never-raise contract is enforced for a single provider call.
+        """
         self._collector.record_request(provider_active=provider.name)
         dispatch: ToolDispatch | None = None
         if tool_handlers is not None and request.tools and ai_tools_enabled():
@@ -284,7 +370,6 @@ class AIGateway:
                 tool_handlers,
                 provider.name,
             )
-        timeout = request.timeout_seconds or target.timeout_seconds
         outcome = "success"
         started = time.perf_counter()
         try:
@@ -294,12 +379,12 @@ class AIGateway:
             if dispatch is None:
                 provider_call = provider.execute(
                     redacted_request,
-                    model=effective_model,
+                    model=model,
                 )
             else:
                 provider_call = provider.execute(
                     redacted_request,
-                    model=effective_model,
+                    model=model,
                     dispatch=dispatch,
                 )
             raw_text = await asyncio.wait_for(provider_call, timeout=timeout)
@@ -431,7 +516,7 @@ class AIGateway:
         return AIResponse(
             task=request.context.task,
             provider=provider.name,
-            model=effective_model,
+            model=model,
             text=text,
             data=data,
             suggestions=(),

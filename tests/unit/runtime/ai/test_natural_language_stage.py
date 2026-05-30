@@ -852,7 +852,7 @@ async def test_empty_message_after_bot_mention_strip_does_not_call_provider(
 ):
     """T12: a bare-mention message ('<@BOT>' alone) is recorded to
     memory but never reaches the provider. Audit row is
-    skipped/NO_ROUTE_MATCHED."""
+    skipped/EMPTY_MESSAGE."""
     from services import ai_gateway
 
     _use_real_conversation_buffer(monkeypatch)
@@ -874,7 +874,7 @@ async def test_empty_message_after_bot_mention_strip_does_not_call_provider(
     assert len(stub_services) == 1
     row = stub_services[0]
     assert row["decision"] == "skipped"
-    assert row["reason_code"] is PolicyDenialReason.NO_ROUTE_MATCHED
+    assert row["reason_code"] is PolicyDenialReason.EMPTY_MESSAGE
 
     # Raw mention is still in memory for future context.
     turns = _real_recent_turns(msg.guild.id, msg.channel.id)

@@ -191,6 +191,126 @@ def _ts(value: Any) -> str | None:
     return iso() if callable(iso) else str(value)
 
 
+# --- get_server_overview ----------------------------------------------
+
+_SERVER_OVERVIEW_SPEC = AIToolSpec(
+    name="get_server_overview",
+    description=(
+        "Return a high-level overview of THIS Discord server: its name, "
+        "description, owner, creation date, boost status, and how many "
+        "text/voice channels, categories, and roles it has. Call this to "
+        "answer general 'tell me about this server' questions. (Member "
+        "count is included only when member lookups are enabled.)"
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.USER,
+)
+
+
+def _make_server_overview(guild: Any, *, include_members: bool) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import guild_introspection_service
+
+        return guild_introspection_service.server_overview(
+            guild,
+            include_members=include_members,
+        )
+
+    return handler
+
+
+# --- list_server_roles -------------------------------------------------
+
+_SERVER_ROLES_SPEC = AIToolSpec(
+    name="list_server_roles",
+    description=(
+        "List the roles in THIS server, highest first, with a short "
+        "privilege summary (administrator / which manage-permissions / "
+        "none) and whether each is hoisted or mentionable. Call this to "
+        "answer questions about the server's roles or permission "
+        "structure. (Per-role member counts appear only when member "
+        "lookups are enabled.)"
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.USER,
+)
+
+
+def _make_list_roles(guild: Any, *, include_member_counts: bool) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import guild_introspection_service
+
+        return guild_introspection_service.list_roles(
+            guild,
+            include_member_counts=include_member_counts,
+        )
+
+    return handler
+
+
+# --- list_server_channels ----------------------------------------------
+
+_SERVER_CHANNELS_SPEC = AIToolSpec(
+    name="list_server_channels",
+    description=(
+        "List the text and voice channels in THIS server that the asking "
+        "user can see, grouped by category, with each channel's topic when "
+        "set. Channels the asker cannot view are omitted. Call this to "
+        "answer questions about the server's channels or layout."
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.USER,
+)
+
+
+def _make_list_channels(guild: Any, member: Any) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import guild_introspection_service
+
+        return guild_introspection_service.list_channels(guild, member)
+
+    return handler
+
+
+# --- lookup_member (opt-in) --------------------------------------------
+
+_MEMBER_LOOKUP_SPEC = AIToolSpec(
+    name="lookup_member",
+    description=(
+        "Find members of THIS server whose display name or username "
+        "matches a query, returning each match's display name, join date, "
+        "whether they are a bot or the owner, and their roles. Use for "
+        "'who is X' / 'what roles does X have' questions. Returns "
+        "found=false when nothing matches."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Name or partial name of the member to look up.",
+            },
+        },
+        "required": ["query"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _make_lookup_member(guild: Any, member: Any) -> ToolHandler:
+    async def handler(arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import guild_introspection_service
+
+        return guild_introspection_service.lookup_member(
+            guild,
+            str(arguments.get("query") or ""),
+            requester=member,
+        )
+
+    return handler
+
+
 # --- btd6_lookup -------------------------------------------------------
 
 _BTD6_LOOKUP_SPEC = AIToolSpec(
@@ -428,6 +548,8 @@ def build_registry(
     scope: AIScope,
     guild_id: int,
     actor_id: int,
+    guild: Any = None,
+    member: Any = None,
 ) -> ToolRegistry:
     """Build the read-only tool set the caller's ``scope`` may be offered.
 
@@ -435,7 +557,17 @@ def build_registry(
     them); ``handlers`` are passed to ``ai_gateway.execute`` as
     ``tool_handlers``. Only tools whose ``min_scope`` the caller
     satisfies are included.
+
+    ``guild`` (the live ``discord.Guild``) and ``member`` (the asking
+    ``discord.Member``) enable the server-introspection tools. When
+    ``guild`` is ``None`` those tools are omitted, so existing callers
+    that do not have a live guild keep the prior toolset. Member-level
+    data (the ``lookup_member`` tool and member counts) is gated behind
+    :func:`feature_flags.ai_server_member_lookup_enabled` — default off.
     """
+    from core.runtime.ai.feature_flags import ai_server_member_lookup_enabled
+
+    include_members = ai_server_member_lookup_enabled()
     catalog: list[tuple[AIToolSpec, ToolHandler]] = [
         (_USER_STANDING_SPEC, _make_user_standing(guild_id, actor_id)),
         (_SERVER_TIME_SPEC, _server_time),
@@ -446,6 +578,24 @@ def build_registry(
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]
+    if guild is not None:
+        catalog.extend(
+            [
+                (
+                    _SERVER_OVERVIEW_SPEC,
+                    _make_server_overview(guild, include_members=include_members),
+                ),
+                (
+                    _SERVER_ROLES_SPEC,
+                    _make_list_roles(guild, include_member_counts=include_members),
+                ),
+                (_SERVER_CHANNELS_SPEC, _make_list_channels(guild, member)),
+            ],
+        )
+        if include_members:
+            catalog.append(
+                (_MEMBER_LOOKUP_SPEC, _make_lookup_member(guild, member)),
+            )
     specs: list[AIToolSpec] = []
     handlers: dict[str, ToolHandler] = {}
     for spec, handler in catalog:

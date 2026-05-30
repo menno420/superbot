@@ -45,6 +45,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from core.runtime.ai.contracts import PolicyDenialReason
+from services import ai_permission_service
 from utils.db import ai as ai_db
 
 logger = logging.getLogger("bot.services.ai_natural_language_policy")
@@ -101,6 +102,11 @@ class PolicyDecision:
     policy_snapshot_hash: str = ""
     extra: dict[str, Any] = field(default_factory=dict)
     precedence_trace: tuple[str, ...] = ()
+    # True when the allow relied on the fresh-user mention allowance (the
+    # asker was below the level floor). The stage consumes one unit of the
+    # allowance only when it actually sends a reply, so the budget is spent
+    # per delivered reply rather than per attempt.
+    used_fresh_allowance: bool = False
 
 
 @dataclass(frozen=True)
@@ -386,16 +392,24 @@ async def resolve(
         trace.append("role_gate: bypass_cooldown=true → effective_cooldown=0s")
 
     # ---- Level gate (XP / fresh-user allowance) ----
+    used_fresh_allowance = False
     if ctx.user_level < gated_min_level:
-        if (
-            ctx.is_fresh_user
-            and ctx.is_mention
-            and policy.get("fresh_user_mention_allowance", 0) > 0
-        ):
+        allowance = int(policy.get("fresh_user_mention_allowance", 0) or 0)
+        # The allowance is a finite per-user budget, not a permanent
+        # bypass: check what remains (a pure in-process read) so a fresh
+        # user gets at most ``allowance`` replies before the level floor
+        # applies again. The stage decrements it on a delivered reply.
+        remaining = ai_permission_service.fresh_allowance_remaining(
+            ctx.guild_id,
+            ctx.user_id,
+            allowance,
+        )
+        if ctx.is_fresh_user and ctx.is_mention and remaining > 0:
+            used_fresh_allowance = True
             if trace is not None:
                 trace.append(
                     f"level_gate: level={ctx.user_level} < min={gated_min_level} "
-                    "BUT fresh-user mention allowance → allowed",
+                    f"BUT fresh-user mention allowance ({remaining} left) → allowed",
                 )
         else:
             if trace is not None:
@@ -442,6 +456,7 @@ async def resolve(
         instruction_profile_ids=effective.instruction_profile_ids,
         policy_snapshot_hash=snapshot,
         precedence_trace=tuple(trace or ()),
+        used_fresh_allowance=used_fresh_allowance,
     )
 
 

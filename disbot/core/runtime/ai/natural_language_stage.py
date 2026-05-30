@@ -26,6 +26,7 @@ import logging
 import re
 import time
 import uuid
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -90,16 +91,51 @@ def _accessible_channel_ids_for(
     return frozenset(accessible)
 
 
+class _NullAsyncContext:
+    """Async no-op context — the fallback when a channel has no typing().
+
+    ``contextlib.nullcontext`` only implements the *sync* protocol, so it
+    cannot stand in for ``async with``; this tiny class does.
+    """
+
+    async def __aenter__(self) -> None:
+        return None
+
+    async def __aexit__(self, *exc: object) -> bool:
+        return False
+
+
+def _maybe_typing(channel: object) -> AbstractAsyncContextManager[None]:
+    """Return ``channel.typing()`` if available, else an async no-op.
+
+    Showing the typing indicator while the (potentially multi-second)
+    provider call runs makes the bot feel responsive instead of silent.
+    Best-effort: a channel type without ``typing()`` (or a duck-typed
+    test channel) falls back to a null context so the stage never
+    depends on it.
+    """
+    typing = getattr(channel, "typing", None)
+    if callable(typing):
+        try:
+            return typing()  # type: ignore[no-any-return]
+        except Exception:  # noqa: BLE001 — never let UX polish break a reply
+            return _NullAsyncContext()
+    return _NullAsyncContext()
+
+
 def _strip_bot_mention(text: str, *, bot_user_id: int | None) -> str:
     """Remove all mentions of the bot from ``text``.
 
-    Discord mentions are ``<@id>`` or ``<@!id>``. ``re.sub`` replaces
-    every match. The returned string is stripped of surrounding
-    whitespace so a bare-mention message collapses to ``""``.
+    Discord mentions are ``<@id>`` or ``<@!id>``. Each match plus the
+    spaces/tabs hugging it collapses to a single space so an inline
+    mention like ``"hey <@id> what's up"`` becomes ``"hey what's up"``
+    rather than leaving a double space. Newlines are preserved so the
+    layout of a multi-line question is not flattened. A bare-mention
+    message still collapses to ``""`` after the surrounding strip.
     """
     if bot_user_id is None:
         return text
-    return re.sub(rf"<@!?{bot_user_id}>", "", text).strip()
+    return re.sub(rf"[ \t]*<@!?{bot_user_id}>[ \t]*", " ", text).strip()
 
 
 def _record_user_turn_if_visible(
@@ -110,7 +146,7 @@ def _record_user_turn_if_visible(
     channel_id: int,
     user_id: int,
     is_mention: bool,
-    include_mentions: bool,
+    record_mentions: bool,
 ) -> bool:
     """Append ``text`` to the conversation buffer when visibility rules allow.
 
@@ -118,13 +154,25 @@ def _record_user_turn_if_visible(
     raw ``text`` (not the mention-stripped form) is what gets stored
     so memory reflects what the user actually typed.
 
+    ``record_mentions`` selects which message *kind* this call owns, so
+    a single message is never recorded twice across the two recording
+    phases in :meth:`AINaturalLanguageStage.process`:
+
+    * ``record_mentions=False`` — the bystander pre-record. Records only
+      NON-mention messages (the mention is recorded later, after the
+      recent-turn buffer has been gathered, so it cannot appear in the
+      context for its own reply).
+    * ``record_mentions=True`` — the triggering-mention record. Records
+      only mention messages; non-mentions were already captured by the
+      bystander phase.
+
     Returns ``True`` if the turn was appended.
     """
     if getattr(message.author, "bot", False):
         return False
     if text.startswith("!") or text.startswith("/"):
         return False
-    if is_mention and not include_mentions:
+    if is_mention != record_mentions:
         return False
     ai_conversation_service.append(
         guild_id,
@@ -195,7 +243,7 @@ class AINaturalLanguageStage:
             channel_id=channel_id,
             user_id=user_id,
             is_mention=is_mention,
-            include_mentions=False,
+            record_mentions=False,
         )
 
         snap = await ai_permission_service.snapshot(guild_id, user_id)
@@ -229,7 +277,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -260,7 +308,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -288,7 +336,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
             await ai_decision_audit_service.record(
                 guild_id=guild_id,
@@ -299,7 +347,7 @@ class AINaturalLanguageStage:
                 task=routed.task.value,
                 route=routed.route,
                 decision="skipped",
-                reason_code=PolicyDenialReason.NO_ROUTE_MATCHED,
+                reason_code=PolicyDenialReason.EMPTY_MESSAGE,
                 policy_snapshot_hash=decision.policy_snapshot_hash,
                 instruction_profile_ids=list(decision.instruction_profile_ids) or None,
             )
@@ -365,10 +413,16 @@ class AINaturalLanguageStage:
                     channel=getattr(message, "channel", None),
                     bot_user_id=bot_user_id,
                 )
-            except Exception as exc:  # noqa: BLE001 — defensive
-                logger.debug(
-                    "ai_natural_language_stage: memory unavailable: %s",
-                    exc,
+            except Exception:  # noqa: BLE001 — defensive
+                # Warning, not debug: the reply still proceeds without
+                # recent context, but a persistent failure here silently
+                # degrades every reply, so it must be visible in prod logs.
+                logger.warning(
+                    "ai_natural_language_stage: memory unavailable; replying "
+                    "without recent context (guild=%s channel=%s)",
+                    guild_id,
+                    channel_id,
+                    exc_info=True,
                 )
                 recent_turns = []
 
@@ -382,62 +436,17 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 user_id=user_id,
                 is_mention=is_mention,
-                include_mentions=True,
+                record_mentions=True,
             )
 
-            # Bot self-knowledge enrichment: catalog of known commands +
-            # the asker's most recent non-replied audit row. Gated by
-            # intent heuristics so the prompt only grows when the user
-            # actually asks a meta-question. Best-effort — failure
-            # collapses to no bot-knowledge blocks.
-            try:
-                from services import bot_knowledge_service
-
-                if bot_knowledge_service.looks_like_audit_question(user_text):
-                    accessible = _accessible_channel_ids_for(
-                        message.author,
-                        message.guild,
-                    )
-                else:
-                    accessible = frozenset()
-
-                bot_knowledge_blocks = await bot_knowledge_service.gather(
-                    guild_id=guild_id,
-                    channel_id=channel_id,
-                    user_id=user_id,
-                    user_text=user_text,
-                    user_tier=bot_knowledge_service.resolve_user_tier(
-                        message.author,
-                    ),
-                    accessible_channel_ids=accessible,
-                )
-            except Exception as exc:  # noqa: BLE001 — defensive
-                logger.debug(
-                    "ai_natural_language_stage: bot knowledge unavailable: %s",
-                    exc,
-                )
-                bot_knowledge_blocks = ()
-
-            # BTD6 live-state / source-status enrichment: only fires for
-            # BTD6-classified messages so general-channel chatter doesn't
-            # pay the lookup cost. Heuristics live in
-            # services.btd6_ai_knowledge_block_service and require a
-            # BTD6 anchor term, so bare "what event is on" cannot route
-            # here even when the task router lets the message through.
-            if routed.task is AITask.BTD6_ANSWER:
-                try:
-                    from services import btd6_ai_knowledge_block_service
-
-                    btd6_blocks = await btd6_ai_knowledge_block_service.gather_btd6_bot_knowledge_blocks(
-                        user_text=user_text,
-                    )
-                    if btd6_blocks:
-                        bot_knowledge_blocks = bot_knowledge_blocks + btd6_blocks
-                except Exception as exc:  # noqa: BLE001 — defensive
-                    logger.debug(
-                        "ai_natural_language_stage: btd6 knowledge unavailable: %s",
-                        exc,
-                    )
+            bot_knowledge_blocks = await _gather_bot_knowledge_blocks(
+                message,
+                user_text=user_text,
+                task=routed.task,
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+            )
 
             stack = await ai_instruction_service.assemble(
                 guild_id=guild_id,
@@ -458,7 +467,10 @@ class AINaturalLanguageStage:
                 scope=_derive_scope(message),
             )
 
-            response = await _invoke_gateway(stack, built, ctx)
+            # Show "Bot is typing…" while the provider call runs so a
+            # multi-second reply does not look like a dropped message.
+            async with _maybe_typing(message.channel):
+                response = await _invoke_gateway(stack, built, ctx)
         except Exception:
             logger.exception(
                 "ai_natural_language_stage: feature pipeline raised "
@@ -523,12 +535,28 @@ class AINaturalLanguageStage:
 
         from core.runtime.ai import response_renderer_registry
 
-        rendered = await response_renderer_registry.render(
-            routed.task,
-            response,
-            _fact_req,
-            feature.render_context,
-        )
+        # A registered renderer may raise (bad render_context, embed
+        # construction error). Fall back to the plain-text path rather
+        # than discarding the model's reply: a degraded presentation
+        # beats no reply at all.
+        try:
+            rendered = await response_renderer_registry.render(
+                routed.task,
+                response,
+                _fact_req,
+                feature.render_context,
+            )
+        except Exception:  # noqa: BLE001 — renderer faults degrade to plain text
+            logger.warning(
+                "ai_natural_language_stage: renderer for task=%s raised; "
+                "falling back to plain text (guild=%s channel=%s message=%s)",
+                routed.task.value,
+                guild_id,
+                channel_id,
+                message.id,
+                exc_info=True,
+            )
+            rendered = None
 
         try:
             if rendered is not None:
@@ -539,10 +567,16 @@ class AINaturalLanguageStage:
                     or discord.AllowedMentions.none(),
                 )
             else:
-                for chunk in _split_for_discord(reply_text):
+                # Reply to the triggering message on the first chunk so the
+                # answer is visibly threaded to the question in a busy
+                # channel. ``fail_if_not_exists=False`` degrades to a plain
+                # send if the original was deleted mid-flight.
+                reference = message.to_reference(fail_if_not_exists=False)
+                for index, chunk in enumerate(_split_for_discord(reply_text)):
                     await message.channel.send(
                         chunk,
                         allowed_mentions=discord.AllowedMentions.none(),
+                        reference=reference if index == 0 else None,
                     )
         except discord.HTTPException:
             logger.exception(
@@ -574,6 +608,12 @@ class AINaturalLanguageStage:
             return StageResult()
 
         ai_permission_service.mark_reply_sent(guild_id, user_id)
+        # Spend one unit of the fresh-user mention allowance only when a
+        # reply was actually delivered (not per attempt), so a brand-new
+        # user gets a bounded number of below-level replies before the
+        # level floor applies again.
+        if decision.used_fresh_allowance:
+            ai_permission_service.consume_fresh_allowance(guild_id, user_id)
         # User-message recording happens earlier via
         # ``_record_user_turn_if_visible``. Here the stage records
         # only its own (sanitized) assistant reply. We omit
@@ -606,6 +646,76 @@ class AINaturalLanguageStage:
 
         ctx.metadata["handled_by"] = STAGE_NAME
         return StageResult(short_circuit=True)
+
+
+async def _gather_bot_knowledge_blocks(
+    message: discord.Message,
+    *,
+    user_text: str,
+    task: AITask,
+    guild_id: int,
+    channel_id: int,
+    user_id: int,
+) -> tuple[ai_instruction_service.BotKnowledgeBlock, ...]:
+    """Collect the authoritative bot-knowledge blocks for this turn.
+
+    Two best-effort enrichments, each isolated so a failure in one never
+    suppresses the other or the reply itself:
+
+    * Bot self-knowledge — command catalog + the asker's most recent
+      non-replied audit row, gated by intent heuristics so the prompt
+      only grows when the user actually asks a meta-question. Failure
+      logs at warning (it silently weakens "what can you do" answers).
+    * BTD6 live-state — only for BTD6-classified messages, and only when
+      the message carries a BTD6 anchor term. Absence is routine, so a
+      failure here stays at debug.
+    """
+    try:
+        from services import bot_knowledge_service
+
+        if bot_knowledge_service.looks_like_audit_question(user_text):
+            accessible = _accessible_channel_ids_for(message.author, message.guild)
+        else:
+            accessible = frozenset()
+
+        blocks: tuple[ai_instruction_service.BotKnowledgeBlock, ...] = (
+            await bot_knowledge_service.gather(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                user_id=user_id,
+                user_text=user_text,
+                user_tier=bot_knowledge_service.resolve_user_tier(message.author),
+                accessible_channel_ids=accessible,
+            )
+        )
+    except Exception:  # noqa: BLE001 — defensive
+        logger.warning(
+            "ai_natural_language_stage: bot knowledge unavailable; replying "
+            "without self-knowledge blocks (guild=%s channel=%s)",
+            guild_id,
+            channel_id,
+            exc_info=True,
+        )
+        blocks = ()
+
+    if task is AITask.BTD6_ANSWER:
+        try:
+            from services import btd6_ai_knowledge_block_service
+
+            btd6_blocks = (
+                await btd6_ai_knowledge_block_service.gather_btd6_bot_knowledge_blocks(
+                    user_text=user_text,
+                )
+            )
+            if btd6_blocks:
+                blocks = blocks + btd6_blocks
+        except Exception as exc:  # noqa: BLE001 — absence is routine here
+            logger.debug(
+                "ai_natural_language_stage: btd6 knowledge unavailable: %s",
+                exc,
+            )
+
+    return blocks
 
 
 async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
@@ -726,10 +836,16 @@ async def _invoke_gateway(
     specs: tuple[AIToolSpec, ...] = ()
     handlers: Mapping[str, ToolHandler] | None = None
     if ai_tools_enabled() and ctx.guild_id is not None and ctx.actor_id is not None:
+        # Pass the live guild + asking member so the server-introspection
+        # tools can read roles / channels / overview. ``build_registry``
+        # omits those tools when ``guild`` is None.
+        message = getattr(_ctx, "message", None)
         registry = ai_tools.build_registry(
             scope=ctx.scope,
             guild_id=ctx.guild_id,
             actor_id=ctx.actor_id,
+            guild=getattr(message, "guild", None),
+            member=getattr(message, "author", None),
         )
         specs = registry.specs
         handlers = registry.handlers
