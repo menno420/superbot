@@ -120,6 +120,13 @@ class BloonEntry:
     popped_by: str = ""
     children: str = ""
     health: int | None = None
+    # Red Bloon Equivalent: total hits to fully clear this bloon AND every
+    # bloon it spawns down to Red. The canonical "how much does this bloon
+    # really cost to clear" figure. ``rbe = (health or 1) + sum(child RBE)``;
+    # the chain bottoms out at Red (rbe=1). Verified values pinned by
+    # tests/unit/services/test_btd6_rbe.py, which recomputes them from the
+    # ``children`` text so a typo in either field fails CI.
+    rbe: int | None = None
     # Attribution only (bloonswiki); never surfaced in grounding. Left blank
     # rather than reusing the discredited bloons.fandom.com pages.
     wiki_url: str = ""
@@ -389,6 +396,12 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
         raise BTD6DataValidationError(
             f"bloon {raw['id']!r}: health must be > 0 when present, got {health}",
         )
+    rbe_raw = raw.get("rbe")
+    rbe = int(rbe_raw) if isinstance(rbe_raw, (int, float)) else None
+    if rbe is not None and rbe <= 0:
+        raise BTD6DataValidationError(
+            f"bloon {raw['id']!r}: rbe must be > 0 when present, got {rbe}",
+        )
     return BloonEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
@@ -401,6 +414,7 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
         popped_by=str(raw.get("popped_by", "")),
         children=str(raw.get("children", "")),
         health=health,
+        rbe=rbe,
     )
 
 
