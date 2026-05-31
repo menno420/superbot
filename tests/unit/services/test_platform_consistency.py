@@ -16,7 +16,9 @@ from services import platform_consistency as pc
 # ---------------------------------------------------------------------------
 
 
-def _make_section(status: pc.SectionStatus, *, informational: bool = False) -> pc.SectionResult:
+def _make_section(
+    status: pc.SectionStatus, *, informational: bool = False
+) -> pc.SectionResult:
     return pc.SectionResult(
         name=f"section-{status.value}",
         status=status,
@@ -25,7 +27,9 @@ def _make_section(status: pc.SectionStatus, *, informational: bool = False) -> p
     )
 
 
-def _report(*statuses: pc.SectionStatus, informational: tuple[bool, ...] | None = None) -> pc.ConsistencyReport:
+def _report(
+    *statuses: pc.SectionStatus, informational: tuple[bool, ...] | None = None
+) -> pc.ConsistencyReport:
     if informational is None:
         informational = (False,) * len(statuses)
     sections = tuple(
@@ -39,12 +43,16 @@ def _report(*statuses: pc.SectionStatus, informational: tuple[bool, ...] | None 
 
 
 def test_overall_status_promotes_fatal_over_warning():
-    r = _report(pc.SectionStatus.WARNING, pc.SectionStatus.FATAL, pc.SectionStatus.CLEAN)
+    r = _report(
+        pc.SectionStatus.WARNING, pc.SectionStatus.FATAL, pc.SectionStatus.CLEAN
+    )
     assert r.overall_status == pc.SectionStatus.FATAL
 
 
 def test_overall_status_warning_when_no_fatal():
-    r = _report(pc.SectionStatus.CLEAN, pc.SectionStatus.WARNING, pc.SectionStatus.SKIPPED)
+    r = _report(
+        pc.SectionStatus.CLEAN, pc.SectionStatus.WARNING, pc.SectionStatus.SKIPPED
+    )
     assert r.overall_status == pc.SectionStatus.WARNING
 
 
@@ -54,7 +62,9 @@ def test_overall_status_all_skipped_returns_skipped():
 
 
 def test_overall_status_skipped_does_not_demote_clean():
-    r = _report(pc.SectionStatus.CLEAN, pc.SectionStatus.SKIPPED, pc.SectionStatus.CLEAN)
+    r = _report(
+        pc.SectionStatus.CLEAN, pc.SectionStatus.SKIPPED, pc.SectionStatus.CLEAN
+    )
     assert r.overall_status == pc.SectionStatus.CLEAN
 
 
@@ -110,10 +120,11 @@ def test_collect_report_isolates_collector_exception():
         _collect_runtime_providers=lambda: good_collector(),
         _collect_lifecycle=lambda: good_collector(),
         _collect_setup_readiness=lambda: good_collector(),
+        _collect_wizard_finalization=lambda: good_collector(),
     ):
         report = asyncio.run(pc.collect_report(bot=object(), guild=None))
 
-    assert len(report.sections) == 11
+    assert len(report.sections) == 12
     identity = report.sections[0]
     assert identity.status == pc.SectionStatus.FATAL
     assert "RuntimeError" in identity.summary
@@ -218,12 +229,16 @@ def test_feature_flags_warning_when_bootstrap_fallback_positive():
     async def fake_resolve(_name, _gid):
         return ("decision", "source")
 
-    with patch("core.runtime.feature_flags.all_flags", return_value=fake_flags), patch(
-        "core.runtime.feature_flags.resolve_with_provenance",
-        side_effect=fake_resolve,
-    ), patch(
-        "core.runtime.feature_flags.bootstrap_fallback_count",
-        return_value=3,
+    with (
+        patch("core.runtime.feature_flags.all_flags", return_value=fake_flags),
+        patch(
+            "core.runtime.feature_flags.resolve_with_provenance",
+            side_effect=fake_resolve,
+        ),
+        patch(
+            "core.runtime.feature_flags.bootstrap_fallback_count",
+            return_value=3,
+        ),
     ):
         result = asyncio.run(pc._collect_feature_flags())
     assert result.status == pc.SectionStatus.WARNING
@@ -236,12 +251,16 @@ def test_feature_flags_clean_when_no_fallback():
     async def fake_resolve(_name, _gid):
         return ("decision", "source")
 
-    with patch("core.runtime.feature_flags.all_flags", return_value=fake_flags), patch(
-        "core.runtime.feature_flags.resolve_with_provenance",
-        side_effect=fake_resolve,
-    ), patch(
-        "core.runtime.feature_flags.bootstrap_fallback_count",
-        return_value=0,
+    with (
+        patch("core.runtime.feature_flags.all_flags", return_value=fake_flags),
+        patch(
+            "core.runtime.feature_flags.resolve_with_provenance",
+            side_effect=fake_resolve,
+        ),
+        patch(
+            "core.runtime.feature_flags.bootstrap_fallback_count",
+            return_value=0,
+        ),
     ):
         result = asyncio.run(pc._collect_feature_flags())
     assert result.status == pc.SectionStatus.CLEAN
@@ -253,9 +272,12 @@ def test_feature_flags_fatal_when_resolve_raises():
     async def fake_resolve(_name, _gid):
         raise RuntimeError("evaluator dead")
 
-    with patch("core.runtime.feature_flags.all_flags", return_value=fake_flags), patch(
-        "core.runtime.feature_flags.resolve_with_provenance",
-        side_effect=fake_resolve,
+    with (
+        patch("core.runtime.feature_flags.all_flags", return_value=fake_flags),
+        patch(
+            "core.runtime.feature_flags.resolve_with_provenance",
+            side_effect=fake_resolve,
+        ),
     ):
         result = asyncio.run(pc._collect_feature_flags())
     assert result.status == pc.SectionStatus.FATAL
@@ -383,6 +405,7 @@ def test_migrations_warning_on_numbering_gap(tmp_path, monkeypatch):
     for n in (1, 2, 5):
         (tmp_path / f"{n:03d}_test.sql").write_text("-- noop")
     monkeypatch.setattr(pc, "_MIGRATIONS_DIR", str(tmp_path))
+
     # Stub the DB to return the full filesystem set so the only signal
     # is the filesystem gap.
     async def fake_fetch(*_args, **_kwargs):
@@ -406,7 +429,10 @@ def test_migrations_warning_when_db_query_raises_but_files_clean(tmp_path, monke
     with patch("utils.db.pool.get", side_effect=boom):
         result = asyncio.run(pc._collect_migrations())
     assert result.status == pc.SectionStatus.WARNING
-    assert "db probe" in result.summary.lower() or "db probe" in " ".join(result.details).lower()
+    assert (
+        "db probe" in result.summary.lower()
+        or "db probe" in " ".join(result.details).lower()
+    )
 
 
 def test_migrations_fatal_when_directory_missing(monkeypatch):
@@ -435,15 +461,18 @@ def test_migrations_clean_when_contiguous_and_applied(tmp_path, monkeypatch):
 
 
 def test_runtime_providers_marks_per_provider_error():
-    with patch(
-        "services.diagnostics_service.registered_names",
-        return_value=["a", "b"],
-    ), patch(
-        "services.diagnostics_service.snapshot_all",
-        return_value={
-            "a": {"ok": True},
-            "b": {"_error": "RuntimeError: boom"},
-        },
+    with (
+        patch(
+            "services.diagnostics_service.registered_names",
+            return_value=["a", "b"],
+        ),
+        patch(
+            "services.diagnostics_service.snapshot_all",
+            return_value={
+                "a": {"ok": True},
+                "b": {"_error": "RuntimeError: boom"},
+            },
+        ),
     ):
         result = asyncio.run(pc._collect_runtime_providers())
     assert result.status == pc.SectionStatus.WARNING
@@ -451,24 +480,30 @@ def test_runtime_providers_marks_per_provider_error():
 
 
 def test_runtime_providers_clean_when_all_ok():
-    with patch(
-        "services.diagnostics_service.registered_names",
-        return_value=["a", "b"],
-    ), patch(
-        "services.diagnostics_service.snapshot_all",
-        return_value={"a": {"ok": True}, "b": {"ok": True}},
+    with (
+        patch(
+            "services.diagnostics_service.registered_names",
+            return_value=["a", "b"],
+        ),
+        patch(
+            "services.diagnostics_service.snapshot_all",
+            return_value={"a": {"ok": True}, "b": {"ok": True}},
+        ),
     ):
         result = asyncio.run(pc._collect_runtime_providers())
     assert result.status == pc.SectionStatus.CLEAN
 
 
 def test_runtime_providers_skipped_when_registry_empty():
-    with patch(
-        "services.diagnostics_service.registered_names",
-        return_value=[],
-    ), patch(
-        "services.diagnostics_service.snapshot_all",
-        return_value={},
+    with (
+        patch(
+            "services.diagnostics_service.registered_names",
+            return_value=[],
+        ),
+        patch(
+            "services.diagnostics_service.snapshot_all",
+            return_value={},
+        ),
     ):
         result = asyncio.run(pc._collect_runtime_providers())
     assert result.status == pc.SectionStatus.SKIPPED
@@ -559,9 +594,9 @@ def test_setup_readiness_lists_all_documented_blockers():
     # must still appear as a prefix in some detail line.
     detail_text = " ".join(result.details)
     for blocker in pc.SETUP_READINESS_BLOCKERS:
-        assert blocker in detail_text, (
-            f"{blocker!r} missing from setup readiness section details"
-        )
+        assert (
+            blocker in detail_text
+        ), f"{blocker!r} missing from setup readiness section details"
 
 
 def test_setup_readiness_marked_informational():
@@ -583,7 +618,7 @@ def test_setup_readiness_constant_is_nonempty_tuple():
 # ---------------------------------------------------------------------------
 
 
-def test_collect_report_returns_eleven_sections_in_order():
+def test_collect_report_returns_twelve_sections_in_order():
     async def trivial(*args, **kwargs) -> pc.SectionResult:
         return pc.SectionResult(name="x", status=pc.SectionStatus.SKIPPED, summary="x")
 
@@ -599,13 +634,17 @@ def test_collect_report_returns_eleven_sections_in_order():
         _collect_migrations=trivial,
         _collect_runtime_providers=trivial,
         _collect_lifecycle=trivial,
-        # Real setup-readiness collector so we get the informational tag.
+        # Real setup-readiness + wizard-finalization collectors so we get
+        # the informational tags on the last two sections.
     ):
         report = asyncio.run(pc.collect_report(bot=object(), guild=None))
-    assert len(report.sections) == 11
-    # Last section must be Setup readiness, marked informational.
-    assert report.sections[-1].name == "Setup readiness"
+    assert len(report.sections) == 12
+    # Last section must be Wizard finalization, marked informational.
+    assert report.sections[-1].name == "Wizard finalization"
     assert report.sections[-1].informational is True
+    # Setup readiness is now second-to-last, also informational.
+    assert report.sections[-2].name == "Setup readiness"
+    assert report.sections[-2].informational is True
 
 
 # ---------------------------------------------------------------------------
@@ -632,6 +671,7 @@ def test_readiness_kinds_canonical_ordering():
         pc.ReadinessKind.RUNTIME_PROVIDERS,
         pc.ReadinessKind.LIFECYCLE,
         pc.ReadinessKind.SETUP_READINESS,
+        pc.ReadinessKind.WIZARD_FINALIZATION,
     )
     # Every declared kind must appear in the canonical tuple.
     assert set(pc.READINESS_KINDS) == set(pc.ReadinessKind)

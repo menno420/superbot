@@ -66,7 +66,7 @@ def _extract_collector_labels() -> tuple[str, ...]:
 
 def test_label_to_kind_covers_every_collector_label():
     labels = _extract_collector_labels()
-    assert len(labels) == 11, f"Expected 11 collectors; found {len(labels)}"
+    assert len(labels) == 12, f"Expected 12 collectors; found {len(labels)}"
     missing = [label for label in labels if label not in pc._LABEL_TO_KIND]
     assert not missing, (
         f"_LABEL_TO_KIND missing entries for: {missing}.  "
@@ -77,9 +77,9 @@ def test_label_to_kind_covers_every_collector_label():
 def test_label_to_kind_has_no_orphan_entries():
     labels = set(_extract_collector_labels())
     orphan = [label for label in pc._LABEL_TO_KIND if label not in labels]
-    assert not orphan, (
-        f"_LABEL_TO_KIND has orphan entries (no matching collector): {orphan}"
-    )
+    assert (
+        not orphan
+    ), f"_LABEL_TO_KIND has orphan entries (no matching collector): {orphan}"
 
 
 def test_readiness_kinds_matches_label_to_kind_values():
