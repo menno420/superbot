@@ -29,9 +29,15 @@ def _role(name, position, *, admin=False, members=(), hoist=False):
         position=position,
         hoist=hoist,
         mentionable=False,
-        permissions=_perms(administrator=admin, manage_guild=False, manage_roles=False,
-                           manage_channels=False, ban_members=False, kick_members=False,
-                           manage_messages=False),
+        permissions=_perms(
+            administrator=admin,
+            manage_guild=False,
+            manage_roles=False,
+            manage_channels=False,
+            ban_members=False,
+            kick_members=False,
+            manage_messages=False,
+        ),
         members=list(members),
     )
 
@@ -115,7 +121,9 @@ def test_list_roles_sorted_high_to_low_with_privilege_summary():
 
 
 def test_list_roles_member_counts_when_opted_in():
-    guild = _guild(roles=[_role("@everyone", 0), _role("Member", 1, members=["a", "b"])])
+    guild = _guild(
+        roles=[_role("@everyone", 0), _role("Member", 1, members=["a", "b"])]
+    )
     out = gintro.list_roles(guild, include_member_counts=True)
     assert out["roles"][0]["member_count"] == 2
 
@@ -149,11 +157,24 @@ def test_list_channels_lists_all_when_no_member():
 
 def test_lookup_member_matches_by_substring():
     members = [
-        SimpleNamespace(display_name="Bob", name="bob123", global_name=None,
-                        joined_at=datetime(2022, 1, 2, tzinfo=timezone.utc),
-                        bot=False, id=2, roles=[_role("@everyone", 0), _role("Mod", 3)]),
-        SimpleNamespace(display_name="Carol", name="carol", global_name=None,
-                        joined_at=None, bot=False, id=3, roles=[]),
+        SimpleNamespace(
+            display_name="Bob",
+            name="bob123",
+            global_name=None,
+            joined_at=datetime(2022, 1, 2, tzinfo=timezone.utc),
+            bot=False,
+            id=2,
+            roles=[_role("@everyone", 0), _role("Mod", 3)],
+        ),
+        SimpleNamespace(
+            display_name="Carol",
+            name="carol",
+            global_name=None,
+            joined_at=None,
+            bot=False,
+            id=3,
+            roles=[],
+        ),
     ]
     out = gintro.lookup_member(_guild(members=members), "bob")
     assert out["found"] is True
@@ -166,6 +187,62 @@ def test_lookup_member_matches_by_substring():
 def test_lookup_member_empty_query():
     out = gintro.lookup_member(_guild(), "")
     assert out["found"] is False
+
+
+# --- list_members (full roster) ----------------------------------------
+
+
+def _full_member(name, *, mid, admin=False, manage_guild=False, bot=False, roles=()):
+    return SimpleNamespace(
+        display_name=name,
+        name=name.lower(),
+        global_name=None,
+        id=mid,
+        bot=bot,
+        guild_permissions=_perms(administrator=admin, manage_guild=manage_guild),
+        roles=[_role("@everyone", 0), *roles],
+    )
+
+
+def test_list_members_returns_everyone_with_permission_tier():
+    members = [
+        _full_member("Regular", mid=2),
+        _full_member("Adminy", mid=3, admin=True, roles=[_role("Admin", 9)]),
+        _full_member("Mody", mid=4, manage_guild=True),
+        _full_member("BotUser", mid=5, bot=True),
+    ]
+    # owner_id=1 is none of the above → they keep their perm-derived tiers.
+    out = gintro.list_members(_guild(members=members, owner_id=1))
+    assert out["total"] == 4
+    assert out["truncated"] is False
+    by_name = {m["display_name"]: m for m in out["members"]}
+    assert by_name["Adminy"]["permission_tier"] == "administrator"
+    assert by_name["Mody"]["permission_tier"] == "moderator"
+    assert by_name["Regular"]["permission_tier"] == "member"
+    assert by_name["BotUser"]["is_bot"] is True
+    assert by_name["Adminy"]["roles"] == ["Admin"]  # @everyone excluded
+
+
+def test_list_members_marks_owner_and_sorts_privileged_first():
+    members = [
+        _full_member("Zara", mid=2),  # regular, name sorts last
+        _full_member("Owner", mid=1),  # matches owner_id below
+        _full_member("Aaron", mid=3, admin=True),
+    ]
+    out = gintro.list_members(_guild(members=members, owner_id=1))
+    order = [m["display_name"] for m in out["members"]]
+    # owner first, then admin, then regular — privilege beats alphabetical.
+    assert order == ["Owner", "Aaron", "Zara"]
+    assert out["members"][0]["is_owner"] is True
+    assert out["members"][0]["permission_tier"] == "owner"
+
+
+def test_list_members_caps_and_reports_truncation():
+    members = [_full_member(f"U{i:03d}", mid=100 + i) for i in range(120)]
+    out = gintro.list_members(_guild(members=members, owner_id=1), limit=100)
+    assert out["total"] == 120
+    assert out["truncated"] is True
+    assert len(out["members"]) == 100
 
 
 # --- registry wiring ---------------------------------------------------
@@ -181,12 +258,17 @@ def test_registry_includes_server_tools_with_guild(monkeypatch):
     # member lookup absent.
     monkeypatch.delenv("AI_SERVER_MEMBER_LOOKUP_ENABLED", raising=False)
     reg = ai_tools.build_registry(
-        scope=AIScope.USER, guild_id=1, actor_id=2, guild=_guild(), member=SimpleNamespace(),
+        scope=AIScope.USER,
+        guild_id=1,
+        actor_id=2,
+        guild=_guild(),
+        member=SimpleNamespace(),
     )
     names = set(reg.handlers)
     assert {"get_server_overview", "list_server_roles", "list_server_channels"} <= names
-    # Member lookup stays gated off by default.
+    # Member tools stay gated off by default.
     assert "lookup_member" not in names
+    assert "list_all_members" not in names
 
 
 def test_registry_member_lookup_appears_when_flag_on(monkeypatch):
@@ -194,17 +276,49 @@ def test_registry_member_lookup_appears_when_flag_on(monkeypatch):
     monkeypatch.setenv("AI_TOOLS_ENABLED", "1")
     monkeypatch.setenv("AI_SERVER_MEMBER_LOOKUP_ENABLED", "1")
     reg = ai_tools.build_registry(
-        scope=AIScope.USER, guild_id=1, actor_id=2, guild=_guild(), member=SimpleNamespace(),
+        scope=AIScope.USER,
+        guild_id=1,
+        actor_id=2,
+        guild=_guild(),
+        member=SimpleNamespace(),
     )
-    assert "lookup_member" in set(reg.handlers)
+    names = set(reg.handlers)
+    # Both the by-name lookup and the full-roster list are gated by the
+    # same opt-in flag.
+    assert "lookup_member" in names
+    assert "list_all_members" in names
 
 
-async def test_overview_handler_via_registry_includes_member_count_when_flag_on(monkeypatch):
+async def test_list_all_members_handler_via_registry(monkeypatch):
+    monkeypatch.setenv("AI_ENABLED", "1")
+    monkeypatch.setenv("AI_TOOLS_ENABLED", "1")
+    monkeypatch.setenv("AI_SERVER_MEMBER_LOOKUP_ENABLED", "1")
+    members = [_full_member("Aaron", mid=3, admin=True), _full_member("Zed", mid=2)]
+    reg = ai_tools.build_registry(
+        scope=AIScope.USER,
+        guild_id=1,
+        actor_id=2,
+        guild=_guild(members=members, owner_id=1),
+        member=SimpleNamespace(),
+    )
+    out = await reg.handlers["list_all_members"]({})
+    assert out["total"] == 2
+    assert [m["display_name"] for m in out["members"]] == ["Aaron", "Zed"]
+    assert out["members"][0]["permission_tier"] == "administrator"
+
+
+async def test_overview_handler_via_registry_includes_member_count_when_flag_on(
+    monkeypatch,
+):
     monkeypatch.setenv("AI_ENABLED", "1")
     monkeypatch.setenv("AI_TOOLS_ENABLED", "1")
     monkeypatch.setenv("AI_SERVER_MEMBER_LOOKUP_ENABLED", "1")
     reg = ai_tools.build_registry(
-        scope=AIScope.USER, guild_id=1, actor_id=2, guild=_guild(), member=SimpleNamespace(),
+        scope=AIScope.USER,
+        guild_id=1,
+        actor_id=2,
+        guild=_guild(),
+        member=SimpleNamespace(),
     )
     out = await reg.handlers["get_server_overview"]({})
     assert out["member_count"] == 42

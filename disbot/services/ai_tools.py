@@ -343,6 +343,33 @@ def _make_lookup_member(guild: Any, member: Any) -> ToolHandler:
     return handler
 
 
+# --- list_all_members (opt-in) -----------------------------------------
+
+_MEMBER_LIST_SPEC = AIToolSpec(
+    name="list_all_members",
+    description=(
+        "List ALL members of THIS server at once, each with their permission "
+        "tier (owner / administrator / moderator / member), whether they are a "
+        "bot, and their roles. Use this for 'list everyone', 'who are all the "
+        "members', or 'show every member and their permissions' — it is the "
+        "full-roster companion to lookup_member's by-name search. Results are "
+        "sorted most-privileged first and capped; the response includes total "
+        "and truncated so you can say 'showing N of M' when the server is large."
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.USER,
+)
+
+
+def _make_list_members(guild: Any) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import guild_introspection_service
+
+        return guild_introspection_service.list_members(guild)
+
+    return handler
+
+
 # --- btd6_lookup -------------------------------------------------------
 
 _BTD6_LOOKUP_SPEC = AIToolSpec(
@@ -869,7 +896,8 @@ def build_registry(
     ``discord.Member``) enable the server-introspection tools. When
     ``guild`` is ``None`` those tools are omitted, so existing callers
     that do not have a live guild keep the prior toolset. Member-level
-    data (the ``lookup_member`` tool and member counts) is gated behind
+    data (the ``lookup_member`` and ``list_all_members`` tools, plus member
+    counts) is gated behind
     :func:`feature_flags.ai_server_member_lookup_enabled` — default off.
     """
     from core.runtime.ai.feature_flags import ai_server_member_lookup_enabled
@@ -902,8 +930,11 @@ def build_registry(
             ],
         )
         if include_members:
-            catalog.append(
-                (_MEMBER_LOOKUP_SPEC, _make_lookup_member(guild, member)),
+            catalog.extend(
+                [
+                    (_MEMBER_LOOKUP_SPEC, _make_lookup_member(guild, member)),
+                    (_MEMBER_LIST_SPEC, _make_list_members(guild)),
+                ],
             )
     specs: list[AIToolSpec] = []
     handlers: dict[str, ToolHandler] = {}
