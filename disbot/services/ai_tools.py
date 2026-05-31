@@ -65,9 +65,10 @@ _USER_STANDING_SPEC = AIToolSpec(
         "permission role (server_owner / administrator / moderator / regular "
         "member) with owner/admin flags, plus their XP level and whether they "
         "are a brand-new user. This is the authoritative live answer for "
-        "'what are my permissions / am I an admin / am I the owner'. Call it "
-        "when the answer depends on who is asking, their permissions, or "
-        "their level."
+        "'what are my permissions / am I an admin / am I the owner'. It also "
+        "reports is_bot_owner — whether the asker is THIS bot's verified "
+        "owner/operator. Call it when the answer depends on who is asking, "
+        "their permissions, or their level."
     ),
     parameters=_NO_ARGS_SCHEMA,
     min_scope=AIScope.USER,
@@ -97,6 +98,13 @@ def _make_user_standing(
             result["server_role"] = tier
             result["is_server_owner"] = tier == "server_owner"
             result["has_admin_access"] = tier in ("server_owner", "administrator")
+        # Bot-owner recognition, keyed to the authoritative actor id (the live
+        # Discord user id), consistent with the bot_user_identity span.
+        from config import BOT_OWNER_USER_ID
+
+        result["is_bot_owner"] = (
+            BOT_OWNER_USER_ID is not None and actor_id == BOT_OWNER_USER_ID
+        )
         return result
 
     return handler

@@ -66,8 +66,9 @@ async def test_user_standing_handler_reads_permission_snapshot(monkeypatch):
 
     result = await registry.handlers["get_user_standing"]({})
 
-    # No member supplied → XP-only result (permission role omitted).
-    assert result == {"level": 5, "is_new_user": False}
+    # No member supplied → no Discord permission role. is_bot_owner is always
+    # reported (False here — actor 20 is not the configured bot owner).
+    assert result == {"level": 5, "is_new_user": False, "is_bot_owner": False}
 
 
 async def test_user_standing_includes_discord_role_for_owner(monkeypatch):
