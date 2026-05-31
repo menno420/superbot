@@ -10,28 +10,34 @@ repos:
         pass_filenames: true
         files: ^disbot/
 
+  # Formatter / linter versions are PINNED to match the CI workflow
+  # (.github/workflows/code-quality.yml) and requirements-dev.txt exactly.
+  # Black/ruff change their output between releases, so a stale pin here
+  # reformats code in a way CI then rejects (and vice versa). When bumping
+  # any tool, bump it in all three places in the same change.
+
   # Black - format
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 26.5.1
     hooks:
       - id: black
 
   # isort - import order
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 8.0.1
     hooks:
       - id: isort
 
   # Ruff - lint + autofix, fail commit if it had to fix anything
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.3
+    rev: v0.15.14
     hooks:
       - id: ruff
         args: ["--fix", "--exit-non-zero-on-fix"]
 
   # Mypy - strict types
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v2.1.0
     hooks:
       - id: mypy
         additional_dependencies: ["types-requests", "types-PyYAML"]

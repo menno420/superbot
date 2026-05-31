@@ -3,9 +3,15 @@
 # `.github/workflows/code-quality.yml` so local and CI agree on tool
 # versions.  Install with `bash scripts/setup_dev_env.sh` or:
 #   pip install -r requirements.txt -r requirements-dev.txt
-black
-isort
-ruff
-mypy
-pytest
-pytest-asyncio
+#
+# Versions are PINNED to match the CI workflow exactly. Formatters change
+# their output between releases, so an unpinned install silently drifts
+# from CI and produces "passes locally, fails in CI" churn (and vice
+# versa). When bumping a tool here, bump it in code-quality.yml AND
+# .pre-commit-config.yaml in the same change.
+black==26.5.1
+isort==8.0.1
+ruff==0.15.14
+mypy==2.1.0
+pytest==9.0.3
+pytest-asyncio==1.4.0
