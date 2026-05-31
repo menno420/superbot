@@ -1,4 +1,4 @@
-"""Setup-wizard finalization readiness rollup — setup-wizard PR1."""
+"""Setup-wizard finalization readiness rollup — setup-wizard PR1/PR3."""
 
 from __future__ import annotations
 
@@ -30,39 +30,41 @@ def test_provisioning_gate_is_deferred():
     assert states["provisioning_availability_gate"].status == "deferred"
 
 
-def test_cross_pr_items_pending_until_provider_registered():
-    """ai_advisor_review and preflight_gate_visible resolve only once PR3
-    registers their diagnostics providers — pending by default."""
-    from services import diagnostics_service
+# ---------------------------------------------------------------------------
+# PR3 capability detection (find_spec / hasattr — house style)
+# ---------------------------------------------------------------------------
 
-    # Ensure a clean baseline (another test may have registered these).
-    diagnostics_service.unregister("setup_ai_advisor")
-    diagnostics_service.unregister("setup_preflight")
+
+def test_ai_advisor_review_resolved_when_module_present():
+    """PR3 adds services.setup_advisor_review.review_draft, so the item
+    resolves via the capability seam."""
     states = {s.id: s for s in wizard_finalization.statuses()}
-    assert states["ai_advisor_review"].status == "pending"
-    assert states["preflight_gate_visible"].status == "pending"
+    assert states["ai_advisor_review"].status == "resolved"
 
 
-def test_ai_advisor_resolves_when_provider_registered():
-    from services import diagnostics_service
-
-    diagnostics_service.register("setup_ai_advisor", lambda: {})
-    try:
-        states = {s.id: s for s in wizard_finalization.statuses()}
-        assert states["ai_advisor_review"].status == "resolved"
-    finally:
-        diagnostics_service.unregister("setup_ai_advisor")
+def test_preflight_gate_resolved_when_capability_present():
+    """PR3 adds services.setup_operations.preflight_gate_state, so the item
+    resolves via hasattr."""
+    states = {s.id: s for s in wizard_finalization.statuses()}
+    assert states["preflight_gate_visible"].status == "resolved"
 
 
-def test_preflight_resolves_when_provider_registered():
-    from services import diagnostics_service
+def test_ai_advisor_in_progress_when_capability_missing(monkeypatch):
+    """If the review module loses its review_draft symbol, the detector
+    degrades to in_progress rather than claiming resolved."""
+    import services.setup_advisor_review as sar
 
-    diagnostics_service.register("setup_preflight", lambda: {})
-    try:
-        states = {s.id: s for s in wizard_finalization.statuses()}
-        assert states["preflight_gate_visible"].status == "resolved"
-    finally:
-        diagnostics_service.unregister("setup_preflight")
+    monkeypatch.delattr(sar, "review_draft", raising=False)
+    states = {s.id: s for s in wizard_finalization.statuses()}
+    assert states["ai_advisor_review"].status == "in_progress"
+
+
+def test_preflight_in_progress_when_capability_missing(monkeypatch):
+    import services.setup_operations as so
+
+    monkeypatch.delattr(so, "preflight_gate_state", raising=False)
+    states = {s.id: s for s in wizard_finalization.statuses()}
+    assert states["preflight_gate_visible"].status == "in_progress"
 
 
 def test_status_for_is_failsafe_on_raising_provider():

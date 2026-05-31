@@ -178,6 +178,18 @@ def build_final_review_embed(
         if len(value) > 1000:
             value = value[:997] + "..."
         embed.add_field(name="Pending", value=value, inline=False)
+        # No-rollback caveat (plan §D3): apply has no automatic undo.
+        # Operations run through idempotent pipelines in phase order; if
+        # one fails midway, the ones already applied stay applied.
+        embed.add_field(
+            name="⚠️ Heads-up",
+            value=(
+                "Apply has **no automatic rollback**. Each operation commits "
+                "through its pipeline in order; if one fails partway, earlier "
+                "ones stay applied and you'll be able to retry the rest."
+            ),
+            inline=False,
+        )
         embed.set_footer(text="Owner-gated. Nothing has applied yet.")
         return embed
 
@@ -227,8 +239,9 @@ def build_final_review_embed(
     if partial:
         embed.set_footer(
             text=(
-                "Draft preserved. Use Retry to re-run the failed/skipped "
-                "operations, or Cancel to leave the draft for later."
+                "Draft preserved. Retry re-runs the failed/skipped operations; "
+                "Cancel leaves the draft for later. Note: Cancel does NOT undo "
+                "operations that already applied."
             ),
         )
     return embed
@@ -414,6 +427,58 @@ class FinalReviewView(BaseView):
             )
         except discord.HTTPException:
             logger.warning("FinalReviewView: followup edit failed")
+
+    @discord.ui.button(
+        label="🧠 Ask AI to review",
+        style=discord.ButtonStyle.secondary,
+        custom_id="setup_final_review:ai_review",
+    )
+    async def _ai_review(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        """Optional, advisory-only AI review of the current setup (plan §D3).
+
+        Reads a guild snapshot and asks the configured advisor (deterministic
+        by default) for suggestions, then shows them as an **ephemeral**
+        message.  It never stages, applies, or mutates anything — the staged
+        draft is untouched — and it never blocks: any failure degrades to a
+        friendly "couldn't run" notice via :func:`review_draft`.
+        """
+        del button
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "AI review requires a guild context.",
+                ephemeral=True,
+            )
+            return
+        from core.runtime.interaction_helpers import safe_defer
+        from services.setup_advisor_review import review_draft
+
+        await safe_defer(interaction, ephemeral=True)
+        review = await review_draft(guild)
+        embed = discord.Embed(
+            title="🧠 AI setup review",
+            description=review.summary,
+            color=(
+                discord.Color.blurple() if review.ok else discord.Color.light_grey()
+            ),
+        )
+        if review.lines:
+            value = "\n".join(f"• {line}" for line in review.lines)
+            embed.add_field(name="Suggestions", value=value[:1000], inline=False)
+        embed.set_footer(
+            text=(
+                f"Advisory only ({review.provider}) — nothing has been staged "
+                "or applied. Use the wizard to make any changes yourself."
+            ),
+        )
+        try:
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        except discord.HTTPException:
+            logger.warning("FinalReviewView: AI review followup failed")
 
     @discord.ui.button(
         label="Edit setup",

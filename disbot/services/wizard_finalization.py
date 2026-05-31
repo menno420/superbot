@@ -89,37 +89,44 @@ def _fallback_attribution_status() -> ItemStatus:
 
 
 def _ai_advisor_review_status() -> ItemStatus:
-    """Resolved when the AI setup advisor is wired in (PR3).
+    """Resolved when the AI setup advisor review capability exists (PR3).
 
-    Detected via a neutral seam — a registered ``setup_ai_advisor``
-    diagnostics provider — because a ``services`` module must not import
-    the ``views`` layer to inspect the wizard directly.  PR3 registers
-    that provider as part of wiring the advisor into the wizard's
-    optional review action.
+    Detected via a capability seam — the ``services.setup_advisor_review``
+    module exposing ``review_draft`` — matching the ``find_spec`` house
+    style of :mod:`services.setup_blockers`.  A ``services`` module must
+    not import the ``views`` layer, and import timing for the advisor is
+    function-local, so module-spec existence is the robust, timing-
+    independent signal that the optional review action is wired.
     """
-    from services import diagnostics_service
+    import importlib.util
 
-    return (
-        "resolved"
-        if "setup_ai_advisor" in diagnostics_service.registered_names()
-        else "pending"
-    )
+    spec = importlib.util.find_spec("services.setup_advisor_review")
+    if spec is None:
+        return "pending"
+    import importlib
+
+    module = importlib.import_module("services.setup_advisor_review")
+    return "resolved" if hasattr(module, "review_draft") else "in_progress"
 
 
 def _preflight_gate_visible_status() -> ItemStatus:
-    """Resolved when the preflight gate is surfaced in diagnostics (PR3).
+    """Resolved when the preflight gate exposes a visibility surface (PR3).
 
-    PR3 registers a ``setup_preflight`` diagnostics provider that
-    exposes ``SETUP_PREFLIGHT_DIFF`` as an env-only gate (kept env-only
-    per plan §D2); its registration is the resolution signal.
+    PR3 adds ``preflight_gate_state`` to
+    :mod:`services.setup_operations`, which surfaces ``SETUP_PREFLIGHT_DIFF``
+    as an env-only gate (kept env-only per plan §D2).  Its presence is the
+    capability signal — detected via ``hasattr`` so it does not depend on
+    any import-time registration.
     """
-    from services import diagnostics_service
+    import importlib.util
 
-    return (
-        "resolved"
-        if "setup_preflight" in diagnostics_service.registered_names()
-        else "pending"
-    )
+    spec = importlib.util.find_spec("services.setup_operations")
+    if spec is None:
+        return "pending"
+    import importlib
+
+    module = importlib.import_module("services.setup_operations")
+    return "resolved" if hasattr(module, "preflight_gate_state") else "in_progress"
 
 
 def _provisioning_availability_gate_status() -> ItemStatus:
