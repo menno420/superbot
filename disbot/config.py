@@ -28,6 +28,21 @@ if not DISCORD_BOT_TOKEN or DISCORD_BOT_TOKEN.strip() == "":
 PREFIX = os.getenv("BOT_PREFIX", "!")
 
 # ==========================
+# Bot owner / operator
+# ==========================
+# The single Discord user authorised to administer this bot — the "bot
+# owner" / code editor. Identity is established by the authoritative
+# Discord user id (``message.author.id``), never by message text, so it
+# cannot be spoofed by someone merely claiming to be the owner. Hardcoded
+# default; overridable per-deployment via the ``BOT_OWNER_USER_ID`` env var.
+try:
+    BOT_OWNER_USER_ID: int | None = int(
+        os.getenv("BOT_OWNER_USER_ID", "340415158583296000"),
+    )
+except ValueError:
+    BOT_OWNER_USER_ID = None
+
+# ==========================
 # Initial Cogs (Extensions)
 # ==========================
 INITIAL_EXTENSIONS = [
