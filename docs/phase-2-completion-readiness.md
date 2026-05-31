@@ -135,13 +135,24 @@ them as informational tracking.
 
 ## Do NOT start yet
 
+> **Status update (2026-05-31) — reconciled with shipped code.** The
+> **setup wizard shipped** after this snapshot (`cogs.setup_cog`,
+> registered in `disbot/config.py`; see
+> `docs/setup_wizard_finalization_plan.md`). It is removed from the
+> lock-box below — it is now in *finalization*, not greenfield. The
+> remaining items stand.
+
 These are explicit lock-boxes — opening any of them before the
 substrate is stable will re-introduce the duplicate-systems risk that
 the consistency ledger exists to prevent:
 
-* `/myprofile` or participation hub UI
-* Setup wizard
-* Resource provisioning runtime (channel/role auto-creation)
+* `/myprofile` or participation hub UI *(still locked — plan-only)*
+* ~~Setup wizard~~ → **SHIPPED**; finalization tracked in
+  `docs/setup_wizard_finalization_plan.md`
+* Resource provisioning runtime (channel/role auto-creation) — *note: the
+  provisioning pipeline is now invoked by the shipped wizard with explicit
+  confirmation (no silent auto-create); the broader auto-provisioning
+  runtime stays locked*
 * Notification routing / DMs / reminders
 * Slash-command entrypoints for setting feature flags or participation
 * Component registry implementation (planning is fine)

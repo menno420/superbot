@@ -385,14 +385,28 @@ These are non-negotiable. Each is enforced (or will be) by tests.
 
 ## 6. Do-not-start-yet list
 
+> **Status update (2026-05-31) — reconciled with shipped code.** The
+> **guild setup wizard shipped** after this list was written
+> (`cogs.setup_cog`, registered in `disbot/config.py`; built and
+> live-tested 2026-05-29). Per "the source file wins," it is removed from
+> the list below — it is now in *finalization*, not greenfield. See
+> `docs/setup_wizard_finalization_plan.md`. The per-user surfaces remain
+> deferred.
+
 These must not be implemented until the Phase 2 substrate is complete
 (PR-0 through PR-10 on `main` and stable, setup readiness gate
 satisfied):
 
-- Setup wizard UI (any panel, modal, guided flow — not even a stub)
+- ~~Setup wizard UI~~ → **SHIPPED** (guild scope): routes every write
+  through the canonical mutation pipelines, read-only preflight, audited
+  session lifecycle. Finalization tracked in
+  `docs/setup_wizard_finalization_plan.md`.
 - Resource provisioning runtime (creating channels/roles/categories on
-  the operator's behalf)
-- `/myprofile` or any participation hub UI
+  the operator's behalf) — *note: the `ResourceProvisioningPipeline` is now
+  invoked by the shipped wizard with explicit confirmation (no silent
+  auto-create); the broader provisioning runtime stays deferred*
+- `/myprofile` or any participation hub UI — **still deferred** (plan-only;
+  the participation backend exists but has zero UI callers)
 - Notification routing (DMs, reminders, opt-in notifications)
 - Production flip of `bindings.primary` (canary in PR-7 only;
   production flip is its own future PR after canary observation)
