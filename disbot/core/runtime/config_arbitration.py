@@ -69,6 +69,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Literal
 
 logger = logging.getLogger("bot.config_arbitration")
@@ -144,12 +145,13 @@ def _bump_counters(result: ConfigReadResult) -> None:
 
 
 def _reset_counters_for_tests() -> None:
-    """Test helper — zero all counters."""
+    """Test helper — zero all counters and clear attribution."""
     global _CALLS_TOTAL
     _CALLS_TOTAL = 0
     for d in (_BY_SOURCE, _BY_BINDING_STATUS, _BY_FLAG_STATE):
         for k in list(d):
             d[k] = 0
+    _FALLBACK_ATTRIBUTION.clear()
 
 
 def counters_snapshot() -> dict[str, Any]:
@@ -160,6 +162,131 @@ def counters_snapshot() -> dict[str, Any]:
         "by_binding_status": dict(_BY_BINDING_STATUS),
         "by_flag_state": dict(_BY_FLAG_STATE),
     }
+
+
+# ---------------------------------------------------------------------------
+# Fallback attribution — names *which* key degraded to legacy (PR1)
+# ---------------------------------------------------------------------------
+#
+# The counters above answer "how many reads fell back?"; they cannot
+# answer "which subsystem / binding / legacy key fell back?".  This map
+# closes that gap for ``!platform consistency`` so an operator can act on
+# a non-zero fallback count instead of guessing.
+#
+# Privacy (hard rule — see docs/setup_wizard_finalization_plan.md §D6):
+# we store ONLY stable internal identifiers (guild_id, subsystem,
+# binding_name, legacy_key, source, flag_state, binding_status, and a
+# UTC timestamp).  We never store the resolved value, channel/role/user
+# names, or any free-form content.
+#
+# Cardinality: keyed by (guild_id, subsystem, binding_name) so a noisy
+# guild re-reading the same key collapses to ONE entry (its most recent
+# state) rather than flooding the map.  The map is hard-capped at
+# ``_ATTRIBUTION_MAX``; when full, the oldest entry by ``recorded_at`` is
+# evicted so it can never grow without bound.
+
+_ATTRIBUTION_MAX = 256
+
+
+@dataclass(frozen=True)
+class FallbackRecord:
+    """One redacted attribution entry for a non-clean arbitration read."""
+
+    guild_id: int
+    subsystem: str
+    binding_name: str
+    legacy_key: str
+    source: Source
+    flag_state: FlagState
+    binding_status: BindingStatus
+    recorded_at: str  # ISO-8601 UTC, second precision
+
+
+_FALLBACK_ATTRIBUTION: dict[tuple[int, str, str], FallbackRecord] = {}
+
+
+def _record_attribution(
+    result: ConfigReadResult,
+    guild_id: int,
+    subsystem: str,
+    binding_name: str,
+    legacy_key: str,
+) -> None:
+    """Record a redacted attribution entry for degrading reads.
+
+    Only ``source='fallback'`` (flag ON, binding not bound, legacy
+    supplied) and ``source='missing'`` while the flag is ON (nothing
+    configured under the new regime) are recorded — these are the
+    actionable migration signals.  ``legacy`` / ``binding`` (clean) and
+    ``missing`` while the flag is OFF (an ordinary unconfigured optional
+    setting) are ignored to keep the map focused and small.
+    """
+    record_it = result.source == "fallback" or (
+        result.source == "missing" and result.flag_state == "on"
+    )
+    if not record_it:
+        return
+    key = (guild_id, subsystem, binding_name)
+    # Evict the oldest entry when introducing a *new* key at capacity.
+    if (
+        key not in _FALLBACK_ATTRIBUTION
+        and len(_FALLBACK_ATTRIBUTION) >= _ATTRIBUTION_MAX
+    ):
+        oldest = min(
+            _FALLBACK_ATTRIBUTION,
+            key=lambda k: _FALLBACK_ATTRIBUTION[k].recorded_at,
+        )
+        _FALLBACK_ATTRIBUTION.pop(oldest, None)
+    _FALLBACK_ATTRIBUTION[key] = FallbackRecord(
+        guild_id=guild_id,
+        subsystem=subsystem,
+        binding_name=binding_name,
+        legacy_key=legacy_key,
+        source=result.source,
+        flag_state=result.flag_state,
+        binding_status=result.binding_status,
+        recorded_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
+    )
+
+
+def attribution_snapshot(limit: int = 25) -> list[dict[str, Any]]:
+    """Most-recent-first redacted attribution entries (capped at ``limit``)."""
+    records = sorted(
+        _FALLBACK_ATTRIBUTION.values(),
+        key=lambda r: r.recorded_at,
+        reverse=True,
+    )
+    return [
+        {
+            "guild_id": r.guild_id,
+            "subsystem": r.subsystem,
+            "binding_name": r.binding_name,
+            "legacy_key": r.legacy_key,
+            "source": r.source,
+            "flag_state": r.flag_state,
+            "binding_status": r.binding_status,
+            "recorded_at": r.recorded_at,
+        }
+        for r in records[:limit]
+    ]
+
+
+def _finalize(
+    result: ConfigReadResult,
+    guild_id: int,
+    subsystem: str,
+    binding_name: str,
+    legacy_key: str,
+) -> ConfigReadResult:
+    """Bump counters + record attribution, then return ``result``.
+
+    A single tail-call for every ``read_config`` return path so the
+    diagnostics side effects can never be forgotten when a new branch
+    is added.
+    """
+    _bump_counters(result)
+    _record_attribution(result, guild_id, subsystem, binding_name, legacy_key)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -238,8 +365,7 @@ async def read_config(
             flag_state="off",
             diagnostics=diagnostics,
         )
-        _bump_counters(result)
-        return result
+        return _finalize(result, guild_id, subsystem, binding_name, legacy_key)
 
     # Step 2: binding read.
     binding_status: BindingStatus = "n/a"
@@ -274,8 +400,7 @@ async def read_config(
                 flag_state="on",
                 diagnostics=diagnostics,
             )
-            _bump_counters(result)
-            return result
+            return _finalize(result, guild_id, subsystem, binding_name, legacy_key)
         if not kind_mismatch:
             diagnostics.append(f"binding not bound (status={binding_status})")
     except Exception as exc:  # noqa: BLE001 — arbitration must not raise
@@ -307,8 +432,7 @@ async def read_config(
             flag_state="on",
             diagnostics=diagnostics,
         )
-    _bump_counters(result)
-    return result
+    return _finalize(result, guild_id, subsystem, binding_name, legacy_key)
 
 
 async def _read_legacy(settings_db, guild_id: int, legacy_key: str) -> Any | None:
@@ -466,9 +590,15 @@ async def get_trusted_tier_role(guild_id: int) -> ConfigReadResult:
 
 
 def _consistency_snapshot() -> dict[str, Any]:
-    """Snapshot for ``!platform consistency`` (full surface lands in PR-10)."""
+    """Snapshot for ``!platform consistency``.
+
+    ``arbitration`` carries the aggregate counters; ``attribution``
+    carries the bounded, redacted per-key fallback list so the
+    consistency view can name *which* key degraded to legacy.
+    """
     return {
         "arbitration": counters_snapshot(),
+        "attribution": attribution_snapshot(),
     }
 
 
@@ -483,6 +613,8 @@ _register_diagnostics()
 
 __all__ = [
     "ConfigReadResult",
+    "FallbackRecord",
+    "attribution_snapshot",
     "counters_snapshot",
     "get_economy_log_channel",
     "get_trusted_tier_role",

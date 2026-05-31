@@ -318,6 +318,25 @@ def is_preflight_enabled() -> bool:
     return val not in ("0", "false", "no", "off")
 
 
+def preflight_gate_state() -> dict[str, Any]:
+    """Read-only visibility surface for the ``SETUP_PREFLIGHT_DIFF`` gate.
+
+    Plan §D2: the preflight diff is a **safety / diagnostic** gate, kept
+    deliberately **env-only** (not a DB-editable feature flag).  This
+    helper lets diagnostics explain *why* preview behaviour changed
+    without promoting the gate into the flag registry.  Returns the gate
+    name, its effective state, ownership, the default, and the raw env
+    value (``None`` when unset).
+    """
+    return {
+        "name": _PREFLIGHT_FLAG_ENV,
+        "enabled": is_preflight_enabled(),
+        "ownership": "env-only",
+        "default_enabled": True,
+        "raw": os.getenv(_PREFLIGHT_FLAG_ENV),
+    }
+
+
 async def preflight_operations(
     ops: list[SetupOperation],
     *,

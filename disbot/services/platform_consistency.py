@@ -98,6 +98,7 @@ class ReadinessKind(str, Enum):
     RUNTIME_PROVIDERS = "runtime_providers"
     LIFECYCLE = "lifecycle"
     SETUP_READINESS = "setup_readiness"
+    WIZARD_FINALIZATION = "wizard_finalization"
 
 
 # Canonical ordering — matches the orchestrator's collector tuple at
@@ -116,6 +117,7 @@ READINESS_KINDS: tuple[ReadinessKind, ...] = (
     ReadinessKind.RUNTIME_PROVIDERS,
     ReadinessKind.LIFECYCLE,
     ReadinessKind.SETUP_READINESS,
+    ReadinessKind.WIZARD_FINALIZATION,
 )
 
 
@@ -135,6 +137,7 @@ _LABEL_TO_KIND: dict[str, ReadinessKind] = {
     "Runtime providers": ReadinessKind.RUNTIME_PROVIDERS,
     "Lifecycle": ReadinessKind.LIFECYCLE,
     "Setup readiness": ReadinessKind.SETUP_READINESS,
+    "Wizard finalization": ReadinessKind.WIZARD_FINALIZATION,
 }
 
 
@@ -240,6 +243,7 @@ async def collect_report(
         ("Runtime providers", _collect_runtime_providers()),
         ("Lifecycle", _collect_lifecycle()),
         ("Setup readiness", _collect_setup_readiness()),
+        ("Wizard finalization", _collect_wizard_finalization()),
     )
     sections: list[SectionResult] = []
     for label, coro in collectors:
@@ -662,14 +666,33 @@ async def _collect_config_arbitration() -> SectionResult:
 
     summary = f"calls_total={calls}; fallback={fallback}; missing={missing}."
     if fallback or missing:
+        # PR1: name *which* keys degraded, not just how many.  The
+        # attribution list is redacted (internal IDs only) and bounded
+        # by config_arbitration; absence is handled gracefully.
+        attribution = snap.get("attribution") if isinstance(snap, dict) else None
+        detail_lines = [
+            "Non-zero fallback/missing — the arbiter is degrading to legacy "
+            "reads. Offending keys:",
+        ]
+        if isinstance(attribution, list) and attribution:
+            for rec in attribution[:4]:
+                if not isinstance(rec, dict):
+                    continue
+                detail_lines.append(
+                    f"{rec.get('subsystem')}/{rec.get('binding_name')} "
+                    f"(legacy={rec.get('legacy_key')}) "
+                    f"src={rec.get('source')} flag={rec.get('flag_state')} "
+                    f"binding={rec.get('binding_status')}",
+                )
+        else:
+            detail_lines.append(
+                "Per-key attribution unavailable — see `!platform flags`.",
+            )
         return SectionResult(
             name=name,
             status=SectionStatus.WARNING,
             summary=summary,
-            details=(
-                "Non-zero fallback/missing indicates the arbiter is degrading "
-                "to legacy reads — investigate per `!platform flags`.",
-            ),
+            details=tuple(detail_lines),
         )
     return SectionResult(
         name=name,
@@ -1031,6 +1054,50 @@ async def _collect_setup_readiness() -> SectionResult:
         suggested_actions=(
             "See `docs/phase-2-completion-readiness.md` for unlock order.",
         ),
+        informational=True,
+    )
+
+
+async def _collect_wizard_finalization() -> SectionResult:
+    """Section 11: setup-wizard finalization progress (informational).
+
+    Reports how far the PR1–PR3 setup-wizard finalization tranche
+    (``docs/setup_wizard_finalization_plan.md``) has landed so progress
+    is observable from ``!platform consistency``.  Each item's status
+    comes from a sync, fail-safe provider in
+    :mod:`services.wizard_finalization`; the section is
+    ``informational=True`` so it never promotes ``overall_status``.
+    """
+    name = "Wizard finalization"
+    # Function-local import keeps this module's import graph cycle-free
+    # (matches the discipline pinned by test_consistency_import_cycle).
+    from services import wizard_finalization
+
+    items = wizard_finalization.statuses()
+    total = len(items)
+    resolved = sum(1 for it in items if it.status == "resolved")
+    # "deferred" items are intentionally out of the tranche, so they do
+    # not count as pending work.
+    pending = [it for it in items if it.status not in ("resolved", "deferred")]
+    details = tuple(f"{it.id} [{it.pr}]: {it.status}" for it in items)
+
+    if not pending:
+        return SectionResult(
+            name=name,
+            status=SectionStatus.CLEAN,
+            summary=f"{resolved}/{total} finalization step(s) landed; rest deferred.",
+            details=details,
+            informational=True,
+        )
+    return SectionResult(
+        name=name,
+        status=SectionStatus.WARNING,
+        summary=(
+            f"{resolved}/{total} finalization step(s) landed "
+            "(informational; setup-wizard finalization in progress)."
+        ),
+        details=details,
+        suggested_actions=("See `docs/setup_wizard_finalization_plan.md` (PR1–PR3).",),
         informational=True,
     )
 

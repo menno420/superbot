@@ -43,12 +43,57 @@ logger = logging.getLogger("bot.views.diagnostic.flag_manager")
 # Max flags renderable in one Discord select.
 _MAX_FLAGS_PER_SELECT = 25
 
+# Flags whose declaration exists but which no runtime code consults yet
+# (verified by grep for ``is_enabled("<flag>")`` outside the declaration
+# and tests — see docs/setup_wizard_finalization_plan.md §7).  The manager
+# marks these "inactive / no consumer" so an operator does not waste time
+# flipping an override that changes nothing.  A flag graduates off this
+# list the moment a real consumer lands.
+_NO_CONSUMER_FLAGS: frozenset[str] = frozenset(
+    {
+        "resources.unified",
+        "settings.mutation.primary",
+        "resource_provisioning.primary",
+    },
+)
+
+
+def _is_operator(flag: Any) -> bool:
+    """True when the flag is an operator-facing feature toggle."""
+    return getattr(flag, "audience", "internal") == "operator"
+
+
+def _option_label(name: str, flag: Any) -> str:
+    """Friendly dropdown label: the flag's ``label`` (raw key goes in the
+    option description), prefixed so operator vs internal reads at a glance.
+    """
+    friendly = (getattr(flag, "label", "") or name) if flag is not None else name
+    prefix = "🛠" if (flag is not None and _is_operator(flag)) else "⚙"
+    return f"{prefix} {friendly}"[:100]
+
+
+def _option_description(name: str, flag: Any) -> str:
+    """Dropdown sub-text: the raw key plus an inactive / env-only marker."""
+    parts = [name]
+    if name in _NO_CONSUMER_FLAGS:
+        parts.append("inactive — no consumer")
+    elif flag is not None and not getattr(flag, "db_editable", True):
+        parts.append("env-only")
+    return " · ".join(parts)[:100]
+
 
 def _sorted_flag_names() -> list[str]:
-    """All declared feature flags, sorted for deterministic UI ordering."""
+    """Declared flags, operator-first then internal, each group sorted.
+
+    Feature toggles read before migration / rollout gates; within each
+    group the order is alphabetical for a stable, scannable dropdown.
+    """
     from core.runtime import feature_flags
 
-    return sorted(feature_flags.declared_names())
+    flags = feature_flags.all_flags()
+    operator = sorted(n for n, f in flags.items() if _is_operator(f))
+    internal = sorted(n for n, f in flags.items() if not _is_operator(f))
+    return operator + internal
 
 
 async def _resolve_flag_details(
@@ -101,6 +146,20 @@ async def _resolve_flag_details(
                 exc,
             )
 
+    # Whether the master switch is ON.  When OFF the evaluator ignores
+    # DB-backed overrides, so editing a per-guild override is a no-op —
+    # surfaced as a warning in the detail embed.  Resolved best-effort;
+    # never block the detail view on it.
+    primary_on = False
+    try:
+        primary = await feature_flags.resolve_with_provenance(
+            "feature_flag.primary",
+            guild_id,
+        )
+        primary_on = bool(primary.value)
+    except Exception as exc:  # noqa: BLE001 — display-only; never block
+        logger.debug("Could not resolve feature_flag.primary: %s", exc)
+
     return {
         "name": flag_name,
         "default": "on" if flag.default_value else "off",
@@ -113,6 +172,8 @@ async def _resolve_flag_details(
         "audience": flag.audience,
         "db_editable": flag.db_editable,
         "label": flag.label,
+        "no_consumer": flag_name in _NO_CONSUMER_FLAGS,
+        "primary_on": primary_on,
     }
 
 
@@ -167,6 +228,31 @@ def build_flag_detail_embed(details: dict[str, Any]) -> discord.Embed:
     removal = details.get("removal_target")
     if removal:
         embed.add_field(name="Removal target", value=removal, inline=True)
+
+    # Plain-language warnings so an operator knows when a control is a
+    # no-op before they click it.  Read-only — these never change state.
+    warnings: list[str] = []
+    if details.get("no_consumer"):
+        warnings.append(
+            "⚠️ **Inactive / no consumer** — declared but no runtime code "
+            "reads this flag yet, so toggling it changes nothing today.",
+        )
+    if not details.get("db_editable", True):
+        warnings.append(
+            "🔒 **Env-only** — per-guild DB overrides are ignored; set the "
+            f"`SUPERBOT_FF_{details['name'].replace('.', '_').upper()}` "
+            "environment variable instead.",
+        )
+    elif not details.get("primary_on", False):
+        warnings.append(
+            "⚠️ **`feature_flag.primary` is OFF** — the evaluator ignores "
+            "DB-backed overrides while the master switch is off, so editing "
+            "a per-guild override here will not take effect. Enable it via "
+            "`SUPERBOT_FF_FEATURE_FLAG_PRIMARY=on`.",
+        )
+    if warnings:
+        embed.add_field(name="Notes", value="\n".join(warnings)[:1024], inline=False)
+
     embed.set_footer(
         text=(
             "Enable/Disable writes a per-guild override through "
@@ -178,12 +264,16 @@ def build_flag_detail_embed(details: dict[str, Any]) -> discord.Embed:
 
 class _FlagSelect(discord.ui.Select):
     def __init__(self, flag_names: list[str], selected: str | None) -> None:
+        from core.runtime import feature_flags
+
         options: list[discord.SelectOption] = []
         for name in flag_names[:_MAX_FLAGS_PER_SELECT]:
+            flag = feature_flags.get(name)
             options.append(
                 discord.SelectOption(
-                    label=name[:100],
+                    label=_option_label(name, flag),
                     value=name,
+                    description=_option_description(name, flag),
                     default=(name == selected),
                 ),
             )
