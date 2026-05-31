@@ -4,7 +4,8 @@ The service composes ``bot_*`` reference blocks for the AI cog. PR1
 verifies:
 
 * Intent gating (catalog block only on meta-questions, audit block
-  only on why-no-reply questions).
+  only on why-no-reply questions; the asker's standing block is
+  always present so the bot is guild-aware on every turn).
 * Trigger regex correctness (URLs, dates, fractions, ``and/or`` do
   NOT trigger the slash regex; bare punctuation does NOT trigger the
   prefix regex).
@@ -246,6 +247,37 @@ async def test_administrator_gets_standing_block_regression() -> None:
     assert any(b.kind == "bot_user_identity" for b in blocks)
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "You do know I am the server admin right",  # the exact regression phrase
+        "make me a cake recipe",  # wholly unrelated request
+        "",  # empty / bare mention
+    ],
+)
+@pytest.mark.asyncio
+async def test_gather_always_includes_standing_block(text: str) -> None:
+    """Regression: the asker's standing must reach the prompt on EVERY turn,
+    not only when the message matches a permission-question trigger.
+
+    Live testing: asked "You do know I am the server admin right", the bot
+    replied "I can't verify your admin status from chat alone" — that phrasing
+    matched no permission trigger, so the standing block was withheld and the
+    bot went blind to who it was talking to. The block is now unconditional.
+    """
+    blocks = await bot_knowledge_service.gather(
+        guild_id=1,
+        channel_id=2,
+        user_id=7,
+        user_text=text,
+        user_tier="administrator",
+        accessible_channel_ids=frozenset(),
+    )
+    identity = [b for b in blocks if b.kind == "bot_user_identity"]
+    assert len(identity) == 1, f"no standing block for {text!r}"
+    assert "ADMINISTRATOR" in identity[0].text
+
+
 # ---------------------------------------------------------------------------
 # Catalog block — tier filtering, bounds, subsystem rules
 # ---------------------------------------------------------------------------
@@ -263,7 +295,9 @@ async def test_gather_includes_catalog_only_on_meta_intent(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset(),
     )
-    assert blocks_no == ()
+    # The catalog block is intent-gated, so a non-meta message yields none of
+    # it. (The always-on standing block is asserted separately.)
+    assert not any(b.kind == "bot_command_catalog" for b in blocks_no)
 
     blocks_yes = await bot_knowledge_service.gather(
         guild_id=1,
@@ -273,8 +307,7 @@ async def test_gather_includes_catalog_only_on_meta_intent(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset(),
     )
-    assert len(blocks_yes) == 1
-    assert blocks_yes[0].kind == "bot_command_catalog"
+    assert any(b.kind == "bot_command_catalog" for b in blocks_yes)
 
 
 @pytest.mark.asyncio
@@ -536,7 +569,9 @@ async def test_catalog_returns_none_when_catalog_unbuilt(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset(),
     )
-    assert blocks == ()
+    # No catalog block when the catalog is unbuilt. (The always-on standing
+    # block may still be present and is asserted separately.)
+    assert not any(b.kind == "bot_command_catalog" for b in blocks)
 
 
 # ---------------------------------------------------------------------------
@@ -591,7 +626,10 @@ async def test_gather_includes_audit_only_on_why_intent(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset(),
     )
-    assert blocks_no == ()
+    # Audit block is intent-gated: a non-"why" message yields none of it and
+    # the audit service is not even queried. (The always-on standing block is
+    # asserted separately.)
+    assert not any(b.kind == "bot_user_audit" for b in blocks_no)
     assert queries == []  # not even queried when intent is missing
 
     blocks_yes = await bot_knowledge_service.gather(
@@ -602,8 +640,7 @@ async def test_gather_includes_audit_only_on_why_intent(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset(),
     )
-    assert len(blocks_yes) == 1
-    assert blocks_yes[0].kind == "bot_user_audit"
+    assert any(b.kind == "bot_user_audit" for b in blocks_yes)
 
 
 @pytest.mark.asyncio
@@ -628,8 +665,9 @@ async def test_audit_block_prefers_current_channel(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset({100, 200}),
     )
-    assert len(blocks) == 1
-    text = blocks[0].text
+    audit = [b for b in blocks if b.kind == "bot_user_audit"]
+    assert len(audit) == 1
+    text = audit[0].text
     assert "in this channel" in text
     assert "here_reason" in text
     assert "Your most recent AI interaction in this channel" in text
@@ -654,8 +692,9 @@ async def test_audit_block_falls_back_guild_wide(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset({100, 200}),
     )
-    assert len(blocks) == 1
-    text = blocks[0].text
+    audit = [b for b in blocks if b.kind == "bot_user_audit"]
+    assert len(audit) == 1
+    text = audit[0].text
     assert "<#200>" in text
     assert "I didn't find a recent non-reply for you in this channel" in text
 
@@ -796,7 +835,9 @@ async def test_audit_block_only_replied_rows_returns_none(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset({100}),
     )
-    assert blocks == ()
+    # No audit block in this case. (The always-on standing block may still be
+    # present and is asserted separately.)
+    assert not any(b.kind == "bot_user_audit" for b in blocks)
 
 
 @pytest.mark.asyncio
@@ -817,4 +858,6 @@ async def test_audit_block_swallows_query_failure(monkeypatch) -> None:
         user_tier="user",
         accessible_channel_ids=frozenset({100}),
     )
-    assert blocks == ()
+    # No audit block in this case. (The always-on standing block may still be
+    # present and is asserted separately.)
+    assert not any(b.kind == "bot_user_audit" for b in blocks)
