@@ -1130,6 +1130,44 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     Module 6.
 
 
+### paragon
+
+1. **cog_module**: `disbot/cogs/paragon_cog.py`
+2. **subsystem**: `btd6` (Paragon degree calculator — a BTD6 feature given a
+   thin command surface of its own so `btd6_cog.py` stays under the 800-LOC
+   ceiling).
+3. **current_commands**: `!paragon` opens the Paragon degree calculator.
+   Also reachable from the 🔮 Paragon button on `BTD6PanelView` (`!btd6`).
+4. **current_command_groups**: none (single prefix command).
+5. **current_command_panel_or_menu**: `!paragon` opens
+   `ParagonCalculatorView` (ephemeral) — selects for paragon / players /
+   difficulty / extra-T5, plus modals for the numbers and the target degree.
+6. **help_menu_discoverable**: Yes — prefix command plus the BTD6 panel button.
+7. **dedicated_panel_command**: `!paragon`.
+8. **help_menu_direct_navigation_hook**: `views.btd6.paragon_view.open_paragon_calculator`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user` (read-only
+    calculator; no mutations).
+14. **hardcoded_or_env_only_behavior**: `PARAGON_API_BASE_URL` /
+    `PARAGON_API_KEY` (env, optional); committed medium base prices in
+    `disbot/utils/btd6/paragon_math.py`.
+15. **missing_customization_commands**: none planned.
+16. **missing_settings_pages**: none planned.
+17. **missing_menu_buttons_selects_modals**: none.
+18. **setting_class_per_value**: n/a (no settings).
+19. **target_Settings_Manager_page**: n/a.
+20. **target_mutation_path**: n/a (read-only; external API + local math via
+    `services.paragon_service`).
+21. **target_help_or_menu_route**: existing; reachable from the BTD6 hub panel
+    button and `!paragon`.
+22. **provisionable_resources**: none.
+23. **priority**: `P2` — BTD6 Paragon calculator.
+24. **recommended_PR_phase**: ships with the Paragon calculator feature.
+
+
 ### settings
 
 1. **cog_module**: `disbot/cogs/settings_cog.py` (added in S5).

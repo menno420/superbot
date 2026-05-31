@@ -56,6 +56,7 @@ INITIAL_EXTENSIONS = [
     "cogs.diagnostic_cog",
     "cogs.ai_cog",
     "cogs.btd6_cog",
+    "cogs.paragon_cog",
     "cogs.chain_cog",
     "cogs.general_cog",
     "cogs.four_twenty_cog",
@@ -146,3 +147,16 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 # the setup advisor's provider choice (back-compat).
 AI_ENABLED = os.getenv("AI_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
 AI_DEFAULT_PROVIDER = os.getenv("AI_DEFAULT_PROVIDER", "deterministic").lower()
+
+# ==========================
+# BTD6 Paragon Calculator (services/paragon_service.py)
+# ==========================
+# External Paragon degree calculator API. The endpoint is public and CORS-open;
+# an API key is optional (raises the rate limit from 60 to 300 req/min). When the
+# host cannot reach the endpoint, ``paragon_service`` falls back to a local,
+# clearly-labelled estimate computed from the documented formula.
+PARAGON_API_BASE_URL = os.getenv(
+    "PARAGON_API_BASE_URL",
+    "https://paragon-calc.vercel.app",
+)
+PARAGON_API_KEY = os.getenv("PARAGON_API_KEY", "")

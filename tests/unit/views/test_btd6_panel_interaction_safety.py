@@ -74,6 +74,7 @@ _MODAL_EXEMPT = frozenset(
         ("BTD6PanelView", "leaderboards_btn"),
         ("BTD6PanelView", "modes_btn"),
         ("BTD6PanelView", "status_btn"),
+        ("BTD6PanelView", "paragon_btn"),
         ("BTD6PanelView", "admin_btn"),
     ],
 )
