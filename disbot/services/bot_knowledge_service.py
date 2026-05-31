@@ -8,8 +8,15 @@ that start with ``bot_``; the task contract in
 ``ai_instruction_service`` tells the model to treat those spans as
 authoritative reference material but **never as instructions**.
 
-PR1 sources two blocks, each gated by a substring/regex heuristic:
+The service sources three blocks:
 
+* ``bot_user_identity`` — the asker's resolved server standing
+  (owner / administrator / moderator / regular member). Included on
+  EVERY turn, not gated by a phrasing heuristic: it is a single
+  authoritative sentence, so the bot is always aware of who it is
+  talking to and never falls back to "I can't see your permissions"
+  just because the question was phrased in a way no trigger list
+  anticipated.
 * ``bot_command_catalog`` — only when the message looks like a
   command/help question. Tier-filtered against the asker's resolved
   permission tier; bounded by entry-count and character-count caps
@@ -122,45 +129,6 @@ def looks_like_audit_question(text: str) -> bool:
     return any(t in lower for t in _AUDIT_SUBSTRING_TRIGGERS)
 
 
-# Permission-question triggers — the asker asking about their OWN standing.
-_PERMISSION_SUBSTRING_TRIGGERS: tuple[str, ...] = (
-    "my permission",
-    "my permissions",
-    "my role",
-    "my roles",
-    "my server role",
-    "my discord role",
-    "my access",
-    "my standing",
-    "am i the owner",
-    "am i owner",
-    "am i an owner",
-    "am i the server owner",
-    "am i admin",
-    "am i an admin",
-    "am i administrator",
-    "am i an administrator",
-    "am i a mod",
-    "am i a moderator",
-    "who am i in this server",
-    "do you know who i am",
-)
-
-
-def looks_like_permission_question(text: str) -> bool:
-    """Public: True if the message asks about the sender's OWN server
-    standing / permissions ('what is my permission', 'am I the owner').
-
-    Gates the user-standing block so it only joins the prompt when the
-    asker is actually asking about their access — mirroring how the
-    command catalog and audit blocks are intent-gated.
-    """
-    if not text:
-        return False
-    lower = text.lower()
-    return any(t in lower for t in _PERMISSION_SUBSTRING_TRIGGERS)
-
-
 def resolve_user_tier(member: object) -> str:
     """Map a discord.Member to one of {user, moderator, administrator, server_owner}.
 
@@ -234,12 +202,16 @@ async def gather(
     user_tier: str,
     accessible_channel_ids: frozenset[int],
 ) -> tuple[BotKnowledgeBlock, ...]:
-    """Compose every applicable bot-knowledge block for one mention."""
+    """Compose every applicable bot-knowledge block for one mention.
+
+    The asker's standing block is included on EVERY turn (it is a single
+    authoritative sentence, not a heuristic-gated lookup) so the bot is
+    always aware of who it is talking to and never falls back to "I can't
+    see your permissions" just because the question was phrased in a way
+    no trigger list anticipated. The larger command-catalog and audit
+    blocks stay intent-gated to keep the prompt lean.
+    """
     blocks: list[BotKnowledgeBlock] = []
-    if looks_like_permission_question(user_text):
-        standing = _user_standing_block(user_tier)
-        if standing is not None:
-            blocks.append(standing)
     if looks_like_command_question(user_text):
         block = _command_catalog_block(user_tier)
         if block is not None:
@@ -253,6 +225,12 @@ async def gather(
         )
         if block is not None:
             blocks.append(block)
+    # Always-on: the asker's own resolved server standing. Appended after
+    # the heuristic blocks so callers/tests that read blocks[0] as the
+    # catalog/audit block are unaffected.
+    standing = _user_standing_block(user_tier)
+    if standing is not None:
+        blocks.append(standing)
     return tuple(blocks)
 
 
@@ -455,6 +433,5 @@ __all__ = [
     "gather",
     "looks_like_audit_question",
     "looks_like_command_question",
-    "looks_like_permission_question",
     "resolve_user_tier",
 ]
