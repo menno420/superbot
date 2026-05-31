@@ -49,7 +49,7 @@ class TestChainStageContract:
     def test_metadata(self):
         stage = ChainStage(_make_cog())
         assert stage.name == CHAIN_STAGE_NAME == "chain"
-        assert stage.order == CHAIN_STAGE_ORDER == 10
+        assert stage.order == CHAIN_STAGE_ORDER == 20
 
     @pytest.mark.asyncio
     async def test_delete_short_circuits(self):

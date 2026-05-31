@@ -29,13 +29,15 @@ if TYPE_CHECKING:
 
 
 COUNTING_STAGE_NAME = "counting"
-COUNTING_STAGE_ORDER = 10
+# Auto-mod tier — after cleanup (10), before chain (20). See the canonical
+# stage-order table in core/runtime/message_pipeline.py.
+COUNTING_STAGE_ORDER = 15
 
 
 class CountingStage:
     """Validate counts in active channels; short-circuit on rule violation.
 
-    Auto-mod tier (order=10).  Returns
+    Auto-mod tier (order=15).  Returns
     ``StageResult(deleted=True, short_circuit=True)`` when the count
     was invalid and the message was deleted, so XP/game stages skip
     a message that's gone.  Returns an empty result for valid counts

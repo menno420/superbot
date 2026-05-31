@@ -26,7 +26,7 @@ class TestRpsTournamentStage:
         cog = MagicMock()
         stage = RpsTournamentStage(cog)
         assert stage.name == RPS_STAGE_NAME == "rps_tournament"
-        assert stage.order == RPS_STAGE_ORDER == 30
+        assert stage.order == RPS_STAGE_ORDER == 40
 
     @pytest.mark.asyncio
     async def test_process_delegates_to_cog(self):

@@ -5,10 +5,11 @@ on the cog) as a :class:`core.runtime.message_pipeline.MessageStage`.
 The cog registers an instance in ``cog_load`` and unregisters on
 ``cog_unload`` for hot-reload safety.
 
-Order: 30.  Per plan §3.2, RPS sits in the *game_input* tier — after
-auto-mod (order=10) and the XP reward stage (order=20).  The stage
-never deletes or short-circuits; it's pure capture of player moves
-in tournament match channels.
+Order: 40.  RPS sits in the *rewards / game-input* tier — after the
+auto-mod tier (cleanup=10, counting=15, chain=20) and the XP reward
+stage (order=30).  The stage never deletes or short-circuits; it's
+pure capture of player moves in tournament match channels.  See the
+canonical stage-order table in ``core/runtime/message_pipeline.py``.
 """
 
 from __future__ import annotations
@@ -25,13 +26,13 @@ if TYPE_CHECKING:
 
 
 RPS_STAGE_NAME = "rps_tournament"
-RPS_STAGE_ORDER = 30
+RPS_STAGE_ORDER = 40
 
 
 class RpsTournamentStage:
     """Capture player moves in tournament match channels.
 
-    Game-input tier (order=30).  No deletion, no short-circuit — just
+    Game-input tier (order=40).  No deletion, no short-circuit — just
     routes the message to the cog's tournament-state dispatch.
 
     Holds a cog reference because the tournament state

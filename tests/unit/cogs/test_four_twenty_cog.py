@@ -85,8 +85,23 @@ def _ctx(content: str, channel_id: int = 1):
 def test_stage_identity():
     stage = FourTwentyStage()
     assert stage.name == FOUR_TWENTY_STAGE_NAME
-    # Observe-only stage runs late, behind game/mod/xp stages.
-    assert stage.order == FOUR_TWENTY_STAGE_ORDER >= 90
+    assert stage.order == FOUR_TWENTY_STAGE_ORDER
+    # Must run after the auto-mod / game tiers (10–30) so it never leafs a
+    # message that's about to be deleted, but BEFORE the AI natural-language
+    # stage (order=70), which short-circuits the pipeline on a bot mention.
+    # That ordering is the whole fix for "@bot … 420" not getting a 🍃.
+    assert 30 < stage.order < 70
+
+
+def test_runs_before_ai_stage_so_mentions_still_get_leafed():
+    """Regression guard: the AI natural-language stage short-circuits the
+    pipeline on a bot mention, so the 🍃 stage MUST be ordered ahead of it
+    or ``@bot … 420`` messages silently never fire. Pin the live order
+    relationship against the AI stage itself, not a magic number.
+    """
+    from core.runtime.ai.natural_language_stage import STAGE_ORDER as AI_ORDER
+
+    assert FOUR_TWENTY_STAGE_ORDER < AI_ORDER
 
 
 @pytest.mark.asyncio
