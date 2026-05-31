@@ -14,12 +14,43 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DISBOT_ROOT = REPO_ROOT / "disbot"
+
+# Always invoke tools as `python3.10 -m <tool>`, never as the bare
+# executable. CI runs Python 3.10, and a bare `black` / `pytest` / etc. on
+# PATH can resolve to a DIFFERENT interpreter (e.g. a uv-installed
+# standalone pytest on its own isolated env that lacks the project's
+# dependencies — which produces thousands of bogus import-error
+# "failures"). Routing through python3.10 -m guarantees the same
+# interpreter + installed packages CI and the Claude Code hooks use.
+# See .claude/CLAUDE.md "Match CI exactly" and the PR #338 post-mortem.
+_PY = "python3.10" if shutil.which("python3.10") else sys.executable
+
+
+def _tool(name: str, *args: str) -> list[str]:
+    """Build a ``python3.10 -m <name> ...`` command (never the bare exe)."""
+    return [_PY, "-m", name, *args]
+
+
+# CI parity (see .github/workflows/code-quality.yml). These MUST match the
+# workflow's invocations exactly, or this script reports failures CI will
+# never see (or misses ones it will). The canonical traps this prevents:
+#   * CI excludes tests/ from black/isort/ruff — checking tests/ here too
+#     surfaced ~196 pre-existing test-file reformats that CI ignores, which
+#     turned the prescribed pre-push check permanently red for no real
+#     reason and caused wasted back-and-forth.
+#   * CI runs mypy only against disbot/.
+# black --exclude / ruff --exclude take a regex / comma-list; isort uses
+# --skip-glob. Kept byte-for-byte aligned with the workflow.
+_BLACK_EXCLUDE = r"(\.github|tests|venv|env|build|dist)"
+_ISORT_SKIP_GLOB = r"*/(\.github|tests|venv|env|build|dist)/*"
+_RUFF_EXCLUDE = ".github,tests,venv,env,build,dist"
 
 
 def _run(label: str, cmd: list[str], *, check: bool = False) -> int:
@@ -34,15 +65,27 @@ def _run(label: str, cmd: list[str], *, check: bool = False) -> int:
 
 
 def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
+    """Run black / isort / ruff over CI's exact scope.
+
+    Scope and exclude flags mirror ``.github/workflows/code-quality.yml``
+    so a pass here means a pass in CI (and vice versa). In ``--check-only``
+    mode the invocations are byte-for-byte the workflow's; in fix mode the
+    only difference is the auto-fix flag.
+    """
     results = []
-    flag = ["--check"] if check_only else []
 
     results.append(
         (
             "black",
             _run(
                 "black" + (" --check" if check_only else " --fix"),
-                ["black", *flag, "disbot/", "scripts/", "tests/"],
+                _tool(
+                    "black",
+                    *(["--check"] if check_only else []),
+                    ".",
+                    "--exclude",
+                    _BLACK_EXCLUDE,
+                ),
             ),
         ),
     )
@@ -51,13 +94,13 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
             "isort",
             _run(
                 "isort" + (" --check-only" if check_only else ""),
-                [
+                _tool(
                     "isort",
                     *(["--check-only"] if check_only else []),
-                    "disbot/",
-                    "scripts/",
-                    "tests/",
-                ],
+                    ".",
+                    "--skip-glob",
+                    _ISORT_SKIP_GLOB,
+                ),
             ),
         ),
     )
@@ -66,13 +109,14 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
             "ruff",
             _run(
                 "ruff" + (" --no-fix" if check_only else " --fix"),
-                [
+                _tool(
                     "ruff",
                     "check",
                     *(["--no-fix"] if check_only else ["--fix"]),
-                    "disbot/",
-                    "scripts/",
-                ],
+                    ".",
+                    "--exclude",
+                    _RUFF_EXCLUDE,
+                ),
             ),
         ),
     )
@@ -80,11 +124,12 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
 
 
 def run_mypy() -> int:
-    return _run("mypy", ["mypy", "disbot/"])
+    # CI runs `mypy disbot/` — match the target exactly.
+    return _run("mypy", _tool("mypy", "disbot/"))
 
 
 def run_pytest() -> int:
-    return _run("pytest", ["pytest", "tests/", "-q", "--tb=short"])
+    return _run("pytest", _tool("pytest", "tests/", "-q", "--tb=short"))
 
 
 def main() -> int:

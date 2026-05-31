@@ -47,11 +47,28 @@ CI runs **Python 3.10** (`.github/workflows/code-quality.yml`). Running formatte
 1. Always run formatters / mypy / pytest via `python3.10 -m <tool>` — never bare `black`, `mypy`, `pytest`, or `python3 -m …`. The Stop hook (`scripts/claude_stop_check.py`) already does this.
 2. Before pushing, run the full pre-PR suite:
    ```
-   python3.10 scripts/check_quality.py --check-only && python3.10 -m pytest tests/ -q
+   python3.10 scripts/check_quality.py --full
    ```
-   The Stop hook prints this same command at end of every turn touching `disbot/*.py`.
-3. The `PostToolUse` hook (`scripts/claude_post_edit.py`) auto-fixes black/isort/ruff on every edit and **prints a loud warning** when it changes the file. Read the warning — it means something landed that wasn't already CI-clean.
-4. Pin third-party packages where the public API has churned (see `youtube-transcript-api<1.0` in `requirements.txt` for the canonical example). Unpinned `>=X.Y` resolves to whatever's latest in CI's fresh install, even if your local env still has the old version cached.
+   This is a **true CI mirror**: it runs black / isort / ruff over CI's exact
+   scope (`.` minus the `tests/`, `.github/`, … excludes), then `mypy disbot/`
+   and the full pytest suite — every tool via `python3.10 -m`. Green here means
+   green in CI, and red means red. `--check-only` runs just the formatters/lint
+   (no mypy/pytest) for a fast pass. The Stop hook prints the command at the end
+   of every turn touching `disbot/*.py`.
+   - **Do not** hand-run bare `black .` / `pytest` to "double-check": bare exes
+     on PATH resolve to a different interpreter/version (a uv-installed pytest on
+     Python 3.11, an older black) and produce false failures. Trust
+     `check_quality.py`, which pins the interpreter.
+   - The script's scope is pinned to the workflow on purpose. CI **excludes
+     `tests/`** from black/isort/ruff, so don't reformat test files to chase a
+     red signal that came from running a formatter over `tests/` directly.
+3. Tool versions are pinned to identical values in three places —
+   `.github/workflows/code-quality.yml`, `requirements-dev.txt`, and
+   `.pre-commit-config.yaml`. When bumping a formatter/linter, change all three
+   in the same commit, or local and CI silently drift (black/ruff reformat
+   differently across releases).
+4. The `PostToolUse` hook (`scripts/claude_post_edit.py`) auto-fixes black/isort/ruff on every edit and **prints a loud warning** when it changes the file. Read the warning — it means something landed that wasn't already CI-clean.
+5. Pin third-party packages where the public API has churned (see `youtube-transcript-api<1.0` in `requirements.txt` for the canonical example). Unpinned `>=X.Y` resolves to whatever's latest in CI's fresh install, even if your local env still has the old version cached.
 <!-- CI_PARITY_END -->
 
 <!-- CODEGRAPH_START -->
