@@ -151,11 +151,17 @@ async def _seed_from_history(
     history_fn = getattr(channel, "history", None)
     if history_fn is None:
         return 0
+    # Fetch the MOST RECENT messages. ``history(limit=N)`` defaults to
+    # newest-first; passing ``oldest_first=True`` with no before/after
+    # anchor instead paginates FORWARD from the channel's very beginning
+    # and returns its OLDEST N messages — the bug that made the scan seed
+    # ancient history (e.g. the channel's first posts) instead of the
+    # messages from just before the restart. Collect newest-first, then
+    # reverse so the buffer ends up oldest->newest like live appends.
+    recent_messages = [msg async for msg in history_fn(limit=_SCAN_LIMIT)]
+    recent_messages.reverse()
     appended = 0
-    # ``oldest_first=True`` so the buffer ends up chronologically
-    # ordered after the seed (the buffer is a FIFO deque under the
-    # hood).
-    async for msg in history_fn(limit=_SCAN_LIMIT, oldest_first=True):
+    for msg in recent_messages:
         author_id = getattr(getattr(msg, "author", None), "id", None)
         body = getattr(msg, "content", "") or ""
         if not body or author_id is None:
