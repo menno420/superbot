@@ -84,17 +84,31 @@ class _FakeMessage:
 
 
 class _FakeChannel:
-    """Async-iterable history mock."""
+    """Async-iterable history mock modelling discord.py semantics.
+
+    ``_messages`` is the channel's full history, oldest-first. discord.py's
+    ``history`` with no before/after anchor paginates from one end:
+
+    * ``oldest_first=True``  → forward from the channel's start: the OLDEST
+      ``limit`` messages, oldest-first.
+    * ``oldest_first=False`` (the default) → backward from now: the most
+      RECENT ``limit`` messages, newest-first.
+
+    The previous mock ignored ``limit`` and returned the same set either
+    way, which hid the real bug — the scan pulling the channel's oldest
+    messages instead of the recent ones before a restart.
+    """
 
     def __init__(self, messages: list[_FakeMessage]):
-        self._messages = messages
+        self._messages = messages  # oldest -> newest
         self.calls: list[dict] = []
 
     def history(self, *, limit: int = 100, oldest_first: bool = False):
         self.calls.append({"limit": limit, "oldest_first": oldest_first})
-        seq = list(self._messages)
-        if not oldest_first:
-            seq.reverse()
+        if oldest_first:
+            seq = self._messages[:limit]  # oldest N, oldest-first
+        else:
+            seq = list(reversed(self._messages[-limit:]))  # recent N, newest-first
 
         async def _gen():
             for m in seq:
@@ -141,6 +155,50 @@ async def test_gather_scans_when_enabled_and_cache_short(monkeypatch):
     )
     assert len(channel.calls) == 1
     assert {t.text for t in out} == {"first", "second", "third"}
+
+
+@pytest.mark.asyncio
+async def test_gather_scan_seeds_most_recent_not_oldest(monkeypatch):
+    """Regression: the scan must backfill the messages from just before the
+    restart (the channel tail), not the channel's oldest messages.
+
+    discord.py ``history(limit=N, oldest_first=True)`` with no anchor returns
+    the channel's OLDEST N messages — it paginates from the start. The scan
+    used that, so on any channel with more than ``_SCAN_LIMIT`` messages it
+    seeded ancient history and the bot's "memory" of the channel looked
+    broken after every restart. It must fetch the most recent messages.
+    """
+
+    async def _settings(_gid):
+        return (60, True)
+
+    monkeypatch.setattr(ai_memory_service, "read_memory_settings", _settings)
+
+    # Full channel history, oldest -> newest, longer than the scan limit.
+    total = ai_memory_service._SCAN_LIMIT + 10
+    history = [
+        _FakeMessage(mid=i, author_id=100 + (i % 3), content=f"msg-{i}")
+        for i in range(total)
+    ]
+    channel = _FakeChannel(history)
+
+    out = await ai_memory_service.gather_recent_turns(
+        guild_id=1,
+        channel_id=2,
+        channel=channel,
+    )
+    texts = {t.text for t in out}
+    # The newest message is present; the oldest is NOT (it is far past the
+    # most-recent _SCAN_LIMIT window).
+    assert f"msg-{total - 1}" in texts
+    assert "msg-0" not in texts
+    # Exactly the scan-limit window of most-recent messages was seeded.
+    assert len(out) == ai_memory_service._SCAN_LIMIT
+    # The fetch asked for the recent tail (default newest-first), NOT the
+    # oldest-first-from-start pagination that caused the bug.
+    assert channel.calls == [
+        {"limit": ai_memory_service._SCAN_LIMIT, "oldest_first": False},
+    ]
 
 
 @pytest.mark.asyncio
