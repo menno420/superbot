@@ -91,6 +91,29 @@ def test_task_contract_keeps_owner_recognition_id_gated():
     assert "never overrides the inviolable system-safety rules" in tc
 
 
+def test_task_contract_owner_span_applies_to_current_message():
+    """Regression: the bot rationalised that the verified-owner span was
+    'initial authentication' that 'does not travel with each message', and so
+    refused to apply owner trust to the current message. The contract must
+    state the span is live per-message metadata about the current sender.
+    """
+    tc = ai_instruction_service._TASK_CONTRACT
+    assert "regenerated fresh for every request" in tc
+    assert "NOT stale 'initial authentication'" in tc
+    # The exact false distinction the bot invented must be forbidden.
+    assert "Do not invent a distinction" in tc
+
+
+def test_owner_span_text_frames_current_message_not_stale_context():
+    """The span body itself must say it is live metadata about the current
+    sender, not earlier history — closing the loophole the model exploited.
+    """
+    from services.bot_knowledge_service import _BOT_OWNER_TEXT
+
+    assert "current message" in _BOT_OWNER_TEXT
+    assert "not stale 'initial authentication'" in _BOT_OWNER_TEXT
+
+
 # --- get_user_standing tool ---------------------------------------------
 
 
