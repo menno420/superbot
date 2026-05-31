@@ -61,19 +61,43 @@ def _scope_allows(caller: AIScope, required: AIScope) -> bool:
 _USER_STANDING_SPEC = AIToolSpec(
     name="get_user_standing",
     description=(
-        "Return the current user's standing in this server: their XP "
-        "level and whether they are a brand-new user. Call this when the "
-        "answer depends on who is asking or on their level/permissions."
+        "Return the asking user's standing in THIS server: their Discord "
+        "permission role (server_owner / administrator / moderator / regular "
+        "member) with owner/admin flags, plus their XP level and whether they "
+        "are a brand-new user. This is the authoritative live answer for "
+        "'what are my permissions / am I an admin / am I the owner'. Call it "
+        "when the answer depends on who is asking, their permissions, or "
+        "their level."
     ),
     parameters=_NO_ARGS_SCHEMA,
     min_scope=AIScope.USER,
 )
 
 
-def _make_user_standing(guild_id: int, actor_id: int) -> ToolHandler:
+def _make_user_standing(
+    guild_id: int,
+    actor_id: int,
+    member: Any = None,
+) -> ToolHandler:
     async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
         snap = await ai_permission_service.snapshot(guild_id, actor_id)
-        return {"level": snap.level, "is_new_user": snap.is_fresh_user}
+        result: dict[str, Any] = {
+            "level": snap.level,
+            "is_new_user": snap.is_fresh_user,
+        }
+        # Resolve the Discord permission standing from the live member using
+        # the SAME resolver the bot_user_identity span uses, so the tool can
+        # never contradict the span. Without this the tool returned only XP
+        # data and the model inferred "no admin status" from its silence —
+        # telling a server owner they were a regular member.
+        if member is not None:
+            from services.bot_knowledge_service import resolve_user_tier
+
+            tier = resolve_user_tier(member)
+            result["server_role"] = tier
+            result["is_server_owner"] = tier == "server_owner"
+            result["has_admin_access"] = tier in ("server_owner", "administrator")
+        return result
 
     return handler
 
@@ -844,7 +868,7 @@ def build_registry(
 
     include_members = ai_server_member_lookup_enabled()
     catalog: list[tuple[AIToolSpec, ToolHandler]] = [
-        (_USER_STANDING_SPEC, _make_user_standing(guild_id, actor_id)),
+        (_USER_STANDING_SPEC, _make_user_standing(guild_id, actor_id, member)),
         (_SERVER_TIME_SPEC, _server_time),
         (_BTD6_LOOKUP_SPEC, _btd6_lookup),
         (_BTD6_CAPABILITY_SPEC, _btd6_capability_lookup),
