@@ -44,6 +44,11 @@ logger = logging.getLogger("bot.services.guild_introspection")
 _ROLE_CAP = 60
 _CHANNEL_CAP = 80
 _MEMBER_MATCH_CAP = 10
+# Full-roster enumeration cap. Higher than the by-name match cap because
+# "list everyone" legitimately wants more rows, but still bounded so a
+# large guild cannot blow the model's prompt budget. The response carries
+# ``truncated`` + ``total`` so the model can say "showing N of M".
+_MEMBER_LIST_CAP = 100
 
 
 def _iso_date(value: Any) -> str | None:
@@ -204,6 +209,78 @@ def list_channels(
     return {"channels": entries[:limit], "total": len(entries), "truncated": truncated}
 
 
+def _member_permission_tier(member: Any, owner_id: Any) -> str:
+    """Compact permission tier for a member (owner / admin / mod / member).
+
+    Mirrors the precedence in ``bot_knowledge_service.resolve_user_tier``:
+    guild ownership wins over the Administrator permission, which wins over
+    the Manage Server (moderator) permission. Anything else is a regular
+    member. Kept here (not imported) so the introspection service stays
+    free of cross-service deps; the two are pinned to agree by test.
+    """
+    if owner_id is not None and getattr(member, "id", None) == owner_id:
+        return "owner"
+    perms = getattr(member, "guild_permissions", None)
+    if perms is None:
+        return "member"
+    if getattr(perms, "administrator", False):
+        return "administrator"
+    if getattr(perms, "manage_guild", False):
+        return "moderator"
+    return "member"
+
+
+def list_members(
+    guild: Any,
+    *,
+    limit: int = _MEMBER_LIST_CAP,
+) -> dict[str, Any]:
+    """Enumerate every member of ``guild`` with their permission tier.
+
+    Returns each member's display name, owner/bot flags, permission tier
+    (owner / administrator / moderator / member), and role names. This is
+    the "list everyone and their permissions" companion to
+    :func:`lookup_member`'s by-name search. Caller is responsible for
+    gating it behind the member-data opt-in (same flag as ``lookup_member``).
+
+    Members are sorted by permission tier (owner → admin → mod → member),
+    then by display name, so the most privileged appear first and survive
+    the cap. Bounded by ``limit``; the result carries ``total`` and
+    ``truncated`` so the model can report "showing N of M".
+    """
+    members = list(getattr(guild, "members", ()) or ())
+    owner_id = getattr(guild, "owner_id", None)
+    _TIER_ORDER = {"owner": 0, "administrator": 1, "moderator": 2, "member": 3}
+
+    entries: list[dict[str, Any]] = []
+    for member in members:
+        tier = _member_permission_tier(member, owner_id)
+        role_names = [
+            getattr(r, "name", "")
+            for r in (getattr(member, "roles", ()) or ())
+            if getattr(r, "name", "") != "@everyone"
+        ]
+        entries.append(
+            {
+                "display_name": _display_name(member),
+                "permission_tier": tier,
+                "is_owner": tier == "owner",
+                "is_bot": bool(getattr(member, "bot", False)),
+                "roles": role_names,
+            },
+        )
+
+    entries.sort(
+        key=lambda e: (
+            _TIER_ORDER.get(e["permission_tier"], 3),
+            e["display_name"].lower(),
+        ),
+    )
+    total = len(entries)
+    truncated = total > limit
+    return {"members": entries[:limit], "total": total, "truncated": truncated}
+
+
 def lookup_member(guild: Any, query: str, *, requester: Any = None) -> dict[str, Any]:
     """Resolve members matching ``query`` (display name / username substring).
 
@@ -246,6 +323,7 @@ def lookup_member(guild: Any, query: str, *, requester: Any = None) -> dict[str,
 
 __all__ = [
     "list_channels",
+    "list_members",
     "list_roles",
     "lookup_member",
     "server_overview",
