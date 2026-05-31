@@ -66,7 +66,72 @@ async def test_user_standing_handler_reads_permission_snapshot(monkeypatch):
 
     result = await registry.handlers["get_user_standing"]({})
 
+    # No member supplied → XP-only result (permission role omitted).
     assert result == {"level": 5, "is_new_user": False}
+
+
+async def test_user_standing_includes_discord_role_for_owner(monkeypatch):
+    """Regression: 'what are my permissions, use your tools' must return the
+    asker's Discord permission role, not just XP.
+
+    The tool previously returned only level/is_new_user, so when a server
+    owner asked, the model inferred 'no admin status' from the tool's silence
+    and told them they were a regular member — contradicting the (correct)
+    bot_user_identity span. The tool now resolves the live permission tier
+    with the same resolver the span uses, so the two always agree.
+    """
+
+    async def fake_snapshot(guild_id, user_id):
+        return SimpleNamespace(level=39, is_fresh_user=False)
+
+    monkeypatch.setattr(ai_tools.ai_permission_service, "snapshot", fake_snapshot)
+
+    # member.id == guild.owner_id → resolve_user_tier returns "server_owner".
+    owner = SimpleNamespace(
+        id=777,
+        guild=SimpleNamespace(owner_id=777),
+        guild_permissions=SimpleNamespace(administrator=True, manage_guild=True),
+    )
+    registry = build_registry(
+        scope=AIScope.USER,
+        guild_id=1,
+        actor_id=777,
+        member=owner,
+    )
+
+    result = await registry.handlers["get_user_standing"]({})
+
+    assert result["server_role"] == "server_owner"
+    assert result["is_server_owner"] is True
+    assert result["has_admin_access"] is True
+    # XP fields are still present alongside the permission role.
+    assert result["level"] == 39
+    assert result["is_new_user"] is False
+
+
+async def test_user_standing_regular_member_reports_no_admin(monkeypatch):
+    async def fake_snapshot(guild_id, user_id):
+        return SimpleNamespace(level=5, is_fresh_user=False)
+
+    monkeypatch.setattr(ai_tools.ai_permission_service, "snapshot", fake_snapshot)
+
+    member = SimpleNamespace(
+        id=2,
+        guild=SimpleNamespace(owner_id=999),
+        guild_permissions=SimpleNamespace(administrator=False, manage_guild=False),
+    )
+    registry = build_registry(
+        scope=AIScope.USER,
+        guild_id=1,
+        actor_id=2,
+        member=member,
+    )
+
+    result = await registry.handlers["get_user_standing"]({})
+
+    assert result["server_role"] == "user"
+    assert result["is_server_owner"] is False
+    assert result["has_admin_access"] is False
 
 
 async def test_btd6_lookup_handler_grounds_named_entity_and_reports_misses():
