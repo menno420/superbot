@@ -721,6 +721,59 @@ def _cap(text: str) -> str:
     return text if len(text) <= _FACT_TEXT_CAP else text[: _FACT_TEXT_CAP - 1] + "…"
 
 
+def _render_ct_relic(entry: Any) -> list[str]:
+    """One ``[btd6_ct_relic]`` grounding line: relic name + paraphrased effect.
+
+    The catalog is static knowledge (the Ninja Kiwi API stores relic
+    names only), so this runs in the always-on fixture pass.
+    """
+    canonical = _sanitise(
+        getattr(entry, "canonical", "") or str(getattr(entry, "id", "")),
+    )
+    if not canonical:
+        return []
+    abbrev = _sanitise(getattr(entry, "abbrev", "") or "")
+    effect = _sanitise(getattr(entry, "effect", "") or "")
+    name = f"{canonical} ({abbrev})" if abbrev else canonical
+    if not effect:
+        return []
+    return [_cap(f"[btd6_ct_relic] {name} — {effect} (source: bloonswiki)")]
+
+
+async def _ct_relic_location_lines(intent: Any) -> list[str]:
+    """``[btd6_ct_tile]`` lines: where each named relic sits in active CTs.
+
+    Bounded at 8 lines so a relic that appears on many tiles across many
+    active events cannot flood the prompt.
+    """
+    relics = getattr(intent, "ct_relics", ()) or ()
+    if not relics:
+        return []
+    from services import btd6_live_query_service as btd6_live
+
+    out: list[str] = []
+    for relic in relics:
+        relic_id = str(getattr(relic, "id", "") or "")
+        canonical = _sanitise(getattr(relic, "canonical", "") or relic_id)
+        if not relic_id:
+            continue
+        for placement in (await btd6_live.find_relic_locations(relic_id))[:6]:
+            pos = (
+                placement.position.describe() if placement.position else "position n/a"
+            )
+            rel = _relative_time(placement.fetched_at)
+            out.append(
+                _cap(
+                    f"[btd6_ct_tile] {canonical} is on tile {placement.tile_id} "
+                    f"({pos}) in CT event {placement.ct_id}; captured-tile relic "
+                    f"bonus (source: data.ninjakiwi.com, fetched {rel})",
+                ),
+            )
+            if len(out) >= 8:
+                return out
+    return out
+
+
 def _fixture_facts_for_intent(intent: Any) -> list[str]:
     """Return fixture-sourced grounding lines for any tower/hero/bloon in ``intent``.
 
@@ -762,6 +815,9 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
     # render them directly rather than re-fetching by number.
     for round_entry in getattr(intent, "rounds", ()) or ():
         lines.extend(_render_fixture_round(round_entry))
+    # CT relics carry their static effect from the catalog.
+    for relic in getattr(intent, "ct_relics", ()) or ():
+        lines.extend(_render_ct_relic(relic))
     return lines
 
 
@@ -813,6 +869,17 @@ async def build(message_text: str) -> BTD6Context:
             facts.extend(await _restriction_lines_for_intent(intent))
         except Exception as exc:  # noqa: BLE001 — defensive
             logger.debug("btd6_context_service: db grounding unavailable (%s)", exc)
+
+        # CT relic tile locations — isolated so a failure in the block
+        # above (or vice-versa) can't suppress it. The query is already
+        # self-guarding, returning () when the DB is unavailable.
+        try:
+            facts.extend(await _ct_relic_location_lines(intent))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: ct relic locations unavailable (%s)",
+                exc,
+            )
 
         # Pass 3: fixture fallback — always runs so cost, category,
         # and upgrade/ability data reach the LLM even when the DB has
