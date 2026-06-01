@@ -52,6 +52,17 @@ def test_normal_stats_bloon_crush_flips_to_normal_and_stuns():
     assert any("Stun" in s for s in ns.specials)
 
 
+def test_normal_stats_excludes_reanimated_minions_for_prince_of_darkness():
+    # Prince of Darkness (wizard 0-0-5) fires reanimated "MOAB"/"BFB" projectiles
+    # (40/100 dmg). Those are minions, not the tower's hit, so the headline must
+    # not report 100 — it reports the highest own-attack projectile instead.
+    stats = svc.get_tower_stats("wizard_monkey")
+    ns = svc.normal_stats(stats.tier("005"))
+    assert ns.damage == 2  # the Reanimate hit, not the reanimated BFB's 100
+    assert ns.pierce == 1
+    assert ns.cooldown == 0.275
+
+
 def test_normal_stats_surfaces_moab_bonus_and_ability():
     stats = svc.get_tower_stats("bomb_shooter")
     ns = svc.normal_stats(stats.tier("040"))  # MOAB Assassin
