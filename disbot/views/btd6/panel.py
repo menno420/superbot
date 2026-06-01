@@ -285,14 +285,21 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        # Contested Territory browser: active CT events + their relic tiles.
+        # Contested Territory browser: active CT events + their relic tiles,
+        # with a rendered hex map of the current event when Pillow is present.
         from cogs.btd6._builders import build_ct_browser_embed
+        from views.btd6.ct_map_view import build_ct_map_file
 
         if not await safe_defer(interaction, ephemeral=True):
             return
+        embed = await build_ct_browser_embed()
+        map_file, _ = await build_ct_map_file()
+        if map_file is not None:
+            embed.set_image(url="attachment://ct_map.png")
         await safe_followup(
             interaction,
-            embed=await build_ct_browser_embed(),
+            embed=embed,
+            file=map_file,
             ephemeral=True,
         )
 

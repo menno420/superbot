@@ -9,3 +9,4 @@ openai>=1.40,<2.0
 anthropic>=0.40,<1.0
 youtube-transcript-api>=0.6.0,<1.0
 PyYAML>=6.0
+Pillow>=10.0,<12
