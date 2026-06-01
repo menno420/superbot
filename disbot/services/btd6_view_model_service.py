@@ -54,6 +54,7 @@ BTD6ContextType = Literal[
     "race",
     "boss",
     "ct",
+    "ct_relic",
     "odyssey",
     "event",
     "tower",

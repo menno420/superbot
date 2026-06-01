@@ -233,6 +233,24 @@ class BTD6Cog(commands.Cog):
 
         await ctx.send(embed=await build_live_events_embed(kind, limit=limit))
 
+    @btd6_group.command(name="relic")  # type: ignore[arg-type]
+    async def btd6_relic(self, ctx: commands.Context, *, name: str) -> None:
+        """Show a Contested Territory relic's effect and current tile(s).
+
+        ``name`` matches the relic by name, abbreviation (e.g. SMS) or
+        alias — e.g. ``!btd6 relic camo trap``.
+        """
+        from cogs.btd6._builders import build_ct_relic_embed
+
+        await ctx.send(embed=await build_ct_relic_embed(name))
+
+    @btd6_group.command(name="ct")  # type: ignore[arg-type]
+    async def btd6_ct(self, ctx: commands.Context) -> None:
+        """Browse active Contested Territory events and their relic tiles."""
+        from cogs.btd6._builders import build_ct_browser_embed
+
+        await ctx.send(embed=await build_ct_browser_embed())
+
     @btd6_group.command(name="leaderboard")  # type: ignore[arg-type]
     async def btd6_leaderboard(
         self,
@@ -406,6 +424,34 @@ class BTD6Cog(commands.Cog):
         if not await safe_defer(interaction, ephemeral=True):
             return
         embed = await build_tower_embed(name)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="relic",
+        description="Look up a Contested Territory relic's effect and tile.",
+    )
+    async def btd6_relic_slash(
+        self,
+        interaction: discord.Interaction,
+        name: str,
+    ) -> None:
+        from cogs.btd6._builders import build_ct_relic_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_ct_relic_embed(name)
+        await safe_followup(interaction, embed=embed, ephemeral=True)
+
+    @btd6_app_group.command(
+        name="ct",
+        description="Browse active Contested Territory events and relic tiles.",
+    )
+    async def btd6_ct_slash(self, interaction: discord.Interaction) -> None:
+        from cogs.btd6._builders import build_ct_browser_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        embed = await build_ct_browser_embed()
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(name="round", description="Look up a round.")
