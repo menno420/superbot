@@ -20,7 +20,28 @@ from utils.btd6 import tier_codes
 # cross-entity questions the resolver path cannot answer on its own).
 CAMO_DETECTION = "camo_detection"
 LEAD_POPPING = "lead_popping"
-CAPABILITIES: tuple[str, ...] = (CAMO_DETECTION, LEAD_POPPING)
+BLACK_POPPING = "black_popping"
+WHITE_POPPING = "white_popping"
+PURPLE_POPPING = "purple_popping"
+CAPABILITIES: tuple[str, ...] = (
+    CAMO_DETECTION,
+    LEAD_POPPING,
+    BLACK_POPPING,
+    WHITE_POPPING,
+    PURPLE_POPPING,
+)
+
+# Capability key -> the bloon-type keyword that, when named in a tier's
+# ``cannot_pop`` note, means the tier CANNOT pop that bloon. All popping
+# capabilities share one derivation: a tier with positive damage pops the bloon
+# unless its immunity note names it. (None of these keywords is a substring of
+# another, so the membership test is unambiguous.)
+_POPPING_IMMUNITY: dict[str, str] = {
+    LEAD_POPPING: "lead",
+    BLACK_POPPING: "black",
+    WHITE_POPPING: "white",
+    PURPLE_POPPING: "purple",
+}
 
 
 @dataclass(frozen=True)
@@ -39,12 +60,13 @@ def _tier_has_capability(capability: str, tier: dict) -> bool:
         # Only meaningful for attacking tiers — a tier with no attack cannot
         # "see" anything, so require a damage value before crediting camo.
         return ns.damage is not None and ns.can_see_camo
-    if capability == LEAD_POPPING:
+    immunity = _POPPING_IMMUNITY.get(capability)
+    if immunity is not None:
         if ns.damage is None or ns.damage <= 0:
             return False
         # cannot_pop is the authoritative immunity note (from the BTD6 dt
-        # table); a tier pops Lead unless that note names Lead.
-        return "lead" not in (ns.cannot_pop or "").lower()
+        # table); a tier pops the bloon unless that note names it.
+        return immunity not in (ns.cannot_pop or "").lower()
     return False
 
 
@@ -105,9 +127,12 @@ def towers_with_capability(
 
 
 __all__ = [
+    "BLACK_POPPING",
     "CAMO_DETECTION",
     "CAPABILITIES",
     "LEAD_POPPING",
+    "PURPLE_POPPING",
+    "WHITE_POPPING",
     "CapabilityHit",
     "towers_with_capability",
 ]

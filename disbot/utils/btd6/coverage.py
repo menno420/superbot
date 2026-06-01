@@ -100,9 +100,15 @@ _COVERAGE: dict[str, CoverageArea] = {
         area=AREA_CAPABILITIES,
         supported=True,
         completeness="partial",
-        limitation="camo and lead popping only",
-        user_label="Capability lookups cover camo and lead popping only.",
-        staff_label="Capabilities: camo + lead only; other immunities not yet modeled.",
+        limitation="camo detection and lead/black/white/purple popping only",
+        user_label=(
+            "Capability lookups cover camo detection and lead/black/white/purple "
+            "popping; glass, frozen, and MOAB-class immunities aren't modeled."
+        ),
+        staff_label=(
+            "Capabilities: camo + lead/black/white/purple popping; glass, frozen, "
+            "and MOAB-class immunities not modeled."
+        ),
     ),
     AREA_HERO_STATS: CoverageArea(
         area=AREA_HERO_STATS,

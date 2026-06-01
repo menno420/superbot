@@ -236,3 +236,69 @@ async def test_higher_version_label_appears_in_rendered_fact(monkeypatch):
     monkeypatch.setattr(btd6_fact_store, "fetch_for_intent", _stub)
     ctx = await btd6_context_service.build("anything")
     assert ", v3," in ctx.facts[0]
+
+
+# ---------------------------------------------------------------------------
+# PR3 — coverage + freshness signals (two distinct layers).
+# ---------------------------------------------------------------------------
+
+
+async def test_live_event_question_emits_coverage_and_freshness_signals(monkeypatch):
+    """A live-event question with no fresh data must, at distinct layers:
+
+    (a) build() append RAW ``[btd6_coverage]`` / ``[btd6_freshness]`` lines to
+        ``ctx.facts`` (build does NOT wrap — it returns raw BTD6Context);
+    (b) assemble() wrap those retrieved facts as untrusted data in the payload;
+    (c) carry the live-event policy DIRECTIVE in the instruction stack
+        (instruction text, never the data envelope).
+    """
+    from types import SimpleNamespace
+
+    intent = SimpleNamespace(
+        confidence=0.9,
+        towers=(),
+        heroes=(),
+        maps=(),
+        modes=(),
+        live_entities=(SimpleNamespace(entity_kind="btd6_boss"),),
+    )
+    monkeypatch.setattr("services.btd6_resolver_service.resolve", lambda _t: intent)
+
+    async def _no_live(_intent, **kw):
+        return []
+
+    monkeypatch.setattr(btd6_context_service, "_fetch_live_entity_rows", _no_live)
+
+    ctx = await btd6_context_service.build("what boss is live right now?")
+
+    # (a) raw signal lines present in ctx.facts (unwrapped).
+    coverage_lines = [f for f in ctx.facts if f.startswith("[btd6_coverage]")]
+    freshness_lines = [f for f in ctx.facts if f.startswith("[btd6_freshness]")]
+    assert coverage_lines, ctx.facts
+    assert any("standard difficulty" in f.lower() for f in coverage_lines)
+    assert freshness_lines, ctx.facts
+    assert any("no current live-event data is loaded" in f.lower() for f in freshness_lines)
+
+    # (b) assemble() wraps the retrieved facts as untrusted data.
+    monkeypatch.setattr(ai_db, "get_instruction_profile", AsyncMock(return_value=None))
+    stack = await ai_instruction_service.assemble(
+        guild_id=1,
+        user_message="what boss is live right now?",
+        profile_ids=(),
+        retrieved_facts=list(ctx.facts),
+    )
+    payload_text = stack.render_payload_text()
+    system_text = stack.render_system_prompt()
+
+    signal_body = "No current live-event data is loaded"
+    assert signal_body in payload_text
+    begin = "<<<UNTRUSTED_DATA__retrieved_fact__BEGIN>>>"
+    end = "<<<UNTRUSTED_DATA__retrieved_fact__END>>>"
+    assert begin in payload_text and end in payload_text
+    # The freshness signal sits inside the untrusted envelope (it is data),
+    # and is NOT injected into the system/instruction layer.
+    assert payload_text.index(begin) < payload_text.index(signal_body)
+    assert signal_body not in system_text
+
+    # (c) the live-event policy directive lives in the instruction stack.
+    assert "Live-event freshness" in system_text

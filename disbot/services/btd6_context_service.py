@@ -22,6 +22,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+from utils.btd6 import coverage as cov
 from utils.btd6 import tier_codes
 from utils.btd6.body_coerce import coerce_body
 from utils.btd6.grounding_format import DEFAULT_CAP as _FACT_TEXT_CAP
@@ -888,11 +889,95 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
     return lines
 
 
+# Resolver live-entity kinds → coverage areas, for the grounding signals.
+_LIVE_KIND_TO_COVERAGE: dict[str, str] = {
+    "btd6_boss": cov.AREA_BOSS,
+    "btd6_odyssey": cov.AREA_ODYSSEY,
+    "btd6_race": cov.AREA_RACES,
+    "btd6_leaderboard": cov.AREA_LEADERBOARDS,
+}
+
+
+def _freshness_signal(live_rows: list[dict[str, Any]]) -> str:
+    """One ``[btd6_freshness]`` line describing live-event data freshness.
+
+    Buckets the newest ``fetched_at`` across the fetched live rows. When no
+    rows were found at all, says so explicitly — that absence is itself the
+    signal that tells the model not to answer from memory.
+    """
+    from services.btd6_source_registry import bucket_freshness
+
+    newest = None
+    for row in live_rows:
+        ts = row.get("fetched_at")
+        if ts is not None and (newest is None or ts > newest):
+            newest = ts
+    if newest is None:
+        return (
+            "[btd6_freshness] No current live-event data is loaded for this "
+            "question — do not answer current boss/race/odyssey/leaderboard "
+            "questions from memory; say the live data isn't available."
+        )
+    bucket = bucket_freshness(newest)
+    if bucket in ("stale", "never"):
+        return (
+            "[btd6_freshness] Live-event data is stale (last update over 24h "
+            "ago) — it may not reflect the current event; do not fill gaps "
+            "from memory."
+        )
+    if bucket == "aging":
+        return (
+            "[btd6_freshness] Live-event data is aging — confirm it is current "
+            "before relying on it."
+        )
+    return "[btd6_freshness] Live-event data is fresh (updated within the last hour)."
+
+
+def _coverage_freshness_signals(
+    intent: Any,
+    live_rows: list[dict[str, Any]],
+) -> list[str]:
+    """Coverage + freshness signal lines for the grounding bundle.
+
+    Coverage: for each partial-coverage area the intent touches, emit a
+    ``[btd6_coverage] …`` line straight from the shared registry so the model
+    states the same limit users see (top-page-only leaderboards, etc.).
+
+    Freshness: for live-event kinds the intent asks about, emit a
+    ``[btd6_freshness] …`` line — the signal the ``_TASK_CONTRACT`` directive
+    keys on to refuse answering current-event questions from training data.
+
+    Returns RAW lines; wrapping as untrusted data happens later in
+    ``ai_instruction_service.assemble`` — not here.
+    """
+    signals: list[str] = []
+
+    live_kinds = {
+        getattr(m, "entity_kind", None)
+        for m in (getattr(intent, "live_entities", ()) or ())
+    }
+    live_kinds.discard(None)
+
+    areas: list[str] = []
+    for kind in sorted(k for k in live_kinds if k):
+        area = _LIVE_KIND_TO_COVERAGE.get(kind)
+        if area is not None and area not in areas:
+            areas.append(area)
+    if getattr(intent, "heroes", ()) and cov.AREA_HERO_STATS not in areas:
+        areas.append(cov.AREA_HERO_STATS)
+
+    for area in areas:
+        signals.append(f"[btd6_coverage] {cov.get_coverage(area).user_label}")
+
+    if live_kinds:
+        signals.append(_freshness_signal(live_rows))
+    return signals
+
+
 async def build(message_text: str) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
-    Three independent passes, each isolated so one failure cannot
-    suppress the others:
+    Four passes, each isolated so one failure cannot suppress the others:
 
     1. Resolver (sync, no DB) — extracts towers/heroes/maps/modes/bloons
        from the text.
@@ -904,8 +989,12 @@ async def build(message_text: str) -> BTD6Context:
        for every resolved bloon, from the JSON fixture files. This pass is
        deliberately OUTSIDE the DB try/except so a missing or misconfigured
        ``btd6_facts`` table never suppresses it.
+    4. Coverage + freshness signals — appends the same data-limit copy users
+       see, plus a freshness flag for live-event kinds, so the model states
+       limits and won't answer stale/missing live-event questions from memory.
     """
     facts: list[str] = []
+    live_rows: list[dict[str, Any]] = []
     confidence = 0.0
     source_summary = _FALLBACK_SOURCE_SUMMARY
 
@@ -964,6 +1053,11 @@ async def build(message_text: str) -> BTD6Context:
         # no rows for tower/hero entities (the common state before live
         # ingestion populates btd6_facts).
         facts.extend(_fixture_facts_for_intent(intent))
+
+        # Pass 4: coverage + freshness signals (raw lines; the instruction
+        # stack wraps the whole bundle as untrusted data). Paired with the
+        # _TASK_CONTRACT live-event directive.
+        facts.extend(_coverage_freshness_signals(intent, live_rows))
 
     if facts:
         source_summary = _DEFAULT_SOURCE_SUMMARY

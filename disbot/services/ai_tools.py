@@ -431,18 +431,23 @@ _BTD6_CAPABILITY_SPEC = AIToolSpec(
     description=(
         "List which BTD6 towers have a capability — use for 'which tower …' "
         "discovery questions that do NOT name a specific tower. Supported "
-        "capabilities: 'camo_detection' (can target Camo bloons) and "
-        "'lead_popping' (can damage Lead bloons). Set unupgraded=true (the "
-        "default) for base 0-0-0 only — the usual 'without upgrades' question "
-        "— or false to also include towers that gain it from an upgrade. "
-        "Returns the matching towers and where each gets the capability."
+        "capabilities: 'camo_detection' (can target Camo bloons), "
+        "'lead_popping', 'black_popping', 'white_popping', and "
+        "'purple_popping' (can damage Lead / Black / White / Purple bloons). "
+        "Set unupgraded=true (the default) for base 0-0-0 only — the usual "
+        "'without upgrades' question — or false to also include towers that "
+        "gain it from an upgrade. Returns the matching towers and where each "
+        "gets the capability."
     ),
     parameters={
         "type": "object",
         "properties": {
             "capability": {
                 "type": "string",
-                "description": "One of: camo_detection, lead_popping.",
+                "description": (
+                    "One of: camo_detection, lead_popping, black_popping, "
+                    "white_popping, purple_popping."
+                ),
             },
             "unupgraded": {
                 "type": "boolean",
@@ -461,6 +466,7 @@ _BTD6_CAPABILITY_SPEC = AIToolSpec(
 
 async def _btd6_capability_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     from services import btd6_capability_service
+    from utils.btd6.coverage import AREA_CAPABILITIES, get_coverage
 
     capability = str(arguments.get("capability") or "").strip().lower()
     if capability not in btd6_capability_service.CAPABILITIES:
@@ -481,6 +487,7 @@ async def _btd6_capability_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
         "found": bool(hits),
         "capability": capability,
         "unupgraded": unupgraded,
+        "note": get_coverage(AREA_CAPABILITIES).user_label,
         "towers": [
             {"id": h.tower_id, "name": h.canonical, "detail": h.detail} for h in hits
         ],

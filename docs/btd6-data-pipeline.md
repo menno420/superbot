@@ -193,15 +193,21 @@ The keyword router is no longer the correctness gate. Two read-only tools in
 - `btd6_lookup(query)` — wraps `btd6_context_service.build` for a named
   tower/hero/bloon/topic;
 - `btd6_capability_lookup(capability, unupgraded)` — answers "which tower …"
-  discovery questions (camo_detection, lead_popping) from a runtime index over
-  the per-tier stats (`services/btd6_capability_service.py`).
+  discovery questions (camo_detection, lead_popping, black_popping,
+  white_popping, purple_popping) from a runtime index over the per-tier stats
+  (`services/btd6_capability_service.py`). All popping capabilities derive from
+  the same `cannot_pop` immunity note, so they always match the committed stats.
 
 The router (`ai_task_router`) is demoted to a fast-path hint. The BTD6 grounding
 discipline in `ai_instruction_service._TASK_CONTRACT` requires the model to call
 a lookup tool and, if no data is found, to lead with "I don't have verified BTD6
 data on that, but here's my best guess:". Original scope:
-**`docs/btd6-ai-tool-calling-plan.md`**. Extending the capability set beyond
-camo/lead is the natural next increment.
+**`docs/btd6-ai-tool-calling-plan.md`**. The capability set now covers camo
+detection plus lead/black/white/purple popping; glass, frozen, and MOAB-class
+immunities are the natural next increment. Coverage + freshness signals
+(`[btd6_coverage]` / `[btd6_freshness]`, from `utils/btd6/coverage.py`) are
+appended to the grounding bundle so the model states data limits and refuses to
+answer stale/missing live-event questions from memory.
 
 ### 4. Smaller polish (optional)
 - Paraphrased tower descriptions (the `description` column is still empty by

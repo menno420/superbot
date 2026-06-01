@@ -1,9 +1,12 @@
 # Plan: AI tool-calling (BTD6 lookup as the first tool)
 
-> **Status: PLAN ONLY — not implemented.** Deliberately not built in-session
-> because it changes the *core, shared* AI request path (one of the most
-> coupled modules in the repo) and was scoped right before a context
-> compaction. This doc is the executable handoff.
+> **Status: IMPLEMENTED.** The BTD6 lookup tools described here now ship in
+> `services/ai_tools.py` — `btd6_lookup`, `btd6_capability_lookup`,
+> `btd6_superlative_lookup`, `btd6_difficulty_cost`, and the two paragon tools
+> — wired into the central AI request path. `btd6_capability_lookup` covers camo
+> detection plus lead/black/white/purple popping and returns a coverage note so
+> the model states its data limits. This doc is retained as the design record;
+> the sections below describe the architecture as built.
 >
 > Motivation: today the AI only "knows" what we *pre-inject* into its prompt
 > via trigger-gated knowledge blocks. When a trigger misses, the model answers

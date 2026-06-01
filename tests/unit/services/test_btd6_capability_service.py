@@ -57,5 +57,33 @@ def test_unknown_capability_returns_empty():
     assert cap.towers_with_capability("") == []
 
 
+def test_black_popping_unupgraded_excludes_explosion_towers():
+    ids = _ids(cap.towers_with_capability(cap.BLACK_POPPING, unupgraded=True))
+    # Black bloons are immune to explosions: bomb/mortar can't pop them at
+    # base, but sharp towers can.
+    assert "dart_monkey" in ids
+    assert {"bomb_shooter", "mortar_monkey"}.isdisjoint(ids)
+
+
+def test_white_popping_unupgraded_excludes_cold_towers():
+    ids = _ids(cap.towers_with_capability(cap.WHITE_POPPING, unupgraded=True))
+    # White bloons are immune to cold: the Ice Monkey can't pop them.
+    assert "dart_monkey" in ids
+    assert "ice_monkey" not in ids
+
+
+def test_purple_popping_unupgraded_excludes_magic_towers():
+    ids = _ids(cap.towers_with_capability(cap.PURPLE_POPPING, unupgraded=True))
+    # Purple bloons are immune to magic: the Wizard Monkey can't pop them at base.
+    assert "dart_monkey" in ids
+    assert "wizard_monkey" not in ids
+
+
 def test_capabilities_constant_is_the_supported_set():
-    assert set(cap.CAPABILITIES) == {cap.CAMO_DETECTION, cap.LEAD_POPPING}
+    assert set(cap.CAPABILITIES) == {
+        cap.CAMO_DETECTION,
+        cap.LEAD_POPPING,
+        cap.BLACK_POPPING,
+        cap.WHITE_POPPING,
+        cap.PURPLE_POPPING,
+    }
