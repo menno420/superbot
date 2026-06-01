@@ -275,6 +275,28 @@ class BTD6PanelView(PersistentView):
 
     # Row 1 — secondary actions + staff
     @discord.ui.button(
+        label="🗺️ CT",
+        style=discord.ButtonStyle.secondary,
+        row=1,
+        custom_id="btd6:ct",
+    )
+    async def ct_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # Contested Territory browser: active CT events + their relic tiles.
+        from cogs.btd6._builders import build_ct_browser_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        await safe_followup(
+            interaction,
+            embed=await build_ct_browser_embed(),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(
         label="Modes",
         style=discord.ButtonStyle.secondary,
         row=1,
