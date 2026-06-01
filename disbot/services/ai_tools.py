@@ -376,19 +376,25 @@ _BTD6_LOOKUP_SPEC = AIToolSpec(
     name="btd6_lookup",
     description=(
         "Look up verified Bloons TD 6 (BTD6) data: tower and hero stats and "
-        "costs; bloon properties, immunities, health, what each bloon spawns "
+        "costs; a single upgrade by name or community abbreviation ('PMFC', "
+        "'POD', 'Prince of Darkness'); paragon stats and their named abilities "
+        "and cooldowns ('Carpet Bomb', 'Spikeageddon'); bloon properties, "
+        "immunities, health, what each bloon spawns "
         "into (the full Red->Blue->Green->Yellow->Pink->...->MOAB-class chain), "
         "and RBE (Red Bloon Equivalent); maps, modes, rounds, current live "
         "events; and Contested Territory (CT) relics and tiles — what each "
         "relic does and which tile it sits on in the active CT event(s). Call "
         "this for ANY question about BTD6 before answering — including 'what "
         "does X pop into', 'how much health/RBE does X have', questions about "
-        "the basic bloon tiers, AND any CT relic / tile question ('tell me "
+        "the basic bloon tiers, any upgrade or paragon-ability question, AND "
+        "any CT relic / tile question ('tell me "
         "about the relics', 'what relics are in the current CT', 'where is "
         "Camo Trap') — even when no specific tower, hero, bloon, or relic is "
-        "named, so the answer is grounded in real data instead of memory. "
+        "named, so the answer is grounded in real data instead of memory. Call "
+        "it even if an earlier reply implied the data wasn't available — the "
+        "tool's data is updated independently and can change between messages. "
         "Returns found=false when nothing matched; treat that as 'no verified "
-        "data available'."
+        "data available' only after you have actually called it."
     ),
     parameters={
         "type": "object",

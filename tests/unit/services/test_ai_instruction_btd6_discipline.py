@@ -52,3 +52,21 @@ def test_task_contract_dropped_the_blanket_disclaimer():
 def test_task_contract_is_a_base_system_string():
     assert instr._TASK_CONTRACT not in ("", None)
     assert isinstance(instr._TASK_CONTRACT, str)
+
+
+def test_task_contract_requires_calling_lookup_before_claiming_missing():
+    # The bot was refusing to call the tool — asserting from a stale prior turn
+    # that the lookup "isn't exposing" abilities instead of just trying.
+    tc = instr._TASK_CONTRACT
+    assert "ALWAYS run the lookup before telling the user you lack" in tc
+    # Don't infer tool contents from earlier turns; data changes between messages.
+    assert "can change between messages" in tc
+    assert "found=false" in tc  # only report missing AFTER an actual call
+
+
+def test_task_contract_routes_upgrades_and_paragon_abilities_to_lookup():
+    tc = instr._TASK_CONTRACT
+    # The routing line must name the entity kinds added this cycle, so the model
+    # knows btd6_lookup covers them (not just towers/heroes/bloons).
+    assert "an upgrade by name or abbreviation" in tc
+    assert "paragon ability" in tc
