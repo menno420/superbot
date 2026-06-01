@@ -33,19 +33,19 @@ def test_prince_of_darkness_detail():
     assert d is not None
     assert d.identity.canonical == "Prince of Darkness"
     assert d.has_combat_stats
-    # The headline normal view keys off the highest-DAMAGE projectile, which for
-    # PoD is the reanimated BFB (100 dmg / 50 pierce) — a known quirk of that
-    # distilled view, and exactly why the per-attack detail below matters.
+    # The headline no longer reports the reanimated BFB (100/50): _main_projectile
+    # skips MOAB-class reanimated minions, so the highest *own-attack* projectile
+    # wins — here the Reanimate hit (2 dmg / 1 pierce), not the blimp's.
     assert d.normal is not None
     assert d.normal.cooldown == 0.275
-    assert (d.normal.damage, d.normal.pierce) == (100, 50)
+    assert (d.normal.damage, d.normal.pierce) == (2, 1)
     # Every named attack stays addressable, including MOAB-reanimation.
     names = {a.name for a in d.attacks}
     assert {"Attack", "Reanimate", "MOAB"} <= names
-    # The actual main attack (1 dmg, 8 pierce) is not lost to the headline.
-    main = _attack(d, "Attack")
-    assert main.projectiles[0].damage == 1
-    assert main.projectiles[0].pierce == 8
+    # The reanimated MOAB/BFB minions are still readable in the detail, just no
+    # longer masquerading as the tower's headline damage.
+    moab = _attack(d, "MOAB")
+    assert {p.name: p.damage for p in moab.projectiles} == {"MOAB": 40, "BFB": 100}
 
 
 def test_prince_of_darkness_minion_pierce_is_one():
