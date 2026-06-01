@@ -1,0 +1,255 @@
+{
+  "paragon_id": "glaive_dominus",
+  "tower_id": "boomerang_monkey",
+  "canonical": "Glaive Dominus",
+  "tower_canonical": "Boomerang Monkey",
+  "game_version": "53.0",
+  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "cost": 375000,
+  "cost_chimps": null,
+  "xp": 500000,
+  "base": {
+    "placeableOnLand": true,
+    "placeableOnWater": false,
+    "placeableOnTrack": false,
+    "range": 60,
+    "towerSelectionMenuThemeId": "AmbidextrousRangs",
+    "attacks": [
+      {
+        "name": "Attack",
+        "rate": 0.04,
+        "eject": "-3.47, 15, 12",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 60,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 15,
+            "vsBlockerRadius": 0,
+            "effects": [
+              {
+                "name": "Damage over time",
+                "layers": 1,
+                "lifespan": 15.1,
+                "glueLevel": 0,
+                "applyOnlyIfDamaged": true,
+                "chance": 0,
+                "filterOutNonMoabs": true,
+                "damage": 750,
+                "damage_type": "Normal",
+                "cannot_pop": "Can damage any Bloon type",
+                "immuneBloonProperties": 0,
+                "interval": 1,
+                "initialDelay": 0,
+                "triggerImmediate": false,
+                "distributeToChildren": true
+              }
+            ],
+            "filterInvisible": false,
+            "damage": 25,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForBoss": 50,
+            "bounceDistance": 9999999,
+            "bounceMinDistance": 0,
+            "maxBounces": 9999999,
+            "bounceDelay": 0.05,
+            "bounceTargeting": "Close",
+            "speed": 297.5,
+            "lifespan": 2
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Orbital glaives",
+        "rate": 0.1,
+        "eject": "0, 0, 0",
+        "fireWithoutTarget": true,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 200,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 50,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false,
+            "damage": 42,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForCeramic": 20,
+            "damageModifierForMoabs": 20,
+            "damageModifierForBoss": 150,
+            "rounds": 1,
+            "lifespan": 0.05
+          }
+        ],
+        "count": 1,
+        "targetTypes": "",
+        "range": 9999999,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "MOAB Press",
+        "rate": 3,
+        "eject": "-3.47, 15, 12",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 300,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 10,
+            "vsBlockerRadius": 0,
+            "effects": [
+              {
+                "name": "Stun (Paragon)",
+                "layers": 1,
+                "glueLevel": 0,
+                "isUnique": true,
+                "dontRefreshDuration": true,
+                "cascadeMutators": true,
+                "removeMutatorIfNotMatching": false,
+                "matchLayersWithDamage": false,
+                "mutationId": "Slow:MoabPressStunParagon",
+                "multiplierForMoabs": 0,
+                "lifespanForMoabs": 0.25
+              }
+            ],
+            "filterInvisible": false,
+            "damage": 1,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 19,
+            "clearHitBloonsInterval": 0.1,
+            "pushAmount": 1,
+            "pushTag": "Moabs",
+            "pushMultiplierForMoab": 1,
+            "pushMultiplierForBfb": 0.5,
+            "pushMultiplierForZomg": 0.25,
+            "pushMultiplierForDdt": 0.25,
+            "pushOnlyIfDamaged": false
+          },
+          {
+            "name": "Explosion",
+            "pierce": 20,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 50,
+            "vsBlockerRadius": 0,
+            "effects": [
+              {
+                "name": "Damage over time",
+                "layers": 9999999,
+                "lifespan": 4,
+                "glueLevel": 0,
+                "applyOnlyIfDamaged": false,
+                "chance": 0,
+                "damage": 500,
+                "damage_type": "Normal",
+                "cannot_pop": "Can damage any Bloon type",
+                "immuneBloonProperties": 0,
+                "interval": 1,
+                "initialDelay": 0,
+                "triggerImmediate": false,
+                "distributeToChildren": true
+              }
+            ],
+            "filterInvisible": false,
+            "damage": 2500,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForBoss": 4000,
+            "rounds": 0,
+            "lifespan": 0.1
+          }
+        ],
+        "count": 1,
+        "targetTypes": "First / Last / Close / Strong",
+        "range": 100,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "filterInvisible": false,
+        "filterOutNonMoabs": true
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Ability",
+        "cooldown": 45,
+        "maxActivationsPerRound": 9999999,
+        "canActivateBetweenRounds": false,
+        "restrictAbilityAfterMaxRoundTimer": false,
+        "buffs": [
+          {
+            "name": "Buff",
+            "maxStackSize": 10,
+            "durationPerStack": 3,
+            "stacksLostPerDuration": 1,
+            "rateMultiplierPerStack": 0.9
+          }
+        ]
+      }
+    ],
+    "buffs": [
+      {
+        "name": "Buff",
+        "isGlobal": true,
+        "customRadius": 0,
+        "appliesToOwningTower": false,
+        "maxStackSize": 0,
+        "rateMultiplier": 0.9,
+        "filterInSets": "Primary"
+      }
+    ],
+    "footprintRadius": 7,
+    "doesntBlockTowerPlacement": false,
+    "targetTypeFirst": true,
+    "targetTypeLast": true,
+    "targetTypeClose": true,
+    "targetTypeStrong": true
+  }
+}
