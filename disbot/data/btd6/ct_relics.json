@@ -1,0 +1,201 @@
+{
+  "schema_version": "1.0",
+  "data_version": "1.0",
+  "game_version": "54.0",
+  "source": "Blooncyclopedia / Bloons Wiki Relic Knowledge (CC BY-NC-SA); effects paraphrased",
+  "relics": [
+    {
+      "id": "abilitized",
+      "canonical": "Abilitized",
+      "api_name": "Abilitized",
+      "aliases": ["abilitized"],
+      "category": "utility",
+      "effect": "Monkey ability cooldowns are reduced by 10%."
+    },
+    {
+      "id": "air_and_sea",
+      "canonical": "Air and Sea",
+      "api_name": "AirAndSea",
+      "aliases": ["air and sea", "air & sea"],
+      "category": "economy",
+      "effect": "Buying and upgrading Monkey Subs, Buccaneers, Heli Pilots and Aces is 10% cheaper."
+    },
+    {
+      "id": "bigger_bloon_sabotage",
+      "canonical": "Bigger Bloon Sabotage",
+      "api_name": "BiggerBloonSabotage",
+      "aliases": ["bigger bloon sabotage", "bloon sabotage"],
+      "category": "offense",
+      "effect": "MOAB-class bloons move 5% slower and have 15% less health."
+    },
+    {
+      "id": "box_of_chocolates",
+      "canonical": "Box of Chocolates",
+      "api_name": "BoxOfChocolates",
+      "aliases": ["box of chocolates", "chocolates"],
+      "category": "lives",
+      "effect": "Start the game with 100 extra lives."
+    },
+    {
+      "id": "box_of_monkeys",
+      "canonical": "Box of Monkeys",
+      "api_name": "BoxOfMonkey",
+      "aliases": ["box of monkeys", "box of monkey"],
+      "category": "economy",
+      "effect": "Start every game with a free random monkey worth under $500."
+    },
+    {
+      "id": "broken_heart",
+      "canonical": "Broken Heart",
+      "api_name": "BrokenHeart",
+      "aliases": ["broken heart"],
+      "category": "offense",
+      "effect": "All of your attacks deal +1 damage to Regrow bloons."
+    },
+    {
+      "id": "camo_trap",
+      "canonical": "Camo Trap",
+      "api_name": "CamoTrap",
+      "aliases": ["camo trap"],
+      "category": "powerup",
+      "effect": "Grants up to 2 uses of the Camo Trap power per game (a placed trap that reveals and pops camo bloons)."
+    },
+    {
+      "id": "durable_shots",
+      "canonical": "Durable Shots",
+      "api_name": "DurableShots",
+      "aliases": ["durable shots"],
+      "category": "offense",
+      "effect": "All towers gain +25% pierce."
+    },
+    {
+      "id": "el_dorado",
+      "canonical": "El Dorado",
+      "api_name": "ElDorado",
+      "aliases": ["el dorado", "eldorado"],
+      "category": "economy",
+      "effect": "Tile victories reward +25% Monkey Money and Team Trophies (rounded down, minimum +1 of each)."
+    },
+    {
+      "id": "fortifried",
+      "canonical": "Fortifried",
+      "api_name": "Fortifried",
+      "aliases": ["fortifried"],
+      "category": "offense",
+      "effect": "All of your attacks deal +1 damage to Fortified bloons."
+    },
+    {
+      "id": "hard_baked",
+      "canonical": "Hard Baked",
+      "api_name": "HardBaked",
+      "aliases": ["hard baked", "hardbaked"],
+      "category": "offense",
+      "effect": "All of your attacks deal +1 damage to Ceramic bloons."
+    },
+    {
+      "id": "hero_boost",
+      "canonical": "Hero Boost",
+      "api_name": "HeroBoost",
+      "aliases": ["hero boost"],
+      "category": "utility",
+      "effect": "Heroes gain a 10% bonus to experience earned."
+    },
+    {
+      "id": "mana_bulwark",
+      "canonical": "Mana Bulwark",
+      "api_name": "ManaBulwark",
+      "aliases": ["mana bulwark"],
+      "category": "lives",
+      "effect": "A shield appears that absorbs up to 50 lives of leaked bloons."
+    },
+    {
+      "id": "marching_boots",
+      "canonical": "Marching Boots",
+      "api_name": "MarchingBoots",
+      "aliases": ["marching boots"],
+      "category": "utility",
+      "effect": "Raises tower limits by +1 of each tower type and +4 on the overall tower cap (stacks to +2 / +8 with the matching store relic)."
+    },
+    {
+      "id": "moab_mine",
+      "canonical": "MOAB Mine",
+      "api_name": "MoabMine",
+      "aliases": ["moab mine"],
+      "category": "powerup",
+      "effect": "Grants 1 use of the MOAB Mine power per game (a mine that detonates on MOAB-class bloons)."
+    },
+    {
+      "id": "regeneration",
+      "canonical": "Regeneration",
+      "api_name": "Regeneration",
+      "aliases": ["regeneration"],
+      "category": "lives",
+      "effect": "Restore 10 lives at the end of each round."
+    },
+    {
+      "id": "restoration",
+      "canonical": "Restoration",
+      "api_name": "Restoration",
+      "aliases": ["restoration"],
+      "category": "lives",
+      "effect": "If you lose no lives during a round, regenerate 10 lives at its end, up to 150 above your starting amount."
+    },
+    {
+      "id": "rounding_up",
+      "canonical": "Rounding Up",
+      "api_name": "RoundingUp",
+      "aliases": ["rounding up"],
+      "category": "economy",
+      "effect": "Earn +$20 at the end of each round."
+    },
+    {
+      "id": "royal_treatment",
+      "canonical": "Royal Treatment",
+      "api_name": "RoyalTreatment",
+      "aliases": ["royal treatment"],
+      "category": "offense",
+      "effect": "All of your attacks can pop Purple bloons."
+    },
+    {
+      "id": "sharpsplosion",
+      "canonical": "Sharpsplosion",
+      "api_name": "Sharpsplosion",
+      "aliases": ["sharpsplosion"],
+      "category": "offense",
+      "effect": "All of your attacks can pop Black bloons."
+    },
+    {
+      "id": "starting_stash",
+      "canonical": "Starting Stash",
+      "api_name": "StartingStash",
+      "aliases": ["starting stash", "stash"],
+      "category": "economy",
+      "effect": "Start the game with 300 extra cash."
+    },
+    {
+      "id": "super_monkey_storm",
+      "canonical": "Super Monkey Storm",
+      "api_name": "SuperMonkeyStorm",
+      "abbrev": "SMS",
+      "aliases": ["super monkey storm", "sms", "monkey storm"],
+      "category": "powerup",
+      "effect": "Grants up to 2 uses of the Super Monkey Storm power per game (instantly destroys most non-MOAB-class bloons on screen)."
+    },
+    {
+      "id": "techbot",
+      "canonical": "Techbot",
+      "api_name": "Techbot",
+      "aliases": ["techbot", "tech bot"],
+      "category": "powerup",
+      "effect": "Grants 1 use of the Tech Bot power per game (auto-upgrades and retargets nearby towers for a time)."
+    },
+    {
+      "id": "thrive",
+      "canonical": "Thrive",
+      "api_name": "Thrive",
+      "aliases": ["thrive"],
+      "category": "powerup",
+      "effect": "Grants up to 2 uses of the Thrive power per game (temporarily boosts nearby tower attack speed)."
+    }
+  ]
+}

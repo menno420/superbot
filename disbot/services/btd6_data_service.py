@@ -145,6 +145,26 @@ class BloonEntry:
 
 
 @dataclass(frozen=True)
+class RelicEntry:
+    """One Contested Territory relic and its effect.
+
+    ``api_name`` is the exact CamelCase token Ninja Kiwi stores on a
+    ``btd6_ct_tile`` fact (``relic_name``), so live tile rows can be
+    mapped back to this catalog entry without guessing. ``abbrev`` is
+    the optional community shorthand (e.g. ``SMS`` for Super Monkey
+    Storm) surfaced alongside the canonical name in display.
+    """
+
+    id: str
+    canonical: str
+    api_name: str
+    aliases: tuple[str, ...]
+    category: str
+    effect: str
+    abbrev: str = ""
+
+
+@dataclass(frozen=True)
 class BTD6DataSet:
     data_version: str
     game_version: str
@@ -155,6 +175,7 @@ class BTD6DataSet:
     modes: tuple[ModeEntry, ...] = ()
     rounds: tuple[RoundEntry, ...] = ()
     bloons: tuple[BloonEntry, ...] = ()
+    ct_relics: tuple[RelicEntry, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +233,15 @@ _REQUIRED_BLOON_FIELDS = (
     "description",
 )
 _BLOON_CATEGORIES = frozenset({"basic", "special", "moab_class", "modifier"})
+_REQUIRED_RELIC_FIELDS = (
+    "id",
+    "canonical",
+    "api_name",
+    "aliases",
+    "category",
+    "effect",
+)
+_RELIC_CATEGORIES = frozenset({"offense", "economy", "lives", "powerup", "utility"})
 
 
 def _require_keys(entry: dict[str, Any], keys: tuple[str, ...], where: str) -> None:
@@ -462,6 +492,35 @@ def _parse_bloon(raw: dict[str, Any]) -> BloonEntry:
     )
 
 
+def _parse_relic(raw: dict[str, Any]) -> RelicEntry:
+    _require_keys(raw, _REQUIRED_RELIC_FIELDS, where=f"relic {raw.get('id')!r}")
+    category = str(raw["category"])
+    if category not in _RELIC_CATEGORIES:
+        raise BTD6DataValidationError(
+            f"relic {raw['id']!r}: category {category!r} not one of "
+            f"{sorted(_RELIC_CATEGORIES)}",
+        )
+    effect = str(raw["effect"]).strip()
+    if not effect:
+        raise BTD6DataValidationError(
+            f"relic {raw['id']!r}: effect must be a non-empty string",
+        )
+    api_name = str(raw["api_name"]).strip()
+    if not api_name:
+        raise BTD6DataValidationError(
+            f"relic {raw['id']!r}: api_name must be a non-empty string",
+        )
+    return RelicEntry(
+        id=str(raw["id"]),
+        canonical=str(raw["canonical"]),
+        api_name=api_name,
+        aliases=tuple(_normalise_alias(a) for a in raw["aliases"]),
+        category=category,
+        effect=effect,
+        abbrev=str(raw.get("abbrev", "")),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Loader
 # ---------------------------------------------------------------------------
@@ -502,6 +561,9 @@ def _load_dataset() -> BTD6DataSet:
     # bloons.json is an optional fixture (added after the original five);
     # absent → empty category, so older staged-fixture sets still load.
     bloons_raw = _load_file_optional("bloons.json")
+    # ct_relics.json is likewise optional (added in the CT feature); a missing
+    # file degrades to an empty catalog rather than aborting the dataset.
+    ct_relics_raw = _load_file_optional("ct_relics.json")
 
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
@@ -511,6 +573,11 @@ def _load_dataset() -> BTD6DataSet:
     bloons = (
         tuple(_parse_bloon(b) for b in bloons_raw.get("bloons", []))
         if bloons_raw is not None
+        else ()
+    )
+    ct_relics = (
+        tuple(_parse_relic(r) for r in ct_relics_raw.get("relics", []))
+        if ct_relics_raw is not None
         else ()
     )
 
@@ -526,6 +593,9 @@ def _load_dataset() -> BTD6DataSet:
     _check_unique([r.round_number for r in rounds], where="rounds.round")
     _check_unique([b.id for b in bloons], where="bloons.id")
     _check_unique([b.canonical for b in bloons], where="bloons.canonical")
+    _check_unique([r.id for r in ct_relics], where="ct_relics.id")
+    _check_unique([r.canonical for r in ct_relics], where="ct_relics.canonical")
+    _check_unique([r.api_name for r in ct_relics], where="ct_relics.api_name")
 
     # Alias collision check across every category — the resolver depends
     # on aliases being globally unique.
@@ -575,6 +645,18 @@ def _load_dataset() -> BTD6DataSet:
                     f"{alias_owners[alias]} and {owner}",
                 )
             alias_owners[alias] = owner
+    for relic in ct_relics:
+        relic_terms = [*relic.aliases, _normalise_alias(relic.canonical)]
+        if relic.abbrev:
+            relic_terms.append(_normalise_alias(relic.abbrev))
+        for alias in relic_terms:
+            owner = f"ct_relic:{relic.id}"
+            if alias in alias_owners and alias_owners[alias] != owner:
+                raise BTD6DataValidationError(
+                    f"alias collision: {alias!r} owned by both "
+                    f"{alias_owners[alias]} and {owner}",
+                )
+            alias_owners[alias] = owner
 
     sources = {
         "towers": str(towers_raw["source"]),
@@ -585,6 +667,8 @@ def _load_dataset() -> BTD6DataSet:
     }
     if bloons_raw is not None:
         sources["bloons"] = str(bloons_raw["source"])
+    if ct_relics_raw is not None:
+        sources["ct_relics"] = str(ct_relics_raw["source"])
 
     return BTD6DataSet(
         data_version=str(towers_raw["data_version"]),
@@ -596,6 +680,7 @@ def _load_dataset() -> BTD6DataSet:
         modes=modes,
         rounds=rounds,
         bloons=bloons,
+        ct_relics=ct_relics,
     )
 
 
@@ -660,4 +745,56 @@ def get_bloon(bloon_id: str) -> BloonEntry | None:
     for bloon in get_dataset().bloons:
         if bloon.id == bloon_id:
             return bloon
+    return None
+
+
+def list_ct_relics() -> tuple[RelicEntry, ...]:
+    """Every Contested Territory relic in the catalog (possibly empty)."""
+    return get_dataset().ct_relics
+
+
+def get_ct_relic(relic_id: str) -> RelicEntry | None:
+    """Look up a relic by its catalog ``id``."""
+    for relic in get_dataset().ct_relics:
+        if relic.id == relic_id:
+            return relic
+    return None
+
+
+def get_ct_relic_by_api_name(api_name: str) -> RelicEntry | None:
+    """Resolve a Ninja Kiwi ``relic_name`` (e.g. ``SuperMonkeyStorm``).
+
+    Match is case-insensitive so minor casing drift in the fetched
+    fact does not orphan a tile from its catalog entry.
+    """
+    needle = api_name.strip().lower()
+    if not needle:
+        return None
+    for relic in get_dataset().ct_relics:
+        if relic.api_name.lower() == needle:
+            return relic
+    return None
+
+
+def resolve_relic(term: str) -> RelicEntry | None:
+    """Best-effort relic lookup by id, API name, canonical, abbrev or alias.
+
+    Case-insensitive. Used by the live-tile query and the resolver so a
+    relic can be addressed however the caller has it (catalog id from the
+    resolver, ``relic_name`` from a fact, or a free-text canonical/alias).
+    """
+    needle = term.strip().lower()
+    if not needle:
+        return None
+    for relic in get_dataset().ct_relics:
+        candidates = {
+            relic.id.lower(),
+            relic.api_name.lower(),
+            relic.canonical.lower(),
+            *(a.lower() for a in relic.aliases),
+        }
+        if relic.abbrev:
+            candidates.add(relic.abbrev.lower())
+        if needle in candidates:
+            return relic
     return None
