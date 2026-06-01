@@ -1198,6 +1198,24 @@ async def build(message_text: str) -> BTD6Context:
         }
         facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
 
+        # Pass 3c: upgrade grounding — an upgrade named in the text by name,
+        # abbreviation / nickname (PMFC / POD / BEZ / Prince of Darkness), or
+        # path notation ("wizard 005"). Grounds its identity + per-attack /
+        # minion / buff detail so upgrade-specific questions resolve even when
+        # the tower isn't also named. Isolated so a failure can't suppress the
+        # rest; the resolver underneath is deterministic and dataset-only.
+        try:
+            from services import btd6_upgrade_detail_service
+
+            facts.extend(
+                btd6_upgrade_detail_service.grounding_for_query(message_text),
+            )
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: upgrade grounding unavailable (%s)",
+                exc,
+            )
+
         # Pass 4: coverage + freshness signals (raw lines; the instruction
         # stack wraps the whole bundle as untrusted data). Paired with the
         # _TASK_CONTRACT live-event directive.
