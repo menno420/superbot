@@ -20,6 +20,8 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from services.paragon_service import (
+    CALCULATOR_AUTHOR_NAME,
+    CALCULATOR_PUBLIC_URL,
     ParagonRequirementResult,
     ParagonResult,
     ParagonServiceError,
@@ -70,6 +72,32 @@ def _fmt(value: int) -> str:
     return f"{value:,}"
 
 
+def _add_credits_field(embed: discord.Embed) -> None:
+    """Attach the web-calculator link + author credit to a paragon embed.
+
+    Shared by every paragon embed builder so the click-through to the live
+    site and the credit to its Discord author travel with each result.
+    """
+    embed.add_field(
+        name="🔗 Web calculator & credits",
+        value=(
+            f"[paragon-calc.vercel.app]({CALCULATOR_PUBLIC_URL}) — "
+            f"built by **{CALCULATOR_AUTHOR_NAME}**"
+        ),
+        inline=False,
+    )
+
+
+def _web_calculator_button(row: int) -> discord.ui.Button:
+    """A link button to the web Paragon Calculator (no callback — URL button)."""
+    return discord.ui.Button(
+        label="🌐 Web calculator",
+        style=discord.ButtonStyle.link,
+        url=CALCULATOR_PUBLIC_URL,
+        row=row,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Embeds
 # ---------------------------------------------------------------------------
@@ -103,6 +131,7 @@ def build_calculator_embed(view: ParagonCalculatorView) -> discord.Embed:
     embed.set_footer(
         text="Solo: 1 extra T5 (Dart only) · Co-op: up to 9 · totems are uncapped",
     )
+    _add_credits_field(embed)
     return embed
 
 
@@ -161,6 +190,7 @@ def build_result_embed(result: ParagonResult) -> discord.Embed:
             f"base ${_fmt(result.base_price)} • {suffix}"
         ),
     )
+    _add_credits_field(embed)
     return embed
 
 
@@ -181,6 +211,7 @@ def build_requirements_config_embed(view: ParagonRequirementsView) -> discord.Em
     embed.set_footer(
         text="Least-X maxes the other inputs; totems top up only the highest degrees.",
     )
+    _add_credits_field(embed)
     return embed
 
 
@@ -224,6 +255,7 @@ def build_requirement_embed(req: ParagonRequirementResult) -> discord.Embed:
     embed.set_footer(
         text=f"{req.tower} • {inputs.difficulty.title()} • {game_mode_for(inputs.player_count)}",
     )
+    _add_credits_field(embed)
     return embed
 
 
@@ -441,6 +473,7 @@ class ParagonCalculatorView(HubView):
         self.add_item(_CalculateButton(self))
         self.add_item(_RequirementsButton(self))
         self.add_item(_BackToBtd6Button())
+        self.add_item(_web_calculator_button(4))
 
 
 # ---------------------------------------------------------------------------
@@ -529,6 +562,7 @@ class ParagonRequirementsView(HubView):
         self.add_item(_StrategySelect(self))
         self.add_item(_EnterTargetButton(self))
         self.add_item(_BackToCalculatorButton(self))
+        self.add_item(_web_calculator_button(1))
 
 
 # ---------------------------------------------------------------------------

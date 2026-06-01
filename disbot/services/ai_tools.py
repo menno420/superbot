@@ -741,6 +741,26 @@ def _paragon_int(value: Any, default: int = 0) -> int:
         return default
 
 
+def _paragon_attribution() -> dict[str, str]:
+    """Credit + click-through data the model must append to paragon answers.
+
+    The link/author live in ``paragon_service`` (it owns the live-API URL); the
+    ``note`` tells the model to end its reply with this credit so attribution
+    travels with every AI-delivered paragon result, mirroring the ``!paragon``
+    panel's link button + credit field.
+    """
+    from services import paragon_service
+
+    return {
+        "calculator_url": paragon_service.CALCULATOR_PUBLIC_URL,
+        "author": paragon_service.CALCULATOR_AUTHOR_NAME,
+        "note": (
+            "End your reply with a credit line linking to calculator_url and "
+            "naming the author."
+        ),
+    }
+
+
 def _paragon_breakdown_summary(breakdown: Any) -> dict[str, Any]:
     return {
         axis.key: {
@@ -805,6 +825,7 @@ async def _paragon_calculate(arguments: dict[str, Any]) -> dict[str, Any]:
                 "game_mode": result.game_mode,
             },
         },
+        "attribution": _paragon_attribution(),
         "error": None,
         "estimated": result.estimated,
     }
@@ -864,6 +885,7 @@ async def _paragon_requirements(arguments: dict[str, Any]) -> dict[str, Any]:
             "requires_totems": solution.requires_totems,
             "verified": requirement.verified,
         },
+        "attribution": _paragon_attribution(),
         "error": None,
         "estimated": requirement.estimated,
     }
