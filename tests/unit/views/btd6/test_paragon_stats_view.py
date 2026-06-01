@@ -52,8 +52,9 @@ def test_paragon_button_skipped_for_tower_without_paragon():
     assert [c for c in view.children if isinstance(c, discord.ui.Button)] == []
 
 
-def test_paragon_button_skipped_for_module_less_paragon():
-    # Druid's paragon (Root of all Nature) has no stats module — no button.
+def test_paragon_button_added_for_prose_sourced_paragon():
+    # Druid's paragon (Root of all Nature) is prose-sourced but still has a
+    # combat base, so the button appears.
     view = discord.ui.View()
     attach_paragon_stats_button(view, "druid", detail_rebuilder=None)  # type: ignore[arg-type]
-    assert [c for c in view.children if isinstance(c, discord.ui.Button)] == []
+    assert any(isinstance(c, discord.ui.Button) for c in view.children)

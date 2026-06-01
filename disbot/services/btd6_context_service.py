@@ -413,7 +413,8 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
     Bounded to two lines — Degree 1 (base) and Degree 100 (max) — so the model
     has the *range* a paragon's stats span without flooding the prompt with 100
     rows. Degree-dependent values are derived by ``utils.btd6.paragon_degrees``
-    (the wiki's own scaling). Returns nothing for the two module-less paragons.
+    (the wiki's own scaling). The two prose-sourced paragons label their origin
+    so the model can hedge appropriately.
     """
     from services import btd6_stats_service
     from utils.btd6 import paragon_degrees
@@ -422,6 +423,7 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
     if pstats is None or not pstats.has_combat_stats:
         return []
 
+    src = "bloonswiki article prose" if pstats.is_prose_sourced else "bloonswiki"
     lines: list[str] = []
     base_bits = _paragon_main_bits(pstats.base, 1) or _normal_stat_bits(
         btd6_stats_service.normal_stats(pstats.base),
@@ -430,7 +432,7 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
         lines.append(
             _cap(
                 f"[btd6_paragon_stats normal] {name} primary attack at Degree 1 "
-                f"(base): {_sanitise(', '.join(base_bits))} (source: bloonswiki)",
+                f"(base): {_sanitise(', '.join(base_bits))} (source: {src})",
             ),
         )
 
@@ -441,7 +443,7 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
             f"[btd6_paragon_stats normal] {name} at Degree 100 (max): "
             f"{_sanitise(', '.join(max_bits)) if max_bits else 'see base'}; "
             f"boss-damage multiplier ×{boss} "
-            "(stats scale per degree 1-100; source: bloonswiki)",
+            f"(stats scale per degree 1-100; source: {src})",
         ),
     )
     return lines

@@ -226,9 +226,15 @@ Paragons now get the same stat coverage as towers: every stat, every degree.
   `Module:BTD6_stats/<Paragon Name>/new?action=raw` — a **single flat node**
   (not crosspath/level-keyed), structurally identical to one tower tier. Cost /
   CHIMPS cost / XP come from Cargo `btd6_paragons`.
-- **Coverage:** 11 of the 13 paragons have a module. Two don't (Root of all
-  Nature, Herald of Everfrost) — they 404 like prose-only heroes and keep
-  cost-only on their tower. Re-run `--all-paragons` if the wiki adds them.
+- **Coverage:** all 13 paragons have a committed stats file. 11 come from their
+  `?action=raw` module; the other two (Root of all Nature, Herald of Everfrost)
+  404 — no module exists — so they're **hand-transcribed from their wiki article
+  prose** (Degree-1 base of the primary attacks), stored with
+  `source: "…article prose"` and flagged `ParagonStats.is_prose_sourced` so the
+  UI/AI label the lower fidelity. The universal degree scaling then applies to
+  them unchanged. `--all-paragons` leaves the two curated files untouched (their
+  fetched `base` is empty); if the wiki ever publishes their modules, delete the
+  curated file and re-run to upgrade to module-exact data.
 - **Derive, don't store, the degree table.** Only the degree-**independent**
   base node is stored (`disbot/data/btd6/stats/paragons/<paragon_id>.json`); the
   degree-**dependent** table (1..100) is derived at runtime by

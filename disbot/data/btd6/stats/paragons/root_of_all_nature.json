@@ -1,0 +1,73 @@
+{
+  "paragon_id": "root_of_all_nature",
+  "tower_id": "druid",
+  "canonical": "Root of all Nature",
+  "tower_canonical": "Druid",
+  "game_version": "54.0",
+  "source": "bloonswiki.com article prose (CC BY-NC-SA)",
+  "cost": 475000,
+  "cost_chimps": null,
+  "xp": 750000,
+  "base": {
+    "range": 60,
+    "attacks": [
+      {
+        "name": "Electrified Thorns",
+        "rate": 0.5,
+        "count": 7,
+        "projectiles": [
+          {
+            "name": "Electrified Thorn",
+            "pierce": 3,
+            "maxPierce": 0,
+            "damage": 55,
+            "damage_type": "Normal",
+            "cannot_pop": null,
+            "damageModifierForBoss": 110,
+            "speed": 300,
+            "lifespan": 0.6667
+          }
+        ]
+      },
+      {
+        "name": "Sentient Forest — Inner zone",
+        "projectiles": [
+          {
+            "name": "Inner zone vines",
+            "damage": 30,
+            "damage_type": "Normal",
+            "cannot_pop": null,
+            "damageModifierForCeramic": 300,
+            "damageModifierForMoabs": 300
+          }
+        ]
+      },
+      {
+        "name": "Sentient Forest — Middle zone",
+        "projectiles": [
+          {
+            "name": "Middle zone vines",
+            "damage": 15,
+            "damage_type": "Normal",
+            "cannot_pop": null,
+            "damageModifierForCeramic": 150,
+            "damageModifierForMoabs": 150
+          }
+        ]
+      },
+      {
+        "name": "Sentient Forest — Outer zone",
+        "projectiles": [
+          {
+            "name": "Outer zone vines",
+            "damage": 10,
+            "damage_type": "Normal",
+            "cannot_pop": null,
+            "damageModifierForCeramic": 100,
+            "damageModifierForMoabs": 100
+          }
+        ]
+      }
+    ]
+  }
+}

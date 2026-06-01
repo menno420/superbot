@@ -306,6 +306,11 @@ def build_paragon_base_embed(stats: Any) -> discord.Embed:
     if stats.cost:
         header += f" · ${stats.cost:,} on Medium"
     header += "\n*Damage, pierce and cooldown scale with degree (1–100).*"
+    if getattr(stats, "is_prose_sourced", False):
+        header += (
+            "\n*ℹ️ Transcribed from the wiki article (no data module yet) — "
+            "primary attacks only.*"
+        )
     embed.description = (
         f"{header}\n{embed.description}" if embed.description else header
     )

@@ -19,9 +19,10 @@ from services import btd6_stats_service as svc
 
 _PARAGONS = Path(svc.PARAGON_STATS_ROOT)
 
-# Paragons that genuinely lack a bloonswiki stats module (cost-only).
-_MODULE_LESS = {"root_of_all_nature", "herald_of_everfrost"}
-_EXPECTED_WITH_MODULE = 11
+# The two paragons with no bloonswiki stats module — transcribed from article
+# prose instead, so they carry a stats file but are flagged prose-sourced.
+_PROSE_SOURCED = {"root_of_all_nature", "herald_of_everfrost"}
+_EXPECTED_PARAGONS = 13
 
 
 @pytest.fixture(autouse=True)
@@ -31,10 +32,10 @@ def _fresh():
     svc.reset_cache()
 
 
-def test_eleven_paragon_files_committed():
-    ids = svc.list_paragon_ids()
-    assert len(ids) == _EXPECTED_WITH_MODULE
-    assert not (_MODULE_LESS & set(ids))
+def test_all_thirteen_paragon_files_committed():
+    ids = set(svc.list_paragon_ids())
+    assert len(ids) == _EXPECTED_PARAGONS
+    assert _PROSE_SOURCED <= ids  # the prose-sourced two are present too
 
 
 def test_every_paragon_file_has_a_combat_base():
@@ -60,10 +61,30 @@ def test_lookup_by_tower_matches_lookup_by_id():
     assert by_tower is apex
 
 
-def test_module_less_paragons_have_no_stats():
-    assert svc.get_paragon_stats("root_of_all_nature") is None
-    assert svc.get_paragon_stats_by_tower("druid") is None
-    assert svc.get_paragon_stats_by_tower("ice_monkey") is None
+def test_prose_sourced_paragons_present_and_flagged():
+    # Module-less paragons are transcribed from article prose: they DO have a
+    # combat base now, flagged is_prose_sourced; module-sourced ones are not.
+    for pid in _PROSE_SOURCED:
+        stats = svc.get_paragon_stats(pid)
+        assert stats is not None
+        assert stats.has_combat_stats
+        assert stats.is_prose_sourced
+    assert svc.get_paragon_stats_by_tower("druid") is not None
+    assert svc.get_paragon_stats_by_tower("ice_monkey") is not None
+    assert svc.get_paragon_stats("glaive_dominus").is_prose_sourced is False
+
+
+def test_prose_sourced_degree_scaling_works():
+    # The universal degree scaling still applies to a prose-sourced base.
+    herald = svc.get_paragon_stats("herald_of_everfrost")
+    d1, d100 = herald.degree(1), herald.degree(100)
+    assert d1.power == 0 and d100.power == 200_000
+    assert d1.boss_multiplier == 1.0 and d100.boss_multiplier == 2.25
+    # Ice Beam 600 dmg at d1 -> 600*2+10 at d100.
+    dmg100 = next(
+        s for s in d100.stats if s.group == "Ice Beam" and s.label == "Damage"
+    )
+    assert dmg100.value == 600 * 2 + 10
 
 
 def test_paragon_tower_matches_committed_tower_paragon_name():
@@ -152,11 +173,14 @@ def test_paragon_name_pass_dedupes_resolved_towers():
     assert ctx._paragon_name_facts("glaive dominus", {"boomerang_monkey"}) == []
 
 
-def test_render_paragon_empty_for_module_less_paragon():
+def test_render_paragon_prose_sourced_labels_origin():
     from services import btd6_context_service as ctx
 
-    # Druid's paragon has cost but no stats module: name+cost line, no stats line.
+    # Druid's paragon is prose-sourced: it still grounds combat stats, but the
+    # provenance label says so (so the model can hedge on the lower fidelity).
     lines = ctx._render_paragon("druid", "Druid")
     joined = "\n".join(lines)
-    assert "[btd6_paragon]" in joined  # name + cost still present
-    assert "[btd6_paragon_stats normal]" not in joined
+    assert "[btd6_paragon]" in joined  # name + cost
+    assert "[btd6_paragon_stats normal]" in joined  # now has stats too
+    assert "Root of all Nature" in joined
+    assert "article prose" in joined  # provenance label

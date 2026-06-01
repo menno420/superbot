@@ -124,9 +124,11 @@ class ParagonStats:
 
     Only the degree-INDEPENDENT base node is stored; the degree-dependent table
     (pierce / damage / cooldown / boss multiplier per degree 1..100) is derived
-    on demand from the wiki's formulas via :func:`degree`. Eleven of the thirteen
-    paragons have a stats module; the two that don't (Root of all Nature, Herald
-    of Everfrost) have no file here and keep cost-only on their tower.
+    on demand from the wiki's formulas via :func:`degree`. All thirteen paragons
+    have a file: eleven from their bloonswiki stats module, and two (Root of all
+    Nature, Herald of Everfrost) transcribed from their article prose because no
+    machine-readable module exists — :attr:`is_prose_sourced` flags those so the
+    UI / AI can label the lower-fidelity origin.
     """
 
     paragon_id: str
@@ -138,10 +140,16 @@ class ParagonStats:
     cost_chimps: int | None
     xp: int | None
     base: dict[str, Any]
+    source: str = ""
 
     @property
     def has_combat_stats(self) -> bool:
         return bool(self.base.get("attacks") or self.base.get("abilities"))
+
+    @property
+    def is_prose_sourced(self) -> bool:
+        """True when the base was transcribed from article prose, not a module."""
+        return "prose" in self.source.lower()
 
     def degree(self, degree: int) -> paragon_degrees.DegreeRow:
         """Degree-dependent stats (power, boss multiplier, scaled cells)."""
@@ -228,6 +236,7 @@ def _load_paragon(paragon_id: str) -> ParagonStats | None:
         cost_chimps=data.get("cost_chimps"),
         xp=data.get("xp"),
         base=data.get("base", {}),
+        source=str(data.get("source", "")),
     )
 
 

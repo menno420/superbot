@@ -396,6 +396,10 @@ def fetch_paragon(
     Like utility towers / prose-only heroes, the two paragons without a stats
     module (Root of all Nature, Herald of Everfrost) 404 on the module page; we
     keep their Cargo cost and note the absence rather than failing the run.
+    Those two are instead committed as hand-transcribed base nodes (from their
+    wiki article prose, ``source: …article prose``); this fetch leaves those
+    curated files untouched because their ``base`` comes back empty (not
+    ``_paragon_writable``), so a re-run never clobbers them.
     """
     from parse_bloonswiki import parse_paragon_stats_json
 
