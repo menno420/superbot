@@ -39,11 +39,12 @@ def _buttons(view: discord.ui.View) -> list[discord.ui.Button]:
 # --- view construction -------------------------------------------------------
 
 
-def test_calculator_view_has_four_selects_and_four_buttons():
+def test_calculator_view_has_four_selects_and_five_buttons():
     view = ParagonCalculatorView(_AUTHOR)
     assert len(_selects(view)) == 4
-    # Calculate, Requirements, ↩ BTD6, and the web-calculator link button.
-    assert len(_buttons(view)) == 4
+    # Calculate, Requirements, 📊 Stats, ↩ BTD6, and the web-calculator link.
+    assert len(_buttons(view)) == 5
+    assert any("Stats" in (b.label or "") for b in _buttons(view))
 
 
 def test_calculator_view_has_web_calculator_link_button():

@@ -111,3 +111,52 @@ def test_degree_groups_are_stable_across_degrees():
     assert tuple(
         dict.fromkeys(s.group for s in stats.degree(77).stats)
     ) == groups
+
+
+# --- AI grounding (btd6_context_service) ------------------------------------
+
+
+def test_render_paragon_now_includes_combat_stats():
+    from services import btd6_context_service as ctx
+
+    lines = ctx._render_paragon("boomerang_monkey", "Boomerang Monkey")
+    joined = "\n".join(lines)
+    # Still names the paragon + cost.
+    assert "[btd6_paragon]" in joined
+    assert "Glaive Dominus" in joined
+    # Now also carries degree-1 + degree-100 combat stats.
+    assert "[btd6_paragon_stats normal]" in joined
+    assert "Degree 1" in joined
+    assert "Degree 100" in joined
+    assert "×2.25" in joined  # max boss multiplier
+    # Primary-attack headline, not the situational MOAB-Press nuke.
+    assert "25 dmg" in joined
+    assert "60 pierce" in joined
+
+
+def test_paragon_name_alone_grounds_stats():
+    """Naming only the paragon (not its tower) still grounds it — the screenshot
+    flow ("what are the stats of Glaive Dominus?").
+    """
+    from services import btd6_context_service as ctx
+
+    lines = ctx._paragon_name_facts("what are the stats of glaive dominus", set())
+    assert any("Glaive Dominus" in line for line in lines)
+    assert any("[btd6_paragon_stats normal]" in line for line in lines)
+
+
+def test_paragon_name_pass_dedupes_resolved_towers():
+    from services import btd6_context_service as ctx
+
+    # If the tower is already grounded via intent, the name pass stays silent.
+    assert ctx._paragon_name_facts("glaive dominus", {"boomerang_monkey"}) == []
+
+
+def test_render_paragon_empty_for_module_less_paragon():
+    from services import btd6_context_service as ctx
+
+    # Druid's paragon has cost but no stats module: name+cost line, no stats line.
+    lines = ctx._render_paragon("druid", "Druid")
+    joined = "\n".join(lines)
+    assert "[btd6_paragon]" in joined  # name + cost still present
+    assert "[btd6_paragon_stats normal]" not in joined

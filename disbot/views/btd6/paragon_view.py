@@ -422,6 +422,58 @@ class _RequirementsButton(discord.ui.Button):
         )
 
 
+class _StatsButton(discord.ui.Button):
+    """Open the selected paragon's combat-stats view (degree picker)."""
+
+    def __init__(self, parent: ParagonCalculatorView) -> None:
+        self._panel = parent
+        super().__init__(label="📊 Stats", style=discord.ButtonStyle.secondary, row=4)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from services import btd6_stats_service
+        from views.btd6.paragon_stats_view import open_paragon_stats
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        stats = btd6_stats_service.get_paragon_stats(self._panel.paragon_id)
+        if stats is None or not stats.has_combat_stats:
+            # Module-less paragon (Root of all Nature, Herald of Everfrost): the
+            # wiki has no stats data page yet, so only its cost is known.
+            embed = discord.Embed(
+                title="📊 Paragon stats",
+                description=(
+                    "No combat-stats module is published for this paragon yet — "
+                    "only its cost is known. Pick another paragon to see full stats."
+                ),
+                color=discord.Color.orange(),
+            )
+            await safe_edit(interaction, embed=embed, view=self._panel)
+            return
+
+        paragon_id = self._panel.paragon_id
+        player_count = self._panel.player_count
+        difficulty = self._panel.difficulty
+
+        async def _rebuild_calculator(
+            inter: discord.Interaction,
+        ) -> tuple[discord.Embed, discord.ui.View]:
+            view = ParagonCalculatorView(
+                inter.user,
+                paragon_id=paragon_id,
+                player_count=player_count,
+                difficulty=difficulty,
+            )
+            return build_calculator_embed(view), view
+
+        await open_paragon_stats(
+            interaction,
+            stats,
+            back_label="↩ Calculator",
+            back_custom_id=f"btd6_paragon_stats:back_calc:{paragon_id}",
+            back_builder=_rebuild_calculator,
+        )
+
+
 class _BackToBtd6Button(discord.ui.Button):
     def __init__(self) -> None:
         super().__init__(label="↩ BTD6", style=discord.ButtonStyle.secondary, row=4)
@@ -472,6 +524,7 @@ class ParagonCalculatorView(HubView):
         self.add_item(_Tier5Select(self))
         self.add_item(_CalculateButton(self))
         self.add_item(_RequirementsButton(self))
+        self.add_item(_StatsButton(self))
         self.add_item(_BackToBtd6Button())
         self.add_item(_web_calculator_button(4))
 

@@ -350,12 +350,101 @@ def _render_paragon(tower_id: str, canonical: str) -> list[str]:
     if stats is None or not stats.paragon_cost:
         return []
     name = stats.paragon_name or f"{canonical} Paragon"
-    return [
+    lines = [
         _cap(
             f"[btd6_paragon] {canonical}'s Paragon (tier 6) is {name}, costing "
             f"{stats.paragon_cost} on Medium (source: bloonswiki)",
         ),
     ]
+    lines.extend(_render_paragon_stats(tower_id, name))
+    return lines
+
+
+def _paragon_main_bits(base: dict[str, Any], degree: int) -> list[str]:
+    """Headline bits for a paragon's *primary* attack at ``degree``.
+
+    Uses the first attack (the recognisable main weapon) rather than the highest
+    single-hit projectile, so the headline isn't dominated by a situational nuke
+    (e.g. Glaive Dominus's MOAB Press). Damage / pierce / cooldown are scaled by
+    the wiki's degree formulas; the damage type + immunity note are folded in
+    exactly as the tower headline does. Returns ``[]`` for an ability-led paragon
+    with no primary attack.
+    """
+    from utils.btd6 import paragon_degrees
+
+    attacks = base.get("attacks") or []
+    if not attacks:
+        return []
+    attack = attacks[0]
+    projectiles = attack.get("projectiles") or []
+    main = max(projectiles, key=lambda p: p.get("damage") or 0, default=None)
+
+    bits: list[str] = []
+    if main is not None:
+        damage = main.get("damage")
+        if isinstance(damage, (int, float)) and damage > 0:
+            dmg = f"{_big(round(paragon_degrees.scale_damage(damage, degree)))} dmg"
+            dtype = main.get("damage_type")
+            if dtype:
+                note = (
+                    "pops everything" if dtype == "Normal" else main.get("cannot_pop")
+                )
+                dmg += f" ({dtype}{f', {note}' if note else ''})"
+            bits.append(dmg)
+        pierce = main.get("pierce")
+        if (
+            isinstance(pierce, (int, float))
+            and pierce < 99999
+            and (main.get("maxPierce") or 0) < 1
+        ):
+            bits.append(
+                f"{_big(round(paragon_degrees.scale_pierce(pierce, degree)))} pierce",
+            )
+    rate = attack.get("rate")
+    if isinstance(rate, (int, float)) and rate < 9999:
+        cd = paragon_degrees.format_value(paragon_degrees.scale_cooldown(rate, degree))
+        bits.append(f"{cd}s cooldown")
+    return bits
+
+
+def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
+    """Headline paragon combat stats as ``[btd6_paragon_stats normal]`` lines.
+
+    Bounded to two lines — Degree 1 (base) and Degree 100 (max) — so the model
+    has the *range* a paragon's stats span without flooding the prompt with 100
+    rows. Degree-dependent values are derived by ``utils.btd6.paragon_degrees``
+    (the wiki's own scaling). Returns nothing for the two module-less paragons.
+    """
+    from services import btd6_stats_service
+    from utils.btd6 import paragon_degrees
+
+    pstats = btd6_stats_service.get_paragon_stats_by_tower(tower_id)
+    if pstats is None or not pstats.has_combat_stats:
+        return []
+
+    lines: list[str] = []
+    base_bits = _paragon_main_bits(pstats.base, 1) or _normal_stat_bits(
+        btd6_stats_service.normal_stats(pstats.base),
+    )
+    if base_bits:
+        lines.append(
+            _cap(
+                f"[btd6_paragon_stats normal] {name} primary attack at Degree 1 "
+                f"(base): {_sanitise(', '.join(base_bits))} (source: bloonswiki)",
+            ),
+        )
+
+    max_bits = _paragon_main_bits(pstats.base, 100)
+    boss = paragon_degrees.boss_multiplier(100)
+    lines.append(
+        _cap(
+            f"[btd6_paragon_stats normal] {name} at Degree 100 (max): "
+            f"{_sanitise(', '.join(max_bits)) if max_bits else 'see base'}; "
+            f"boss-damage multiplier ×{boss} "
+            "(stats scale per degree 1-100; source: bloonswiki)",
+        ),
+    )
+    return lines
 
 
 def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
@@ -854,6 +943,32 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
     return out
 
 
+def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:
+    """Ground a paragon named directly (e.g. "what are Glaive Dominus's stats?").
+
+    The resolver keys on towers/heroes, not paragon names, so a question naming
+    only the paragon would otherwise get no paragon grounding. Match on the full
+    paragon name (distinctive enough to avoid tower-name false positives) and emit
+    the same name + cost + stats lines, skipping any tower already grounded via
+    the resolved intent so nothing is duplicated.
+    """
+    from services import btd6_stats_service
+    from utils.btd6 import paragon_math
+
+    text = (message_text or "").lower()
+    out: list[str] = []
+    for paragon in paragon_math.PARAGONS:
+        # Strip a parenthetical (e.g. "… (B.O.M.B.)") and match the bare name.
+        name = paragon.name.split(" (")[0].strip().lower()
+        if not name or name not in text:
+            continue
+        pstats = btd6_stats_service.get_paragon_stats(paragon.paragon_id)
+        if pstats is None or pstats.tower_id in resolved_tower_ids:
+            continue
+        out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
+    return out
+
+
 def _fixture_facts_for_intent(intent: Any) -> list[str]:
     """Return fixture-sourced grounding lines for any tower/hero/bloon in ``intent``.
 
@@ -1065,6 +1180,15 @@ async def build(message_text: str) -> BTD6Context:
         # no rows for tower/hero entities (the common state before live
         # ingestion populates btd6_facts).
         facts.extend(_fixture_facts_for_intent(intent))
+
+        # Pass 3b: a paragon named directly (not via its tower) — the resolver
+        # doesn't key on paragon names, so ground those too (deduped against
+        # towers already grounded above).
+        resolved_tower_ids = {
+            str(getattr(tower, "id", "") or "")
+            for tower in getattr(intent, "towers", ()) or ()
+        }
+        facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
 
         # Pass 4: coverage + freshness signals (raw lines; the instruction
         # stack wraps the whole bundle as untrusted data). Paired with the
