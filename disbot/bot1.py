@@ -16,8 +16,8 @@ import config
 from core.runtime import lifecycle as _lifecycle
 from services.runtime import BOOT_ID, install_boot_id_logging
 from services.webhook_reporter import WebhookReporter
-from utils import db
-from utils.synonyms import find_command as _find_synonym
+from utils import command_resolution, db
+from utils.synonyms import COMMAND_SYNONYMS
 
 # ---------------------------------------------------------------------------
 # Logging — structured JSON when python-json-logger is available,
@@ -80,6 +80,11 @@ bot = commands.Bot(
     command_prefix=config.PREFIX,
     intents=intents,
     help_command=None,
+    # Resolve case variants (``!Help``, ``!BAN``) at the source.  Lowercasing
+    # can never change *which* command is meant — there are no two commands
+    # differing only by case — so this is always safe and frees the typo
+    # resolver (utils.command_resolution) to handle genuine misspellings only.
+    case_insensitive=True,
 )
 
 
@@ -294,6 +299,48 @@ async def _maybe_cleanup_successful_command(ctx: commands.Context) -> None:
         logger.warning("Cleanup failed for successful command: %s", exc)
 
 
+# ---------------------------------------------------------------------------
+# Fuzzy command resolution support.
+#
+# We build a ``token -> canonical command name`` map from the LIVE command
+# surface (primary names + aliases) plus the hand-maintained synonym table,
+# then derive the auto-correct allowlist once.  The cache is keyed on the
+# command-surface size so it rebuilds transparently if cogs (un)load.
+# ---------------------------------------------------------------------------
+_resolution_cache: tuple[int, dict[str, str], frozenset[str]] | None = None
+
+
+def _build_token_map() -> dict[str, str]:
+    """Map every known token (name, alias, synonym) to its canonical command.
+
+    Primary command names win over aliases/synonyms on collision so a real
+    command is never shadowed by another command's alias.
+    """
+    token_map: dict[str, str] = {}
+    # Synonyms first (lowest precedence)...
+    for canonical, synonyms in COMMAND_SYNONYMS.items():
+        for syn in synonyms:
+            token_map.setdefault(syn.lower(), canonical)
+    # ...then aliases...
+    for cmd in bot.commands:
+        for alias in getattr(cmd, "aliases", ()) or ():
+            token_map[alias.lower()] = cmd.name
+    # ...then primary names (highest precedence).
+    for cmd in bot.commands:
+        token_map[cmd.name.lower()] = cmd.name
+    return token_map
+
+
+def _resolution_inputs() -> tuple[dict[str, str], frozenset[str]]:
+    global _resolution_cache
+    surface_size = len(bot.all_commands)
+    if _resolution_cache is None or _resolution_cache[0] != surface_size:
+        token_map = _build_token_map()
+        auto_set = command_resolution.derive_auto_correct_set(token_map)
+        _resolution_cache = (surface_size, token_map, auto_set)
+    return _resolution_cache[1], _resolution_cache[2]
+
+
 @bot.event
 async def on_command_error(ctx: commands.Context, error: commands.CommandError) -> None:
     from services import metrics as _metrics
@@ -355,10 +402,29 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         )
     elif isinstance(error, commands.CommandNotFound):
         raw = ctx.invoked_with or ""
-        suggestion = _find_synonym(raw)
-        if suggestion:
+        token_map, auto_set = _resolution_inputs()
+        resolution = command_resolution.classify(raw, token_map, auto_set)
+        prefix = ctx.prefix or config.PREFIX
+
+        if resolution.outcome is command_resolution.Outcome.AUTO and resolution.command:
+            # Rewrite the mistyped token and re-dispatch through the full
+            # command pipeline (process_commands), so permission checks and
+            # cooldowns still run — never ctx.invoke, which would bypass them.
+            corrected = resolution.command
+            rest = ctx.message.content[len(prefix) + len(raw) :]
+            ctx.message.content = f"{prefix}{corrected}{rest}"
             await ctx.send(
-                f"❓ Unknown command `{raw}`. Did you mean `{config.PREFIX}{suggestion}`?",
+                f"↩️ Ran `{prefix}{corrected}` — assumed from `{prefix}{raw}`.",
+                delete_after=8,
+            )
+            await bot.process_commands(ctx.message)
+        elif (
+            resolution.outcome is command_resolution.Outcome.SUGGEST
+            and resolution.command
+        ):
+            await ctx.send(
+                f"❓ Unknown command `{raw}`. "
+                f"Did you mean `{prefix}{resolution.command}`?",
                 delete_after=15,
             )
         else:
