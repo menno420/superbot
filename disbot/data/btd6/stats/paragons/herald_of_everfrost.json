@@ -1,0 +1,73 @@
+{
+  "paragon_id": "herald_of_everfrost",
+  "tower_id": "ice_monkey",
+  "canonical": "Herald of Everfrost",
+  "tower_canonical": "Ice Monkey",
+  "game_version": "54.0",
+  "source": "bloonswiki.com article prose (CC BY-NC-SA)",
+  "cost": 300000,
+  "cost_chimps": null,
+  "xp": 750000,
+  "base": {
+    "range": 46,
+    "attacks": [
+      {
+        "name": "Ice Lance Beam",
+        "rate": 4,
+        "projectiles": [
+          {
+            "name": "Ice Beam",
+            "pierce": 500,
+            "maxPierce": 0,
+            "damage": 600,
+            "damage_type": "Normal",
+            "cannot_pop": null,
+            "damageModifierForBoss": 6000,
+            "radius": 2,
+            "effects": [
+              {
+                "name": "Freeze",
+                "damage": 600,
+                "damage_type": "Normal",
+                "cannot_pop": null,
+                "lifespan": 10
+              }
+            ]
+          },
+          {
+            "name": "Ice Shards",
+            "pierce": 25,
+            "maxPierce": 0,
+            "damage": 25,
+            "damage_type": "Normal",
+            "cannot_pop": null,
+            "damageModifierForMoabs": 50,
+            "damageModifierForBoss": 125,
+            "radius": 5,
+            "speed": 350
+          },
+          {
+            "name": "Icicles",
+            "damage": 10,
+            "damage_type": "Normal",
+            "cannot_pop": null,
+            "damageModifierForMoabs": 40,
+            "damageModifierForBoss": 300,
+            "lifespan": 1.5
+          }
+        ]
+      },
+      {
+        "name": "Snowstorm Roar",
+        "projectiles": [
+          {
+            "name": "Snowstorm",
+            "damage": 10,
+            "damage_type": "Normal",
+            "cannot_pop": null
+          }
+        ]
+      }
+    ]
+  }
+}

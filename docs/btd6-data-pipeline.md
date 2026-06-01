@@ -53,9 +53,9 @@ the bot only reads files).
 |---|---|---|
 | Base cost / category | Cargo `btd6_towers` (`cost`, `category`) | `where=name='<Canonical>'` |
 | Per-upgrade cost / XP / name | Cargo `btd6_upgrades` (`path,tier,name,cost,cost_C,xp`) | `where=tower='<Canonical>' AND unused=0` |
-| Paragon cost | Cargo `btd6_paragons` (`cost`) | optional |
+| Paragon cost / XP | Cargo `btd6_paragons` (`name,cost,cost_C,xp`) | `where=tower='<Canonical>'` |
 | Hero cost | Cargo `btd6_heroes` (`cost`, `cost_C`) | hero costs verified already-correct |
-| Combat stats | `Module:BTD6_stats/<Name>/new?action=raw` (JSON) | towers keyed by crosspath; heroes by level |
+| Combat stats | `Module:BTD6_stats/<Name>/new?action=raw` (JSON) | towers keyed by crosspath; heroes by level; **paragons are a single flat node** (degree-independent base — see Paragons below) |
 | Damage type | `Template:BTD6 dt` switch | ported in `utils/btd6/damage_types.py` |
 
 Cargo API shape: `https://www.bloonswiki.com/api.php?action=cargoquery&format=json&tables=…&fields=…&where=…&order_by=…&limit=…` → rows under `cargoquery[].title`.
@@ -132,6 +132,8 @@ services/btd6_stats_service.get_tower_stats(id)  (lazy, cached)
 python3.10 scripts/fetch_bloonswiki.py --tower bomb_shooter --dry-run
 # Fetch the whole roster (writes CSV cost columns + stats/*.json):
 python3.10 scripts/fetch_bloonswiki.py --all
+# Fetch every paragon's stats (writes stats/paragons/<id>.json):
+python3.10 scripts/fetch_bloonswiki.py --all-paragons
 # Regenerate the catalog from the corrected CSV:
 python3.10 scripts/import_btd6_data_from_csv.py --allow-empty-descriptions --skip-incomplete --game-version 54.0
 # Gate:
@@ -215,6 +217,49 @@ answer stale/missing live-event questions from memory.
 - Show derived per-difficulty costs in the UI (formula already exists).
 - ~~Surface crosspath-delta stats in the Pro view~~ — **done** (see the update
   section at the top; reconstructed cumulatively, two-step picker).
+
+## Paragons — full combat stats (DONE)
+
+Paragons now get the same stat coverage as towers: every stat, every degree.
+
+- **Source:** each paragon has its own stats module
+  `Module:BTD6_stats/<Paragon Name>/new?action=raw` — a **single flat node**
+  (not crosspath/level-keyed), structurally identical to one tower tier. Cost /
+  CHIMPS cost / XP come from Cargo `btd6_paragons`.
+- **Coverage:** all 13 paragons have a committed stats file. 11 come from their
+  `?action=raw` module; the other two (Root of all Nature, Herald of Everfrost)
+  404 — no module exists — so they're **hand-transcribed from their wiki article
+  prose** (Degree-1 base of the primary attacks), stored with
+  `source: "…article prose"` and flagged `ParagonStats.is_prose_sourced` so the
+  UI/AI label the lower fidelity. The universal degree scaling then applies to
+  them unchanged. `--all-paragons` leaves the two curated files untouched (their
+  fetched `base` is empty); if the wiki ever publishes their modules, delete the
+  curated file and re-run to upgrade to module-exact data.
+- **Derive, don't store, the degree table.** Only the degree-**independent**
+  base node is stored (`disbot/data/btd6/stats/paragons/<paragon_id>.json`); the
+  degree-**dependent** table (1..100) is derived at runtime by
+  `utils/btd6/paragon_degrees.py`, a verbatim port of the wiki's own
+  `Module:BTD6 stats` `parse_paragon_table` (cooldown `rate/(1+0.01·√(50(d-1)))`,
+  damage `base·(1+0.01(d-1))+⌊(d-1)/10⌋`, pierce `⌊base·(1+0.01(d-1))⌋+(d-1)/10`,
+  modifiers `base·(1+0.01(d-1))`, the boss-mult ladder, and the `d==100` specials
+  `base·2+10`). The Power column reuses the cubic threshold but **rounds** (the
+  wiki's displayed `degree_requirements` table rounds; `paragon_math.threshold`
+  floors it for the calculator's "minimum power" compare). Pinned to the wiki's
+  rendered numbers in `tests/unit/utils/test_paragon_degrees.py`.
+- **Runtime:** `btd6_stats_service.get_paragon_stats(id)` /
+  `get_paragon_stats_by_tower(id)` (lazy, cached); `.degree(d)` returns the row.
+- **UI:** `views/btd6/paragon_stats_view.py` (base infobox + degree picker +
+  "Enter degree" modal), reached from a **📊 Stats** button on the Paragon
+  Calculator and a **👑 Paragon stats** button on the tower detail.
+- **AI:** `btd6_context_service._render_paragon` appends Degree 1 + 100 headline
+  stats; a paragon-name pass grounds a paragon named directly ("Glaive Dominus
+  stats") even when its tower isn't named.
+- **Descriptions:** bloonswiki prose is CC-BY-NC-SA, so the per-paragon overviews
+  in `disbot/data/btd6/paragon_descriptions.json` are **paraphrased in our own
+  voice** (how it attacks + its signature behaviour), not copied — kept in a
+  separate file so a stats re-fetch never clobbers them, merged onto
+  `ParagonStats.description`, and shown in the base embed + AI grounding. (Same
+  CC rule as the deliberately-empty tower/hero `description` columns.)
 
 ## Gotchas
 

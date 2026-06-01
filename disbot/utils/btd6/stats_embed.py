@@ -282,11 +282,98 @@ def build_pro_hero_level_embed(stats: Any, code: str) -> discord.Embed:
     )
 
 
+# ---------------------------------------------------------------------------
+# Paragon view (degree-independent base + a per-degree breakdown)
+# ---------------------------------------------------------------------------
+
+
+def build_paragon_base_embed(stats: Any) -> discord.Embed:
+    """Degree-independent base stats for a paragon — the infobox view.
+
+    Reuses the shared per-node body, so a paragon renders through the same code
+    as a tower tier / hero level. The damage / pierce / cooldown shown are the
+    degree-1 values; they scale up per degree (see
+    :func:`build_paragon_degree_embed`), while count / speed / radius / lifespan /
+    damage type / range hold at every degree.
+    """
+    embed = _stat_node_embed(
+        f"👑 {stats.canonical} — Base stats",
+        stats.base,
+        stats.game_version,
+        empty_msg="No combat stats.",
+    )
+    header = f"{stats.tower_canonical}'s Paragon (tier 6)"
+    if stats.cost:
+        header += f" · ${stats.cost:,} on Medium"
+    header += "\n*Damage, pierce and cooldown scale with degree (1–100).*"
+    if getattr(stats, "is_prose_sourced", False):
+        header += (
+            "\n*ℹ️ Transcribed from the wiki article (no data module yet) — "
+            "primary attacks only.*"
+        )
+    overview = getattr(stats, "description", "")
+    if overview:
+        header = f"{overview}\n\n{header}"
+    embed.description = (
+        f"{header}\n{embed.description}" if embed.description else header
+    )
+    return embed
+
+
+def paragon_degree_label(degree: int) -> str:
+    """e.g. ``"Degree 50"`` — the paragon analogue of :func:`tier_label`."""
+    return f"Degree {degree}"
+
+
+def build_paragon_degree_embed(stats: Any, degree: int) -> discord.Embed:
+    """Degree-dependent stats for one paragon degree (power, boss mult, scaled
+    cells grouped by attack / projectile / effect / ability).
+    """
+    from utils.btd6.paragon_degrees import format_value
+
+    row = stats.degree(degree)
+    embed = discord.Embed(
+        title=f"👑 {stats.canonical} — {paragon_degree_label(row.degree)}",
+        color=discord.Color.gold(),
+    )
+    embed.description = (
+        f"**Power required:** {row.power:,}\n"
+        f"**Boss-damage multiplier:** ×{row.boss_multiplier}"
+    )
+    grouped: dict[str, list[Any]] = {}
+    order: list[str] = []
+    for cell in row.stats:
+        if cell.group not in grouped:
+            grouped[cell.group] = []
+            order.append(cell.group)
+        grouped[cell.group].append(cell)
+    for group in order:
+        parts: list[str] = []
+        for cell in grouped[group]:
+            value = format_value(cell.value)
+            if cell.is_cooldown:
+                value += "s"
+            prefix = "+" if cell.is_modifier else ""
+            parts.append(f"{cell.label} **{prefix}{value}**")
+        embed.add_field(name=group, value=" · ".join(parts)[:1024], inline=False)
+    if not row.stats:
+        embed.add_field(
+            name="—",
+            value="No degree-dependent stats.",
+            inline=False,
+        )
+    embed.set_footer(text=f"BTD6 stats v{stats.game_version}")
+    return embed
+
+
 __all__ = [
     "build_crosspath_compare_embed",
+    "build_paragon_base_embed",
+    "build_paragon_degree_embed",
     "build_pro_hero_level_embed",
     "build_pro_tier_embed",
     "format_normal_stats",
     "hero_level_label",
+    "paragon_degree_label",
     "tier_label",
 ]

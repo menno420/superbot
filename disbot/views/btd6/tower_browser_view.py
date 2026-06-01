@@ -156,6 +156,7 @@ class _TowerSelect(discord.ui.Select):
             parent.set_vm(list_vm)
             return build_tower_list_embed(list_vm), parent
 
+        from views.btd6.paragon_stats_view import attach_paragon_stats_button
         from views.btd6.tower_events_view import attach_event_status_button
         from views.btd6.tower_stats_view import attach_pro_stats_button
 
@@ -169,6 +170,7 @@ class _TowerSelect(discord.ui.Select):
                 parent_builder=_rebuild_list,
             )
             attach_pro_stats_button(view, detail_vm.tower_id, _rebuild_detail)
+            attach_paragon_stats_button(view, detail_vm.tower_id, _rebuild_detail)
             attach_event_status_button(
                 view,
                 detail_vm.canonical,

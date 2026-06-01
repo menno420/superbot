@@ -503,6 +503,48 @@ def parse_hero_stats_json(text: str) -> HeroStatsResult:
     return result
 
 
+# ---------------------------------------------------------------------------
+# Paragon stats — Module:BTD6 stats/<Paragon>/new JSON (a single flat node)
+# ---------------------------------------------------------------------------
+#
+# A paragon page is NOT crosspath- or level-keyed: its module is one flat node
+# (range / attacks → projectiles → effects / abilities / buffs), structurally
+# identical to a single tower tier. These are the degree-INDEPENDENT base stats;
+# the degree-dependent table (pierce / damage / cooldown / boss multiplier per
+# degree 1..100) is derived at runtime by ``utils.btd6.paragon_degrees`` from the
+# wiki's own ``parse_paragon_table`` formulas — so nothing per-degree is stored.
+
+
+@dataclass
+class ParagonStatsResult:
+    game_version: str
+    base: dict = field(default_factory=dict)
+    warnings: list[str] = field(default_factory=list)
+
+    @property
+    def ok(self) -> bool:
+        return not self.warnings
+
+
+def parse_paragon_stats_json(text: str) -> ParagonStatsResult:
+    """Parse a paragon ``Module:BTD6 stats/<Paragon>/new`` JSON page.
+
+    The page is a single node, so this is just :func:`_clean_node` over the root
+    (which already drops ``_``-prefixed keys, flattens ``_order`` containers, and
+    decodes damage types). Raises ``ValueError`` (via :func:`json.loads`) on
+    malformed JSON — the completeness guard against a truncated fetch.
+    """
+    data = json.loads(text)
+    game_version = str(data.get("_last_updated", ""))
+    result = ParagonStatsResult(game_version=game_version)
+    result.base = _clean_node(data)
+    if not result.base.get("attacks") and not result.base.get("abilities"):
+        result.warnings.append("no attacks or abilities (not a combat paragon node)")
+    if not game_version:
+        result.warnings.append("missing _last_updated (game version)")
+    return result
+
+
 def _headline(tier: dict) -> str:
     """One-line headline (damage / type / pierce / cooldown / range) for a tier."""
     attacks = tier.get("attacks", [])

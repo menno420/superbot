@@ -57,6 +57,7 @@ _DEFAULT_CSV = _REPO_ROOT / "data" / "btd6" / "towers.csv"
 _DEFAULT_STATS_DIR = _REPO_ROOT / "disbot" / "data" / "btd6" / "stats"
 _DEFAULT_HEROES_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "heroes.json"
 _DEFAULT_HERO_STATS_DIR = _DEFAULT_STATS_DIR / "heroes"
+_DEFAULT_PARAGON_STATS_DIR = _DEFAULT_STATS_DIR / "paragons"
 _DEFAULT_BLOONS_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "bloons.json"
 _DEFAULT_ROUNDS_JSON = _REPO_ROOT / "disbot" / "data" / "btd6" / "rounds.json"
 _CATALOG_GAME_VERSION = "54.0"
@@ -356,6 +357,124 @@ def write_hero_stats_file(hd: HeroData, heroes_dir: Path) -> Path:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Paragons (btd6_paragons Cargo + Module:BTD6 stats/<Paragon>/new)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ParagonData:
+    tower_id: str
+    tower_canonical: str
+    paragon_id: str
+    paragon_name: str | None = None
+    cost: int | None = None
+    cost_chimps: int | None = None
+    xp: int | None = None
+    base: dict = field(default_factory=dict)
+    game_version: str = ""
+    warnings: list[str] = field(default_factory=list)
+
+
+def _fetch_paragon_stats_raw(paragon_name: str) -> str:
+    page = urllib.parse.quote(paragon_name.replace(" ", "_"))
+    return _get(f"{_BASE}/Module:BTD6_stats/{page}/new?action=raw")
+
+
+def fetch_paragon(
+    tower_id: str,
+    tower_canonical: str,
+    *,
+    delay: float,
+) -> ParagonData | None:
+    """Fetch a tower's paragon cost + degree-independent base stats.
+
+    Returns ``None`` when the tower has no paragon (no ``btd6_paragons`` row).
+    The paragon's *degree-dependent* stats are derived at runtime from the base
+    node by ``utils.btd6.paragon_degrees`` — nothing per-degree is fetched.
+
+    Like utility towers / prose-only heroes, the two paragons without a stats
+    module (Root of all Nature, Herald of Everfrost) 404 on the module page; we
+    keep their Cargo cost and note the absence rather than failing the run.
+    Those two are instead committed as hand-transcribed base nodes (from their
+    wiki article prose, ``source: …article prose``); this fetch leaves those
+    curated files untouched because their ``base`` comes back empty (not
+    ``_paragon_writable``), so a re-run never clobbers them.
+    """
+    from parse_bloonswiki import parse_paragon_stats_json
+
+    from utils.btd6 import paragon_math
+
+    safe = tower_canonical.replace("'", "\\'")
+    rows = _cargo_query("btd6_paragons", "name,cost,cost_C,xp", f"tower='{safe}'")
+    if not rows:
+        return None  # this tower has no paragon
+
+    name = str(rows[0].get("name", "")).strip() or None
+    resolved = paragon_math.resolve_paragon(tower_canonical)
+    paragon_id = resolved.paragon_id if resolved else _slug(name or tower_id)
+    pd = ParagonData(
+        tower_id=tower_id,
+        tower_canonical=tower_canonical,
+        paragon_id=paragon_id,
+        paragon_name=name,
+        cost=_int(rows[0].get("cost")),
+        # Cargo flattens ``cost_C`` to a space-separated key in JSON output.
+        cost_chimps=_int(rows[0].get("cost C") or rows[0].get("cost_C")),
+        xp=_int(rows[0].get("xp")),
+    )
+    time.sleep(delay)
+
+    if not name:
+        pd.warnings.append("no paragon name in btd6_paragons")
+        return pd
+    try:
+        stats = parse_paragon_stats_json(_fetch_paragon_stats_raw(name))
+        pd.base = stats.base
+        pd.game_version = stats.game_version
+        pd.warnings.extend(f"stats: {w}" for w in stats.warnings)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            pd.warnings.append("no stats module (module-less paragon — cost only)")
+        else:
+            raise
+    return pd
+
+
+def _slug(text: str) -> str:
+    return "_".join("".join(c for c in text.lower() if c.isalnum() or c == " ").split())
+
+
+def _paragon_writable(pd: ParagonData) -> bool:
+    """Only paragons with a real stats module are worth a stats file."""
+    return bool(pd.base.get("attacks") or pd.base.get("abilities"))
+
+
+def paragon_stats_document(pd: ParagonData) -> dict:
+    return {
+        "paragon_id": pd.paragon_id,
+        "tower_id": pd.tower_id,
+        "canonical": pd.paragon_name,
+        "tower_canonical": pd.tower_canonical,
+        "game_version": pd.game_version,
+        "source": "bloonswiki.com (CC BY-NC-SA)",
+        "cost": pd.cost,
+        "cost_chimps": pd.cost_chimps,
+        "xp": pd.xp,
+        "base": pd.base,
+    }
+
+
+def write_paragon_stats_file(pd: ParagonData, paragons_dir: Path) -> Path:
+    paragons_dir.mkdir(parents=True, exist_ok=True)
+    out = paragons_dir / f"{pd.paragon_id}.json"
+    out.write_text(
+        json.dumps(paragon_stats_document(pd), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    return out
+
+
 def apply_costs_to_row(row: dict, td: TowerData) -> None:
     """Write fetched base cost, upgrade names, and Medium costs into a CSV row.
 
@@ -475,6 +594,68 @@ def _run_heroes(args: argparse.Namespace) -> int:
 
     if not args.dry_run and written:
         print(f"Wrote {written} hero stats file(s) to {args.hero_stats_dir}")
+    return 1 if any_warn else 0
+
+
+def _paragon_report(pd: ParagonData) -> str:
+    groups = ""
+    if pd.base:
+        from utils.btd6 import paragon_degrees
+
+        groups = ", ".join(paragon_degrees.degree_stat_groups(pd.base))
+    lines = [
+        f"{pd.paragon_name or '?'} ({pd.paragon_id}) — {pd.tower_canonical}",
+        f"  cost: {pd.cost}  chimps: {pd.cost_chimps}  xp: {pd.xp}  "
+        f"version: {pd.game_version or '?'}",
+        f"  degree-stat groups: {groups or '(none — module-less)'}",
+    ]
+    if pd.warnings:
+        lines.append(f"  ⚠ {len(pd.warnings)} warning(s):")
+        lines.extend(f"    - {w}" for w in pd.warnings)
+    else:
+        lines.append("  ✓ no warnings")
+    return "\n".join(lines)
+
+
+def _run_paragons(args: argparse.Namespace) -> int:
+    """Fetch paragons (one or all) and write a stats file for each that has a
+    stats module. Cost-only (module-less) paragons are reported, not written.
+    """
+    roster = _read_roster(args.csv)
+    if args.paragon:
+        from utils.btd6 import paragon_math
+
+        key = args.paragon.strip().lower()
+        resolved = paragon_math.resolve_paragon(args.paragon)
+        roster = [
+            (tid, canon)
+            for tid, canon in roster
+            if key in (tid.lower(), canon.lower())
+            or (resolved is not None and canon.lower() == resolved.tower.lower())
+        ]
+        if not roster:
+            print(f"No tower/paragon matching {args.paragon!r}")
+            return 1
+
+    written = 0
+    any_warn = False
+    for tid, canon in roster:
+        try:
+            pd = fetch_paragon(tid, canon, delay=args.delay)
+        except Exception as exc:  # noqa: BLE001 - report + continue across roster
+            print(f"{canon} ({tid}) paragon: FETCH FAILED — {exc}\n")
+            any_warn = True
+            continue
+        if pd is None:
+            continue  # tower has no paragon — silent skip
+        print(_paragon_report(pd) + "\n")
+        any_warn = any_warn or bool(pd.warnings)
+        if not args.dry_run and _paragon_writable(pd):
+            write_paragon_stats_file(pd, args.paragon_stats_dir)
+            written += 1
+
+    if not args.dry_run and written:
+        print(f"Wrote {written} paragon stats file(s) to {args.paragon_stats_dir}")
     return 1 if any_warn else 0
 
 
@@ -755,6 +936,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Fetch every hero in heroes.json",
     )
     group.add_argument(
+        "--paragon",
+        help="Tower/paragon id or name to fetch the paragon stats for",
+    )
+    group.add_argument(
+        "--all-paragons",
+        action="store_true",
+        help="Fetch every tower's paragon stats -> stats/paragons/<id>.json",
+    )
+    group.add_argument(
         "--all-bloons",
         action="store_true",
         help="Fetch the btd6_bloons table -> bloons.json",
@@ -778,6 +968,11 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=_DEFAULT_HERO_STATS_DIR,
     )
+    parser.add_argument(
+        "--paragon-stats-dir",
+        type=Path,
+        default=_DEFAULT_PARAGON_STATS_DIR,
+    )
     parser.add_argument("--bloons-json", type=Path, default=_DEFAULT_BLOONS_JSON)
     parser.add_argument("--rounds-json", type=Path, default=_DEFAULT_ROUNDS_JSON)
     parser.add_argument("--game-version", default=_CATALOG_GAME_VERSION)
@@ -791,6 +986,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.hero or args.all_heroes:
         return _run_heroes(args)
+
+    if args.paragon or args.all_paragons:
+        return _run_paragons(args)
 
     roster = _read_roster(args.csv)
     if args.tower:

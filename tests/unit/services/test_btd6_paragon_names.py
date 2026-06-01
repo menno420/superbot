@@ -72,10 +72,12 @@ def test_superlative_paragon_rows_carry_real_names():
 
 def test_render_paragon_grounding_line_names_the_paragon():
     lines = btd6_context_service._render_paragon("dart_monkey", "Dart Monkey")
-    assert len(lines) == 1
+    # First line still names the paragon + Medium cost (unchanged contract);
+    # combat-stat lines now follow it (see test_btd6_paragon_stats.py).
     assert "btd6_paragon" in lines[0]
     assert "Apex Plasma Master" in lines[0]
     assert "150000" in lines[0]
+    assert len(lines) >= 1
 
 
 def test_render_paragon_returns_nothing_for_non_paragon_tower():

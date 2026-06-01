@@ -7,10 +7,13 @@ import pytest
 from services import btd6_stats_service as svc
 from utils.btd6.stats_embed import (
     build_crosspath_compare_embed,
+    build_paragon_base_embed,
+    build_paragon_degree_embed,
     build_pro_hero_level_embed,
     build_pro_tier_embed,
     format_normal_stats,
     hero_level_label,
+    paragon_degree_label,
     tier_label,
 )
 
@@ -108,3 +111,41 @@ def test_format_normal_stats_on_hero_level_node():
     text = format_normal_stats(svc.normal_stats(stats.level("1")))
     assert "pierce" in text.lower()
     assert "Camo" in text
+
+
+def test_paragon_base_embed_renders_infobox():
+    stats = svc.get_paragon_stats("glaive_dominus")
+    embed = build_paragon_base_embed(stats)
+    assert "Glaive Dominus" in embed.title
+    assert "Paragon (tier 6)" in embed.description
+    assert "$375,000" in embed.description
+    # Reuses the per-node body, so attack fields are present.
+    assert embed.fields
+
+
+def test_paragon_base_embed_includes_curated_overview():
+    stats = svc.get_paragon_stats("glaive_dominus")
+    embed = build_paragon_base_embed(stats)
+    # The curated, original-voice overview leads the description.
+    assert "fusing Glaive Lord" in embed.description
+    assert "Paragon (tier 6)" in embed.description
+
+
+def test_paragon_degree_embed_shows_power_and_boss_mult():
+    stats = svc.get_paragon_stats("glaive_dominus")
+    e1 = build_paragon_degree_embed(stats, 1)
+    assert paragon_degree_label(1) in e1.title
+    assert "Power required:** 0" in e1.description
+    assert "×1.0" in e1.description
+
+    e100 = build_paragon_degree_embed(stats, 100)
+    assert "200,000" in e100.description
+    assert "×2.25" in e100.description
+    # Grouped by attack/projectile; cells carry scaled values.
+    assert e100.fields
+
+
+def test_paragon_degree_embed_clamps_out_of_range():
+    stats = svc.get_paragon_stats("glaive_dominus")
+    assert paragon_degree_label(100) in build_paragon_degree_embed(stats, 999).title
+    assert paragon_degree_label(1) in build_paragon_degree_embed(stats, 0).title

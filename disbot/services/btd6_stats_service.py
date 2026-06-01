@@ -22,10 +22,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from utils.btd6 import tier_codes
+from utils.btd6 import paragon_degrees, tier_codes
 
 STATS_ROOT = Path(__file__).resolve().parents[1] / "data" / "btd6" / "stats"
 HERO_STATS_ROOT = STATS_ROOT / "heroes"
+PARAGON_STATS_ROOT = STATS_ROOT / "paragons"
 
 
 @dataclass(frozen=True)
@@ -117,12 +118,57 @@ class HeroStats:
         return tuple(code for code in _HERO_LEVEL_CODES if code in self.levels)
 
 
+@dataclass(frozen=True)
+class ParagonStats:
+    """All stored stats for one paragon (lazy-loaded).
+
+    Only the degree-INDEPENDENT base node is stored; the degree-dependent table
+    (pierce / damage / cooldown / boss multiplier per degree 1..100) is derived
+    on demand from the wiki's formulas via :func:`degree`. All thirteen paragons
+    have a file: eleven from their bloonswiki stats module, and two (Root of all
+    Nature, Herald of Everfrost) transcribed from their article prose because no
+    machine-readable module exists — :attr:`is_prose_sourced` flags those so the
+    UI / AI can label the lower-fidelity origin.
+    """
+
+    paragon_id: str
+    tower_id: str
+    canonical: str
+    tower_canonical: str
+    game_version: str
+    cost: int | None
+    cost_chimps: int | None
+    xp: int | None
+    base: dict[str, Any]
+    source: str = ""
+    description: str = ""
+
+    @property
+    def has_combat_stats(self) -> bool:
+        return bool(self.base.get("attacks") or self.base.get("abilities"))
+
+    @property
+    def is_prose_sourced(self) -> bool:
+        """True when the base was transcribed from article prose, not a module."""
+        return "prose" in self.source.lower()
+
+    def degree(self, degree: int) -> paragon_degrees.DegreeRow:
+        """Degree-dependent stats (power, boss multiplier, scaled cells)."""
+        return paragon_degrees.degree_row(self.base, degree)
+
+    def degree_groups(self) -> tuple[str, ...]:
+        """Column-group headers the degree table shows (degree-independent)."""
+        return paragon_degrees.degree_stat_groups(self.base)
+
+
 # ---------------------------------------------------------------------------
 # Cached loader
 # ---------------------------------------------------------------------------
 
 _CACHE: dict[str, TowerStats | None] = {}
 _HERO_CACHE: dict[str, HeroStats | None] = {}
+_PARAGON_CACHE: dict[str, ParagonStats | None] = {}
+_PARAGON_BY_TOWER: dict[str, str] | None = None
 
 
 def _load(tower_id: str) -> TowerStats | None:
@@ -176,10 +222,90 @@ def get_hero_stats(hero_id: str) -> HeroStats | None:
     return _HERO_CACHE[hero_id]
 
 
+_PARAGON_DESCRIPTIONS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "btd6" / "paragon_descriptions.json"
+)
+_PARAGON_DESCRIPTIONS: dict[str, str] | None = None
+
+
+def _descriptions() -> dict[str, str]:
+    """Curated, original-voice paragon overviews (paraphrased; cached).
+
+    Kept in a separate committed file so a stats re-fetch never clobbers them.
+    """
+    global _PARAGON_DESCRIPTIONS
+    if _PARAGON_DESCRIPTIONS is None:
+        try:
+            data = json.loads(
+                _PARAGON_DESCRIPTIONS_PATH.read_text(encoding="utf-8"),
+            )
+            _PARAGON_DESCRIPTIONS = dict(data.get("descriptions", {}))
+        except (OSError, ValueError):
+            _PARAGON_DESCRIPTIONS = {}
+    return _PARAGON_DESCRIPTIONS
+
+
+def _load_paragon(paragon_id: str) -> ParagonStats | None:
+    path = PARAGON_STATS_ROOT / f"{paragon_id}.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return ParagonStats(
+        paragon_id=data.get("paragon_id", paragon_id),
+        tower_id=data.get("tower_id", ""),
+        canonical=data.get("canonical", ""),
+        tower_canonical=data.get("tower_canonical", ""),
+        game_version=str(data.get("game_version", "")),
+        cost=data.get("cost"),
+        cost_chimps=data.get("cost_chimps"),
+        xp=data.get("xp"),
+        base=data.get("base", {}),
+        source=str(data.get("source", "")),
+        description=_descriptions().get(data.get("paragon_id", paragon_id), ""),
+    )
+
+
+def get_paragon_stats(paragon_id: str) -> ParagonStats | None:
+    """Return a paragon's stats by paragon id, or ``None`` if none exists."""
+    if paragon_id not in _PARAGON_CACHE:
+        _PARAGON_CACHE[paragon_id] = _load_paragon(paragon_id)
+    return _PARAGON_CACHE[paragon_id]
+
+
+def list_paragon_ids() -> tuple[str, ...]:
+    """All paragon ids that have a committed stats file (sorted)."""
+    if not PARAGON_STATS_ROOT.exists():
+        return ()
+    return tuple(sorted(p.stem for p in PARAGON_STATS_ROOT.glob("*.json")))
+
+
+def _paragon_index() -> dict[str, str]:
+    """``tower_id -> paragon_id`` for every paragon with a stats file (cached)."""
+    global _PARAGON_BY_TOWER
+    if _PARAGON_BY_TOWER is None:
+        index: dict[str, str] = {}
+        for paragon_id in list_paragon_ids():
+            stats = get_paragon_stats(paragon_id)
+            if stats is not None and stats.tower_id:
+                index[stats.tower_id] = paragon_id
+        _PARAGON_BY_TOWER = index
+    return _PARAGON_BY_TOWER
+
+
+def get_paragon_stats_by_tower(tower_id: str) -> ParagonStats | None:
+    """Return the paragon stats for ``tower_id`` (the tower's tier-6 paragon)."""
+    paragon_id = _paragon_index().get(tower_id)
+    return get_paragon_stats(paragon_id) if paragon_id else None
+
+
 def reset_cache() -> None:
     """Test seam: drop the loaded-stats caches."""
+    global _PARAGON_BY_TOWER, _PARAGON_DESCRIPTIONS
     _CACHE.clear()
     _HERO_CACHE.clear()
+    _PARAGON_CACHE.clear()
+    _PARAGON_BY_TOWER = None
+    _PARAGON_DESCRIPTIONS = None
 
 
 # ---------------------------------------------------------------------------
@@ -267,9 +393,13 @@ def normal_stats(tier: dict[str, Any]) -> NormalStats:
 __all__ = [
     "HeroStats",
     "NormalStats",
+    "ParagonStats",
     "TowerStats",
     "get_hero_stats",
+    "get_paragon_stats",
+    "get_paragon_stats_by_tower",
     "get_tower_stats",
+    "list_paragon_ids",
     "normal_stats",
     "reset_cache",
 ]
