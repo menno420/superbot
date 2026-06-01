@@ -774,6 +774,72 @@ async def _ct_relic_location_lines(intent: Any) -> list[str]:
     return out
 
 
+# A general Contested-Territory topic — the user is asking about CT relics
+# or tile layout without naming a specific relic ("what relics are in the
+# current CT", "tiles and relics", …). Matched on the raw message so the
+# listing fires even when no catalog relic alias appears in the text.
+_CT_TOPIC_RE = re.compile(r"\b(relics?|tiles?|contested\s+territor)", re.IGNORECASE)
+
+
+def _mentions_ct_topic(intent: Any) -> bool:
+    if _CT_TOPIC_RE.search(getattr(intent, "raw_text", "") or ""):
+        return True
+    for entity in getattr(intent, "live_entities", ()) or ():
+        kind = getattr(entity, "entity_kind", entity)
+        if kind in ("btd6_ct", "btd6_ct_tile"):
+            return True
+    return False
+
+
+async def _ct_active_tile_lines(intent: Any) -> list[str]:
+    """Relic→tile map for the active CT on a *general* CT relic/tile question.
+
+    When a specific relic is named, :func:`_ct_relic_location_lines` gives
+    the targeted answer, so this broad listing is skipped to avoid
+    duplication. Otherwise it lists the relic tiles of the newest active CT
+    event(s) — exactly the "tiles and relics" breakdown the model is
+    missing — plus the effect of each distinct relic found. Bounded so a
+    full 169-tile map can't flood the prompt.
+    """
+    if getattr(intent, "ct_relics", ()):  # specific relic handled elsewhere
+        return []
+    if not _mentions_ct_topic(intent):
+        return []
+
+    from services import btd6_data_service
+    from services import btd6_live_query_service as btd6_live
+
+    out: list[str] = []
+    seen_relics: list[str] = []
+    events = await btd6_live.get_active_events(("btd6_ct",))
+    for evt in events[:2]:
+        tiles = await btd6_live.get_ct_tiles(evt.entity_key, relics_only=True)
+        for tile in tiles:
+            canonical = _sanitise(tile.relic_canonical or tile.relic_name or "?")
+            pos = tile.position.describe() if tile.position else "position n/a"
+            out.append(
+                _cap(
+                    f"[btd6_ct_tile] CT {_sanitise(evt.entity_key)}: {canonical} "
+                    f"on tile {_sanitise(tile.tile_id)} ({pos}) "
+                    f"(source: data.ninjakiwi.com)",
+                ),
+            )
+            if tile.relic_id and tile.relic_id not in seen_relics:
+                seen_relics.append(tile.relic_id)
+            if len(out) >= 14:
+                break
+        if len(out) >= 14:
+            break
+
+    # The effect of each distinct relic actually on the map, so the model
+    # can answer "what does it do" follow-ups without a second round-trip.
+    for relic_id in seen_relics[:8]:
+        entry = btd6_data_service.get_ct_relic(relic_id)
+        if entry is not None:
+            out.extend(_render_ct_relic(entry))
+    return out
+
+
 def _fixture_facts_for_intent(intent: Any) -> list[str]:
     """Return fixture-sourced grounding lines for any tower/hero/bloon in ``intent``.
 
@@ -878,6 +944,17 @@ async def build(message_text: str) -> BTD6Context:
         except Exception as exc:  # noqa: BLE001 — defensive
             logger.debug(
                 "btd6_context_service: ct relic locations unavailable (%s)",
+                exc,
+            )
+
+        # General CT relic/tile topic (no specific relic named) — list the
+        # active map's relic tiles so "tiles and relics" questions get the
+        # breakdown the event index alone can't provide.
+        try:
+            facts.extend(await _ct_active_tile_lines(intent))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: ct active tiles unavailable (%s)",
                 exc,
             )
 

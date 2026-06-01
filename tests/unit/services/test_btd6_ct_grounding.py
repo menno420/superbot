@@ -74,6 +74,57 @@ async def test_relic_effect_line_present(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_general_ct_question_lists_relic_tiles(monkeypatch):
+    """A question that names no specific relic still gets the active CT's
+    relic→tile breakdown (the gap behind 'I don't have per-tile details')."""
+    from services import btd6_live_query_service as live
+    from utils.btd6.ct_tile_geometry import decode_tile
+
+    def _tile(tid, rid, canon, api):
+        return live.CTTilePlacement(
+            ct_id="mpejg5d0",
+            tile_id=tid,
+            tile_type="Relic",
+            game_type="Race",
+            relic_name=api,
+            relic_id=rid,
+            relic_canonical=canon,
+            fetched_at=datetime.now(tz=timezone.utc),
+            position=decode_tile(tid),
+        )
+
+    async def _active(kinds=None):
+        return (
+            live.ActiveEventHeadline(
+                "btd6_ct",
+                "mpejg5d0",
+                "mpejg5d0",
+                None,
+                None,
+                datetime.now(tz=timezone.utc),
+            ),
+        )
+
+    async def _tiles(ct_id, *, relic=None, relics_only=False):
+        return (
+            _tile("DEC", "camo_trap", "Camo Trap", "CamoTrap"),
+            _tile(
+                "AAA", "super_monkey_storm", "Super Monkey Storm", "SuperMonkeyStorm"
+            ),
+        )
+
+    monkeypatch.setattr(live, "get_active_events", _active)
+    monkeypatch.setattr(live, "get_ct_tiles", _tiles)
+    out = await ctx.build("Do you have specific information about the tiles and relics")
+    tile_lines = [f for f in out.facts if f.startswith("[btd6_ct_tile]")]
+    relic_lines = [f for f in out.facts if f.startswith("[btd6_ct_relic]")]
+    assert any("tile DEC" in ln and "Camo Trap" in ln for ln in tile_lines)
+    assert any("tile AAA" in ln and "Super Monkey Storm" in ln for ln in tile_lines)
+    # distinct relic effects are appended too
+    assert relic_lines
+
+
+@pytest.mark.asyncio
 async def test_relic_tile_location_line_present(monkeypatch):
     from services import btd6_live_query_service as live
     from utils.btd6.ct_tile_geometry import decode_tile
