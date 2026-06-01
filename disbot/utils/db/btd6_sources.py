@@ -665,6 +665,36 @@ async def mark_stale_runs_interrupted(
     return int(result.split()[-1])
 
 
+async def list_ingestion_runs(
+    *,
+    source_key: str | None = None,
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    """Most-recent ingestion run rows, newest first.
+
+    Read counterpart to :func:`insert_ingestion_run` /
+    :func:`update_ingestion_run`, powering the operator readiness and
+    recent-runs surfaces. ``source_key=None`` returns the latest runs
+    across all sources; pass a key to scope to one source. Bounded by
+    :data:`_LIST_SOURCES_MAX_LIMIT`.
+    """
+    safe_limit = max(1, min(int(limit), _LIST_SOURCES_MAX_LIMIT))
+    sql = (
+        "SELECT id, source_key, status, triggered_by, started_at, "
+        "finished_at, duration_ms, fact_count, status_code, "
+        "error_code, error_message "
+        "FROM btd6_ingestion_runs"
+    )
+    args: list[Any] = []
+    if source_key is not None:
+        args.append(source_key)
+        sql += f" WHERE source_key = ${len(args)}"
+    args.append(safe_limit)
+    sql += f" ORDER BY started_at DESC, id DESC LIMIT ${len(args)}"
+    rows = await pool.get().fetch(sql, *args)
+    return [dict(r) for r in rows]
+
+
 # ---------------------------------------------------------------------------
 # btd6_source_snapshots
 # ---------------------------------------------------------------------------

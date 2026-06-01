@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from services.btd6_ingestion_service import IngestionResult
+    from services.btd6_ops_readiness_service import ReadinessVerdict
 
 
 def _event_window(body: dict[str, Any]) -> str:
@@ -1208,15 +1209,153 @@ async def build_leaderboard_embed(
     return append_context_footer(embed, f"btd6_leaderboard:{norm}_{resolved_id}")
 
 
+# ---------------------------------------------------------------------------
+# Operator readiness + ingestion runs (PR2)
+# ---------------------------------------------------------------------------
+
+
+def _yn(value: bool) -> str:
+    return "✅ yes" if value else "❌ no"
+
+
+_READINESS_PRESENTATION: dict[str, tuple[str, discord.Color]] = {
+    "ready": ("🟢 ready", discord.Color.green()),
+    "partial": ("🟡 partial", discord.Color.gold()),
+    "not_ready": ("🔴 not ready", discord.Color.red()),
+    "disabled": ("🚫 disabled", discord.Color.greyple()),
+}
+
+_RUN_STATUS_EMOJI = {
+    "success": "🟢",
+    "running": "🔵",
+    "fetch_error": "🔴",
+    "parse_error": "🟠",
+    "store_error": "🔴",
+    "interrupted": "⚪",
+}
+
+
+def build_readiness_embed(verdict: ReadinessVerdict) -> discord.Embed:
+    """Render an operator readiness verdict.
+
+    Pure: the cog calls ``btd6_ops_readiness_service.evaluate()`` and passes
+    the verdict here. The ``"disabled"`` (env-off) status renders as its own
+    distinct line, never as a generic "not ready".
+    """
+    title, color = _READINESS_PRESENTATION.get(
+        verdict.status,
+        (verdict.status, discord.Color.greyple()),
+    )
+    embed = discord.Embed(title=f"🐵 BTD6 ingestion readiness — {title}", color=color)
+
+    if verdict.status == "disabled":
+        embed.description = (
+            "Ingestion is **switched off** (`BTD6_INGESTION_ENABLED` is not "
+            "`true`). No scheduled fetches run; the sources below are "
+            "configured but dormant."
+        )
+
+    embed.add_field(
+        name="Ingestion",
+        value=(
+            f"env enabled: {_yn(verdict.ingestion_enabled)}\n"
+            f"supervisor running: {_yn(verdict.supervisor_running)}"
+        ),
+        inline=True,
+    )
+    embed.add_field(
+        name="Sources",
+        value=(
+            f"total: {verdict.sources_total}\n"
+            f"enabled: {verdict.sources_enabled}\n"
+            f"disabled: {verdict.sources_disabled}\n"
+            f"enabled w/o base_url: {verdict.enabled_missing_base_url}"
+        ),
+        inline=True,
+    )
+    embed.add_field(
+        name="Freshness (enabled)",
+        value=(
+            f"🟢 fresh: {verdict.fresh}\n"
+            f"🟡 aging: {verdict.aging}\n"
+            f"🔴 stale: {verdict.stale}\n"
+            f"⚪ never: {verdict.never}"
+        ),
+        inline=True,
+    )
+
+    breakers = ", ".join(verdict.open_breakers) if verdict.open_breakers else "none"
+    embed.add_field(name="Open circuit breakers", value=breakers, inline=False)
+
+    last_run = (
+        verdict.last_run_at.isoformat(timespec="minutes")
+        if verdict.last_run_at is not None
+        else "—"
+    )
+    embed.add_field(
+        name="Recent runs",
+        value=(
+            f"scanned: {verdict.recent_runs_total}\n"
+            f"failures: {verdict.recent_failures}\n"
+            f"last run: {last_run}"
+        ),
+        inline=False,
+    )
+    return embed
+
+
+def build_ingestion_runs_embed(
+    runs: list[dict[str, Any]],
+    *,
+    source_key: str | None = None,
+) -> discord.Embed:
+    """Render the most-recent ingestion runs as a compact list.
+
+    ``runs`` comes from ``utils.db.btd6_sources.list_ingestion_runs`` (newest
+    first). Pure formatter — no I/O.
+    """
+    scope = f" — {source_key}" if source_key else ""
+    embed = discord.Embed(
+        title=f"🐵 BTD6 ingestion runs{scope}",
+        color=discord.Color.blurple(),
+    )
+    if not runs:
+        embed.description = (
+            "No ingestion runs recorded yet."
+            if source_key is None
+            else f"No ingestion runs recorded for `{source_key}` yet."
+        )
+        return embed
+
+    lines: list[str] = []
+    for r in runs:
+        status = str(r.get("status") or "?")
+        emoji = _RUN_STATUS_EMOJI.get(status, "•")
+        key = r.get("source_key") or "?"
+        started = r.get("started_at")
+        when = started.isoformat(timespec="minutes") if started is not None else "?"
+        facts = r.get("fact_count")
+        facts_s = f" · facts={facts}" if isinstance(facts, int) else ""
+        err = r.get("error_code")
+        err_s = f" · {err}" if err else ""
+        lines.append(f"{emoji} `{key}` {status} · {when}{facts_s}{err_s}")
+
+    embed.description = "\n".join(lines)
+    embed.set_footer(text=f"{len(runs)} run(s), newest first")
+    return embed
+
+
 __all__ = [
     "build_admin_refresh_summary_embed",
     "build_event_detail_embed",
     "build_grounding_embed",
     "build_hero_embed",
+    "build_ingestion_runs_embed",
     "build_latest_data_embed",
     "build_leaderboard_embed",
     "build_live_events_embed",
     "build_pending_review_payload",
+    "build_readiness_embed",
     "build_refresh_source_embed",
     "build_source_health_embed",
     "build_sources_payload",

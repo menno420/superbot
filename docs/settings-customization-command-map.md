@@ -1168,6 +1168,46 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 24. **recommended_PR_phase**: ships with the Paragon calculator feature.
 
 
+### btd6_ops
+
+1. **cog_module**: `disbot/cogs/btd6_ops_cog.py`
+2. **subsystem**: `btd6` (operator surface for BTD6 ingestion — given its own
+   thin cog so `btd6_cog.py` stays under the 800-LOC ceiling).
+3. **current_commands**: `!btd6ops readiness` (ingestion readiness verdict),
+   `!btd6ops runs` (recent ingestion runs), `!btd6ops source_enable <key>` /
+   `!btd6ops source_disable <key>` (toggle a source). Slash twins under
+   `/btd6ops`. Also reachable from the 🛠️ Admin sub-panel on `!btd6`.
+4. **current_command_groups**: `btd6ops` (prefix group) / `/btd6ops` (app group).
+5. **current_command_panel_or_menu**: the BTD6 Admin panel
+   (`views.btd6.admin_panel.BTD6AdminView`) exposes Readiness, Recent Runs, and
+   a source enable/disable select + buttons.
+6. **help_menu_discoverable**: Yes — prefix + slash commands and the admin panel.
+7. **dedicated_panel_command**: opened via the 🛠️ Admin button on `!btd6`.
+8. **help_menu_direct_navigation_hook**: `views.btd6.admin_panel.BTD6AdminView.create`.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: mixed — readiness/runs require staff
+    (`is_staff_member`); source enable/disable require administrator
+    (`is_administrator_member`), matching `btd6_source_mutation._check_admin`.
+14. **hardcoded_or_env_only_behavior**: `BTD6_INGESTION_ENABLED` (env gate; the
+    readiness verdict reports the env-off state distinctly).
+15. **missing_customization_commands**: none planned.
+16. **missing_settings_pages**: none planned.
+17. **missing_menu_buttons_selects_modals**: none.
+18. **setting_class_per_value**: n/a (no settings).
+19. **target_Settings_Manager_page**: n/a.
+20. **target_mutation_path**: source toggles write through
+    `services.btd6_source_mutation.set_enabled` (audited); reads via
+    `services.btd6_ops_readiness_service` + `utils.db.btd6_sources`.
+21. **target_help_or_menu_route**: existing; the BTD6 hub Admin panel and
+    `!btd6ops` / `/btd6ops`.
+22. **provisionable_resources**: none.
+23. **priority**: `P2` — BTD6 ingestion operations.
+24. **recommended_PR_phase**: ships with the BTD6 operator-visibility feature.
+
+
 ### settings
 
 1. **cog_module**: `disbot/cogs/settings_cog.py` (added in S5).

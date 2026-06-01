@@ -3,13 +3,19 @@
 Opened by the **🛠️ Admin** button on the main :class:`BTD6PanelView`.
 A fresh instance per click; not persistent across bot restarts.
 
-Layout (5 buttons per row max):
+Layout (5 components per row max):
 
-* Row 0 — fetch controls: **Fetch All**, **Fetch Selected**.
-* Row 1 — diagnostics: **Source Health**, **Latest Data**, **Close**.
-* Row 2 — multi-select dropdown of registered enabled source keys.
+* Row 0 — fetch + status: **Fetch All**, **Fetch Selected**, **Readiness**.
+* Row 1 — diagnostics: **Source Health**, **Latest Data**, **Recent Runs**, **Close**.
+* Row 2 — multi-select dropdown of registered enabled source keys (fetch).
+* Row 3 — single-select dropdown of all sources (enable/disable target).
+* Row 4 — source toggle: **Enable Source**, **Disable Source**.
 
-Every action is gated to ``manage_guild`` / ``administrator``.
+The panel itself is gated to staff (``manage_guild`` / ``administrator``) via
+``interaction_check``. The **source enable/disable** controls add a stricter
+**administrator-only** check (``is_administrator_member``) that matches
+``services.btd6_source_mutation._check_admin`` — the mutation re-checks
+server-side, so a non-admin staffer gets a friendly denial either way.
 Fetch buttons drive ``btd6_ingestion_service.refresh_source_or_dependencies``
 — the same service entry point the prefix / slash ``refresh-source``
 commands use, so chain expansion / audit / locks all just work.
@@ -26,9 +32,12 @@ from core.runtime.interaction_helpers import safe_defer
 from services import (
     btd6_ingestion_service,
     btd6_ingestion_sources,
+    btd6_ops_readiness_service,
+    btd6_source_mutation,
     btd6_source_registry,
 )
-from utils.discord_permissions import is_staff_member
+from utils.db import btd6_sources as btd6_db
+from utils.discord_permissions import is_administrator_member, is_staff_member
 
 logger = logging.getLogger("bot.views.btd6.admin")
 
@@ -73,35 +82,54 @@ async def build_admin_embed() -> discord.Embed:
 class BTD6AdminView(discord.ui.View):
     """Ephemeral staff-only admin panel. Fresh instance per click."""
 
-    def __init__(self, opener_user_id: int, source_keys: list[str]) -> None:
+    def __init__(
+        self,
+        opener_user_id: int,
+        source_keys: list[str],
+        toggle_sources: list[tuple[str, bool]],
+    ) -> None:
         super().__init__(timeout=600)  # 10 min
         self.opener_user_id = opener_user_id
         self._source_keys = source_keys
-        # Hold the multi-select so the action buttons can read its
-        # current ``values``. Stored on `self` rather than queried via
+        # Hold the selects so the action buttons can read their current
+        # ``values``. Stored on `self` rather than queried via
         # `self.children` so the typing stays explicit.
         self.source_select = _SourceMultiSelect(source_keys)
+        self.toggle_select = _SourceToggleSelect(toggle_sources)
         self.add_item(_FetchAllButton())
         self.add_item(_FetchSelectedButton())
+        self.add_item(_ReadinessButton())
         self.add_item(_SourceHealthButton())
         self.add_item(_LatestDataButton())
+        self.add_item(_RecentRunsButton())
         self.add_item(_CloseButton())
         self.add_item(self.source_select)
+        self.add_item(self.toggle_select)
+        self.add_item(_EnableSourceButton())
+        self.add_item(_DisableSourceButton())
 
     @classmethod
     async def create(cls, opener_user_id: int) -> BTD6AdminView:
-        """Async factory — populates the multi-select from the live registry."""
+        """Async factory — populates both selects from the live registry."""
         try:
             rows = await btd6_source_registry.list_enabled_sources(limit=100)
         except Exception:  # noqa: BLE001 — degrade gracefully
             logger.exception("admin panel: failed to load source registry")
             rows = []
         keys = sorted({row["source_key"] for row in rows})
+        # The toggle select needs *all* sources (so disabled ones can be
+        # enabled), not just the enabled set the fetch select uses.
+        try:
+            all_rows = await btd6_source_registry.list_all(limit=100)
+        except Exception:  # noqa: BLE001 — degrade gracefully
+            logger.exception("admin panel: failed to load full source list")
+            all_rows = []
+        toggle_sources = sorted(
+            {(row["source_key"], bool(row.get("enabled"))) for row in all_rows},
+        )
         # Discord caps `discord.ui.Select` at 25 options. Truncate
-        # gracefully — if the registry ever grows past 25 enabled
-        # sources, "Fetch All" still covers all parents and the
-        # multi-select shows the first 25 alphabetically.
-        return cls(opener_user_id, keys[:25])
+        # gracefully — "Fetch All" still covers all parent chains.
+        return cls(opener_user_id, keys[:25], toggle_sources[:25])
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.opener_user_id:
@@ -256,6 +284,161 @@ class _CloseButton(discord.ui.Button):
             ),
             view=None,
         )
+
+
+# ---------------------------------------------------------------------------
+# Readiness / recent-runs (staff-readable) + source toggle (admin-only)
+# ---------------------------------------------------------------------------
+
+
+class _ReadinessButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(
+            label="Readiness",
+            style=discord.ButtonStyle.secondary,
+            row=0,
+            custom_id="btd6_admin:readiness",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from cogs.btd6._builders import build_readiness_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        verdict = await btd6_ops_readiness_service.evaluate()
+        await interaction.followup.send(
+            embed=build_readiness_embed(verdict),
+            ephemeral=True,
+        )
+
+
+class _RecentRunsButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(
+            label="Recent Runs",
+            style=discord.ButtonStyle.secondary,
+            row=1,
+            custom_id="btd6_admin:runs",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        from cogs.btd6._builders import build_ingestion_runs_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        runs = await btd6_db.list_ingestion_runs(limit=10)
+        await interaction.followup.send(
+            embed=build_ingestion_runs_embed(runs),
+            ephemeral=True,
+        )
+
+
+class _SourceToggleSelect(discord.ui.Select):
+    """Single-select of all sources; the target for Enable/Disable."""
+
+    def __init__(self, sources: list[tuple[str, bool]]) -> None:
+        options = [
+            discord.SelectOption(
+                label=key,
+                value=key,
+                description="currently enabled" if enabled else "currently disabled",
+                emoji="✅" if enabled else "⬜",
+            )
+            for key, enabled in sources
+        ]
+        if not options:
+            options = [discord.SelectOption(label="(no sources)", value="__none__")]
+        super().__init__(
+            placeholder="Pick a source to enable/disable…",
+            min_values=0,
+            max_values=1,
+            options=options,
+            row=3,
+            custom_id="btd6_admin:source_toggle",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        # State holder — the Enable/Disable buttons read `.values`.
+        await safe_defer(interaction, ephemeral=True)
+
+
+class _EnableSourceButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(
+            label="Enable Source",
+            style=discord.ButtonStyle.success,
+            row=4,
+            custom_id="btd6_admin:source_enable",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: BTD6AdminView = self.view  # type: ignore[assignment]
+        await _handle_toggle(interaction, view, enabled=True)
+
+
+class _DisableSourceButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(
+            label="Disable Source",
+            style=discord.ButtonStyle.danger,
+            row=4,
+            custom_id="btd6_admin:source_disable",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: BTD6AdminView = self.view  # type: ignore[assignment]
+        await _handle_toggle(interaction, view, enabled=False)
+
+
+async def _apply_toggle(actor: Any, source_key: str, *, enabled: bool) -> str:
+    """Flip one source via the mutation service; return a friendly message.
+
+    Administrator is re-checked server-side and the source is validated
+    (e.g. enabling a NULL-base_url row is refused), so both failure modes
+    surface as a line rather than an unhandled exception.
+    """
+    try:
+        result = await btd6_source_mutation.set_enabled(
+            source_key,
+            enabled=enabled,
+            actor=actor,
+            reason="admin panel",
+        )
+    except btd6_source_mutation.UnauthorizedSourceMutationError:
+        return "❌ Administrator permission required to toggle sources."
+    except btd6_source_mutation.InvalidSourceValueError as exc:
+        return f"⚠️ {exc}"
+    except btd6_source_mutation.BTD6SourceMutationError as exc:  # pragma: no cover
+        logger.warning("admin panel source toggle failed: %s", exc)
+        return f"⚠️ {exc}"
+    verb = "enabled" if enabled else "disabled"
+    return f"✅ Source `{result.source_key}` {verb}."
+
+
+async def _handle_toggle(
+    interaction: discord.Interaction,
+    view: BTD6AdminView,
+    *,
+    enabled: bool,
+) -> None:
+    """Admin-gate, read the toggle select, apply, and reply ephemerally."""
+    if not is_administrator_member(interaction.user):
+        await interaction.response.send_message(
+            "❌ Toggling sources requires the Administrator permission.",
+            ephemeral=True,
+        )
+        return
+    selected = [v for v in view.toggle_select.values if v != "__none__"]
+    if not selected:
+        await interaction.response.send_message(
+            "Pick a source from the toggle dropdown first.",
+            ephemeral=True,
+        )
+        return
+    messages = [
+        await _apply_toggle(interaction.user, key, enabled=enabled) for key in selected
+    ]
+    await interaction.response.send_message("\n".join(messages), ephemeral=True)
 
 
 # ---------------------------------------------------------------------------
