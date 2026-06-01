@@ -31,20 +31,12 @@ from typing import Any
 import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
+from utils.discord_permissions import is_staff_member
 
 logger = logging.getLogger("bot.views.btd6.strategy_review")
 
 _VIEW_TIMEOUT_SECONDS = 300
 _PANEL_COLOR = discord.Color.gold()
-
-
-def _is_staff(member: Any) -> bool:
-    perms = getattr(member, "guild_permissions", None)
-    if perms is None:
-        return False
-    return bool(
-        getattr(perms, "administrator", False) or getattr(perms, "manage_guild", False),
-    )
 
 
 def build_strategy_embed(strategy: dict[str, Any]) -> discord.Embed:
@@ -148,7 +140,7 @@ class StrategyReviewView(discord.ui.View):
             self.remove_item(self.unpublish_btn)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not _is_staff(interaction.user):
+        if not is_staff_member(interaction.user):
             await interaction.response.send_message(
                 "❌ Strategy review requires `manage_guild` or administrator.",
                 ephemeral=True,

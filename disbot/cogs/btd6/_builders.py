@@ -21,6 +21,13 @@ import discord
 
 from core.runtime.ai.contracts import AITask
 from utils.btd6.body_coerce import coerce_body as _coerce_body
+from utils.btd6.coverage import (
+    AREA_BOSS,
+    AREA_HERO_STATS,
+    AREA_LEADERBOARDS,
+    AREA_ODYSSEY,
+    get_coverage,
+)
 from utils.btd6.event_window import format_ms_human as _ms_to_human  # noqa: F401
 from utils.btd6.event_window import format_window_range as _format_window_range
 from utils.btd6.event_window import format_window_status as _format_window_status
@@ -122,6 +129,11 @@ async def build_hero_embed(name: str) -> discord.Embed:
         str(hero.id),
     )
     embed = _response_to_embed(for_hero(hero, restrictions=restrictions))
+    embed.add_field(
+        name="Coverage",
+        value=get_coverage(AREA_HERO_STATS).user_label,
+        inline=False,
+    )
     return append_context_footer(embed, f"btd6_hero:{hero.id}")
 
 
@@ -827,6 +839,15 @@ _EVENT_KIND_TITLE = {
 }
 
 
+# Event kinds whose ingestion is intentionally partial; surfaced as a
+# "Coverage" field so users/staff see the same limitation the registry
+# encodes (boss = standard/teamSize 1, odyssey = easy only).
+_EVENT_COVERAGE_AREA = {
+    "btd6_boss": AREA_BOSS,
+    "btd6_odyssey": AREA_ODYSSEY,
+}
+
+
 def build_event_detail_embed(
     entity_kind: str,
     entity_key: str,
@@ -961,6 +982,14 @@ def build_event_detail_embed(
                     dropped = len(entries) - len(cut)
                     value = ", ".join(cut) + f"… (+{dropped} more)"
                 embed.add_field(name=label, value=value, inline=False)
+
+    coverage_area = _EVENT_COVERAGE_AREA.get(entity_kind)
+    if coverage_area is not None:
+        embed.add_field(
+            name="Coverage",
+            value=get_coverage(coverage_area).user_label,
+            inline=False,
+        )
 
     when = primary.get("fetched_at") if primary else None
     if when is not None:
@@ -1167,6 +1196,7 @@ async def build_leaderboard_embed(
     parts: list[str] = []
     if footer_hint:
         parts.append(footer_hint)
+    parts.append(get_coverage(AREA_LEADERBOARDS).user_label)
     if latest_fetched is not None:
         bucket = bucket_freshness(latest_fetched)
         if bucket in ("aging", "stale"):

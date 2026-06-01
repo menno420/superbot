@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from utils.db import btd6_strategies as db
+from utils.discord_permissions import is_staff_member
 
 logger = logging.getLogger("bot.services.btd6_strategy_mutation")
 
@@ -51,15 +52,6 @@ def _check_actor(actor: Any) -> int | None:
     if actor is None:
         raise UnauthorizedStrategyMutationError("actor is required")
     return getattr(actor, "id", None)
-
-
-def _is_staff(actor: Any) -> bool:
-    perms = getattr(actor, "guild_permissions", None)
-    if perms is None:
-        return False
-    if getattr(perms, "administrator", False):
-        return True
-    return bool(getattr(perms, "manage_guild", False))
 
 
 async def submit_strategy(
@@ -188,7 +180,7 @@ async def staff_approve_guild(
     required before a strategy goes global.
     """
     actor_id = _check_actor(staff_actor)
-    if not _is_staff(staff_actor):
+    if not is_staff_member(staff_actor):
         raise UnauthorizedStrategyMutationError(
             "staff approval requires manage_guild or administrator permission",
         )
@@ -236,7 +228,7 @@ async def staff_publish(
     mutation gate provides defence in depth.
     """
     actor_id = _check_actor(staff_actor)
-    if not _is_staff(staff_actor):
+    if not is_staff_member(staff_actor):
         raise UnauthorizedStrategyMutationError(
             "publishing requires manage_guild or administrator permission",
         )
@@ -277,7 +269,7 @@ async def unpublish(
     reason: str | None = None,
 ) -> StrategyMutationResult:
     actor_id = _check_actor(staff_actor)
-    if not _is_staff(staff_actor):
+    if not is_staff_member(staff_actor):
         raise UnauthorizedStrategyMutationError(
             "unpublishing requires manage_guild or administrator permission",
         )
@@ -356,7 +348,7 @@ async def staff_reject(
     :func:`reject` so the chokepoint stays authorized.
     """
     actor_id = _check_actor(staff_actor)
-    if not _is_staff(staff_actor):
+    if not is_staff_member(staff_actor):
         raise UnauthorizedStrategyMutationError(
             "rejection requires manage_guild or administrator permission",
         )

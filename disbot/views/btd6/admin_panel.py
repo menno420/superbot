@@ -28,7 +28,7 @@ from services import (
     btd6_ingestion_sources,
     btd6_source_registry,
 )
-from views.btd6.panel import _is_staff
+from utils.discord_permissions import is_staff_member
 
 logger = logging.getLogger("bot.views.btd6.admin")
 
@@ -110,7 +110,7 @@ class BTD6AdminView(discord.ui.View):
                 ephemeral=True,
             )
             return False
-        if not _is_staff(interaction.user):
+        if not is_staff_member(interaction.user):
             await interaction.response.send_message(
                 "❌ Staff role required.",
                 ephemeral=True,

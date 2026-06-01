@@ -22,22 +22,9 @@ import discord
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from core.runtime.persistent_views import PersistentView, register
 from services import btd6_ai_service
+from utils.discord_permissions import is_staff_member
 
 _PANEL_COLOR = discord.Color.green()
-
-
-# ---------------------------------------------------------------------------
-# Staff gate (mirrors disbot/views/btd6/strategy_review.py:41-47)
-# ---------------------------------------------------------------------------
-
-
-def _is_staff(member: Any) -> bool:
-    perms = getattr(member, "guild_permissions", None)
-    if perms is None:
-        return False
-    return bool(
-        getattr(perms, "administrator", False) or getattr(perms, "manage_guild", False),
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -373,7 +360,7 @@ class BTD6PanelView(PersistentView):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        if not _is_staff(interaction.user):
+        if not is_staff_member(interaction.user):
             await interaction.response.send_message(
                 "❌ The Admin panel requires `manage_guild` or administrator.",
                 ephemeral=True,

@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from utils.btd6 import tier_codes
+from utils.btd6.body_coerce import coerce_body
 from utils.btd6.grounding_format import DEFAULT_CAP as _FACT_TEXT_CAP
 from utils.btd6.grounding_format import relative_time as _relative_time
 from utils.btd6.grounding_format import sanitise as _sanitise_helper
@@ -91,27 +92,6 @@ _EXTRA_KEYS = (
 )
 
 
-def _coerce_body(value: Any) -> dict[str, Any]:
-    """Normalise ``body_json`` to a dict.
-
-    Legacy ``btd6_facts`` rows were written via a double-encoded
-    ``json.dumps`` path (fixed in utils.db.btd6_sources) and so
-    round-trip as JSON strings. We decode on read so the grounding
-    bundle keeps working for those rows until they're rewritten.
-    """
-    import json
-
-    if isinstance(value, dict):
-        return value
-    if isinstance(value, str):
-        try:
-            decoded = json.loads(value)
-        except (ValueError, TypeError):
-            return {}
-        return decoded if isinstance(decoded, dict) else {}
-    return {}
-
-
 def _render_fact(row: dict[str, Any]) -> str:
     """Turn one fact row into a single labeled context string.
 
@@ -128,7 +108,7 @@ def _render_fact(row: dict[str, Any]) -> str:
     body, but bare links in a context string can encourage the LLM
     to follow them.
     """
-    body = _coerce_body(row.get("body_json"))
+    body = coerce_body(row.get("body_json"))
     headline = ""
     for key in _HEADLINE_KEYS:
         value = body.get(key)
