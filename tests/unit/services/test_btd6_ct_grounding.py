@@ -125,6 +125,19 @@ async def test_general_ct_question_lists_relic_tiles(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_btd6_lookup_tool_returns_ct_relics_without_db():
+    """The live AI path is the btd6_lookup tool → build(). A general CT relic
+    question must come back found=True with verified relic effects even when
+    no live tile data is loaded (static-catalog fallback)."""
+    from services import ai_tools
+
+    res = await ai_tools._btd6_lookup({"query": "tell me about the CT relics"})
+    assert res["found"] is True
+    relic_lines = [f for f in res["facts"] if f.startswith("[btd6_ct_relic]")]
+    assert relic_lines, "btd6_lookup returned no CT relic effects"
+
+
+@pytest.mark.asyncio
 async def test_relic_tile_location_line_present(monkeypatch):
     from services import btd6_live_query_service as live
     from utils.btd6.ct_tile_geometry import decode_tile

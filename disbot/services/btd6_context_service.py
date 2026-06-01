@@ -807,29 +807,35 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
         return []
 
     from services import btd6_data_service
-    from services import btd6_live_query_service as btd6_live
 
     out: list[str] = []
     seen_relics: list[str] = []
-    events = await btd6_live.get_active_events(("btd6_ct",))
-    for evt in events[:2]:
-        tiles = await btd6_live.get_ct_tiles(evt.entity_key, relics_only=True)
-        for tile in tiles:
-            canonical = _sanitise(tile.relic_canonical or tile.relic_name or "?")
-            pos = tile.position.describe() if tile.position else "position n/a"
-            out.append(
-                _cap(
-                    f"[btd6_ct_tile] CT {_sanitise(evt.entity_key)}: {canonical} "
-                    f"on tile {_sanitise(tile.tile_id)} ({pos}) "
-                    f"(source: data.ninjakiwi.com)",
-                ),
-            )
-            if tile.relic_id and tile.relic_id not in seen_relics:
-                seen_relics.append(tile.relic_id)
+    # Live tile placements — guarded so a DB outage falls through to the
+    # static catalog below rather than aborting the whole CT answer.
+    try:
+        from services import btd6_live_query_service as btd6_live
+
+        events = await btd6_live.get_active_events(("btd6_ct",))
+        for evt in events[:2]:
+            tiles = await btd6_live.get_ct_tiles(evt.entity_key, relics_only=True)
+            for tile in tiles:
+                canonical = _sanitise(tile.relic_canonical or tile.relic_name or "?")
+                pos = tile.position.describe() if tile.position else "position n/a"
+                out.append(
+                    _cap(
+                        f"[btd6_ct_tile] CT {_sanitise(evt.entity_key)}: {canonical} "
+                        f"on tile {_sanitise(tile.tile_id)} ({pos}) "
+                        f"(source: data.ninjakiwi.com)",
+                    ),
+                )
+                if tile.relic_id and tile.relic_id not in seen_relics:
+                    seen_relics.append(tile.relic_id)
+                if len(out) >= 14:
+                    break
             if len(out) >= 14:
                 break
-        if len(out) >= 14:
-            break
+    except Exception as exc:  # noqa: BLE001 — degrade to the static catalog
+        logger.debug("btd6_context_service: ct live tiles unavailable (%s)", exc)
 
     # The effect of each distinct relic actually on the map, so the model
     # can answer "what does it do" follow-ups without a second round-trip.
@@ -837,6 +843,13 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
         entry = btd6_data_service.get_ct_relic(relic_id)
         if entry is not None:
             out.extend(_render_ct_relic(entry))
+
+    # No live tile data (DB not yet populated) — fall back to the static
+    # relic catalog so a general "tell me about the relics" question still
+    # gets the verified relic effects instead of an "I don't have it".
+    if not out:
+        for relic in btd6_data_service.list_ct_relics():
+            out.extend(_render_ct_relic(relic))
     return out
 
 
