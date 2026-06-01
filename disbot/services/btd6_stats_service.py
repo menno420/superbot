@@ -119,6 +119,16 @@ class HeroStats:
 
 
 @dataclass(frozen=True)
+class ParagonAbility:
+    """One named paragon ability (activated or passive), curated from the wiki."""
+
+    name: str
+    kind: str  # "activated" | "passive"
+    cooldown: int | None  # seconds, for activated abilities
+    description: str
+
+
+@dataclass(frozen=True)
 class ParagonStats:
     """All stored stats for one paragon (lazy-loaded).
 
@@ -142,6 +152,7 @@ class ParagonStats:
     base: dict[str, Any]
     source: str = ""
     description: str = ""
+    abilities: tuple[ParagonAbility, ...] = ()
 
     @property
     def has_combat_stats(self) -> bool:
@@ -226,6 +237,10 @@ _PARAGON_DESCRIPTIONS_PATH = (
     Path(__file__).resolve().parents[1] / "data" / "btd6" / "paragon_descriptions.json"
 )
 _PARAGON_DESCRIPTIONS: dict[str, str] | None = None
+_PARAGON_ABILITIES_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "btd6" / "paragon_abilities.json"
+)
+_PARAGON_ABILITIES: dict[str, tuple[ParagonAbility, ...]] | None = None
 
 
 def _descriptions() -> dict[str, str]:
@@ -245,6 +260,35 @@ def _descriptions() -> dict[str, str]:
     return _PARAGON_DESCRIPTIONS
 
 
+def _abilities() -> dict[str, tuple[ParagonAbility, ...]]:
+    """Curated paragon ability names + explanations (paraphrased; cached).
+
+    Like the overviews, kept in a separate committed file (the fetched stats
+    module carries cooldowns but no prose, and a few abilities are unnamed
+    there) so a stats re-fetch never clobbers it.
+    """
+    global _PARAGON_ABILITIES
+    if _PARAGON_ABILITIES is None:
+        index: dict[str, tuple[ParagonAbility, ...]] = {}
+        try:
+            data = json.loads(_PARAGON_ABILITIES_PATH.read_text(encoding="utf-8"))
+            for paragon_id, rows in (data.get("abilities") or {}).items():
+                index[paragon_id] = tuple(
+                    ParagonAbility(
+                        name=str(row.get("name", "")),
+                        kind=str(row.get("kind", "activated")),
+                        cooldown=row.get("cooldown"),
+                        description=str(row.get("description", "")),
+                    )
+                    for row in rows
+                    if row.get("name")
+                )
+        except (OSError, ValueError):
+            index = {}
+        _PARAGON_ABILITIES = index
+    return _PARAGON_ABILITIES
+
+
 def _load_paragon(paragon_id: str) -> ParagonStats | None:
     path = PARAGON_STATS_ROOT / f"{paragon_id}.json"
     if not path.exists():
@@ -262,6 +306,7 @@ def _load_paragon(paragon_id: str) -> ParagonStats | None:
         base=data.get("base", {}),
         source=str(data.get("source", "")),
         description=_descriptions().get(data.get("paragon_id", paragon_id), ""),
+        abilities=_abilities().get(data.get("paragon_id", paragon_id), ()),
     )
 
 
@@ -300,12 +345,13 @@ def get_paragon_stats_by_tower(tower_id: str) -> ParagonStats | None:
 
 def reset_cache() -> None:
     """Test seam: drop the loaded-stats caches."""
-    global _PARAGON_BY_TOWER, _PARAGON_DESCRIPTIONS
+    global _PARAGON_BY_TOWER, _PARAGON_DESCRIPTIONS, _PARAGON_ABILITIES
     _CACHE.clear()
     _HERO_CACHE.clear()
     _PARAGON_CACHE.clear()
     _PARAGON_BY_TOWER = None
     _PARAGON_DESCRIPTIONS = None
+    _PARAGON_ABILITIES = None
 
 
 # ---------------------------------------------------------------------------
@@ -414,6 +460,7 @@ def normal_stats(tier: dict[str, Any]) -> NormalStats:
 __all__ = [
     "HeroStats",
     "NormalStats",
+    "ParagonAbility",
     "ParagonStats",
     "TowerStats",
     "get_hero_stats",

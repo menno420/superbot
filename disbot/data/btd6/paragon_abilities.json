@@ -1,0 +1,145 @@
+{
+  "_comment": "Curated paragon ability names + explanations. The fetched stats module (Module:BTD6_stats) carries ability cooldowns but no prose, and a few abilities are unnamed there ('Ability'); the names + descriptions here are paraphrased from each paragon's bloonswiki article and kept in this separate committed file so a stats re-fetch never clobbers them (same pattern as paragon_descriptions.json). 'kind' is 'activated' (player-triggered, has a cooldown) or 'passive' (always-on / auto-triggered).",
+  "source": "bloonswiki.com (CC BY-NC-SA), paraphrased",
+  "abilities": {
+    "apex_plasma_master": [],
+    "ascended_shadow": [
+      {
+        "name": "Grand Saboteur",
+        "kind": "passive",
+        "cooldown": null,
+        "description": "While on screen, passively debuffs every Bloon: all Bloons except BADs and Bosses move 50% slower, and all MOAB-class Bloons except Bosses have 25% less health per layer."
+      },
+      {
+        "name": "Camo support buffs",
+        "kind": "passive",
+        "cooldown": null,
+        "description": "Grants Camo detection to every tower on screen (including other Paragons), gives all other Ninja Monkeys +10 range, and grants Ninjas in range a free Shinobi Tactics stack."
+      }
+    ],
+    "ballistic_obliteration_missile_bunker": [
+      {
+        "name": "ISABM",
+        "kind": "activated",
+        "cooldown": 30,
+        "description": "Fires an Indomitable Surface-to-Air Ballistic Missile that seeks a target using the BOMB's targeting, ignoring line of sight and with infinite range. It moves slowly but turns sharply, drops a small pushback explosion every 0.25s, and detonates on its target or after 9 seconds; it cannot be reactivated until the missile expires."
+      },
+      {
+        "name": "Blitz Tactical Storm",
+        "kind": "passive",
+        "cooldown": 120,
+        "description": "Auto-triggers when you lose a life or Bloons try to leak: hits every Bloon on screen (including Camo), instantly destroying any Bloon type except MOAB Test and Golden Bloons, and dealing 20,000 damage to BADs and Bosses. Base cooldown 120s."
+      }
+    ],
+    "crucible_of_steel_and_flame": [
+      {
+        "name": "Maelstrom",
+        "kind": "activated",
+        "cooldown": 20,
+        "description": "Multiplies the lifespan of all its attacks by 2.5x and adds a Ring-of-Fire-style flame ring (high pierce, bonus Boss damage) for 9 seconds. Base cooldown 20s."
+      },
+      {
+        "name": "Meteor Impact",
+        "kind": "activated",
+        "cooldown": 60,
+        "description": "Calls down a meteor that pursues a Bloon by targeting priority and explodes into 32 homing fireballs that can re-hit Bloons. Base cooldown 60s."
+      }
+    ],
+    "glaive_dominus": [
+      {
+        "name": "Overcharge",
+        "kind": "activated",
+        "cooldown": 45,
+        "description": "Grants 10 stacks of Overcharge that sharply raise attack speed (up to +187%). One stack is lost every 3 seconds, fading over 30s, and it can be reactivated while charges remain. Base cooldown 45s."
+      }
+    ],
+    "goliath_doomship": [
+      {
+        "name": "Carpet Bomb",
+        "kind": "activated",
+        "cooldown": 60,
+        "description": "Saturates the track with bombing volleys: 12 non-homing missiles that pierce multiple Bloons and explode when they expire, plus 8 homing missiles that seek MOAB-class targets. Base cooldown 60s."
+      }
+    ],
+    "herald_of_everfrost": [
+      {
+        "name": "Eclipse of Fimbulwinter",
+        "kind": "activated",
+        "cooldown": 90,
+        "description": "Darkens the whole map for 25 seconds and applies three effects to every Bloon: a global slow (Bosses -5%, BADs -10%, others -30%), a freeze applied 5s in (10s, half-duration on BADs/Bosses), and a permafrost slow (regular -75%, MOAB-class -50%). Base cooldown 90s."
+      }
+    ],
+    "magus_perfectus": [
+      {
+        "name": "Phoenix Explosion",
+        "kind": "activated",
+        "cooldown": 40,
+        "description": "Internally 'Phoenix Rebirth'. Consumes all mana to detonate the Dark Phoenix, dealing damage over time within 100 units (every 0.5s for 30s) and spawning one Undead ZOMG per 9,000 mana spent (up to 10). Cannot damage Purple Bloons or Blastapopoulos. Base cooldown 40s."
+      },
+      {
+        "name": "Arcane Metamorphosis",
+        "kind": "activated",
+        "cooldown": 90,
+        "description": "Merges the Phoenix into the Magus, replacing the main attack with two stronger attacks: a twin flame cascade and one that leaves Walls of Fire on the track. Drains 4,000 mana per second while active. Base cooldown 90s."
+      }
+    ],
+    "master_builder": [
+      {
+        "name": "Mega Sentry",
+        "kind": "activated",
+        "cooldown": 20,
+        "description": "Places a Sentry Paragon sub-tower anywhere on the map, cycling Green (persistent laser), Red (plasma streams), then Blue (explosive missiles) on successive uses. Each Mega Sentry also periodically spawns temporary Modified Sentry Paragons. Base cooldown 20s."
+      },
+      {
+        "name": "Power Glove",
+        "kind": "activated",
+        "cooldown": 60,
+        "description": "A stronger Overclock that can target other Paragons (not itself) and also buffs nearby non-Paragon towers, granting +66.67% attack speed (plus +15% range to Villages and +66.67% production to Farms). Base cooldown 60s."
+      }
+    ],
+    "mega_massive_munitions_factory": [
+      {
+        "name": "Controlled Burst",
+        "kind": "activated",
+        "cooldown": 15,
+        "description": "Quadruples the main attack's speed for 15 seconds. Base cooldown 15s; usable once per round."
+      },
+      {
+        "name": "Spikeageddon",
+        "kind": "activated",
+        "cooldown": 75,
+        "description": "Launches up to 25 land mines across each path, spreading them from the exit toward the entrance to blanket the track in spikes. Base cooldown 75s."
+      }
+    ],
+    "nautic_siege_core": [
+      {
+        "name": "Final Strike",
+        "kind": "activated",
+        "cooldown": 240,
+        "description": "Begins a 15-second countdown (pausing between rounds) that disables its other attacks, then launches three Camo-capable missiles at First, Close, and Strong targets. Each impact deals heavy damage, a stunning aftershock (15s, except BADs/Bosses), and leaves radioactive fallout pools that burn passing Bloons. Base cooldown 240s."
+      }
+    ],
+    "navarch_of_the_seas": [
+      {
+        "name": "Grappling Hook",
+        "kind": "activated",
+        "cooldown": 30,
+        "description": "Fires a giant grappling hook that instantly takes down the strongest MOAB-class Bloon on screen, including BADs (but not Dreadrock Bloons). Base cooldown 30s, usable twice per round. Separate from its ten passive auto-grappling hooks."
+      }
+    ],
+    "root_of_all_nature": [
+      {
+        "name": "Primordial Wrath",
+        "kind": "activated",
+        "cooldown": 9,
+        "description": "Toggles between Elemental and Wrathful modes. In Wrathful mode the Paragon gains +35% range, 80% tighter shot spread, and an Avatar-of-Wrath-style damage boost that scales with on-screen leak damage (up to 5x). Short 9s cooldown."
+      },
+      {
+        "name": "Jungle's Bounty",
+        "kind": "passive",
+        "cooldown": null,
+        "description": "At the end of each round, when a BAD is popped, or when a Boss Skull is broken, generates 1 life and $120 cash, boosted by nearby Banana Farms and Storm Trees up to a $10,000 cap."
+      }
+    ]
+  }
+}

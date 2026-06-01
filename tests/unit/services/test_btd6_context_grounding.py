@@ -319,3 +319,30 @@ async def test_build_ignores_non_upgrade_text():
     # A plain greeting must not spuriously ground an upgrade.
     ctx = await btd6_context_service.build("hello there")
     assert not any(f.startswith("[btd6_upgrade]") for f in ctx.facts)
+
+
+# ---------------------------------------------------------------------------
+# build() paragon ability grounding (curated from bloonswiki)
+# ---------------------------------------------------------------------------
+
+
+async def test_build_grounds_paragon_abilities_by_paragon_name():
+    ctx = await btd6_context_service.build("Magus Perfectus abilities")
+    blob = "\n".join(ctx.facts)
+    assert "Phoenix Explosion" in blob
+    assert "Arcane Metamorphosis" in blob
+    assert "40s cooldown" in blob
+
+
+async def test_build_grounds_paragon_by_ability_name():
+    # Naming only the ability grounds the owning paragon — searchable abilities.
+    ctx = await btd6_context_service.build("what is Spikeageddon's cooldown")
+    assert any(
+        "Mega Massive Munitions Factory" in f and "Spikeageddon" in f and "75s" in f
+        for f in ctx.facts
+    ), ctx.facts
+
+
+async def test_build_states_apex_plasma_master_has_no_ability():
+    ctx = await btd6_context_service.build("does Apex Plasma Master have an ability")
+    assert any("no activated ability" in f for f in ctx.facts)

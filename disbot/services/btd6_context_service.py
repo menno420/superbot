@@ -362,7 +362,31 @@ def _render_paragon(tower_id: str, canonical: str) -> list[str]:
         # cost line above already establish the source, so keep this line lean
         # (the per-fact cap would otherwise truncate a trailing attribution).
         lines.append(_cap(f"[btd6_paragon] {name} — {_sanitise(pstats.description)}"))
+    if pstats is not None:
+        lines.extend(_render_paragon_abilities(name, pstats))
     lines.extend(_render_paragon_stats(tower_id, name))
+    return lines
+
+
+def _render_paragon_abilities(name: str, pstats: Any) -> list[str]:
+    """``[btd6_paragon]`` ability lines for a paragon (curated from bloonswiki).
+
+    One line per named ability so the assistant can answer "what does <ability>
+    do / what's its cooldown" without guessing. A paragon with no activated
+    ability (e.g. Apex Plasma Master) gets a single explicit line so the model
+    states that rather than inventing one.
+    """
+    abilities = getattr(pstats, "abilities", ()) or ()
+    if not abilities:
+        return [f"[btd6_paragon] {name} has no activated ability."]
+    lines: list[str] = []
+    for ability in abilities:
+        if ability.kind == "passive":
+            head = f"[btd6_paragon] {name} passive — {ability.name}"
+        else:
+            cd = f" ({ability.cooldown}s cooldown)" if ability.cooldown else ""
+            head = f"[btd6_paragon] {name} ability — {ability.name}{cd}"
+        lines.append(_cap(f"{head}: {_sanitise(ability.description)}"))
     return lines
 
 
@@ -965,15 +989,28 @@ def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list
 
     text = (message_text or "").lower()
     out: list[str] = []
+    grounded: set[str] = set(resolved_tower_ids)
     for paragon in paragon_math.PARAGONS:
         # Strip a parenthetical (e.g. "… (B.O.M.B.)") and match the bare name.
         name = paragon.name.split(" (")[0].strip().lower()
         if not name or name not in text:
             continue
         pstats = btd6_stats_service.get_paragon_stats(paragon.paragon_id)
-        if pstats is None or pstats.tower_id in resolved_tower_ids:
+        if pstats is None or pstats.tower_id in grounded:
             continue
+        grounded.add(pstats.tower_id)
         out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
+
+    # A paragon ABILITY named directly (e.g. "Spikeageddon cooldown", "what does
+    # Final Strike do") — the names are distinctive, so a full-name substring
+    # match grounds the owning paragon (and its ability lines) without false hits.
+    for paragon_id in btd6_stats_service.list_paragon_ids():
+        pstats = btd6_stats_service.get_paragon_stats(paragon_id)
+        if pstats is None or pstats.tower_id in grounded:
+            continue
+        if any(ab.name and ab.name.lower() in text for ab in pstats.abilities):
+            grounded.add(pstats.tower_id)
+            out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
     return out
 
 

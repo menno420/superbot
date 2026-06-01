@@ -52,6 +52,35 @@ def test_normal_stats_bloon_crush_flips_to_normal_and_stuns():
     assert any("Stun" in s for s in ns.specials)
 
 
+def test_paragon_abilities_load_named_with_cooldowns():
+    mp = svc.get_paragon_stats("magus_perfectus")
+    assert [a.name for a in mp.abilities] == ["Phoenix Explosion", "Arcane Metamorphosis"]
+    assert mp.abilities[0].kind == "activated"
+    assert mp.abilities[0].cooldown == 40
+    assert "Phoenix Rebirth" in mp.abilities[0].description  # internal-name note kept
+    # Apex Plasma Master genuinely has no activated ability — curated as empty.
+    assert svc.get_paragon_stats("apex_plasma_master").abilities == ()
+
+
+def test_every_paragon_has_curated_abilities_with_real_names():
+    # The curated file must cover every paragon and never leave a generic name:
+    # the stats module had four unnamed 'Ability' nodes (Glaive Dominus, Goliath
+    # Doomship, Nautic Siege Core, Navarch) which must now carry real names.
+    ids = set(svc.list_paragon_ids())
+    assert set(svc._abilities()) == ids  # exactly the 13 paragons, no stray ids
+    for pid in (
+        "glaive_dominus",
+        "goliath_doomship",
+        "nautic_siege_core",
+        "navarch_of_the_seas",
+        "herald_of_everfrost",  # was prose-only, no abilities at all before
+        "root_of_all_nature",
+    ):
+        abilities = svc.get_paragon_stats(pid).abilities
+        assert abilities, pid
+        assert all(a.name and a.name != "Ability" for a in abilities), pid
+
+
 def test_normal_stats_excludes_reanimated_minions_for_prince_of_darkness():
     # Prince of Darkness (wizard 0-0-5) fires reanimated "MOAB"/"BFB" projectiles
     # (40/100 dmg). Those are minions, not the tower's hit, so the headline must
