@@ -54,5 +54,34 @@ def test_results_are_ordered_and_capped():
     assert rows[0].cost >= rows[1].cost >= rows[2].cost
 
 
+def test_paragon_dps_ranks_all_paragons_highest_and_lowest():
+    high = sup.rank(sup.PARAGON_DPS, limit=25)
+    # Every paragon has a computable single-target DPS, ranked descending.
+    assert len(high) == len(sup.rank(sup.PARAGON_COST, limit=25))
+    assert [h.value for h in high] == sorted((h.value for h in high), reverse=True)
+    assert high[0].unit == "DPS"
+    assert "dmg" in high[0].detail and "degree 1" in high[0].detail
+    # Glaive Dominus (fast attacker) tops it; the slow Spike paragon is the floor.
+    assert high[0].tower_id == "boomerang_monkey"
+    assert sup.rank(sup.PARAGON_DPS, cheapest=True)[0].tower_id == "spike_factory"
+
+
+def test_paragon_pierce_differs_from_dps_ranking():
+    # A high-pierce paragon that ranks low on single-target DPS must top pierce —
+    # proving DPS and pierce are genuinely distinct metrics, not the same sort.
+    top_pierce = sup.rank(sup.PARAGON_PIERCE)[0]
+    assert top_pierce.unit == "pierce"
+    assert top_pierce.tower_id == "ice_monkey"  # Herald of Everfrost, 500 pierce
+
+
+def test_tower_combat_metrics_use_base_tier_and_have_range():
+    rng = sup.rank(sup.TOWER_RANGE)
+    assert rng and rng[0].unit == "range"
+    assert rng[0].value > 0
+    dps = sup.rank(sup.TOWER_DPS, limit=30)
+    assert dps and all(h.unit == "DPS" for h in dps)
+    assert all("base 0-0-0" in h.detail for h in dps)
+
+
 def test_unknown_metric_returns_empty():
     assert sup.rank("nonsense") == []

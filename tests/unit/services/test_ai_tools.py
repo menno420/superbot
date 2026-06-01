@@ -230,6 +230,16 @@ async def test_btd6_superlative_lookup_answers_cost_rankings():
     bad = await registry.handlers["btd6_superlative_lookup"]({"metric": "nope"})
     assert bad["found"] is False
 
+    # Combat ranking — "which paragon has the highest DPS" in one call.
+    dps = await registry.handlers["btd6_superlative_lookup"](
+        {"metric": "paragon_dps", "limit": 1},
+    )
+    assert dps["found"] is True
+    top = dps["results"][0]
+    assert top["unit"] == "DPS"
+    assert top["value"] > 0 and top["detail"]  # value + a "X dmg / Ys" detail
+    assert "cost" not in top  # combat rows aren't dollar amounts
+
 
 async def test_btd6_difficulty_cost_converts_medium_to_all_difficulties():
     # The bot previously claimed BTD6 costs don't change by difficulty; this

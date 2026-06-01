@@ -505,19 +505,31 @@ async def _btd6_capability_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
 _BTD6_SUPERLATIVE_SPEC = AIToolSpec(
     name="btd6_superlative_lookup",
     description=(
-        "Rank BTD6 costs across the whole roster — use for "
-        "'most/least/cheapest/most expensive …' questions. metric: "
-        "'upgrade_cost' (set tier 1-5 to scope it, e.g. 'most expensive tier "
-        "4 upgrade'), 'tower_cost' (base placement cost), or 'paragon_cost'. "
-        "Set cheapest=true for least expensive (default is most expensive). "
-        "Returns the top matches with their cost."
+        "Rank BTD6 entities across the whole roster in ONE call — use for "
+        "'most/least/highest/lowest/cheapest/most expensive …' questions (e.g. "
+        "'which paragon has the highest DPS', 'longest-range tower') instead of "
+        "looking entities up one by one. COST metrics: 'upgrade_cost' (set tier "
+        "1-5 to scope, e.g. 'priciest tier-4 upgrade'), 'tower_cost' (base "
+        "placement), 'paragon_cost'. COMBAT metrics: 'paragon_dps', "
+        "'paragon_damage', 'paragon_pierce' (paragons at degree 1) and "
+        "'tower_dps', 'tower_damage', 'tower_pierce', 'tower_range' (base 0-0-0 "
+        "towers). DPS is single-target main-attack DPS (damage / cooldown) — it "
+        "ignores pierce / AoE / extra attacks / abilities, so a high-pierce "
+        "crowd-clearer ranks low; say it's single-target when you quote it, and "
+        "use '*_pierce' for crowd-clear. Set cheapest=true for the lowest/least "
+        "(default is highest/most). Each result has value, unit, what, and a "
+        "detail string."
     ),
     parameters={
         "type": "object",
         "properties": {
             "metric": {
                 "type": "string",
-                "description": "upgrade_cost, tower_cost, or paragon_cost.",
+                "description": (
+                    "Cost: upgrade_cost, tower_cost, paragon_cost. Combat: "
+                    "paragon_dps, paragon_damage, paragon_pierce, tower_dps, "
+                    "tower_damage, tower_pierce, tower_range."
+                ),
             },
             "tier": {
                 "type": "integer",
@@ -525,7 +537,10 @@ _BTD6_SUPERLATIVE_SPEC = AIToolSpec(
             },
             "cheapest": {
                 "type": "boolean",
-                "description": "Least expensive when true (default false).",
+                "description": (
+                    "Lowest/least when true (cheapest cost, lowest DPS, …); "
+                    "default false = highest/most."
+                ),
             },
             "limit": {
                 "type": "integer",
@@ -559,14 +574,24 @@ async def _btd6_superlative_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     cheapest = bool(arguments.get("cheapest", False))
     limit = _coerce_limit(arguments.get("limit"), default=3, lo=1, hi=25)
     hits = sup.rank(metric, tier=tier, cheapest=cheapest, limit=limit)
+    results: list[dict[str, Any]] = []
+    for h in hits:
+        row: dict[str, Any] = {
+            "value": h.value,
+            "unit": h.unit,
+            "what": h.what,
+            "detail": h.detail,
+            "tower_id": h.tower_id,
+        }
+        if h.unit == "$":  # back-compat for cost-ranking callers
+            row["cost"] = h.cost
+        results.append(row)
     return {
         "found": bool(hits),
         "metric": metric,
         "tier": tier,
         "cheapest": cheapest,
-        "results": [
-            {"cost": h.cost, "what": h.what, "tower_id": h.tower_id} for h in hits
-        ],
+        "results": results,
     }
 
 
