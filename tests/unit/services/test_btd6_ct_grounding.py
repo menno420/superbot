@@ -164,3 +164,58 @@ async def test_relic_tile_location_line_present(monkeypatch):
     assert tile_lines
     assert "tile DEC" in tile_lines[0]
     assert "mpejg5d0" in tile_lines[0]
+
+
+@pytest.mark.asyncio
+async def test_general_ct_question_lists_all_relics_without_14_cap(monkeypatch):
+    """Regression: a full CT map must surface ALL its relic tiles in grounding.
+
+    The API can return 24 active relics, but ``_ct_active_tile_lines`` used to
+    hard-cap the broad listing at 14 — so the model only ever saw 14 of 24.
+    Build one tile per catalog relic and assert every one survives into facts
+    (tiles AND distinct relic effects, the latter previously capped at 8).
+    """
+    from services import btd6_data_service
+    from services import btd6_live_query_service as live
+
+    relics = btd6_data_service.list_ct_relics()
+    n = len(relics)
+    assert n > 14, "relic catalog must exceed the old cap for this test to bite"
+
+    async def _active(kinds=None):
+        return (
+            live.ActiveEventHeadline(
+                "btd6_ct",
+                "mpejg5d0",
+                "mpejg5d0",
+                None,
+                None,
+                datetime.now(tz=timezone.utc),
+            ),
+        )
+
+    async def _tiles(ct_id, *, relic=None, relics_only=False):
+        return tuple(
+            live.CTTilePlacement(
+                ct_id="mpejg5d0",
+                tile_id=f"T{i:02d}",
+                tile_type="Relic",
+                game_type="Race",
+                relic_name=getattr(r, "canonical", None) or str(getattr(r, "id", "")),
+                relic_id=str(getattr(r, "id", "")),
+                relic_canonical=getattr(r, "canonical", None),
+                fetched_at=datetime.now(tz=timezone.utc),
+                position=None,
+            )
+            for i, r in enumerate(relics)
+        )
+
+    monkeypatch.setattr(live, "get_active_events", _active)
+    monkeypatch.setattr(live, "get_ct_tiles", _tiles)
+    out = await ctx.build("Do you have specific information about the tiles and relics")
+    tile_lines = [f for f in out.facts if f.startswith("[btd6_ct_tile]")]
+    relic_lines = [f for f in out.facts if f.startswith("[btd6_ct_relic]")]
+    # Every relic tile surfaces — not just the first 14.
+    assert len(tile_lines) == n, (len(tile_lines), n)
+    # Distinct relic effects are no longer capped at 8 either.
+    assert len(relic_lines) > 8, len(relic_lines)

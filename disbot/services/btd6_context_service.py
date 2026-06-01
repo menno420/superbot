@@ -777,6 +777,17 @@ def _mentions_ct_topic(intent: Any) -> bool:
     return False
 
 
+# CT relic listing bounds. The relic catalog has 24 entries
+# (btd6_data_service.list_ct_relics) and a CT map places at most one tile per
+# relic, so a full active map is ~24 relic tiles. Bound the broad live listing
+# generously above that — enough for even two concurrently-active CT events —
+# so a real full map is never truncated (the prior cap of 14 silently dropped
+# 10 of 24 relics). The static catalog fallback below already lists every relic
+# uncapped, so a complete live listing is consistent.
+_CT_TILE_LINE_CAP = 48
+_CT_RELIC_EFFECT_CAP = 24
+
+
 async def _ct_active_tile_lines(intent: Any) -> list[str]:
     """Relic→tile map for the active CT on a *general* CT relic/tile question.
 
@@ -784,8 +795,9 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
     the targeted answer, so this broad listing is skipped to avoid
     duplication. Otherwise it lists the relic tiles of the newest active CT
     event(s) — exactly the "tiles and relics" breakdown the model is
-    missing — plus the effect of each distinct relic found. Bounded so a
-    full 169-tile map can't flood the prompt.
+    missing — plus the effect of each distinct relic found. Bounded by the
+    relic catalog size so a full active map (~24 relics) lists completely
+    without flooding the prompt.
     """
     if getattr(intent, "ct_relics", ()):  # specific relic handled elsewhere
         return []
@@ -819,16 +831,16 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
                 )
                 if tile.relic_id and tile.relic_id not in seen_relics:
                     seen_relics.append(tile.relic_id)
-                if len(out) >= 14:
+                if len(out) >= _CT_TILE_LINE_CAP:
                     break
-            if len(out) >= 14:
+            if len(out) >= _CT_TILE_LINE_CAP:
                 break
     except Exception as exc:  # noqa: BLE001 — degrade to the static catalog
         logger.debug("btd6_context_service: ct live tiles unavailable (%s)", exc)
 
     # The effect of each distinct relic actually on the map, so the model
     # can answer "what does it do" follow-ups without a second round-trip.
-    for relic_id in seen_relics[:8]:
+    for relic_id in seen_relics[:_CT_RELIC_EFFECT_CAP]:
         entry = btd6_data_service.get_ct_relic(relic_id)
         if entry is not None:
             out.extend(_render_ct_relic(entry))
