@@ -179,6 +179,7 @@ async def safe_followup(
     *,
     embed: discord.Embed | None = None,
     view: discord.ui.View | None = None,
+    file: discord.File | None = None,
     ephemeral: bool = False,
 ) -> discord.Message | None:
     """Send a response message regardless of deferred state.
@@ -200,6 +201,8 @@ async def safe_followup(
         kwargs["embed"] = clamp_embed(embed)
     if view is not None:
         kwargs["view"] = view
+    if file is not None:
+        kwargs["file"] = file
     if ephemeral:
         kwargs["ephemeral"] = True
 
