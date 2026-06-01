@@ -8,8 +8,11 @@ parser is a pure-function pipeline.
 from __future__ import annotations
 
 import ast
+import math
 import operator as op
 import re
+from collections.abc import Callable
+from typing import Any
 
 # Compiled regex patterns
 NUMBER_PATTERN = re.compile(r"\d+")
@@ -155,15 +158,114 @@ EMOJI_NUMBER_MAPPING: dict[str, str] = {
     "🔟": "10",
 }
 
+# ---------------------------------------------------------------------------
+# DoS guards.  The parser runs on the on_message hot path for every message
+# in a counting channel, so a single crafted expression must never be able
+# to burn CPU or RAM.  Exponentiation and factorial are the only operations
+# that grow super-linearly in the size of their (small) operands, so both
+# are routed through bounded wrappers.  Everything else is linear in the
+# (length-capped) expression and needs no guard.
+# ---------------------------------------------------------------------------
+MAX_POW_EXPONENT = 1000  # reject ``a ** b`` / ``a ^ b`` when ``abs(b)`` exceeds this
+MAX_FACTORIAL = 1000  # reject ``n!`` / ``factorial(n)`` when ``n`` exceeds this
+
+
+def safe_pow(base: Any, exponent: Any) -> Any:
+    """``base ** exponent`` with a bound on the exponent.
+
+    Without this, ``9 ^ 9 ^ 9`` (right-associative) asks Python to build a
+    ~370-million-digit integer and hangs the event loop.  Capping the
+    exponent magnitude keeps every power bounded; nested towers are caught
+    because each inner power is evaluated (and bounded) before it becomes the
+    exponent of the next one.
+    """
+    if abs(exponent) > MAX_POW_EXPONENT:
+        raise ValueError(f"exponent {exponent!r} exceeds limit {MAX_POW_EXPONENT}")
+    return op.pow(base, exponent)
+
+
+def safe_factorial(n: Any) -> int:
+    """``math.factorial`` with a bound, rejecting non-integers and negatives."""
+    if isinstance(n, float):
+        if not n.is_integer():
+            raise ValueError("factorial of a non-integer")
+        n = int(n)
+    if not isinstance(n, int):
+        raise TypeError("factorial expects an integer")
+    if n < 0 or n > MAX_FACTORIAL:
+        raise ValueError(f"factorial argument {n} outside 0..{MAX_FACTORIAL}")
+    return math.factorial(n)
+
+
 # AST node type → Python operator.  Used by ``parsing.eval_expr``.
-OPERATORS: dict[type, object] = {
+OPERATORS: dict[type, Callable[..., Any]] = {
     ast.Add: op.add,
     ast.Sub: op.sub,
     ast.Mult: op.mul,
     ast.Div: op.truediv,
-    ast.Pow: op.pow,
-    ast.BitXor: op.pow,  # allow '^' as exponentiation
+    ast.FloorDiv: op.floordiv,
+    ast.Mod: op.mod,
+    ast.Pow: safe_pow,
+    ast.BitXor: safe_pow,  # allow '^' as exponentiation
     ast.USub: op.neg,
+    ast.UAdd: op.pos,
+}
+
+# Named constants usable in expressions, e.g. ``2 * pi`` or ``tau / 4``.
+MATH_CONSTANTS: dict[str, float] = {
+    "pi": math.pi,
+    "e": math.e,
+    "tau": math.tau,
+}
+
+
+def _signum(x: Any) -> int:
+    return (x > 0) - (x < 0)
+
+
+def _cbrt(x: Any) -> float:
+    # ``x ** (1/3)`` returns a complex number for negative x; preserve sign.
+    return math.copysign(abs(x) ** (1.0 / 3.0), x)
+
+
+# Whitelisted callables.  Only alphabetic names are usable: the tokenizer
+# splits a letter+digit run such as ``log2`` into ``log`` + ``2``, so any
+# function with a digit in its name is unreachable from user input by design.
+# Variadic builtins (min/max/sum) are wrapped so they accept positional args.
+MATH_FUNCTIONS: dict[str, Callable[..., Any]] = {
+    "abs": abs,
+    "round": lambda x, ndigits=0: round(x, int(ndigits)),
+    "min": lambda *args: min(args),
+    "max": lambda *args: max(args),
+    "sum": lambda *args: sum(args),
+    "sqrt": math.sqrt,
+    "cbrt": _cbrt,
+    "factorial": safe_factorial,
+    "floor": math.floor,
+    "ceil": math.ceil,
+    "trunc": math.trunc,
+    "sign": _signum,
+    "exp": math.exp,
+    "ln": math.log,
+    "log": math.log10,
+    "sin": math.sin,
+    "cos": math.cos,
+    "tan": math.tan,
+    "asin": math.asin,
+    "acos": math.acos,
+    "atan": math.atan,
+    "sinh": math.sinh,
+    "cosh": math.cosh,
+    "tanh": math.tanh,
+    "degrees": math.degrees,
+    "radians": math.radians,
+    "gcd": math.gcd,
+    "lcm": math.lcm,
+    "hypot": math.hypot,
+    "pow": safe_pow,
+    "comb": math.comb,
+    "perm": math.perm,
+    "fmod": math.fmod,
 }
 
 # Word/symbol → arithmetic operator replacement.
@@ -182,6 +284,8 @@ OPERATOR_MAPPING: dict[str, str] = {
     "over": "/",
     "powerof": "**",
     "tothepowerof": "**",
+    "mod": "%",
+    "modulo": "%",
     "equals": "=",
     "equal": "=",
     "and": "+",
