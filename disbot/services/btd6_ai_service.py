@@ -12,9 +12,12 @@ Brings resolver, knowledge, and response-builder together.
 Gate stack (all must be true to call the gateway):
 
 1. Caller passes ``augment_with_ai=True``.
-2. ``BTD6_AI_ENABLED`` env var is truthy.
-3. The AI platform itself is enabled (``AI_ENABLED``) and the
+2. The AI platform itself is enabled (``AI_ENABLED``) and the
    ``HELP_ANSWER`` task is allowed.
+
+The legacy ``BTD6_AI_ENABLED`` env var was retired in M5;
+``btd6_ai_enabled()`` is now a ``return True`` shim and the task /
+``ai_natural_language_policy`` layer is the real runtime gate.
 
 Any failure mode — gateway disabled, provider unavailable, timeout,
 invalid output, exception — yields the deterministic baseline

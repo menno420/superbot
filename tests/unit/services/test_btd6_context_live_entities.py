@@ -111,10 +111,10 @@ def test_coerce_body_handles_legacy_string_form():
     from services import btd6_context_service
 
     body = {"name": "Reversed Loop", "type": "race"}
-    assert btd6_context_service._coerce_body(body) is body
-    assert btd6_context_service._coerce_body(_json.dumps(body)) == body
-    assert btd6_context_service._coerce_body("not-json {") == {}
-    assert btd6_context_service._coerce_body(None) == {}
+    assert btd6_context_service.coerce_body(body) is body
+    assert btd6_context_service.coerce_body(_json.dumps(body)) == body
+    assert btd6_context_service.coerce_body("not-json {") == {}
+    assert btd6_context_service.coerce_body(None) == {}
 
 
 def test_render_fact_decodes_legacy_string_body():

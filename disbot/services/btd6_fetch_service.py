@@ -63,6 +63,16 @@ class FetchResult:
         return hashlib.sha256(self.raw_body.encode("utf-8")).hexdigest()
 
 
+@dataclass(frozen=True)
+class BreakerState:
+    """Immutable snapshot of one open circuit breaker."""
+
+    source_key: str
+    failures: int
+    open_until: float
+    seconds_remaining: float
+
+
 # ---------------------------------------------------------------------------
 # Rate limiting + circuit breaker (per source_key)
 # ---------------------------------------------------------------------------
@@ -91,6 +101,31 @@ def _reset_for_tests() -> None:
     _LAST_REQUEST_AT.clear()
     _FAILURES.clear()
     _BREAKER_OPEN_UNTIL.clear()
+
+
+def breaker_status() -> tuple[BreakerState, ...]:
+    """Immutable snapshot of currently-open circuit breakers.
+
+    Reads the in-memory breaker maps **without mutating them**: iterates
+    ``.items()`` and uses ``.get()`` rather than ``_FAILURES[key]`` /
+    ``_BREAKER_OPEN_UNTIL[key]``, which (being ``defaultdict``s) would
+    materialise phantom zero entries on read. Only breakers open *now*
+    are returned, sorted by source_key, so the operator readiness reader
+    can never perturb fetcher state.
+    """
+    now = time.time()
+    out: list[BreakerState] = []
+    for source_key, open_until in _BREAKER_OPEN_UNTIL.items():
+        if open_until > now:
+            out.append(
+                BreakerState(
+                    source_key=source_key,
+                    failures=_FAILURES.get(source_key, 0),
+                    open_until=open_until,
+                    seconds_remaining=open_until - now,
+                ),
+            )
+    return tuple(sorted(out, key=lambda b: b.source_key))
 
 
 async def fetch(
@@ -189,6 +224,8 @@ async def _http_get(url: str, *, timeout: float) -> tuple[str, int]:
 __all__ = [
     "BTD6FetchHTTPError",
     "BTD6FetchRefusedError",
+    "BreakerState",
     "FetchResult",
+    "breaker_status",
     "fetch",
 ]

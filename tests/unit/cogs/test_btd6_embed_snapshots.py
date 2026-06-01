@@ -132,6 +132,50 @@ def test_event_detail_window_field_present() -> None:
     assert "status:" in (window_field.value or "")
 
 
+def test_event_detail_boss_shows_coverage_field() -> None:
+    from cogs.btd6._builders import build_event_detail_embed
+    from utils.btd6.coverage import AREA_BOSS, get_coverage
+
+    row = {
+        "entity_kind": "btd6_boss",
+        "entity_key": "B7",
+        "body_json": {"name": "Phayze"},
+    }
+    embed = build_event_detail_embed("btd6_boss", "B7", row=row)
+    coverage_fields = [f for f in embed.fields if f.name == "Coverage"]
+    assert coverage_fields, "boss event detail must surface a Coverage field"
+    assert coverage_fields[0].value == get_coverage(AREA_BOSS).user_label
+
+
+def test_event_detail_odyssey_shows_coverage_field() -> None:
+    from cogs.btd6._builders import build_event_detail_embed
+    from utils.btd6.coverage import AREA_ODYSSEY, get_coverage
+
+    row = {
+        "entity_kind": "btd6_odyssey",
+        "entity_key": "O3",
+        "body_json": {"name": "Tidal Surge"},
+    }
+    embed = build_event_detail_embed("btd6_odyssey", "O3", row=row)
+    coverage_fields = [f for f in embed.fields if f.name == "Coverage"]
+    assert coverage_fields, "odyssey event detail must surface a Coverage field"
+    assert coverage_fields[0].value == get_coverage(AREA_ODYSSEY).user_label
+
+
+def test_event_detail_race_has_no_coverage_field() -> None:
+    # Races are not in the partial-coverage map, so no Coverage field on the
+    # event-detail embed (leaderboard page-1 coverage is surfaced separately).
+    from cogs.btd6._builders import build_event_detail_embed
+
+    row = {
+        "entity_kind": "btd6_race",
+        "entity_key": "R1",
+        "body_json": {"name": "Loop"},
+    }
+    embed = build_event_detail_embed("btd6_race", "R1", row=row)
+    assert not [f for f in embed.fields if f.name == "Coverage"]
+
+
 # ---------------------------------------------------------------------------
 # status (build_status_embed uses _BUCKET_EMOJI via _freshness_render)
 # ---------------------------------------------------------------------------

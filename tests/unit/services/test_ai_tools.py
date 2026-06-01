@@ -180,6 +180,23 @@ async def test_btd6_capability_lookup_answers_discovery_questions():
     assert unsupported["found"] is False
 
 
+async def test_btd6_capability_lookup_supports_color_popping_and_notes_coverage():
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+
+    black = await registry.handlers["btd6_capability_lookup"](
+        {"capability": "black_popping", "unupgraded": True},
+    )
+    assert black["found"] is True
+    ids = {t["id"] for t in black["towers"]}
+    # Sharp towers pop black; explosion towers (immune) do not.
+    assert "dart_monkey" in ids
+    assert "bomb_shooter" not in ids
+    # The success result carries the shared coverage note so the model can
+    # state its data limits.
+    assert "note" in black
+    assert "popping" in black["note"].lower()
+
+
 async def test_btd6_superlative_lookup_answers_cost_rankings():
     # "most expensive tier-4 upgrade" and friends — verified vs real data.
     registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)

@@ -175,6 +175,8 @@ async def test_boss_happy_path_shows_standard_solo_hint(monkeypatch):
     footer_text = embed.footer.text or "" if embed.footer else ""
     assert "standard solo" in footer_text
     assert "Elite" in footer_text
+    # Page-1 leaderboard coverage caveat is always surfaced on populated boards.
+    assert "top page only" in footer_text
 
 
 @pytest.mark.asyncio
@@ -193,3 +195,22 @@ async def test_explicit_event_id_skips_active_resolution(monkeypatch):
 
     embed = await build_leaderboard_embed("race", "explicit_race_id")
     assert "explicit_race_id" in (embed.title or "")
+
+
+@pytest.mark.asyncio
+async def test_race_leaderboard_footer_shows_page1_coverage(monkeypatch):
+    from services import btd6_live_query_service as live
+
+    async def _active_race():
+        return _active("R9", name="Edge Loop")
+
+    async def _lb(race_id, *, limit=10):
+        return (_row(1, "alice"),)
+
+    monkeypatch.setattr(live, "get_newest_active_race", _active_race)
+    monkeypatch.setattr(live, "get_race_leaderboard", _lb)
+
+    embed = await build_leaderboard_embed("race", None)
+    footer_text = embed.footer.text or "" if embed.footer else ""
+    # Race leaderboards have no boss hint, but still surface page-1 coverage.
+    assert "top page only" in footer_text

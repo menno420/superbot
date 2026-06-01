@@ -101,6 +101,21 @@ async def stop_supervisor() -> None:
     logger.info("BTD6 ingestion supervisor stopped")
 
 
+def is_enabled() -> bool:
+    """Return whether ingestion is enabled via ``BTD6_INGESTION_ENABLED``.
+
+    Read at import time; this is the static env gate the supervisor checks
+    before spawning the loop. Exposed for the operator readiness surface,
+    which reports "ingestion disabled (env off)" as a distinct state.
+    """
+    return _BTD6_INGESTION_ENABLED
+
+
+def is_running() -> bool:
+    """Return whether the supervisor loop task is currently alive."""
+    return _supervisor_task is not None and not _supervisor_task.done()
+
+
 def _on_supervisor_error(task: asyncio.Task[None], exc: Exception) -> None:
     logger.critical("BTD6 ingestion supervisor crashed: %s", exc, exc_info=True)
 
@@ -183,4 +198,4 @@ async def _run_loop() -> None:
             return
 
 
-__all__ = ["start_supervisor", "stop_supervisor"]
+__all__ = ["is_enabled", "is_running", "start_supervisor", "stop_supervisor"]
