@@ -545,6 +545,109 @@ async def build_live_events_embed(
 
 
 # ---------------------------------------------------------------------------
+# Contested Territory — relic detail + browser
+# ---------------------------------------------------------------------------
+
+
+def _relic_display_name(relic: Any) -> str:
+    abbrev = getattr(relic, "abbrev", "") or ""
+    canonical = getattr(relic, "canonical", "") or getattr(relic, "id", "")
+    return f"{canonical} ({abbrev})" if abbrev else str(canonical)
+
+
+async def build_ct_relic_embed(name: str) -> discord.Embed:
+    """Relic effect + where it currently sits across active CT events.
+
+    ``name`` is matched against the relic catalog (canonical / abbrev /
+    alias / API name). Unknown relics yield a friendly error embed.
+    """
+    from services import btd6_data_service
+    from utils.btd6.context_footer import append_context_footer
+
+    relic = btd6_data_service.resolve_relic(name)
+    if relic is None:
+        names = ", ".join(
+            sorted(r.canonical for r in btd6_data_service.list_ct_relics())[:8],
+        )
+        return discord.Embed(
+            title="🗺️ BTD6 CT — Unknown relic",
+            description=(
+                f"`{name}` isn't a relic I know. Examples: {names}…"
+                if names
+                else f"`{name}` isn't a relic I know."
+            ),
+            color=discord.Color.red(),
+        )
+
+    embed = discord.Embed(
+        title=f"🗺️ CT Relic — {_relic_display_name(relic)}",
+        description=relic.effect,
+        color=discord.Color.teal(),
+    )
+    embed.add_field(name="Category", value=relic.category, inline=True)
+
+    from services import btd6_live_query_service as btd6_live
+
+    placements = await btd6_live.find_relic_locations(relic.id)
+    if placements:
+        lines = []
+        for placement in placements[:10]:
+            pos = (
+                placement.position.describe() if placement.position else "position n/a"
+            )
+            lines.append(
+                f"`{placement.tile_id}` — {pos} (CT `{placement.ct_id}`)",
+            )
+        embed.add_field(
+            name=f"On the map now ({len(placements)} tile(s))",
+            value="\n".join(lines)[:1024],
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="On the map now",
+            value="No active CT tile currently carries this relic (or live data isn't loaded).",
+            inline=False,
+        )
+    embed.set_footer(text="Source: bloonswiki + data.ninjakiwi.com")
+    return append_context_footer(embed, f"btd6_ct_relic:{relic.id}")
+
+
+async def build_ct_browser_embed() -> discord.Embed:
+    """List active Contested Territory events with their relic-tile counts."""
+    from services import btd6_live_query_service as btd6_live
+    from utils.btd6.context_footer import append_context_footer
+
+    events = await btd6_live.get_active_events(("btd6_ct",))
+    embed = discord.Embed(
+        title="🗺️ BTD6 — Contested Territory",
+        color=discord.Color.gold(),
+    )
+    if not events:
+        embed.description = (
+            "No active CT events recorded. Try "
+            "`!btd6 refresh-source nk_btd6_ct` to fetch live data."
+        )
+        return append_context_footer(embed, "btd6_ct:browser")
+
+    embed.description = (
+        "Active CT events. Use `!btd6 relic <name>` for a relic's effect "
+        "and current tile, or `!btd6 event ct <id>` for one event."
+    )
+    for evt in events[:8]:
+        tiles = await btd6_live.get_ct_tiles(evt.entity_key, relics_only=True)
+        relic_names = sorted({t.relic_canonical or t.relic_name or "?" for t in tiles})
+        value = (
+            f"id=`{evt.entity_key}`\n{len(tiles)} relic tile(s): "
+            f"{', '.join(relic_names)[:600]}"
+            if tiles
+            else f"id=`{evt.entity_key}`\nno relic tiles loaded"
+        )
+        embed.add_field(name=str(evt.name)[:256], value=value, inline=False)
+    return append_context_footer(embed, "btd6_ct:browser")
+
+
+# ---------------------------------------------------------------------------
 # refresh-source result builder
 # ---------------------------------------------------------------------------
 

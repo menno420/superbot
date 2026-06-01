@@ -22,11 +22,13 @@ Architecture:
 from __future__ import annotations
 
 import logging
+from collections.abc import Awaitable
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from cogs.btd6 import _builders, _event_helpers
 from cogs.btd6._embeds import (
     build_diagnostics_embed,
     build_status_embed,
@@ -37,6 +39,7 @@ from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline, tasks
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import btd6_ai_service, btd6_ingestion_supervisor
+from views.btd6 import strategy_browse
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 logger = logging.getLogger("bot")
@@ -75,6 +78,23 @@ class BTD6Cog(commands.Cog):
         await btd6_ingestion_supervisor.stop_supervisor()
         tasks.cancel_by_prefix("btd6_ingestion:")
 
+    async def _reply(
+        self,
+        interaction: discord.Interaction,
+        payload_coro: Awaitable[discord.Embed | str],
+    ) -> None:
+        """Defer ephemerally, await the builder, then follow up.
+
+        Shared ``safe_defer → build → safe_followup`` backbone for the
+        non-guarded slash twins. ``str`` payloads go as content, embeds
+        as embeds.
+        """
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        payload = await payload_coro
+        key = "content" if isinstance(payload, str) else "embed"
+        await safe_followup(interaction, ephemeral=True, **{key: payload})
+
     # ------------------------------------------------------------------
     # Prefix commands
     # ------------------------------------------------------------------
@@ -100,21 +120,18 @@ class BTD6Cog(commands.Cog):
 
     @btd6_group.command(name="tower")  # type: ignore[arg-type]
     async def btd6_tower(self, ctx: commands.Context, *, name: str) -> None:
-        from cogs.btd6._builders import build_tower_embed
 
-        await ctx.send(embed=await build_tower_embed(name))
+        await ctx.send(embed=await _builders.build_tower_embed(name))
 
     @btd6_group.command(name="hero")  # type: ignore[arg-type]
     async def btd6_hero(self, ctx: commands.Context, *, name: str) -> None:
-        from cogs.btd6._builders import build_hero_embed
 
-        await ctx.send(embed=await build_hero_embed(name))
+        await ctx.send(embed=await _builders.build_hero_embed(name))
 
     @btd6_group.command(name="round")  # type: ignore[arg-type]
     async def btd6_round(self, ctx: commands.Context, number: int) -> None:
-        from cogs.btd6._builders import build_round_embed
 
-        await ctx.send(embed=await build_round_embed(number))
+        await ctx.send(embed=await _builders.build_round_embed(number))
 
     @btd6_group.command(name="test-intent")  # type: ignore[arg-type]
     async def btd6_test_intent(self, ctx: commands.Context, *, text: str) -> None:
@@ -139,9 +156,11 @@ class BTD6Cog(commands.Cog):
         if not ctx.guild:
             await ctx.send("This command requires a guild context.")
             return
-        from cogs.btd6._builders import build_why_no_response_payload
 
-        payload = await build_why_no_response_payload(ctx.guild.id, limit=limit)
+        payload = await _builders.build_why_no_response_payload(
+            ctx.guild.id,
+            limit=limit,
+        )
         if isinstance(payload, str):
             await ctx.send(payload)
         else:
@@ -150,9 +169,7 @@ class BTD6Cog(commands.Cog):
     @btd6_group.command(name="sources")  # type: ignore[arg-type]
     async def btd6_sources(self, ctx: commands.Context) -> None:
         """List BTD6 source registry rows."""
-        from cogs.btd6._builders import build_sources_payload
-
-        await ctx.send(await build_sources_payload())
+        await ctx.send(await _builders.build_sources_payload())
 
     @btd6_group.command(name="strategies")  # type: ignore[arg-type]
     async def btd6_strategies(self, ctx: commands.Context) -> None:
@@ -160,9 +177,8 @@ class BTD6Cog(commands.Cog):
         if not ctx.guild:
             await ctx.send("This command requires a guild context.")
             return
-        from cogs.btd6._builders import build_strategies_payload
 
-        await ctx.send(await build_strategies_payload(ctx.guild.id))
+        await ctx.send(await _builders.build_strategies_payload(ctx.guild.id))
 
     @btd6_group.command(name="source-health")  # type: ignore[arg-type]
     async def btd6_source_health(
@@ -171,9 +187,7 @@ class BTD6Cog(commands.Cog):
         limit: int = 25,
     ) -> None:
         """Show source registry freshness (PR-D)."""
-        from cogs.btd6._builders import build_source_health_embed
-
-        await ctx.send(embed=await build_source_health_embed(limit=limit))
+        await ctx.send(embed=await _builders.build_source_health_embed(limit=limit))
 
     @btd6_group.command(name="refresh-source")  # type: ignore[arg-type]
     @commands.has_guild_permissions(manage_guild=True)
@@ -188,9 +202,7 @@ class BTD6Cog(commands.Cog):
         sources return one result. Exception detail is suppressed in the
         prefix surface because the embed is posted to the channel.
         """
-        from cogs.btd6._event_helpers import build_refresh_source_payload
-
-        embed = await build_refresh_source_payload(
+        embed = await _event_helpers.build_refresh_source_payload(
             source_key,
             started_by_user_id=ctx.author.id,
             include_exception_detail=False,
@@ -210,16 +222,12 @@ class BTD6Cog(commands.Cog):
         ``entity_key`` is the event's API id (use ``!btd6 live <kind>``
         to discover ids).
         """
-        from cogs.btd6._event_helpers import build_event_payload
-
-        await ctx.send(embed=await build_event_payload(kind, entity_key))
+        await ctx.send(embed=await _event_helpers.build_event_payload(kind, entity_key))
 
     @btd6_group.command(name="latest-data")  # type: ignore[arg-type]
     async def btd6_latest_data(self, ctx: commands.Context) -> None:
         """Show newest fact envelope per entity_kind (PR-D)."""
-        from cogs.btd6._builders import build_latest_data_embed
-
-        await ctx.send(embed=await build_latest_data_embed())
+        await ctx.send(embed=await _builders.build_latest_data_embed())
 
     @btd6_group.command(name="live")  # type: ignore[arg-type]
     async def btd6_live(
@@ -229,9 +237,17 @@ class BTD6Cog(commands.Cog):
         limit: int = 5,
     ) -> None:
         """Show recent live events for ``kind`` (race / boss / ct / odyssey / event)."""
-        from cogs.btd6._builders import build_live_events_embed
+        await ctx.send(embed=await _builders.build_live_events_embed(kind, limit=limit))
 
-        await ctx.send(embed=await build_live_events_embed(kind, limit=limit))
+    @btd6_group.command(name="relic")  # type: ignore[arg-type]
+    async def btd6_relic(self, ctx: commands.Context, *, name: str) -> None:
+        """CT relic effect + current tile (by name / abbrev e.g. SMS / alias)."""
+        await ctx.send(embed=await _builders.build_ct_relic_embed(name))
+
+    @btd6_group.command(name="ct")  # type: ignore[arg-type]
+    async def btd6_ct(self, ctx: commands.Context) -> None:
+        """Browse active Contested Territory events and their relic tiles."""
+        await ctx.send(embed=await _builders.build_ct_browser_embed())
 
     @btd6_group.command(name="leaderboard")  # type: ignore[arg-type]
     async def btd6_leaderboard(
@@ -242,9 +258,9 @@ class BTD6Cog(commands.Cog):
         limit: int = 10,
     ) -> None:
         """Top-N race or boss leaderboard. No event_id = newest active."""
-        from cogs.btd6._builders import build_leaderboard_embed
-
-        await ctx.send(embed=await build_leaderboard_embed(kind, event_id, limit=limit))
+        await ctx.send(
+            embed=await _builders.build_leaderboard_embed(kind, event_id, limit=limit),
+        )
 
     @btd6_group.command(name="grounding")  # type: ignore[arg-type]
     async def btd6_grounding(
@@ -256,9 +272,8 @@ class BTD6Cog(commands.Cog):
         if not ctx.guild:
             await ctx.send("This command requires a guild context.")
             return
-        from cogs.btd6._builders import build_grounding_embed
 
-        payload = await build_grounding_embed(ctx.guild.id, message_id)
+        payload = await _builders.build_grounding_embed(ctx.guild.id, message_id)
         if isinstance(payload, str):
             await ctx.send(payload)
         else:
@@ -271,9 +286,7 @@ class BTD6Cog(commands.Cog):
         limit: int = 10,
     ) -> None:
         """Browse published BTD6 strategies (PR-F)."""
-        from views.btd6.strategy_browse import build_browse_embed
-
-        await ctx.send(embed=await build_browse_embed(limit=limit))
+        await ctx.send(embed=await strategy_browse.build_browse_embed(limit=limit))
 
     @btd6_group.command(name="mine")  # type: ignore[arg-type]
     async def btd6_mine(self, ctx: commands.Context, limit: int = 10) -> None:
@@ -281,10 +294,13 @@ class BTD6Cog(commands.Cog):
         if not ctx.guild:
             await ctx.send("This command requires a guild context.")
             return
-        from views.btd6.strategy_browse import build_mine_embed
 
         await ctx.send(
-            embed=await build_mine_embed(ctx.guild.id, ctx.author.id, limit=limit),
+            embed=await strategy_browse.build_mine_embed(
+                ctx.guild.id,
+                ctx.author.id,
+                limit=limit,
+            ),
         )
 
     @btd6_group.command(name="strategy")  # type: ignore[arg-type]
@@ -294,10 +310,11 @@ class BTD6Cog(commands.Cog):
         strategy_id: int,
     ) -> None:
         """Show one strategy in detail (PR-F)."""
-        from views.btd6.strategy_browse import build_detail_embed
-
         viewer_guild = ctx.guild.id if ctx.guild else None
-        payload = await build_detail_embed(strategy_id, viewer_guild_id=viewer_guild)
+        payload = await strategy_browse.build_detail_embed(
+            strategy_id,
+            viewer_guild_id=viewer_guild,
+        )
         if isinstance(payload, str):
             await ctx.send(payload)
         else:
@@ -310,9 +327,7 @@ class BTD6Cog(commands.Cog):
         strategy_id: int,
     ) -> None:
         """Show the per-strategy audit log (PR-F)."""
-        from views.btd6.strategy_browse import build_audit_embed
-
-        await ctx.send(embed=await build_audit_embed(strategy_id))
+        await ctx.send(embed=await strategy_browse.build_audit_embed(strategy_id))
 
     @btd6_group.command(name="submit")  # type: ignore[arg-type]
     async def btd6_submit(self, ctx: commands.Context) -> None:
@@ -339,9 +354,11 @@ class BTD6Cog(commands.Cog):
         if not ctx.guild:
             await ctx.send("This command requires a guild context.")
             return
-        from cogs.btd6._builders import build_pending_review_payload
 
-        payload = await build_pending_review_payload(ctx.guild.id, limit=limit)
+        payload = await _builders.build_pending_review_payload(
+            ctx.guild.id,
+            limit=limit,
+        )
         if isinstance(payload, str):
             await ctx.send(payload)
             return
@@ -364,10 +381,7 @@ class BTD6Cog(commands.Cog):
 
     @btd6_app_group.command(name="status", description="BTD6 assistant status.")
     async def btd6_status_slash(self, interaction: discord.Interaction) -> None:
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_status_embed()
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(interaction, build_status_embed())
 
     @btd6_app_group.command(
         name="diagnostics",
@@ -401,12 +415,28 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         name: str,
     ) -> None:
-        from cogs.btd6._builders import build_tower_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_tower_embed(name)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(interaction, _builders.build_tower_embed(name))
+
+    @btd6_app_group.command(
+        name="relic",
+        description="Look up a Contested Territory relic's effect and tile.",
+    )
+    async def btd6_relic_slash(
+        self,
+        interaction: discord.Interaction,
+        name: str,
+    ) -> None:
+
+        await self._reply(interaction, _builders.build_ct_relic_embed(name))
+
+    @btd6_app_group.command(
+        name="ct",
+        description="Browse active Contested Territory events and relic tiles.",
+    )
+    async def btd6_ct_slash(self, interaction: discord.Interaction) -> None:
+
+        await self._reply(interaction, _builders.build_ct_browser_embed())
 
     @btd6_app_group.command(name="round", description="Look up a round.")
     async def btd6_round_slash(
@@ -414,9 +444,8 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         number: int,
     ) -> None:
-        from cogs.btd6._builders import build_round_embed
 
-        embed = await build_round_embed(number)
+        embed = await _builders.build_round_embed(number)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
@@ -440,11 +469,10 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         name: str,
     ) -> None:
-        from cogs.btd6._builders import build_hero_embed
 
         if not await safe_defer(interaction, ephemeral=True):
             return
-        embed = await build_hero_embed(name)
+        embed = await _builders.build_hero_embed(name)
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
@@ -462,27 +490,21 @@ class BTD6Cog(commands.Cog):
                 ephemeral=True,
             )
             return
-        from cogs.btd6._builders import build_why_no_response_payload
 
-        payload = await build_why_no_response_payload(
-            interaction.guild.id,
-            limit=limit,
+        await self._reply(
+            interaction,
+            _builders.build_why_no_response_payload(interaction.guild.id, limit=limit),
         )
-        if isinstance(payload, str):
-            await interaction.response.send_message(payload, ephemeral=True)
-        else:
-            await interaction.response.send_message(embed=payload, ephemeral=True)
 
     @btd6_app_group.command(
         name="sources",
         description="List BTD6 source registry rows.",
     )
     async def btd6_sources_slash(self, interaction: discord.Interaction) -> None:
-        from cogs.btd6._builders import build_sources_payload
 
         if not await safe_defer(interaction, ephemeral=True):
             return
-        payload = await build_sources_payload()
+        payload = await _builders.build_sources_payload()
         await safe_followup(interaction, content=payload, ephemeral=True)
 
     @btd6_app_group.command(
@@ -496,11 +518,10 @@ class BTD6Cog(commands.Cog):
                 ephemeral=True,
             )
             return
-        from cogs.btd6._builders import build_strategies_payload
 
         if not await safe_defer(interaction, ephemeral=True):
             return
-        payload = await build_strategies_payload(interaction.guild.id)
+        payload = await _builders.build_strategies_payload(interaction.guild.id)
         await safe_followup(interaction, content=payload, ephemeral=True)
 
     @btd6_app_group.command(
@@ -512,12 +533,8 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         limit: int = 25,
     ) -> None:
-        from cogs.btd6._builders import build_source_health_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_source_health_embed(limit=limit)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(interaction, _builders.build_source_health_embed(limit=limit))
 
     @btd6_app_group.command(
         name="latest-data",
@@ -527,12 +544,8 @@ class BTD6Cog(commands.Cog):
         self,
         interaction: discord.Interaction,
     ) -> None:
-        from cogs.btd6._builders import build_latest_data_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_latest_data_embed()
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(interaction, _builders.build_latest_data_embed())
 
     @btd6_app_group.command(
         name="live",
@@ -544,12 +557,11 @@ class BTD6Cog(commands.Cog):
         kind: str = "race",
         limit: int = 5,
     ) -> None:
-        from cogs.btd6._builders import build_live_events_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_live_events_embed(kind, limit=limit)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(
+            interaction,
+            _builders.build_live_events_embed(kind, limit=limit),
+        )
 
     @btd6_app_group.command(
         name="leaderboard",
@@ -562,12 +574,11 @@ class BTD6Cog(commands.Cog):
         event_id: str | None = None,
         limit: int = 10,
     ) -> None:
-        from cogs.btd6._builders import build_leaderboard_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_leaderboard_embed(kind, event_id, limit=limit)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(
+            interaction,
+            _builders.build_leaderboard_embed(kind, event_id, limit=limit),
+        )
 
     @btd6_app_group.command(
         name="refresh-source",
@@ -579,16 +590,15 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         source_key: str,
     ) -> None:
-        from cogs.btd6._event_helpers import build_refresh_source_payload
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_refresh_source_payload(
-            source_key,
-            started_by_user_id=interaction.user.id,
-            include_exception_detail=True,
+        await self._reply(
+            interaction,
+            _event_helpers.build_refresh_source_payload(
+                source_key,
+                started_by_user_id=interaction.user.id,
+                include_exception_detail=True,
+            ),
         )
-        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="event",
@@ -600,12 +610,11 @@ class BTD6Cog(commands.Cog):
         kind: str,
         entity_key: str,
     ) -> None:
-        from cogs.btd6._event_helpers import build_event_payload
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_event_payload(kind, entity_key)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(
+            interaction,
+            _event_helpers.build_event_payload(kind, entity_key),
+        )
 
     @btd6_app_group.command(
         name="grounding",
@@ -630,11 +639,10 @@ class BTD6Cog(commands.Cog):
                 ephemeral=True,
             )
             return
-        from cogs.btd6._builders import build_grounding_embed
 
         if not await safe_defer(interaction, ephemeral=True):
             return
-        payload = await build_grounding_embed(interaction.guild.id, mid)
+        payload = await _builders.build_grounding_embed(interaction.guild.id, mid)
         if isinstance(payload, str):
             await safe_followup(interaction, content=payload, ephemeral=True)
         else:
@@ -649,12 +657,8 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         limit: int = 10,
     ) -> None:
-        from views.btd6.strategy_browse import build_browse_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_browse_embed(limit=limit)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
+        await self._reply(interaction, strategy_browse.build_browse_embed(limit=limit))
 
     @btd6_app_group.command(
         name="mine",
@@ -671,16 +675,15 @@ class BTD6Cog(commands.Cog):
                 ephemeral=True,
             )
             return
-        from views.btd6.strategy_browse import build_mine_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await build_mine_embed(
-            interaction.guild.id,
-            interaction.user.id,
-            limit=limit,
+        await self._reply(
+            interaction,
+            strategy_browse.build_mine_embed(
+                interaction.guild.id,
+                interaction.user.id,
+                limit=limit,
+            ),
         )
-        await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
         name="strategy",
@@ -691,16 +694,15 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         strategy_id: int,
     ) -> None:
-        from views.btd6.strategy_browse import build_detail_embed
 
-        if not await safe_defer(interaction, ephemeral=True):
-            return
         viewer_guild = interaction.guild.id if interaction.guild else None
-        payload = await build_detail_embed(strategy_id, viewer_guild_id=viewer_guild)
-        if isinstance(payload, str):
-            await safe_followup(interaction, payload, ephemeral=True)
-        else:
-            await safe_followup(interaction, embed=payload, ephemeral=True)
+        await self._reply(
+            interaction,
+            strategy_browse.build_detail_embed(
+                strategy_id,
+                viewer_guild_id=viewer_guild,
+            ),
+        )
 
     @btd6_app_group.command(
         name="strategy-audit",
@@ -711,11 +713,10 @@ class BTD6Cog(commands.Cog):
         interaction: discord.Interaction,
         strategy_id: int,
     ) -> None:
-        from views.btd6.strategy_browse import build_audit_embed
 
         if not await safe_defer(interaction, ephemeral=True):
             return
-        embed = await build_audit_embed(strategy_id)
+        embed = await strategy_browse.build_audit_embed(strategy_id)
         await safe_followup(interaction, embed=embed, ephemeral=True)
 
     @btd6_app_group.command(
@@ -749,11 +750,10 @@ class BTD6Cog(commands.Cog):
                 ephemeral=True,
             )
             return
-        from cogs.btd6._builders import build_pending_review_payload
 
         if not await safe_defer(interaction, ephemeral=True):
             return
-        payload = await build_pending_review_payload(
+        payload = await _builders.build_pending_review_payload(
             interaction.guild.id,
             limit=limit,
         )
@@ -774,8 +774,12 @@ class BTD6Cog(commands.Cog):
         if not await safe_defer(interaction, ephemeral=True):
             return
         embed = await build_btd6_panel_embed()
-        view = BTD6PanelView()
-        await safe_followup(interaction, embed=embed, view=view, ephemeral=True)
+        await safe_followup(
+            interaction,
+            embed=embed,
+            view=BTD6PanelView(),
+            ephemeral=True,
+        )
 
     # ------------------------------------------------------------------
     # Help-menu hook

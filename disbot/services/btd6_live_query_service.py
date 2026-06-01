@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from typing import Any, Literal
 
 from utils.btd6.body_coerce import coerce_body as _coerce_body
+from utils.btd6.ct_tile_geometry import CTTilePosition, decode_tile
 
 logger = logging.getLogger("bot.services.btd6_live_query")
 
@@ -829,14 +830,153 @@ async def get_boss_leaderboard(
     return tuple(rows[:clamped])
 
 
+# ---------------------------------------------------------------------------
+# Contested Territory tiles
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CTTilePlacement:
+    """One CT tile, with its relic (if any) and decoded map position.
+
+    ``relic_name`` is the raw Ninja Kiwi token; ``relic_id`` /
+    ``relic_canonical`` are the matched catalog entry (``None`` when the
+    relic isn't in the catalog or the tile carries no relic).
+    ``position`` is the decoded hex location (``None`` for unparseable
+    codes).
+    """
+
+    ct_id: str
+    tile_id: str
+    tile_type: str | None
+    game_type: str | None
+    relic_name: str | None
+    relic_id: str | None
+    relic_canonical: str | None
+    fetched_at: datetime | None
+    position: CTTilePosition | None
+
+
+def _row_to_ct_placement(row: dict[str, Any]) -> CTTilePlacement | None:
+    body = _coerce_body(row.get("body_json"))
+    tile_id = body.get("tile_id")
+    if not isinstance(tile_id, str) or not tile_id:
+        return None
+    raw_relic = body.get("relic_name")
+    relic_name = raw_relic if isinstance(raw_relic, str) and raw_relic else None
+    relic_id: str | None = None
+    relic_canonical: str | None = None
+    if relic_name is not None:
+        from services import btd6_data_service
+
+        entry = btd6_data_service.get_ct_relic_by_api_name(relic_name)
+        if entry is not None:
+            relic_id = entry.id
+            relic_canonical = entry.canonical
+    ct_id = body.get("ct_id")
+    tile_type = body.get("type")
+    game_type = body.get("game_type")
+    return CTTilePlacement(
+        ct_id=ct_id if isinstance(ct_id, str) else "",
+        tile_id=tile_id,
+        tile_type=tile_type if isinstance(tile_type, str) else None,
+        game_type=game_type if isinstance(game_type, str) else None,
+        relic_name=relic_name,
+        relic_id=relic_id,
+        relic_canonical=relic_canonical,
+        fetched_at=row.get("fetched_at"),
+        position=decode_tile(tile_id),
+    )
+
+
+async def get_ct_tiles(
+    ct_id: str,
+    *,
+    relic: str | None = None,
+    relics_only: bool = False,
+) -> tuple[CTTilePlacement, ...]:
+    """All tiles for one CT event, newest version per tile.
+
+    ``relic`` filters to tiles carrying that relic (matched by catalog
+    id / API name / canonical / alias, or raw ``relic_name`` as a
+    fallback). ``relics_only`` drops non-relic tiles (Banner / Regular /
+    TeamStart …).
+    """
+    from utils.db import btd6_sources as btd6_db
+
+    target_id: str | None = None
+    needle: str | None = None
+    if relic is not None:
+        from services import btd6_data_service
+
+        entry = btd6_data_service.resolve_relic(relic)
+        target_id = entry.id if entry is not None else None
+        needle = relic.strip().lower()
+
+    rows = await btd6_db.list_ct_tiles_for_event(ct_id)
+    out: list[CTTilePlacement] = []
+    for row in rows:
+        placement = _row_to_ct_placement(row)
+        if placement is None:
+            continue
+        if (relics_only or relic is not None) and placement.relic_name is None:
+            continue
+        if relic is not None and not _placement_matches_relic(
+            placement,
+            target_id,
+            needle,
+        ):
+            continue
+        out.append(placement)
+    out.sort(key=lambda p: (p.position.ring if p.position else 99, p.tile_id))
+    return tuple(out)
+
+
+def _placement_matches_relic(
+    placement: CTTilePlacement,
+    target_id: str | None,
+    needle: str | None,
+) -> bool:
+    if target_id is not None and placement.relic_id == target_id:
+        return True
+    if needle:
+        for value in (
+            placement.relic_name,
+            placement.relic_id,
+            placement.relic_canonical,
+        ):
+            if value and value.lower() == needle:
+                return True
+    return False
+
+
+async def find_relic_locations(relic: str) -> tuple[CTTilePlacement, ...]:
+    """Every active-CT tile carrying ``relic``, across all active events.
+
+    ``relic`` accepts a catalog id, API name, canonical name, abbrev or
+    alias. Returns an empty tuple when nothing active carries it.
+    """
+    out: list[CTTilePlacement] = []
+    try:
+        for evt in await get_active_events(("btd6_ct",)):
+            out.extend(await get_ct_tiles(evt.entity_key, relic=relic))
+    except Exception:  # noqa: BLE001 — degrade gracefully
+        logger.exception("ct relic-location scan failed for relic=%s", relic)
+        return ()
+    return tuple(out)
+
+
 __all__ = [
     "ActiveEventHeadline",
     "BroadRestriction",
+    "CTTilePlacement",
     "LeaderboardRow",
     "TowerRestrictionContext",
+    "find_relic_locations",
     "get_active_event_restrictions_for_hero",
     "get_active_event_restrictions_for_tower",
     "get_active_events",
+    "get_ct_tiles",
     "get_all_active_restrictions",
     "get_boss_leaderboard",
     "get_newest_active_boss",

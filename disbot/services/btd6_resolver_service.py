@@ -31,6 +31,7 @@ from services.btd6_data_service import (
     HeroEntry,
     MapEntry,
     ModeEntry,
+    RelicEntry,
     RoundEntry,
     TowerEntry,
     get_dataset,
@@ -56,6 +57,8 @@ class ResolvedIntent:
     modes: tuple[ModeEntry, ...] = ()
     rounds: tuple[RoundEntry, ...] = ()
     bloons: tuple[BloonEntry, ...] = ()
+    # Contested Territory relics named in the text (Camo Trap, SMS, …).
+    ct_relics: tuple[RelicEntry, ...] = ()
     ambiguous_terms: tuple[str, ...] = ()
     candidate_round_numbers: tuple[int, ...] = field(default_factory=tuple)
     # PR-E: live Ninja Kiwi entities (races, bosses, CT, odyssey,
@@ -80,18 +83,29 @@ def _match_terms(
     its owner id. Multi-word aliases are matched as a substring;
     single-word aliases are matched on word boundaries.
     """
+    found, _terms = _match_terms_collect(text, name_aliases)
+    return found, []
+
+
+def _match_terms_collect(
+    text: str,
+    name_aliases: dict[str, str],
+) -> tuple[set[str], list[str]]:
+    """Like :func:`_match_terms` but also returns the matched alias strings.
+
+    The matched surface terms let the caller mask them out of the text
+    (see relic-vs-fixture precedence in :func:`resolve`).
+    """
     text_lower = text.lower()
     tokens = set(_word_iter(text))
     found: set[str] = set()
+    terms: list[str] = []
     for alias, owner_id in name_aliases.items():
-        if " " in alias:
-            # Multi-word alias: substring search.
-            if alias in text_lower:
-                found.add(owner_id)
-        else:
-            if alias in tokens:
-                found.add(owner_id)
-    return found, []
+        hit = (alias in text_lower) if " " in alias else (alias in tokens)
+        if hit:
+            found.add(owner_id)
+            terms.append(alias)
+    return found, terms
 
 
 def _build_alias_map() -> tuple[
@@ -135,6 +149,31 @@ def _build_alias_map() -> tuple[
     return towers, heroes, maps, modes, bloons
 
 
+def _build_relic_alias_map() -> dict[str, str]:
+    """Surface term (canonical / abbrev / alias) → relic id."""
+    relics: dict[str, str] = {}
+    for relic in get_dataset().ct_relics:
+        relics[relic.canonical.lower()] = relic.id
+        if relic.abbrev:
+            relics[relic.abbrev.lower()] = relic.id
+        for alias in relic.aliases:
+            relics[alias.lower()] = relic.id
+    return relics
+
+
+def _mask_terms(text: str, terms: list[str]) -> str:
+    """Blank out ``terms`` (longest first) from ``text``, case-insensitively.
+
+    Used so a matched relic phrase (e.g. ``"camo trap"`` or ``"super
+    monkey storm"``) cannot also trip the nested fixture match (the camo
+    *bloon* / the Super Monkey *tower*).
+    """
+    masked = text
+    for term in sorted(terms, key=len, reverse=True):
+        masked = re.sub(re.escape(term), " ", masked, flags=re.IGNORECASE)
+    return masked
+
+
 def resolve(text: str) -> ResolvedIntent:
     """Resolve free-form ``text`` into a :class:`ResolvedIntent`."""
     if not text or not text.strip():
@@ -143,11 +182,17 @@ def resolve(text: str) -> ResolvedIntent:
     tower_map, hero_map, map_map, mode_map, bloon_map = _build_alias_map()
     dataset = get_dataset()
 
-    tower_ids, _ = _match_terms(text, tower_map)
-    hero_ids, _ = _match_terms(text, hero_map)
-    map_ids, _ = _match_terms(text, map_map)
-    mode_ids, _ = _match_terms(text, mode_map)
-    bloon_ids, _ = _match_terms(text, bloon_map)
+    # Resolve CT relics first, then mask the matched phrases out of the text
+    # used for fixture matching so e.g. "camo trap" / "super monkey storm"
+    # don't also match the camo bloon / Super Monkey tower.
+    relic_ids, relic_terms = _match_terms_collect(text, _build_relic_alias_map())
+    fixture_text = _mask_terms(text, relic_terms) if relic_terms else text
+
+    tower_ids, _ = _match_terms(fixture_text, tower_map)
+    hero_ids, _ = _match_terms(fixture_text, hero_map)
+    map_ids, _ = _match_terms(fixture_text, map_map)
+    mode_ids, _ = _match_terms(fixture_text, mode_map)
+    bloon_ids, _ = _match_terms(fixture_text, bloon_map)
 
     candidate_rounds: list[int] = []
     rounds: list[RoundEntry] = []
@@ -172,6 +217,7 @@ def resolve(text: str) -> ResolvedIntent:
         + len(map_ids)
         + len(mode_ids)
         + len(bloon_ids)
+        + len(relic_ids)
         + len(candidate_rounds)
         + len(live_entities)
     )
@@ -187,6 +233,7 @@ def resolve(text: str) -> ResolvedIntent:
         modes=tuple(m for m in dataset.modes if m.id in mode_ids),
         rounds=tuple(rounds),
         bloons=tuple(b for b in dataset.bloons if b.id in bloon_ids),
+        ct_relics=tuple(r for r in dataset.ct_relics if r.id in relic_ids),
         candidate_round_numbers=tuple(candidate_rounds),
         ambiguous_terms=tuple(ambiguous),
         live_entities=tuple(live_entities),

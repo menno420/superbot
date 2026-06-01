@@ -181,6 +181,7 @@ def test_make_context_handle_round_trips_every_type() -> None:
         "race",
         "boss",
         "ct",
+        "ct_relic",
         "odyssey",
         "event",
         "tower",

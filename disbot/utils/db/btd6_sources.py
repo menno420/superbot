@@ -437,6 +437,40 @@ async def search_facts(
     return [dict(r) for r in rows]
 
 
+async def list_ct_tiles_for_event(
+    ct_id: str,
+    *,
+    limit: int = 256,
+) -> list[dict[str, Any]]:
+    """All ``btd6_ct_tile`` facts for one Contested Territory event.
+
+    Tiles are stored with ``entity_key = "{ct_id}_tile_{tile_id}"`` (see
+    :mod:`services.parsers.ninjakiwi_ct`). A CT map has 169 tiles, and
+    several events can be stored at once, so a plain
+    :func:`search_facts` (which only filters ``fact_type`` / ``entity_kind``
+    and orders by ``fetched_at``) could silently drop tiles. Scoping by
+    the ``entity_key`` prefix returns exactly this event's tiles. The
+    newest version of each tile is kept via ``DISTINCT ON (entity_key)``.
+    """
+    safe_limit = max(1, int(limit))
+    rows = await pool.get().fetch(
+        """
+        SELECT DISTINCT ON (entity_key)
+               id, source_id, fact_type, entity_kind, entity_key,
+               body_json, game_version, fetched_at, validated_at,
+               confidence, version
+        FROM btd6_facts
+        WHERE entity_kind = 'btd6_ct_tile'
+          AND entity_key LIKE $1 || '_tile_%'
+        ORDER BY entity_key, fetched_at DESC, version DESC
+        LIMIT $2
+        """,
+        ct_id,
+        safe_limit,
+    )
+    return [dict(r) for r in rows]
+
+
 async def fetch_facts_for_intent(
     queries: list[tuple[str | None, str, str]],
     *,
