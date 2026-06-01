@@ -311,6 +311,9 @@ def build_paragon_base_embed(stats: Any) -> discord.Embed:
             "\n*ℹ️ Transcribed from the wiki article (no data module yet) — "
             "primary attacks only.*"
         )
+    overview = getattr(stats, "description", "")
+    if overview:
+        header = f"{overview}\n\n{header}"
     embed.description = (
         f"{header}\n{embed.description}" if embed.description else header
     )

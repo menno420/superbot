@@ -254,6 +254,12 @@ Paragons now get the same stat coverage as towers: every stat, every degree.
 - **AI:** `btd6_context_service._render_paragon` appends Degree 1 + 100 headline
   stats; a paragon-name pass grounds a paragon named directly ("Glaive Dominus
   stats") even when its tower isn't named.
+- **Descriptions:** bloonswiki prose is CC-BY-NC-SA, so the per-paragon overviews
+  in `disbot/data/btd6/paragon_descriptions.json` are **paraphrased in our own
+  voice** (how it attacks + its signature behaviour), not copied — kept in a
+  separate file so a stats re-fetch never clobbers them, merged onto
+  `ParagonStats.description`, and shown in the base embed + AI grounding. (Same
+  CC rule as the deliberately-empty tower/hero `description` columns.)
 
 ## Gotchas
 

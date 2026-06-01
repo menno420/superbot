@@ -356,6 +356,12 @@ def _render_paragon(tower_id: str, canonical: str) -> list[str]:
             f"{stats.paragon_cost} on Medium (source: bloonswiki)",
         ),
     ]
+    pstats = btd6_stats_service.get_paragon_stats_by_tower(tower_id)
+    if pstats is not None and pstats.description:
+        # Overview is paraphrased from bloonswiki; the [btd6_paragon] tag + the
+        # cost line above already establish the source, so keep this line lean
+        # (the per-fact cap would otherwise truncate a trailing attribution).
+        lines.append(_cap(f"[btd6_paragon] {name} — {_sanitise(pstats.description)}"))
     lines.extend(_render_paragon_stats(tower_id, name))
     return lines
 

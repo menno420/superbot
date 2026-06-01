@@ -123,6 +123,14 @@ def test_paragon_base_embed_renders_infobox():
     assert embed.fields
 
 
+def test_paragon_base_embed_includes_curated_overview():
+    stats = svc.get_paragon_stats("glaive_dominus")
+    embed = build_paragon_base_embed(stats)
+    # The curated, original-voice overview leads the description.
+    assert "fusing Glaive Lord" in embed.description
+    assert "Paragon (tier 6)" in embed.description
+
+
 def test_paragon_degree_embed_shows_power_and_boss_mult():
     stats = svc.get_paragon_stats("glaive_dominus")
     e1 = build_paragon_degree_embed(stats, 1)

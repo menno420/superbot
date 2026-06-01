@@ -141,6 +141,7 @@ class ParagonStats:
     xp: int | None
     base: dict[str, Any]
     source: str = ""
+    description: str = ""
 
     @property
     def has_combat_stats(self) -> bool:
@@ -221,6 +222,29 @@ def get_hero_stats(hero_id: str) -> HeroStats | None:
     return _HERO_CACHE[hero_id]
 
 
+_PARAGON_DESCRIPTIONS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "btd6" / "paragon_descriptions.json"
+)
+_PARAGON_DESCRIPTIONS: dict[str, str] | None = None
+
+
+def _descriptions() -> dict[str, str]:
+    """Curated, original-voice paragon overviews (paraphrased; cached).
+
+    Kept in a separate committed file so a stats re-fetch never clobbers them.
+    """
+    global _PARAGON_DESCRIPTIONS
+    if _PARAGON_DESCRIPTIONS is None:
+        try:
+            data = json.loads(
+                _PARAGON_DESCRIPTIONS_PATH.read_text(encoding="utf-8"),
+            )
+            _PARAGON_DESCRIPTIONS = dict(data.get("descriptions", {}))
+        except (OSError, ValueError):
+            _PARAGON_DESCRIPTIONS = {}
+    return _PARAGON_DESCRIPTIONS
+
+
 def _load_paragon(paragon_id: str) -> ParagonStats | None:
     path = PARAGON_STATS_ROOT / f"{paragon_id}.json"
     if not path.exists():
@@ -237,6 +261,7 @@ def _load_paragon(paragon_id: str) -> ParagonStats | None:
         xp=data.get("xp"),
         base=data.get("base", {}),
         source=str(data.get("source", "")),
+        description=_descriptions().get(data.get("paragon_id", paragon_id), ""),
     )
 
 
@@ -275,11 +300,12 @@ def get_paragon_stats_by_tower(tower_id: str) -> ParagonStats | None:
 
 def reset_cache() -> None:
     """Test seam: drop the loaded-stats caches."""
-    global _PARAGON_BY_TOWER
+    global _PARAGON_BY_TOWER, _PARAGON_DESCRIPTIONS
     _CACHE.clear()
     _HERO_CACHE.clear()
     _PARAGON_CACHE.clear()
     _PARAGON_BY_TOWER = None
+    _PARAGON_DESCRIPTIONS = None
 
 
 # ---------------------------------------------------------------------------

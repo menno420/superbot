@@ -173,6 +173,23 @@ def test_paragon_name_pass_dedupes_resolved_towers():
     assert ctx._paragon_name_facts("glaive dominus", {"boomerang_monkey"}) == []
 
 
+def test_every_paragon_has_a_curated_description():
+    for pid in svc.list_paragon_ids():
+        stats = svc.get_paragon_stats(pid)
+        assert stats is not None
+        assert stats.description, pid
+        # A real summary, not a stub.
+        assert len(stats.description) > 60, pid
+        assert "Paragon" in stats.description
+
+
+def test_description_surfaces_in_grounding():
+    from services import btd6_context_service as ctx
+
+    lines = ctx._render_paragon("boomerang_monkey", "Boomerang Monkey")
+    assert any("fusing Glaive Lord" in line for line in lines)
+
+
 def test_render_paragon_prose_sourced_labels_origin():
     from services import btd6_context_service as ctx
 
