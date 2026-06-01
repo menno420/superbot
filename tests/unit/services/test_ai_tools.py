@@ -420,6 +420,9 @@ async def test_paragon_calculate_tool_returns_degree(monkeypatch):
         "totems",
     }
     assert out["result"]["paragon"]["id"] == "apex_plasma_master"
+    # Credit travels with the result so the model can append the attribution.
+    assert out["attribution"]["calculator_url"] == "https://paragon-calc.vercel.app/"
+    assert out["attribution"]["author"] == "notausgang0341"
 
 
 async def test_paragon_calculate_tool_missing_tower_is_structured():

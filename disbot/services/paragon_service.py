@@ -49,6 +49,17 @@ logger = logging.getLogger("bot.services.paragon")
 _BASE_URL = os.getenv("PARAGON_API_BASE_URL", "https://paragon-calc.vercel.app")
 _API_KEY = os.getenv("PARAGON_API_KEY", "")
 
+# --- public attribution ------------------------------------------------------
+# The Paragon Calculator web app and the Discord user who built it. The
+# calculator panel (``!paragon`` / the BTD6 hub button) shows a link button +
+# credit, and AI answers that used the paragon tools append the same credit, so
+# a click-through to the live site and author credit travel with every result.
+# Kept here — the service already owns the live-API URL (``_BASE_URL``) and is
+# importable by both ``views/`` and the AI ``services/``.
+CALCULATOR_PUBLIC_URL = "https://paragon-calc.vercel.app/"
+CALCULATOR_AUTHOR_ID = 1407658814668275712
+CALCULATOR_AUTHOR_NAME = "notausgang0341"
+
 _TIMEOUT_SECONDS = 10
 _CACHE_TTL_SECONDS = 60.0
 
@@ -498,6 +509,9 @@ def _reset_for_tests() -> None:
 
 
 __all__ = [
+    "CALCULATOR_AUTHOR_ID",
+    "CALCULATOR_AUTHOR_NAME",
+    "CALCULATOR_PUBLIC_URL",
     "Paragon",
     "ParagonAPIUnavailableError",
     "ParagonInputs",

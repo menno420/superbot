@@ -39,10 +39,20 @@ def _buttons(view: discord.ui.View) -> list[discord.ui.Button]:
 # --- view construction -------------------------------------------------------
 
 
-def test_calculator_view_has_four_selects_and_three_buttons():
+def test_calculator_view_has_four_selects_and_four_buttons():
     view = ParagonCalculatorView(_AUTHOR)
     assert len(_selects(view)) == 4
-    assert len(_buttons(view)) == 3
+    # Calculate, Requirements, ↩ BTD6, and the web-calculator link button.
+    assert len(_buttons(view)) == 4
+
+
+def test_calculator_view_has_web_calculator_link_button():
+    view = ParagonCalculatorView(_AUTHOR)
+    link_buttons = [
+        b for b in _buttons(view) if b.style is discord.ButtonStyle.link
+    ]
+    assert len(link_buttons) == 1
+    assert link_buttons[0].url == "https://paragon-calc.vercel.app/"
 
 
 def test_calculator_view_panel_reference_survives_init():
@@ -81,14 +91,17 @@ def test_tier5_count_clamped_to_mode_limit_on_build():
     assert view.tier5_count == 1
 
 
-def test_requirements_view_has_strategy_select_and_two_buttons():
+def test_requirements_view_has_strategy_select_and_three_buttons():
     view = ParagonRequirementsView(
         _AUTHOR, paragon_id="apex_plasma_master", player_count=1, difficulty="medium"
     )
     selects = _selects(view)
     assert len(selects) == 1
     assert {o.value for o in selects[0].options} == {s.value for s in pm.SolveStrategy}
-    assert len(_buttons(view)) == 2
+    # Enter target, ↩ Calculator, and the web-calculator link button.
+    assert len(_buttons(view)) == 3
+    link_buttons = [b for b in _buttons(view) if b.style is discord.ButtonStyle.link]
+    assert [b.url for b in link_buttons] == ["https://paragon-calc.vercel.app/"]
 
 
 # --- modals (Discord limits) -------------------------------------------------
@@ -175,6 +188,21 @@ def test_calculator_embed_reflects_state():
     embed = build_calculator_embed(view)
     assert "Root of all Nature" in (embed.description or "")
     assert "coop" in (embed.description or "")
+
+
+def test_calculator_embed_carries_web_link_and_author_credit():
+    view = ParagonCalculatorView(_AUTHOR)
+    embed = build_calculator_embed(view)
+    credit = next(f for f in embed.fields if "credit" in f.name.lower())
+    assert "https://paragon-calc.vercel.app/" in credit.value
+    assert "notausgang0341" in credit.value
+
+
+def test_result_embed_carries_web_link_and_author_credit():
+    embed = build_result_embed(_make_result())
+    credit = next(f for f in embed.fields if "credit" in f.name.lower())
+    assert "https://paragon-calc.vercel.app/" in credit.value
+    assert "notausgang0341" in credit.value
 
 
 def test_error_embed_surfaces_valid_towers():
