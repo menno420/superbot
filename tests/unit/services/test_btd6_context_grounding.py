@@ -85,7 +85,8 @@ def test_render_fact_omits_url_fields_even_when_present_in_body():
     assert "https://" not in rendered.replace(
         # the only legitimate URL fragment is the source label itself,
         # but we use a plain domain there (no scheme).
-        "data.ninjakiwi.com", "",
+        "data.ninjakiwi.com",
+        "",
     )
 
 
@@ -273,3 +274,48 @@ async def test_build_caps_renderer_output_at_240_chars(monkeypatch):
     ctx = await btd6_context_service.build("text")
     assert len(ctx.facts) == 1
     assert len(ctx.facts[0]) <= 240
+
+
+# ---------------------------------------------------------------------------
+# build() upgrade grounding — the live failures from #444/#445 wired in
+# ---------------------------------------------------------------------------
+
+
+async def test_build_grounds_upgrade_by_abbreviation_without_tower():
+    # "POD" alone used to return no facts ("I don't have verified data for POD").
+    ctx = await btd6_context_service.build("POD cooldown")
+    blob = "\n".join(ctx.facts)
+    assert "[btd6_upgrade] Prince of Darkness" in blob
+    assert "Wizard Monkey 0-0-5" in blob
+    assert "0.275s cooldown" in blob
+
+
+async def test_build_grounds_upgrade_minion_pierce_detail():
+    ctx = await btd6_context_service.build("Prince of Darkness minion pierce?")
+    blob = "\n".join(ctx.facts)
+    reanimate = next(line for line in ctx.facts if "Reanimate" in line)
+    assert "1 pierce" in reanimate
+    assert "Undead Bloon buff" in blob
+
+
+@pytest.mark.parametrize(
+    ("query", "expected"),
+    [
+        ("BEZ", "Bloon Exclusion Zone"),
+        ("What are the stats for the MAD", "M.A.D"),
+        ("What are PMFC's stats?", "Plasma Monkey Fan Club"),
+        ("Prince of Darkness", "Prince of Darkness"),
+        ("050 dart", "Plasma Monkey Fan Club"),
+    ],
+)
+async def test_build_grounds_reported_upgrade_queries(query, expected):
+    ctx = await btd6_context_service.build(query)
+    assert any(
+        f.startswith("[btd6_upgrade]") and expected in f for f in ctx.facts
+    ), f"{query!r} did not ground {expected!r}: {ctx.facts}"
+
+
+async def test_build_ignores_non_upgrade_text():
+    # A plain greeting must not spuriously ground an upgrade.
+    ctx = await btd6_context_service.build("hello there")
+    assert not any(f.startswith("[btd6_upgrade]") for f in ctx.facts)
