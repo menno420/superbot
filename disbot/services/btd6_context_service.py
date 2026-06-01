@@ -762,11 +762,16 @@ async def _ct_relic_location_lines(intent: Any) -> list[str]:
                 placement.position.describe() if placement.position else "position n/a"
             )
             rel = _relative_time(placement.fetched_at)
+            mode = (
+                f", {_sanitise(placement.game_type)} battle"
+                if placement.game_type
+                else ""
+            )
             out.append(
                 _cap(
                     f"[btd6_ct_tile] {canonical} is on tile {placement.tile_id} "
-                    f"({pos}) in CT event {placement.ct_id}; captured-tile relic "
-                    f"bonus (source: data.ninjakiwi.com, fetched {rel})",
+                    f"({pos}{mode}) in CT event {placement.ct_id}; captured-tile "
+                    f"relic bonus (source: data.ninjakiwi.com, fetched {rel})",
                 ),
             )
             if len(out) >= 8:
@@ -821,10 +826,13 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
             for tile in tiles:
                 canonical = _sanitise(tile.relic_canonical or tile.relic_name or "?")
                 pos = tile.position.describe() if tile.position else "position n/a"
+                mode = (
+                    f" — {_sanitise(tile.game_type)} battle" if tile.game_type else ""
+                )
                 out.append(
                     _cap(
                         f"[btd6_ct_tile] CT {_sanitise(evt.entity_key)}: {canonical} "
-                        f"on tile {_sanitise(tile.tile_id)} ({pos}) "
+                        f"on tile {_sanitise(tile.tile_id)} ({pos}){mode} "
                         f"(source: data.ninjakiwi.com)",
                     ),
                 )
