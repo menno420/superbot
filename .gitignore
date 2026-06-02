@@ -36,6 +36,7 @@ superbot/data/db/*
 # LOGS
 ########################################
 *.log
+*.log.*
 logs/
 log/
 superbot/data/logs/
