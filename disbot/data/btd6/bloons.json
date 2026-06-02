@@ -340,7 +340,10 @@
           "modifiers": []
         }
       ],
-      "properties": [],
+      "properties": [
+        "weak-to-fire-explosion",
+        "detonates"
+      ],
       "rbe": 55,
       "health": 30,
       "layers": 7,
@@ -350,7 +353,7 @@
         "dynamites",
         "dynamite bloon"
       ],
-      "description": ""
+      "description": "Frontier Legends DLC. Below 10 HP it turns unstable and detonates after a 3s countdown, stunning towers in the blast for 6s. Takes +1 damage from fire and explosion attacks."
     },
     {
       "id": "aura",
@@ -385,7 +388,9 @@
           "modifiers": []
         }
       ],
-      "properties": [],
+      "properties": [
+        "speed-aura"
+      ],
       "rbe": 85,
       "health": 40,
       "layers": 6,
@@ -395,7 +400,7 @@
         "auras",
         "aura bloon"
       ],
-      "description": ""
+      "description": "Frontier Legends DLC. Projects an aura (40-unit radius) that gives other Bloons inside it a 1.35x speed boost."
     },
     {
       "id": "glass",
@@ -428,7 +433,9 @@
           ]
         }
       ],
-      "properties": [],
+      "properties": [
+        "reflects-immune-projectiles"
+      ],
       "rbe": 89,
       "health": 20,
       "layers": 9,
@@ -438,7 +445,7 @@
         "glasss",
         "glass bloon"
       ],
-      "description": ""
+      "description": "Frontier Legends DLC. Reflects projectiles of the damage types it is immune to (Energy, Plasma, Acid). Among the fastest Bloons in the game."
     },
     {
       "id": "ceramic",
@@ -489,7 +496,9 @@
         }
       ],
       "properties": [
-        "knockback-immune"
+        "knockback-immune",
+        "movement-impairment-immune",
+        "stuns-attackers"
       ],
       "rbe": 138,
       "health": 100,
@@ -500,7 +509,7 @@
         "retributions",
         "retribution bloon"
       ],
-      "description": ""
+      "description": "Frontier Legends DLC. Every 5 hits it takes, it stuns that attacker for 1.5s; on pop it stuns the finishing tower for 6s. Immune to all movement impairment, like the BAD."
     },
     {
       "id": "ringleader",
@@ -515,7 +524,9 @@
           "modifiers": []
         }
       ],
-      "properties": [],
+      "properties": [
+        "projectile-barrier"
+      ],
       "rbe": 171,
       "health": 30,
       "layers": 9,
@@ -525,7 +536,7 @@
         "ringleaders",
         "ringleader bloon"
       ],
-      "description": ""
+      "description": "Frontier Legends DLC. Projects an 80-HP barrier that blocks shots and cuts their pierce to 0 for sheltered Bloons, which are then speed-capped. Regenerates 6s after breaking."
     },
     {
       "id": "diamond",
@@ -543,6 +554,8 @@
         }
       ],
       "properties": [
+        "damage-capped",
+        "pierce-reduction",
         "knockback-immune"
       ],
       "rbe": 194,
@@ -554,7 +567,8 @@
         "diamonds",
         "diamond bloon"
       ],
-      "description": ""
+      "description": "Frontier Legends DLC. Each projectile that hits it loses 5 pierce. Immune to all movement impairment (slow, blowback, knockback, stun). Pops into 1 Fortified Ceramic Bloon.",
+      "popped_by": "any damage type, but each hit deals only 1 damage — always exactly 80 hits to pop regardless of attack power"
     },
     {
       "id": "moab",
