@@ -179,3 +179,18 @@ PARAGON_API_BASE_URL = os.getenv(
     "https://paragon-calc.vercel.app",
 )
 PARAGON_API_KEY = os.getenv("PARAGON_API_KEY", "")
+
+# ==========================
+# BTD6 deterministic data source (services/btd6_data_service.py)
+# ==========================
+# Where the BTD6 fixture JSON (towers/heroes/maps/modes/rounds, …) is read
+# from. Unset (the default) → the committed files under ``disbot/data/btd6/``.
+# Set to a PUBLIC-READ object-store/CDN base URL (Cloudflare R2 / S3 / GCS) to
+# serve the fixtures from the cloud instead: at startup the bot fetches
+# ``{BTD6_DATA_BASE_URL}/<fixture>.json`` into ``BTD6_DATA_CACHE_DIR`` and reads
+# from that cache (see ``docs/btd6-cloud-data.md``). No secret required for a
+# public bucket. Populate the bucket with ``scripts/upload_btd6_data.py``.
+BTD6_DATA_BASE_URL = os.getenv("BTD6_DATA_BASE_URL", "")
+# Local cache dir for cloud-fetched fixtures. Empty → a temp dir is used
+# (ephemeral; re-warmed each boot).
+BTD6_DATA_CACHE_DIR = os.getenv("BTD6_DATA_CACHE_DIR", "")

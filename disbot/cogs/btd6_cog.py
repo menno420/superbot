@@ -50,7 +50,7 @@ from cogs.btd6._reply import reply_ephemeral
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline, tasks
 from core.runtime.interaction_helpers import safe_defer, safe_followup
-from services import btd6_ai_service, btd6_ingestion_supervisor
+from services import btd6_ai_service, btd6_data_service, btd6_ingestion_supervisor
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 logger = logging.getLogger("bot")
@@ -81,6 +81,21 @@ class BTD6Cog(commands.Cog):
 
         register_schemas()
         message_pipeline.unregister(BTD6_STAGE_NAME)
+
+        # Warm the deterministic-data cache before starting ingestion. This is
+        # a no-op for the local file provider; for the cloud provider it
+        # fetches fixtures into the local cache. If required data is
+        # unreachable with no cache, degrade gracefully — log, skip the
+        # ingestion supervisor (so it doesn't error-loop), and leave the cogs
+        # loaded so the panel still works — rather than crashing the bot.
+        if not await btd6_data_service.warm_provider():
+            logger.warning(
+                "BTD6 data unavailable (%s) — skipping ingestion supervisor; "
+                "BTD6 lookups will be unavailable until data is reachable.",
+                btd6_data_service.data_source_label(),
+            )
+            return
+
         await btd6_ingestion_supervisor.start_supervisor()
 
     async def cog_unload(self) -> None:
