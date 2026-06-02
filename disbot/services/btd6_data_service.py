@@ -655,6 +655,36 @@ def data_source_label() -> str:
     return f"local:{DATA_ROOT}"
 
 
+async def seed_postgres_from_files(root: Path | None = None) -> int:
+    """Upsert every bundled BTD6 data file into ``btd6_data_blobs`` (idempotent).
+
+    Reads the committed files via a ``FileRawProvider`` (independent of whichever
+    backend is *active*) and writes each through ``utils.db.btd6_data``. Returns
+    the number of blobs seeded. Requires the DB pool to be initialised — it is,
+    once the bot is running, so this powers the ``!btd6ops seed-data`` command as
+    well as ``scripts/seed_btd6_data.py``.
+    """
+    import hashlib
+    import json
+
+    from utils.db import btd6_data
+
+    src = FileRawProvider(root) if root is not None else FileRawProvider()
+    seeded = 0
+    for name in src.list_names():
+        if name == "manifest.json":  # bucket artifact, not a fixture
+            continue
+        body = src.load(name)
+        if body is None:
+            continue
+        sha = hashlib.sha256(
+            json.dumps(body, sort_keys=True, ensure_ascii=False).encode("utf-8"),
+        ).hexdigest()
+        await btd6_data.upsert_blob(name, body, sha)
+        seeded += 1
+    return seeded
+
+
 def _load_file(name: str) -> dict[str, Any]:
     raw = _PROVIDER.load(name)
     if raw is None:

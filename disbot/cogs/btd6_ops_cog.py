@@ -26,6 +26,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from cogs.btd6 import _builders
+from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import btd6_ops_readiness_service, btd6_source_mutation
 from utils.db import btd6_sources as btd6_db
 from utils.discord_permissions import is_administrator_member, is_staff_member
@@ -73,6 +74,35 @@ async def _toggle_source(actor: object, source_key: str, *, enabled: bool) -> st
         return f"⚠️ {exc}"
     verb = "enabled" if enabled else "disabled"
     return f"✅ Source `{result.source_key}` {verb}."
+
+
+async def _seed_embed() -> discord.Embed:
+    """Seed the Postgres data store from the bundled files; report the result."""
+    from services import btd6_data_service
+
+    count = await btd6_data_service.seed_postgres_from_files()
+    if count == 0:
+        return discord.Embed(
+            title="🌱 BTD6 data seed",
+            description=(
+                "No bundled data files were found to seed. If the repo data has "
+                "already been removed, re-generate the fixtures first."
+            ),
+            color=discord.Color.orange(),
+        )
+    return discord.Embed(
+        title="🌱 BTD6 data seeded",
+        description=(
+            f"Upserted **{count}** blobs into the `btd6_data_blobs` table.\n\n"
+            "**Next steps:**\n"
+            "1. In Railway → your bot service → **Variables**, add "
+            "`BTD6_DATA_BACKEND` = `postgres` (the service redeploys).\n"
+            "2. Run `!btd6 status` — it should read "
+            "`Data source: postgres (…)`.\n\n"
+            "Safe to re-run any time (it upserts)."
+        ),
+        color=discord.Color.green(),
+    )
 
 
 class BTD6OpsCog(commands.Cog):
@@ -131,6 +161,14 @@ class BTD6OpsCog(commands.Cog):
             await ctx.send(_ADMIN_DENIED)
             return
         await ctx.send(await _toggle_source(ctx.author, source_key, enabled=False))
+
+    @btd6ops.command(name="seed-data")  # type: ignore[arg-type]
+    async def seed_data_prefix(self, ctx: commands.Context) -> None:
+        """Seed the Postgres data store from the bundled files (administrator)."""
+        if not is_administrator_member(ctx.author):
+            await ctx.send(_ADMIN_DENIED)
+            return
+        await ctx.send(embed=await _seed_embed())
 
     # ------------------------------------------------------------------
     # Slash surface — /btd6ops ... (mirrors the prefix surface)
@@ -198,6 +236,20 @@ class BTD6OpsCog(commands.Cog):
             return
         msg = await _toggle_source(interaction.user, source_key, enabled=False)
         await interaction.response.send_message(msg, ephemeral=True)
+
+    @btd6ops_app.command(
+        name="seed-data",
+        description="Seed the Postgres data store from the bundled files (admin).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    async def seed_data_slash(self, interaction: discord.Interaction) -> None:
+        if not is_administrator_member(interaction.user):
+            await interaction.response.send_message(_ADMIN_DENIED, ephemeral=True)
+            return
+        # Reading files + upserting can take a moment — defer first.
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        await safe_followup(interaction, embed=await _seed_embed(), ephemeral=True)
 
 
 async def setup(bot: commands.Bot) -> None:

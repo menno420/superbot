@@ -31,21 +31,26 @@ by repo-relative path (`towers.json`, `stats/dart_monkey.json`, …). At startup
 synchronous loaders then read from that dict (the async DB is never on a hot
 path).
 
-**Setup:**
+**Setup (no terminal needed — recommended):**
 
-1. The `btd6_data_blobs` table is created by migration `054` (runs
-   automatically on boot).
-2. Seed it from a checkout pointed at your deployment DB:
-   ```bash
-   # dry run (no DB):
-   python3.10 scripts/seed_btd6_data.py --dry-run
-   # seed (uses the bot's DSN env vars):
-   python3.10 scripts/seed_btd6_data.py
-   ```
-3. Set `BTD6_DATA_BACKEND=postgres` on Railway and redeploy.
-4. Verify: `!btd6 status` shows `Data source: postgres (<N> blobs)`.
-5. Refresh after a game patch: regenerate the fixtures, re-run the seed script
-   (it upserts).
+1. The `btd6_data_blobs` table is created by migration `054` automatically on
+   boot — nothing to do.
+2. In Discord, as a server **administrator**, run **`!btd6ops seed-data`**. The
+   bot loads its bundled data files into the table and replies with the count +
+   the next step. (Idempotent — safe to re-run, e.g. after a game-data update.)
+3. In **Railway → your bot service → Variables**, add `BTD6_DATA_BACKEND` =
+   `postgres`. Saving redeploys the service.
+4. Run **`!btd6 status`** — it should read `Data source: postgres (<N> blobs)`.
+
+⚠️ Order matters: **seed first** (step 2), *then* flip the variable (step 3). If
+you switch to `postgres` while the table is empty, BTD6 lookups report
+"unavailable" until you seed.
+
+**Alternative (CLI):** from a checkout with the deployment `DATABASE_URL`:
+```bash
+python3.10 scripts/seed_btd6_data.py --dry-run   # preview, no DB
+python3.10 scripts/seed_btd6_data.py             # seed
+```
 
 **Cutover — removing the data from the repo (gated):** once `!btd6 status`
 reads from Postgres and BTD6 lookups work, `git rm -r disbot/data/btd6/`
