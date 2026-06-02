@@ -9,9 +9,10 @@ data**, never from a hallucinated prior. When it lacks a fact it should say so
 (and that "stick to verified data, don't cave to 'you're wrong'" behaviour is
 **intentional** — do not soften it).
 
-> **Data source:** fixtures default to `disbot/data/btd6/` but can be served
-> from a public-read object store by setting `BTD6_DATA_BASE_URL` — see
-> **`docs/btd6-cloud-data.md`**. The read seam is
+> **Data source:** fixtures default to `disbot/data/btd6/` but the backend is
+> swappable via `BTD6_DATA_BACKEND` (`file` / `postgres` / `cloud`) — see
+> **`docs/btd6-data-backends.md`** (Postgres is the recommended production
+> backend; it reuses the DB the bot already depends on). The read seam is
 > `services/btd6_data_provider.py`; everything funnels through
 > `btd6_data_service._load_file`, so the backend swap is invisible to consumers.
 

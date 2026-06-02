@@ -71,6 +71,15 @@ class FileRawProvider:
             return None
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def list_names(self, prefix: str = "") -> tuple[str, ...]:
+        """Repo-relative ``*.json`` names under ``prefix`` (the glob seam)."""
+        if not self._root.is_dir():
+            return ()
+        names = (
+            p.relative_to(self._root).as_posix() for p in self._root.rglob("*.json")
+        )
+        return tuple(sorted(n for n in names if n.startswith(prefix)))
+
 
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
@@ -139,6 +148,11 @@ class CloudRawProvider:
 
     def load(self, name: str) -> dict[str, Any] | None:
         return self._cache.load(name)
+
+    def list_names(self, prefix: str = "") -> tuple[str, ...]:
+        # Lists the warmed cache dir. Note: cloud warm only fetches the
+        # fixtures, so the stats/ tree is not available on the cloud backend.
+        return FileRawProvider(self._cache_dir).list_names(prefix)
 
     async def warm_cache(
         self,
@@ -216,3 +230,74 @@ class CloudRawProvider:
         from services.btd6_fetch_service import fetch_url_bytes
 
         return await fetch_url_bytes(url, timeout=self._timeout)
+
+
+class PostgresRawProvider:
+    """Serve BTD6 fixtures from the ``btd6_data_blobs`` Postgres table.
+
+    Warms the whole blob set into memory with one query at startup — the bot's
+    asyncpg pool + migrations are ready before any cog loads (``bot1.main``
+    calls ``db.init()`` before ``bot.start()``) — then serves *sync* ``load``
+    reads from that dict, so the synchronous ``get_dataset`` / stats loaders
+    never touch the async DB on a hot path.
+
+    Reuses the dependency the bot already hard-requires: no new external
+    service, no new failure mode, no public URL or credential. If the table is
+    unseeded, ``is_available`` reports ``False`` and the caller degrades.
+
+    ``fetch_all`` is an injectable ``async () -> list[(name, body)]`` (tests
+    pass a fake to avoid a real DB); ``None`` uses ``utils.db.btd6_data``.
+    """
+
+    def __init__(
+        self,
+        *,
+        fetch_all: Callable[[], Awaitable[list[tuple[str, Any]]]] | None = None,
+    ) -> None:
+        self._fetch_all = fetch_all
+        self._data: dict[str, Any] = {}
+        self._available = False
+        self._warmed = False
+
+    def is_available(self) -> bool:
+        return self._available
+
+    def source_label(self) -> str:
+        if not self._warmed:
+            return "postgres (not warmed)"
+        if not self._available:
+            return "postgres (unavailable — btd6_data_blobs unseeded?)"
+        return f"postgres ({len(self._data)} blobs)"
+
+    def load(self, name: str) -> dict[str, Any] | None:
+        return self._data.get(name)
+
+    def list_names(self, prefix: str = "") -> tuple[str, ...]:
+        """Stored blob names under ``prefix`` (the file glob's DB equivalent)."""
+        return tuple(sorted(n for n in self._data if n.startswith(prefix)))
+
+    async def warm_cache(
+        self,
+        *,
+        required: Iterable[str] = (),
+        optional: Iterable[str] = (),  # noqa: ARG002 - parity with the seam
+    ) -> bool:
+        required = tuple(required)
+        fetch_all = self._fetch_all
+        if fetch_all is None:
+            from utils.db import btd6_data
+
+            fetch_all = btd6_data.fetch_all_blobs
+        data: dict[str, Any] = {}
+        for name, body in await fetch_all():
+            # Defensive: the jsonb codec yields dicts, but coerce text too.
+            data[name] = body if isinstance(body, (dict, list)) else json.loads(body)
+        self._data = data
+        self._available = all(n in self._data for n in required)
+        self._warmed = True
+        if not self._available:
+            logger.warning(
+                "BTD6 postgres data unavailable: required fixtures missing from "
+                "btd6_data_blobs — seed with scripts/seed_btd6_data.py",
+            )
+        return self._available
