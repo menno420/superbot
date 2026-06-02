@@ -9,6 +9,12 @@ data**, never from a hallucinated prior. When it lacks a fact it should say so
 (and that "stick to verified data, don't cave to 'you're wrong'" behaviour is
 **intentional** — do not soften it).
 
+> **Data source:** fixtures default to `disbot/data/btd6/` but can be served
+> from a public-read object store by setting `BTD6_DATA_BASE_URL` — see
+> **`docs/btd6-cloud-data.md`**. The read seam is
+> `services/btd6_data_provider.py`; everything funnels through
+> `btd6_data_service._load_file`, so the backend swap is invisible to consumers.
+
 ---
 
 ## 1. How a BTD6 answer is produced (the pipeline)
@@ -136,3 +142,30 @@ print('\n'.join(f for f in asyncio.run(c.build('what does the diamond bloon do')
 - The red **"14"** badge in the user's Discord screenshots is the unread-message count, **not** a data count — don't chase it.
 - CT **tile codes** are `[A-F][A-G][A-G]` (+ centre `MRX`, quirk `FAH`); positions are fixed across events, only each tile's type/relic/mode changes weekly. The CT **bracket/group id is per-event** (rotates weekly) — a saved one goes "stale".
 - `btd6_live_query_service` is a **DB-read** layer (no HTTP). On-demand fetches (like the CT bracket) live in domain services (`btd6_ct_team_service`), patterned after `youtube_context_service`.
+
+---
+
+## 9. Live-events display — fixed vs remaining (cog-split PR3)
+
+**Fixed:** the "current race button does nothing" dead-end. In
+`views/btd6/live_events_view.py`, when a kind has no stored events the
+event-select used to offer a `(no events)` option that **silently deferred**
+on click (looked broken). It is now a **disabled** control, and the defensive
+`__none__` path edits in an explicit "no active/recent events" message. The
+list embed already renders a clear empty-state. `build_event_detail_embed` is
+already limit-safe (≤9 fields; 1024-char truncation), so embed overflow is
+**not** the cause of empty detail views.
+
+**Remaining (needs live NK data + a running bot to do safely):**
+- **Active vs old events.** `btd6_live_query_service._is_active_window` is
+  intentionally lenient — it returns `True` when `end_ms` is absent/invalid, so
+  events without a window leak into the "active" list. Tightening it requires
+  knowing the real fact-body shape per kind (does every active fact carry
+  `end_ms`?); changing it blind risks hiding genuinely-active events.
+- **Daily vs custom challenges.** Challenges ingest via the `nk_btd6_challenges`
+  parent source (entity kind `btd6_challenge`, `btd6.challenge_list`, daily
+  cadence). Splitting "daily" from user-made "custom" challenges needs the NK
+  `/btd6/challenges/filter/daily` endpoint wired as a registry source (pattern:
+  enable via `services.btd6_source_mutation` + an idempotent migration) and a
+  filter in `get_active_events` / `build_live_events_embed`. Confirm the
+  endpoint's payload shape against live data before coding.

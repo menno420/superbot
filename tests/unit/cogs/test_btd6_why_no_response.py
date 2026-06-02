@@ -21,7 +21,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from cogs.btd6_cog import BTD6Cog
+from cogs.btd6_strategy_cog import BTD6StrategyCog
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -62,7 +62,7 @@ def _row(*, decision: str, task: str, reason: str = "below_min_level"):
 def test_btd6_cog_has_no_passive_stage_attribute():
     """The cog should no longer carry the retired ``_passive_stage``
     attribute. If this fails, the surgical cleanup regressed."""
-    cog = BTD6Cog(bot=MagicMock())
+    cog = BTD6StrategyCog(bot=MagicMock())
     assert not hasattr(cog, "_passive_stage")
 
 
@@ -86,7 +86,7 @@ async def test_btd6_why_no_response_reads_audit_table(monkeypatch):
 
     monkeypatch.setattr(ai_decision_audit_service, "query", _query)
 
-    cog = BTD6Cog(bot=MagicMock())
+    cog = BTD6StrategyCog(bot=MagicMock())
     ctx = _ctx(guild_id=42)
     await cog.btd6_why_no_response.callback(cog, ctx)
 
@@ -120,7 +120,7 @@ async def test_btd6_why_no_response_filters_to_btd6_task(monkeypatch):
 
     monkeypatch.setattr(ai_decision_audit_service, "query", _query)
 
-    cog = BTD6Cog(bot=MagicMock())
+    cog = BTD6StrategyCog(bot=MagicMock())
     ctx = _ctx(guild_id=42)
     await cog.btd6_why_no_response.callback(cog, ctx)
 
@@ -142,7 +142,7 @@ async def test_btd6_why_no_response_no_rows_message(monkeypatch):
 
     monkeypatch.setattr(ai_decision_audit_service, "query", _query)
 
-    cog = BTD6Cog(bot=MagicMock())
+    cog = BTD6StrategyCog(bot=MagicMock())
     ctx = _ctx(guild_id=42)
     await cog.btd6_why_no_response.callback(cog, ctx)
 
@@ -152,7 +152,7 @@ async def test_btd6_why_no_response_no_rows_message(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_btd6_why_no_response_requires_guild_context():
-    cog = BTD6Cog(bot=MagicMock())
+    cog = BTD6StrategyCog(bot=MagicMock())
     ctx = _ctx(guild_id=None)
     await cog.btd6_why_no_response.callback(cog, ctx)
 
@@ -174,7 +174,7 @@ async def test_btd6_why_no_response_clamps_limit(monkeypatch):
 
     monkeypatch.setattr(ai_decision_audit_service, "query", _query)
 
-    cog = BTD6Cog(bot=MagicMock())
+    cog = BTD6StrategyCog(bot=MagicMock())
     await cog.btd6_why_no_response.callback(cog, _ctx(guild_id=42), limit=0)
     await cog.btd6_why_no_response.callback(cog, _ctx(guild_id=42), limit=9999)
 

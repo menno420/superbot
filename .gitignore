@@ -85,3 +85,11 @@ staticfiles/
 static/
 dist/
 build/
+
+########################################
+# BTD6 cloud-data local cache (BTD6_DATA_CACHE_DIR)
+########################################
+# Defensive: the default cache lives in a temp dir (outside the repo); this
+# only matters if BTD6_DATA_CACHE_DIR is pointed at a repo-local path.
+superbot_btd6_data/
+.btd6_data_cache/

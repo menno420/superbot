@@ -1071,10 +1071,13 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 1. **cog_module**: `disbot/cogs/btd6_cog.py`
 2. **subsystem**: `btd6`
 3. **current_commands**: `!btd6` (group), `!btd6 status`,
-   `!btd6 diagnostics`, `!btd6 ask <question>`, `!btd6 tower <name>`,
-   `!btd6 hero <name>`, `!btd6 round <N>`, `!btd6 test-intent <text>`,
-   `!btd6menu`. Slash equivalents (`/btd6 ...`, `/btd6menu`) mirror
-   the prefix surface.
+   `!btd6 diagnostics`, `!btd6 ask <question>`, `!btd6 test-intent <text>`,
+   `!btd6 ctteam`, `!btd6menu`. Slash equivalents (`/btd6 ...`, `/btd6menu`)
+   mirror the prefix surface. The reference / events / strategy command
+   groups now live in sibling cogs (see `btd6_reference`, `btd6_events`,
+   `btd6_strategy` below) so `btd6_cog.py` stays under the 800-LOC ceiling;
+   the mother cog keeps the panel, core diagnostics, and the schema +
+   ingestion-supervisor lifecycle.
 4. **current_command_groups**: `!btd6` group (user-tier).
 5. **current_command_panel_or_menu**: `!btd6menu` (alias for `!btd6`)
    opens the persistent panel `BTD6PanelView`.
@@ -1131,6 +1134,66 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P1` — Module 4 of the AI/BTD6 plan.
 24. **recommended_PR_phase**: lands with Module 4; settings expand in
     Module 6.
+
+
+### btd6_reference
+
+1. **cog_module**: `disbot/cogs/btd6_reference_cog.py`
+2. **subsystem**: `btd6` (sibling cog — static game-data lookups split out so
+   `btd6_cog.py` stays under the 800-LOC ceiling; class name maps to no
+   SUBSYSTEMS key, so it shares the `btd6` subsystem like `btd6_ops`).
+3. **current_commands**: `!btd6ref tower <name>`, `!btd6ref hero <name>`,
+   `!btd6ref round <N>`, `!btd6ref relic <name>`, `!btd6ref ct`. Slash twins
+   under `/btd6ref`. Also reachable from `BTD6PanelView` (`!btd6`).
+4. **current_command_groups**: `btd6ref` (prefix) / `/btd6ref` (app group).
+5. **current_command_panel_or_menu**: none of its own — surfaced via the
+   shared `BTD6PanelView`.
+6. **help_menu_discoverable**: via the BTD6 panel (the `btd6` subsystem owns
+   `build_help_menu_view`).
+7-22. inherit the `btd6` subsystem's settings / access / mutation posture
+   (deterministic reference reads; no settings, no mutations).
+23. **priority**: `P1` — BTD6 cog-split foundation.
+24. **recommended_PR_phase**: ships with the BTD6 cog split.
+
+
+### btd6_events
+
+1. **cog_module**: `disbot/cogs/btd6_events_cog.py`
+2. **subsystem**: `btd6` (sibling cog — live Ninja Kiwi events / leaderboards /
+   source diagnostics / grounding, split out of `btd6_cog`).
+3. **current_commands**: `!btd6events live`, `!btd6events event`,
+   `!btd6events leaderboard`, `!btd6events sources`,
+   `!btd6events source-health`, `!btd6events latest-data`,
+   `!btd6events refresh-source <key>` (manage-guild), `!btd6events grounding`.
+   Slash twins under `/btd6events`.
+4. **current_command_groups**: `btd6events` (prefix) / `/btd6events` (app group).
+5. **current_command_panel_or_menu**: none of its own — surfaced via
+   `BTD6PanelView`.
+6. **help_menu_discoverable**: via the BTD6 panel.
+7-22. inherit the `btd6` subsystem posture; `refresh-source` writes flow
+   through `services.btd6_source_mutation` (audited), never the cog directly.
+23. **priority**: `P1` — BTD6 cog-split foundation.
+24. **recommended_PR_phase**: ships with the BTD6 cog split.
+
+
+### btd6_strategy
+
+1. **cog_module**: `disbot/cogs/btd6_strategy_cog.py`
+2. **subsystem**: `btd6` (sibling cog — strategy memory browse/submit/review +
+   `why-no-response`, split out of `btd6_cog`).
+3. **current_commands**: `!btd6strat browse`, `!btd6strat mine`,
+   `!btd6strat strategy <id>`, `!btd6strat strategy-audit <id>`,
+   `!btd6strat submit` (slash opens a modal), `!btd6strat pending`
+   (manage-guild), `!btd6strat strategies`, `!btd6strat why-no-response`.
+   Slash twins under `/btd6strat`.
+4. **current_command_groups**: `btd6strat` (prefix) / `/btd6strat` (app group).
+5. **current_command_panel_or_menu**: none of its own — surfaced via
+   `BTD6PanelView`.
+6. **help_menu_discoverable**: via the BTD6 panel.
+7-22. inherit the `btd6` subsystem posture; submissions + review transitions
+   flow through `services.btd6_strategy_mutation` (audited).
+23. **priority**: `P1` — BTD6 cog-split foundation.
+24. **recommended_PR_phase**: ships with the BTD6 cog split.
 
 
 ### paragon

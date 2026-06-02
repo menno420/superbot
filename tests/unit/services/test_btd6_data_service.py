@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
 
+from services.btd6_data_provider import FileRawProvider
 from services.btd6_data_service import (
     DATA_ROOT,
     BTD6DataValidationError,
     get_dataset,
+    get_provider,
     reset_cache,
+    set_provider,
 )
 
 
@@ -21,6 +25,25 @@ def _reset_dataset_cache():
     reset_cache()
     yield
     reset_cache()
+
+
+@contextmanager
+def _use_root(root: Path):
+    """Point the dataset loader at a staged fixture root via the provider seam.
+
+    Replaces the historical ``data_service.DATA_ROOT = bad_root`` patching —
+    reads now funnel through the swappable ``FileRawProvider``, so staging a
+    fixture set means installing a provider rooted at the temp dir and
+    restoring the previous one afterwards.
+    """
+    original = get_provider()
+    set_provider(FileRawProvider(root))
+    reset_cache()
+    try:
+        yield
+    finally:
+        set_provider(original)
+        reset_cache()
 
 
 def test_dataset_loads_with_metadata():
@@ -73,18 +96,10 @@ def test_alias_collision_fails_loudly(tmp_path):
     heroes["heroes"][0]["aliases"].append("dart")  # collides with Dart Monkey
     heroes_path.write_text(json.dumps(heroes), encoding="utf-8")
 
-    # Point the loader at the broken copy by patching DATA_ROOT.
-    import services.btd6_data_service as data_service
-
-    original = data_service.DATA_ROOT
-    data_service.DATA_ROOT = bad_root
-    try:
-        reset_cache()
+    # Point the loader at the broken copy via the provider seam.
+    with _use_root(bad_root):
         with pytest.raises(BTD6DataValidationError, match="alias collision"):
             get_dataset()
-    finally:
-        data_service.DATA_ROOT = original
-        reset_cache()
 
 
 def test_duplicate_canonical_name_fails_loudly(tmp_path):
@@ -105,17 +120,9 @@ def test_duplicate_canonical_name_fails_loudly(tmp_path):
     towers["towers"].append(clone)
     towers_path.write_text(json.dumps(towers), encoding="utf-8")
 
-    import services.btd6_data_service as data_service
-
-    original = data_service.DATA_ROOT
-    data_service.DATA_ROOT = bad_root
-    try:
-        reset_cache()
+    with _use_root(bad_root):
         with pytest.raises(BTD6DataValidationError, match="duplicate"):
             get_dataset()
-    finally:
-        data_service.DATA_ROOT = original
-        reset_cache()
 
 
 def test_missing_required_field_fails_loudly(tmp_path):
@@ -132,17 +139,9 @@ def test_missing_required_field_fails_loudly(tmp_path):
     del towers["towers"][0]["base_cost"]
     towers_path.write_text(json.dumps(towers), encoding="utf-8")
 
-    import services.btd6_data_service as data_service
-
-    original = data_service.DATA_ROOT
-    data_service.DATA_ROOT = bad_root
-    try:
-        reset_cache()
+    with _use_root(bad_root):
         with pytest.raises(BTD6DataValidationError, match="missing required"):
             get_dataset()
-    finally:
-        data_service.DATA_ROOT = original
-        reset_cache()
 
 
 # ---------------------------------------------------------------------------
@@ -168,17 +167,9 @@ def _expect_validation_error(
     *,
     match: str,
 ) -> None:
-    import services.btd6_data_service as data_service
-
-    original = data_service.DATA_ROOT
-    data_service.DATA_ROOT = bad_root
-    try:
-        reset_cache()
+    with _use_root(bad_root):
         with pytest.raises(BTD6DataValidationError, match=match):
             get_dataset()
-    finally:
-        data_service.DATA_ROOT = original
-        reset_cache()
 
 
 def test_invalid_tower_category_fails(tmp_path):
@@ -386,18 +377,10 @@ def test_dataset_loads_when_bloons_fixture_absent(tmp_path):
     staged = _stage_data(tmp_path)
     assert not (staged / "bloons.json").exists()
 
-    import services.btd6_data_service as data_service
-
-    original = data_service.DATA_ROOT
-    data_service.DATA_ROOT = staged
-    try:
-        reset_cache()
+    with _use_root(staged):
         dataset = get_dataset()  # must not raise
         assert dataset.bloons == ()
         assert "bloons" not in dataset.sources
-    finally:
-        data_service.DATA_ROOT = original
-        reset_cache()
 
 
 def test_invalid_bloon_category_fails(tmp_path):

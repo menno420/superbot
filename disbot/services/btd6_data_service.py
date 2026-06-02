@@ -23,12 +23,16 @@ Validation guarantees:
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-DATA_ROOT = Path(__file__).resolve().parents[1] / "data" / "btd6"
+from services.btd6_data_provider import (
+    DATA_ROOT,
+    BTD6RawProvider,
+    CloudRawProvider,
+    FileRawProvider,
+)
 
 
 class BTD6DataValidationError(ValueError):
@@ -526,14 +530,104 @@ def _parse_relic(raw: dict[str, Any]) -> RelicEntry:
 # ---------------------------------------------------------------------------
 
 
+# Raw-bytes seam: the dataset's validation + caching layer reads fixtures
+# through a swappable provider. Defaults to the committed local files; setting
+# ``BTD6_DATA_BASE_URL`` swaps in the network-backed CloudRawProvider (warmed
+# at startup) with no change to the dataset consumers.
+_REQUIRED_FIXTURES = (
+    "towers.json",
+    "heroes.json",
+    "maps.json",
+    "modes.json",
+    "rounds.json",
+)
+_OPTIONAL_FIXTURES = ("bloons.json", "ct_relics.json")
+
+
+def _default_cache_dir() -> Path:
+    import tempfile
+
+    return Path(tempfile.gettempdir()) / "superbot_btd6_data"
+
+
+def _select_provider() -> BTD6RawProvider:
+    """Pick the raw-fixture backend from config (no network I/O at import).
+
+    ``BTD6_DATA_BASE_URL`` set → :class:`CloudRawProvider` (warmed at startup
+    via :func:`warm_provider`); otherwise the committed local files via
+    ``FileRawProvider``. Provider *selection* is cheap; the actual fetch
+    happens later in ``warm_provider`` so import stays side-effect-free.
+    """
+    try:
+        from config import BTD6_DATA_BASE_URL, BTD6_DATA_CACHE_DIR
+    except Exception:  # noqa: BLE001 - config always importable in the app
+        return FileRawProvider()
+    base_url = (BTD6_DATA_BASE_URL or "").strip()
+    if not base_url:
+        return FileRawProvider()
+    cache_dir = (BTD6_DATA_CACHE_DIR or "").strip() or _default_cache_dir()
+    return CloudRawProvider(base_url, cache_dir)
+
+
+_PROVIDER: BTD6RawProvider = _select_provider()
+
+
+def set_provider(provider: BTD6RawProvider) -> None:
+    """Swap the raw-fixture provider (cloud migration + test seam).
+
+    Callers that change the provider should also call :func:`reset_cache`
+    so the next :func:`get_dataset` reloads through the new backend.
+    """
+    global _PROVIDER
+    _PROVIDER = provider
+
+
+def get_provider() -> BTD6RawProvider:
+    """Return the active raw-fixture provider."""
+    return _PROVIDER
+
+
+async def warm_provider() -> bool:
+    """Populate the active provider's cache if it supports warming (cloud).
+
+    Returns ``True`` when the required fixtures are available (always ``True``
+    for the local file provider). Safe no-op when ``BTD6_DATA_BASE_URL`` is
+    unset. Drops the dataset cache so the next :func:`get_dataset` reads the
+    freshly warmed copy.
+    """
+    warm = getattr(_PROVIDER, "warm_cache", None)
+    if warm is None:
+        return True
+    ok = await warm(required=_REQUIRED_FIXTURES, optional=_OPTIONAL_FIXTURES)
+    reset_cache()
+    return bool(ok)
+
+
+def data_available() -> bool:
+    """Whether BTD6 deterministic data can be loaded right now.
+
+    The file provider is always available (the fixtures ship in the repo); the
+    cloud provider reports availability after :func:`warm_provider` runs.
+    """
+    is_available = getattr(_PROVIDER, "is_available", None)
+    return is_available() if is_available is not None else True
+
+
+def data_source_label() -> str:
+    """Human-readable description of the active data source (for status)."""
+    label = getattr(_PROVIDER, "source_label", None)
+    if label is not None:
+        return label()
+    return f"local:{DATA_ROOT}"
+
+
 def _load_file(name: str) -> dict[str, Any]:
-    path = DATA_ROOT / name
-    if not path.exists():
+    raw = _PROVIDER.load(name)
+    if raw is None:
         raise BTD6DataValidationError(
-            f"missing fixture file: {path}",
+            f"missing fixture file: {DATA_ROOT / name}",
         )
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    _require_keys(raw, _REQUIRED_TOP_LEVEL, where=str(path))
+    _require_keys(raw, _REQUIRED_TOP_LEVEL, where=str(DATA_ROOT / name))
     return raw
 
 
@@ -545,10 +639,11 @@ def _load_file_optional(name: str) -> dict[str, Any] | None:
     an empty category instead of aborting the whole dataset load — and keeps
     the staged-fixture tests, which copy only the original five, green.
     """
-    path = DATA_ROOT / name
-    if not path.exists():
+    raw = _PROVIDER.load(name)
+    if raw is None:
         return None
-    return _load_file(name)
+    _require_keys(raw, _REQUIRED_TOP_LEVEL, where=str(DATA_ROOT / name))
+    return raw
 
 
 def _load_dataset() -> BTD6DataSet:

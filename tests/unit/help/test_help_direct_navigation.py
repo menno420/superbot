@@ -56,6 +56,8 @@ def _scan_cog_classes() -> dict[str, dict]:
 
             commands_set: set[str] = set()
             aliases_set: set[str] = set()
+            entrypoint_set: set[str] = set()
+            entrypoint_aliases: set[str] = set()
             methods_set: set[str] = set()
             async_methods: set[str] = set()
             for child in node.body:
@@ -73,7 +75,18 @@ def _scan_cog_classes() -> dict[str, dict]:
                         and func.attr in ("command", "group")
                     ):
                         continue
+                    # Subsystem entry_points are always *top-level* command
+                    # names, registered on ``commands`` / ``app_commands``.
+                    # ``@<group>.command(...)`` registers a subcommand whose
+                    # leaf name must NOT be matched against entry_points —
+                    # otherwise ``!btd6strat mine`` would falsely resolve the
+                    # ``mining`` subsystem to the BTD6 strategy cog.
+                    registrar = (
+                        func.value.id if isinstance(func.value, ast.Name) else None
+                    )
+                    is_top_level = registrar in ("commands", "app_commands")
                     cmd_name: str | None = None
+                    dec_aliases: set[str] = set()
                     for kw in dec.keywords:
                         if kw.arg == "name" and isinstance(kw.value, ast.Constant):
                             cmd_name = kw.value.value
@@ -82,15 +95,21 @@ def _scan_cog_classes() -> dict[str, dict]:
                                 if isinstance(elt, ast.Constant) and isinstance(
                                     elt.value, str
                                 ):
-                                    aliases_set.add(elt.value)
+                                    dec_aliases.add(elt.value)
                     if cmd_name is None:
                         cmd_name = child.name
                     commands_set.add(cmd_name)
+                    aliases_set.update(dec_aliases)
+                    if is_top_level:
+                        entrypoint_set.add(cmd_name)
+                        entrypoint_aliases.update(dec_aliases)
 
             module_name = "cogs." + py.stem
             result[f"{module_name}:{node.name}"] = {
                 "commands": commands_set,
                 "aliases": aliases_set,
+                "entry_point_commands": entrypoint_set,
+                "entry_point_aliases": entrypoint_aliases,
                 "methods": methods_set,
                 "async_methods": async_methods,
             }
@@ -129,11 +148,14 @@ def test_every_visible_subsystem_cog_has_build_help_menu_view():
         if not entry_points:
             continue
 
-        # Find the cog whose commands (or aliases) intersect entry_points.
+        # Find the cog whose *top-level* commands (or aliases) intersect
+        # entry_points. Subcommand leaf names (e.g. ``!btd6strat mine``) are
+        # excluded so they don't falsely resolve another subsystem.
         owning = [
             key
             for key, info in classes.items()
-            if (info["commands"] | info["aliases"]) & entry_points
+            if (info["entry_point_commands"] | info["entry_point_aliases"])
+            & entry_points
         ]
         if not owning:
             unresolved.append(f"{sub_name} (entry_points={sorted(entry_points)})")

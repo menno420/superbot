@@ -221,6 +221,34 @@ async def _http_get(url: str, *, timeout: float) -> tuple[str, int]:
         return text, resp.status
 
 
+async def fetch_url_bytes(url: str, *, timeout: float = 10.0) -> bytes:
+    """Fetch raw bytes from an operator-configured URL (BTD6 cloud data).
+
+    A narrow second chokepoint so the *only* module issuing outbound HTTP stays
+    ``btd6_fetch_service`` (pinned by ``test_no_untrusted_fetches``). Unlike
+    :func:`fetch`, this does **not** consult the source registry — the URL is
+    operator-configured (``BTD6_DATA_BASE_URL``), not user- or registry-driven —
+    so it is used solely by ``CloudRawProvider`` to pull our own fixtures.
+    """
+    try:
+        import aiohttp
+    except Exception as exc:  # pragma: no cover - dependency present in prod
+        raise BTD6FetchHTTPError(
+            "(no_source)",
+            0,
+            f"aiohttp unavailable: {exc}",
+        ) from exc
+    async with (
+        aiohttp.ClientSession() as session,
+        session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as resp,
+    ):
+        data = await resp.read()
+        if resp.status >= 400:
+            detail = data[:200].decode("utf-8", "replace")
+            raise BTD6FetchHTTPError("(http)", resp.status, detail)
+        return data
+
+
 __all__ = [
     "BTD6FetchHTTPError",
     "BTD6FetchRefusedError",
@@ -228,4 +256,5 @@ __all__ = [
     "FetchResult",
     "breaker_status",
     "fetch",
+    "fetch_url_bytes",
 ]

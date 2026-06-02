@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 import discord
 
-from services import btd6_knowledge_service
+from services import btd6_data_service, btd6_knowledge_service
 from services.btd6_resolver_service import resolve
 from utils.btd6.freshness_render import BUCKET_EMOJI as _BUCKET_EMOJI
 from utils.btd6.response_embed import response_to_embed
@@ -146,6 +146,11 @@ async def build_status_embed() -> discord.Embed:
         value=_format_live_facts_value(summaries),
         inline=False,
     )
+    embed.add_field(
+        name="🗄️ Data source",
+        value=f"`{btd6_data_service.data_source_label()}`",
+        inline=False,
+    )
     from utils.btd6.context_footer import append_context_footer
 
     return append_context_footer(embed, "btd6_status:global")
@@ -181,6 +186,14 @@ def build_diagnostics_embed() -> discord.Embed:
         str(r.round_number) for r in btd6_knowledge_service.list_rounds()
     )
     embed.add_field(name="Rounds tracked", value=rounds, inline=False)
+    embed.add_field(
+        name="Data source",
+        value=(
+            f"`{btd6_data_service.data_source_label()}`"
+            f" · available: **{btd6_data_service.data_available()}**"
+        ),
+        inline=False,
+    )
     from utils.btd6.context_footer import append_context_footer
 
     return append_context_footer(embed, "btd6_diagnostics:catalog")

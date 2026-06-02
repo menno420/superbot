@@ -18,7 +18,7 @@ from cogs.btd6._builders import (
     build_latest_data_embed,
     build_refresh_source_embed,
 )
-from cogs.btd6_cog import BTD6Cog
+from cogs.btd6_events_cog import BTD6EventsCog
 from services import btd6_ingestion_service
 
 # ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ async def test_refresh_source_prefix_success_embed(monkeypatch):
         _stub,
     )
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.author.id = 4242
     ctx.send = AsyncMock()
@@ -264,7 +264,7 @@ async def test_refresh_source_prefix_error_result_embed(monkeypatch):
         _stub,
     )
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.author.id = 1
     ctx.send = AsyncMock()
@@ -304,7 +304,7 @@ async def test_refresh_source_prefix_unknown_source(monkeypatch):
     )
     monkeypatch.setattr(btd6_source_registry, "list_all", _list_all)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.author.id = 1
     ctx.send = AsyncMock()
@@ -332,7 +332,7 @@ async def test_refresh_source_prefix_ct_uses_dependencies(monkeypatch):
         _stub,
     )
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.author.id = 1
     ctx.send = AsyncMock()
@@ -360,7 +360,7 @@ async def test_refresh_source_prefix_propagates_user_id(monkeypatch):
         _stub,
     )
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.author.id = 999_111
     ctx.send = AsyncMock()
@@ -380,7 +380,7 @@ async def test_refresh_source_prefix_handles_service_exception_sanitized(monkeyp
         _raises,
     )
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.author.id = 1
     ctx.send = AsyncMock()
@@ -413,7 +413,7 @@ async def test_refresh_source_slash_defers_before_service_call(monkeypatch):
         _stub,
     )
 
-    from cogs import btd6_cog as cog_mod
+    from cogs.btd6 import _reply as cog_mod
 
     async def _defer_capture(interaction, **_kw):
         call_order.append("defer")
@@ -427,7 +427,7 @@ async def test_refresh_source_slash_defers_before_service_call(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
     await cog.btd6_refresh_source_slash.callback(
         cog,
@@ -449,7 +449,7 @@ async def test_refresh_source_slash_includes_exception_detail(monkeypatch):
         _raises,
     )
 
-    from cogs import btd6_cog as cog_mod
+    from cogs.btd6 import _reply as cog_mod
 
     captured: dict = {}
 
@@ -464,7 +464,7 @@ async def test_refresh_source_slash_includes_exception_detail(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
     await cog.btd6_refresh_source_slash.callback(
         cog,
@@ -491,7 +491,7 @@ async def test_refresh_source_slash_handles_service_exception(monkeypatch):
         _raises,
     )
 
-    from cogs import btd6_cog as cog_mod
+    from cogs.btd6 import _reply as cog_mod
 
     followup_calls: list[dict] = []
 
@@ -506,7 +506,7 @@ async def test_refresh_source_slash_handles_service_exception(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
     await cog.btd6_refresh_source_slash.callback(
         cog,
@@ -525,13 +525,13 @@ async def test_refresh_source_slash_handles_service_exception(monkeypatch):
 
 
 def test_refresh_source_prefix_command_has_staff_check():
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     cmd = next(
         c
         for c in cog.walk_commands()
         if c.name == "refresh-source"
         and getattr(c, "parent", None) is not None
-        and c.parent.name == "btd6"
+        and c.parent.name == "btd6events"
     )
     # The has_guild_permissions decorator attaches a check; verify by
     # constructing a non-staff ctx and asserting at least one check is
@@ -540,8 +540,8 @@ def test_refresh_source_prefix_command_has_staff_check():
 
 
 def test_refresh_source_slash_has_default_permissions():
-    cog = BTD6Cog(MagicMock())
-    cmd = next(c for c in cog.btd6_app_group.commands if c.name == "refresh-source")
+    cog = BTD6EventsCog(MagicMock())
+    cmd = next(c for c in cog.btd6events_app_group.commands if c.name == "refresh-source")
     perms = cmd.default_permissions
     assert perms is not None
     assert perms.manage_guild is True

@@ -19,7 +19,7 @@ from cogs.btd6._builders import (
     _ms_to_human,
     build_live_events_embed,
 )
-from cogs.btd6_cog import BTD6Cog
+from cogs.btd6_events_cog import BTD6EventsCog
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -312,7 +312,7 @@ async def test_live_prefix_routes_each_kind_to_entity_kind(
 
     monkeypatch.setattr(btd6_db, "search_facts", _fake)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.send = AsyncMock()
     await cog.btd6_live.callback(cog, ctx, kind_arg, 7)
@@ -330,7 +330,7 @@ async def test_live_prefix_unknown_kind_returns_error_embed(monkeypatch):
 
     monkeypatch.setattr(btd6_db, "search_facts", _fake)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.send = AsyncMock()
     await cog.btd6_live.callback(cog, ctx, "nonsense", 5)
@@ -353,7 +353,7 @@ async def test_live_slash_defers_before_db_call(monkeypatch):
         call_order.append("db")
         return []
 
-    from cogs import btd6_cog as cog_mod
+    from cogs.btd6 import _reply as cog_mod
     from utils.db import btd6_sources as btd6_db
 
     monkeypatch.setattr(btd6_db, "search_facts", _fake)
@@ -369,7 +369,7 @@ async def test_live_slash_defers_before_db_call(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
     await cog.btd6_live_slash.callback(cog, interaction, "race", 3)
 
@@ -378,7 +378,7 @@ async def test_live_slash_defers_before_db_call(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_live_slash_unknown_kind_followups_with_error_embed(monkeypatch):
-    from cogs import btd6_cog as cog_mod
+    from cogs.btd6 import _reply as cog_mod
     from utils.db import btd6_sources as btd6_db
 
     async def _fake(**_kw):
@@ -397,7 +397,7 @@ async def test_live_slash_unknown_kind_followups_with_error_embed(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     interaction = _slash_interaction()
     await cog.btd6_live_slash.callback(cog, interaction, "nonsense", 5)
 

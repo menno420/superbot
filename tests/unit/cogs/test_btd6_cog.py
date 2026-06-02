@@ -31,6 +31,8 @@ from cogs.btd6._embeds import (
     build_towers_embed,
 )
 from cogs.btd6_cog import BTD6Cog
+from cogs.btd6_events_cog import BTD6EventsCog
+from cogs.btd6_strategy_cog import BTD6StrategyCog
 from core.runtime.persistent_views import _REGISTRY as _PERSISTENT_VIEW_REGISTRY
 from services.setup_sections import REGISTRY as SETUP_REGISTRY
 from utils.subsystem_registry import SUBSYSTEMS
@@ -213,59 +215,83 @@ def _slash_interaction():
 
 
 @pytest.mark.parametrize(
-    ("command_attr", "builder_module", "builder_name", "kwargs", "return_kind"),
+    (
+        "cog_class",
+        "command_attr",
+        "builder_module",
+        "builder_name",
+        "kwargs",
+        "return_kind",
+        "defer_module",
+    ),
     [
         (
+            BTD6StrategyCog,
             "btd6_pending_slash",
             "cogs.btd6._builders",
             "build_pending_review_payload",
             {"limit": 5},
             "pending_list",
+            "cogs.btd6_strategy_cog",
         ),
         (
+            BTD6EventsCog,
             "btd6_source_health_slash",
             "cogs.btd6._builders",
             "build_source_health_embed",
             {"limit": 25},
             "embed",
+            "cogs.btd6._reply",
         ),
         (
+            BTD6StrategyCog,
             "btd6_browse_slash",
             "views.btd6.strategy_browse",
             "build_browse_embed",
             {"limit": 10},
             "embed",
+            "cogs.btd6._reply",
         ),
         (
+            BTD6StrategyCog,
             "btd6_mine_slash",
             "views.btd6.strategy_browse",
             "build_mine_embed",
             {"limit": 10},
             "embed",
+            "cogs.btd6._reply",
         ),
         (
+            BTD6StrategyCog,
             "btd6_strategy_slash",
             "views.btd6.strategy_browse",
             "build_detail_embed",
             {"strategy_id": 1},
             "embed",
+            "cogs.btd6._reply",
         ),
     ],
 )
 @pytest.mark.asyncio
 async def test_slash_command_defers_before_db_work(
     monkeypatch,
+    cog_class,
     command_attr,
     builder_module,
     builder_name,
     kwargs,
     return_kind,
+    defer_module,
 ):
     """Every named BTD6 slash command must call ``safe_defer`` before
     invoking its builder so DB latency doesn't trip the interaction
     token. Patch targets are the source modules because the cog uses
     function-body lazy imports — ``from cogs.btd6._builders import
-    build_…`` re-resolves at call time.
+    build_…`` re-resolves at call time. ``defer_module`` is where
+    ``safe_defer``/``safe_followup`` actually resolve for this command:
+    ``cogs.btd6._reply`` for twins routed through ``reply_ephemeral``, or
+    the owning cog module for commands that call ``safe_defer`` directly
+    (e.g. ``pending``'s multi-followup loop).
     """
     import importlib
 
@@ -284,8 +310,8 @@ async def test_slash_command_defers_before_db_work(
 
     monkeypatch.setattr(builder_mod, builder_name, _build_capture)
 
-    # Patch safe_defer / safe_followup at the cog's import site.
-    from cogs import btd6_cog as cog_mod
+    # Patch safe_defer / safe_followup at the command's actual call site.
+    defer_mod = importlib.import_module(defer_module)
 
     async def _defer_capture(interaction, **_kw):
         call_order.append("defer")
@@ -297,10 +323,10 @@ async def test_slash_command_defers_before_db_work(
     async def _followup_capture(*_a, **_kw):
         return None
 
-    monkeypatch.setattr(cog_mod, "safe_defer", _defer_capture)
-    monkeypatch.setattr(cog_mod, "safe_followup", _followup_capture)
+    monkeypatch.setattr(defer_mod, "safe_defer", _defer_capture)
+    monkeypatch.setattr(defer_mod, "safe_followup", _followup_capture)
 
-    cog = BTD6Cog(MagicMock())
+    cog = cog_class(MagicMock())
     interaction = _slash_interaction()
     callback = getattr(cog, command_attr).callback
     await callback(cog, interaction, **kwargs)

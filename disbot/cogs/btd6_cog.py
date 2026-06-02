@@ -1,45 +1,56 @@
-"""BTD6 Assistant cog.
+"""BTD6 Assistant — mother cog.
 
-Provides Bloons Tower Defense 6 lookups, strategy memory, and
-audit-quality diagnostics. Deterministic facts (towers, heroes,
-maps, modes, rounds) come from :mod:`services.btd6_knowledge_service`;
-live entity grounding flows through :mod:`services.btd6_context_service`
-once the resolver matches a live intent.
+Owns the BTD6 subsystem identity (the ``btd6`` / ``btd6menu`` entry points,
+the ``BTD6PanelView`` main menu, and the schema + ingestion-supervisor
+lifecycle). The bulk of the command surface lives in sibling cogs to keep
+this file under the 800-LOC ceiling
+(``tests/unit/invariants/test_cog_size.py``):
+
+* :mod:`cogs.btd6_reference_cog` — ``!btd6ref`` tower/hero/round/relic/ct.
+* :mod:`cogs.btd6_events_cog` — ``!btd6events`` live events, leaderboards,
+  source diagnostics, grounding.
+* :mod:`cogs.btd6_strategy_cog` — ``!btd6strat`` strategy browse/submit/review
+  and ``why-no-response``.
+* :mod:`cogs.btd6_ops_cog` — ``!btd6ops`` ingestion operations.
+
+This cog keeps the panel (bare ``!btd6`` / ``/btd6menu``), the core
+diagnostics (``status`` / ``diagnostics`` / ``ask`` / ``test-intent``), and
+``ctteam`` (a prefix-only admin utility — pasting a long bracket URL is the
+natural prefix surface, so it intentionally has no slash twin).
 
 Architecture:
 
-* The cog never writes to the AI Platform's policy / instruction
-  tables. Natural-language reply eligibility is owned by
-  :mod:`services.ai_natural_language_policy`; this cog reads from
+* The cog never writes to the AI Platform's policy / instruction tables.
+  Natural-language reply eligibility is owned by
+  :mod:`services.ai_natural_language_policy`; BTD6 reads from
   :mod:`services.ai_decision_audit_service` only.
-* All BTD6 facts come from the BTD6 service layer; nothing in the
-  cog invents BTD6 data.
-* Commands match the SuperBot convention (prefix + slash side by
-  side via :mod:`cogs.btd6._builders`; both forms gated as user-tier
-  per the SUBSYSTEMS entry).
+* All BTD6 facts come from the BTD6 service layer; nothing in the cog
+  invents BTD6 data.
+* Commands match the SuperBot convention (prefix + slash side by side via
+  :mod:`cogs.btd6._builders`; both forms gated as user-tier per the
+  SUBSYSTEMS entry).
 """
 
 from __future__ import annotations
 
 import logging
-from collections.abc import Awaitable
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from cogs.btd6 import _builders, _event_helpers
+from cogs.btd6 import _builders
 from cogs.btd6._embeds import (
     build_diagnostics_embed,
     build_status_embed,
     build_test_intent_embed,
 )
 from cogs.btd6._embeds import response_to_embed as _response_to_embed
+from cogs.btd6._reply import reply_ephemeral
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline, tasks
 from core.runtime.interaction_helpers import safe_defer, safe_followup
-from services import btd6_ai_service, btd6_ingestion_supervisor
-from views.btd6 import strategy_browse
+from services import btd6_ai_service, btd6_data_service, btd6_ingestion_supervisor
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 logger = logging.getLogger("bot")
@@ -51,7 +62,7 @@ logger = logging.getLogger("bot")
 
 
 class BTD6Cog(commands.Cog):
-    """Deterministic BTD6 assistant. User-tier; no provider calls."""
+    """Deterministic BTD6 assistant — panel, core diagnostics, lifecycle."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -62,7 +73,7 @@ class BTD6Cog(commands.Cog):
         M2 introduced the central natural-language stage (order=70).
         M5 retired the short-lived ``AI_BTD6_VIA_ROUTER`` env var: the
         BTD6 passive stage stays unregistered unconditionally so the
-        central stage is the only passive replier. ``!btd6
+        central stage is the only passive replier. ``!btd6strat
         why-no-response`` reads the AI decision audit table directly,
         filtered to ``task='btd6.answer'``.
         """
@@ -70,6 +81,21 @@ class BTD6Cog(commands.Cog):
 
         register_schemas()
         message_pipeline.unregister(BTD6_STAGE_NAME)
+
+        # Warm the deterministic-data cache before starting ingestion. This is
+        # a no-op for the local file provider; for the cloud provider it
+        # fetches fixtures into the local cache. If required data is
+        # unreachable with no cache, degrade gracefully — log, skip the
+        # ingestion supervisor (so it doesn't error-loop), and leave the cogs
+        # loaded so the panel still works — rather than crashing the bot.
+        if not await btd6_data_service.warm_provider():
+            logger.warning(
+                "BTD6 data unavailable (%s) — skipping ingestion supervisor; "
+                "BTD6 lookups will be unavailable until data is reachable.",
+                btd6_data_service.data_source_label(),
+            )
+            return
+
         await btd6_ingestion_supervisor.start_supervisor()
 
     async def cog_unload(self) -> None:
@@ -77,23 +103,6 @@ class BTD6Cog(commands.Cog):
         message_pipeline.unregister(BTD6_STAGE_NAME)
         await btd6_ingestion_supervisor.stop_supervisor()
         tasks.cancel_by_prefix("btd6_ingestion:")
-
-    async def _reply(
-        self,
-        interaction: discord.Interaction,
-        payload_coro: Awaitable[discord.Embed | str],
-    ) -> None:
-        """Defer ephemerally, await the builder, then follow up.
-
-        Shared ``safe_defer → build → safe_followup`` backbone for the
-        non-guarded slash twins. ``str`` payloads go as content, embeds
-        as embeds.
-        """
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        payload = await payload_coro
-        key = "content" if isinstance(payload, str) else "embed"
-        await safe_followup(interaction, ephemeral=True, **{key: payload})
 
     # ------------------------------------------------------------------
     # Prefix commands
@@ -118,255 +127,14 @@ class BTD6Cog(commands.Cog):
         response = await btd6_ai_service.answer_question(question)
         await ctx.send(embed=_response_to_embed(response))
 
-    @btd6_group.command(name="tower")  # type: ignore[arg-type]
-    async def btd6_tower(self, ctx: commands.Context, *, name: str) -> None:
-
-        await ctx.send(embed=await _builders.build_tower_embed(name))
-
-    @btd6_group.command(name="hero")  # type: ignore[arg-type]
-    async def btd6_hero(self, ctx: commands.Context, *, name: str) -> None:
-
-        await ctx.send(embed=await _builders.build_hero_embed(name))
-
-    @btd6_group.command(name="round")  # type: ignore[arg-type]
-    async def btd6_round(self, ctx: commands.Context, number: int) -> None:
-
-        await ctx.send(embed=await _builders.build_round_embed(number))
-
     @btd6_group.command(name="test-intent")  # type: ignore[arg-type]
     async def btd6_test_intent(self, ctx: commands.Context, *, text: str) -> None:
         await ctx.send(embed=build_test_intent_embed(text))
-
-    @btd6_group.command(name="why-no-response")  # type: ignore[arg-type]
-    async def btd6_why_no_response(
-        self,
-        ctx: commands.Context,
-        limit: int = 10,
-    ) -> None:
-        """Show the most recent BTD6 denials / skips for this guild.
-
-        Reads the canonical ``ai_decision_audit`` table filtered to
-        ``task='btd6.answer'`` — the legacy in-memory skip buffer of
-        the retired passive stage is no longer consulted. The embed
-        surfaces ``policy_snapshot_hash``, ``instruction_profile_ids``,
-        ``route``, ``provider``, ``model`` and ``reason_code`` so
-        operators can correlate a denial with the policy/profile state
-        that produced it.
-        """
-        if not ctx.guild:
-            await ctx.send("This command requires a guild context.")
-            return
-
-        payload = await _builders.build_why_no_response_payload(
-            ctx.guild.id,
-            limit=limit,
-        )
-        if isinstance(payload, str):
-            await ctx.send(payload)
-        else:
-            await ctx.send(embed=payload)
-
-    @btd6_group.command(name="sources")  # type: ignore[arg-type]
-    async def btd6_sources(self, ctx: commands.Context) -> None:
-        """List BTD6 source registry rows."""
-        await ctx.send(await _builders.build_sources_payload())
-
-    @btd6_group.command(name="strategies")  # type: ignore[arg-type]
-    async def btd6_strategies(self, ctx: commands.Context) -> None:
-        """List strategy memory entries available in this guild."""
-        if not ctx.guild:
-            await ctx.send("This command requires a guild context.")
-            return
-
-        await ctx.send(await _builders.build_strategies_payload(ctx.guild.id))
-
-    @btd6_group.command(name="source-health")  # type: ignore[arg-type]
-    async def btd6_source_health(
-        self,
-        ctx: commands.Context,
-        limit: int = 25,
-    ) -> None:
-        """Show source registry freshness (PR-D)."""
-        await ctx.send(embed=await _builders.build_source_health_embed(limit=limit))
-
-    @btd6_group.command(name="refresh-source")  # type: ignore[arg-type]
-    @commands.has_guild_permissions(manage_guild=True)
-    async def btd6_refresh_source(
-        self,
-        ctx: commands.Context,
-        source_key: str,
-    ) -> None:
-        """Manually refresh one Ninja Kiwi source (staff-only).
-
-        Chains (``nk_btd6_ct``) expand into parent + children; single
-        sources return one result.
-        """
-        embed = await _event_helpers.build_refresh_source_payload(
-            source_key,
-            started_by_user_id=ctx.author.id,
-            include_exception_detail=False,
-        )
-        await ctx.send(embed=embed)
-
-    @btd6_group.command(name="event")  # type: ignore[arg-type]
-    async def btd6_event(
-        self,
-        ctx: commands.Context,
-        kind: str,
-        entity_key: str,
-    ) -> None:
-        """Show one specific BTD6 event with its tower restrictions.
-
-        ``kind`` is race / boss / ct / odyssey / event; ``entity_key`` is the
-        event's API id (use ``!btd6 live <kind>`` to discover ids).
-        """
-        await ctx.send(embed=await _event_helpers.build_event_payload(kind, entity_key))
-
-    @btd6_group.command(name="latest-data")  # type: ignore[arg-type]
-    async def btd6_latest_data(self, ctx: commands.Context) -> None:
-        """Show newest fact envelope per entity_kind (PR-D)."""
-        await ctx.send(embed=await _builders.build_latest_data_embed())
-
-    @btd6_group.command(name="live")  # type: ignore[arg-type]
-    async def btd6_live(
-        self,
-        ctx: commands.Context,
-        kind: str = "race",
-        limit: int = 5,
-    ) -> None:
-        """Show recent live events for ``kind`` (race / boss / ct / odyssey / event)."""
-        await ctx.send(embed=await _builders.build_live_events_embed(kind, limit=limit))
-
-    @btd6_group.command(name="relic")  # type: ignore[arg-type]
-    async def btd6_relic(self, ctx: commands.Context, *, name: str) -> None:
-        """CT relic effect + current tile (by name / abbrev e.g. SMS / alias)."""
-        await ctx.send(embed=await _builders.build_ct_relic_embed(name))
-
-    @btd6_group.command(name="ct")  # type: ignore[arg-type]
-    async def btd6_ct(self, ctx: commands.Context) -> None:
-        """Browse active Contested Territory events and their relic tiles."""
-        await ctx.send(embed=await _builders.build_ct_browser_embed())
-
-    @btd6_group.command(name="leaderboard")  # type: ignore[arg-type]
-    async def btd6_leaderboard(
-        self,
-        ctx: commands.Context,
-        kind: str,
-        event_id: str | None = None,
-        limit: int = 10,
-    ) -> None:
-        """Top-N race or boss leaderboard. No event_id = newest active."""
-        await ctx.send(
-            embed=await _builders.build_leaderboard_embed(kind, event_id, limit=limit),
-        )
 
     @btd6_group.command(name="ctteam")  # type: ignore[arg-type]
     async def btd6_ctteam(self, ctx: commands.Context, *, arg: str = "") -> None:
         """View or set this server's CT team (paste the bracket group id / URL)."""
         await ctx.send(embed=await _builders.handle_ctteam(ctx, arg))
-
-    @btd6_group.command(name="grounding")  # type: ignore[arg-type]
-    async def btd6_grounding(
-        self,
-        ctx: commands.Context,
-        message_id: int,
-    ) -> None:
-        """Show the grounding facts that fed an AI response (PR-D)."""
-        if not ctx.guild:
-            await ctx.send("This command requires a guild context.")
-            return
-
-        payload = await _builders.build_grounding_embed(ctx.guild.id, message_id)
-        if isinstance(payload, str):
-            await ctx.send(payload)
-        else:
-            await ctx.send(embed=payload)
-
-    @btd6_group.command(name="browse")  # type: ignore[arg-type]
-    async def btd6_browse(
-        self,
-        ctx: commands.Context,
-        limit: int = 10,
-    ) -> None:
-        """Browse published BTD6 strategies (PR-F)."""
-        await ctx.send(embed=await strategy_browse.build_browse_embed(limit=limit))
-
-    @btd6_group.command(name="mine")  # type: ignore[arg-type]
-    async def btd6_mine(self, ctx: commands.Context, limit: int = 10) -> None:
-        """List my own strategy submissions in this guild (PR-F)."""
-        if not ctx.guild:
-            await ctx.send("This command requires a guild context.")
-            return
-
-        await ctx.send(
-            embed=await strategy_browse.build_mine_embed(
-                ctx.guild.id,
-                ctx.author.id,
-                limit=limit,
-            ),
-        )
-
-    @btd6_group.command(name="strategy")  # type: ignore[arg-type]
-    async def btd6_strategy_detail(
-        self,
-        ctx: commands.Context,
-        strategy_id: int,
-    ) -> None:
-        """Show one strategy in detail (PR-F)."""
-        viewer_guild = ctx.guild.id if ctx.guild else None
-        payload = await strategy_browse.build_detail_embed(
-            strategy_id,
-            viewer_guild_id=viewer_guild,
-        )
-        if isinstance(payload, str):
-            await ctx.send(payload)
-        else:
-            await ctx.send(embed=payload)
-
-    @btd6_group.command(name="strategy-audit")  # type: ignore[arg-type]
-    async def btd6_strategy_audit(
-        self,
-        ctx: commands.Context,
-        strategy_id: int,
-    ) -> None:
-        """Show the per-strategy audit log (PR-F)."""
-        await ctx.send(embed=await strategy_browse.build_audit_embed(strategy_id))
-
-    @btd6_group.command(name="submit")  # type: ignore[arg-type]
-    async def btd6_submit(self, ctx: commands.Context) -> None:
-        """Open a strategy submission modal (slash-only on Discord).
-
-        Discord modals are slash-only; the prefix command surfaces a
-        friendly message redirecting to /btd6 submit.
-        """
-        await ctx.send(
-            "Strategy submission opens a Discord modal — use `/btd6 submit` "
-            "to fill it in.",
-        )
-
-    @btd6_group.command(name="pending")  # type: ignore[arg-type]
-    @commands.has_guild_permissions(manage_guild=True)
-    async def btd6_pending(self, ctx: commands.Context, limit: int = 5) -> None:
-        """List pending strategy submissions with review buttons.
-
-        Staff-only (manage_guild). Each pending strategy gets its own
-        review embed + button row (Approve guild / Publish / Reject /
-        Unpublish). All actions funnel through
-        ``services.btd6_strategy_mutation``.
-        """
-        if not ctx.guild:
-            await ctx.send("This command requires a guild context.")
-            return
-
-        payload = await _builders.build_pending_review_payload(
-            ctx.guild.id,
-            limit=limit,
-        )
-        if isinstance(payload, str):
-            await ctx.send(payload)
-            return
-        for embed, view in payload:
-            await ctx.send(embed=embed, view=view)
 
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:
@@ -379,12 +147,12 @@ class BTD6Cog(commands.Cog):
 
     btd6_app_group = app_commands.Group(
         name="btd6",
-        description="BTD6 Assistant — deterministic tower/round/mode lookups.",
+        description="BTD6 Assistant — panel, status, ask, diagnostics.",
     )
 
     @btd6_app_group.command(name="status", description="BTD6 assistant status.")
     async def btd6_status_slash(self, interaction: discord.Interaction) -> None:
-        await self._reply(interaction, build_status_embed())
+        await reply_ephemeral(interaction, build_status_embed())
 
     @btd6_app_group.command(
         name="diagnostics",
@@ -412,45 +180,6 @@ class BTD6Cog(commands.Cog):
             ephemeral=True,
         )
 
-    @btd6_app_group.command(name="tower", description="Look up a tower.")
-    async def btd6_tower_slash(
-        self,
-        interaction: discord.Interaction,
-        name: str,
-    ) -> None:
-
-        await self._reply(interaction, _builders.build_tower_embed(name))
-
-    @btd6_app_group.command(
-        name="relic",
-        description="Look up a Contested Territory relic's effect and tile.",
-    )
-    async def btd6_relic_slash(
-        self,
-        interaction: discord.Interaction,
-        name: str,
-    ) -> None:
-
-        await self._reply(interaction, _builders.build_ct_relic_embed(name))
-
-    @btd6_app_group.command(
-        name="ct",
-        description="Browse active Contested Territory events and relic tiles.",
-    )
-    async def btd6_ct_slash(self, interaction: discord.Interaction) -> None:
-
-        await self._reply(interaction, _builders.build_ct_browser_embed())
-
-    @btd6_app_group.command(name="round", description="Look up a round.")
-    async def btd6_round_slash(
-        self,
-        interaction: discord.Interaction,
-        number: int,
-    ) -> None:
-
-        embed = await _builders.build_round_embed(number)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
     @btd6_app_group.command(
         name="test-intent",
         description="Show what the resolver extracted from a message.",
@@ -465,312 +194,6 @@ class BTD6Cog(commands.Cog):
             embed=build_test_intent_embed(text),
             ephemeral=True,
         )
-
-    @btd6_app_group.command(name="hero", description="Look up a hero.")
-    async def btd6_hero_slash(
-        self,
-        interaction: discord.Interaction,
-        name: str,
-    ) -> None:
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await _builders.build_hero_embed(name)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
-
-    @btd6_app_group.command(
-        name="why-no-response",
-        description="Recent BTD6 denials/skips for this guild.",
-    )
-    async def btd6_why_no_response_slash(
-        self,
-        interaction: discord.Interaction,
-        limit: int = 10,
-    ) -> None:
-        if interaction.guild is None:
-            await interaction.response.send_message(
-                "This command requires a guild context.",
-                ephemeral=True,
-            )
-            return
-
-        await self._reply(
-            interaction,
-            _builders.build_why_no_response_payload(interaction.guild.id, limit=limit),
-        )
-
-    @btd6_app_group.command(
-        name="sources",
-        description="List BTD6 source registry rows.",
-    )
-    async def btd6_sources_slash(self, interaction: discord.Interaction) -> None:
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        payload = await _builders.build_sources_payload()
-        await safe_followup(interaction, content=payload, ephemeral=True)
-
-    @btd6_app_group.command(
-        name="strategies",
-        description="List strategy memory entries available in this guild.",
-    )
-    async def btd6_strategies_slash(self, interaction: discord.Interaction) -> None:
-        if interaction.guild is None:
-            await interaction.response.send_message(
-                "This command requires a guild context.",
-                ephemeral=True,
-            )
-            return
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        payload = await _builders.build_strategies_payload(interaction.guild.id)
-        await safe_followup(interaction, content=payload, ephemeral=True)
-
-    @btd6_app_group.command(
-        name="source-health",
-        description="BTD6 source registry freshness overview.",
-    )
-    async def btd6_source_health_slash(
-        self,
-        interaction: discord.Interaction,
-        limit: int = 25,
-    ) -> None:
-
-        await self._reply(interaction, _builders.build_source_health_embed(limit=limit))
-
-    @btd6_app_group.command(
-        name="latest-data",
-        description="Newest fact envelope per entity_kind.",
-    )
-    async def btd6_latest_data_slash(
-        self,
-        interaction: discord.Interaction,
-    ) -> None:
-
-        await self._reply(interaction, _builders.build_latest_data_embed())
-
-    @btd6_app_group.command(
-        name="live",
-        description="Show recent live events (race/boss/ct/odyssey/event).",
-    )
-    async def btd6_live_slash(
-        self,
-        interaction: discord.Interaction,
-        kind: str = "race",
-        limit: int = 5,
-    ) -> None:
-
-        await self._reply(
-            interaction,
-            _builders.build_live_events_embed(kind, limit=limit),
-        )
-
-    @btd6_app_group.command(
-        name="leaderboard",
-        description="Show race / boss leaderboard.",
-    )
-    async def btd6_leaderboard_slash(
-        self,
-        interaction: discord.Interaction,
-        kind: str,
-        event_id: str | None = None,
-        limit: int = 10,
-    ) -> None:
-
-        await self._reply(
-            interaction,
-            _builders.build_leaderboard_embed(kind, event_id, limit=limit),
-        )
-
-    @btd6_app_group.command(
-        name="refresh-source",
-        description="Manually refresh one Ninja Kiwi source (staff-only).",
-    )
-    @app_commands.default_permissions(manage_guild=True)
-    async def btd6_refresh_source_slash(
-        self,
-        interaction: discord.Interaction,
-        source_key: str,
-    ) -> None:
-
-        await self._reply(
-            interaction,
-            _event_helpers.build_refresh_source_payload(
-                source_key,
-                started_by_user_id=interaction.user.id,
-                include_exception_detail=True,
-            ),
-        )
-
-    @btd6_app_group.command(
-        name="event",
-        description="Show one specific BTD6 event with tower restrictions.",
-    )
-    async def btd6_event_slash(
-        self,
-        interaction: discord.Interaction,
-        kind: str,
-        entity_key: str,
-    ) -> None:
-
-        await self._reply(
-            interaction,
-            _event_helpers.build_event_payload(kind, entity_key),
-        )
-
-    @btd6_app_group.command(
-        name="grounding",
-        description="Grounding facts that fed an AI response.",
-    )
-    async def btd6_grounding_slash(
-        self,
-        interaction: discord.Interaction,
-        message_id: str,
-    ) -> None:
-        if interaction.guild is None:
-            await interaction.response.send_message(
-                "This command requires a guild context.",
-                ephemeral=True,
-            )
-            return
-        try:
-            mid = int(message_id)
-        except ValueError:
-            await interaction.response.send_message(
-                f"❌ Invalid message_id: {message_id!r}",
-                ephemeral=True,
-            )
-            return
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        payload = await _builders.build_grounding_embed(interaction.guild.id, mid)
-        if isinstance(payload, str):
-            await safe_followup(interaction, content=payload, ephemeral=True)
-        else:
-            await safe_followup(interaction, embed=payload, ephemeral=True)
-
-    @btd6_app_group.command(
-        name="browse",
-        description="Browse published BTD6 strategies.",
-    )
-    async def btd6_browse_slash(
-        self,
-        interaction: discord.Interaction,
-        limit: int = 10,
-    ) -> None:
-
-        await self._reply(interaction, strategy_browse.build_browse_embed(limit=limit))
-
-    @btd6_app_group.command(
-        name="mine",
-        description="List my own strategy submissions in this guild.",
-    )
-    async def btd6_mine_slash(
-        self,
-        interaction: discord.Interaction,
-        limit: int = 10,
-    ) -> None:
-        if interaction.guild is None:
-            await interaction.response.send_message(
-                "This command requires a guild context.",
-                ephemeral=True,
-            )
-            return
-
-        await self._reply(
-            interaction,
-            strategy_browse.build_mine_embed(
-                interaction.guild.id,
-                interaction.user.id,
-                limit=limit,
-            ),
-        )
-
-    @btd6_app_group.command(
-        name="strategy",
-        description="Show one strategy in detail.",
-    )
-    async def btd6_strategy_slash(
-        self,
-        interaction: discord.Interaction,
-        strategy_id: int,
-    ) -> None:
-
-        viewer_guild = interaction.guild.id if interaction.guild else None
-        await self._reply(
-            interaction,
-            strategy_browse.build_detail_embed(
-                strategy_id,
-                viewer_guild_id=viewer_guild,
-            ),
-        )
-
-    @btd6_app_group.command(
-        name="strategy-audit",
-        description="Per-strategy audit log.",
-    )
-    async def btd6_strategy_audit_slash(
-        self,
-        interaction: discord.Interaction,
-        strategy_id: int,
-    ) -> None:
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        embed = await strategy_browse.build_audit_embed(strategy_id)
-        await safe_followup(interaction, embed=embed, ephemeral=True)
-
-    @btd6_app_group.command(
-        name="submit",
-        description="Submit a BTD6 strategy.",
-    )
-    async def btd6_submit_slash(self, interaction: discord.Interaction) -> None:
-        from views.btd6.strategy_submit import StrategySubmitModal
-
-        if interaction.guild is None:
-            await interaction.response.send_message(
-                "❌ Submitting a strategy requires a guild context.",
-                ephemeral=True,
-            )
-            return
-        await interaction.response.send_modal(StrategySubmitModal())
-
-    @btd6_app_group.command(
-        name="pending",
-        description="List pending strategy submissions (staff-only).",
-    )
-    @app_commands.default_permissions(manage_guild=True)
-    async def btd6_pending_slash(
-        self,
-        interaction: discord.Interaction,
-        limit: int = 5,
-    ) -> None:
-        if interaction.guild is None:
-            await interaction.response.send_message(
-                "This command requires a guild context.",
-                ephemeral=True,
-            )
-            return
-
-        if not await safe_defer(interaction, ephemeral=True):
-            return
-        payload = await _builders.build_pending_review_payload(
-            interaction.guild.id,
-            limit=limit,
-        )
-        if isinstance(payload, str):
-            await safe_followup(interaction, payload, ephemeral=True)
-            return
-        # Uniform: every page goes through safe_followup after one defer.
-        for embed, view in payload:
-            await safe_followup(
-                interaction,
-                embed=embed,
-                view=view,
-                ephemeral=True,
-            )
 
     @app_commands.command(name="btd6menu", description="Open the BTD6 panel.")
     async def btd6menu_slash(self, interaction: discord.Interaction) -> None:

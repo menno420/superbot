@@ -165,30 +165,53 @@ class _EventSelect(discord.ui.Select):
             )
             for item in vm.items
         ]
-        if not options:
+        empty = not options
+        if empty:
+            # Disable rather than offer a dead "(no events)" option that
+            # silently defers on click — that silent defer is what made the
+            # control look broken ("the race button does nothing"). The list
+            # embed already explains the empty state; a greyed-out select
+            # reinforces "nothing to pick" instead of "broken".
             options = [
-                discord.SelectOption(
-                    label="(no events)",
-                    value="__none__",
-                ),
+                discord.SelectOption(label="(no events)", value="__none__"),
             ]
         super().__init__(
-            placeholder="Pick an event to view…",
+            placeholder=(
+                "No events to show — check back when one is live"
+                if empty
+                else "Pick an event to view…"
+            ),
             min_values=1,
             max_values=1,
             options=options[:25],
             row=1,
+            disabled=empty,
         )
         self._kind = vm.kind
 
     async def callback(self, interaction: discord.Interaction) -> None:
         choice = self.values[0]
+        kind = self._kind
         if choice == "__none__":
-            await safe_defer(interaction, ephemeral=True)
+            # Defensive: the select is disabled when empty, but if a stale
+            # component fires, answer explicitly rather than silently defer.
+            if not await safe_defer(interaction, ephemeral=True):
+                return
+            await safe_edit(
+                interaction,
+                embed=discord.Embed(
+                    title=f"🐵 BTD6 — Live {kind.title()} events",
+                    description=(
+                        f"No active or recent `{kind}` events are stored right "
+                        "now. Check back when one is live."
+                    ),
+                    color=discord.Color.gold(),
+                ),
+                view=None,
+            )
             return
         if not await safe_defer(interaction, ephemeral=True):
             return
-        kind = self._kind
         detail_vm = await build_event_detail_view_model(kind, choice)
         if detail_vm is None:
             embed = discord.Embed(
