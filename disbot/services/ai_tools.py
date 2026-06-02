@@ -383,13 +383,17 @@ _BTD6_LOOKUP_SPEC = AIToolSpec(
         "into (the full Red->Blue->Green->Yellow->Pink->...->MOAB-class chain), "
         "and RBE (Red Bloon Equivalent); maps, modes, rounds, current live "
         "events; and Contested Territory (CT) relics and tiles — what each "
-        "relic does and which tile it sits on in the active CT event(s). Call "
+        "relic does and which tile it sits on, the active CT event's full tile "
+        "inventory (the true total and counts by tile type and battle mode), "
+        "and what sits on a specific tile named by its 3-letter code ('DEC', "
+        "'MRX'). Call "
         "this for ANY question about BTD6 before answering — including 'what "
         "does X pop into', 'how much health/RBE does X have', questions about "
         "the basic bloon tiers, any upgrade or paragon-ability question, AND "
         "any CT relic / tile question ('tell me "
         "about the relics', 'what relics are in the current CT', 'where is "
-        "Camo Trap') — even when no specific tower, hero, bloon, or relic is "
+        "Camo Trap', 'list all tiles', 'how many tiles', 'what's on tile DEC') "
+        "— even when no specific tower, hero, bloon, or relic is "
         "named, so the answer is grounded in real data instead of memory. Call "
         "it even if an earlier reply implied the data wasn't available — the "
         "tool's data is updated independently and can change between messages. "
@@ -413,8 +417,16 @@ _BTD6_LOOKUP_SPEC = AIToolSpec(
     min_scope=AIScope.USER,
 )
 
-# Cap returned grounding lines so one chatty entity can't blow the token budget.
-_BTD6_LOOKUP_FACT_CAP = 25
+# Cap returned grounding lines so a runaway query can't blow the token budget.
+# Must clear the grounding's own largest single-query payload, or the tool
+# silently re-truncates what build() already bounded. The biggest legitimate
+# case is a full Contested Territory relic map: btd6_context_service caps it at
+# _CT_TILE_LINE_CAP (48 tile lines) + _CT_RELIC_EFFECT_CAP (24 effect lines),
+# and Pass-2 live-event rows are emitted *before* those tiles — so a cap of 25
+# dropped a 24-relic listing to ~19 once a handful of live events ate the
+# budget. Sit above 48+24 plus live-event preamble; each line is itself capped
+# at 240 chars, so even the maximum payload stays within a sane token budget.
+_BTD6_LOOKUP_FACT_CAP = 80
 
 
 async def _btd6_lookup(arguments: dict[str, Any]) -> dict[str, Any]:

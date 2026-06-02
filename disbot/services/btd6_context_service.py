@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import logging
 import re
+from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -916,27 +918,158 @@ def _mentions_ct_topic(intent: Any) -> bool:
     return False
 
 
-# CT relic listing bounds. The relic catalog has 24 entries
-# (btd6_data_service.list_ct_relics) and a CT map places at most one tile per
-# relic, so a full active map is ~24 relic tiles. Bound the broad live listing
-# generously above that — enough for even two concurrently-active CT events —
-# so a real full map is never truncated (the prior cap of 14 silently dropped
-# 10 of 24 relics). The static catalog fallback below already lists every relic
-# uncapped, so a complete live listing is consistent.
+# CT tile listing bounds. A CT map is 169 tiles, of which ~24 carry relics and
+# the rest are plain battle / banner tiles. We list every relic tile in full
+# (bounded generously above 24 so even two concurrently-active CT events are
+# never truncated) but summarise the plain tiles as counts rather than 145
+# individual lines, so a "list all tiles" answer stays readable.
 _CT_TILE_LINE_CAP = 48
 _CT_RELIC_EFFECT_CAP = 24
+# A specific tile named by its code is a focused lookup; bound it so a message
+# that happens to contain many tile-code-shaped tokens can't flood the prompt.
+_CT_SPECIFIC_TILE_CAP = 8
+
+# A 3-letter CT tile code (e.g. "DEC", "MRX", "FAH"). Deliberately liberal — a
+# candidate is only grounded when it also equals a real tile id in the live
+# event, so ordinary 3-letter words ("all", "you") drop out at that
+# intersection rather than via a brittle structural rule that would also miss
+# any Ninja Kiwi code quirk.
+_TILE_CODE_RE = re.compile(r"\b[A-Za-z]{3}\b")
+
+
+def _tile_codes_in_text(text: str) -> set[str]:
+    """Upper-cased 3-letter tokens from ``text`` that might be tile codes."""
+    return {m.group(0).upper() for m in _TILE_CODE_RE.finditer(text or "")}
+
+
+def _humanize_label(value: str) -> str:
+    """Split a CamelCase API token for display: ``LeastCash`` -> ``Least Cash``."""
+    return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", value).strip()
+
+
+def _ct_tile_breakdown_lines(ct_id: str, tiles: Sequence[Any]) -> list[str]:
+    """Two ``[btd6_ct_map]`` lines: total tile count, by type and by battle mode.
+
+    A CT map is 169 tiles but only ~24 carry relics; the rest are plain
+    battle / banner tiles. Grounding the real inventory lets the model answer
+    "how many tiles" / "list all tiles" from the true total and stop implying
+    the lookup is truncating once it has returned the complete relic set.
+    """
+    if not tiles:
+        return []
+    by_type: Counter[str] = Counter()
+    by_mode: Counter[str] = Counter()
+    fetched = None
+    for tile in tiles:
+        by_type[_humanize_label(str(getattr(tile, "tile_type", None) or "Other"))] += 1
+        mode = getattr(tile, "game_type", None)
+        if mode:
+            by_mode[_humanize_label(str(mode))] += 1
+        fetched = fetched or getattr(tile, "fetched_at", None)
+
+    def _counts(counter: Counter[str]) -> str:
+        return ", ".join(
+            f"{n} {label}"
+            for label, n in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))
+        )
+
+    cid = _sanitise(ct_id)
+    out = [
+        _cap(
+            f"[btd6_ct_map] CT {cid}: {sum(by_type.values())} tiles total — "
+            f"{_counts(by_type)} (source: data.ninjakiwi.com, "
+            f"fetched {_relative_time(fetched)})",
+        ),
+    ]
+    if by_mode:
+        out.append(
+            _cap(
+                f"[btd6_ct_map] CT {cid}: battle modes — {_counts(by_mode)} "
+                f"(source: data.ninjakiwi.com)",
+            ),
+        )
+    return out
+
+
+def _render_ct_tile_full(ct_id: str, tile: Any) -> str:
+    """A ``[btd6_ct_tile]`` line for one tile of *any* type (specific lookup)."""
+    pos = (
+        tile.position.describe() if getattr(tile, "position", None) else "position n/a"
+    )
+    ttype = _humanize_label(str(getattr(tile, "tile_type", None) or "tile"))
+    relic = _sanitise(
+        getattr(tile, "relic_canonical", None)
+        or getattr(tile, "relic_name", None)
+        or "",
+    )
+    carries = f" carrying {relic}" if relic else ""
+    mode = getattr(tile, "game_type", None)
+    mode_bit = f" — {_humanize_label(_sanitise(str(mode)))} battle" if mode else ""
+    return _cap(
+        f"[btd6_ct_tile] CT {_sanitise(ct_id)}: tile {_sanitise(tile.tile_id)} "
+        f"({pos}) — {ttype}{carries}{mode_bit} (source: data.ninjakiwi.com)",
+    )
+
+
+def _specific_tile_lines(
+    ct_id: str,
+    tiles: Sequence[Any],
+    wanted_codes: set[str],
+) -> list[str]:
+    """Detailed lines for tiles whose code the query named.
+
+    Matches any tile type (relic or plain) but only when the code equals a
+    real tile id, so a 3-letter word that isn't a tile grounds nothing.
+    """
+    if not wanted_codes:
+        return []
+    out: list[str] = []
+    for tile in tiles:
+        if str(getattr(tile, "tile_id", "")) in wanted_codes:
+            out.append(_render_ct_tile_full(ct_id, tile))
+            if len(out) >= _CT_SPECIFIC_TILE_CAP:
+                break
+    return out
+
+
+def _relic_tile_lines(
+    ct_id: str,
+    tiles: Sequence[Any],
+    seen_relics: list[str],
+) -> list[str]:
+    """One ``[btd6_ct_tile]`` line per relic tile; records distinct relic ids."""
+    out: list[str] = []
+    cid = _sanitise(ct_id)
+    for tile in tiles:
+        if getattr(tile, "relic_name", None) is None:
+            continue
+        canonical = _sanitise(tile.relic_canonical or tile.relic_name or "?")
+        pos = tile.position.describe() if tile.position else "position n/a"
+        mode = f" — {_sanitise(tile.game_type)} battle" if tile.game_type else ""
+        out.append(
+            _cap(
+                f"[btd6_ct_tile] CT {cid}: {canonical} "
+                f"on tile {_sanitise(tile.tile_id)} ({pos}){mode} "
+                f"(source: data.ninjakiwi.com)",
+            ),
+        )
+        if tile.relic_id and tile.relic_id not in seen_relics:
+            seen_relics.append(tile.relic_id)
+        if len(out) >= _CT_TILE_LINE_CAP:
+            break
+    return out
 
 
 async def _ct_active_tile_lines(intent: Any) -> list[str]:
-    """Relic→tile map for the active CT on a *general* CT relic/tile question.
+    """Active-CT tile inventory for a *general* CT relic/tile question.
 
-    When a specific relic is named, :func:`_ct_relic_location_lines` gives
-    the targeted answer, so this broad listing is skipped to avoid
-    duplication. Otherwise it lists the relic tiles of the newest active CT
-    event(s) — exactly the "tiles and relics" breakdown the model is
-    missing — plus the effect of each distinct relic found. Bounded by the
-    relic catalog size so a full active map (~24 relics) lists completely
-    without flooding the prompt.
+    When a specific relic is named, :func:`_ct_relic_location_lines` gives the
+    targeted answer, so this broad listing is skipped to avoid duplication.
+    Otherwise it grounds, for the newest active CT event(s): the true tile
+    inventory (total + per-type / per-mode counts), every relic tile in full,
+    the effect of each distinct relic found, and a detailed line for any
+    specific tile the query named by code. Each part is bounded so even a full
+    169-tile map cannot flood the prompt.
     """
     if getattr(intent, "ct_relics", ()):  # specific relic handled elsewhere
         return []
@@ -947,6 +1080,7 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
 
     out: list[str] = []
     seen_relics: list[str] = []
+    wanted_codes = _tile_codes_in_text(getattr(intent, "raw_text", "") or "")
     # Live tile placements — guarded so a DB outage falls through to the
     # static catalog below rather than aborting the whole CT answer.
     try:
@@ -954,26 +1088,12 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
 
         events = await btd6_live.get_active_events(("btd6_ct",))
         for evt in events[:2]:
-            tiles = await btd6_live.get_ct_tiles(evt.entity_key, relics_only=True)
-            for tile in tiles:
-                canonical = _sanitise(tile.relic_canonical or tile.relic_name or "?")
-                pos = tile.position.describe() if tile.position else "position n/a"
-                mode = (
-                    f" — {_sanitise(tile.game_type)} battle" if tile.game_type else ""
-                )
-                out.append(
-                    _cap(
-                        f"[btd6_ct_tile] CT {_sanitise(evt.entity_key)}: {canonical} "
-                        f"on tile {_sanitise(tile.tile_id)} ({pos}){mode} "
-                        f"(source: data.ninjakiwi.com)",
-                    ),
-                )
-                if tile.relic_id and tile.relic_id not in seen_relics:
-                    seen_relics.append(tile.relic_id)
-                if len(out) >= _CT_TILE_LINE_CAP:
-                    break
-            if len(out) >= _CT_TILE_LINE_CAP:
-                break
+            tiles = await btd6_live.get_ct_tiles(evt.entity_key)
+            if not tiles:
+                continue
+            out.extend(_ct_tile_breakdown_lines(evt.entity_key, tiles))
+            out.extend(_specific_tile_lines(evt.entity_key, tiles, wanted_codes))
+            out.extend(_relic_tile_lines(evt.entity_key, tiles, seen_relics))
     except Exception as exc:  # noqa: BLE001 — degrade to the static catalog
         logger.debug("btd6_context_service: ct live tiles unavailable (%s)", exc)
 
