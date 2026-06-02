@@ -184,8 +184,10 @@ def test_happy_path_round_trips_through_runtime_loader(importer, tmp_path, monke
         (fake_root / filename).write_text((real_data / filename).read_text())
 
     from services import btd6_data_service
+    from services.btd6_data_provider import FileRawProvider
 
-    monkeypatch.setattr(btd6_data_service, "DATA_ROOT", fake_root)
+    # Reads funnel through the swappable provider; point it at the staged root.
+    monkeypatch.setattr(btd6_data_service, "_PROVIDER", FileRawProvider(fake_root))
     btd6_data_service.reset_cache()
     try:
         dataset = btd6_data_service.get_dataset()

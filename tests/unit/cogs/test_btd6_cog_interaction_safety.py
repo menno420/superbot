@@ -14,7 +14,16 @@ from pathlib import Path
 
 import pytest
 
-_COG_PATH = Path(__file__).resolve().parents[3] / "disbot" / "cogs" / "btd6_cog.py"
+_DISBOT_COGS = Path(__file__).resolve().parents[3] / "disbot" / "cogs"
+
+# The BTD6 slash surface is split across the mother cog + sibling cogs; a
+# handler may live in any of them, so the AST scan sweeps all four.
+_COG_PATHS = (
+    _DISBOT_COGS / "btd6_cog.py",
+    _DISBOT_COGS / "btd6_reference_cog.py",
+    _DISBOT_COGS / "btd6_events_cog.py",
+    _DISBOT_COGS / "btd6_strategy_cog.py",
+)
 
 # Handlers that previously did async DB/service work before the first
 # response. ``btd6_diagnostics_slash`` and ``btd6_test_intent_slash``
@@ -32,11 +41,14 @@ _HANDLERS_REQUIRING_SAFE_DEFER = (
 
 
 def _load_function_node(name: str) -> ast.AsyncFunctionDef:
-    tree = ast.parse(_COG_PATH.read_text())
-    for node in ast.walk(tree):
-        if isinstance(node, ast.AsyncFunctionDef) and node.name == name:
-            return node
-    raise AssertionError(f"handler {name} not found in {_COG_PATH}")
+    for path in _COG_PATHS:
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.AsyncFunctionDef) and node.name == name:
+                return node
+    raise AssertionError(
+        f"handler {name} not found in {[p.name for p in _COG_PATHS]}",
+    )
 
 
 def _is_safe_defer_call(expr: ast.expr) -> bool:

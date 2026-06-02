@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, MagicMock
 import discord
 import pytest
 
-from cogs.btd6_cog import BTD6Cog
+from cogs.btd6_events_cog import BTD6EventsCog
 
 
 def _index_row(entity_kind: str, entity_key: str, name: str | None = None) -> dict:
@@ -73,7 +73,7 @@ async def test_prefix_event_command_renders_index_only(monkeypatch):
 
     monkeypatch.setattr(btd6_db, "get_latest_fact", _fact)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.send = AsyncMock()
 
@@ -105,7 +105,7 @@ async def test_prefix_event_command_renders_tower_restrictions(monkeypatch):
 
     monkeypatch.setattr(btd6_db, "get_latest_fact", _fact)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.send = AsyncMock()
 
@@ -128,7 +128,7 @@ async def test_prefix_event_command_empty_state(monkeypatch):
 
     monkeypatch.setattr(btd6_db, "get_latest_fact", _fact)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     ctx = MagicMock()
     ctx.send = AsyncMock()
 
@@ -150,7 +150,7 @@ async def test_prefix_event_command_empty_state(monkeypatch):
 async def test_slash_event_command_defers_before_db_calls(monkeypatch):
     call_order: list[str] = []
 
-    from cogs import btd6_cog as cog_mod
+    from cogs.btd6 import _reply as cog_mod
     from utils.db import btd6_sources as btd6_db
 
     async def _fact(fact_type, entity_kind, entity_key):
@@ -170,7 +170,7 @@ async def test_slash_event_command_defers_before_db_calls(monkeypatch):
     monkeypatch.setattr(cog_mod, "safe_defer", _defer)
     monkeypatch.setattr(cog_mod, "safe_followup", _followup)
 
-    cog = BTD6Cog(MagicMock())
+    cog = BTD6EventsCog(MagicMock())
     interaction = MagicMock()
     interaction.response.is_done = lambda: False
 

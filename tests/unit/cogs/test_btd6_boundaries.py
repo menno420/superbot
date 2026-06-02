@@ -27,9 +27,13 @@ from views.btd6.panel import build_btd6_panel_embed
 
 _DISBOT_ROOT = Path(__file__).resolve().parents[3] / "disbot"
 
-# Module paths owned by BTD6.
+# Module paths owned by BTD6. The command surface is split across the mother
+# cog and sibling cogs, so the boundary scans must cover all of them.
 _BTD6_PATHS = [
     _DISBOT_ROOT / "cogs" / "btd6_cog.py",
+    _DISBOT_ROOT / "cogs" / "btd6_reference_cog.py",
+    _DISBOT_ROOT / "cogs" / "btd6_events_cog.py",
+    _DISBOT_ROOT / "cogs" / "btd6_strategy_cog.py",
     _DISBOT_ROOT / "cogs" / "btd6",
     _DISBOT_ROOT / "views" / "btd6",
     _DISBOT_ROOT / "services",  # filtered below
@@ -157,17 +161,32 @@ def _expected_parity_names() -> set[str]:
 
 
 def test_btd6_prefix_and_slash_commands_have_parity():
-    cog = BTD6Cog(bot=type("Bot", (), {})())
+    # The surface is split across the mother cog + sibling cogs; aggregate
+    # every cog's commands so the full expected set must still exist across
+    # the split (no command silently lost in the move).
+    from cogs.btd6_events_cog import BTD6EventsCog
+    from cogs.btd6_reference_cog import BTD6ReferenceCog
+    from cogs.btd6_strategy_cog import BTD6StrategyCog
+
+    def _bot():
+        return type("Bot", (), {})()
+
+    cog_instances = [
+        BTD6Cog(bot=_bot()),
+        BTD6ReferenceCog(bot=_bot()),
+        BTD6EventsCog(bot=_bot()),
+        BTD6StrategyCog(bot=_bot()),
+    ]
 
     prefix_names: set[str] = set()
-    for cmd in cog.walk_commands():
-        # Only consider commands inside the btd6 group.
-        if getattr(cmd, "parent", None) is not None and cmd.parent.name == "btd6":
-            prefix_names.add(cmd.name)
-
-    # The slash group lives on the cog as a class attribute.
-    slash_group = cog.btd6_app_group
-    slash_names = {c.name for c in slash_group.commands}
+    slash_names: set[str] = set()
+    for cog in cog_instances:
+        prefix_names.update(c.name for c in cog.walk_commands())
+        slash_names.update(
+            c.name
+            for c in cog.walk_app_commands()
+            if isinstance(c, discord.app_commands.Command)
+        )
 
     expected = _expected_parity_names()
     missing_prefix = expected - prefix_names

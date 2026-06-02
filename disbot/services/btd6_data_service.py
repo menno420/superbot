@@ -23,12 +23,14 @@ Validation guarantees:
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
-DATA_ROOT = Path(__file__).resolve().parents[1] / "data" / "btd6"
+from services.btd6_data_provider import (
+    DATA_ROOT,
+    BTD6RawProvider,
+    FileRawProvider,
+)
 
 
 class BTD6DataValidationError(ValueError):
@@ -526,14 +528,35 @@ def _parse_relic(raw: dict[str, Any]) -> RelicEntry:
 # ---------------------------------------------------------------------------
 
 
+# Raw-bytes seam: the dataset's validation + caching layer reads fixtures
+# through a swappable provider. Defaults to the committed local files; the
+# cloud-storage migration swaps in a network-backed provider via
+# :func:`set_provider` with no change to the dataset consumers.
+_PROVIDER: BTD6RawProvider = FileRawProvider()
+
+
+def set_provider(provider: BTD6RawProvider) -> None:
+    """Swap the raw-fixture provider (cloud migration + test seam).
+
+    Callers that change the provider should also call :func:`reset_cache`
+    so the next :func:`get_dataset` reloads through the new backend.
+    """
+    global _PROVIDER
+    _PROVIDER = provider
+
+
+def get_provider() -> BTD6RawProvider:
+    """Return the active raw-fixture provider."""
+    return _PROVIDER
+
+
 def _load_file(name: str) -> dict[str, Any]:
-    path = DATA_ROOT / name
-    if not path.exists():
+    raw = _PROVIDER.load(name)
+    if raw is None:
         raise BTD6DataValidationError(
-            f"missing fixture file: {path}",
+            f"missing fixture file: {DATA_ROOT / name}",
         )
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    _require_keys(raw, _REQUIRED_TOP_LEVEL, where=str(path))
+    _require_keys(raw, _REQUIRED_TOP_LEVEL, where=str(DATA_ROOT / name))
     return raw
 
 
@@ -545,10 +568,11 @@ def _load_file_optional(name: str) -> dict[str, Any] | None:
     an empty category instead of aborting the whole dataset load — and keeps
     the staged-fixture tests, which copy only the original five, green.
     """
-    path = DATA_ROOT / name
-    if not path.exists():
+    raw = _PROVIDER.load(name)
+    if raw is None:
         return None
-    return _load_file(name)
+    _require_keys(raw, _REQUIRED_TOP_LEVEL, where=str(DATA_ROOT / name))
+    return raw
 
 
 def _load_dataset() -> BTD6DataSet:
