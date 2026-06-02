@@ -343,6 +343,147 @@ def get_paragon_stats_by_tower(tower_id: str) -> ParagonStats | None:
     return get_paragon_stats(paragon_id) if paragon_id else None
 
 
+@dataclass(frozen=True)
+class ParagonDegreeStats:
+    """A paragon's headline stats computed at one degree.
+
+    Damage / pierce / cooldown describe the MAIN attack (``attacks[0]``).
+    ``main_dps`` is that attack alone; ``total_dps`` sums every damaging attack
+    (so a multi-attack paragon isn't understated) — note total_dps assumes all
+    attacks engage the target, so it can overstate against a single non-MOAB.
+    """
+
+    paragon_id: str
+    canonical: str
+    tower_canonical: str
+    degree: int
+    damage: float
+    pierce: float
+    cooldown: float
+    main_dps: float
+    total_dps: float
+    attack_count: int
+    boss_multiplier: float
+    power: int
+
+
+def attack_summary(
+    attacks: list,
+    degree: int | None = None,
+) -> tuple[float, float, float, float, float, int] | None:
+    """``(main_dmg, main_pierce, main_cooldown, main_dps, total_dps, n)`` or None.
+
+    Each damaging attack contributes its highest-damage projectile. With
+    ``degree`` the paragon scaling is applied (cooldown sqrt-curve, damage/pierce
+    per-degree); without it, base values (towers). ``total_dps`` sums all
+    attacks' damage/cooldown; the main fields describe ``attacks[0]``.
+    """
+    rows: list[tuple[float, float, float]] = []
+    for attack in attacks or []:
+        rate = attack.get("rate")
+        if not isinstance(rate, (int, float)) or rate <= 0:
+            continue
+        main = max(
+            attack.get("projectiles") or [],
+            key=lambda p: p.get("damage") or 0,
+            default=None,
+        )
+        if main is None:
+            continue
+        damage = main.get("damage")
+        if not isinstance(damage, (int, float)) or damage <= 0:
+            continue
+        pierce = main.get("pierce")
+        pierce_val = float(pierce) if isinstance(pierce, (int, float)) else 0.0
+        rows.append((float(damage), float(rate), pierce_val))
+    if not rows:
+        return None
+
+    def _scaled(damage: float, rate: float) -> tuple[float, float]:
+        if degree is None:
+            return damage, rate
+        return (
+            paragon_degrees.scale_damage(damage, degree),
+            paragon_degrees.scale_cooldown(rate, degree),
+        )
+
+    total_dps = 0.0
+    for damage, rate, _ in rows:
+        sd, sr = _scaled(damage, rate)
+        total_dps += sd / sr if sr else 0.0
+    m_damage, m_rate, m_pierce = rows[0]
+    sd, sr = _scaled(m_damage, m_rate)
+    s_pierce = (
+        paragon_degrees.scale_pierce(m_pierce, degree)
+        if degree is not None
+        else m_pierce
+    )
+    return (sd, s_pierce, sr, sd / sr if sr else 0.0, total_dps, len(rows))
+
+
+def paragon_stats_at_degree(paragon_id: str, degree: int) -> ParagonDegreeStats | None:
+    """Exact stats for a paragon at ``degree`` (1-100), main + total DPS.
+
+    Applies the wiki's non-linear degree formulas (:mod:`utils.btd6.paragon_degrees`)
+    rather than interpolating: cooldown is a square-root curve, damage/pierce rise
+    ~1%/degree then jump to ~2x base at degree 100. None if no computable attack.
+    """
+    pstats = get_paragon_stats(paragon_id)
+    if pstats is None:
+        return None
+    deg = max(1, min(paragon_degrees.MAX_DEGREE, int(degree)))
+    summary = attack_summary(pstats.base.get("attacks") or [], deg)
+    if summary is None:
+        return None
+    damage, pierce, cooldown, main_dps, total_dps, count = summary
+    return ParagonDegreeStats(
+        paragon_id=pstats.paragon_id,
+        canonical=pstats.canonical,
+        tower_canonical=pstats.tower_canonical,
+        degree=deg,
+        damage=round(damage, 1),
+        pierce=round(pierce, 1),
+        cooldown=round(cooldown, 4),
+        main_dps=round(main_dps, 1),
+        total_dps=round(total_dps, 1),
+        attack_count=count,
+        boss_multiplier=paragon_degrees.boss_multiplier(deg),
+        power=paragon_degrees.power_for_degree(deg),
+    )
+
+
+def degree_for_target_dps(paragon_id: str, target_dps: float) -> int | None:
+    """Lowest degree (1-100) whose TOTAL DPS (all attacks) reaches ``target_dps``.
+
+    None if it never reaches it (even at degree 100) or has no attack.
+    """
+    for deg in range(1, paragon_degrees.MAX_DEGREE + 1):
+        stats = paragon_stats_at_degree(paragon_id, deg)
+        if stats is not None and stats.total_dps >= target_dps:
+            return deg
+    return None
+
+
+def resolve_paragon(query: str) -> str | None:
+    """Resolve free-form ``query`` (a paragon name, or its tower) to a paragon id."""
+    text = (query or "").lower()
+    if not text.strip():
+        return None
+    for paragon_id in list_paragon_ids():
+        pstats = get_paragon_stats(paragon_id)
+        if pstats and pstats.canonical and pstats.canonical.lower() in text:
+            return paragon_id
+    # Fall back to tower resolution ('ace', 'Monkey Ace', aliases) -> its paragon.
+    from services import btd6_resolver_service
+
+    intent = btd6_resolver_service.resolve(query)
+    for tower in getattr(intent, "towers", ()) or ():
+        paragon_id = _paragon_index().get(getattr(tower, "id", ""))
+        if paragon_id:
+            return paragon_id
+    return None
+
+
 def reset_cache() -> None:
     """Test seam: drop the loaded-stats caches."""
     global _PARAGON_BY_TOWER, _PARAGON_DESCRIPTIONS, _PARAGON_ABILITIES
@@ -461,13 +602,18 @@ __all__ = [
     "HeroStats",
     "NormalStats",
     "ParagonAbility",
+    "ParagonDegreeStats",
     "ParagonStats",
     "TowerStats",
+    "attack_summary",
+    "degree_for_target_dps",
     "get_hero_stats",
     "get_paragon_stats",
     "get_paragon_stats_by_tower",
     "get_tower_stats",
     "list_paragon_ids",
     "normal_stats",
+    "paragon_stats_at_degree",
     "reset_cache",
+    "resolve_paragon",
 ]

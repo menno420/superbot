@@ -7,13 +7,12 @@ Derived at runtime from the committed data in :mod:`services.btd6_data_service`
 and :mod:`services.btd6_stats_service`. Read-only, no DB. Backs the
 ``btd6_superlative_lookup`` AI tool.
 
-**DPS here is single-target DPS of the main attack** = main projectile damage ÷
-attack cooldown. It deliberately ignores pierce, extra attacks, abilities,
-buffs, and MOAB bonuses, so it is a comparable headline number, not a full
-damage-output model (a high-pierce AoE paragon ranks low on it — rank by
-``*_pierce`` for that). Paragon combat stats are taken at degree 1 (base
-values); the degree scaling is shared across paragons, so the ranking is stable
-with degree. Tower combat stats are the base (0-0-0) tier.
+**DPS here is total single-target DPS** — the sum over every damaging attack of
+its main projectile's damage ÷ cooldown. It assumes all attacks engage the
+target (so it can overstate vs a single non-MOAB), and ignores pierce / AoE /
+abilities / MOAB bonuses; rank by ``*_pierce`` for crowd-clear. Paragon combat
+stats are taken at degree 1 (base); damage / pierce describe the main attack.
+Tower combat stats are the base (0-0-0) tier.
 """
 
 from __future__ import annotations
@@ -57,11 +56,6 @@ class SuperlativeHit:
     def cost(self) -> int:
         """Back-compat accessor for the cost metrics (value is a dollar amount)."""
         return int(self.value)
-
-
-def _num(value: float) -> str:
-    """Compact number — drop a trailing ``.0`` but keep real decimals."""
-    return str(int(value)) if float(value).is_integer() else f"{value:g}"
 
 
 # ---------------------------------------------------------------------------
@@ -128,51 +122,33 @@ def _paragon_cost_rows() -> list[SuperlativeHit]:
 # ---------------------------------------------------------------------------
 
 
-def _main_attack(attacks: list) -> tuple[float, float, float] | None:
-    """(damage, cooldown, pierce) of the main attack's top projectile, or None.
-
-    The main attack is ``attacks[0]`` (matching the headline view); within it the
-    highest-damage projectile is the representative hit.
-    """
-    if not attacks:
-        return None
-    attack = attacks[0]
-    rate = attack.get("rate")
-    if not isinstance(rate, (int, float)) or rate <= 0:
-        return None
-    projectiles = attack.get("projectiles") or []
-    main = max(projectiles, key=lambda p: p.get("damage") or 0, default=None)
-    if main is None:
-        return None
-    damage = main.get("damage")
-    if not isinstance(damage, (int, float)) or damage <= 0:
-        return None
-    pierce = main.get("pierce")
-    pierce_val = float(pierce) if isinstance(pierce, (int, float)) else 0.0
-    return float(damage), float(rate), pierce_val
-
-
 def _combat_hit(
     metric: str,
     *,
+    dps: float | None,
+    n_attacks: int,
     damage: float | None,
-    cooldown: float | None,
     pierce: float | None,
     attack_range: float | None,
     what: str,
     tower_id: str,
     context: str,
 ) -> SuperlativeHit | None:
-    """Build a ranked hit for a combat ``metric``, or None if the field is absent."""
+    """Build a ranked hit for a combat ``metric``, or None if the field is absent.
+
+    DPS ranks **total** DPS (all attacks summed); damage / pierce describe the
+    main attack; range is the tier's range.
+    """
     if metric in (PARAGON_DPS, TOWER_DPS):
-        if not damage or not cooldown:
+        if not dps:
             return None
+        plural = "" if n_attacks == 1 else "s"
         return SuperlativeHit(
-            value=round(damage / cooldown, 1),
+            value=round(dps, 1),
             unit="DPS",
             what=what,
             tower_id=tower_id,
-            detail=f"{_num(damage)} dmg / {_num(cooldown)}s ({context})",
+            detail=f"total of {n_attacks} attack{plural} ({context})",
         )
     if metric in (PARAGON_DAMAGE, TOWER_DAMAGE) and damage:
         return SuperlativeHit(damage, "dmg", what, tower_id, f"main attack ({context})")
@@ -195,18 +171,20 @@ def _paragon_combat_rows(metric: str) -> list[SuperlativeHit]:
         pstats = btd6_stats_service.get_paragon_stats_by_tower(tower.id)
         if pstats is None:
             continue
-        stat = _main_attack(pstats.base.get("attacks") or [])
-        if stat is None:
+        # Degree 1 (base): damage/pierce describe the main attack, total_dps
+        # sums every attack so multi-attack paragons aren't understated.
+        summary = btd6_stats_service.attack_summary(pstats.base.get("attacks") or [], 1)
+        if summary is None:
             continue
-        damage, cooldown, pierce = stat
-        label = f"{pstats.canonical} ({tower.canonical} Paragon)"
+        m_damage, m_pierce, _m_cd, _m_dps, total_dps, n_attacks = summary
         hit = _combat_hit(
             metric,
-            damage=damage,
-            cooldown=cooldown,
-            pierce=pierce,
+            dps=total_dps,
+            n_attacks=n_attacks,
+            damage=m_damage,
+            pierce=m_pierce,
             attack_range=None,
-            what=label,
+            what=f"{pstats.canonical} ({tower.canonical} Paragon)",
             tower_id=tower.id,
             context="degree 1",
         )
@@ -225,10 +203,14 @@ def _tower_combat_rows(metric: str) -> list[SuperlativeHit]:
         if tier is None:
             continue
         normal = btd6_stats_service.normal_stats(tier)
+        summary = btd6_stats_service.attack_summary(tier.get("attacks") or [], None)
+        total_dps = summary[4] if summary is not None else None
+        n_attacks = summary[5] if summary is not None else 0
         hit = _combat_hit(
             metric,
+            dps=total_dps,
+            n_attacks=n_attacks,
             damage=float(normal.damage) if normal.damage else None,
-            cooldown=normal.cooldown,
             pierce=float(normal.pierce) if normal.pierce else None,
             attack_range=normal.attack_range,
             what=tower.canonical,

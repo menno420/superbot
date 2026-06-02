@@ -933,6 +933,121 @@ async def _paragon_requirements(arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- btd6_paragon_stats_at_degree -------------------------------------------
+
+_BTD6_PARAGON_STATS_AT_DEGREE_SPEC = AIToolSpec(
+    name="btd6_paragon_stats_at_degree",
+    description=(
+        "Exact paragon combat stats at a specific DEGREE (1-100). USE THIS "
+        "instead of interpolating between the Degree 1 and Degree 100 numbers — "
+        "paragons scale NON-linearly (attack speed is a square-root curve and "
+        "damage/pierce jump to ~2x at Degree 100), so linear interpolation gives "
+        "a wrong answer. Give 'paragon' (a paragon name or its tower, e.g. "
+        "'Goliath Doomship' or 'Ace') and either 'degree' (1-100) for that "
+        "degree's stats, or 'target_dps' to find the lowest degree that reaches "
+        "that single-target DPS (e.g. 'what degree is a ~1000 DPS Ace paragon'). "
+        "Returns exact damage, pierce, cooldown, single-target DPS (damage / "
+        "cooldown), boss-damage multiplier, and cumulative power. DPS is "
+        "single-target main attack only (ignores pierce / AoE / abilities)."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "paragon": {
+                "type": "string",
+                "description": (
+                    "Paragon name or its tower, e.g. 'Goliath Doomship' or 'Ace'."
+                ),
+            },
+            "degree": {
+                "type": "integer",
+                "description": "1-100; the degree to compute stats for.",
+            },
+            "target_dps": {
+                "type": "number",
+                "description": (
+                    "Instead of a degree, find the lowest degree whose "
+                    "single-target DPS reaches this value."
+                ),
+            },
+        },
+        "required": ["paragon"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _degree_payload(stats: Any) -> dict[str, Any]:
+    return {
+        "paragon": stats.canonical,
+        "tower": stats.tower_canonical,
+        "degree": stats.degree,
+        "main_attack_damage": stats.damage,
+        "main_attack_pierce": stats.pierce,
+        "main_attack_cooldown_seconds": stats.cooldown,
+        "total_dps": stats.total_dps,
+        "main_attack_dps": stats.main_dps,
+        "attack_count": stats.attack_count,
+        "dps_note": (
+            f"total_dps sums all {stats.attack_count} attack(s); main_attack_dps "
+            "is attacks[0] only. Single-target, ignores pierce/AoE; total assumes "
+            "all attacks engage the target so it can overstate vs one non-MOAB."
+        ),
+        "boss_damage_multiplier": stats.boss_multiplier,
+        "power": stats.power,
+    }
+
+
+async def _btd6_paragon_stats_at_degree(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_stats_service as ss
+
+    paragon = str(arguments.get("paragon") or "").strip()
+    paragon_id = ss.resolve_paragon(paragon) if paragon else None
+    if paragon_id is None:
+        return {"found": False, "note": f"no paragon matched {paragon!r}"}
+
+    degree_arg = arguments.get("degree")
+    note: str | None = None
+    raw_target = arguments.get("target_dps")
+    if raw_target is not None:
+        try:
+            target = float(raw_target)
+        except (TypeError, ValueError):
+            return {"found": False, "note": "target_dps must be a number"}
+        degree = ss.degree_for_target_dps(paragon_id, target)
+        if degree is None:
+            maxed = ss.paragon_stats_at_degree(paragon_id, 100)
+            return {
+                "found": True,
+                "reached": False,
+                "note": (
+                    f"total DPS never reaches {target:g}; the max is "
+                    f"{maxed.total_dps:g} at Degree 100"
+                    if maxed
+                    else "no computable attack"
+                ),
+                **(_degree_payload(maxed) if maxed else {}),
+            }
+        degree_arg = degree
+        note = f"Degree {degree} is the lowest reaching ~{target:g} total DPS (all attacks)"
+
+    if degree_arg is None:
+        return {"found": False, "note": "provide a 'degree' (1-100) or a 'target_dps'"}
+    try:
+        degree_val = int(degree_arg)
+    except (TypeError, ValueError):
+        return {"found": False, "note": "degree must be an integer 1-100"}
+    stats = ss.paragon_stats_at_degree(paragon_id, degree_val)
+    if stats is None:
+        return {"found": False, "note": f"{paragon_id} has no computable main attack"}
+    payload = _degree_payload(stats)
+    payload["found"] = True
+    if note:
+        payload["note"] = note
+    return payload
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -976,6 +1091,7 @@ def build_registry(
         (_BTD6_DIFFICULTY_COST_SPEC, _btd6_difficulty_cost),
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
+        (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]

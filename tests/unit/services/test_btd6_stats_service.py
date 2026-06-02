@@ -182,3 +182,33 @@ def test_hero_level_progression_uses_normal_stats():
     assert l20.pierce == 9  # pierce climbs with level
     assert l20.cooldown < l1.cooldown  # attacks faster at max level
     assert l20.can_see_camo is True  # Quincy gains camo detection by level 20
+
+
+def test_paragon_stats_at_degree_is_nonlinear_and_reports_both_dps():
+    pid = svc.resolve_paragon("Goliath Doomship")
+    assert pid == "goliath_doomship"
+    s = svc.paragon_stats_at_degree(pid, 65)
+    # Cooldown follows the sqrt curve, NOT linear interpolation (~0.49s).
+    assert abs(s.cooldown - 0.4215) < 0.001
+    # Goliath has 3 damaging attacks, so total DPS >> main-attack DPS.
+    assert s.attack_count == 3
+    assert s.main_dps < s.total_dps
+    assert abs(s.main_dps - 1181.4) < 0.5
+    # Degree-100 jump: damage = base*2 + 10 (not the linear trend).
+    base = svc.paragon_stats_at_degree(pid, 1).damage
+    assert svc.paragon_stats_at_degree(pid, 100).damage == round(base * 2 + 10, 1)
+
+
+def test_degree_for_target_dps_uses_total_not_main():
+    pid = svc.resolve_paragon("Ace")  # Goliath Doomship via its tower
+    # Total DPS is already ~2273 at degree 1, so 1000 DPS is reached immediately.
+    assert svc.degree_for_target_dps(pid, 1000) == 1
+    # Unreachable target returns None.
+    assert svc.degree_for_target_dps(pid, 9_999_999) is None
+
+
+def test_resolve_paragon_by_name_and_tower():
+    assert svc.resolve_paragon("Magus Perfectus") == "magus_perfectus"
+    assert svc.resolve_paragon("wizard") == "magus_perfectus"
+    assert svc.resolve_paragon("Monkey Ace") == "goliath_doomship"
+    assert svc.resolve_paragon("not a tower") is None

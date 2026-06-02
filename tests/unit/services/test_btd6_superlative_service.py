@@ -54,15 +54,17 @@ def test_results_are_ordered_and_capped():
     assert rows[0].cost >= rows[1].cost >= rows[2].cost
 
 
-def test_paragon_dps_ranks_all_paragons_highest_and_lowest():
+def test_paragon_dps_ranks_all_paragons_by_total_highest_and_lowest():
     high = sup.rank(sup.PARAGON_DPS, limit=25)
-    # Every paragon has a computable single-target DPS, ranked descending.
+    # Every paragon has a computable total DPS, ranked descending.
     assert len(high) == len(sup.rank(sup.PARAGON_COST, limit=25))
     assert [h.value for h in high] == sorted((h.value for h in high), reverse=True)
     assert high[0].unit == "DPS"
-    assert "dmg" in high[0].detail and "degree 1" in high[0].detail
-    # Glaive Dominus (fast attacker) tops it; the slow Spike paragon is the floor.
-    assert high[0].tower_id == "boomerang_monkey"
+    assert "total of" in high[0].detail and "degree 1" in high[0].detail
+    # Total DPS (all attacks): Magus Perfectus' four attacks top it; the
+    # single-attack Spike paragon is the floor. (Main-attack-only would have
+    # mis-ranked Glaive Dominus first — see the regression this metric fixes.)
+    assert high[0].tower_id == "wizard_monkey"
     assert sup.rank(sup.PARAGON_DPS, cheapest=True)[0].tower_id == "spike_factory"
 
 

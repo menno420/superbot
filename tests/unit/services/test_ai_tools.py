@@ -33,6 +33,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_difficulty_cost",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
+        "btd6_paragon_stats_at_degree",
     }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
@@ -273,6 +274,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_difficulty_cost",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
+        "btd6_paragon_stats_at_degree",
         "get_guild_ai_config",
         "recent_audit",
     }
@@ -541,3 +543,24 @@ async def test_paragon_requirements_tool_validates_target():
     )
     assert out["success"] is False
     assert out["error"]["code"] == "invalid_target"
+
+
+async def test_btd6_paragon_stats_at_degree_uses_real_nonlinear_formula():
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    assert "btd6_paragon_stats_at_degree" in registry.handlers
+    h = registry.handlers["btd6_paragon_stats_at_degree"]
+    # Forward: exact stats at a degree — cooldown is the sqrt curve, not linear.
+    r = await h({"paragon": "Goliath Doomship", "degree": 65})
+    assert r["found"] is True
+    assert abs(r["main_attack_cooldown_seconds"] - 0.4215) < 0.001
+    assert r["attack_count"] == 3
+    assert r["total_dps"] > r["main_attack_dps"]
+    # Inverse uses TOTAL dps, so a Goliath is already ~1000 DPS at degree 1.
+    inv = await h({"paragon": "Ace", "target_dps": 1000})
+    assert inv["found"] is True and inv["degree"] == 1
+    # Unreachable target reports the max rather than a degree.
+    big = await h({"paragon": "Ace", "target_dps": 9_999_999})
+    assert big.get("reached") is False
+    # Unknown paragon and missing args degrade cleanly.
+    assert (await h({"paragon": "zzz"}))["found"] is False
+    assert (await h({"paragon": "Ace"}))["found"] is False
