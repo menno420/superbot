@@ -993,6 +993,52 @@ async def _ct_active_tile_lines(intent: Any) -> list[str]:
     return out
 
 
+_ROSTER_INTENT = (
+    "all paragon",
+    "list paragon",
+    "which paragon",
+    "every paragon",
+    "how many paragon",
+    "each paragon",
+    "name the paragon",
+    "name all paragon",
+)
+
+
+def _paragon_roster_facts(message_text: str) -> list[str]:
+    """Ground the authoritative 13-paragon roster for roster-level questions.
+
+    A general "which paragons …" / "list all paragons" question otherwise lets
+    the model invent paragons — it has listed HEROES (which have no paragon) and
+    fake names. Pin the real 13 and the rule that only towers have paragons.
+    """
+    from utils.btd6 import paragon_math
+
+    text = (message_text or "").lower()
+    if "paragon" not in text:
+        return []
+    if "paragons" not in text and not any(kw in text for kw in _ROSTER_INTENT):
+        return []
+    names = [p.name.split(" (")[0].strip() for p in paragon_math.PARAGONS]
+    lines = [
+        "[btd6_paragon_roster] BTD6 has exactly 13 paragons (tier-6 super-"
+        "upgrades), one per tower. ONLY towers have paragons — a hero (Quincy, "
+        "Gwendolin, Adora, Benjamin, …) is NEVER a paragon; never list heroes "
+        "as paragons.",
+    ]
+    prefix = "[btd6_paragon_roster] The 13: "
+    line = prefix
+    for name in names:
+        addition = name if line == prefix else f", {name}"
+        if len(line) + len(addition) > 230:
+            lines.append(line)
+            line = prefix + name
+        else:
+            line += addition
+    lines.append(line)
+    return lines
+
+
 def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:
     """Ground a paragon named directly (e.g. "what are Glaive Dominus's stats?").
 
@@ -1252,6 +1298,7 @@ async def build(message_text: str) -> BTD6Context:
             for tower in getattr(intent, "towers", ()) or ()
         }
         facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
+        facts.extend(_paragon_roster_facts(message_text))
 
         # Pass 3c: upgrade grounding — an upgrade named in the text by name,
         # abbreviation / nickname (PMFC / POD / BEZ / Prince of Darkness), or

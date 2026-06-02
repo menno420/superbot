@@ -563,3 +563,18 @@ async def test_btd6_paragon_stats_at_degree_returns_nonlinear_breakdown():
     # Degree defaults to 1 when omitted; unknown paragon degrades cleanly.
     assert (await h({"paragon": "Ace"}))["degree"] == 1
     assert (await h({"paragon": "zzz"}))["found"] is False
+
+
+async def test_btd6_capability_lookup_paragon_camo_split():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers[
+        "btd6_capability_lookup"
+    ]
+    r = await h({"capability": "camo_detection", "entity": "paragon"})
+    assert r["found"] is True and r["entity"] == "paragon"
+    cannot = {x["paragon"] for x in r["without_capability"]}
+    assert "Herald of Everfrost" in cannot
+    assert "Glaive Dominus" in {x["paragon"] for x in r["with_capability"]}
+    assert "Heroes do NOT have paragons" in r["note"]
+    # Only camo is verified per-paragon.
+    bad = await h({"capability": "lead_popping", "entity": "paragon"})
+    assert bad["found"] is False

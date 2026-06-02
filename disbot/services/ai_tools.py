@@ -435,15 +435,16 @@ async def _btd6_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
 _BTD6_CAPABILITY_SPEC = AIToolSpec(
     name="btd6_capability_lookup",
     description=(
-        "List which BTD6 towers have a capability — use for 'which tower …' "
-        "discovery questions that do NOT name a specific tower. Supported "
+        "List which BTD6 TOWERS — or PARAGONS — have a capability. Use for "
+        "'which tower …' / 'which paragon …' / 'which paragons can(not) see "
+        "camo' discovery questions that don't name a specific entity. Supported "
         "capabilities: 'camo_detection' (can target Camo bloons), "
-        "'lead_popping', 'black_popping', 'white_popping', and "
-        "'purple_popping' (can damage Lead / Black / White / Purple bloons). "
-        "Set unupgraded=true (the default) for base 0-0-0 only — the usual "
-        "'without upgrades' question — or false to also include towers that "
-        "gain it from an upgrade. Returns the matching towers and where each "
-        "gets the capability."
+        "'lead_popping', 'black_popping', 'white_popping', 'purple_popping'. "
+        "Set entity='paragon' for paragon questions (camo_detection only — "
+        "returns BOTH the paragons that CAN and CANNOT see camo; only the 13 "
+        "tower paragons exist, heroes have none); default entity='tower'. For "
+        "towers, set unupgraded=true (default) for base 0-0-0 only, or false to "
+        "include upgrade-granted towers. Returns the matching entities."
     ),
     parameters={
         "type": "object",
@@ -455,10 +456,17 @@ _BTD6_CAPABILITY_SPEC = AIToolSpec(
                     "white_popping, purple_popping."
                 ),
             },
+            "entity": {
+                "type": "string",
+                "description": (
+                    "'tower' (default) or 'paragon'. Use 'paragon' for "
+                    "'which paragon(s) …' questions (camo_detection only)."
+                ),
+            },
             "unupgraded": {
                 "type": "boolean",
                 "description": (
-                    "Base (0-0-0) only when true (default); include "
+                    "Towers only: base (0-0-0) when true (default); include "
                     "upgrade-granted towers when false."
                 ),
             },
@@ -483,6 +491,39 @@ async def _btd6_capability_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
                 + ", ".join(btd6_capability_service.CAPABILITIES)
             ),
         }
+
+    entity = str(arguments.get("entity") or "tower").strip().lower()
+    if entity == "paragon":
+        hits = btd6_capability_service.paragons_with_capability(capability)
+        if not hits:
+            return {
+                "found": False,
+                "entity": "paragon",
+                "note": (
+                    f"per-paragon {capability} is not verified; only "
+                    "camo_detection is supported for paragons"
+                ),
+            }
+        return {
+            "found": True,
+            "entity": "paragon",
+            "capability": capability,
+            "with_capability": [
+                {"paragon": h.paragon, "tower": h.tower}
+                for h in hits
+                if h.has_capability
+            ],
+            "without_capability": [
+                {"paragon": h.paragon, "tower": h.tower}
+                for h in hits
+                if not h.has_capability
+            ],
+            "note": (
+                "The 13 tier-6 tower paragons. Heroes do NOT have paragons — "
+                "do not list heroes."
+            ),
+        }
+
     raw = arguments.get("unupgraded", True)
     unupgraded = True if raw is None else bool(raw)
     hits = btd6_capability_service.towers_with_capability(
