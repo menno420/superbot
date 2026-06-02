@@ -132,3 +132,51 @@ async def test_source_enable_prefix_allows_admin(monkeypatch) -> None:
     await BTD6OpsCog.source_enable_prefix.callback(cog, ctx, "nk_x")
     ctx.send.assert_awaited_once()
     assert "✅" in ctx.send.await_args.args[0]
+
+
+# ---------------------------------------------------------------------------
+# seed-data — administrator-gated Postgres seeding
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_seed_data_prefix_denies_non_admin() -> None:
+    cog = BTD6OpsCog(bot=MagicMock())
+    ctx = MagicMock()
+    ctx.author = _actor(manage_guild=True)  # staff, but not administrator
+    ctx.send = AsyncMock()
+    await BTD6OpsCog.seed_data_prefix.callback(cog, ctx)
+    ctx.send.assert_awaited_once_with(_ADMIN_DENIED)
+
+
+@pytest.mark.asyncio
+async def test_seed_data_prefix_allows_admin(monkeypatch) -> None:
+    import discord
+
+    from cogs import btd6_ops_cog
+
+    async def _embed() -> discord.Embed:
+        return discord.Embed(title="🌱 BTD6 data seeded")
+
+    monkeypatch.setattr(btd6_ops_cog, "_seed_embed", _embed)
+    cog = BTD6OpsCog(bot=MagicMock())
+    ctx = MagicMock()
+    ctx.author = _actor(administrator=True)
+    ctx.send = AsyncMock()
+    await BTD6OpsCog.seed_data_prefix.callback(cog, ctx)
+    ctx.send.assert_awaited_once()
+    assert "embed" in ctx.send.await_args.kwargs
+
+
+@pytest.mark.asyncio
+async def test_seed_embed_reports_count(monkeypatch) -> None:
+    from cogs import btd6_ops_cog
+    from services import btd6_data_service
+
+    async def _seed(root=None) -> int:
+        return 42
+
+    monkeypatch.setattr(btd6_data_service, "seed_postgres_from_files", _seed)
+    embed = await btd6_ops_cog._seed_embed()
+    assert "42" in (embed.description or "")
+    assert "BTD6_DATA_BACKEND" in (embed.description or "")

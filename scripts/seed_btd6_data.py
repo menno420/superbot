@@ -67,17 +67,18 @@ def _print_summary(rows: list[tuple[str, Any, str]], root: Path) -> None:
         print(f"  … and {len(rows) - 10} more")
 
 
-async def seed(rows: list[tuple[str, Any, str]]) -> int:
+async def seed(root: Path) -> int:
+    # The DB write path lives in one place (btd6_data_service), shared with the
+    # in-app !btd6ops seed-data command.
+    from services import btd6_data_service
     from utils import db
-    from utils.db import btd6_data, pool
+    from utils.db import pool
 
     await db.init()
     try:
-        for name, body, sha in rows:
-            await btd6_data.upsert_blob(name, body, sha)
+        return await btd6_data_service.seed_postgres_from_files(root)
     finally:
         await pool.close()
-    return len(rows)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -100,7 +101,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    count = asyncio.run(seed(rows))
+    count = asyncio.run(seed(root))
     print(f"seeded {count} blobs into btd6_data_blobs")
     return 0
 

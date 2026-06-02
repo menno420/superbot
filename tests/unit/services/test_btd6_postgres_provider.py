@@ -134,3 +134,26 @@ def test_select_provider_file_default(monkeypatch):
     monkeypatch.setattr(config, "BTD6_DATA_BACKEND", "", raising=False)
     monkeypatch.setattr(config, "BTD6_DATA_BASE_URL", "", raising=False)
     assert isinstance(_select_provider(), FileRawProvider)
+
+
+@pytest.mark.asyncio
+async def test_seed_postgres_from_files_upserts_every_blob(monkeypatch):
+    """The seeder reads the bundled files and upserts each (DB mocked)."""
+    from services import btd6_data_service
+    from utils.db import btd6_data
+
+    calls: list[tuple] = []
+
+    async def fake_upsert(name, body, sha256=None):
+        calls.append((name, body, sha256))
+
+    monkeypatch.setattr(btd6_data, "upsert_blob", fake_upsert)
+
+    seeded = await btd6_data_service.seed_postgres_from_files()
+    assert seeded >= 7  # the committed fixtures (+ the stats tree)
+    names = {c[0] for c in calls}
+    assert "towers.json" in names
+    assert "manifest.json" not in names  # bucket artifact, excluded
+    assert all(isinstance(c[1], dict) for c in calls)  # parsed bodies
+    assert all(len(c[2]) == 64 for c in calls)  # sha256 hex provenance
+    assert len(calls) == seeded
