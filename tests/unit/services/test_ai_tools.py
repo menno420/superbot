@@ -237,8 +237,8 @@ async def test_btd6_superlative_lookup_answers_cost_rankings():
     )
     assert dps["found"] is True
     top = dps["results"][0]
-    assert top["unit"] == "DPS"
-    assert top["value"] > 0 and top["detail"]  # value + a "X dmg / Ys" detail
+    assert top["unit"] == "DPS (rough)"  # labelled rough, never exact
+    assert top["value"] > 0 and "ROUGH" in top["detail"]
     assert "cost" not in top  # combat rows aren't dollar amounts
 
 
@@ -545,22 +545,21 @@ async def test_paragon_requirements_tool_validates_target():
     assert out["error"]["code"] == "invalid_target"
 
 
-async def test_btd6_paragon_stats_at_degree_uses_real_nonlinear_formula():
+async def test_btd6_paragon_stats_at_degree_returns_nonlinear_breakdown():
     registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
     assert "btd6_paragon_stats_at_degree" in registry.handlers
     h = registry.handlers["btd6_paragon_stats_at_degree"]
-    # Forward: exact stats at a degree — cooldown is the sqrt curve, not linear.
     r = await h({"paragon": "Goliath Doomship", "degree": 65})
     assert r["found"] is True
-    assert abs(r["main_attack_cooldown_seconds"] - 0.4215) < 0.001
-    assert r["attack_count"] == 3
-    assert r["total_dps"] > r["main_attack_dps"]
-    # Inverse uses TOTAL dps, so a Goliath is already ~1000 DPS at degree 1.
-    inv = await h({"paragon": "Ace", "target_dps": 1000})
-    assert inv["found"] is True and inv["degree"] == 1
-    # Unreachable target reports the max rather than a degree.
-    big = await h({"paragon": "Ace", "target_dps": 9_999_999})
-    assert big.get("reached") is False
-    # Unknown paragon and missing args degrade cleanly.
+    assert len(r["attacks"]) == 3
+    main = r["attacks"][0]
+    # Cooldown is the sqrt curve (not linear ~0.49s); the bomb's two projectiles
+    # are exposed rather than collapsed to one number.
+    assert abs(main["cooldown_seconds"] - 0.4215) < 0.001
+    assert {p["name"] for p in main["projectiles"]} >= {"Projectile", "Explosion"}
+    # DPS is present but explicitly a rough estimate, never asserted as exact.
+    assert r["rough_dps"] > 0
+    assert "ROUGH" in r["rough_dps_note"]
+    # Degree defaults to 1 when omitted; unknown paragon degrades cleanly.
+    assert (await h({"paragon": "Ace"}))["degree"] == 1
     assert (await h({"paragon": "zzz"}))["found"] is False
-    assert (await h({"paragon": "Ace"}))["found"] is False

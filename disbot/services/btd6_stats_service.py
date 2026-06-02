@@ -344,124 +344,139 @@ def get_paragon_stats_by_tower(tower_id: str) -> ParagonStats | None:
 
 
 @dataclass(frozen=True)
-class ParagonDegreeStats:
-    """A paragon's headline stats computed at one degree.
+class DegreeAttack:
+    """One attack's per-projectile stats at a degree (the authoritative data)."""
 
-    Damage / pierce / cooldown describe the MAIN attack (``attacks[0]``).
-    ``main_dps`` is that attack alone; ``total_dps`` sums every damaging attack
-    (so a multi-attack paragon isn't understated) — note total_dps assumes all
-    attacks engage the target, so it can overstate against a single non-MOAB.
+    name: str
+    cooldown: float
+    projectiles: tuple[tuple[str, float, float], ...]  # (name, damage, pierce)
+
+
+@dataclass(frozen=True)
+class ParagonDegreeStats:
+    """A paragon's exact per-attack stats at one degree.
+
+    ``attacks`` is the authoritative breakdown (every attack, every projectile,
+    scaled by the wiki's non-linear degree formulas). ``rough_dps`` is a single
+    headline ESTIMATE only — it sums all projectile damage / cooldown across
+    every attack, which ignores targeting, pierce, AoE, and uptime, so it is not
+    a precise figure; quote the breakdown for anything exact.
     """
 
     paragon_id: str
     canonical: str
     tower_canonical: str
     degree: int
-    damage: float
-    pierce: float
-    cooldown: float
-    main_dps: float
-    total_dps: float
-    attack_count: int
+    attacks: tuple[DegreeAttack, ...]
+    rough_dps: float
     boss_multiplier: float
     power: int
 
 
-def attack_summary(
+def attack_breakdown(
     attacks: list,
     degree: int | None = None,
-) -> tuple[float, float, float, float, float, int] | None:
-    """``(main_dmg, main_pierce, main_cooldown, main_dps, total_dps, n)`` or None.
+) -> tuple[DegreeAttack, ...]:
+    """Per-attack, per-projectile stats — scaled by ``degree`` for paragons.
 
-    Each damaging attack contributes its highest-damage projectile. With
-    ``degree`` the paragon scaling is applied (cooldown sqrt-curve, damage/pierce
-    per-degree); without it, base values (towers). ``total_dps`` sums all
-    attacks' damage/cooldown; the main fields describe ``attacks[0]``.
+    Without ``degree`` the base values are used (towers). Each projectile keeps
+    its own name / damage / pierce; nothing is collapsed, so callers see the real
+    components (e.g. a bomb's direct hit AND its explosion) instead of one number.
     """
-    rows: list[tuple[float, float, float]] = []
+    out: list[DegreeAttack] = []
     for attack in attacks or []:
         rate = attack.get("rate")
         if not isinstance(rate, (int, float)) or rate <= 0:
             continue
-        main = max(
-            attack.get("projectiles") or [],
-            key=lambda p: p.get("damage") or 0,
-            default=None,
+        cooldown = (
+            paragon_degrees.scale_cooldown(float(rate), degree)
+            if degree is not None
+            else float(rate)
         )
-        if main is None:
-            continue
-        damage = main.get("damage")
-        if not isinstance(damage, (int, float)) or damage <= 0:
-            continue
-        pierce = main.get("pierce")
-        pierce_val = float(pierce) if isinstance(pierce, (int, float)) else 0.0
-        rows.append((float(damage), float(rate), pierce_val))
-    if not rows:
+        projectiles: list[tuple[str, float, float]] = []
+        for proj in attack.get("projectiles") or []:
+            damage = proj.get("damage")
+            if not isinstance(damage, (int, float)) or damage <= 0:
+                continue
+            pierce = proj.get("pierce")
+            pierce_val = float(pierce) if isinstance(pierce, (int, float)) else 0.0
+            if degree is not None:
+                damage = paragon_degrees.scale_damage(float(damage), degree)
+                pierce_val = paragon_degrees.scale_pierce(pierce_val, degree)
+            projectiles.append(
+                (
+                    str(proj.get("name") or "Projectile"),
+                    round(float(damage), 1),
+                    round(pierce_val, 1),
+                ),
+            )
+        if projectiles:
+            out.append(
+                DegreeAttack(
+                    name=str(attack.get("name") or "Attack"),
+                    cooldown=round(cooldown, 4),
+                    projectiles=tuple(projectiles),
+                ),
+            )
+    return tuple(out)
+
+
+def rough_attack_dps(attacks: list, degree: int | None = None) -> float | None:
+    """Rough total DPS ESTIMATE — sum of all projectile damage / cooldown.
+
+    Deliberately approximate (ignores targeting / pierce / AoE / uptime); use it
+    only as a labelled estimate, never as an authoritative number. None if no
+    damaging attack.
+    """
+    breakdown = attack_breakdown(attacks, degree)
+    if not breakdown:
         return None
-
-    def _scaled(damage: float, rate: float) -> tuple[float, float]:
-        if degree is None:
-            return damage, rate
-        return (
-            paragon_degrees.scale_damage(damage, degree),
-            paragon_degrees.scale_cooldown(rate, degree),
-        )
-
-    total_dps = 0.0
-    for damage, rate, _ in rows:
-        sd, sr = _scaled(damage, rate)
-        total_dps += sd / sr if sr else 0.0
-    m_damage, m_rate, m_pierce = rows[0]
-    sd, sr = _scaled(m_damage, m_rate)
-    s_pierce = (
-        paragon_degrees.scale_pierce(m_pierce, degree)
-        if degree is not None
-        else m_pierce
+    total = sum(
+        sum(p[1] for p in atk.projectiles) / atk.cooldown
+        for atk in breakdown
+        if atk.cooldown
     )
-    return (sd, s_pierce, sr, sd / sr if sr else 0.0, total_dps, len(rows))
+    return round(total, 1)
+
+
+def main_projectile_stats(
+    attacks: list,
+    degree: int | None = None,
+) -> tuple[float, float] | None:
+    """``(damage, pierce)`` of the first attack's highest-damage projectile."""
+    breakdown = attack_breakdown(attacks, degree)
+    if not breakdown:
+        return None
+    top = max(breakdown[0].projectiles, key=lambda p: p[1], default=None)
+    return (top[1], top[2]) if top is not None else None
 
 
 def paragon_stats_at_degree(paragon_id: str, degree: int) -> ParagonDegreeStats | None:
-    """Exact stats for a paragon at ``degree`` (1-100), main + total DPS.
+    """Exact per-attack stats for a paragon at ``degree`` (1-100).
 
     Applies the wiki's non-linear degree formulas (:mod:`utils.btd6.paragon_degrees`)
     rather than interpolating: cooldown is a square-root curve, damage/pierce rise
-    ~1%/degree then jump to ~2x base at degree 100. None if no computable attack.
+    ~1%/degree then jump to ~2x base at degree 100. The per-attack breakdown is
+    exact; ``rough_dps`` is an estimate only. None if no computable attack.
     """
     pstats = get_paragon_stats(paragon_id)
     if pstats is None:
         return None
     deg = max(1, min(paragon_degrees.MAX_DEGREE, int(degree)))
-    summary = attack_summary(pstats.base.get("attacks") or [], deg)
-    if summary is None:
+    attacks = pstats.base.get("attacks") or []
+    breakdown = attack_breakdown(attacks, deg)
+    if not breakdown:
         return None
-    damage, pierce, cooldown, main_dps, total_dps, count = summary
     return ParagonDegreeStats(
         paragon_id=pstats.paragon_id,
         canonical=pstats.canonical,
         tower_canonical=pstats.tower_canonical,
         degree=deg,
-        damage=round(damage, 1),
-        pierce=round(pierce, 1),
-        cooldown=round(cooldown, 4),
-        main_dps=round(main_dps, 1),
-        total_dps=round(total_dps, 1),
-        attack_count=count,
+        attacks=breakdown,
+        rough_dps=rough_attack_dps(attacks, deg) or 0.0,
         boss_multiplier=paragon_degrees.boss_multiplier(deg),
         power=paragon_degrees.power_for_degree(deg),
     )
-
-
-def degree_for_target_dps(paragon_id: str, target_dps: float) -> int | None:
-    """Lowest degree (1-100) whose TOTAL DPS (all attacks) reaches ``target_dps``.
-
-    None if it never reaches it (even at degree 100) or has no attack.
-    """
-    for deg in range(1, paragon_degrees.MAX_DEGREE + 1):
-        stats = paragon_stats_at_degree(paragon_id, deg)
-        if stats is not None and stats.total_dps >= target_dps:
-            return deg
-    return None
 
 
 def resolve_paragon(query: str) -> str | None:
@@ -599,21 +614,23 @@ def normal_stats(tier: dict[str, Any]) -> NormalStats:
 
 
 __all__ = [
+    "DegreeAttack",
     "HeroStats",
     "NormalStats",
     "ParagonAbility",
     "ParagonDegreeStats",
     "ParagonStats",
     "TowerStats",
-    "attack_summary",
-    "degree_for_target_dps",
+    "attack_breakdown",
     "get_hero_stats",
     "get_paragon_stats",
     "get_paragon_stats_by_tower",
     "get_tower_stats",
     "list_paragon_ids",
+    "main_projectile_stats",
     "normal_stats",
     "paragon_stats_at_degree",
     "reset_cache",
     "resolve_paragon",
+    "rough_attack_dps",
 ]

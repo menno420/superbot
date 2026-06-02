@@ -7,12 +7,12 @@ Derived at runtime from the committed data in :mod:`services.btd6_data_service`
 and :mod:`services.btd6_stats_service`. Read-only, no DB. Backs the
 ``btd6_superlative_lookup`` AI tool.
 
-**DPS here is total single-target DPS** — the sum over every damaging attack of
-its main projectile's damage ÷ cooldown. It assumes all attacks engage the
-target (so it can overstate vs a single non-MOAB), and ignores pierce / AoE /
-abilities / MOAB bonuses; rank by ``*_pierce`` for crowd-clear. Paragon combat
-stats are taken at degree 1 (base); damage / pierce describe the main attack.
-Tower combat stats are the base (0-0-0) tier.
+**DPS here is a ROUGH estimate only** — the sum over every attack of all its
+projectiles' damage ÷ cooldown. It ignores targeting, pierce, AoE, and uptime,
+so it is never authoritative; it exists to answer "roughly which is highest",
+and the exact figures live in the per-attack breakdown from
+``btd6_paragon_stats_at_degree``. Paragon combat stats are at degree 1 (base);
+damage / pierce describe the main attack. Tower combat stats are base (0-0-0).
 """
 
 from __future__ import annotations
@@ -126,7 +126,6 @@ def _combat_hit(
     metric: str,
     *,
     dps: float | None,
-    n_attacks: int,
     damage: float | None,
     pierce: float | None,
     attack_range: float | None,
@@ -136,19 +135,21 @@ def _combat_hit(
 ) -> SuperlativeHit | None:
     """Build a ranked hit for a combat ``metric``, or None if the field is absent.
 
-    DPS ranks **total** DPS (all attacks summed); damage / pierce describe the
-    main attack; range is the tier's range.
+    DPS is a labelled ROUGH estimate (sums all projectile damage / cooldown);
+    damage / pierce describe the main attack; range is the tier's range.
     """
     if metric in (PARAGON_DPS, TOWER_DPS):
         if not dps:
             return None
-        plural = "" if n_attacks == 1 else "s"
         return SuperlativeHit(
             value=round(dps, 1),
-            unit="DPS",
+            unit="DPS (rough)",
             what=what,
             tower_id=tower_id,
-            detail=f"total of {n_attacks} attack{plural} ({context})",
+            detail=(
+                f"ROUGH estimate, sums all attacks ({context}); ignores "
+                "targeting/pierce/AoE — quote the per-attack breakdown for exact"
+            ),
         )
     if metric in (PARAGON_DAMAGE, TOWER_DAMAGE) and damage:
         return SuperlativeHit(damage, "dmg", what, tower_id, f"main attack ({context})")
@@ -171,16 +172,14 @@ def _paragon_combat_rows(metric: str) -> list[SuperlativeHit]:
         pstats = btd6_stats_service.get_paragon_stats_by_tower(tower.id)
         if pstats is None:
             continue
-        # Degree 1 (base): damage/pierce describe the main attack, total_dps
-        # sums every attack so multi-attack paragons aren't understated.
-        summary = btd6_stats_service.attack_summary(pstats.base.get("attacks") or [], 1)
-        if summary is None:
-            continue
-        m_damage, m_pierce, _m_cd, _m_dps, total_dps, n_attacks = summary
+        # Degree 1 (base): damage/pierce describe the main attack; the rough DPS
+        # estimate sums every attack so multi-attack paragons aren't understated.
+        attacks = pstats.base.get("attacks") or []
+        main = btd6_stats_service.main_projectile_stats(attacks, 1)
+        m_damage, m_pierce = main if main is not None else (None, None)
         hit = _combat_hit(
             metric,
-            dps=total_dps,
-            n_attacks=n_attacks,
+            dps=btd6_stats_service.rough_attack_dps(attacks, 1),
             damage=m_damage,
             pierce=m_pierce,
             attack_range=None,
@@ -203,13 +202,9 @@ def _tower_combat_rows(metric: str) -> list[SuperlativeHit]:
         if tier is None:
             continue
         normal = btd6_stats_service.normal_stats(tier)
-        summary = btd6_stats_service.attack_summary(tier.get("attacks") or [], None)
-        total_dps = summary[4] if summary is not None else None
-        n_attacks = summary[5] if summary is not None else 0
         hit = _combat_hit(
             metric,
-            dps=total_dps,
-            n_attacks=n_attacks,
+            dps=btd6_stats_service.rough_attack_dps(tier.get("attacks") or [], None),
             damage=float(normal.damage) if normal.damage else None,
             pierce=float(normal.pierce) if normal.pierce else None,
             attack_range=normal.attack_range,
