@@ -32,6 +32,7 @@ from services.btd6_data_provider import (
     BTD6RawProvider,
     CloudRawProvider,
     FileRawProvider,
+    PostgresRawProvider,
 )
 
 
@@ -551,22 +552,38 @@ def _default_cache_dir() -> Path:
 
 
 def _select_provider() -> BTD6RawProvider:
-    """Pick the raw-fixture backend from config (no network I/O at import).
+    """Pick the raw-fixture backend from config (no network/DB I/O at import).
 
-    ``BTD6_DATA_BASE_URL`` set → :class:`CloudRawProvider` (warmed at startup
-    via :func:`warm_provider`); otherwise the committed local files via
-    ``FileRawProvider``. Provider *selection* is cheap; the actual fetch
-    happens later in ``warm_provider`` so import stays side-effect-free.
+    ``BTD6_DATA_BACKEND`` selects explicitly:
+
+    * ``postgres`` → :class:`PostgresRawProvider` (the ``btd6_data_blobs``
+      table; recommended for a deployment that already runs Postgres);
+    * ``cloud`` → :class:`CloudRawProvider` (a public-read object store at
+      ``BTD6_DATA_BASE_URL``);
+    * ``file`` / unset → the committed local files via ``FileRawProvider``.
+
+    Back-compat: ``BTD6_DATA_BASE_URL`` set with no explicit backend still
+    implies ``cloud``. Provider *selection* is cheap; the actual fetch happens
+    later in :func:`warm_provider`, so import stays side-effect-free.
     """
     try:
-        from config import BTD6_DATA_BASE_URL, BTD6_DATA_CACHE_DIR
+        from config import (
+            BTD6_DATA_BACKEND,
+            BTD6_DATA_BASE_URL,
+            BTD6_DATA_CACHE_DIR,
+        )
     except Exception:  # noqa: BLE001 - config always importable in the app
         return FileRawProvider()
+    backend = (BTD6_DATA_BACKEND or "").strip().lower()
     base_url = (BTD6_DATA_BASE_URL or "").strip()
-    if not base_url:
-        return FileRawProvider()
-    cache_dir = (BTD6_DATA_CACHE_DIR or "").strip() or _default_cache_dir()
-    return CloudRawProvider(base_url, cache_dir)
+
+    if backend == "postgres":
+        return PostgresRawProvider()
+    if backend == "cloud" or (not backend and base_url):
+        if base_url:
+            cache_dir = (BTD6_DATA_CACHE_DIR or "").strip() or _default_cache_dir()
+            return CloudRawProvider(base_url, cache_dir)
+    return FileRawProvider()
 
 
 _PROVIDER: BTD6RawProvider = _select_provider()
