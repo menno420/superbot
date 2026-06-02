@@ -301,3 +301,151 @@ async def test_btd6_lookup_tool_lists_all_relics_despite_live_preamble(monkeypat
     assert preamble, "live-event preamble did not render; test is toothless"
     # Every relic tile reaches the model through the capped tool path.
     assert len(tile_lines) == n, (len(tile_lines), n)
+
+
+# ---------------------------------------------------------------------------
+# Full tile inventory (all 169 tiles, not just the 24 relic tiles)
+# ---------------------------------------------------------------------------
+
+
+def _ct_placements_from_fixture() -> list:
+    """Build CTTilePlacement objects from the committed 169-tile CT fixture."""
+    import json
+
+    from services import btd6_data_service
+    from services import btd6_live_query_service as live
+    from utils.btd6.ct_tile_geometry import decode_tile
+
+    path = (
+        Path(__file__).parents[3]
+        / "tests/fixtures/ninjakiwi/btd6_ct_mpejg5d0_tiles.json"
+    )
+    payload = json.loads(path.read_text())
+
+    def _find_tiles(obj):
+        if isinstance(obj, dict):
+            if isinstance(obj.get("tiles"), list):
+                return obj["tiles"]
+            for value in obj.values():
+                found = _find_tiles(value)
+                if found is not None:
+                    return found
+        return None
+
+    placements = []
+    for tile in _find_tiles(payload) or []:
+        raw_type = str(tile.get("type", ""))
+        relic_api = None
+        tile_type = raw_type
+        if raw_type.startswith("Relic - "):
+            tile_type = "Relic"
+            relic_api = raw_type[len("Relic - ") :].strip()
+        relic_id = relic_canon = None
+        if relic_api:
+            entry = btd6_data_service.get_ct_relic_by_api_name(relic_api)
+            if entry is not None:
+                relic_id, relic_canon = entry.id, entry.canonical
+            else:
+                relic_canon = relic_api
+        placements.append(
+            live.CTTilePlacement(
+                ct_id="mpejg5d0",
+                tile_id=tile["id"],
+                tile_type=tile_type,
+                game_type=tile.get("gameType"),
+                relic_name=relic_api,
+                relic_id=relic_id,
+                relic_canonical=relic_canon,
+                fetched_at=datetime.now(tz=timezone.utc),
+                position=decode_tile(tile["id"]),
+            ),
+        )
+    return placements
+
+
+def _patch_full_map(monkeypatch, placements):
+    """Point the live layer at ``placements`` for one active CT event."""
+    from services import btd6_live_query_service as live
+
+    async def _active(kinds=None):
+        return (
+            live.ActiveEventHeadline(
+                "btd6_ct",
+                "mpejg5d0",
+                "mpejg5d0",
+                None,
+                None,
+                datetime.now(tz=timezone.utc),
+            ),
+        )
+
+    async def _tiles(ct_id, *, relic=None, relics_only=False):
+        return tuple(
+            p for p in placements if (p.relic_name is not None or not relics_only)
+        )
+
+    monkeypatch.setattr(live, "get_active_events", _active)
+    monkeypatch.setattr(live, "get_ct_tiles", _tiles)
+
+
+def test_humanize_label_splits_camelcase():
+    assert ctx._humanize_label("LeastCash") == "Least Cash"
+    assert ctx._humanize_label("TeamFirstCapture") == "Team First Capture"
+    assert ctx._humanize_label("Relic") == "Relic"
+
+
+def test_tile_codes_in_text_uppercases_three_letter_tokens():
+    codes = ctx._tile_codes_in_text("what's on tile dcb and DAG, not tiles overall")
+    assert {"DCB", "DAG"} <= codes
+    # 4+ letter words ("what", "tile", "tiles", "overall") are never codes.
+    assert "TILE" not in codes and "WHAT" not in codes
+
+
+@pytest.mark.asyncio
+async def test_general_ct_question_grounds_full_tile_inventory(monkeypatch):
+    """'list all tiles' grounds the TRUE 169-tile total + per-type / per-mode
+    breakdown (so the model stops claiming the lookup is truncating), alongside
+    the full 24-relic list. The other ~145 tiles are summarised, not enumerated.
+    """
+    _patch_full_map(monkeypatch, _ct_placements_from_fixture())
+    out = await ctx.build("list all tiles you can see")
+
+    map_lines = [f for f in out.facts if f.startswith("[btd6_ct_map]")]
+    tile_lines = [f for f in out.facts if f.startswith("[btd6_ct_tile]")]
+    assert map_lines, "no [btd6_ct_map] inventory line"
+    total_line = map_lines[0]
+    assert "169 tiles total" in total_line
+    assert "97 Regular" in total_line and "24 Relic" in total_line
+    # A battle-mode breakdown line is present too.
+    assert any("battle modes" in ln for ln in map_lines)
+    # All 24 relic tiles are still listed in full; the 145 plain tiles are NOT
+    # enumerated (so the relic tiles are the only per-tile lines for a broad
+    # listing — no false specific lines from words like "all"/"you"/"see").
+    assert len(tile_lines) == 24, len(tile_lines)
+
+
+@pytest.mark.asyncio
+async def test_specific_tile_lookup_grounds_any_type(monkeypatch):
+    """A tile named by its code grounds a detailed line for ANY tile type —
+    the EDN-style gap where non-relic tiles were invisible."""
+    _patch_full_map(monkeypatch, _ct_placements_from_fixture())
+
+    # DAG is a Banner tile (no relic) — previously unreachable.
+    out = await ctx.build("what is on tile DAG")
+    dag = [f for f in out.facts if "tile DAG" in f]
+    assert dag, "non-relic tile DAG was not grounded"
+    assert any("Banner" in ln for ln in dag)
+
+    # DCB is a relic tile — its detailed line names the relic it carries.
+    out2 = await ctx.build("what's on tile DCB")
+    dcb = [f for f in out2.facts if "tile DCB (" in f and "—" in f]
+    assert dcb and any("Air and Sea" in ln for ln in dcb), dcb
+
+
+@pytest.mark.asyncio
+async def test_unknown_tile_code_grounds_no_phantom_tile(monkeypatch):
+    """A code that isn't a real tile in the event grounds no tile line, so the
+    model can say it's absent instead of inventing it (e.g. 'EDN')."""
+    _patch_full_map(monkeypatch, _ct_placements_from_fixture())
+    out = await ctx.build("is there anything on tile ZZZ in the current ct")
+    assert not [f for f in out.facts if "tile ZZZ" in f]
