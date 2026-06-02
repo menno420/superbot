@@ -355,3 +355,14 @@ async def test_build_grounds_paragon_nonlinear_scaling_note():
     assert "square-root curve" in blob
     # Every grounding line stays within the per-fact cap.
     assert all(len(f) <= 240 for f in ctx.facts)
+
+
+async def test_build_grounds_paragon_roster_and_excludes_heroes():
+    ctx = await btd6_context_service.build("which paragons can't see camo")
+    blob = "\n".join(f for f in ctx.facts if "paragon_roster" in f)
+    assert "exactly 13 paragons" in blob
+    assert "NEVER a paragon" in blob  # the hero-exclusion rule
+    assert "Magus Perfectus" in blob and "Glaive Dominus" in blob
+    # A specific-paragon question must NOT trigger the roster dump.
+    specific = await btd6_context_service.build("Magus Perfectus cost")
+    assert not any("paragon_roster" in f for f in specific.facts)

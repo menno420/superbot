@@ -53,6 +53,62 @@ class CapabilityHit:
     detail: str  # e.g. "innate (0-0-0)" or "Explosion at base" / "from 0-2-0"
 
 
+# Curated per-paragon Camo detection. The committed stats can't derive this
+# reliably (the `filterInvisible` flag is absent for several paragons, and the
+# tower-line derivation disagrees with it), so this is the authoritative truth,
+# sourced from each paragon's bloonswiki article + the stats `filterInvisible`
+# where present. Tests assert it covers exactly the 13 paragons.
+_PARAGON_CAMO: dict[str, bool] = {
+    # Innate Camo detection.
+    "apex_plasma_master": True,
+    "ascended_shadow": True,  # also GRANTS global Camo detection to all towers
+    "glaive_dominus": True,  # "innate camo detection for all its attacks"
+    "goliath_doomship": True,
+    "magus_perfectus": True,
+    "master_builder": True,  # Master Builder + its Sentries detect Camo
+    "navarch_of_the_seas": True,
+    "nautic_siege_core": True,
+    # No innate Camo detection — needs external support.
+    "ballistic_obliteration_missile_bunker": False,
+    "crucible_of_steel_and_flame": False,
+    "mega_massive_munitions_factory": False,
+    "herald_of_everfrost": False,
+    "root_of_all_nature": False,
+}
+
+
+@dataclass(frozen=True)
+class ParagonCapabilityHit:
+    """One paragon and whether it has the requested capability."""
+
+    paragon: str  # "Glaive Dominus"
+    tower: str  # "Boomerang Monkey"
+    has_capability: bool
+
+
+def paragons_with_capability(capability: str) -> list[ParagonCapabilityHit]:
+    """Every paragon + whether it has ``capability``.
+
+    Only ``camo_detection`` is supported (curated, authoritative); other
+    capabilities return ``[]`` because they are not verified per-paragon.
+    """
+    if capability != CAMO_DETECTION:
+        return []
+    out: list[ParagonCapabilityHit] = []
+    for paragon_id in btd6_stats_service.list_paragon_ids():
+        pstats = btd6_stats_service.get_paragon_stats(paragon_id)
+        if pstats is None:
+            continue
+        out.append(
+            ParagonCapabilityHit(
+                paragon=pstats.canonical,
+                tower=pstats.tower_canonical,
+                has_capability=_PARAGON_CAMO.get(paragon_id, False),
+            ),
+        )
+    return out
+
+
 def _tier_has_capability(capability: str, tier: dict) -> bool:
     """True when a single tier node satisfies ``capability``."""
     ns = btd6_stats_service.normal_stats(tier)
@@ -134,5 +190,7 @@ __all__ = [
     "PURPLE_POPPING",
     "WHITE_POPPING",
     "CapabilityHit",
+    "ParagonCapabilityHit",
+    "paragons_with_capability",
     "towers_with_capability",
 ]

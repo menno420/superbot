@@ -87,3 +87,33 @@ def test_capabilities_constant_is_the_supported_set():
         cap.WHITE_POPPING,
         cap.PURPLE_POPPING,
     }
+
+
+def test_paragon_camo_covers_all_13_and_splits_correctly():
+    hits = cap.paragons_with_capability(cap.CAMO_DETECTION)
+    # Exactly the 13 tower paragons, no heroes.
+    assert len(hits) == len(ss.list_paragon_ids()) == 13
+    can = {h.paragon for h in hits if h.has_capability}
+    cannot = {h.paragon for h in hits if not h.has_capability}
+    # The five without innate camo (curated from bloonswiki + stats).
+    assert cannot == {
+        "Ballistic Obliteration Missile Bunker",
+        "Crucible of Steel and Flame",
+        "Mega Massive Munitions Factory",
+        "Herald of Everfrost",
+        "Root of all Nature",
+    }
+    # Spot-check the resolved-from-wiki cases.
+    assert "Glaive Dominus" in can  # "innate camo detection"
+    assert "Ascended Shadow" in can  # grants global camo detection
+    assert "Herald of Everfrost" not in can  # only receives camo buffs
+
+
+def test_paragon_camo_curation_keys_match_real_paragons():
+    # Every curated key must be a real paragon id (no typos / stale ids).
+    assert set(cap._PARAGON_CAMO) == set(ss.list_paragon_ids())
+
+
+def test_paragons_with_capability_only_supports_camo():
+    assert cap.paragons_with_capability(cap.LEAD_POPPING) == []
+    assert cap.paragons_with_capability("nonsense") == []
