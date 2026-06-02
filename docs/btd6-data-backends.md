@@ -52,19 +52,21 @@ python3.10 scripts/seed_btd6_data.py --dry-run   # preview, no DB
 python3.10 scripts/seed_btd6_data.py             # seed
 ```
 
-**Cutover — removing the data from the repo (gated):** once `!btd6 status`
-reads from Postgres and BTD6 lookups work, `git rm -r disbot/data/btd6/`
-(keeping the generator scripts) and commit. Do this only after the table is
-seeded **and** every consumer reads from PG (see the stats note below).
+**The committed files are kept on purpose.** Production reads from Postgres
+(`BTD6_DATA_BACKEND=postgres`), but the JSON under `disbot/data/btd6/` stays in
+the repo as: the seed source (`!btd6ops seed-data` reads it), the default
+backend for local dev + CI, and a version-controlled backup. They're marked
+`linguist-generated` in `.gitattributes`, so GitHub collapses them in diffs and
+drops them from language stats — the repo stays tidy without losing the safety
+net or the easy re-seed. (Deleting them would break `!btd6ops seed-data` and the
+file backend for ~6 MB of cosmetic savings, so we don't.)
 
 ## Scope note (fixtures vs the stats tree)
 
-`btd6_data_service` (the 7 fixtures) reads through the provider today, so it
-honours `BTD6_DATA_BACKEND` immediately. The per-entity `stats/` tree
-(`btd6_stats_service`, the 5.8 MB bulk) is migrated to the same provider/seam in
-the same series — the seed script already loads `stats/**` into the table, so
-the data is present; the repo-removal cutover waits until the stats loaders read
-from PG too.
+`btd6_data_service` (the 9 fixtures) and `btd6_stats_service` (the per-entity
+`stats/` tree, the 5.8 MB bulk) both read through the provider, so the whole
+data set honours `BTD6_DATA_BACKEND`. `!btd6ops seed-data` loads all 53 blobs
+into the table in one go.
 
 ## CI hermeticity
 
