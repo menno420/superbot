@@ -62,6 +62,12 @@ _ALLOWED_PATHS = {
     # rps_tournament/_helpers, views/blackjack/tournament_views) were
     # removed from this allowlist when they migrated to the service.
     _DISBOT / "services" / "tournament_state_service.py",
+    # The btd6_ct_team_service is the canonical access boundary for the
+    # BTD6_CT_GROUP_ID pointer (a per-guild CT bracket id pasted via
+    # ``!btd6 ctteam``). Like ACTIVE_TOURNAMENT it is a runtime pointer, not
+    # operator-tunable config with a SettingSpec, so it writes through its own
+    # typed service rather than the SettingsMutationPipeline.
+    _DISBOT / "services" / "btd6_ct_team_service.py",
     # Pre-existing callers — migrate to SettingsMutationPipeline in S10.
     # Each entry below corresponds to a per-subsystem S10 sub-PR
     # ("settings/<subsystem>") that will route the call through the

@@ -34,6 +34,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
+        "btd6_ct_team_status",
     }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
@@ -275,6 +276,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
+        "btd6_ct_team_status",
         "get_guild_ai_config",
         "recent_audit",
     }
