@@ -70,3 +70,11 @@ def test_task_contract_routes_upgrades_and_paragon_abilities_to_lookup():
     # knows btd6_lookup covers them (not just towers/heroes/bloons).
     assert "an upgrade by name or abbreviation" in tc
     assert "paragon ability" in tc
+
+
+def test_task_contract_routes_per_degree_paragon_stats_and_forbids_interpolation():
+    tc = instr._TASK_CONTRACT
+    assert "btd6_paragon_stats_at_degree" in tc
+    assert "NON-linear" in tc
+    assert "square-root" in tc
+    assert "interpolate" in tc  # the model must not linearly interpolate degrees

@@ -33,6 +33,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_difficulty_cost",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
+        "btd6_paragon_stats_at_degree",
     }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
@@ -230,6 +231,16 @@ async def test_btd6_superlative_lookup_answers_cost_rankings():
     bad = await registry.handlers["btd6_superlative_lookup"]({"metric": "nope"})
     assert bad["found"] is False
 
+    # Combat ranking — "which paragon has the highest DPS" in one call.
+    dps = await registry.handlers["btd6_superlative_lookup"](
+        {"metric": "paragon_dps", "limit": 1},
+    )
+    assert dps["found"] is True
+    top = dps["results"][0]
+    assert top["unit"] == "DPS (rough)"  # labelled rough, never exact
+    assert top["value"] > 0 and "ROUGH" in top["detail"]
+    assert "cost" not in top  # combat rows aren't dollar amounts
+
 
 async def test_btd6_difficulty_cost_converts_medium_to_all_difficulties():
     # The bot previously claimed BTD6 costs don't change by difficulty; this
@@ -263,6 +274,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_difficulty_cost",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
+        "btd6_paragon_stats_at_degree",
         "get_guild_ai_config",
         "recent_audit",
     }
@@ -531,3 +543,23 @@ async def test_paragon_requirements_tool_validates_target():
     )
     assert out["success"] is False
     assert out["error"]["code"] == "invalid_target"
+
+
+async def test_btd6_paragon_stats_at_degree_returns_nonlinear_breakdown():
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    assert "btd6_paragon_stats_at_degree" in registry.handlers
+    h = registry.handlers["btd6_paragon_stats_at_degree"]
+    r = await h({"paragon": "Goliath Doomship", "degree": 65})
+    assert r["found"] is True
+    assert len(r["attacks"]) == 3
+    main = r["attacks"][0]
+    # Cooldown is the sqrt curve (not linear ~0.49s); the bomb's two projectiles
+    # are exposed rather than collapsed to one number.
+    assert abs(main["cooldown_seconds"] - 0.4215) < 0.001
+    assert {p["name"] for p in main["projectiles"]} >= {"Projectile", "Explosion"}
+    # DPS is present but explicitly a rough estimate, never asserted as exact.
+    assert r["rough_dps"] > 0
+    assert "ROUGH" in r["rough_dps_note"]
+    # Degree defaults to 1 when omitted; unknown paragon degrades cleanly.
+    assert (await h({"paragon": "Ace"}))["degree"] == 1
+    assert (await h({"paragon": "zzz"}))["found"] is False

@@ -505,19 +505,31 @@ async def _btd6_capability_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
 _BTD6_SUPERLATIVE_SPEC = AIToolSpec(
     name="btd6_superlative_lookup",
     description=(
-        "Rank BTD6 costs across the whole roster — use for "
-        "'most/least/cheapest/most expensive …' questions. metric: "
-        "'upgrade_cost' (set tier 1-5 to scope it, e.g. 'most expensive tier "
-        "4 upgrade'), 'tower_cost' (base placement cost), or 'paragon_cost'. "
-        "Set cheapest=true for least expensive (default is most expensive). "
-        "Returns the top matches with their cost."
+        "Rank BTD6 entities across the whole roster in ONE call — use for "
+        "'most/least/highest/lowest/cheapest/most expensive …' questions (e.g. "
+        "'which paragon has the highest DPS', 'longest-range tower') instead of "
+        "looking entities up one by one. COST metrics: 'upgrade_cost' (set tier "
+        "1-5 to scope, e.g. 'priciest tier-4 upgrade'), 'tower_cost' (base "
+        "placement), 'paragon_cost'. COMBAT metrics: 'paragon_dps', "
+        "'paragon_damage', 'paragon_pierce' (paragons at degree 1) and "
+        "'tower_dps', 'tower_damage', 'tower_pierce', 'tower_range' (base 0-0-0 "
+        "towers). DPS is a ROUGH estimate only (sums all projectile damage / "
+        "cooldown; ignores targeting/pierce/AoE) — present it as approximate and "
+        "use 'btd6_paragon_stats_at_degree' for the exact per-attack breakdown; "
+        "rank by '*_pierce' for crowd-clear. Set cheapest=true for the "
+        "lowest/least (default is highest/most). Each result has value, unit, "
+        "what, and a detail string."
     ),
     parameters={
         "type": "object",
         "properties": {
             "metric": {
                 "type": "string",
-                "description": "upgrade_cost, tower_cost, or paragon_cost.",
+                "description": (
+                    "Cost: upgrade_cost, tower_cost, paragon_cost. Combat: "
+                    "paragon_dps, paragon_damage, paragon_pierce, tower_dps, "
+                    "tower_damage, tower_pierce, tower_range."
+                ),
             },
             "tier": {
                 "type": "integer",
@@ -525,7 +537,10 @@ _BTD6_SUPERLATIVE_SPEC = AIToolSpec(
             },
             "cheapest": {
                 "type": "boolean",
-                "description": "Least expensive when true (default false).",
+                "description": (
+                    "Lowest/least when true (cheapest cost, lowest DPS, …); "
+                    "default false = highest/most."
+                ),
             },
             "limit": {
                 "type": "integer",
@@ -559,14 +574,24 @@ async def _btd6_superlative_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     cheapest = bool(arguments.get("cheapest", False))
     limit = _coerce_limit(arguments.get("limit"), default=3, lo=1, hi=25)
     hits = sup.rank(metric, tier=tier, cheapest=cheapest, limit=limit)
+    results: list[dict[str, Any]] = []
+    for h in hits:
+        row: dict[str, Any] = {
+            "value": h.value,
+            "unit": h.unit,
+            "what": h.what,
+            "detail": h.detail,
+            "tower_id": h.tower_id,
+        }
+        if h.unit == "$":  # back-compat for cost-ranking callers
+            row["cost"] = h.cost
+        results.append(row)
     return {
         "found": bool(hits),
         "metric": metric,
         "tier": tier,
         "cheapest": cheapest,
-        "results": [
-            {"cost": h.cost, "what": h.what, "tower_id": h.tower_id} for h in hits
-        ],
+        "results": results,
     }
 
 
@@ -908,6 +933,89 @@ async def _paragon_requirements(arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- btd6_paragon_stats_at_degree -------------------------------------------
+
+_BTD6_PARAGON_STATS_AT_DEGREE_SPEC = AIToolSpec(
+    name="btd6_paragon_stats_at_degree",
+    description=(
+        "Exact paragon stats at a specific DEGREE (1-100), as a per-attack "
+        "breakdown. USE THIS instead of interpolating between the Degree 1 and "
+        "Degree 100 numbers — paragons scale NON-linearly (attack speed is a "
+        "square-root curve, damage/pierce jump to ~2x at Degree 100), so linear "
+        "interpolation is wrong. Give 'paragon' (a paragon name or its tower, "
+        "e.g. 'Goliath Doomship' or 'Ace') and a 'degree' (1-100). Returns each "
+        "attack with its exact cooldown and every projectile's damage/pierce "
+        "(quote these for anything precise), the boss-damage multiplier, and "
+        "cumulative power, plus 'rough_dps' — a ROUGH estimate only (sums all "
+        "projectile damage / cooldown; ignores targeting/pierce/AoE/uptime). "
+        "Present DPS as approximate; never as an exact figure."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "paragon": {
+                "type": "string",
+                "description": (
+                    "Paragon name or its tower, e.g. 'Goliath Doomship' or 'Ace'."
+                ),
+            },
+            "degree": {
+                "type": "integer",
+                "description": "1-100; the degree to compute stats for (default 1).",
+            },
+        },
+        "required": ["paragon"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_paragon_stats_at_degree(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_stats_service as ss
+
+    paragon = str(arguments.get("paragon") or "").strip()
+    paragon_id = ss.resolve_paragon(paragon) if paragon else None
+    if paragon_id is None:
+        return {"found": False, "note": f"no paragon matched {paragon!r}"}
+
+    degree_arg = arguments.get("degree", 1)
+    try:
+        degree = int(degree_arg) if degree_arg is not None else 1
+    except (TypeError, ValueError):
+        return {"found": False, "note": "degree must be an integer 1-100"}
+
+    stats = ss.paragon_stats_at_degree(paragon_id, degree)
+    if stats is None:
+        return {"found": False, "note": f"{paragon_id} has no computable attack"}
+    return {
+        "found": True,
+        "paragon": stats.canonical,
+        "tower": stats.tower_canonical,
+        "degree": stats.degree,
+        "attacks": [
+            {
+                "name": atk.name,
+                "cooldown_seconds": atk.cooldown,
+                "projectiles": [
+                    {"name": name, "damage": dmg, "pierce": pierce}
+                    for (name, dmg, pierce) in atk.projectiles
+                ],
+            }
+            for atk in stats.attacks
+        ],
+        "rough_dps": stats.rough_dps,
+        "rough_dps_note": (
+            "ROUGH estimate only — sums all projectile damage / cooldown across "
+            "every attack; ignores targeting, pierce, AoE, and uptime. Use the "
+            "per-attack breakdown above for exact damage/cooldown; do not present "
+            "rough_dps as a precise DPS figure."
+        ),
+        "boss_damage_multiplier": stats.boss_multiplier,
+        "power": stats.power,
+    }
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -951,6 +1059,7 @@ def build_registry(
         (_BTD6_DIFFICULTY_COST_SPEC, _btd6_difficulty_cost),
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
+        (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]

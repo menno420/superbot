@@ -476,6 +476,24 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
             f"(stats scale per degree 1-100; source: {src})",
         ),
     )
+    # The two anchors above are endpoints, not a line: spell out the real
+    # (non-linear) curve so the model doesn't interpolate Degree 1<->100 linearly.
+    lines.append(
+        _cap(
+            "[btd6_paragon_stats scaling] Paragon stats do NOT scale linearly "
+            "with degree — never interpolate linearly between Degree 1 and 100. "
+            "Damage and pierce rise about +1% of base per degree, then jump to "
+            "~2x base (base*2+10) at Degree 100.",
+        ),
+    )
+    lines.append(
+        _cap(
+            "[btd6_paragon_stats scaling] Attack speed is a square-root curve: "
+            "cooldown = rate / (1 + 0.01*sqrt(50*(degree-1))), so early degrees "
+            "gain most. Boss-damage steps every 20 degrees (1.0 to 2.0), 2.25 "
+            "at Degree 100.",
+        ),
+    )
     return lines
 
 

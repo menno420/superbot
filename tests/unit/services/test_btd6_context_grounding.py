@@ -346,3 +346,12 @@ async def test_build_grounds_paragon_by_ability_name():
 async def test_build_states_apex_plasma_master_has_no_ability():
     ctx = await btd6_context_service.build("does Apex Plasma Master have an ability")
     assert any("no activated ability" in f for f in ctx.facts)
+
+
+async def test_build_grounds_paragon_nonlinear_scaling_note():
+    ctx = await btd6_context_service.build("Magus Perfectus stats at degree 50")
+    blob = "\n".join(ctx.facts)
+    assert "do NOT scale linearly" in blob
+    assert "square-root curve" in blob
+    # Every grounding line stays within the per-fact cap.
+    assert all(len(f) <= 240 for f in ctx.facts)

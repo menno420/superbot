@@ -182,3 +182,41 @@ def test_hero_level_progression_uses_normal_stats():
     assert l20.pierce == 9  # pierce climbs with level
     assert l20.cooldown < l1.cooldown  # attacks faster at max level
     assert l20.can_see_camo is True  # Quincy gains camo detection by level 20
+
+
+def test_paragon_stats_at_degree_gives_nonlinear_per_attack_breakdown():
+    pid = svc.resolve_paragon("Goliath Doomship")
+    assert pid == "goliath_doomship"
+    s = svc.paragon_stats_at_degree(pid, 65)
+    # Authoritative breakdown: 3 attacks, each with its real projectiles — the
+    # main bomb keeps BOTH its direct projectile AND its explosion (the exact
+    # components that a single "DPS" number hides).
+    assert len(s.attacks) == 3
+    main = s.attacks[0]
+    assert {p[0] for p in main.projectiles} >= {"Projectile", "Explosion"}
+    # Cooldown is the sqrt curve, NOT linear interpolation (~0.49s).
+    assert abs(main.cooldown - 0.4215) < 0.001
+    # rough_dps is only an estimate (sum of all projectiles / cooldown), > 0.
+    assert s.rough_dps > 0
+    # Degree-100 jump: a projectile's damage = base*2 + 10, not a linear trend.
+    d1 = svc.paragon_stats_at_degree(pid, 1).attacks[0].projectiles[0][1]
+    d100 = svc.paragon_stats_at_degree(pid, 100).attacks[0].projectiles[0][1]
+    assert d100 == round(d1 * 2 + 10, 1)
+
+
+def test_rough_attack_dps_sums_all_projectiles_and_is_none_for_economy():
+    # Goliath's main bomb = 200 (direct) + 300 (explosion) per shot, so the rough
+    # DPS counts both, not just the highest.
+    goliath = svc.get_paragon_stats("goliath_doomship").base["attacks"]
+    main_only = svc.main_projectile_stats(goliath, 1)[0] / 0.66  # explosion / cd
+    rough = svc.rough_attack_dps(goliath[:1], 1)  # just the main attack
+    assert rough > main_only  # summing both projectiles beats the single highest
+    # No damaging attack (e.g. an economy tower's tier) -> None.
+    assert svc.rough_attack_dps([]) is None
+
+
+def test_resolve_paragon_by_name_and_tower():
+    assert svc.resolve_paragon("Magus Perfectus") == "magus_perfectus"
+    assert svc.resolve_paragon("wizard") == "magus_perfectus"
+    assert svc.resolve_paragon("Monkey Ace") == "goliath_doomship"
+    assert svc.resolve_paragon("not a tower") is None
