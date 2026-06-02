@@ -17,7 +17,6 @@ Pure data access — no Discord, no network (the bot never fetches at runtime;
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -182,11 +181,23 @@ _PARAGON_CACHE: dict[str, ParagonStats | None] = {}
 _PARAGON_BY_TOWER: dict[str, str] | None = None
 
 
+def _read_blob(relpath: str) -> dict | None:
+    """Read one stats blob through the active BTD6 data backend.
+
+    Routes the per-entity stats reads through the same provider as the
+    fixtures (``btd6_data_service``), so the stats tree honours
+    ``BTD6_DATA_BACKEND`` (file / postgres / cloud) too. Lazy import keeps the
+    module load order independent.
+    """
+    from services import btd6_data_service
+
+    return btd6_data_service.read_blob(relpath)
+
+
 def _load(tower_id: str) -> TowerStats | None:
-    path = STATS_ROOT / f"{tower_id}.json"
-    if not path.exists():
+    data = _read_blob(f"stats/{tower_id}.json")
+    if data is None:
         return None
-    data = json.loads(path.read_text(encoding="utf-8"))
     return TowerStats(
         tower_id=data.get("tower_id", tower_id),
         canonical=data.get("canonical", ""),
@@ -208,10 +219,9 @@ def get_tower_stats(tower_id: str) -> TowerStats | None:
 
 
 def _load_hero(hero_id: str) -> HeroStats | None:
-    path = HERO_STATS_ROOT / f"{hero_id}.json"
-    if not path.exists():
+    data = _read_blob(f"stats/heroes/{hero_id}.json")
+    if data is None:
         return None
-    data = json.loads(path.read_text(encoding="utf-8"))
     return HeroStats(
         hero_id=data.get("hero_id", hero_id),
         canonical=data.get("canonical", ""),
@@ -233,13 +243,10 @@ def get_hero_stats(hero_id: str) -> HeroStats | None:
     return _HERO_CACHE[hero_id]
 
 
-_PARAGON_DESCRIPTIONS_PATH = (
-    Path(__file__).resolve().parents[1] / "data" / "btd6" / "paragon_descriptions.json"
-)
+# Paragon overviews + ability prose live in their own committed blobs
+# (paragon_descriptions.json / paragon_abilities.json) so a stats re-fetch
+# never clobbers them; read through the provider via ``_read_blob``.
 _PARAGON_DESCRIPTIONS: dict[str, str] | None = None
-_PARAGON_ABILITIES_PATH = (
-    Path(__file__).resolve().parents[1] / "data" / "btd6" / "paragon_abilities.json"
-)
 _PARAGON_ABILITIES: dict[str, tuple[ParagonAbility, ...]] | None = None
 
 
@@ -250,13 +257,8 @@ def _descriptions() -> dict[str, str]:
     """
     global _PARAGON_DESCRIPTIONS
     if _PARAGON_DESCRIPTIONS is None:
-        try:
-            data = json.loads(
-                _PARAGON_DESCRIPTIONS_PATH.read_text(encoding="utf-8"),
-            )
-            _PARAGON_DESCRIPTIONS = dict(data.get("descriptions", {}))
-        except (OSError, ValueError):
-            _PARAGON_DESCRIPTIONS = {}
+        data = _read_blob("paragon_descriptions.json")
+        _PARAGON_DESCRIPTIONS = dict(data.get("descriptions", {})) if data else {}
     return _PARAGON_DESCRIPTIONS
 
 
@@ -270,30 +272,26 @@ def _abilities() -> dict[str, tuple[ParagonAbility, ...]]:
     global _PARAGON_ABILITIES
     if _PARAGON_ABILITIES is None:
         index: dict[str, tuple[ParagonAbility, ...]] = {}
-        try:
-            data = json.loads(_PARAGON_ABILITIES_PATH.read_text(encoding="utf-8"))
-            for paragon_id, rows in (data.get("abilities") or {}).items():
-                index[paragon_id] = tuple(
-                    ParagonAbility(
-                        name=str(row.get("name", "")),
-                        kind=str(row.get("kind", "activated")),
-                        cooldown=row.get("cooldown"),
-                        description=str(row.get("description", "")),
-                    )
-                    for row in rows
-                    if row.get("name")
+        data = _read_blob("paragon_abilities.json")
+        for paragon_id, rows in ((data or {}).get("abilities") or {}).items():
+            index[paragon_id] = tuple(
+                ParagonAbility(
+                    name=str(row.get("name", "")),
+                    kind=str(row.get("kind", "activated")),
+                    cooldown=row.get("cooldown"),
+                    description=str(row.get("description", "")),
                 )
-        except (OSError, ValueError):
-            index = {}
+                for row in rows
+                if row.get("name")
+            )
         _PARAGON_ABILITIES = index
     return _PARAGON_ABILITIES
 
 
 def _load_paragon(paragon_id: str) -> ParagonStats | None:
-    path = PARAGON_STATS_ROOT / f"{paragon_id}.json"
-    if not path.exists():
+    data = _read_blob(f"stats/paragons/{paragon_id}.json")
+    if data is None:
         return None
-    data = json.loads(path.read_text(encoding="utf-8"))
     return ParagonStats(
         paragon_id=data.get("paragon_id", paragon_id),
         tower_id=data.get("tower_id", ""),
@@ -317,11 +315,21 @@ def get_paragon_stats(paragon_id: str) -> ParagonStats | None:
     return _PARAGON_CACHE[paragon_id]
 
 
+_PARAGON_PREFIX = "stats/paragons/"
+_JSON_SUFFIX = ".json"
+
+
 def list_paragon_ids() -> tuple[str, ...]:
-    """All paragon ids that have a committed stats file (sorted)."""
-    if not PARAGON_STATS_ROOT.exists():
-        return ()
-    return tuple(sorted(p.stem for p in PARAGON_STATS_ROOT.glob("*.json")))
+    """All paragon ids that have a stats blob in the active backend (sorted)."""
+    from services import btd6_data_service
+
+    names = btd6_data_service.list_blob_names(_PARAGON_PREFIX)
+    ids = [
+        name[len(_PARAGON_PREFIX) : -len(_JSON_SUFFIX)]
+        for name in names
+        if name.endswith(_JSON_SUFFIX)
+    ]
+    return tuple(sorted(ids))
 
 
 def _paragon_index() -> dict[str, str]:

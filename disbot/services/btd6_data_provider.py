@@ -71,6 +71,15 @@ class FileRawProvider:
             return None
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def list_names(self, prefix: str = "") -> tuple[str, ...]:
+        """Repo-relative ``*.json`` names under ``prefix`` (the glob seam)."""
+        if not self._root.is_dir():
+            return ()
+        names = (
+            p.relative_to(self._root).as_posix() for p in self._root.rglob("*.json")
+        )
+        return tuple(sorted(n for n in names if n.startswith(prefix)))
+
 
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
@@ -139,6 +148,11 @@ class CloudRawProvider:
 
     def load(self, name: str) -> dict[str, Any] | None:
         return self._cache.load(name)
+
+    def list_names(self, prefix: str = "") -> tuple[str, ...]:
+        # Lists the warmed cache dir. Note: cloud warm only fetches the
+        # fixtures, so the stats/ tree is not available on the cloud backend.
+        return FileRawProvider(self._cache_dir).list_names(prefix)
 
     async def warm_cache(
         self,

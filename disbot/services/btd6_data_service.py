@@ -604,6 +604,23 @@ def get_provider() -> BTD6RawProvider:
     return _PROVIDER
 
 
+def read_blob(name: str) -> dict[str, Any] | None:
+    """Read one raw blob through the active provider, or ``None`` if absent.
+
+    ``name`` is relative to the BTD6 data root (e.g. ``"stats/dart_monkey.json"``
+    or ``"paragon_abilities.json"``). Lets ``btd6_stats_service`` read the
+    per-entity stats tree through the same backend as the fixtures so it honours
+    ``BTD6_DATA_BACKEND`` too.
+    """
+    return _PROVIDER.load(name)
+
+
+def list_blob_names(prefix: str = "") -> tuple[str, ...]:
+    """Available blob names under ``prefix`` (the provider-aware glob seam)."""
+    lister = getattr(_PROVIDER, "list_names", None)
+    return lister(prefix) if lister is not None else ()
+
+
 async def warm_provider() -> bool:
     """Populate the active provider's cache if it supports warming (cloud).
 
