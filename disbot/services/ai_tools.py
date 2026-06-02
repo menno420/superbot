@@ -1069,6 +1069,75 @@ async def _btd6_paragon_stats_at_degree(arguments: dict[str, Any]) -> dict[str, 
     }
 
 
+# --- btd6_ct_team_status (guild-scoped) -------------------------------
+
+_BTD6_CT_TEAM_SPEC = AIToolSpec(
+    name="btd6_ct_team_status",
+    description=(
+        "Return THIS server's Contested Territory (CT) TEAM standing for the "
+        "current event: the team's live score and rank within its weekly "
+        "bracket, plus the rival teams it is matched against. Use for 'how is "
+        "our CT team doing', 'our team's score', 'are we winning our bracket', "
+        "'CT team standing'. The team is whichever CT bracket an admin pasted "
+        "with the '!btd6 ctteam' command; if none is set, or the saved id has "
+        "gone stale (Ninja Kiwi rotates it each event), the tool says so — "
+        "relay that instead of guessing. This is team SCORES only: Ninja Kiwi "
+        "does not publish per-tile ownership, so never claim to know which team "
+        "holds which tile."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _make_btd6_ct_team_status(guild_id: int) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import btd6_ct_team_service
+
+        group_id = await btd6_ct_team_service.get_team_group_id(guild_id)
+        if not group_id:
+            return {
+                "configured": False,
+                "note": (
+                    "No CT team is configured for this server. An admin can set "
+                    "one with '!btd6 ctteam <bracket id or group URL>'."
+                ),
+            }
+        result = await btd6_ct_team_service.get_ct_bracket(group_id)
+        if result.ct_id is None:
+            return {
+                "configured": True,
+                "active_event": False,
+                "note": "No Contested Territory event is active right now.",
+            }
+        if result.stale:
+            return {
+                "configured": True,
+                "active_event": True,
+                "stale": True,
+                "note": (
+                    "The saved bracket id returned no teams for the current CT "
+                    "event — Ninja Kiwi rotates it each event, so re-paste this "
+                    "week's bracket id with '!btd6 ctteam <id or URL>'."
+                ),
+            }
+        return {
+            "configured": True,
+            "active_event": True,
+            "ct_event_id": result.ct_id,
+            "bracket": [
+                {"rank": row.rank, "team": row.display_name, "score": row.score}
+                for row in result.rows
+            ],
+        }
+
+    return handler
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -1113,6 +1182,7 @@ def build_registry(
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
         (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),
+        (_BTD6_CT_TEAM_SPEC, _make_btd6_ct_team_status(guild_id)),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
     ]

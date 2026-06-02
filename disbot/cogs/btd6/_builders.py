@@ -660,6 +660,95 @@ async def build_ct_browser_embed() -> discord.Embed:
     return append_context_footer(embed, "btd6_ct:browser")
 
 
+def _ct_team_notice(message: str) -> discord.Embed:
+    return discord.Embed(
+        title="🛡️ BTD6 — Your CT Team",
+        description=message,
+        color=discord.Color.gold(),
+    )
+
+
+async def handle_ctteam(ctx: Any, arg: str) -> discord.Embed:
+    """Drive the ``!btd6 ctteam`` command: view / set / clear.
+
+    Returns an embed for every path so the cog stays a one-line delegate.
+    Setting or clearing the bracket id needs the Manage Server permission;
+    an empty ``arg`` just shows the current team's live standing.
+    """
+    from services import btd6_ct_team_service
+
+    guild = getattr(ctx, "guild", None)
+    if guild is None:
+        return _ct_team_notice("Use this in a server, not a DM.")
+    guild_id = guild.id
+    action = (arg or "").strip()
+    if action:
+        perms = getattr(getattr(ctx, "author", None), "guild_permissions", None)
+        if perms is None or not getattr(perms, "manage_guild", False):
+            return _ct_team_notice(
+                "You need the Manage Server permission to change the CT team.",
+            )
+        if action.lower() == "clear":
+            await btd6_ct_team_service.clear_team_group_id(guild_id)
+            return _ct_team_notice("Cleared this server's CT team.")
+        stored = await btd6_ct_team_service.set_team_group_id(guild_id, action)
+        if stored is None:
+            return _ct_team_notice(
+                "That doesn't look like a CT bracket id or group URL. Paste your "
+                "team's `…/leaderboard/group/<id>` link or the bare id.",
+            )
+    return await build_ct_team_embed(guild_id)
+
+
+async def build_ct_team_embed(guild_id: int) -> discord.Embed:
+    """Show this server's configured CT team and its live bracket standing."""
+    from services import btd6_ct_team_service
+    from utils.btd6.context_footer import append_context_footer
+
+    embed = discord.Embed(title="🛡️ BTD6 — Your CT Team", color=discord.Color.gold())
+    group_id = await btd6_ct_team_service.get_team_group_id(guild_id)
+    if not group_id:
+        embed.description = (
+            "No CT team is set for this server.\n"
+            "An admin can set one with `!btd6 ctteam <bracket id or group URL>` — "
+            "copy your team's `…/leaderboard/group/<id>` link from the CT team "
+            "leaderboard."
+        )
+        return append_context_footer(embed, "btd6_ct:team")
+
+    embed.description = f"Configured bracket id: `{group_id}`"
+    result = await btd6_ct_team_service.get_ct_bracket(group_id)
+    if result.ct_id is None:
+        embed.add_field(
+            name="Status",
+            value="No Contested Territory event is active right now.",
+            inline=False,
+        )
+        return append_context_footer(embed, "btd6_ct:team")
+    if result.stale:
+        embed.add_field(
+            name="⚠️ Stale bracket id",
+            value=(
+                "This id returned no teams for the current CT event. Ninja Kiwi "
+                "rotates bracket ids each event — re-paste this week's with "
+                "`!btd6 ctteam <id or URL>`."
+            ),
+            inline=False,
+        )
+        return append_context_footer(embed, "btd6_ct:team")
+    lines = [
+        f"`#{row.rank}` **{discord.utils.escape_markdown(row.display_name)}** — "
+        f"{row.score:,}"
+        for row in result.rows
+    ]
+    embed.add_field(
+        name=f"Bracket standings (CT {result.ct_id})",
+        value="\n".join(lines)[:1024] or "no teams",
+        inline=False,
+    )
+    return append_context_footer(embed, "btd6_ct:team")
+
+
 # ---------------------------------------------------------------------------
 # refresh-source result builder
 # ---------------------------------------------------------------------------

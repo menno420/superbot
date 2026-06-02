@@ -199,8 +199,7 @@ class BTD6Cog(commands.Cog):
         """Manually refresh one Ninja Kiwi source (staff-only).
 
         Chains (``nk_btd6_ct``) expand into parent + children; single
-        sources return one result. Exception detail is suppressed in the
-        prefix surface because the embed is posted to the channel.
+        sources return one result.
         """
         embed = await _event_helpers.build_refresh_source_payload(
             source_key,
@@ -218,9 +217,8 @@ class BTD6Cog(commands.Cog):
     ) -> None:
         """Show one specific BTD6 event with its tower restrictions.
 
-        ``kind`` is one of race / boss / ct / odyssey / event.
-        ``entity_key`` is the event's API id (use ``!btd6 live <kind>``
-        to discover ids).
+        ``kind`` is race / boss / ct / odyssey / event; ``entity_key`` is the
+        event's API id (use ``!btd6 live <kind>`` to discover ids).
         """
         await ctx.send(embed=await _event_helpers.build_event_payload(kind, entity_key))
 
@@ -261,6 +259,11 @@ class BTD6Cog(commands.Cog):
         await ctx.send(
             embed=await _builders.build_leaderboard_embed(kind, event_id, limit=limit),
         )
+
+    @btd6_group.command(name="ctteam")  # type: ignore[arg-type]
+    async def btd6_ctteam(self, ctx: commands.Context, *, arg: str = "") -> None:
+        """View or set this server's CT team (paste the bracket group id / URL)."""
+        await ctx.send(embed=await _builders.handle_ctteam(ctx, arg))
 
     @btd6_group.command(name="grounding")  # type: ignore[arg-type]
     async def btd6_grounding(

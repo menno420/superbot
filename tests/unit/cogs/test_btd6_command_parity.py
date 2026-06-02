@@ -34,7 +34,10 @@ SLASH_ONLY = frozenset(
 
 # Some commands ship only as prefix (e.g. heavy debug helpers). When
 # adding such an entry, document the rationale in the comment above.
-PREFIX_ONLY: frozenset[str] = frozenset()
+#   ``ctteam`` — admin utility to paste a CT bracket id / group URL. Prefix is
+#   the natural surface for pasting a long URL, and it is a low-traffic config
+#   command (set once per weekly event), so it intentionally has no slash twin.
+PREFIX_ONLY: frozenset[str] = frozenset({"ctteam"})
 
 
 def _tree() -> ast.Module:
