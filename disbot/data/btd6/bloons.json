@@ -543,6 +543,8 @@
         }
       ],
       "properties": [
+        "damage-capped",
+        "pierce-reduction",
         "knockback-immune"
       ],
       "rbe": 194,
@@ -554,7 +556,8 @@
         "diamonds",
         "diamond bloon"
       ],
-      "description": ""
+      "description": "Frontier Legends DLC. Each projectile that hits it loses 5 pierce. Immune to all movement impairment (slow, blowback, knockback, stun). Pops into 1 Fortified Ceramic Bloon.",
+      "popped_by": "any damage type, but each hit deals only 1 damage — always exactly 80 hits to pop regardless of attack power"
     },
     {
       "id": "moab",
