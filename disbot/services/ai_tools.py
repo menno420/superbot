@@ -413,8 +413,16 @@ _BTD6_LOOKUP_SPEC = AIToolSpec(
     min_scope=AIScope.USER,
 )
 
-# Cap returned grounding lines so one chatty entity can't blow the token budget.
-_BTD6_LOOKUP_FACT_CAP = 25
+# Cap returned grounding lines so a runaway query can't blow the token budget.
+# Must clear the grounding's own largest single-query payload, or the tool
+# silently re-truncates what build() already bounded. The biggest legitimate
+# case is a full Contested Territory relic map: btd6_context_service caps it at
+# _CT_TILE_LINE_CAP (48 tile lines) + _CT_RELIC_EFFECT_CAP (24 effect lines),
+# and Pass-2 live-event rows are emitted *before* those tiles — so a cap of 25
+# dropped a 24-relic listing to ~19 once a handful of live events ate the
+# budget. Sit above 48+24 plus live-event preamble; each line is itself capped
+# at 240 chars, so even the maximum payload stays within a sane token budget.
+_BTD6_LOOKUP_FACT_CAP = 80
 
 
 async def _btd6_lookup(arguments: dict[str, Any]) -> dict[str, Any]:

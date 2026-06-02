@@ -219,3 +219,85 @@ async def test_general_ct_question_lists_all_relics_without_14_cap(monkeypatch):
     assert len(tile_lines) == n, (len(tile_lines), n)
     # Distinct relic effects are no longer capped at 8 either.
     assert len(relic_lines) > 8, len(relic_lines)
+
+
+@pytest.mark.asyncio
+async def test_btd6_lookup_tool_lists_all_relics_despite_live_preamble(monkeypatch):
+    """Regression: the btd6_lookup TOOL must surface every relic tile.
+
+    ``build()`` emits all 24 tile lines (the grounding test above proves it),
+    but the live AI path consumes them through the ``btd6_lookup`` tool, which
+    caps the returned facts. In production the live DB is populated, so Pass-2
+    live-event rows are emitted *before* the CT tile lines and eat into that
+    cap — which dropped a 24-relic listing to 19 (the model lists exactly what
+    the tool returns). The grounding-only test never exercised the capped tool
+    path, so it stayed green while the user saw 19. Reproduce a populated live
+    DB + a full 24-relic map and assert all 24 tiles reach the model.
+    """
+    from services import ai_tools, btd6_data_service
+    from services import btd6_live_query_service as live
+
+    relics = btd6_data_service.list_ct_relics()
+    n = len(relics)
+    assert n > 14, "relic catalog must exceed the old cap for this test to bite"
+
+    async def _active(kinds=None):
+        return (
+            live.ActiveEventHeadline(
+                "btd6_ct",
+                "mpejg5d0",
+                "mpejg5d0",
+                None,
+                None,
+                datetime.now(tz=timezone.utc),
+            ),
+        )
+
+    async def _tiles(ct_id, *, relic=None, relics_only=False):
+        return tuple(
+            live.CTTilePlacement(
+                ct_id="mpejg5d0",
+                tile_id=f"T{i:02d}",
+                tile_type="Relic",
+                game_type="Race",
+                relic_name=getattr(r, "canonical", None) or str(getattr(r, "id", "")),
+                relic_id=str(getattr(r, "id", "")),
+                relic_canonical=getattr(r, "canonical", None),
+                fetched_at=datetime.now(tz=timezone.utc),
+                position=None,
+            )
+            for i, r in enumerate(relics)
+        )
+
+    # Production has a populated live DB: several active-event rows render
+    # before the CT tiles and so eat into the tool's fact cap.
+    async def _preamble(_intent):
+        return [
+            {
+                "fact_type": "btd6.event",
+                "entity_kind": "btd6_ct",
+                "entity_key": f"live_event_{i}",
+                "body_json": {"name": f"Live event {i}"},
+                "fetched_at": datetime.now(tz=timezone.utc),
+            }
+            for i in range(6)
+        ]
+
+    monkeypatch.setattr(live, "get_active_events", _active)
+    monkeypatch.setattr(live, "get_ct_tiles", _tiles)
+    monkeypatch.setattr(ctx, "_fetch_live_entity_rows", _preamble)
+
+    res = await ai_tools._btd6_lookup(
+        {"query": "list all active relics in the current ct event"},
+    )
+    tile_lines = [f for f in res["facts"] if f.startswith("[btd6_ct_tile]")]
+    preamble = [
+        f
+        for f in res["facts"]
+        if not f.startswith("[btd6_ct_tile]") and not f.startswith("[btd6_ct_relic]")
+    ]
+    # The preamble must actually render, or this test exerts no cap pressure
+    # and would pass even under a too-small cap (the original blind spot).
+    assert preamble, "live-event preamble did not render; test is toothless"
+    # Every relic tile reaches the model through the capped tool path.
+    assert len(tile_lines) == n, (len(tile_lines), n)
