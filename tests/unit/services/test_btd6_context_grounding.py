@@ -404,3 +404,33 @@ async def test_build_grounds_tower_roster_with_costs_and_category():
     # A named-entity question ("dart monkey stats") must NOT dump the roster.
     specific = await btd6_context_service.build("dart monkey stats")
     assert not any("tower_roster" in f for f in specific.facts)
+
+
+def test_deterministic_roster_reply_lists_full_rosters():
+    # The model can't restate 17+ costs verbatim, so a list request floors to a
+    # code-built roster that is always correct (it IS the source).
+    heroes = btd6_context_service.deterministic_roster_reply("list all heroes")
+    assert heroes is not None
+    assert "17" in heroes
+    for name in ("Quincy", "Benjamin", "Sauda", "Silas"):
+        assert name in heroes
+    assert "$540" in heroes  # Quincy's cost is code-built
+
+    primary = btd6_context_service.deterministic_roster_reply(
+        "list all primary towers"
+    )
+    assert primary is not None and "Dart Monkey" in primary
+    assert "Sniper Monkey" not in primary  # military tower excluded by category
+
+    paragons = btd6_context_service.deterministic_roster_reply("list all paragons")
+    assert paragons is not None and "Apex Plasma Master" in paragons
+
+
+def test_deterministic_roster_reply_skips_strategy_and_specific_questions():
+    # Recommendation/opinion questions must reach the model, not dump a roster.
+    assert btd6_context_service.deterministic_roster_reply("which hero is best") is None
+    assert (
+        btd6_context_service.deterministic_roster_reply("what tower should I use")
+        is None
+    )
+    assert btd6_context_service.deterministic_roster_reply("dart monkey stats") is None

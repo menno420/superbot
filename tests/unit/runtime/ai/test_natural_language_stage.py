@@ -1293,10 +1293,13 @@ def _sent_text(msg) -> str:
 
 
 @pytest.mark.asyncio
-async def test_btd6_hallucinated_roster_is_refused(monkeypatch, stub_services):
-    """The five-heroes repro: an ungrounded BTD6 roster never reaches the user;
-    the deterministic version-stamped refusal does, audited as denied /
-    GROUNDING_FAILED."""
+async def test_btd6_roster_question_serves_deterministic_list(
+    monkeypatch, stub_services
+):
+    """The five-heroes repro: the ungrounded roster never reaches the user, but a
+    roster-LIST question is answered with the deterministic, COMPLETE roster (the
+    model can't restate 17 costs verbatim, so the code-built list is the floor) —
+    audited as replied, not refused."""
     from services import ai_gateway
 
     _route_btd6(monkeypatch)
@@ -1317,12 +1320,15 @@ async def test_btd6_hallucinated_roster_is_refused(monkeypatch, stub_services):
     await AINaturalLanguageStage().process(_make_ctx(msg))
 
     sent = _sent_text(msg)
-    assert "five heroes" not in sent  # model text NOT served
-    assert "verified BTD6 data" in sent
-    assert "54.0" in sent  # version-stamped with what the bot serves
-    assert len(calls) == 2  # regenerate-once attempted
-    assert stub_services[-1]["decision"] == "denied"
-    assert stub_services[-1]["reason_code"] is PolicyDenialReason.GROUNDING_FAILED
+    assert "five heroes" not in sent  # the hallucination is NOT served
+    assert "verified BTD6 data" not in sent  # NOT the refusal floor
+    # The complete deterministic roster is served — including heroes the
+    # hallucination omitted.
+    assert "17" in sent
+    assert "Benjamin" in sent and "Sauda" in sent and "Silas" in sent
+    assert len(calls) == 2  # regenerate-once is still attempted first
+    assert stub_services[-1]["decision"] == "replied"
+    assert stub_services[-1]["reason_code"] is PolicyDenialReason.NONE
 
 
 @pytest.mark.asyncio

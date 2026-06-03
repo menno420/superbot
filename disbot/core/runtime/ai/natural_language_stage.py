@@ -518,10 +518,13 @@ class AINaturalLanguageStage:
                 audit_decision = "degraded"
                 audit_reason = PolicyDenialReason.PROVIDER_UNAVAILABLE
             elif routed.task is AITask.BTD6_ANSWER:
-                await _send_btd6_refusal(message)
+                # Healthy but empty on an in-domain BTD6 question: serve the
+                # deterministic roster for a list request, else the refusal.
+                audit_decision, audit_reason = await _serve_btd6_floor(
+                    message,
+                    raw_text,
+                )
                 sent_refusal = True
-                audit_decision = "denied"
-                audit_reason = PolicyDenialReason.GROUNDING_FAILED
             else:
                 audit_decision = "skipped"
                 audit_reason = PolicyDenialReason.NO_ROUTE_MATCHED
@@ -603,15 +606,10 @@ class AINaturalLanguageStage:
                     )
                     reply_text = retry_text
                 else:
-                    # Floor: deterministic refusal. A degraded retry is a
-                    # provider outage, NOT a grounding failure — keep the
-                    # audit honest so operators can tell them apart.
-                    if response.degraded:
-                        floor_decision = "degraded"
-                        floor_reason = PolicyDenialReason.PROVIDER_UNAVAILABLE
-                    else:
-                        floor_decision = "denied"
-                        floor_reason = PolicyDenialReason.GROUNDING_FAILED
+                    # Floor. A degraded retry is a provider outage, NOT a
+                    # grounding failure — keep that audit honest. A healthy
+                    # grounding failure serves the deterministic roster for a
+                    # list request ("list all heroes"), else the no-data refusal.
                     logger.warning(
                         "btd6_faithfulness: blocked task=%s route=%s guard=%s "
                         "names=%s numbers=%s retry_attempted=True "
@@ -623,7 +621,15 @@ class AINaturalLanguageStage:
                         list(verdict.offending_numbers),
                         response.degraded,
                     )
-                    await _send_btd6_refusal(message)
+                    if response.degraded:
+                        await _send_btd6_refusal(message)
+                        floor_decision = "degraded"
+                        floor_reason = PolicyDenialReason.PROVIDER_UNAVAILABLE
+                    else:
+                        floor_decision, floor_reason = await _serve_btd6_floor(
+                            message,
+                            raw_text,
+                        )
                     await ai_decision_audit_service.record(
                         guild_id=guild_id,
                         channel_id=channel_id,
@@ -970,6 +976,47 @@ async def _send_btd6_refusal(message: discord.Message) -> None:
             getattr(message, "id", None),
             exc_info=True,
         )
+
+
+async def _serve_btd6_floor(
+    message: discord.Message,
+    raw_text: str,
+) -> tuple[str, PolicyDenialReason]:
+    """Floor for a healthy BTD6 answer that produced no groundable reply.
+
+    For a clear roster-LIST request ("list all heroes", "list all towers") send
+    the deterministic, code-built roster — the model cannot restate 17+ costs
+    verbatim, so a single mismatch refused the whole list; the roster *is* the
+    source, so it always answers. Otherwise send the version-stamped no-data
+    refusal. Returns the ``(decision, reason_code)`` to audit.
+    """
+    roster: str | None = None
+    try:
+        from services import btd6_context_service
+
+        roster = btd6_context_service.deterministic_roster_reply(raw_text)
+    except Exception:
+        logger.warning("btd6 deterministic roster build failed", exc_info=True)
+
+    if roster:
+        try:
+            reference = message.to_reference(fail_if_not_exists=False)
+            for index, chunk in enumerate(_split_for_discord(roster)):
+                await message.channel.send(
+                    chunk,
+                    allowed_mentions=discord.AllowedMentions.none(),
+                    reference=reference if index == 0 else None,
+                )
+        except discord.HTTPException:
+            logger.warning(
+                "btd6 roster send failed for message=%s",
+                getattr(message, "id", None),
+                exc_info=True,
+            )
+        return "replied", PolicyDenialReason.NONE
+
+    await _send_btd6_refusal(message)
+    return "denied", PolicyDenialReason.GROUNDING_FAILED
 
 
 def _wrap_handlers_for_ledger(

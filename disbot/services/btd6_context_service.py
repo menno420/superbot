@@ -1265,6 +1265,114 @@ def _entity_roster_facts(message_text: str) -> list[str]:
     return out
 
 
+# Strategy / opinion words → the user wants a recommendation, not an
+# enumeration. The model handles those; the deterministic roster must NOT fire.
+_ROSTER_STRATEGY_WORDS = (
+    "best",
+    "worst",
+    "should",
+    "good for",
+    "recommend",
+    "better",
+    " vs ",
+    "versus",
+    "against",
+    "counter",
+    "strateg",
+    "tier list",
+    "for round",
+)
+
+# Phrases that clearly request a complete enumeration.
+_ROSTER_LIST_INTENT = (
+    "list",
+    "how many",
+    "name all",
+    "name every",
+    "name the",
+    "are there",
+    "in the game",
+    "exist",
+    "all of the",
+    "what are all",
+)
+
+
+def deterministic_roster_reply(message_text: str) -> str | None:
+    """A clean, code-built roster for a clear LIST request, or ``None``.
+
+    Heroes / towers / paragons enumerated deterministically from the dataset,
+    so the answer is always correct and never tripped by the faithfulness guard
+    (it *is* the source). The natural-language stage sends this as the floor for
+    a roster-list question — the model cannot reliably restate 17+ costs
+    verbatim, so a single mismatched cost refused the whole list. Returns
+    ``None`` for strategy/opinion questions ("which hero is best") so those
+    still reach the model, and for anything that is not a clear enumeration.
+    """
+    text = (message_text or "").lower()
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    is_list = any(phrase in text for phrase in _ROSTER_LIST_INTENT) or (
+        "all " in text or "every " in text
+    )
+    if not is_list:
+        return None
+
+    from services import btd6_data_service
+
+    dataset = btd6_data_service.get_dataset()
+
+    if "paragon" in text:
+        from utils.btd6 import paragon_math
+
+        lines = [
+            f"• **{paragon.name}** — {paragon.tower} "
+            f"(${paragon.base_price_medium:,})"
+            for paragon in paragon_math.PARAGONS
+        ]
+        return (
+            f"**BTD6 Paragons ({len(lines)})** — one per eligible tower, "
+            "base price on medium:\n" + "\n".join(lines)
+        )
+
+    if "hero" in text:
+        lines = [
+            (
+                f"• **{hero.canonical}** — ${hero.base_cost}"
+                if getattr(hero, "base_cost", None)
+                else f"• **{hero.canonical}**"
+            )
+            for hero in dataset.heroes
+        ]
+        return (
+            f"**BTD6 Heroes ({len(lines)})** — base placement cost (medium):"
+            "\n" + "\n".join(lines)
+        )
+
+    if "tower" in text:
+        cats = [c for c in ("primary", "military", "magic", "support") if c in text]
+        towers = [t for t in dataset.towers if not cats or t.category in cats]
+        if not towers:
+            return None
+        if cats:
+            label = "/".join(c.capitalize() for c in cats)
+            body = "\n".join(f"• **{t.canonical}** — ${t.base_cost}" for t in towers)
+            return (
+                f"**BTD6 {label} Towers ({len(towers)})** — base cost "
+                "(medium):\n" + body
+            )
+        out: list[str] = [f"**BTD6 Towers ({len(towers)})** — base cost (medium):"]
+        for cat in ("primary", "military", "magic", "support"):
+            group = [t for t in towers if t.category == cat]
+            if not group:
+                continue
+            out.append(f"__{cat.capitalize()}__")
+            out.extend(f"• **{t.canonical}** — ${t.base_cost}" for t in group)
+        return "\n".join(out)
+
+    return None
+
+
 def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:
     """Ground a paragon named directly (e.g. "what are Glaive Dominus's stats?").
 
