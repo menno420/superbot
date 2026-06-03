@@ -442,6 +442,56 @@ async def _btd6_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     return {"found": bool(facts), "facts": facts, "source": ctx.source_summary}
 
 
+# --- btd6_list_roster --------------------------------------------------
+
+_BTD6_LIST_ROSTER_SPEC = AIToolSpec(
+    name="btd6_list_roster",
+    description=(
+        "List the COMPLETE verified roster of a BTD6 entity kind — every hero, "
+        "tower, or paragon by name, with the exact count. Use for 'list all "
+        "heroes', 'which heroes are in the game', 'how many towers are there', "
+        "'name every paragon'. Returns the full canonical list so you never "
+        "guess a count or miss an entry — state the names from this list "
+        "verbatim. ``kind`` must be one of: heroes, towers, paragons."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "kind": {
+                "type": "string",
+                "enum": ["heroes", "towers", "paragons"],
+                "description": "Which roster to list.",
+            },
+        },
+        "required": ["kind"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_list_roster(arguments: dict[str, Any]) -> dict[str, Any]:
+    kind = str(arguments.get("kind") or "").strip().lower()
+    # Lazy import: keep the BTD6 data layer off the import path until used.
+    from services import btd6_data_service
+
+    if kind == "heroes":
+        names = [hero.canonical for hero in btd6_data_service.get_dataset().heroes]
+    elif kind == "towers":
+        names = [tower.canonical for tower in btd6_data_service.get_dataset().towers]
+    elif kind == "paragons":
+        from utils.btd6.paragon_math import PARAGONS
+
+        names = [paragon.name for paragon in PARAGONS]
+    else:
+        return {
+            "found": False,
+            "kind": kind,
+            "note": "kind must be one of: heroes, towers, paragons",
+        }
+    return {"found": True, "kind": kind, "count": len(names), "names": names}
+
+
 # --- btd6_capability_lookup --------------------------------------------
 
 _BTD6_CAPABILITY_SPEC = AIToolSpec(
@@ -1146,6 +1196,27 @@ class ToolRegistry:
     handlers: Mapping[str, ToolHandler]
 
 
+# Tools whose results are BTD6 *facts* and may therefore ground a BTD6 answer.
+# The natural-language stage captures ONLY these tools' outputs into the
+# faithfulness ledger — server/user/config tools (member counts, timestamps,
+# IDs) must never whitelist a hallucinated BTD6 name or number. Keep in sync
+# with the ``btd6_*`` specs above; ``tests/unit/services/test_ai_tools.py``
+# pins this set ⊆ the registered ``btd6_*`` tool names so it cannot drift.
+BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
+    {
+        "btd6_lookup",
+        "btd6_list_roster",
+        "btd6_capability_lookup",
+        "btd6_superlative_lookup",
+        "btd6_difficulty_cost",
+        "btd6_paragon_calculate",
+        "btd6_paragon_requirements",
+        "btd6_paragon_stats_at_degree",
+        "btd6_ct_team_status",
+    },
+)
+
+
 def build_registry(
     *,
     scope: AIScope,
@@ -1176,6 +1247,7 @@ def build_registry(
         (_USER_STANDING_SPEC, _make_user_standing(guild_id, actor_id, member)),
         (_SERVER_TIME_SPEC, _server_time),
         (_BTD6_LOOKUP_SPEC, _btd6_lookup),
+        (_BTD6_LIST_ROSTER_SPEC, _btd6_list_roster),
         (_BTD6_CAPABILITY_SPEC, _btd6_capability_lookup),
         (_BTD6_SUPERLATIVE_SPEC, _btd6_superlative_lookup),
         (_BTD6_DIFFICULTY_COST_SPEC, _btd6_difficulty_cost),
@@ -1216,4 +1288,4 @@ def build_registry(
     return ToolRegistry(specs=tuple(specs), handlers=handlers)
 
 
-__all__ = ["ToolRegistry", "build_registry"]
+__all__ = ["BTD6_GROUNDING_TOOL_NAMES", "ToolRegistry", "build_registry"]
