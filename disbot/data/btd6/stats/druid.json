@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Hard Thorns",
       "cost": 350,
-      "xp": 150
+      "xp": 150,
+      "description": "Hard thorns can pop 2 Bloons each and pop any Bloon type."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Heart of Thunder",
       "cost": 850,
-      "xp": 750
+      "xp": 750,
+      "description": "Unleashes regular blasts of forked lightning that arc from Bloon to Bloon."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Druid of the Storm",
       "cost": 1700,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Gusts of wind blow Bloons off the track away from the exit."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Ball Lightning",
       "cost": 4500,
-      "xp": 12000
+      "xp": 12000,
+      "description": "Able to perceive Camo Bloons. Creates powerful balls of lightning that can freeze Bloons. Additional lightning bolts arc off main attack to nearby Bloons."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Monarch of Storms",
       "cost": 60000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Calls forth a relentless barrage of superstorms. Blasts all Bloon types for massive damage and blows them away from the exit."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Thorn Swarm",
       "cost": 250,
-      "xp": 140
+      "xp": 140,
+      "description": "Shoots 8 thorns per shot instead of 5."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Heart of Oak",
       "cost": 350,
-      "xp": 600
+      "xp": 600,
+      "description": "Attacks convert Regrow Bloons into normal Bloons. Gains 1% pierce for every life gained from the starting value after the upgrade. Maxes at 100% and diminishes if lives are lost."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Druid of the Jungle",
       "cost": 1050,
-      "xp": 2000
+      "xp": 2000,
+      "description": "Calls a vine from the ground to entangle and crush Bloons one at a time, leaving behind a deadly thorn pile."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Jungle's Bounty",
       "cost": 4900,
-      "xp": 11000
+      "xp": 11000,
+      "description": "Vines create stronger thorn piles. Druid generates cash and lives at the end of each round, plus extra cash per Banana Farm near the Druid. Vine Crush Ability: Vines grab many Bloons at once, following Druid's target priority."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Spirit of the Forest",
       "cost": 35000,
-      "xp": 40000
+      "xp": 40000,
+      "description": "Grows thorned vines along the path that deal constant damage and bonus damage to ceramics. Vines nearest the Spirit of the Forest do more damage. Activated ability grabs more Bloons."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Druidic Reach",
       "cost": 100,
-      "xp": 120
+      "xp": 120,
+      "description": "Increases range by a large amount."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Heart of Vengeance",
       "cost": 300,
-      "xp": 550
+      "xp": 550,
+      "description": "Gains 10% attack speed and 1% for every life lost from the starting value after the upgrade. Maxes at 50% and diminishes if lives are restored."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Druid of Wrath",
       "cost": 600,
-      "xp": 1700
+      "xp": 1700,
+      "description": "Gains attack speed during the round as long as the Druid is attacking Bloons."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Poplust",
       "cost": 2350,
-      "xp": 14000
+      "xp": 14000,
+      "description": "Boosts attack speed and pierce for other Druids in the radius. Can stack up to 5 times on any single Druid."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Avatar of Wrath",
       "cost": 45000,
-      "xp": 33000
+      "xp": 33000,
+      "description": "The more Bloons there are, the more damage it does!"
     }
   ],
   "tiers": {

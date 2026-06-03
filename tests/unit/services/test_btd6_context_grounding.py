@@ -293,7 +293,11 @@ async def test_build_grounds_upgrade_by_abbreviation_without_tower():
 async def test_build_grounds_upgrade_minion_pierce_detail():
     ctx = await btd6_context_service.build("Prince of Darkness minion pierce?")
     blob = "\n".join(ctx.facts)
-    reanimate = next(line for line in ctx.facts if "Reanimate" in line)
+    # Match the Reanimate *attack* line, not the textTable description line (which
+    # also contains "Reanimate") — key off the per-attack "pierce" stat.
+    reanimate = next(
+        line for line in ctx.facts if "Reanimate" in line and "pierce" in line
+    )
     assert "1 pierce" in reanimate
     assert "Undead Bloon buff" in blob
 

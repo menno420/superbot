@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Permafrost",
       "cost": 150,
-      "xp": 160
+      "xp": 160,
+      "description": "Bloons move slowly even after thawing out."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Cold Snap",
       "cost": 350,
-      "xp": 500
+      "xp": 500,
+      "description": "Can freeze and pop Lead and Camo Bloons."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Ice Shards",
       "cost": 1500,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Removes Camo and Regrow properties when damaging Bloons. Razor sharp shards fly out when Frozen Bloons pop."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Embrittlement",
       "cost": 2300,
-      "xp": 8250
+      "xp": 8250,
+      "description": "Can hit MOAB-class Bloons. All hit Bloons become brittle, taking extra damage while frozen, and losing Lead immunity for a short time."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Super Brittle",
       "cost": 28000,
-      "xp": 25000
+      "xp": 25000,
+      "description": "Bloons take huge damage while frozen, while Ice Shards rip through Ceramic Bloons like paper!"
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Enhanced Freeze",
       "cost": 200,
-      "xp": 160
+      "xp": 160,
+      "description": "Attacks faster and freezes for longer."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Deep Freeze",
       "cost": 300,
-      "xp": 500
+      "xp": 500,
+      "description": "Increases pierce, freezes an extra layer and freeze lasts longer."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Arctic Wind",
       "cost": 2750,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Gains a super cold aura that slows Bloons and freezes water nearby."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Snowstorm",
       "cost": 4000,
-      "xp": 8500
+      "xp": 8500,
+      "description": "Snowstorm Ability: Freezes all regular Bloons on screen, briefly freezes White, Zebra, and Camo, and slows MOAB-class."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Absolute Zero",
       "cost": 21000,
-      "xp": 27500
+      "xp": 27500,
+      "description": "Each attack freezes all Bloons everywhere for a short time. Snowstorm freezes all Bloon types for even longer while greatly increasing attack speed of all Ice Monkeys for the duration."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Larger Radius",
       "cost": 150,
-      "xp": 160
+      "xp": 160,
+      "description": "Larger freeze area."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Re-Freeze",
       "cost": 200,
-      "xp": 500
+      "xp": 500,
+      "description": "Can re-freeze Bloons that are already frozen."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Cryo Cannon",
       "cost": 1900,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Rapidly shoots smaller ice bombs over longer range."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Icicles",
       "cost": 2750,
-      "xp": 9000
+      "xp": 9000,
+      "description": "Does bonus damage to MOAB-Class Bloons. Frozen Bloons grow sharp icicles that can pop Bloons that touch them."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Icicle Impale",
       "cost": 30000,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Shoots huge icicle spikes that do huge damage to MOAB-Class Bloons and freezes them."
     }
   ],
   "tiers": {

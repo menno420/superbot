@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Quickdraw",
       "cost": 200,
-      "xp": 200
+      "xp": 200,
+      "description": "Attacks faster the further Bloons are from Desperado."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Standoff",
       "cost": 200,
-      "xp": 450
+      "xp": 450,
+      "description": "Attacks faster the fewer Bloons are in range."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Big Iron",
       "cost": 1200,
-      "xp": 2100
+      "xp": 2100,
+      "description": "Upgrades pistol to a 6-shot revolver. Attacks even faster the fewer Bloons are in range."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Twin Sixes",
       "cost": 5800,
-      "xp": 9500
+      "xp": 9500,
+      "description": "Gains twin higher damage revolvers."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "The Blazing Sun",
       "cost": 16500,
-      "xp": 29000
+      "xp": 29000,
+      "description": "They say Desperado shoots so fast them revolvers catch alight."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Eagle Eye",
       "cost": 150,
-      "xp": 200
+      "xp": 200,
+      "description": "Desperado can see Camo Bloons."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Bullseye",
       "cost": 350,
-      "xp": 650
+      "xp": 650,
+      "description": "Shots get a chance to Crit. Chance to Crit goes up when target Bloon is further away."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Deadeye",
       "cost": 3000,
-      "xp": 3750
+      "xp": 3750,
+      "description": "Take Aim ability: target Monkey gains improved range, accuracy, and Camo detection. Desperado gains a long range rifle to use against distant targets. Rifle shots excel against Fortified targets and can pop Lead Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Bounty Hunter",
       "cost": 6000,
-      "xp": 18000
+      "xp": 18000,
+      "description": "Marked to Pop ability: Marks extra Bloons, then proceeds to attack all Marked Bloons. Marked Bloons take more damage and give more cash. All Desperados can target Marked Bloons."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Golden Justice",
       "cost": 42000,
-      "xp": 40000
+      "xp": 40000,
+      "description": "They say Desperado's longarm can hit clean through an army of Bloons."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Wanderer",
       "cost": 220,
-      "xp": 150
+      "xp": 150,
+      "description": "A Wanderer works best alone. Desperado attacks much faster, but less so when more Monkeys are in each weapon's attack range."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Nomad",
       "cost": 280,
-      "xp": 600
+      "xp": 600,
+      "description": "Attacks faster the more Bloons are in range. When lives are lost gets temporary range and attack speed increase, plus a small amount of cash if a Bloon leaked."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Enforcer",
       "cost": 2100,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Uses a shotgun that can knock back Bloons when they get within close range."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Avenger",
       "cost": 9500,
-      "xp": 14000
+      "xp": 14000,
+      "description": "Shotgun hits release shrapnel and can even knock back MOABs. When lives are lost, weaker Bloons only take 1 life each for a short time."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "The Desert Phantom",
       "cost": 31000,
-      "xp": 29000
+      "xp": 29000,
+      "description": "They say Desperado hits so hard it's like a mine blast."
     }
   ],
   "tiers": {

@@ -1266,8 +1266,79 @@ def overlay_payload(committed: dict, mapped: dict, version: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# textTable description overlay — wire the game-authored "what this upgrade
+# grants" prose onto the curated tower files (the in-game-description half of
+# the end goal). Kept separate from the numeric overlay above: descriptions are
+# verbatim game `textTable` strings keyed reliably by the upgrade's `LocsKey`
+# (resolved in `_upgrades_for`) and aligned by `(path, tier)`, so unlike the
+# fragile projectile/ability name match they are always safe to write — and they
+# SHOULD refresh on every dump re-pull (they track the game version), so they
+# live inline in the fixtures, not in a curated sidecar.
+# ---------------------------------------------------------------------------
+
+
+def apply_upgrade_descriptions(committed: dict, mapped: dict) -> list[str]:
+    """Set each committed upgrade's ``description`` from the mapped (game) prose,
+    aligned by ``(path, tier)``; return the list of changes. Names are frozen —
+    a description write must never disturb a curated name.
+    """
+    names_before = collect_names(committed)
+    mmap = {
+        (u.get("path"), u.get("tier")): u
+        for u in mapped.get("upgrades", []) or []
+        if isinstance(u, dict)
+    }
+    changes: list[str] = []
+    for up in committed.get("upgrades", []) or []:
+        if not isinstance(up, dict):
+            continue
+        m = mmap.get((up.get("path"), up.get("tier")))
+        if not m:
+            continue
+        new = m.get("description")
+        if not isinstance(new, str) or not new.strip():
+            continue
+        if up.get("description") != new:
+            old = up.get("description")
+            up["description"] = new
+            verb = "set" if not old else "refreshed"
+            changes.append(
+                f"upgrade[{up.get('path')}-{up.get('tier')}].description {verb}",
+            )
+    assert_names_preserved(
+        names_before,
+        collect_names(committed),
+        label="descriptions",
+    )
+    return changes
+
+
+def overlay_descriptions(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
+    """Write game-authored upgrade descriptions onto every curated tower file.
+    Heroes (no upgrades) and paragons (curated sidecar prose) are out of scope.
+    Returns ``{relative_path: [change, …]}`` for files that changed.
+    """
+    towers, _heroes = build_allowlist(dump)
+    version = _dump_version(dump)
+    report: dict[str, list[str]] = {}
+    for tid, canonical in towers.items():
+        fp = _STATS_DIR / f"{tid}.json"
+        if not fp.exists():
+            continue
+        committed = json.loads(fp.read_text("utf-8"))
+        mapped = map_tower(dump, tid, canonical, version).payload
+        changes = apply_upgrade_descriptions(committed, mapped)
+        if changes:
+            report[f"stats/{tid}.json"] = changes
+            if not dry_run:
+                _write(fp, committed)
+    return report
+
+
+# ---------------------------------------------------------------------------
 # Anchors + CLI
 # ---------------------------------------------------------------------------
+
 
 _ANCHORS = {"DartMonkey": 200.0, "SuperMonkey": 2500.0}
 
@@ -1353,6 +1424,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="refresh trusted v55 numbers onto curated tower/hero files",
     )
+    ap.add_argument(
+        "--descriptions",
+        action="store_true",
+        help="write game-authored textTable upgrade descriptions onto tower files",
+    )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
 
@@ -1383,6 +1459,15 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {rel}  ({len(report[rel])} change(s))")
             for change in report[rel]:
                 print(f"      {change}")
+        return 0
+
+    if args.descriptions:
+        report = overlay_descriptions(dump, dry_run=args.dry_run)
+        verb = "would change" if args.dry_run else "changed"
+        total = sum(len(v) for v in report.values())
+        print(f"descriptions: {verb} {len(report)} file(s), {total} description(s)\n")
+        for rel in sorted(report):
+            print(f"  {rel}  ({len(report[rel])} change(s))")
         return 0
 
     towers, heroes = build_allowlist(dump)

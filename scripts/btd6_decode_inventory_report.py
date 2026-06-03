@@ -69,7 +69,7 @@ _DOMAIN_META: dict[str, dict[str, str]] = {
         "extracted": "yes",
         "verdict": "ingest-now",
         "reason": "per-tier cost/xp/name extracted; LocsKey->textTable "
-        "descriptions decoded but not yet wired into stats (step 4).",
+        "descriptions now wired inline into stats (373/375) + grounding.",
     },
     "Bloons": {
         "extracted": "partial",

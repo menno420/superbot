@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Laser Blasts",
       "cost": 2000,
-      "xp": 500
+      "xp": 500,
+      "description": "Shoots powerful blasts of laser instead of darts."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Plasma Blasts",
       "cost": 2500,
-      "xp": 2200
+      "xp": 2200,
+      "description": "Plasma vaporizes almost everything it touches."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Sun Avatar",
       "cost": 20000,
-      "xp": 7000
+      "xp": 7000,
+      "description": "Channels power from the core of the Sun."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Sun Temple",
       "cost": 100000,
-      "xp": 50000
+      "xp": 50000,
+      "description": "Tower sacrifices enhance and modify the Temple's attacks."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "True Sun God",
       "cost": 500000,
-      "xp": 150000
+      "xp": 150000,
+      "description": "Tremble before the AWESOME power of the TRUE Sun God!!"
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Super Range",
       "cost": 1500,
-      "xp": 300
+      "xp": 300,
+      "description": "Super Monkeys need Super Range."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Epic Range",
       "cost": 1900,
-      "xp": 1300
+      "xp": 1300,
+      "description": "Why settle for super when you can have EPIC?"
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Robo Monkey",
       "cost": 7500,
-      "xp": 6000
+      "xp": 6000,
+      "description": "Half Super Monkey, half killer robot of death. Shoots from 2 guns at once and can crit!"
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Tech Terror",
       "cost": 25000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Annihilation ability: Destroys most Bloons completely and utterly within blast radius."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "The Anti-Bloon",
       "cost": 70000,
-      "xp": 85000
+      "xp": 85000,
+      "description": "<Program Directive> <Eradicate Bloons> <INITIATE>"
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Knockback",
       "cost": 3000,
-      "xp": 550
+      "xp": 550,
+      "description": "Bloons get pushed backwards or slowed after each hit."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Ultravision",
       "cost": 1200,
-      "xp": 2000
+      "xp": 2000,
+      "description": "Enables Super Monkey to shoot slightly further, see and do more damage to Camo Bloons."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Dark Knight",
       "cost": 5600,
-      "xp": 6500
+      "xp": 6500,
+      "description": "Dark blades increase knockback and pierce and deal extra damage to MOAB-class Bloons. Gains Darkshift ability to shift to a nearby location."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Dark Champion",
       "cost": 55555,
-      "xp": 47500
+      "xp": 47500,
+      "description": "Champion's dark blades excel at puncturing and ruining all Bloon types. Darkshift ability extends mapwide."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Legend of the Night",
       "cost": 165650,
-      "xp": 100000
+      "xp": 100000,
+      "description": "We turn to him, when all hope is lost..."
     }
   ],
   "tiers": {

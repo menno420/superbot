@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Piranha",
       "cost": 160,
-      "xp": 250
+      "xp": 250,
+      "description": "Command a small but feisty little fish to leap from the water at the Bloons."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Barracuda",
       "cost": 810,
-      "xp": 500
+      "xp": 500,
+      "description": "The Barracuda slaps Bloons backwards and pops multiple layers with their razor sharp teeth."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Great White",
       "cost": 2010,
-      "xp": 1000
+      "xp": 1000,
+      "description": "The Great White will crush Bloons, including Lead Bloons in its jaws, dragging them back to the water if needed. At max Beast Power the Great White can drag down MOABs."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Orca",
       "cost": 12500,
-      "xp": 4250
+      "xp": 4250,
+      "description": "The mighty Orca's huge mouth can grab and drag all but the very largest Bloons into the depths. At max Beast Power the Orca can drag down ZOMGs."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Megalodon",
       "cost": 45000,
-      "xp": 100000
+      "xp": 100000,
+      "description": "A truly colossal shark with a taste for Bloon. Requires 3 additional Orca Handlers to control."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Microraptor",
       "cost": 175,
-      "xp": 250
+      "xp": 250,
+      "description": "Command a sharp clawed little dinosaur."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Adasaurus",
       "cost": 830,
-      "xp": 500
+      "xp": 500,
+      "description": "The sharp teeth of the Adasaurus deal high short range damage that can tear through Lead."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Velociraptor",
       "cost": 2065,
-      "xp": 1000
+      "xp": 1000,
+      "description": "Velociraptor viciously slashes and chomps, dealing more damage to stunned Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Tyrannosaurus Rex",
       "cost": 9500,
-      "xp": 5000
+      "xp": 5000,
+      "description": "The Tyrannosaurus Rex's huge jaw and sharp teeth deal a ton of damage with each bite. T Rex Stomp ability: Stuns up to ZOMG Bloons in a wide area."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Giganotosaurus",
       "cost": 60000,
-      "xp": 90000
+      "xp": 90000,
+      "description": "The biggest and most fierce dinosaur of them all, Giganotosaurus can shred almost any Bloon instantly and with ease. Stomp ability hits the whole map and lasts longer. Requires 3 additional Tyrannosaurus Handlers to control."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Gyrfalcon",
       "cost": 190,
-      "xp": 250
+      "xp": 250,
+      "description": "Command a noble little bird of prey that can grab and move Bloons to the drop-off target. Bloons up-track of the target get scratched."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Horned Owl",
       "cost": 860,
-      "xp": 550
+      "xp": 550,
+      "description": "The Horned Owl is strong enough to grab Ceramic Bloons, and has keen eyes that can detect Camo Bloons."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Golden Eagle",
       "cost": 2120,
-      "xp": 1000
+      "xp": 1000,
+      "description": "The Golden Eagle's huge talons make it an expert at grabbing large numbers of Bloons at once. At max Beast Power the Golden Eagle can grab lowest tiers of MOAB."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Giant Condor",
       "cost": 9000,
-      "xp": 5500
+      "xp": 5500,
+      "description": "The huge talons of the fearsome Giant Condor can pick up smaller MOAB-Class Bloons."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Pouākai",
       "cost": 30000,
-      "xp": 110000
+      "xp": 110000,
+      "description": "The legendary Pouākai: a bird so large that it can pick up, carry off and destroy almost any number of Bloons of almost any size. Requires 3 additional Condor Handlers to control."
     }
   ],
   "tiers": {

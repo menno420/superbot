@@ -208,17 +208,30 @@ curator-supplied name is preserved, never regressed to an internal model string.
    textTable description). The anchor gate runs first and aborts on failure.
    *This sizes steps 3–5 and turns the model-type tail into a worklist.*
 
-2. **Wire `textTable` upgrade/ability descriptions into fixtures + grounding** —
-   *[extraction done #466 → consumption new]* *(reviewer d).* The ≈422 cards are
-   already decoded (`LocsKey` → `textTable "<key> Description"`), but **0 committed
-   `stats/*.json` carry them** and the runtime reads none at the upgrade level —
-   though tower- and paragon-level descriptions already ground (`btd6_context_
-   service.py` line ~330; `paragon_descriptions.json`), so this extends a live
-   pattern. Delivers the **in-game-description half** of the end goal. *Rationale:
-   highest value-per-effort — the hard extraction is done, it is license-clean, it
-   keys off the reliable `LocsKey` (so it does NOT depend on the fragile name
-   matching that gates the overlay), and #468 guards it automatically. Decoupled
-   from 3/4 — promoted ahead of them.*
+2. **Wire `textTable` upgrade descriptions into fixtures + grounding** —
+   ✅ **done (2026-06-03).** The game-authored prose (`LocsKey` →
+   `textTable "<key> Description"`) is now written **inline** into the committed
+   `stats/*.json` `upgrades[]` (**373/375** cards — the 2 gaps are a pre-existing
+   mapper under-emission of one Ace/Wizard upgrade node, *not* a missing string)
+   via `parse_gamedata.py --descriptions` (`apply_upgrade_descriptions` /
+   `overlay_descriptions`), kept **separate from the numeric overlay** so the
+   data diff is descriptions-only, and **names-frozen** by the same
+   `assert_names_preserved` guard. The runtime surfaces it:
+   `btd6_upgrade_detail_service` carries `UpgradeDetail.description` (joined by
+   `(path, tier)`) and `render_upgrade_grounding` emits a
+   `[btd6_upgrade] … (source: BTD6 in-game description)` line right after the
+   identity line, so it grounds through the existing Pass-3c
+   `grounding_for_query` seam — and #468 guards it automatically.
+   - *Storage note:* inline (not a `paragon_descriptions.json`-style sidecar) on
+     purpose — these are **verbatim, derived** game strings that SHOULD refresh
+     on every dump re-pull, unlike the curated/paraphrased paragon prose the
+     sidecar exists to protect.
+   - *Follow-on (not done):* **ability descriptions** are effectively covered
+     because abilities are granted by upgrade tiers (the `AbilityModel.description`
+     field is empty in the dump). **Hero-level descriptions**
+     (`"<Hero> Level N Description"` in `textTable`, e.g. *Ezili L11 → "+50%
+     pierce to reanimated Bloons"*) are a **separate** extraction the mapper does
+     not yet do — a clean next slice.
 
 3. **Name-preservation guard** — ✅ **done (2026-06-03).** `parse_gamedata.py`
    now carries `collect_names` / `name_downgrades` / `assert_names_preserved`

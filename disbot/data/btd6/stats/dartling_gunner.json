@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Focused Firing",
       "cost": 300,
-      "xp": 150
+      "xp": 150,
+      "description": "Increases accuracy of the Dartling Gun."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Laser Shock",
       "cost": 900,
-      "xp": 600
+      "xp": 600,
+      "description": "Laser tipped shots shock Bloons into popping again 1 second after being struck."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Laser Cannon",
       "cost": 3000,
-      "xp": 2600
+      "xp": 2600,
+      "description": "Rapidly fires much more powerful laser blasts that can pop Frozen Bloons, and deal increased MOAB damage."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Plasma Accelerator",
       "cost": 11750,
-      "xp": 12500
+      "xp": 12500,
+      "description": "Concentrates a powerful beam of energy to a single point."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Ray of Doom",
       "cost": 75000,
-      "xp": 75000
+      "xp": 75000,
+      "description": "Creates a solid line of annihilation. You can erase most Bloons at your leisure."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Advanced Targeting",
       "cost": 250,
-      "xp": 130
+      "xp": 130,
+      "description": "Allows Dartling Gunner to hit Camo Bloons."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Faster Barrel Spin",
       "cost": 950,
-      "xp": 700
+      "xp": 700,
+      "description": "Makes gun fire much faster."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Hydra Rocket Pods",
       "cost": 4500,
-      "xp": 2700
+      "xp": 2700,
+      "description": "Shoots depleted bloontonium missiles that can damage all Bloon types and trigger multiple explosions."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Rocket Storm",
       "cost": 5000,
-      "xp": 14000
+      "xp": 14000,
+      "description": "Rocket Storm ability: Launches a powerful storm of rockets in a wide cone."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "M.A.D",
       "cost": 65000,
-      "xp": 60000
+      "xp": 60000,
+      "description": "MOAB Assured Destroyer. Slower firing mega missiles deal extreme damage to MOAB-class Bloons."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Faster Swivel",
       "cost": 150,
-      "xp": 110
+      "xp": 110,
+      "description": "Barrel can swivel much faster."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Powerful Darts",
       "cost": 1200,
-      "xp": 650
+      "xp": 650,
+      "description": "Darts move faster, can pop frozen Bloons and can pop 3 Bloons each."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Buckshot",
       "cost": 3000,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Shoots blasts of deadly buckshot instead of darts."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Bloon Area Denial System",
       "cost": 12000,
-      "xp": 15000
+      "xp": 15000,
+      "description": "4-barreled auto-cannon that can be set to attack automatically."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Bloon Exclusion Zone",
       "cost": 58000,
-      "xp": 55000
+      "xp": 55000,
+      "description": "Upgraded to 6 barrels and massively increased damage. Bloons are excluded from existence."
     }
   ],
   "tiers": {

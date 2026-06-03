@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Bigger Blast",
       "cost": 300,
-      "xp": 180
+      "xp": 180,
+      "description": "Bigger shells deliver a bigger blast radius."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Bloon Buster",
       "cost": 500,
-      "xp": 600
+      "xp": 600,
+      "description": "Smash through 3 layers of Bloons at once!"
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Shell Shock",
       "cost": 825,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Blast shockwave stuns Bloons at impact, pops bloons in a wider area, and increases Burny Stuff damage."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "The Big One",
       "cost": 7000,
-      "xp": 15000
+      "xp": 15000,
+      "description": "Devastating explosions pop 10 layers. Increases Burny Stuff damage further."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "The Biggest One",
       "cost": 36000,
-      "xp": 29000
+      "xp": 29000,
+      "description": "Blasts deeply through Bloons and layers over a huge area, plus powerful Burny Stuff damage."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Faster Reload",
       "cost": 400,
-      "xp": 150
+      "xp": 150,
+      "description": "Increases the attack speed of the Mortar."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Rapid Reload",
       "cost": 500,
-      "xp": 600
+      "xp": 600,
+      "description": "Even faster reload."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Heavy Shells",
       "cost": 900,
-      "xp": 2300
+      "xp": 2300,
+      "description": "Heavy shells do extra damage to Ceramic, Lead, Fortified, MOABs, and stunned Bloons. Attacks faster and can also pop Black Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Artillery Battery",
       "cost": 6500,
-      "xp": 12500
+      "xp": 12500,
+      "description": "Bombardment Ability: Unleashes a rapid fire attack in a slightly wider area. Upgrades to 3 barrels for incredibly fast attacks."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Pop and Awe",
       "cost": 38000,
-      "xp": 32000
+      "xp": 32000,
+      "description": "Pop and Awe has permanent rapid attack speed. Pop and Awe Ability: rains explosions over the whole screen, damaging Bloons and stunning them periodically."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Increased Accuracy",
       "cost": 200,
-      "xp": 140
+      "xp": 140,
+      "description": "Makes the shots more accurate."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Burny Stuff",
       "cost": 400,
-      "xp": 650
+      "xp": 650,
+      "description": "Damaged Bloons are set ablaze momentarily with each hit."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Signal Flare",
       "cost": 1100,
-      "xp": 2200
+      "xp": 2200,
+      "description": "Camo Bloons popped by flares lose their camouflage permanently."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Shattering Shells",
       "cost": 9500,
-      "xp": 12000
+      "xp": 12000,
+      "description": "Shattering shells strip special Bloon properties off all but the biggest bloons. Burny stuff melts through 5 layers with each shot and burns MOAB-class Bloons for extra damage."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Blooncineration",
       "cost": 40000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Superhot burny stuff that incinerates MOAB-Class Bloons with ease."
     }
   ],
   "tiers": {

@@ -28,7 +28,7 @@
 | `Skins/` | 51 | no | cosmetic-skip | cosmetic skins; audio/prefab swaps only. |
 | `Towers/` | 2093 | yes | ingest-now | core stats live here; numeric leaves audit CLEAN/DELTA. The zone/buff/subtower-tail effects are the open decode work (step 5). |
 | `TrophyStoreItems/` | 424 | no | cosmetic-skip | trophy-store cosmetics; not gameplay. |
-| `Upgrades/` | 764 | yes | ingest-now | per-tier cost/xp/name extracted; LocsKey->textTable descriptions decoded but not yet wired into stats (step 4). |
+| `Upgrades/` | 764 | yes | ingest-now | per-tier cost/xp/name extracted; LocsKey->textTable descriptions now wired inline into stats (373/375) + grounding. |
 
 textTable: 12,127 keys
 

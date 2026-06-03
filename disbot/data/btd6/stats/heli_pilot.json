@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Quad Darts",
       "cost": 800,
-      "xp": 200
+      "xp": 200,
+      "description": "Shoots 4 darts per volley instead of 2."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Pursuit",
       "cost": 500,
-      "xp": 650
+      "xp": 650,
+      "description": "A new targeting option enables Heli to seek and pursue the Bloons automatically."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Razor Rotors",
       "cost": 1850,
-      "xp": 2700
+      "xp": 2700,
+      "description": "Razor Rotor blades rip up Bloons on contact, including Lead and Frozen Bloons."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Apache Dartship",
       "cost": 19600,
-      "xp": 20000
+      "xp": 20000,
+      "description": "Adds a large missile array and powerful machine guns."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Apache Prime",
       "cost": 45000,
-      "xp": 55000
+      "xp": 55000,
+      "description": "The Apache Prime leaves most Bloons wishing they'd never been inflated."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Bigger Jets",
       "cost": 300,
-      "xp": 150
+      "xp": 150,
+      "description": "Powerful jets make Heli move much faster."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "IFR",
       "cost": 600,
-      "xp": 650
+      "xp": 650,
+      "description": "Allows Heli Pilot to detect and shoot Camo Bloons."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Downdraft",
       "cost": 3500,
-      "xp": 3300
+      "xp": 3300,
+      "description": "Blows Bloons away from the Heli, back toward the entrance."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Support Chinook",
       "cost": 9500,
-      "xp": 15000
+      "xp": 15000,
+      "description": "Blows back many more Bloons and gains abilities: Drops lives and cash crates, and can pick up and redeploy most Monkey types."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Special Poperations",
       "cost": 30000,
-      "xp": 40000
+      "xp": 40000,
+      "description": "Deploys a powerful special Monkey Marine with a machine gun."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Faster Darts",
       "cost": 250,
-      "xp": 140
+      "xp": 140,
+      "description": "Darts are propelled much faster through the air."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Faster Firing",
       "cost": 350,
-      "xp": 550
+      "xp": 550,
+      "description": "Faster attack speed for all Heli attacks."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "MOAB Shove",
       "cost": 3400,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Can collide with and shove MOAB-class Bloons, reversing or slowing their movement. Shove is amplified by Bigger Jets and IFR upgrades."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Comanche Defense",
       "cost": 8500,
-      "xp": 12500
+      "xp": 12500,
+      "description": "Automatically calls in mini Comanches when they're most needed."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Comanche Commander",
       "cost": 35000,
-      "xp": 50000
+      "xp": 50000,
+      "description": "Upgraded weapons. Also automatically calls in 3 more Comanches. Permanently."
     }
   ],
   "tiers": {
