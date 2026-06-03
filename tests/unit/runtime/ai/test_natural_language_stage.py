@@ -1538,3 +1538,43 @@ async def test_ledger_captures_only_btd6_tool_results():
     assert "235" not in " ".join(ledger)
     # The non-BTD6 handler is returned untouched (not wrapped).
     assert wrapped["get_server_overview"] is server_handler
+
+
+@pytest.mark.asyncio
+async def test_btd6_roster_answer_is_served_when_grounded(monkeypatch, stub_services):
+    """Regression: a roster question grounded by the hero-roster facts must be
+    SERVED, not refused. In production it refused because heroes/towers had no
+    roster auto-grounding, so the model's correct list read as ungrounded."""
+    from services import ai_gateway
+
+    _route_btd6(monkeypatch)
+    _stub_facts(
+        monkeypatch,
+        (
+            "[btd6_hero_roster] BTD6 has 17 heroes — the complete list: Quincy, "
+            "Gwendolin, Striker Jones, Obyn Greenfoot, Captain Churchill, "
+            "Benjamin, Ezili, Pat Fusty, Adora, Admiral Brickell, Etienne, "
+            "Sauda, Psi, Geraldo, Corvus, Rosalia, Silas.",
+        ),
+    )
+
+    async def fake_execute(_request):
+        return _make_response(
+            text=(
+                "BTD6 has 17 heroes: Quincy, Gwendolin, Striker Jones, Obyn "
+                "Greenfoot, Captain Churchill, Benjamin, Ezili, Pat Fusty, Adora, "
+                "Admiral Brickell, Etienne, Sauda, Psi, Geraldo, Corvus, Rosalia, "
+                "Silas."
+            )
+        )
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> which heroes are in the game?"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    sent = _sent_text(msg)
+    assert "verified BTD6 data" not in sent  # NOT the refusal floor
+    assert "Quincy" in sent and "Silas" in sent  # the real roster is served
+    assert stub_services[-1]["decision"] == "replied"

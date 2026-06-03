@@ -1159,6 +1159,75 @@ def _paragon_roster_facts(message_text: str) -> list[str]:
     return lines
 
 
+# Roster-intent verbs for the hero/tower roster grounding. Heroes and towers
+# have no ``_paragon_roster_facts`` equivalent, so a "list all heroes" / "which
+# towers" question reached the model with ZERO grounding facts — and the
+# answer-faithfulness guard then refused the model's (correct) roster as
+# ungrounded. Gated on the entity word so ordinary entity questions
+# ("dart monkey stats") never trip it.
+_ENTITY_ROSTER_VERBS = (
+    "list ",
+    "all ",
+    "which ",
+    "every ",
+    "how many",
+    "name the",
+    "name all",
+    "name every",
+    "what are the",
+    "what heroes",
+    "what towers",
+    "each ",
+)
+
+
+def _roster_lines(kind: str, names: list[str]) -> list[str]:
+    """Chunk a roster into <=230-char grounding lines tagged by ``kind``."""
+    if not names:
+        return []
+    plural = "heroes" if kind == "hero" else f"{kind}s"
+    head = (
+        f"[btd6_{kind}_roster] BTD6 has {len(names)} {plural} — the complete "
+        f"list (state these verbatim; never invent or omit one):"
+    )
+    lines = [head]
+    prefix = f"[btd6_{kind}_roster] "
+    line = prefix
+    for name in names:
+        addition = name if line == prefix else f", {name}"
+        if len(line) + len(addition) > 230:
+            lines.append(line)
+            line = prefix + name
+        else:
+            line += addition
+    lines.append(line)
+    return lines
+
+
+def _entity_roster_facts(message_text: str) -> list[str]:
+    """Ground the authoritative hero / tower roster for roster-level questions.
+
+    Mirrors :func:`_paragon_roster_facts` for the two catalogs that lacked it.
+    "which heroes are in the game" / "list all towers" otherwise produce no
+    grounding facts at all, so the model's correct roster reads as ungrounded
+    and is refused by the faithfulness guard. Pin the real roster + count so the
+    answer grounds — independent of ``AI_TOOLS_ENABLED`` and of whether the
+    model chooses to call ``btd6_list_roster``.
+    """
+    text = (message_text or "").lower()
+    if not any(verb in text for verb in _ENTITY_ROSTER_VERBS):
+        return []
+    from services import btd6_data_service
+
+    dataset = btd6_data_service.get_dataset()
+    out: list[str] = []
+    if "hero" in text:
+        out.extend(_roster_lines("hero", [h.canonical for h in dataset.heroes]))
+    if "tower" in text:
+        out.extend(_roster_lines("tower", [t.canonical for t in dataset.towers]))
+    return out
+
+
 def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:
     """Ground a paragon named directly (e.g. "what are Glaive Dominus's stats?").
 
@@ -1419,6 +1488,7 @@ async def build(message_text: str) -> BTD6Context:
         }
         facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
         facts.extend(_paragon_roster_facts(message_text))
+        facts.extend(_entity_roster_facts(message_text))
 
         # Pass 3c: upgrade grounding — an upgrade named in the text by name,
         # abbreviation / nickname (PMFC / POD / BEZ / Prince of Darkness), or
