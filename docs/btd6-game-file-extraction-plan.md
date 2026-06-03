@@ -10,7 +10,9 @@
 > structure — see `btd6-gamedata-native-schema.md`), with the conservative
 > `--overlay` as an interim safe refresh. Bosses are in `Bloons/` (not a
 > separate domain). This is a *roadmap* doc — when it disagrees with the source
-> or the decode-status doc, those win.
+> or the decode-status doc, those win. **The live, ordered next-steps list is
+> `btd6-gamedata-decode-status.md` → "Next steps — single ordered roadmap";** the
+> sections here are the verified mapping spec / data-source / licensing reference.
 >
 > **Last verified:** 2026-06-03, in-sandbox, against
 > `Btd6ModHelper/btd6-game-data` commit `a3348a89` (dumped 2026-06-02, v55.0).
@@ -137,23 +139,26 @@ audit flags as systematically divergent stay curated.
    Also: tower files must carry `paragon_cost`/`paragon_name` (catalog metadata,
    not cleanly in the dump) — preserve like the paragon `cost`/`canonical`.
 
-### ⚠ Two hard prerequisites the v55 cutover is BLOCKED on (verified PR 2 session)
+### ⚠ Two prerequisites the cutover was blocked on — P1 SOLVED, P2 re-scoped (HISTORICAL)
 
-> **RESOLVED / RE-SCOPED — keep for history, but the claims below are outdated.**
-> **P1 (names) is solved:** abilities carry `displayName`; upgrades resolve name
-> + description via `LocsKey` → `textTable`; subtowers use the nested tower name.
-> The framing "textTable not keyed by the internal model name → must find the
-> link" was right about the symptom but the link (`displayName`/`LocsKey`)
-> exists and the mapper now uses it. **P2 is partially done:** subtowers ✅
-> (common spawn models), zones 🔴 (12 types) + buffs 🔴 (37 types) remain — and
-> the count was 12+37, not "~10". See `btd6-gamedata-decode-status.md` for the
-> authoritative status.
+> **SUPERSEDED — kept for history; the P1/P2 prose below is outdated. Do not
+> action it.** **P1 (names) is SOLVED:** abilities carry `displayName`; upgrades
+> resolve name + description via `LocsKey` → `textTable`; subtowers use the nested
+> tower name. The old framing ("textTable not keyed by the internal model name →
+> must find the link") named the symptom correctly, but the link
+> (`displayName`/`LocsKey`) exists and the mapper now uses it (#466). **P2 is
+> partially done:** subtowers 🟡 (2 of 4 spawn mechanisms), zones 🔴 (12 types) +
+> buffs 🔴 (37 types) remain — the count is **12+37**, not "~10". The live,
+> ordered roadmap is **`btd6-gamedata-decode-status.md` → "Next steps — single
+> ordered roadmap"**; that doc + the source win on every conflict.
 
 Attempting the hero/paragon refresh surfaced two blockers that make *any*
 wholesale v55 cutover regress trusted, human-facing data unless solved first.
 **Do these before re-running `--all` for committed data.**
 
-**P1 — display-name localization (`textTable.json`).** The raw model names
+**P1 — display-name localization (`textTable.json`). _(SOLVED #466 — historical;
+the mapper resolves names via `displayName`/`LocsKey`. Retained only to record
+the regressions a naïve refresh would have caused.)_** The raw model names
 features with **internal identifiers**, not the player-facing names the wiki
 curated. Verified regressions a naïve refresh causes:
 - Gwendolin ability: wiki `"Cocktail of Fire"` → raw `"WallOfFire"`.

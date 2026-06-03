@@ -1,12 +1,21 @@
 # Plan: AI tool-calling (BTD6 lookup as the first tool)
 
 > **Status: IMPLEMENTED.** The BTD6 lookup tools described here now ship in
-> `services/ai_tools.py` — `btd6_lookup`, `btd6_capability_lookup`,
+> `services/ai_tools.py` — `btd6_lookup`, `btd6_list_roster` (the complete
+> heroes/towers/paragons roster, #468), `btd6_capability_lookup`,
 > `btd6_superlative_lookup`, `btd6_difficulty_cost`, and the two paragon tools
 > — wired into the central AI request path. `btd6_capability_lookup` covers camo
 > detection plus lead/black/white/purple popping and returns a coverage note so
 > the model states its data limits. This doc is retained as the design record;
 > the sections below describe the architecture as built.
+>
+> **#468 added a faithfulness backstop:** the natural-language stage now verifies
+> every BTD6 answer against the grounded payload (auto-grounding facts ∪ approved
+> BTD6 tool results) and rejects → regenerates-once → version-stamped-refuses
+> rather than serve an ungrounded name/number. Only the `btd6_*` tools ground an
+> answer (the ledger allowlist `ai_tools.BTD6_GROUNDING_TOOL_NAMES`). See
+> `btd6-gamedata-decode-status.md` → "Next steps" for the data-side roadmap that
+> feeds it (e.g. wiring `textTable` descriptions into grounding).
 >
 > Motivation: today the AI only "knows" what we *pre-inject* into its prompt
 > via trigger-gated knowledge blocks. When a trigger misses, the model answers
