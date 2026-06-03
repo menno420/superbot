@@ -29,6 +29,9 @@ PARENT_SOURCES: tuple[ParentSourceSpec, ...] = (
     # Map / challenge directories rotate daily.
     ParentSourceSpec("nk_btd6_maps", 86400),
     ParentSourceSpec("nk_btd6_challenges", 86400),
+    # Steam update / patch notes (no API key) — drops are infrequent, so
+    # a 6h cadence catches a new version well within a day of release.
+    ParentSourceSpec("steam_btd6_news", 21600),
 )
 
 

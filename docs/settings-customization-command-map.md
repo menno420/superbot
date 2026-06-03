@@ -1097,10 +1097,14 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     `BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD`,
     `BTD6_CACHE_FRESHNESS_WARNING_HOURS`
     (in `disbot/utils/settings_keys/btd6_cache.py`);
-    `BTD6_STRATEGY_SUBMISSION_CHANNEL` (M4) and
+    `BTD6_STRATEGY_SUBMISSION_CHANNEL` (M4),
     `BTD6_CT_GROUP_ID` (the per-guild Contested Territory bracket id pasted
     via `!btd6 ctteam`, read/written through
-    `services.btd6_ct_team_service`; a runtime pointer, no SettingSpec), both
+    `services.btd6_ct_team_service`; a runtime pointer, no SettingSpec), and
+    `BTD6_VERSION_ANNOUNCEMENT_CHANNEL` (the per-guild channel where new BTD6
+    version announcements are posted, set via `!btd6ops announcechannel`,
+    read/written through `services.btd6_version_announce`; a runtime pointer,
+    no SettingSpec), all
     in `disbot/utils/settings_keys/btd6.py`.
 11. **existing_BindingSpec_entries**: `btd6.strategy_submission_channel`
     (M4) routes natural-language submissions in bound channels into

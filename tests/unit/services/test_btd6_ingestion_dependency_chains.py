@@ -421,7 +421,8 @@ async def test_supervisor_calls_dependency_aware_refresh(monkeypatch):
     """Regression pin against accidentally bypassing _DEPENDENCY_CHAINS."""
     from services import btd6_ingestion_supervisor
 
-    # _SOURCE_INTERVALS covers exactly the 7 parents (per the plan).
+    # _SOURCE_INTERVALS covers the 7 NK parents plus the Steam patch-notes
+    # feed (a standalone parent — no dependency chain).
     assert set(btd6_ingestion_supervisor._SOURCE_INTERVALS) == {
         "nk_btd6_events",
         "nk_btd6_races",
@@ -430,6 +431,7 @@ async def test_supervisor_calls_dependency_aware_refresh(monkeypatch):
         "nk_btd6_ct",
         "nk_btd6_maps",
         "nk_btd6_challenges",
+        "steam_btd6_news",
     }
 
     # The supervisor loop spawns refresh_with_dependencies for each

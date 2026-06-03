@@ -105,6 +105,25 @@ async def _seed_embed() -> discord.Embed:
     )
 
 
+async def _set_announce_channel(
+    guild_id: int,
+    channel: discord.TextChannel | None,
+) -> str:
+    """Set or clear the BTD6 version-announcement channel; return a result line.
+
+    The setting is owned by ``services.btd6_version_announce`` (no raw key
+    string here, mirroring ``btd6_ct_team_service``). A ``None`` channel
+    clears it — disabling the announcement for the guild.
+    """
+    from services import btd6_version_announce
+
+    if channel is None:
+        await btd6_version_announce.clear_channel(guild_id)
+        return "✅ BTD6 version announcements disabled (no channel set)."
+    await btd6_version_announce.set_channel(guild_id, channel.id)
+    return f"✅ New BTD6 versions will be announced in {channel.mention}."
+
+
 class BTD6OpsCog(commands.Cog):
     """Operator surface for BTD6 ingestion readiness + source control."""
 
@@ -169,6 +188,24 @@ class BTD6OpsCog(commands.Cog):
             await ctx.send(_ADMIN_DENIED)
             return
         await ctx.send(embed=await _seed_embed())
+
+    @btd6ops.command(name="announcechannel")  # type: ignore[arg-type]
+    async def announce_channel_prefix(
+        self,
+        ctx: commands.Context,
+        channel: discord.TextChannel | None = None,
+    ) -> None:
+        """Set/clear the BTD6 new-version announcement channel (administrator).
+
+        ``!btd6ops announcechannel #updates`` routes new-version
+        announcements there; with no channel it clears (disables) them.
+        """
+        if not is_administrator_member(ctx.author):
+            await ctx.send(_ADMIN_DENIED)
+            return
+        if ctx.guild is None:
+            return
+        await ctx.send(await _set_announce_channel(ctx.guild.id, channel))
 
     # ------------------------------------------------------------------
     # Slash surface — /btd6ops ... (mirrors the prefix surface)
@@ -250,6 +287,28 @@ class BTD6OpsCog(commands.Cog):
         if not await safe_defer(interaction, ephemeral=True):
             return
         await safe_followup(interaction, embed=await _seed_embed(), ephemeral=True)
+
+    @btd6ops_app.command(
+        name="announcechannel",
+        description="Set/clear the BTD6 new-version announcement channel (admin).",
+    )
+    @app_commands.default_permissions(administrator=True)
+    async def announce_channel_slash(
+        self,
+        interaction: discord.Interaction,
+        channel: discord.TextChannel | None = None,
+    ) -> None:
+        if not is_administrator_member(interaction.user):
+            await interaction.response.send_message(_ADMIN_DENIED, ephemeral=True)
+            return
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "🚫 This command must be used in a server.",
+                ephemeral=True,
+            )
+            return
+        msg = await _set_announce_channel(interaction.guild.id, channel)
+        await interaction.response.send_message(msg, ephemeral=True)
 
 
 async def setup(bot: commands.Bot) -> None:

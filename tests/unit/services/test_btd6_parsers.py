@@ -62,6 +62,12 @@ _UNPARSED = (
     "nk_btd6_guild",
 )
 
+# Non-NinjaKiwi parsers registered alongside the captured NK endpoints.
+# ``steam_btd6_news`` consumes the public Steam ISteamNews feed (BTD6
+# patch notes), not an NK API endpoint, so it is intentionally excluded
+# from the NK captured-set pin below.
+_NON_NK_PARSERS = frozenset({"steam_btd6_news"})
+
 
 @pytest.fixture(autouse=True)
 def _import_parsers():
@@ -95,7 +101,7 @@ def test_registry_count_matches_captured_set():
     known = set(btd6_source_parser.known_keys())
     captured = set(_REGISTERED)
     missing = captured - known
-    extra = known - captured
+    extra = known - captured - _NON_NK_PARSERS
     assert not missing, f"captured but unregistered: {sorted(missing)}"
     assert not extra, (
         f"registered but not in captured set: {sorted(extra)} — "
