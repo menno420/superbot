@@ -1132,10 +1132,112 @@ def _overlay_upgrades(committed: dict, mapped: dict, changes: list[str]) -> None
                 up[field_name] = m[field_name]
 
 
+# ---------------------------------------------------------------------------
+# Name-preservation guard — a hard stop so no overlay/cutover write ever
+# downgrades a curated name to an internal/empty dump field.
+# ---------------------------------------------------------------------------
+#
+# PR-1.5 proved a naïve refresh regresses curated names: "Arctic Wind" → ""
+# (the dump's zone `name` is empty) and "Reanimate" → "Attack Necromancer" (the
+# internal model id; the wiki name "Reanimate" was editorial). Those names are
+# also the join key for attaching decoded effects (step 5), so a downgrade both
+# loses curated data AND breaks the join. This guard is the precondition the
+# maintainer flagged before widening the overlay onto ability-bearing entities:
+# every overlay run asserts no curated name moved. Callers doing the eventual
+# cutover (where names legitimately come from the dump) pass the dump's internal
+# id set as ``internal_names`` so a curated→internal swap is caught explicitly.
+
+# Keys whose string value is a human-facing name we must never silently drop.
+_NAME_BEARING_KEYS = frozenset({"name", "displayName"})
+
+
+class NameDowngradeError(RuntimeError):
+    """Raised when a write would replace a curated name with an empty/internal
+    value. A hard stop — never downgrade-then-warn.
+    """
+
+
+def _is_curated_name(value: Any) -> bool:
+    """A non-empty human name worth protecting (not ``""`` / whitespace / None)."""
+    return isinstance(value, str) and bool(value.strip())
+
+
+def collect_names(node: Any, path: str = "") -> dict[str, str]:
+    """Map ``path -> name`` for every ``name`` / ``displayName`` string leaf.
+
+    Paths are positional (``tiers.500.abilities[0].name``); collecting before
+    and after an in-place overlay of the *same* tree keeps them aligned, so a
+    moved name is detected by path.
+    """
+    out: dict[str, str] = {}
+    if isinstance(node, dict):
+        for key, value in node.items():
+            child = f"{path}.{key}" if path else key
+            if key in _NAME_BEARING_KEYS and isinstance(value, str):
+                out[child] = value
+            else:
+                out.update(collect_names(value, child))
+    elif isinstance(node, list):
+        for i, value in enumerate(node):
+            out.update(collect_names(value, f"{path}[{i}]"))
+    return out
+
+
+def name_downgrades(
+    before: dict[str, str],
+    after: dict[str, str],
+    *,
+    internal_names: frozenset[str] = frozenset(),
+) -> list[str]:
+    """Paths where a curated name was downgraded. ``[]`` means every name held.
+
+    A downgrade is a curated (non-empty) name becoming empty, or changing to a
+    different value — flagged ``(emptied)`` / ``(internal model string)`` /
+    ``(changed)``. The first two are always illegal; ``(changed)`` lets the
+    overlay enforce "numbers only, names frozen" while a future cutover can
+    choose to allow curated→curated renames by filtering that tag out.
+    """
+    bad: list[str] = []
+    for path, curated in before.items():
+        if not _is_curated_name(curated):
+            continue  # nothing curated to protect at this path
+        new = after.get(path)
+        if new is None:
+            continue  # the name leaf itself vanished (structure change) — not ours
+        if not _is_curated_name(new):
+            bad.append(f"{path}: {curated!r} → {new!r} (emptied)")
+        elif new != curated and new in internal_names:
+            bad.append(f"{path}: {curated!r} → {new!r} (internal model string)")
+        elif new != curated:
+            bad.append(f"{path}: {curated!r} → {new!r} (changed)")
+    return bad
+
+
+def assert_names_preserved(
+    before: dict[str, str],
+    after: dict[str, str],
+    *,
+    label: str = "overlay",
+    internal_names: frozenset[str] = frozenset(),
+) -> None:
+    """Hard stop: raise :class:`NameDowngradeError` on any name downgrade."""
+    downgrades = name_downgrades(before, after, internal_names=internal_names)
+    if downgrades:
+        raise NameDowngradeError(
+            f"{label}: refusing to downgrade {len(downgrades)} curated name(s):\n  "
+            + "\n  ".join(downgrades),
+        )
+
+
 def overlay_payload(committed: dict, mapped: dict, version: str) -> list[str]:
     """Overlay ``mapped`` v55 numbers onto a committed tower/hero ``dict`` in
     place; return the list of changes made.
+
+    The numeric overlay must never touch names. We snapshot every curated name
+    before mutating and re-check after — :func:`assert_names_preserved` hard-
+    stops if a write emptied or altered one (the PR-1.5 regression mode).
     """
+    names_before = collect_names(committed)
     changes: list[str] = []
     for key in ("base_cost", "category"):
         if key in committed and key in mapped and committed[key] != mapped[key]:
@@ -1157,6 +1259,9 @@ def overlay_payload(committed: dict, mapped: dict, version: str) -> list[str]:
         stamp = f"BTD Mod Helper game data v{version} (numeric overlay)"
         if "Mod Helper" not in prior:
             committed["source"] = f"{prior}; {stamp}" if prior else stamp
+    # Tripwire: the numeric overlay froze names; prove none moved before we hand
+    # the mutated payload back to be written to disk.
+    assert_names_preserved(names_before, collect_names(committed), label="overlay")
     return changes
 
 

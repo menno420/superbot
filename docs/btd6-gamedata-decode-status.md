@@ -14,6 +14,10 @@ works** (the traps we hit), and what is still un-decoded.
 > Tooling (point `--dump` at a clone; nothing is fetched at runtime):
 > - `scripts/parse_gamedata.py --audit` — per-field fidelity vs our committed data (CLEAN / DELTA / SUSPECT).
 > - `scripts/btd6_gamedata_inventory.py` — domain/model-type/text-linkage discovery.
+> - `scripts/btd6_decode_inventory_report.py` — **the SHA-pinned roll-up** of the
+>   two above + the ranked zone/buff effect tail (decodable-number? /
+>   has-curated-name?). Emits `docs/btd6-decode-inventory-v55.md`; validates
+>   anchors first and aborts if they fail. *Re-run to refresh per patch.*
 
 ## What this effort is
 
@@ -36,6 +40,17 @@ direction.)*
 
 Only items confirmed **100% complete** are marked ✅. Anything partial is 🟡 and
 must not be treated as done. Verified against the v55 dump on 2026-06-03.
+
+> **Step 0 ground-check (2026-06-03, before resuming data work).** Anchors
+> re-validated at dump SHA `a3348a89…` (Dart 200, Super 2500 — PASS). The three
+> post-#468 regressions were confirmed fixed in **production behavior**, not just
+> green tests: (1) *enumeration over-refusal* — `deterministic_roster_reply`
+> serves a costed roster for "list all heroes/towers" (answers, never refuses);
+> (2) *renderer regression* — the noisy verified-data embed is deleted, answers
+> render as guard-verified prose / the deterministic costed list; (3) *CT leak* —
+> the resolver attaches **zero** live/CT entities to pricing questions
+> (`live_entities=() ct_relics=()`), so a pricing answer's grounding cannot carry
+> CT lines. Base is solid; data work proceeded.
 
 ### ✅ Complete & verified
 
@@ -60,8 +75,14 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 
 ### 🔴 Not started
 
-- **Zones** (`zones[]`) — **0 of 12** zone model types mapped.
-- **Buffs** (`buffs[]`) — **0 of 37** buff/support model types mapped.
+- **Zones** (`zones[]`) — **0 of 28** zone model types mapped. *(Corrected
+  2026-06-03: this doc previously said "0 of 12". The v55 dump carries **28**
+  distinct `*ZoneModel` `$type`s inline in tower behaviors — see the SHA-pinned
+  report `docs/btd6-decode-inventory-v55.md` §3a, the live ground truth. The
+  old "12" was an undercount; do not inherit it.)*
+- **Buffs** (`buffs[]`) — **0 of 38** buff/support model types mapped.
+  *(Corrected from "37"; the dump has 38 distinct `*SupportModel`/`*BuffModel`
+  `$type`s — report §3b. Close to the prior figure but not equal.)*
 - **Economy-tower attack suppression** (Banana Farm shows a nominal AttackModel).
 - **The towers cutover itself** — blocked on zones + buffs + the subtower tail.
 - **Descriptions consumed by the runtime** — extracted into upgrade data, but
@@ -175,14 +196,17 @@ curator-supplied name is preserved, never regressed to an internal model string.
 
 **Ordered next steps**
 
-1. **SHA-pinned inventory/audit report** — *[planned-existing tools → new report]*
-   *(reviewer a).* One re-runnable artifact keyed on the dump commit: per
-   domain/field — present? / mapped by `parse_gamedata.py`? / `--audit` verdict
-   (CLEAN/DELTA/SUSPECT) / ingest verdict (now/later/skip) — plus two columns for
-   the effect work, **decodable-number?** and **has-curated-name?**. The pieces
-   exist (`--audit`, `btd6_gamedata_inventory.py`, the dictionary); this packages
-   them and re-runs the anchor gate first. *Rationale: it sizes 3–5 and is the
-   anchor gate, so it comes first.*
+1. **SHA-pinned inventory/audit report** — ✅ **done (2026-06-03).**
+   `scripts/btd6_decode_inventory_report.py` → `docs/btd6-decode-inventory-v55.md`,
+   pinned to dump SHA `a3348a89c28b9db204f6f30776c5b072510584bc` (v55.0). One
+   re-runnable artifact: per domain — present? / extracted? / ingest verdict
+   (now/later/skip); the full `--audit` field table (verified **33 CLEAN · 15
+   DELTA · 0 SUSPECT** — nothing is a systematic gap, so the whole extracted set
+   is overlay-eligible); and the ranked zone/buff effect tail with the two
+   effect-work columns **decodable-number?** / **has-curated-name?** (3/28 zone +
+   11/38 buff `$type`s carry a decodable effect number; the rest fall back to the
+   textTable description). The anchor gate runs first and aborts on failure.
+   *This sizes steps 3–5 and turns the model-type tail into a worklist.*
 
 2. **Wire `textTable` upgrade/ability descriptions into fixtures + grounding** —
    *[extraction done #466 → consumption new]* *(reviewer d).* The ≈422 cards are
@@ -196,12 +220,20 @@ curator-supplied name is preserved, never regressed to an internal model string.
    matching that gates the overlay), and #468 guards it automatically. Decoupled
    from 3/4 — promoted ahead of them.*
 
-3. **Name-preservation guard** — *[new]* *(reviewer b).* A hard-stop so no
-   overlay/cutover write replaces a curated name with an internal/empty dump
-   field; a name-downgrade fails loudly. Today `--overlay` sidesteps names
-   entirely, so this is the *precondition* for widening it (4) onto
-   ability-bearing entities and the join key for (5). *Rationale: cheap invariant
-   that must land before anything writes near curated names.*
+3. **Name-preservation guard** — ✅ **done (2026-06-03).** `parse_gamedata.py`
+   now carries `collect_names` / `name_downgrades` / `assert_names_preserved`
+   (+ `NameDowngradeError`). `overlay_payload` snapshots every curated `name` /
+   `displayName` before mutating and hard-stops if any was emptied or altered —
+   the numeric overlay is names-frozen by construction. The guard catches both
+   PR-1.5 regression modes (tested): "Arctic Wind" → `""` *(emptied)* and
+   "Reanimate" → "Attack Necromancer" *(internal model string)*. The future
+   cutover passes the dump's internal-id set as `internal_names` to catch
+   curated→internal swaps while still allowing deliberate curated→curated
+   renames. This is the precondition for widening the overlay (4) and the join
+   key for (5). *(The maintainer's binding ordering numbers this **step 2**,
+   ahead of textTable; the doc's roadmap kept textTable at 2 because it keys off
+   the reliable `LocsKey` and doesn't depend on the name match — both land
+   before any ability-bearing overlay, so the order between them is moot.)*
 
 4. **Numeric overlay expansion** — *[engine done #466 → expansion
    planned-existing]* *(reviewer c).* Widen `--overlay` from the 3 uniquely-keyed

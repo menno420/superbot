@@ -448,6 +448,82 @@ def test_overlay_no_change_leaves_version_and_source(mod):
     assert committed["game_version"] == "54.0"  # untouched when nothing moved
 
 
+# --- name-preservation guard (step 2) ---------------------------------------
+
+
+def test_collect_names_walks_nested_name_and_display_name(mod):
+    payload = {
+        "name": "Druid",
+        "tiers": {
+            "500": {
+                "abilities": [{"displayName": "Ball Lightning"}],
+                "attacks": [{"name": "Attack", "projectiles": [{"name": "Bolt"}]}],
+            },
+        },
+    }
+    names = mod.collect_names(payload)
+    assert names["name"] == "Druid"
+    assert names["tiers.500.abilities[0].displayName"] == "Ball Lightning"
+    assert names["tiers.500.attacks[0].projectiles[0].name"] == "Bolt"
+
+
+def test_name_downgrades_flags_emptied_name(mod):
+    # PR-1.5 regression: a naïve refresh blanks "Arctic Wind" (dump zone name "").
+    before = {"tiers.4.abilities[0].name": "Arctic Wind"}
+    after = {"tiers.4.abilities[0].name": ""}
+    bad = mod.name_downgrades(before, after)
+    assert len(bad) == 1 and "Arctic Wind" in bad[0] and "emptied" in bad[0]
+
+
+def test_name_downgrades_flags_curated_to_internal(mod):
+    # PR-1.5 regression: "Reanimate" (editorial) → "Attack Necromancer" (model id).
+    before = {"abilities[0].name": "Reanimate"}
+    after = {"abilities[0].name": "Attack Necromancer"}
+    bad = mod.name_downgrades(
+        before, after, internal_names=frozenset({"Attack Necromancer"})
+    )
+    assert len(bad) == 1 and "internal model string" in bad[0]
+
+
+def test_name_downgrades_flags_any_change_for_frozen_overlay(mod):
+    before = {"name": "Reanimate"}
+    after = {"name": "Something Else"}
+    bad = mod.name_downgrades(before, after)  # no internal_names → "(changed)"
+    assert len(bad) == 1 and "changed" in bad[0]
+
+
+def test_name_downgrades_allows_preserved_and_newly_set_names(mod):
+    before = {"name": "Druid", "blank": ""}
+    after = {"name": "Druid", "blank": "Now Named", "added": "Fresh"}
+    # equal curated name held; an empty→named upgrade and a brand-new name are
+    # not downgrades.
+    assert mod.name_downgrades(before, after) == []
+
+
+def test_assert_names_preserved_raises_on_downgrade(mod):
+    with pytest.raises(mod.NameDowngradeError) as exc:
+        mod.assert_names_preserved({"a.name": "Arctic Wind"}, {"a.name": ""})
+    assert "Arctic Wind" in str(exc.value)
+
+
+def test_overlay_preserves_names_and_passes_guard(mod):
+    # A normal numeric overlay touches no name → the guard is satisfied silently.
+    committed = {
+        "name": "Druid",
+        "tiers": {
+            "500": {
+                "range": 28,
+                "abilities": [{"name": "Reanimate"}],
+                "attacks": [{"name": "Attack"}],
+            },
+        },
+    }
+    mapped = {"name": "Druid", "tiers": {"500": {"range": 80}}}
+    mod.overlay_payload(committed, mapped, "55.0")
+    assert committed["tiers"]["500"]["abilities"][0]["name"] == "Reanimate"
+    assert committed["name"] == "Druid"
+
+
 def test_ability_uses_game_display_name(mod):
     ability = {
         "$type": _t("AbilityModel"),
