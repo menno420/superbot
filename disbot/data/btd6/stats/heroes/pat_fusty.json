@@ -391,6 +391,23 @@
                   "lifespan": 1
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -477,6 +494,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -567,6 +601,23 @@
                   "lifespan": 0.3
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -653,6 +704,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -743,6 +811,23 @@
                   "lifespan": 0.3
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -829,6 +914,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -923,6 +1025,23 @@
                   "lifespan": 0.3
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -1013,6 +1132,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1107,6 +1243,23 @@
                   "lifespan": 0.5
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -1197,6 +1350,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1291,6 +1461,23 @@
                   "lifespan": 0.5
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -1381,6 +1568,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1475,6 +1679,23 @@
                   "lifespan": 0.5
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -1565,6 +1786,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1659,6 +1897,23 @@
                   "lifespan": 0.5
                 }
               ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
+                }
+              ]
             }
           ],
           "count": 1,
@@ -1749,6 +2004,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }

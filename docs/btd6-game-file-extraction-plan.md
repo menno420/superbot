@@ -53,6 +53,21 @@ committed (wiki-sourced) ground truth, classifying every field:
    count suggests. **Deep same-name sub-projectiles** still fall back to
    positional and account for most residual DELTAs; PR 2's overlay must align
    them by name **and** damage signature before writing.
+4. **Projectile flattening missed ~13 spawn-model types (completeness bug).**
+   `_collect_projectiles` only followed behaviors named `CreateProjectile*`, so
+   it dropped projectiles spawned via `AlternateProjectileModel` (the bomb's
+   secondary cluster, on the *weapon*), `ProjectileOverTimeModel`,
+   `UnstableConcoctionSplashModel`, `PreEmptiveStrikeLauncherModel`,
+   `PrinceOfDarknessEmissionModel`, `PhoenixRebirthModel`, etc. — under-emitting
+   in 177 attacks (e.g. **Psi's entire damage projectile "DestructiveResonance"
+   was missing**). **Fixed:** detect child projectiles by their own `$type`
+   under *any* field name, on both the projectile's and the **weapon's**
+   behaviors, and de-dupe identical ones (an explosion reached via two paths
+   appears once). Roster projectile-count parity vs the wiki improved
+   (exact 1269→1348, under 177→111, duplicate-name attacks 192→72); pat_fusty,
+   psi and silas re-emit with their previously-missing projectiles. The residual
+   gap is flattening *style* (the wiki names/groups sub-projectiles its own way),
+   not missing data.
 
 **Names — the part of P1 that is *unsolvable from the dump*.** Abilities carry
 `displayName` directly (100%: "Cocktail of Fire", "Firestorm"); spawned

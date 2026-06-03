@@ -148,6 +148,47 @@ def test_sub_projectiles_are_flattened_as_siblings(mod):
     assert explosion_node["damage"] == 1 and explosion_node["pierce"] == 22
 
 
+def test_weapon_behavior_alternate_projectile_is_collected(mod):
+    # The bomb's secondary cluster is fired by an AlternateProjectileModel on the
+    # *weapon* (not weapon.projectile) — the old CreateProjectile-only walk
+    # dropped it (and the real damage projectile of e.g. Psi).
+    alt = _projectile(name="Secondary", pierce=5.0, damage=3.0)
+    attack = _attack(_projectile(name="Primary", damage=1.0))
+    attack["weapons"][0]["behaviors"] = [
+        {"$type": _t("AlternateProjectileModel"), "projectile": alt},
+    ]
+    names = [p["name"] for p in mod._clean_attack(attack, 0)["projectiles"]]
+    assert "Primary" in names and "Secondary" in names
+
+
+def test_spawned_projectiles_detected_by_structure_under_any_field(mod):
+    # ProjectileOverTimeModel holds its child under `projectileModel`, not
+    # `projectile` — structural detection (by $type) must still find it.
+    child = _projectile(name="OverTime", damage=2.0)
+    behavior = {"$type": _t("ProjectileOverTimeModel"), "projectileModel": child}
+    found = mod._spawned_projectiles(behavior)
+    assert len(found) == 1 and found[0]["id"] == "OverTime"
+
+
+def test_duplicate_projectiles_are_deduped(mod):
+    # The same explosion reached via two spawn paths is emitted once (wiki parity).
+    shell = _projectile(name="Projectile", damage=None)
+    shell["behaviors"].append(
+        {
+            "$type": _t("CreateProjectileOnContactModel"),
+            "projectile": _projectile(name="Explosion", pierce=22.0, damage=1.0),
+        },
+    )
+    shell["behaviors"].append(
+        {
+            "$type": _t("CreateProjectileOnExpireModel"),
+            "projectile": _projectile(name="Explosion", pierce=22.0, damage=1.0),
+        },
+    )
+    names = [p["name"] for p in mod._clean_attack(_attack(shell), 0)["projectiles"]]
+    assert names.count("Explosion") == 1
+
+
 def test_attack_name_strips_class_prefix_and_trailing_underscore(mod):
     attack = mod._clean_attack(_attack(_projectile()), 0)
     assert attack["name"] == "Attack"  # from "AttackModel_Attack_"
