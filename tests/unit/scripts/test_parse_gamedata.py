@@ -250,29 +250,33 @@ def test_pascal_name_mapping(mod):
 # --- damage-modifier fidelity (the v55 "uniform 1.0" trap) ------------------
 
 
-def _tag_mod(tag: str, multiplier: float) -> dict:
+def _tag_mod(tag: str, *, additive: float = 0.0, multiplier: float = 1.0) -> dict:
+    # The real bonus lives in `damageAddative` (sic); `damageMultiplier` is a
+    # separate, almost-always-1.0 field.
     return {
         "$type": _t("DamageModifierForTagModel"),
         "tag": tag,
         "damageMultiplier": multiplier,
+        "damageAddative": additive,
         "name": "DamageModifierForTagModel_",
     }
 
 
-def test_neutral_damage_modifier_is_not_emitted(mod):
-    # In the v55 dump every DamageModifierForTagModel is a no-op 1.0 even where
-    # the trusted wiki has a real bonus — emitting it would overwrite good data.
+def test_tag_bonus_read_from_misspelled_additive_field(mod):
+    # Ultra-Juggernaut Lead +20 is stored in `damageAddative`, not the multiplier.
     proj = _projectile()
-    proj["behaviors"].append(_tag_mod("Lead", 1.0))
+    proj["behaviors"].append(_tag_mod("Lead", additive=20.0))
     cleaned = mod._clean_projectile(proj)
-    assert "damageModifierForLead" not in cleaned
+    assert cleaned["damageModifierForLead"] == 20
 
 
-def test_real_damage_modifier_is_emitted(mod):
+def test_neutral_modifier_not_emitted(mod):
+    # additive 0 + multiplier 1 = no real bonus → emit nothing (don't overwrite
+    # curated data with a no-op).
     proj = _projectile()
-    proj["behaviors"].append(_tag_mod("Ceramic", 3.0))
+    proj["behaviors"].append(_tag_mod("Ceramic", additive=0.0, multiplier=1.0))
     cleaned = mod._clean_projectile(proj)
-    assert cleaned["damageModifierForCeramic"] == 3
+    assert "damageModifierForCeramic" not in cleaned
 
 
 # --- fidelity audit ---------------------------------------------------------

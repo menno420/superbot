@@ -177,18 +177,20 @@ def _clean_projectile(proj: dict) -> dict:
             out["lifespan"] = _num(travel["lifespan"])
 
     # Tag-based damage modifiers → the flat ``damageModifierFor<Tag>`` the UI
-    # reads. CAUTION: in the v55 dump every ``DamageModifierForTagModel`` carries
-    # ``damageMultiplier == 1.0`` (a no-op) even where the trusted wiki data has a
-    # real bonus (e.g. Ultra-Juggernaut Lead ×20). The bonus is expressed
-    # elsewhere in the model in a form we don't yet decode, so emitting the raw
-    # ``1.0`` would *overwrite* a correct curated value with "no modifier". Only
-    # surface a modifier that is actually != 1 — never claim a 1.0 we can't trust.
+    # reads. The real bonus is an ADDITIVE stored in ``damageAddative`` (sic —
+    # the field is misspelled in the model). ``damageMultiplier`` is a *separate*
+    # field that is a neutral ``1.0`` in all but 2 cases across the whole roster,
+    # so reading it alone (the old bug) missed 2,467 real bonuses and made it
+    # look like the mechanic had been removed — it had not (Ultra-Juggernaut
+    # Lead +20 / Ceramic +8 are right here in ``damageAddative``, identical to
+    # the wiki). Our schema's ``damageModifierFor<Tag>`` holds that additive.
     for mod in _behaviors(proj, "DamageModifierForTagModel"):
-        tag = mod.get("tag")
-        key = _TAG_TO_DAMAGE_MOD.get(str(tag))
-        mult = mod.get("damageMultiplier")
-        if key and isinstance(mult, (int, float)) and mult != 1:
-            out[key] = _num(mult)
+        key = _TAG_TO_DAMAGE_MOD.get(str(mod.get("tag")))
+        if not key:
+            continue
+        add = mod.get("damageAddative")
+        if isinstance(add, (int, float)) and add != 0:
+            out[key] = _num(add)
 
     knock = _first(proj, "KnockbackModel")
     if knock is not None and "distance" in knock:

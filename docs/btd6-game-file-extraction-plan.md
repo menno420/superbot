@@ -30,14 +30,18 @@ committed (wiki-sourced) ground truth, classifying every field:
 
 **What the audit revealed (and PR 1.5 fixes / accounts for):**
 
-1. **`DamageModifierForTagModel` is a uniform `1.0` in the v55 dump** even where
-   the wiki carries the real bonus (Ultra-Juggernaut Lead ×20, Ceramic ×8). The
-   bonus lives elsewhere in the model in a form we don't yet decode. The mapper
-   used to emit that `1.0`, which would overwrite a correct curated value with
-   "no modifier". **Fixed:** the mapper now only emits a `damageModifierFor*`
-   when it is `!= 1`. This also cleaned **130 false `…: 1` lines** from the four
-   PR-1-generated heroes that had them (captain_churchill, corvus, ezili,
-   pat_fusty) — re-emitted in this PR.
+1. **Tag damage bonus lives in `damageAddative` (sic), not `damageMultiplier`.**
+   `DamageModifierForTagModel.damageMultiplier` is a neutral `1.0` in all but 2
+   of 2,843 cases roster-wide; the real bonus is the *additive* in the
+   misspelled `damageAddative` field (Ultra-Juggernaut Lead **+20** / Ceramic
+   **+8** are right there, identical to the wiki — the mechanic was **never
+   reworked**). The original mapper read only `damageMultiplier`, so it missed
+   2,467 real bonuses and made it look removed. **Fixed:** read `damageAddative`
+   → `damageModifierFor<Tag>`. After this the audit's `damageModifierFor*`
+   fields are **CLEAN** (exact wiki match), and the four heroes re-emit with
+   their **correct** bonus values restored (captain_churchill, corvus, ezili,
+   pat_fusty). *(An earlier pass mistakenly dropped these as neutral `1`s before
+   the real field was found.)*
 2. **Float precision** — the wiki rounds (`0.3616`); the dump is full precision
    (`0.36160713`). The audit compares numbers rounded to 4 dp so this
    representation noise doesn't read as a change.

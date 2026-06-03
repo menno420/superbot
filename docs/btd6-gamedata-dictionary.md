@@ -23,11 +23,12 @@ knowing where, and which encoding to trust.
    (abilities). Player-facing names are all here.
 3. **Descriptions / "what it grants"** → `textTable` `"<LocsKey> Description"`
    and `"<Hero> Level N Description"`. The game's own prose — authoritative and
-   complete, and steadier than the structured effect models (see Juggernaut).
+   complete; the readable companion to the structured numbers.
 4. **Semantic effect models** (buffs / zones / subtowers) → inline in the tower
-   models. Real but **encoded inconsistently and reworked between patches** — do
-   not treat a single field as canonical; prefer the description for meaning and
-   the structured value only where `--audit` says it is stable.
+   models. Real and stable, but **read the right field** — the encoding is exact
+   (no rounding), the field *names* are the catch (e.g. the tag damage bonus is
+   `damageAddative`, a misspelled additive, not `damageMultiplier`). Decode the
+   field, confirm with `--audit`, then trust it.
 
 ## Domains (v55: 17 dirs + 5 loose files)
 
@@ -79,13 +80,15 @@ Loose files: **`textTable.json`** (12,127 keys — every name & description),
 
 ## Keystone decodes / lessons (don't relearn these)
 
-- **`DamageModifierForTagModel` is a uniform `1.0` in v55** even where a tower
-  really does bonus a tag. Ultra-Juggernaut's "excels at crushing Ceramic,
-  Fortified and Lead" (per its own description) is **not** a `damageMultiplier`
-  in v55 — the wiki's `Lead ×20 / Ceramic ×8` was the **v53** encoding, since
-  reworked. Lesson: bonus-vs-tag is a *reworked* mechanic; trust the
-  **description** for meaning, never a lone multiplier. The mapper now omits the
-  `1.0` so it can't overwrite curated data.
+- **Tag damage bonus is in `damageAddative` (sic), not `damageMultiplier`.**
+  On `DamageModifierForTagModel`, `damageMultiplier` is a neutral `1.0` in all
+  but 2 of 2,843 cases; the real bonus is the *additive* in the misspelled
+  `damageAddative` field. Ultra-Juggernaut "excels at crushing Ceramic,
+  Fortified and Lead" = `damageAddative` **+8 / +5 / +20** — **identical to the
+  wiki, never reworked**. Reading the wrong field once made it look removed.
+  Lesson: when a field looks empty/neutral, the value is usually in a
+  sibling field with an unexpected (or misspelled) name — find it, then
+  `--audit` confirms it's CLEAN.
 - **`LocsKey` is the localization join** from a model to `textTable` — the
   reliable name + description link (not a key-by-internal-name lookup, which
   fails). `localizedNameOverride` overrides it on some upgrades.

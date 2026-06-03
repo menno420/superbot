@@ -39,6 +39,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -58,6 +59,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -115,6 +117,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -134,6 +137,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -191,6 +195,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -210,6 +215,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -273,6 +279,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -292,6 +299,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -355,6 +363,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -374,6 +383,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -437,6 +447,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -456,6 +467,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -523,6 +535,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -542,6 +555,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -609,6 +623,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -628,6 +643,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -695,6 +711,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -714,6 +731,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -781,6 +799,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -800,6 +819,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -871,6 +891,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -890,6 +911,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -961,6 +983,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -980,6 +1003,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1051,6 +1075,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -1070,6 +1095,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1141,6 +1167,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -1160,6 +1187,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1231,6 +1259,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -1250,6 +1279,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1321,6 +1351,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1340,6 +1371,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1411,6 +1443,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1430,6 +1463,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1501,6 +1535,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1520,6 +1555,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1591,6 +1627,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1610,6 +1647,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1681,6 +1719,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1700,6 +1739,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
