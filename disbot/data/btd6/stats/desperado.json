@@ -1,8 +1,8 @@
 {
   "tower_id": "desperado",
   "canonical": "Desperado",
-  "game_version": "54.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.0",
+  "source": "bloonswiki.com (CC BY-NC-SA); BTD Mod Helper game data v55.0 (numeric overlay)",
   "base_cost": 300,
   "category": "primary",
   "paragon_cost": null,
@@ -616,7 +616,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -735,7 +735,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -982,7 +982,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -3392,7 +3392,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -3515,7 +3515,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -3642,7 +3642,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -3769,7 +3769,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -3905,7 +3905,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -4160,7 +4160,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -4423,7 +4423,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -4686,7 +4686,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -4958,7 +4958,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -5246,7 +5246,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -5542,7 +5542,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {
@@ -5838,7 +5838,7 @@
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
-      "range": 28,
+      "range": 80,
       "towerSelectionMenuThemeId": "Desperado",
       "attacks": [
         {

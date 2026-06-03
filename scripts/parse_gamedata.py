@@ -373,7 +373,13 @@ def _clean_attack(attack: dict, index: int) -> dict:
 
 
 def _clean_ability(ability: dict, index: int) -> dict:
-    out: dict = {"name": _clean_name(ability.get("name"), f"Ability {index + 1}")}
+    # Prefer the game's own player-facing name (``displayName`` is already English
+    # — "Cocktail of Fire", "Firestorm") over the internal model name.
+    display = ability.get("displayName")
+    name = display if isinstance(display, str) and display else None
+    out: dict = {
+        "name": name or _clean_name(ability.get("name"), f"Ability {index + 1}"),
+    }
     if "cooldown" in ability:
         out["cooldown"] = _num(ability["cooldown"])
     # An ability fires its own AttackModels; surface their projectiles + bad dmg.
@@ -567,6 +573,7 @@ def _upgrades_for(tdir: Path, dump: Path) -> list[dict]:
             if isinstance(name, str) and name and name not in seen:
                 seen.add(name)
                 names.append(name)
+    tt = _text_table(dump)
     out: list[dict] = []
     for name in names:
         up = _read_upgrade(dump, name)
@@ -576,17 +583,41 @@ def _upgrades_for(tdir: Path, dump: Path) -> list[dict]:
         tier = up.get("tier")
         if not isinstance(path, int) or not isinstance(tier, int):
             continue
-        out.append(
-            {
-                "path": path + 1,
-                "tier": tier + 1,
-                "name": up.get("name", name),
-                "cost": _num(up.get("cost", 0)),
-                "xp": _num(up.get("xpCost", 0)),
-            },
-        )
+        entry = {
+            "path": path + 1,
+            "tier": tier + 1,
+            "name": up.get("name", name),
+            "cost": _num(up.get("cost", 0)),
+            "xp": _num(up.get("xpCost", 0)),
+        }
+        # Game-authored description ("what this upgrade grants"), resolved through
+        # the upgrade's localization key — the bot's most reliable upgrade prose.
+        locs = up.get("LocsKey")
+        if isinstance(locs, str) and locs:
+            description = tt.get(f"{locs} Description")
+            if isinstance(description, str) and description:
+                entry["description"] = description
+        out.append(entry)
     out.sort(key=lambda u: (u["path"], u["tier"]))
     return out
+
+
+_TEXT_TABLE_CACHE: dict[str, dict[str, str]] = {}
+
+
+def _text_table(dump: Path) -> dict[str, str]:
+    """The dump's ``textTable.json`` (game display strings + descriptions), cached
+    per dump path. Empty dict if absent — name/description lookups then no-op.
+    """
+    key = str(dump)
+    if key not in _TEXT_TABLE_CACHE:
+        fp = dump / "textTable.json"
+        try:
+            raw = json.loads(fp.read_text("utf-8")) if fp.exists() else {}
+        except (OSError, json.JSONDecodeError):
+            raw = {}
+        _TEXT_TABLE_CACHE[key] = {k: v for k, v in raw.items() if isinstance(v, str)}
+    return _TEXT_TABLE_CACHE[key]
 
 
 def _read_upgrade(dump: Path, upgrade_id: Any) -> dict | None:
@@ -964,6 +995,101 @@ def render_audit(stats: dict[str, _FieldStat]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Safe numeric overlay — refresh trusted v55 numbers onto the curated files
+# ---------------------------------------------------------------------------
+#
+# The committed tower/hero files are bloonswiki-sourced (v53) with curated names,
+# descriptions and structure. The overlay refreshes ONLY the audit-trusted
+# numeric / immunity leaves to their v55 values, in place, aligning lists by
+# name (and upgrades by (path, tier)) — it never adds or removes a projectile /
+# attack / upgrade, so the curated structure + names survive intact. Fields the
+# audit can't trust (``count``, the camo/blocker bools tangled in flatten order)
+# and all names/descriptions are left untouched.
+
+# Tier-/level-level scalar fields that are SAFE to overlay: each occurs once per
+# tier dict, so there is no alignment ambiguity. We deliberately do NOT overlay
+# per-projectile / per-attack / per-ability stats — projectile and ability names
+# are not reliable keys across the two sources (the wiki calls a projectile
+# "Projectile" where the dump calls it "BaseProjectile"; "Ability" is reused for
+# distinct abilities), so matching by name writes values onto the WRONG node
+# (verified: it would put the Superstorm's 100 dmg on Druid's base dart, and
+# Legend-of-the-Night's 180s cooldown on Dark Knight's other ability). Those
+# stats stay curated; the audit shows them mostly CLEAN anyway.
+_OVERLAY_FIELDS: frozenset[str] = frozenset({"range", "footprintRadius"})
+
+
+def _overlay_node(committed: Any, mapped: Any, changes: list[str], ctx: str) -> None:
+    """Refresh ``_OVERLAY_FIELDS`` scalar leaves of ``committed`` from ``mapped``.
+
+    Recurses **dicts only** — never lists. Lists (attacks/projectiles/abilities)
+    can't be aligned safely across the two sources (see ``_OVERLAY_FIELDS``), so
+    they are left entirely curated rather than risk a mis-keyed write.
+    """
+    if not (isinstance(committed, dict) and isinstance(mapped, dict)):
+        return
+    for key, cval in committed.items():
+        if key not in mapped:
+            continue
+        mval = mapped[key]
+        if key in _OVERLAY_FIELDS and _is_audit_scalar(cval) and _is_audit_scalar(mval):
+            if not _audit_equal(cval, mval) and type(cval) is not bool:
+                committed[key] = mval
+                changes.append(f"{ctx}.{key}: {cval!r} → {mval!r}")
+        elif isinstance(cval, dict):
+            _overlay_node(cval, mval, changes, f"{ctx}.{key}")
+
+
+def _overlay_upgrades(committed: dict, mapped: dict, changes: list[str]) -> None:
+    """Refresh upgrade ``cost`` / ``xp`` aligned by ``(path, tier)`` (keep names)."""
+    mmap = {
+        (u.get("path"), u.get("tier")): u
+        for u in mapped.get("upgrades", [])
+        if isinstance(u, dict)
+    }
+    for up in committed.get("upgrades", []) or []:
+        if not isinstance(up, dict):
+            continue
+        m = mmap.get((up.get("path"), up.get("tier")))
+        if not m:
+            continue
+        for field_name in ("cost", "xp"):
+            if field_name in up and field_name in m and up[field_name] != m[field_name]:
+                changes.append(
+                    f"upgrade[{up.get('path')}-{up.get('tier')}].{field_name}: "
+                    f"{up[field_name]!r} → {m[field_name]!r}",
+                )
+                up[field_name] = m[field_name]
+
+
+def overlay_payload(committed: dict, mapped: dict, version: str) -> list[str]:
+    """Overlay ``mapped`` v55 numbers onto a committed tower/hero ``dict`` in
+    place; return the list of changes made.
+    """
+    changes: list[str] = []
+    for key in ("base_cost", "category"):
+        if key in committed and key in mapped and committed[key] != mapped[key]:
+            changes.append(f"{key}: {committed[key]!r} → {mapped[key]!r}")
+            committed[key] = mapped[key]
+    if committed.get("upgrades") and mapped.get("upgrades"):
+        _overlay_upgrades(committed, mapped, changes)
+    for container in ("tiers", "levels"):
+        if container in committed and container in mapped:
+            _overlay_node(
+                committed[container],
+                mapped[container],
+                changes,
+                container,
+            )
+    if changes:
+        committed["game_version"] = version
+        prior = str(committed.get("source", ""))
+        stamp = f"BTD Mod Helper game data v{version} (numeric overlay)"
+        if "Mod Helper" not in prior:
+            committed["source"] = f"{prior}; {stamp}" if prior else stamp
+    return changes
+
+
+# ---------------------------------------------------------------------------
 # Anchors + CLI
 # ---------------------------------------------------------------------------
 
@@ -981,6 +1107,40 @@ def validate_anchors(dump: Path) -> list[str]:
         if cost != expected:
             errors.append(f"{folder}: cost {cost!r} != expected {expected}")
     return errors
+
+
+def overlay_all(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
+    """Overlay v55 numbers onto every curated tower + hero file. Returns
+    ``{relative_path: [change, …]}`` for files that changed (generated heroes are
+    already v55, so they no-op). Paragons are intentionally out of scope.
+    """
+    towers, heroes = build_allowlist(dump)
+    version = _dump_version(dump)
+    report: dict[str, list[str]] = {}
+
+    def apply(fp: Path, rel: str, mapped: dict) -> None:
+        if not fp.exists():
+            return
+        committed = json.loads(fp.read_text("utf-8"))
+        changes = overlay_payload(committed, mapped, version)
+        if changes:
+            report[rel] = changes
+            if not dry_run:
+                _write(fp, committed)
+
+    for tid, canonical in towers.items():
+        apply(
+            _STATS_DIR / f"{tid}.json",
+            f"stats/{tid}.json",
+            map_tower(dump, tid, canonical, version).payload,
+        )
+    for hid, canonical in heroes.items():
+        apply(
+            _STATS_DIR / "heroes" / f"{hid}.json",
+            f"stats/heroes/{hid}.json",
+            map_hero(dump, hid, canonical, version).payload,
+        )
+    return report
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -1012,6 +1172,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="report per-field fidelity vs the committed wiki data (no writes)",
     )
+    ap.add_argument(
+        "--overlay",
+        action="store_true",
+        help="refresh trusted v55 numbers onto curated tower/hero files",
+    )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
 
@@ -1031,6 +1196,17 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.audit:
         print(render_audit(audit(dump)))
+        return 0
+
+    if args.overlay:
+        report = overlay_all(dump, dry_run=args.dry_run)
+        verb = "would change" if args.dry_run else "changed"
+        total = sum(len(v) for v in report.values())
+        print(f"overlay: {verb} {len(report)} file(s), {total} leaf value(s)\n")
+        for rel in sorted(report):
+            print(f"  {rel}  ({len(report[rel])} change(s))")
+            for change in report[rel]:
+                print(f"      {change}")
         return 0
 
     towers, heroes = build_allowlist(dump)

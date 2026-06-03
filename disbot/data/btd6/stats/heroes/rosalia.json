@@ -80,7 +80,7 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         }
       ],
@@ -112,7 +112,7 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         }
       ],
@@ -144,7 +144,7 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         }
       ],
@@ -176,7 +176,7 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         }
       ],
@@ -208,11 +208,11 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         }
       ],
@@ -244,11 +244,11 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         }
       ],
@@ -280,11 +280,11 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         }
       ],
@@ -316,15 +316,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 75
         }
       ],
@@ -356,15 +356,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 75
         }
       ],
@@ -396,15 +396,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 75
         }
       ],
@@ -436,15 +436,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 75
         }
       ],
@@ -476,15 +476,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 75
         }
       ],
@@ -516,15 +516,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 45
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 75
         }
       ],
@@ -556,15 +556,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 30
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 60
         }
       ],
@@ -596,15 +596,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 30
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 45
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 60
         }
       ],
@@ -636,15 +636,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 30
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 35
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 60
         }
       ],
@@ -676,15 +676,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 30
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 35
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 60
         }
       ],
@@ -716,15 +716,15 @@
       ],
       "abilities": [
         {
-          "name": "ScatterMissileAbility",
+          "name": "Scatter Missile",
           "cooldown": 30
         },
         {
-          "name": "FlightBoostAbility",
+          "name": "Flight Boost",
           "cooldown": 35
         },
         {
-          "name": "KineticChargeAbility",
+          "name": "Kinetic Charge",
           "cooldown": 60
         }
       ],

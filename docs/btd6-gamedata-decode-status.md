@@ -6,6 +6,7 @@ to pick up the work: it records what's done, **how the dump's data actually
 works** (the traps we hit), and what is still un-decoded.
 
 > Companion docs — read alongside:
+> - **`btd6-gamedata-native-schema.md`** — *the game-native storage design & cutover map* (game data leads; how to store the game's structure displayably).
 > - **`btd6-gamedata-dictionary.md`** — *what data exists and where* (domains, the textTable linkage).
 > - **`btd6-game-file-extraction-plan.md`** — the mapper roadmap + the fidelity-audit findings.
 > - **`btd6-data-pipeline.md`** — the existing bloonswiki pipeline this augments.
@@ -28,7 +29,8 @@ and the wiki's clean structure). See the dictionary's "source ladder".
 | PR | What |
 |---|---|
 | **#464** (merged) | **Fidelity-audit foundation.** `parse_gamedata.py --audit` maps every tower/hero/paragon in-memory and diffs each numeric/bool leaf vs the committed wiki data, classifying each field CLEAN / DELTA / SUSPECT. Float-tolerant (4 dp), aligns dict-lists by `name` and upgrades by `(path, tier)`. |
-| **#465** (open) | **Discovery tooling + dictionary + two real mapper bug fixes** (below): `btd6_gamedata_inventory.py`, `docs/btd6-gamedata-dictionary.md`, the `damageAddative` fix, and the spawn-model projectile fix. |
+| **#465** (merged) | **Discovery tooling + dictionary + two mapper bug fixes**: `btd6_gamedata_inventory.py`, `docs/btd6-gamedata-dictionary.md`, the `damageAddative` fix, and the spawn-model projectile fix. |
+| **(this PR)** | **Conservative numeric overlay** (`parse_gamedata.py --overlay`, `--dry-run`): refreshes only the *unambiguously-keyed* v55 values onto the curated files — top-level cost/category, upgrade cost/xp by `(path, tier)`, and **tier-level** `range`/`footprintRadius`. Found a real wiki bug (Desperado mid-path range 28, *below* its base 60 — corrected to v55's 80) plus mermonkey xp / ace cost. **Per-projectile/ability stats are deliberately NOT overlaid** (see the naming lesson below). |
 
 Two extraction bugs were found and fixed — **both the same failure mode: the
 data was always present; the mapper read the wrong field or the wrong place.**
@@ -72,6 +74,16 @@ data was always present; the mapper read the wrong field or the wrong place.**
 - **List ordering differs**: the mapper flattens sub-projectiles depth-first;
   the wiki groups/names them its own way. Align by `name` (+ damage signature),
   never by index. Same-name sub-projectiles are the main residual audit DELTAs.
+- **Projectile / ability *names* are NOT reliable keys across wiki↔dump** — the
+  single most dangerous thing for *writing* (overlay). The wiki calls a
+  projectile `"Projectile"` where the dump uses the id `"BaseProjectile"`, and
+  `"Projectile"`/`"Ability"` are reused for distinct nodes. Matching by name
+  therefore writes onto the **wrong** node: it would put Druid Superstorm's 100
+  dmg on the base dart, and Dark Knight's *Legend of the Night* 180s cooldown
+  on its *other* ability. So the overlay only touches **uniquely-keyed** values
+  (cost/category, upgrades by `(path,tier)`, tier-level `range`/`footprint`) and
+  leaves all per-projectile/ability stats curated. The audit may *report* a
+  per-projectile DELTA, but it is never safe to auto-*write* it.
 - **`immuneBloonProperties`** is a bitmask with bits we don't decode (9 vs 73
   can decode to the *same* type+immunity) — compare the *decoded* type, not the
   raw int.
@@ -96,10 +108,16 @@ data was always present; the mapper read the wrong field or the wrong place.**
 ## Not yet added / decoded (open items)
 
 **Mapper / data completeness**
-- **The safe overlay itself isn't applied yet.** The audit says *which* fields
-  are safe; PR-next refreshes audit-CLEAN/DELTA numbers onto the curated files
-  (names preserved via `LocsKey`/`displayName`, lists aligned by name+signature)
-  and updates the ~25 value-pinned tests for the v55 numbers.
+- **The overlay is applied, but only for uniquely-keyed fields** (cost/category,
+  upgrade cost/xp, tier-level `range`/`footprint`). **Expanding it to
+  per-projectile/ability stats is blocked** on reconciling wiki↔dump names (a
+  `"Projectile"` ↔ `"BaseProjectile"` map, or a signature match on the
+  *un*-changed fields), or restricting to provably-unambiguous tiers (exactly
+  one attack × one projectile). Until then those stats stay curated — the audit
+  shows them mostly CLEAN, so little is lost; the DELTAs are the risky ones.
+- **Paragons not yet overlaid** (their combat lives in a `base` node, not
+  `tiers`/`levels`; metadata is curated). Easy follow-up once the per-projectile
+  story is settled.
 - **Descriptions are unused.** Wiring `textTable` upgrade/ability/hero-level
   prose into our fixtures + AI grounding is the biggest untapped, authoritative
   win (would answer "what does Ezili L11 do?" from the game itself).

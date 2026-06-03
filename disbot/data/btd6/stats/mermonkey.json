@@ -1,8 +1,8 @@
 {
   "tower_id": "mermonkey",
   "canonical": "Mermonkey",
-  "game_version": "54.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.0",
+  "source": "bloonswiki.com (CC BY-NC-SA); BTD Mod Helper game data v55.0 (numeric overlay)",
   "base_cost": 300,
   "category": "magic",
   "paragon_cost": null,
@@ -83,7 +83,7 @@
       "tier": 1,
       "name": "Echosense Precision",
       "cost": 200,
-      "xp": 150
+      "xp": 120
     },
     {
       "path": 3,

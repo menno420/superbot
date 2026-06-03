@@ -161,7 +161,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         }
       ],
@@ -247,7 +247,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         }
       ],
@@ -339,7 +339,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         }
       ],
@@ -425,7 +425,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         }
       ],
@@ -511,7 +511,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         }
       ],
@@ -597,7 +597,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         }
       ],
@@ -683,7 +683,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         }
       ],
@@ -769,11 +769,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -859,11 +859,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -949,11 +949,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1039,11 +1039,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1129,11 +1129,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1219,11 +1219,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1309,11 +1309,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1399,11 +1399,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1489,11 +1489,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1579,11 +1579,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 90
         }
       ],
@@ -1669,11 +1669,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityBrambles",
+          "name": "Brambles",
           "cooldown": 30
         },
         {
-          "name": "AbilityWallOfTrees",
+          "name": "Wall of Trees",
           "cooldown": 75
         }
       ],
