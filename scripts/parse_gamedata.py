@@ -176,12 +176,19 @@ def _clean_projectile(proj: dict) -> dict:
         if "lifespan" in travel:
             out["lifespan"] = _num(travel["lifespan"])
 
-    # Tag-based damage modifiers → the flat ``damageModifierFor<Tag>`` the UI reads.
+    # Tag-based damage modifiers → the flat ``damageModifierFor<Tag>`` the UI
+    # reads. CAUTION: in the v55 dump every ``DamageModifierForTagModel`` carries
+    # ``damageMultiplier == 1.0`` (a no-op) even where the trusted wiki data has a
+    # real bonus (e.g. Ultra-Juggernaut Lead ×20). The bonus is expressed
+    # elsewhere in the model in a form we don't yet decode, so emitting the raw
+    # ``1.0`` would *overwrite* a correct curated value with "no modifier". Only
+    # surface a modifier that is actually != 1 — never claim a 1.0 we can't trust.
     for mod in _behaviors(proj, "DamageModifierForTagModel"):
         tag = mod.get("tag")
         key = _TAG_TO_DAMAGE_MOD.get(str(tag))
-        if key and "damageMultiplier" in mod:
-            out[key] = _num(mod["damageMultiplier"])
+        mult = mod.get("damageMultiplier")
+        if key and isinstance(mult, (int, float)) and mult != 1:
+            out[key] = _num(mult)
 
     knock = _first(proj, "KnockbackModel")
     if knock is not None and "distance" in knock:
@@ -285,6 +292,11 @@ def _clean_attack(attack: dict, index: int) -> dict:
         if isinstance(w, dict) and isinstance(w.get("projectile"), dict):
             projectiles.extend(_collect_projectiles(w["projectile"]))
     out["projectiles"] = projectiles
+    # ``count`` (projectiles per shot) has no single reliable source in the dump
+    # — ``len(weapons)`` and the per-weapon ``emission.count`` each diverge from
+    # the trusted wiki value on a third of tiers (see the fidelity audit). Keep
+    # the historical ``len(weapons)`` so the mapper output is stable, and let the
+    # audit flag ``count`` as SUSPECT so the overlay never refreshes it.
     out["count"] = len(weapons)
     out["targetTypes"] = "Depends on targeting option"
     if "range" in attack:
@@ -666,6 +678,229 @@ def map_paragon(
 
 
 # ---------------------------------------------------------------------------
+# Fidelity audit — mapper output vs the committed (wiki-sourced) ground truth
+# ---------------------------------------------------------------------------
+#
+# A v55 cutover that blindly wrote the mapper's numbers over the committed files
+# would *corrupt* correct data: the dump represents several mechanics
+# differently from the wiki (verified — e.g. ``DamageModifierForTagModel`` is a
+# uniform ``1.0`` in the dump while the wiki carries the real Lead/Ceramic
+# bonus). Before any overlay we must know, field by field, where the mapper
+# agrees with the trusted data (safe to refresh), where it differs rarely
+# (likely a genuine v55 delta), and where it differs systematically (a mapper /
+# representation gap — must NOT be overlaid). This audit produces exactly that
+# verdict so the overlay (next step) only touches fields it can trust.
+
+# A field is SUSPECT (a systematic mapper gap, never overlay it) above this
+# divergence rate; at-or-below it the diffs are sparse enough to be real v55
+# deltas worth reviewing (DELTA); zero diffs is CLEAN (safe to overlay).
+_AUDIT_SUSPECT_RATE = 0.20
+
+
+@dataclass
+class _FieldStat:
+    total: int = 0
+    diffs: int = 0
+    examples: list[tuple[str, Any, Any]] = field(default_factory=list)
+
+    @property
+    def rate(self) -> float:
+        return self.diffs / self.total if self.total else 0.0
+
+    @property
+    def verdict(self) -> str:
+        if self.diffs == 0:
+            return "CLEAN"
+        return "SUSPECT" if self.rate > _AUDIT_SUSPECT_RATE else "DELTA"
+
+
+def _is_audit_scalar(value: Any) -> bool:
+    """Numbers and bools — the leaves an overlay could refresh. (Names/strings
+    are curated and never overlaid, so they are out of scope here.)
+    """
+    return isinstance(value, (int, float, bool))
+
+
+def _audit_equal(committed: Any, mapped: Any) -> bool:
+    """Equal *for fidelity purposes* — bools compared identity, numbers compared
+    rounded to 4 decimals so the wiki's rounded values (``0.3616``) don't read as
+    a diff against the dump's full precision (``0.36160713``). That float-
+    precision noise is a representation difference, not a data change.
+    """
+    if isinstance(committed, bool) or isinstance(mapped, bool):
+        return committed is mapped
+    if isinstance(committed, (int, float)) and isinstance(mapped, (int, float)):
+        return round(float(committed), 4) == round(float(mapped), 4)
+    return committed == mapped
+
+
+def _align_named(
+    committed: list,
+    mapped: list,
+) -> list[tuple[str, dict, dict]] | None:
+    """Pair two lists of dicts by their ``name`` — or ``None`` to fall back to
+    positional alignment.
+
+    Attacks, projectiles and abilities are emitted in a different order by the
+    two sources (the mapper flattens sub-projectiles depth-first; the wiki
+    orders them its own way), so an index diff reports every field as a phantom
+    swap. When both sides are dicts with **unique** names, pairing by name is
+    the true alignment. Anything else (scalars, missing/duplicate names) keeps
+    positional comparison.
+    """
+
+    def names(rows: list) -> list[str] | None:
+        if not rows or not all(isinstance(r, dict) and "name" in r for r in rows):
+            return None
+        ns = [str(r["name"]) for r in rows]
+        return ns if len(set(ns)) == len(ns) else None
+
+    cn, mn = names(committed), names(mapped)
+    if cn is None or mn is None:
+        return None
+    mmap = {str(r["name"]): r for r in mapped}
+    return [(n, c, mmap[n]) for n, c in zip(cn, committed, strict=True) if n in mmap]
+
+
+def _walk_audit(
+    committed: Any,
+    mapped: Any,
+    key: str,
+    stats: dict[str, _FieldStat],
+    ctx: str,
+) -> None:
+    """Compare matching leaves of the two trees, tallying per-field-name stats.
+
+    Walks only keys/indices present in both: a key the mapper omits (e.g. a
+    curated description, or a ``1.0`` modifier we deliberately drop) is not a
+    diff — the overlay simply keeps the curated value there.
+    """
+    if isinstance(committed, dict) and isinstance(mapped, dict):
+        for k in committed:
+            if k in mapped:
+                _walk_audit(committed[k], mapped[k], k, stats, f"{ctx}.{k}")
+    elif isinstance(committed, list) and isinstance(mapped, list):
+        pairs = _align_named(committed, mapped)
+        if pairs is not None:  # dict-lists with unique names — align by name
+            for name, citem, mitem in pairs:
+                _walk_audit(citem, mitem, key, stats, f"{ctx}[{name}]")
+        else:  # positional fallback (scalars / unnamed / duplicate names)
+            for i in range(min(len(committed), len(mapped))):
+                _walk_audit(committed[i], mapped[i], key, stats, f"{ctx}[{i}]")
+    elif _is_audit_scalar(committed) and _is_audit_scalar(mapped):
+        # bool and 1/1.0 compare equal in Python; keep them in separate buckets
+        # so a numeric field and a same-named flag never pool.
+        bucket = f"bool:{key}" if isinstance(committed, bool) else key
+        st = stats.setdefault(bucket, _FieldStat())
+        st.total += 1
+        if not _audit_equal(committed, mapped):
+            st.diffs += 1
+            if len(st.examples) < 5:
+                st.examples.append((ctx, committed, mapped))
+
+
+def _audit_upgrades(
+    committed: list,
+    mapped: list,
+    stats: dict[str, _FieldStat],
+    ctx: str,
+) -> None:
+    """Upgrades aligned by ``(path, tier)`` — index alignment produces phantom
+    diffs because the two sources order the 15 upgrades differently.
+    """
+
+    def keyed(rows: list) -> dict[tuple, dict]:
+        out: dict[tuple, dict] = {}
+        for row in rows:
+            if isinstance(row, dict) and "path" in row and "tier" in row:
+                out[(row["path"], row["tier"])] = row
+        return out
+
+    cmap, mmap = keyed(committed), keyed(mapped)
+    for k in cmap:
+        if k in mmap:
+            _walk_audit(cmap[k], mmap[k], "upgrade", stats, f"{ctx}[{k[0]}-{k[1]}]")
+
+
+def _map_for_audit(
+    dump: Path,
+    towers: dict[str, str],
+    heroes: dict[str, str],
+    version: str,
+) -> dict[str, dict]:
+    """``committed-relative-path -> mapped payload`` for every entity that has a
+    committed file to compare against.
+    """
+    existing = _existing_paragons()
+    out: dict[str, dict] = {}
+    for tid, canonical in towers.items():
+        out[f"stats/{tid}.json"] = map_tower(dump, tid, canonical, version).payload
+        par = map_paragon(dump, tid, canonical, version, existing)
+        if par is not None:
+            stem, res = par
+            out[f"stats/paragons/{stem}.json"] = res.payload
+    for hid, canonical in heroes.items():
+        out[f"stats/heroes/{hid}.json"] = map_hero(
+            dump,
+            hid,
+            canonical,
+            version,
+        ).payload
+    return out
+
+
+def audit(dump: Path) -> dict[str, _FieldStat]:
+    """Per-field fidelity stats across every entity with a committed file."""
+    towers, heroes = build_allowlist(dump)
+    version = _dump_version(dump)
+    stats: dict[str, _FieldStat] = {}
+    for rel, mapped in _map_for_audit(dump, towers, heroes, version).items():
+        committed_fp = _DATA_ROOT / rel
+        if not committed_fp.exists():
+            continue
+        committed = json.loads(committed_fp.read_text("utf-8"))
+        for key in committed:
+            if key == "upgrades" and isinstance(committed.get("upgrades"), list):
+                _audit_upgrades(
+                    committed["upgrades"],
+                    mapped.get("upgrades", []),
+                    stats,
+                    rel,
+                )
+            elif key in mapped:
+                _walk_audit(committed[key], mapped[key], key, stats, f"{rel}.{key}")
+    return stats
+
+
+def render_audit(stats: dict[str, _FieldStat]) -> str:
+    """A human-readable trust report, SUSPECT first then DELTA then CLEAN."""
+    order = {"SUSPECT": 0, "DELTA": 1, "CLEAN": 2}
+    rows = sorted(
+        stats.items(),
+        key=lambda kv: (order[kv[1].verdict], -kv[1].diffs),
+    )
+    lines = [
+        "BTD6 game-data mapper fidelity audit (mapped v55 vs committed wiki data)",
+        f"  SUSPECT = systematic gap, never overlay (>{_AUDIT_SUSPECT_RATE:.0%} diff)",
+        "  DELTA   = sparse diffs, review as genuine v55 changes",
+        "  CLEAN   = mapper matches the trusted data, safe to overlay",
+        "",
+        f"  {'field':36}{'verdict':9}{'diffs':>7}{'total':>8}{'rate':>7}",
+    ]
+    for name, st in rows:
+        lines.append(
+            f"  {name:36}{st.verdict:9}{st.diffs:>7}{st.total:>8}{st.rate:>6.0%}",
+        )
+        if st.verdict != "CLEAN":
+            for ctx, cv, mv in st.examples[:3]:
+                where = ctx.split("/")[-1]
+                lines.append(f"        {where}: {cv!r} → {mv!r}")
+    safe = sorted(n for n, s in stats.items() if s.verdict in ("CLEAN", "DELTA"))
+    lines += ["", f"  overlay-eligible (CLEAN+DELTA): {', '.join(safe)}"]
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Anchors + CLI
 # ---------------------------------------------------------------------------
 
@@ -709,6 +944,11 @@ def main(argv: list[str] | None = None) -> int:
         help="map every tower + hero + paragon",
     )
     ap.add_argument("--validate-anchors", action="store_true")
+    ap.add_argument(
+        "--audit",
+        action="store_true",
+        help="report per-field fidelity vs the committed wiki data (no writes)",
+    )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
 
@@ -724,6 +964,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  - {e}")
             return 1
         print("anchors OK (Dart 200, Super 2500)")
+        return 0
+
+    if args.audit:
+        print(render_audit(audit(dump)))
         return 0
 
     towers, heroes = build_allowlist(dump)

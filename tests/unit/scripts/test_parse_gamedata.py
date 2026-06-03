@@ -245,3 +245,100 @@ def test_pascal_name_mapping(mod):
     assert mod._pascal("Captain Churchill") == "CaptainChurchill"
     assert mod._pascal("Dart Monkey") == "DartMonkey"
     assert mod._pascal("Obyn Greenfoot") == "ObynGreenfoot"
+
+
+# --- damage-modifier fidelity (the v55 "uniform 1.0" trap) ------------------
+
+
+def _tag_mod(tag: str, multiplier: float) -> dict:
+    return {
+        "$type": _t("DamageModifierForTagModel"),
+        "tag": tag,
+        "damageMultiplier": multiplier,
+        "name": "DamageModifierForTagModel_",
+    }
+
+
+def test_neutral_damage_modifier_is_not_emitted(mod):
+    # In the v55 dump every DamageModifierForTagModel is a no-op 1.0 even where
+    # the trusted wiki has a real bonus — emitting it would overwrite good data.
+    proj = _projectile()
+    proj["behaviors"].append(_tag_mod("Lead", 1.0))
+    cleaned = mod._clean_projectile(proj)
+    assert "damageModifierForLead" not in cleaned
+
+
+def test_real_damage_modifier_is_emitted(mod):
+    proj = _projectile()
+    proj["behaviors"].append(_tag_mod("Ceramic", 3.0))
+    cleaned = mod._clean_projectile(proj)
+    assert cleaned["damageModifierForCeramic"] == 3
+
+
+# --- fidelity audit ---------------------------------------------------------
+
+
+def test_audit_equal_ignores_float_precision(mod):
+    # The wiki rounds (0.3616); the dump is full precision (0.36160713).
+    assert mod._audit_equal(0.3616, 0.36160713)
+    assert mod._audit_equal(5, 5.0)
+    assert not mod._audit_equal(28, 80)
+
+
+def test_audit_equal_bools_compared_by_identity(mod):
+    assert mod._audit_equal(True, True)
+    assert not mod._audit_equal(True, False)
+    # a bool is never "equal" to a number even when Python would say 1 == True.
+    assert not mod._audit_equal(True, 1)
+
+
+def test_align_named_pairs_by_name_not_index(mod):
+    committed = [{"name": "Projectile", "r": 4}, {"name": "Frag"}, {"name": "Explosion"}]
+    mapped = [{"name": "Projectile", "r": 4}, {"name": "Explosion"}, {"name": "Frag"}]
+    pairs = mod._align_named(committed, mapped)
+    assert [n for n, _, _ in pairs] == ["Projectile", "Frag", "Explosion"]
+    # the Explosion pair lines up across the two different orders
+    _, c_expl, m_expl = next(p for p in pairs if p[0] == "Explosion")
+    assert c_expl["name"] == m_expl["name"] == "Explosion"
+
+
+def test_align_named_falls_back_on_duplicate_or_missing_names(mod):
+    assert mod._align_named([{"name": "a"}, {"name": "a"}], [{"name": "a"}]) is None
+    assert mod._align_named([{"x": 1}], [{"x": 2}]) is None
+
+
+def test_walk_audit_tallies_named_alignment(mod):
+    stats: dict = {}
+    committed = {"projectiles": [{"name": "A", "pierce": 10}, {"name": "B", "pierce": 5}]}
+    mapped = {"projectiles": [{"name": "B", "pierce": 5}, {"name": "A", "pierce": 7}]}
+    mod._walk_audit(committed, mapped, "root", stats, "ctx")
+    # A.pierce differs (10 vs 7), B.pierce matches → 1 diff / 2 total, despite
+    # the reversed order.
+    assert stats["pierce"].diffs == 1
+    assert stats["pierce"].total == 2
+    assert stats["pierce"].verdict == "SUSPECT"  # 50% > 20%
+
+
+def test_field_stat_verdict_thresholds(mod):
+    clean = mod._FieldStat(total=10, diffs=0)
+    delta = mod._FieldStat(total=100, diffs=10)
+    suspect = mod._FieldStat(total=100, diffs=50)
+    assert clean.verdict == "CLEAN"
+    assert delta.verdict == "DELTA"
+    assert suspect.verdict == "SUSPECT"
+
+
+def test_audit_upgrades_aligned_by_path_tier(mod):
+    stats: dict = {}
+    # Same upgrades, different list order — index diff would be all-phantom.
+    committed = [
+        {"path": 1, "tier": 1, "cost": 140},
+        {"path": 2, "tier": 1, "cost": 200},
+    ]
+    mapped = [
+        {"path": 2, "tier": 1, "cost": 200},
+        {"path": 1, "tier": 1, "cost": 170},  # a real cost change
+    ]
+    mod._audit_upgrades(committed, mapped, stats, "rel")
+    assert stats["cost"].diffs == 1  # only the (1,1) cost change, not a swap
+    assert stats["cost"].total == 2

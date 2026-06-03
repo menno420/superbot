@@ -1390,9 +1390,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1428,9 +1425,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1505,9 +1499,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1543,9 +1534,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1620,9 +1608,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1658,9 +1643,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1735,9 +1717,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1773,9 +1752,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1850,9 +1826,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1888,9 +1861,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -1965,9 +1935,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
@@ -2003,9 +1970,6 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForFortified": 1,
-              "damageModifierForLead": 1,
-              "damageModifierForCamo": 1,
               "filterInvisible": false
             }
           ],
