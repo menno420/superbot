@@ -40,6 +40,18 @@ def test_build_registry_returns_specs_and_matching_handlers():
     assert isinstance(registry.specs, tuple)
 
 
+def test_btd6_grounding_tool_allowlist_matches_registered_btd6_tools():
+    """The faithfulness ledger allowlist must be exactly the registered
+    ``btd6_*`` tools — no non-BTD6 tool may ground a BTD6 answer, and no BTD6
+    tool may be silently dropped (drift guard for C1)."""
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    registered = {spec.name for spec in registry.specs}
+    btd6_registered = {name for name in registered if name.startswith("btd6_")}
+
+    assert ai_tools.BTD6_GROUNDING_TOOL_NAMES == btd6_registered
+    assert all(name.startswith("btd6_") for name in ai_tools.BTD6_GROUNDING_TOOL_NAMES)
+
+
 def test_scope_gating_is_least_privilege():
     assert _scope_allows(AIScope.USER, AIScope.USER) is True
     assert _scope_allows(AIScope.USER, AIScope.ADMIN) is False

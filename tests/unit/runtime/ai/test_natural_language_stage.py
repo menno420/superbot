@@ -1258,3 +1258,283 @@ async def test_stage_continues_when_btd6_gather_raises(monkeypatch, stub_service
     assert captured["kwargs"]["bot_knowledge_blocks"] == ()
     assert len(stub_services) == 1
     assert stub_services[0]["decision"] == "replied"
+
+
+# ---------------------------------------------------------------------------
+# BTD6 faithfulness guard (PR1)
+# ---------------------------------------------------------------------------
+
+
+def _route_btd6(monkeypatch):
+    from core.runtime.ai import natural_language_stage as mod
+
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _t: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
+    )
+
+
+def _stub_facts(monkeypatch, facts: tuple[str, ...]):
+    from core.runtime.ai import natural_language_stage as mod
+    from core.runtime.ai.feature_facts import FeatureFactsResult
+
+    monkeypatch.setattr(
+        mod,
+        "_gather_feature_facts",
+        AsyncMock(return_value=FeatureFactsResult(facts=facts, render_context=None)),
+    )
+
+
+def _sent_text(msg) -> str:
+    assert msg.channel.send.call_args is not None, "nothing was sent"
+    args, _ = msg.channel.send.call_args
+    return args[0] if args else ""
+
+
+@pytest.mark.asyncio
+async def test_btd6_hallucinated_roster_is_refused(monkeypatch, stub_services):
+    """The five-heroes repro: an ungrounded BTD6 roster never reaches the user;
+    the deterministic version-stamped refusal does, audited as denied /
+    GROUNDING_FAILED."""
+    from services import ai_gateway
+
+    _route_btd6(monkeypatch)
+    _stub_facts(monkeypatch, ())
+
+    calls: list[int] = []
+
+    async def fake_execute(_request):
+        calls.append(1)
+        return _make_response(
+            text="BTD6 has five heroes: Quincy, Gwen, Obyn, Geraldo, Adora."
+        )
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> which heroes are in the game?"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    sent = _sent_text(msg)
+    assert "five heroes" not in sent  # model text NOT served
+    assert "verified BTD6 data" in sent
+    assert "54.0" in sent  # version-stamped with what the bot serves
+    assert len(calls) == 2  # regenerate-once attempted
+    assert stub_services[-1]["decision"] == "denied"
+    assert stub_services[-1]["reason_code"] is PolicyDenialReason.GROUNDING_FAILED
+
+
+@pytest.mark.asyncio
+async def test_btd6_regenerate_once_rescues(monkeypatch, stub_services):
+    """First reply ungrounded, the constrained retry grounded → the grounded
+    reply is served and the gateway was called twice."""
+    from services import ai_gateway
+
+    _route_btd6(monkeypatch)
+    _stub_facts(monkeypatch, ("Quincy is a hero available from the start.",))
+
+    texts = iter(
+        ["The Glaive Dominus is the best hero.", "Quincy is a starter hero."]
+    )
+
+    async def fake_execute(_request):
+        return _make_response(text=next(texts))
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> tell me about Quincy"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert _sent_text(msg) == "Quincy is a starter hero."
+    assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_btd6_grounded_answer_is_served(monkeypatch, stub_services):
+    from services import ai_gateway
+
+    _route_btd6(monkeypatch)
+    _stub_facts(monkeypatch, ("Quincy is a hero available from the start.",))
+
+    async def fake_execute(_request):
+        return _make_response(text="Quincy is a starter hero.")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> tell me about Quincy"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert _sent_text(msg) == "Quincy is a starter hero."
+    assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_btd6_healthy_empty_reply_is_refused(monkeypatch, stub_services):
+    """A healthy empty reply to a BTD6 question serves the refusal (denied /
+    GROUNDING_FAILED), not silence."""
+    from services import ai_gateway
+
+    _route_btd6(monkeypatch)
+    _stub_facts(monkeypatch, ())
+
+    async def fake_execute(_request):
+        return _make_response(text="", degraded=False, provider="deterministic")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> what's the best tower?"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert "verified BTD6 data" in _sent_text(msg)
+    assert stub_services[-1]["decision"] == "denied"
+    assert stub_services[-1]["reason_code"] is PolicyDenialReason.GROUNDING_FAILED
+
+
+@pytest.mark.asyncio
+async def test_btd6_degraded_reply_is_not_a_grounding_failure(
+    monkeypatch, stub_services
+):
+    """A provider outage on a BTD6 question stays PROVIDER_UNAVAILABLE — it must
+    never be misclassified as a grounding failure (C2)."""
+    from services import ai_gateway
+
+    _route_btd6(monkeypatch)
+    _stub_facts(monkeypatch, ())
+
+    async def fake_execute(_request):
+        return _make_response(text=None, degraded=True, model="")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> what's the best tower?"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert stub_services[-1]["decision"] == "degraded"
+    assert stub_services[-1]["reason_code"] is PolicyDenialReason.PROVIDER_UNAVAILABLE
+    msg.channel.send.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_btd6_verifier_crash_fails_closed(monkeypatch, stub_services):
+    """If the verifier index raises, the guard fails CLOSED to the refusal."""
+    from services import ai_gateway, btd6_grounding_service
+
+    _route_btd6(monkeypatch)
+    _stub_facts(monkeypatch, ())
+
+    def _boom():
+        raise RuntimeError("index broke")
+
+    monkeypatch.setattr(btd6_grounding_service, "_name_index", _boom)
+
+    async def fake_execute(_request):
+        return _make_response(text="some otherwise-harmless reply")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> tell me about towers"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert "verified BTD6 data" in _sent_text(msg)
+    assert stub_services[-1]["decision"] == "denied"
+
+
+@pytest.mark.asyncio
+async def test_general_ordinary_name_is_not_refused(monkeypatch, stub_services):
+    """An ordinary general reply that shares a word with a hero name
+    ("Benjamin") must be served unchanged — the general-path guard only fires on
+    BTD6 context or a distinctive multi-word name."""
+    from services import ai_gateway
+
+    _stub_facts(monkeypatch, ())  # router stub already returns GENERAL_NL_ANSWER
+
+    async def fake_execute(_request):
+        return _make_response(
+            text="Benjamin Franklin (1706-1790) was an American polymath."
+        )
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "Who was Benjamin Franklin?"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert "Benjamin Franklin" in _sent_text(msg)
+    assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_general_numeric_answer_is_not_refused(monkeypatch, stub_services):
+    """Ordinary general numbers are never grounded (no BTD6 payload to ground
+    against)."""
+    from services import ai_gateway
+
+    _stub_facts(monkeypatch, ())
+
+    async def fake_execute(_request):
+        return _make_response(text="There are 7 continents.")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "How many continents are there?"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert _sent_text(msg) == "There are 7 continents."
+    assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_general_path_btd6_leak_is_refused(monkeypatch, stub_services):
+    """A general reply that names a distinctive multi-word BTD6 entity it cannot
+    ground is refused even though the router missed it."""
+    from services import ai_gateway
+
+    _stub_facts(monkeypatch, ())
+
+    async def fake_execute(_request):
+        return _make_response(text="The Apex Plasma Master costs 5000000.")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "tell me something cool"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert "verified BTD6 data" in _sent_text(msg)
+    assert stub_services[-1]["decision"] == "denied"
+
+
+@pytest.mark.asyncio
+async def test_ledger_captures_only_btd6_tool_results():
+    """The faithfulness ledger captures approved BTD6 tool outputs (redacted)
+    and never an unrelated server/user tool's numbers (C1)."""
+    from core.runtime.ai.natural_language_stage import _wrap_handlers_for_ledger
+
+    async def btd6_handler(_args):
+        return {"cost": 48210, "name": "Dart Monkey"}
+
+    async def server_handler(_args):
+        return {"members": 235}
+
+    ledger: list[str] = []
+    wrapped = _wrap_handlers_for_ledger(
+        {"btd6_lookup": btd6_handler, "get_server_overview": server_handler},
+        frozenset({"btd6_lookup"}),
+        ledger,
+    )
+
+    await wrapped["btd6_lookup"]({})
+    await wrapped["get_server_overview"]({})
+
+    assert len(ledger) == 1
+    assert "48210" in ledger[0]
+    assert "235" not in " ".join(ledger)
+    # The non-BTD6 handler is returned untouched (not wrapped).
+    assert wrapped["get_server_overview"] is server_handler

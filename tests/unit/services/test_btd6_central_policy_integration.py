@@ -221,13 +221,16 @@ def _stub_services_for_btd6(monkeypatch):
         mod.ai_conversation_service, "append", lambda *a, **kw: None,
     )
 
-    # Replace the feature-fact gather so we don't pull real BTD6 data.
+    # Replace the feature-fact gather so we don't pull real BTD6 data. The
+    # facts must *ground* the benign reply below ("Dart Monkey costs 200.")
+    # so these policy-focused tests exercise the reply path and not the BTD6
+    # faithfulness floor (which would otherwise refuse an ungrounded reply).
     from core.runtime.ai.feature_facts import FeatureFactsResult
 
-    async def _no_facts(_req):
-        return FeatureFactsResult(facts=())
+    async def _grounding_facts(_req):
+        return FeatureFactsResult(facts=("Dart Monkey costs 200.",))
 
-    monkeypatch.setattr(mod, "_gather_feature_facts", _no_facts)
+    monkeypatch.setattr(mod, "_gather_feature_facts", _grounding_facts)
 
     # Capture gateway call + return a benign reply.
     from services import ai_gateway

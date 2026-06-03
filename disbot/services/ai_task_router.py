@@ -17,6 +17,7 @@ import threading
 from dataclasses import dataclass
 
 from core.runtime.ai.contracts import AITask
+from utils.btd6.keywords import BTD6_CONTEXT_KEYWORDS
 
 _YOUTUBE_URL_RE = re.compile(
     r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
@@ -68,48 +69,11 @@ def _has_question_intent(text: str) -> bool:
 # over-route. Those questions rely on the model's ``btd6_lookup`` tool call
 # (reliable on Claude after AI PR1); a curated distinctive-name pass is a
 # follow-up.
-_BTD6_KEYWORDS = (
-    "btd6",
-    "bloons",
-    "bloon",
-    "moab",
-    "ddt",
-    "bfb",
-    "zomg",
-    "tower",
-    "hero",
-    "monkey",
-    "chimps",
-    "round ",
-    "freeplay",
-    "deflation",
-    "apopalypse",
-    "impoppable",
-    "half cash",
-    "primary only",
-    "military only",
-    "magic only",
-    "support only",
-    "boss bloon",
-    "boss event",
-    "current boss",
-    "current race",
-    "current event",
-    "what boss",
-    "what race",
-    "what odyssey",
-    "active boss",
-    "active race",
-    "ninja kiwi",
-    "ninjakiwi",
-    "odyssey",
-    "contested territory",
-    "race ",
-    "banned hero",
-    "banned tower",
-    "obyn",
-    "desperado",
-)
+#
+# The curated tuple itself now lives in ``utils.btd6.keywords`` so the
+# natural-language answer guard reads the exact same list (no drift). Imported
+# back here under the original name; values are identical.
+_BTD6_KEYWORDS = BTD6_CONTEXT_KEYWORDS
 
 
 # ---------------------------------------------------------------------------

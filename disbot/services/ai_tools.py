@@ -1146,6 +1146,26 @@ class ToolRegistry:
     handlers: Mapping[str, ToolHandler]
 
 
+# Tools whose results are BTD6 *facts* and may therefore ground a BTD6 answer.
+# The natural-language stage captures ONLY these tools' outputs into the
+# faithfulness ledger — server/user/config tools (member counts, timestamps,
+# IDs) must never whitelist a hallucinated BTD6 name or number. Keep in sync
+# with the ``btd6_*`` specs above; ``tests/unit/services/test_ai_tools.py``
+# pins this set ⊆ the registered ``btd6_*`` tool names so it cannot drift.
+BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
+    {
+        "btd6_lookup",
+        "btd6_capability_lookup",
+        "btd6_superlative_lookup",
+        "btd6_difficulty_cost",
+        "btd6_paragon_calculate",
+        "btd6_paragon_requirements",
+        "btd6_paragon_stats_at_degree",
+        "btd6_ct_team_status",
+    },
+)
+
+
 def build_registry(
     *,
     scope: AIScope,
@@ -1216,4 +1236,4 @@ def build_registry(
     return ToolRegistry(specs=tuple(specs), handlers=handlers)
 
 
-__all__ = ["ToolRegistry", "build_registry"]
+__all__ = ["BTD6_GROUNDING_TOOL_NAMES", "ToolRegistry", "build_registry"]

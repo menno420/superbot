@@ -47,7 +47,11 @@ from services import (
 from services.ai_natural_language_policy import MessageContext
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from core.runtime.ai.contracts import AIResponse
+    from core.runtime.ai.providers.base import ToolHandler
+    from services import btd6_grounding_service
 
 _VIDEO_TASKS = frozenset({AITask.VIDEO_DESCRIBE, AITask.VIDEO_COMPARE, AITask.VIDEO_QA})
 
@@ -467,10 +471,14 @@ class AINaturalLanguageStage:
                 scope=_derive_scope(message),
             )
 
+            # BTD6 faithfulness ledger: approved BTD6 tool results are
+            # captured here so the post-generation verifier can ground the
+            # reply against them (alongside the auto-grounding facts).
+            ledger: list[str] = []
             # Show "Bot is typing…" while the provider call runs so a
             # multi-second reply does not look like a dropped message.
             async with _maybe_typing(message.channel):
-                response = await _invoke_gateway(stack, built, ctx)
+                response = await _invoke_gateway(stack, built, ctx, ledger=ledger)
         except Exception:
             logger.exception(
                 "ai_natural_language_stage: feature pipeline raised "
@@ -500,10 +508,20 @@ class AINaturalLanguageStage:
         if not reply_text:
             # Differentiate "provider degraded" (gateway/provider failure)
             # from "model returned empty text" (genuine skip) so operators
-            # can tell them apart in the audit table.
+            # can tell them apart in the audit table. A *healthy* empty reply
+            # to an in-domain BTD6 question is a no-data case: serve the
+            # deterministic, version-stamped refusal rather than silence.
+            # ``GROUNDING_FAILED`` is reserved for healthy paths — a provider
+            # outage stays ``PROVIDER_UNAVAILABLE``.
+            sent_refusal = False
             if response.degraded:
                 audit_decision = "degraded"
                 audit_reason = PolicyDenialReason.PROVIDER_UNAVAILABLE
+            elif routed.task is AITask.BTD6_ANSWER:
+                await _send_btd6_refusal(message)
+                sent_refusal = True
+                audit_decision = "denied"
+                audit_reason = PolicyDenialReason.GROUNDING_FAILED
             else:
                 audit_decision = "skipped"
                 audit_reason = PolicyDenialReason.NO_ROUTE_MATCHED
@@ -522,6 +540,9 @@ class AINaturalLanguageStage:
                 provider=response.provider or None,
                 model=response.model or None,
             )
+            if sent_refusal:
+                ctx.metadata["handled_by"] = STAGE_NAME
+                return StageResult(short_circuit=True)
             return StageResult()
 
         # Outbound redaction: scrub Discord snowflakes and other
@@ -532,6 +553,95 @@ class AINaturalLanguageStage:
         from core.runtime.ai.redaction import redact_text
 
         reply_text = redact_text(reply_text).value
+
+        # ---- BTD6 faithfulness guard ----------------------------------------
+        # A BTD6 answer (or a BTD6-themed general reply that names an entity)
+        # must not state names/numbers absent from the grounded payload
+        # (auto-grounding facts ∪ approved BTD6 tool results in ``ledger``).
+        # Reject + regenerate once with an explicit do-not-state constraint,
+        # then fall to the deterministic, version-stamped refusal. Numbers are
+        # only grounded on the BTD6 path; the general path runs the name guard
+        # only when the turn is BTD6-themed or names a distinctive multi-word
+        # entity (so "Benjamin Franklin" in ordinary chat is never refused).
+        from services import btd6_grounding_service
+
+        if routed.task is AITask.BTD6_ANSWER or (
+            routed.task is AITask.GENERAL_NL_ANSWER
+            and btd6_grounding_service.general_path_should_verify(raw_text, reply_text)
+        ):
+            verdict = btd6_grounding_service.validate_btd6_reply(
+                reply_text,
+                facts=tuple(feature.facts),
+                tool_results=tuple(ledger),
+                task=routed.task,
+            )
+            if not verdict.grounded:
+                async with _maybe_typing(message.channel):
+                    response = await _invoke_gateway(
+                        stack,
+                        built,
+                        ctx,
+                        ledger=ledger,
+                        grounding_constraint=_build_grounding_constraint(verdict),
+                    )
+                retry_text = redact_text((response.text or "").strip()).value
+                retry_verdict = (
+                    btd6_grounding_service.validate_btd6_reply(
+                        retry_text,
+                        facts=tuple(feature.facts),
+                        tool_results=tuple(ledger),
+                        task=routed.task,
+                    )
+                    if retry_text
+                    else None
+                )
+                if retry_text and retry_verdict is not None and retry_verdict.grounded:
+                    logger.info(
+                        "btd6_faithfulness: retry_rescued task=%s route=%s",
+                        routed.task.value,
+                        routed.route,
+                    )
+                    reply_text = retry_text
+                else:
+                    # Floor: deterministic refusal. A degraded retry is a
+                    # provider outage, NOT a grounding failure — keep the
+                    # audit honest so operators can tell them apart.
+                    if response.degraded:
+                        floor_decision = "degraded"
+                        floor_reason = PolicyDenialReason.PROVIDER_UNAVAILABLE
+                    else:
+                        floor_decision = "denied"
+                        floor_reason = PolicyDenialReason.GROUNDING_FAILED
+                    logger.warning(
+                        "btd6_faithfulness: blocked task=%s route=%s guard=%s "
+                        "names=%s numbers=%s retry_attempted=True "
+                        "retry_rescued=False degraded=%s",
+                        routed.task.value,
+                        routed.route,
+                        ",".join(verdict.notes),
+                        list(verdict.offending_names),
+                        list(verdict.offending_numbers),
+                        response.degraded,
+                    )
+                    await _send_btd6_refusal(message)
+                    await ai_decision_audit_service.record(
+                        guild_id=guild_id,
+                        channel_id=channel_id,
+                        category_id=category_id,
+                        user_id=user_id,
+                        message_id=message.id,
+                        task=routed.task.value,
+                        route=routed.route,
+                        decision=floor_decision,
+                        reason_code=floor_reason,
+                        policy_snapshot_hash=decision.policy_snapshot_hash,
+                        instruction_profile_ids=list(stack.instruction_profile_ids)
+                        or None,
+                        provider=response.provider or None,
+                        model=response.model or None,
+                    )
+                    ctx.metadata["handled_by"] = STAGE_NAME
+                    return StageResult(short_circuit=True)
 
         from core.runtime.ai import response_renderer_registry
 
@@ -806,10 +916,105 @@ def _derive_scope(message: discord.Message) -> AIScope:
     return AIScope.USER
 
 
+def _btd6_game_version() -> str:
+    """The game version the bot actually serves (e.g. "54.0"), for the stamp."""
+    try:
+        from services import btd6_data_service
+
+        return btd6_data_service.get_dataset().game_version or "the current"
+    except Exception:
+        return "the current"
+
+
+def _btd6_no_data_refusal() -> str:
+    """Deterministic, version-stamped BTD6 refusal — never model prose.
+
+    The single source for the floor string so every grounding refusal stamps
+    the same version. Never raises.
+    """
+    return (
+        "I don't have verified BTD6 data to answer that for the current game "
+        f"version ({_btd6_game_version()}). I won't state names or numbers I "
+        "can't ground in my data — try asking about a specific tower, hero, or "
+        "paragon."
+    )
+
+
+def _build_grounding_constraint(verdict: btd6_grounding_service.GroundingResult) -> str:
+    """A do-not-state constraint appended to the system prompt on the retry."""
+    bits: list[str] = []
+    if verdict.offending_names:
+        bits.append("names not in the data: " + ", ".join(verdict.offending_names))
+    if verdict.offending_numbers:
+        bits.append("numbers not in the data: " + ", ".join(verdict.offending_numbers))
+    detail = "; ".join(bits) if bits else "unsupported BTD6 claims"
+    return (
+        "GROUNDING CORRECTION: your previous reply contained "
+        f"{detail}. Do NOT state these. Use only BTD6 names and numbers present "
+        "in the provided data and tool results. If the data does not support an "
+        "answer, say you don't have that information."
+    )
+
+
+async def _send_btd6_refusal(message: discord.Message) -> None:
+    """Send the deterministic BTD6 refusal as a reply to ``message``."""
+    try:
+        await message.channel.send(
+            _btd6_no_data_refusal(),
+            allowed_mentions=discord.AllowedMentions.none(),
+            reference=message.to_reference(fail_if_not_exists=False),
+        )
+    except discord.HTTPException:
+        logger.warning(
+            "btd6_faithfulness: refusal send failed for message=%s",
+            getattr(message, "id", None),
+            exc_info=True,
+        )
+
+
+def _wrap_handlers_for_ledger(
+    handlers: Mapping[str, ToolHandler],
+    allowlist: frozenset[str],
+    ledger: list[str],
+) -> dict[str, ToolHandler]:
+    """Wrap approved BTD6 tool handlers so their results feed the ledger.
+
+    Only handlers whose name is in ``allowlist`` are wrapped; every other
+    handler is returned untouched. The captured string is the redacted,
+    JSON-encoded result — the same shape the gateway feeds back into the model
+    context — so the faithfulness verifier's trusted haystack contains exactly
+    the deterministic BTD6 facts the model saw, and never a server member count
+    or timestamp from an unrelated tool.
+    """
+    import json
+
+    from core.runtime.ai.redaction import redact_text
+
+    def _capture(handler: ToolHandler) -> ToolHandler:
+        async def wrapped(arguments: dict[str, object]) -> object:
+            result = await handler(arguments)
+            try:
+                encoded = json.dumps(result, default=str)
+            except (TypeError, ValueError):
+                encoded = str(result)
+            ledger.append(redact_text(encoded).value)
+            return result
+
+        return wrapped
+
+    return {
+        name: (_capture(handler) if name in allowlist else handler)
+        for name, handler in handlers.items()
+    }
+
+
 async def _invoke_gateway(
     stack: ai_instruction_service.InstructionStack,
     built: ai_context_service.BuiltContext,
     _ctx: MessagePipelineContext,
+    *,
+    ledger: list[str] | None = None,
+    grounding_constraint: str | None = None,
 ) -> AIResponse:
     """Run the AI gateway and return the full :class:`AIResponse`.
 
@@ -824,12 +1029,15 @@ async def _invoke_gateway(
     caller's scope permits; the gateway decides whether to actually offer
     them to the model. When off, ``tools`` is empty and ``tool_handlers``
     is ``None`` — byte-for-byte identical to the no-tools path.
-    """
-    from collections.abc import Mapping
 
+    ``ledger`` (BTD6 faithfulness): when supplied, approved BTD6 tool results
+    are appended to it (see :func:`_wrap_handlers_for_ledger`) so the caller
+    can ground the model's reply against them. ``grounding_constraint`` is
+    appended to the system prompt on the regenerate-once retry to tell the
+    model which names/numbers it must not restate.
+    """
     from core.runtime.ai.contracts import AIRequest, AIResponseMode, AIToolSpec
     from core.runtime.ai.feature_flags import ai_tools_enabled
-    from core.runtime.ai.providers.base import ToolHandler
     from services import ai_gateway, ai_tools
 
     ctx = built.request_context
@@ -849,10 +1057,20 @@ async def _invoke_gateway(
         )
         specs = registry.specs
         handlers = registry.handlers
+        if ledger is not None:
+            handlers = _wrap_handlers_for_ledger(
+                handlers,
+                ai_tools.BTD6_GROUNDING_TOOL_NAMES,
+                ledger,
+            )
+
+    system_prompt = stack.render_system_prompt()
+    if grounding_constraint:
+        system_prompt = f"{system_prompt}\n\n{grounding_constraint}"
 
     request = AIRequest(
         context=ctx,
-        system_prompt=stack.render_system_prompt(),
+        system_prompt=system_prompt,
         payload={"text": stack.render_payload_text()},
         mode=AIResponseMode.TEXT,
         tools=specs,
