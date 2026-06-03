@@ -1,0 +1,185 @@
+# BTD6 game-file extraction — plan & handoff
+
+> **Status:** PLAN ONLY — no extraction code written yet. Parked at the
+> **recon** step (the user runs it on their tablet; see § "Step 1").
+> This is a *roadmap* doc (read for context); when it disagrees with the
+> source, the source wins.
+>
+> **Last updated:** 2026-06-03 (session that shipped the Steam patch-notes
+> feed + the patch-notes diff tool — see § "What already shipped").
+
+---
+
+## Why this exists (the problem)
+
+The BTD6 cog's structured stats (`disbot/data/btd6/stats/*.json`) come from
+**bloonswiki.com** via `scripts/fetch_bloonswiki.py`. That source has two
+real weaknesses we hit head-on:
+
+1. **Timing lag.** After a game patch, bloonswiki updates *per-tower, over
+   hours-to-days*. Verified live on 2026-06-03: with BTD6 v55 released that
+   day, **zero** towers on the wiki were stamped `55.0` (newest was `54.0`;
+   many towers still at `53.0`/`52.2`).
+2. **Coverage gaps — the wiki simply doesn't have the data.**
+   - **Only 6 of 17 heroes** have per-level stat modules: `adora`,
+     `geraldo`, `gwendolin`, `quincy`, `sauda`, `striker_jones`. The other
+     **11 have no module**: `admiral_brickell`, `benjamin`,
+     `captain_churchill`, `corvus`, `etienne`, `ezili`, `obyn_greenfoot`,
+     `pat_fusty`, `psi`, `rosalia`, `silas`.
+   - **2 of 13 paragons** are hand-transcribed from prose (flagged
+     `is_prose_sourced`): **Root of all Nature** (Druid) and **Herald of
+     Everfrost** (Ice Monkey) — the wiki 404s their stats modules.
+
+## Why patch notes can't fix this (settled)
+
+Patch notes (Steam / r/btd6) are **deltas, not full state** — a changelog,
+not a snapshot. You cannot reconstruct a tower's complete stat block from
+them (no anchor for the unchanged ~95% of values; many lines are
+non-numeric "reworked"/"increased"). Worse for the gaps: a hero that isn't
+rebalanced appears in **zero** notes, so notes can never fill a hole the
+wiki has. Patch notes are good for *maintenance/verification*, not baseline
+construction.
+
+**Source accuracy ranking: game files > bloonswiki > patch notes.**
+Game-file extraction is the only source that is both **complete** (covers
+the 11 heroes + 2 paragons) and **day-one accurate** (no wiki lag).
+
+## What already shipped (the interim / maintenance layer)
+
+These handle "stay current between patches" while the wiki catches up; they
+do **not** replace the need for a complete source:
+
+- **PR #459 (merged):** Steam `ISteamNews/GetNewsForApp` ingestion (appid
+  `960090`, no API key) → `btd6_patch_notes` + a `btd6.version_detected`
+  event → `services/btd6_version_announce` posts to a configured channel
+  (`!btd6ops announcechannel`). Gives the *prose notes* + a "new version
+  dropped" signal immediately.
+- **PR #460 (open, CI green):** `scripts/btd6_patch_diff.py` — parses notes
+  text, verifies each `old > new` against the on-disk stat files, and
+  buckets changes (CLEAN/LIKELY/STALE/REVIEW/NO_FILE/SCOPE). Turns each
+  patch into a reviewable worklist; never auto-applies.
+
+---
+
+## The extraction approach
+
+BTD6 is **Unity / IL2CPP**. Gameplay data (towers, upgrades, bloons,
+rounds, **all heroes, all paragons**) ships as **AES-encrypted JSON
+`TextAsset`s** inside the Unity assets. The decryption key is a game
+constant (lives in the native binary — `libil2cpp.so` on Android,
+`GameAssembly.dll` on PC), so an **Android extraction yields identical data
+to PC**.
+
+Pipeline:
+
+1. **Locate** BTD6's asset files on the device.
+2. **Extract** the `TextAsset`s — Python **UnityPy**.
+3. **Decrypt** — AES with the community-known key. *This is the crux / the
+   one genuinely uncertain step.*
+4. **Validate** against known anchors before trusting anything (e.g. Dart
+   Monkey base cost = `200`, Super Monkey = `2500` — cross-check a handful
+   against the current committed files).
+5. **Map** the game-model JSON → our `stats/<id>.json` schema (a
+   `parse_gamedata`-style module, analogous to `parse_bloonswiki.py`).
+6. **Commit** with clear provenance; re-run each patch.
+
+**Payoff:** complete coverage (17/17 heroes, 13/13 paragons), exact, day-one.
+**Cost:** re-run per patch (assets change; occasionally the key/format
+shifts), and step 3 may need iteration.
+
+## Environment & device facts
+
+- **Claude runs in an ephemeral cloud sandbox** with *no game files and no
+  way to fetch them*. Claude **cannot run the extraction** — it builds the
+  tooling/mapper/tests and integrates; the **user runs extraction on their
+  device** and feeds back decrypted-JSON samples to iterate on.
+- **Device:** Samsung Galaxy Tab S11 Ultra (Android), keyboard + mouse.
+  **BTD6 is installed** (Play Store build). **NOT rooted.**
+- **On-device toolchain:** **Termux** (install from **F-Droid**, not Play
+  Store) → `pkg install python` → `pip install UnityPy` (may need native
+  deps: lz4 / brotli / Pillow build tools first).
+
+## Division of labor
+
+| Claude (in repo) | User (on tablet) |
+|---|---|
+| Extractor + decrypt + mapper scripts (`scripts/`) | Set up Termux + Python + UnityPy |
+| Schema mapping + validation harness + tests | Get at BTD6 asset files; run scripts |
+| Pipeline integration + provenance flags | Paste decrypted-JSON samples; iterate on decryption |
+
+---
+
+## Step 1 — RECON (do first, on the tablet, in Termux)
+
+Cheap, safe, no decryption. Tells us whether the gameplay data is **inside
+the APK** (easy, no scoped-storage problem) or in **external downloaded
+bundles** under `/sdcard/Android/data/...` (harder on Android 11+ without
+root). Paste the output back.
+
+```bash
+# 1. Confirm it's installed + the package name
+pm list packages | grep -iE "ninjakiwi|bloons"
+
+# 2. Where are the APK(s)?  (use the package id from step 1)
+pm path com.ninjakiwi.bloonstd6
+
+# 3. Pull the base APK and look for Unity data assets inside
+cp "$(pm path com.ninjakiwi.bloonstd6 | head -1 | cut -d: -f2)" ~/btd6.apk
+unzip -l ~/btd6.apk | grep -iE "bin/Data|\.unity3d|resources|\.assets|globalgamemanagers" | head -30
+
+# 4. Sizes — APK vs external data dir (external may be blocked; that's fine)
+du -h ~/btd6.apk
+ls -laR /sdcard/Android/data/com.ninjakiwi.bloonstd6/ 2>/dev/null | head -40
+```
+
+## Phased plan (after recon)
+
+- **Phase 0 — recon** (above): confirm format/location on the actual device.
+- **Phase 1 — extract**: UnityPy script to pull `TextAsset`s from the
+  confirmed location.
+- **Phase 2 — decrypt + validate**: apply the community AES key; confirm
+  against anchors. *Gate: do not proceed until anchors match.*
+- **Phase 3 — map**: game-model JSON → `stats/<id>.json` schema; start with
+  one tower end-to-end (e.g. dart_monkey) to prove the mapping, then a hero
+  the wiki lacks (e.g. `benjamin`) to prove the gap is closed.
+- **Phase 4 — integrate**: add as a data source (alongside/over bloonswiki),
+  stamp provenance, wire into the existing CSV→JSON / data-service flow.
+- **Phase 5 — maintain**: documented re-run procedure per patch.
+
+## Open questions / risks
+
+- **Scoped storage** (Android 11+): only an issue if data is *external* to
+  the APK. No root, so we'd need a SAF-capable file manager to copy the
+  app's `Android/data` to shared storage. Recon step 3/4 decides if this
+  even matters.
+- **Decryption key currency**: the community key may be stale if NK rotated
+  it recently — validated against anchors in Phase 2.
+- **Termux native deps**: UnityPy's lz4/brotli/Pillow may need manual
+  `pkg install` of build tooling on ARM64.
+- **Untestable in the sandbox**: Claude debugs partly blind; the user is the
+  eyes on real files.
+
+## Legal / licensing stance
+
+- The bot is **free, non-commercial, mostly private servers**; future
+  monetization is unrelated commissioned work (e.g. custom in-chat games),
+  **not** this BTD6 data. This is the lowest-risk category for personal
+  data-mining (same as how the wiki community sources its data).
+- Raw stat **numbers are facts** (not copyrightable). BTD6's EULA prohibits
+  reverse-engineering; extracting/decrypting assets is a gray area accepted
+  for personal/informational use.
+- **Do NOT commit** the AES key, the decryption routine sourced from the
+  binary, or wholesale decrypted asset dumps to the repo. Commit only the
+  **derived stat values** in our schema, with a `source` provenance note.
+- This *replaces* bloonswiki's CC-BY-NC-SA "NC matters if monetized" concern
+  with the EULA/RE one — acceptable given the non-commercial use above.
+
+## Pick-up checklist for next session
+
+1. Has the user run **Step 1 recon**? If yes, read their output → decide
+   APK-vs-external path.
+2. Confirm Termux + UnityPy install status on the tablet.
+3. Proceed to Phase 1 (extract) → Phase 2 (decrypt + **validate against
+   anchors**) before any mapping.
+4. Companion docs: `docs/btd6-data-pipeline.md` (the bloonswiki pipeline this
+   would augment/replace), `docs/btd6-data-backends.md`.
