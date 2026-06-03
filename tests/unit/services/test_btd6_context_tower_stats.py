@@ -81,12 +81,12 @@ def test_hero_with_module_emits_per_level_stat_lines():
     assert all("source: bloonswiki" in ln for ln in stat_lines)
 
 
-def test_hero_without_module_has_cost_and_abilities_but_no_stat_lines():
-    # Obyn attacks in-game but has no bloonswiki stats module → cost + abilities
-    # only, no per-level stat lines (and no crash).
+def test_game_data_hero_grounds_cost_and_per_level_stat_lines():
+    # Obyn attacks in-game; bloonswiki had no stats module for him, but the
+    # game-data export does, so grounding now carries btd6_hero_stats lines too.
     lines = ctx._render_fixture_hero(ds.get_hero("obyn_greenfoot"))
-    assert not [ln for ln in lines if "btd6_hero_stats" in ln]
     assert any("[btd6_hero]" in ln for ln in lines)
+    assert any("btd6_hero_stats" in ln for ln in lines)
 
 
 def test_bloon_grounding_includes_rbe_and_speed():

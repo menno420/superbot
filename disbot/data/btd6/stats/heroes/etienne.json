@@ -1,0 +1,1079 @@
+{
+  "hero_id": "etienne",
+  "canonical": "Etienne",
+  "game_version": "55.0",
+  "source": "BTD Mod Helper game data export",
+  "base_cost": 650,
+  "cost_chimps": 650,
+  "levels": {
+    "1": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 55,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 1
+    },
+    "2": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 2
+    },
+    "3": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 70
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 3
+    },
+    "4": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 70
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 4
+    },
+    "5": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 70
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 5
+    },
+    "6": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 6
+    },
+    "7": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 7
+    },
+    "8": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 8
+    },
+    "9": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 9
+    },
+    "10": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 90
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 10
+    },
+    "11": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 90
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 11
+    },
+    "12": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 90
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 12
+    },
+    "13": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 13
+    },
+    "14": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 14
+    },
+    "15": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 60,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 60,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 55
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 15
+    },
+    "16": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 80,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 80,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 16
+    },
+    "17": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 80,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 80,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 17
+    },
+    "18": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 80,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 80,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 18
+    },
+    "19": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 80,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 80,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 11, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 19
+    },
+    "20": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 80,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "projectiles": [],
+          "count": 0,
+          "targetTypes": "Depends on targeting option",
+          "range": 80,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "UAVSpawner",
+          "rate": 1,
+          "eject": "0, 15.9, -3.6",
+          "fireWithoutTarget": true,
+          "fireBetweenRounds": true,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 0,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "speed": 0,
+              "lifespan": "NaN",
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 0,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "DroneSwarmAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "UCAVAbility",
+          "cooldown": 75
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "level": 20
+    }
+  }
+}

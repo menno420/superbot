@@ -1,0 +1,3138 @@
+{
+  "hero_id": "admiral_brickell",
+  "canonical": "AdmiralBrickell",
+  "game_version": "55.0",
+  "source": "BTD Mod Helper game data export",
+  "base_cost": 900,
+  "cost_chimps": 900,
+  "levels": {
+    "1": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.8,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 3,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 1
+    },
+    "2": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 2
+    },
+    "3": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 3
+    },
+    "4": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 4
+    },
+    "5": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 5
+    },
+    "6": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 50,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 6
+    },
+    "7": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 7
+    },
+    "8": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 8
+    },
+    "9": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 7,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 7,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 9
+    },
+    "10": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.8,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 7,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 0.3,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 7,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 60
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 10
+    },
+    "11": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.65,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 7,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 7,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 60
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 11
+    },
+    "12": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 60
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 12
+    },
+    "13": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 13
+    },
+    "14": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 25,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 14
+    },
+    "15": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 18,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 35,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 58,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 15
+    },
+    "16": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 62,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 18,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 35,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 16
+    },
+    "17": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 62,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 40,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 35,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 17
+    },
+    "18": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 62,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 40,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 35,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 40
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 18
+    },
+    "19": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 62,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 40,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 35,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 40
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 19
+    },
+    "20": {
+      "placeableOnLand": false,
+      "placeableOnWater": true,
+      "placeableOnTrack": false,
+      "range": 62,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.35,
+          "eject": "0, 15.7, 11.44",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 40,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "AttackSeaMine",
+          "rate": 2.5,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "SeaMineThrowing",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSet",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 40,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "SeaMineSeeking",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.2,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CreateEffectOnExhaustFractionModel",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Explosion",
+              "pierce": 28,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 35,
+              "vsBlockerRadius": 0,
+              "damage": 22,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 62,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "FirstAbility",
+          "cooldown": 50
+        },
+        {
+          "name": "SecondAbility",
+          "cooldown": 40
+        },
+        {
+          "name": "BlastChainAbility",
+          "cooldown": 45
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 20
+    }
+  }
+}

@@ -1,0 +1,2038 @@
+{
+  "hero_id": "captain_churchill",
+  "canonical": "CaptainChurchill",
+  "game_version": "55.0",
+  "source": "BTD Mod Helper game data export",
+  "base_cost": 2000,
+  "cost_chimps": 2000,
+  "levels": {
+    "1": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 65,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.5,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 65,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 1
+    },
+    "2": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 65,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.5,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 65,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 2
+    },
+    "3": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 65,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.5,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 65,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 3
+    },
+    "4": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.5,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 4
+    },
+    "5": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.5,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 5
+    },
+    "6": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.5,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 6
+    },
+    "7": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.5,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 7
+    },
+    "8": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 8
+    },
+    "9": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 9
+    },
+    "10": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 15,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 10
+    },
+    "11": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 11
+    },
+    "12": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 9,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 12
+    },
+    "13": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 9,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 13
+    },
+    "14": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 14
+    },
+    "15": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 15
+    },
+    "16": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 1.2,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 16
+    },
+    "17": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.9,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 8,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 17
+    },
+    "18": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.9,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 15,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 18
+    },
+    "19": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.9,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 15,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 12,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 60
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 19
+    },
+    "20": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 75,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 8,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.9,
+          "eject": "-0.21, 12.39, 11.5",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 400,
+              "lifespan": 0.5,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        },
+        {
+          "name": "Machine Gun Attack",
+          "rate": 0.1,
+          "eject": "0, 9, 12",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "MachineGunProjectile",
+              "pierce": 1,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 1,
+              "vsBlockerRadius": 0,
+              "damage": 16,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForFortified": 1,
+              "damageModifierForLead": 1,
+              "damageModifierForCamo": 1,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 75,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "abilities": [
+        {
+          "name": "ArmorPiercingShells",
+          "cooldown": 30
+        },
+        {
+          "name": "MOABBarrage",
+          "cooldown": 30
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 20
+    }
+  }
+}
