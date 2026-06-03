@@ -177,18 +177,20 @@ def _clean_projectile(proj: dict) -> dict:
             out["lifespan"] = _num(travel["lifespan"])
 
     # Tag-based damage modifiers → the flat ``damageModifierFor<Tag>`` the UI
-    # reads. CAUTION: in the v55 dump every ``DamageModifierForTagModel`` carries
-    # ``damageMultiplier == 1.0`` (a no-op) even where the trusted wiki data has a
-    # real bonus (e.g. Ultra-Juggernaut Lead ×20). The bonus is expressed
-    # elsewhere in the model in a form we don't yet decode, so emitting the raw
-    # ``1.0`` would *overwrite* a correct curated value with "no modifier". Only
-    # surface a modifier that is actually != 1 — never claim a 1.0 we can't trust.
+    # reads. The real bonus is an ADDITIVE stored in ``damageAddative`` (sic —
+    # the field is misspelled in the model). ``damageMultiplier`` is a *separate*
+    # field that is a neutral ``1.0`` in all but 2 cases across the whole roster,
+    # so reading it alone (the old bug) missed 2,467 real bonuses and made it
+    # look like the mechanic had been removed — it had not (Ultra-Juggernaut
+    # Lead +20 / Ceramic +8 are right here in ``damageAddative``, identical to
+    # the wiki). Our schema's ``damageModifierFor<Tag>`` holds that additive.
     for mod in _behaviors(proj, "DamageModifierForTagModel"):
-        tag = mod.get("tag")
-        key = _TAG_TO_DAMAGE_MOD.get(str(tag))
-        mult = mod.get("damageMultiplier")
-        if key and isinstance(mult, (int, float)) and mult != 1:
-            out[key] = _num(mult)
+        key = _TAG_TO_DAMAGE_MOD.get(str(mod.get("tag")))
+        if not key:
+            continue
+        add = mod.get("damageAddative")
+        if isinstance(add, (int, float)) and add != 0:
+            out[key] = _num(add)
 
     knock = _first(proj, "KnockbackModel")
     if knock is not None and "distance" in knock:
@@ -204,26 +206,78 @@ def _clean_projectile(proj: dict) -> dict:
     return out
 
 
+def _spawned_projectiles(behavior: dict) -> list[dict]:
+    """Child ``ProjectileModel``s a spawn behavior holds, by *structure* not name.
+
+    Spawn models reference their child projectile under many field names —
+    ``projectile`` (CreateProjectileOnContact / AlternateProjectile /
+    UnstableConcoctionSplash …), ``projectileModel`` (ProjectileOverTime /
+    PreEmptiveStrikeLauncher / Submerge …), ``alternateProjectile``
+    (PrinceOfDarkness), ``projectileZOMG``/``projectileBFB`` (PhoenixRebirth),
+    etc. Matching the *parent type* (the old ``startswith("CreateProjectile")``
+    rule) silently dropped ~13 spawn models — and the secondary cluster bombs /
+    sub pre-emptive strike / alch splash they fire. So detect a child by its own
+    ``$type`` instead, scanning every field value (and one level of list).
+    """
+    out: list[dict] = []
+    for key, value in behavior.items():
+        if key == "$type":
+            continue
+        if isinstance(value, dict) and _short_type(value) == "ProjectileModel":
+            out.append(value)
+        elif isinstance(value, list):
+            out.extend(
+                v
+                for v in value
+                if isinstance(v, dict) and _short_type(v) == "ProjectileModel"
+            )
+    return out
+
+
+def _projectile_signature(node: dict) -> tuple:
+    """Identity for de-duping projectiles reachable via two spawn paths (an
+    explosion can be both an on-contact and on-expire child). Same name + same
+    headline stats ⇒ the same projectile; the wiki lists it once, so do we.
+    """
+    return (
+        node.get("name"),
+        node.get("damage"),
+        node.get("pierce"),
+        node.get("radius"),
+        node.get("damage_type"),
+    )
+
+
 def _collect_projectiles(proj: dict, _depth: int = 0) -> list[dict]:
     """Flatten a projectile + every projectile it spawns into sibling nodes.
 
     Many towers deal their damage on a *child* projectile, not the one thrown:
-    a bomb's thrown shell carries no ``DamageModel`` — the explosion spawned by
-    ``CreateProjectileOnContactModel`` does (the wiki surfaces both as siblings,
-    e.g. "Projectile" + "Explosion"). Cluster/MOAB-shred towers nest further, so
-    we recurse (depth-capped) and emit each as its own cleaned projectile.
+    a bomb's thrown shell carries no ``DamageModel`` — the explosion spawned on
+    contact does (the wiki surfaces both as siblings, "Projectile" + "Explosion").
+    Cluster/MOAB-shred towers nest further, so we recurse (depth-capped), emit
+    each as its own cleaned projectile, and drop exact duplicates.
     """
     out = [_clean_projectile(proj)]
-    if _depth >= 4:
-        return out
-    for spawn in proj.get("behaviors", []) or []:
-        if not isinstance(spawn, dict):
-            continue
-        if not _short_type(spawn).startswith("CreateProjectile"):
-            continue
-        child = spawn.get("projectile")
-        if isinstance(child, dict):
-            out.extend(_collect_projectiles(child, _depth + 1))
+    if _depth < 4:
+        for behavior in proj.get("behaviors", []) or []:
+            if not isinstance(behavior, dict):
+                continue
+            for child in _spawned_projectiles(behavior):
+                out.extend(_collect_projectiles(child, _depth + 1))
+    return out
+
+
+def _dedupe_projectiles(projectiles: list[dict]) -> list[dict]:
+    """Drop projectiles with an identical signature — a child reachable via two
+    spawn paths (on-contact *and* on-expire) appears once, as the wiki lists it.
+    """
+    seen: set[tuple] = set()
+    out: list[dict] = []
+    for node in projectiles:
+        sig = _projectile_signature(node)
+        if sig not in seen:
+            seen.add(sig)
+            out.append(node)
     return out
 
 
@@ -289,9 +343,18 @@ def _clean_attack(attack: dict, index: int) -> dict:
         out["fireBetweenRounds"] = bool(first.get("fireBetweenRounds", False))
     projectiles: list[dict] = []
     for w in weapons:
-        if isinstance(w, dict) and isinstance(w.get("projectile"), dict):
+        if not isinstance(w, dict):
+            continue
+        if isinstance(w.get("projectile"), dict):
             projectiles.extend(_collect_projectiles(w["projectile"]))
-    out["projectiles"] = projectiles
+        # A weapon can also fire projectiles via its own behaviors — e.g. the
+        # bomb's secondary cluster comes from an ``AlternateProjectileModel`` on
+        # the weapon, not from ``weapon.projectile``.
+        for behavior in w.get("behaviors", []) or []:
+            if isinstance(behavior, dict):
+                for child in _spawned_projectiles(behavior):
+                    projectiles.extend(_collect_projectiles(child))
+    out["projectiles"] = _dedupe_projectiles(projectiles)
     # ``count`` (projectiles per shot) has no single reliable source in the dump
     # — ``len(weapons)`` and the per-weapon ``emission.count`` each diverge from
     # the trusted wiki value on a third of tiers (see the fidelity audit). Keep
@@ -320,7 +383,7 @@ def _clean_ability(ability: dict, index: int) -> dict:
             if isinstance(w, dict) and isinstance(w.get("projectile"), dict):
                 projectiles.extend(_collect_projectiles(w["projectile"]))
     if projectiles:
-        out["projectiles"] = projectiles
+        out["projectiles"] = _dedupe_projectiles(projectiles)
     for key in ("damageToBad", "damageToNonBad"):
         # These live on DamageModel children of the ability's attacks.
         for attack in _behaviors(ability, "AttackModel"):

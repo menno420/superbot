@@ -1,5 +1,8 @@
 # BTD6 game-file extraction — plan & handoff
 
+> **Picking up the work?** Start at **`btd6-gamedata-decode-status.md`** (status,
+> lessons & open items), then this roadmap and `btd6-gamedata-dictionary.md`.
+
 > **Status:** MAPPER BUILT (PR 1) + **FIDELITY AUDIT (PR 1.5, this PR).**
 > `scripts/parse_gamedata.py` maps the dump and now also self-audits
 > (`--audit`) against the committed wiki data. **PR 1.5 reframes the plan** —
@@ -30,14 +33,18 @@ committed (wiki-sourced) ground truth, classifying every field:
 
 **What the audit revealed (and PR 1.5 fixes / accounts for):**
 
-1. **`DamageModifierForTagModel` is a uniform `1.0` in the v55 dump** even where
-   the wiki carries the real bonus (Ultra-Juggernaut Lead ×20, Ceramic ×8). The
-   bonus lives elsewhere in the model in a form we don't yet decode. The mapper
-   used to emit that `1.0`, which would overwrite a correct curated value with
-   "no modifier". **Fixed:** the mapper now only emits a `damageModifierFor*`
-   when it is `!= 1`. This also cleaned **130 false `…: 1` lines** from the four
-   PR-1-generated heroes that had them (captain_churchill, corvus, ezili,
-   pat_fusty) — re-emitted in this PR.
+1. **Tag damage bonus lives in `damageAddative` (sic), not `damageMultiplier`.**
+   `DamageModifierForTagModel.damageMultiplier` is a neutral `1.0` in all but 2
+   of 2,843 cases roster-wide; the real bonus is the *additive* in the
+   misspelled `damageAddative` field (Ultra-Juggernaut Lead **+20** / Ceramic
+   **+8** are right there, identical to the wiki — the mechanic was **never
+   reworked**). The original mapper read only `damageMultiplier`, so it missed
+   2,467 real bonuses and made it look removed. **Fixed:** read `damageAddative`
+   → `damageModifierFor<Tag>`. After this the audit's `damageModifierFor*`
+   fields are **CLEAN** (exact wiki match), and the four heroes re-emit with
+   their **correct** bonus values restored (captain_churchill, corvus, ezili,
+   pat_fusty). *(An earlier pass mistakenly dropped these as neutral `1`s before
+   the real field was found.)*
 2. **Float precision** — the wiki rounds (`0.3616`); the dump is full precision
    (`0.36160713`). The audit compares numbers rounded to 4 dp so this
    representation noise doesn't read as a change.
@@ -49,6 +56,21 @@ committed (wiki-sourced) ground truth, classifying every field:
    count suggests. **Deep same-name sub-projectiles** still fall back to
    positional and account for most residual DELTAs; PR 2's overlay must align
    them by name **and** damage signature before writing.
+4. **Projectile flattening missed ~13 spawn-model types (completeness bug).**
+   `_collect_projectiles` only followed behaviors named `CreateProjectile*`, so
+   it dropped projectiles spawned via `AlternateProjectileModel` (the bomb's
+   secondary cluster, on the *weapon*), `ProjectileOverTimeModel`,
+   `UnstableConcoctionSplashModel`, `PreEmptiveStrikeLauncherModel`,
+   `PrinceOfDarknessEmissionModel`, `PhoenixRebirthModel`, etc. — under-emitting
+   in 177 attacks (e.g. **Psi's entire damage projectile "DestructiveResonance"
+   was missing**). **Fixed:** detect child projectiles by their own `$type`
+   under *any* field name, on both the projectile's and the **weapon's**
+   behaviors, and de-dupe identical ones (an explosion reached via two paths
+   appears once). Roster projectile-count parity vs the wiki improved
+   (exact 1269→1348, under 177→111, duplicate-name attacks 192→72); pat_fusty,
+   psi and silas re-emit with their previously-missing projectiles. The residual
+   gap is flattening *style* (the wiki names/groups sub-projectiles its own way),
+   not missing data.
 
 **Names — the part of P1 that is *unsolvable from the dump*.** Abilities carry
 `displayName` directly (100%: "Cocktail of Fire", "Firestorm"); spawned

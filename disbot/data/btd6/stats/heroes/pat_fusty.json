@@ -39,6 +39,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -58,6 +59,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -115,6 +117,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -134,6 +137,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -191,6 +195,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -210,6 +215,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -273,6 +279,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -292,6 +299,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -355,6 +363,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -374,11 +383,29 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
                   "name": "CreateEffectOnExhaustFractionModel",
                   "lifespan": 1
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -437,6 +464,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -456,6 +484,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -465,6 +494,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -523,6 +569,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -542,6 +589,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -551,6 +599,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -609,6 +674,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -628,6 +694,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -637,6 +704,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -695,6 +779,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -714,6 +799,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -723,6 +809,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -781,6 +884,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -800,6 +904,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -809,6 +914,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -871,6 +993,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -890,6 +1013,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -899,6 +1023,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -961,6 +1102,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -980,6 +1122,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -989,6 +1132,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.3
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1051,6 +1211,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -1070,6 +1231,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1079,6 +1241,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1141,6 +1320,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -1160,6 +1340,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1169,6 +1350,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1231,6 +1429,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true
             },
             {
@@ -1250,6 +1449,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 2,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1259,6 +1459,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1321,6 +1538,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1340,6 +1558,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1349,6 +1568,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1411,6 +1647,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1430,6 +1667,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1439,6 +1677,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1501,6 +1756,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1520,6 +1776,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1529,6 +1786,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1591,6 +1865,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1610,6 +1885,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1619,6 +1895,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }
@@ -1681,6 +1974,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 7,
               "filterInvisible": true
             },
             {
@@ -1700,6 +1994,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 8,
               "filterInvisible": true,
               "effects": [
                 {
@@ -1709,6 +2004,23 @@
                 {
                   "name": "SlowModel",
                   "lifespan": 0.5
+                }
+              ]
+            },
+            {
+              "name": "ProjectileSlap",
+              "pierce": 16,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "SlapFX",
+                  "lifespan": -1
                 }
               ]
             }

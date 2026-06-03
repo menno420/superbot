@@ -148,6 +148,47 @@ def test_sub_projectiles_are_flattened_as_siblings(mod):
     assert explosion_node["damage"] == 1 and explosion_node["pierce"] == 22
 
 
+def test_weapon_behavior_alternate_projectile_is_collected(mod):
+    # The bomb's secondary cluster is fired by an AlternateProjectileModel on the
+    # *weapon* (not weapon.projectile) — the old CreateProjectile-only walk
+    # dropped it (and the real damage projectile of e.g. Psi).
+    alt = _projectile(name="Secondary", pierce=5.0, damage=3.0)
+    attack = _attack(_projectile(name="Primary", damage=1.0))
+    attack["weapons"][0]["behaviors"] = [
+        {"$type": _t("AlternateProjectileModel"), "projectile": alt},
+    ]
+    names = [p["name"] for p in mod._clean_attack(attack, 0)["projectiles"]]
+    assert "Primary" in names and "Secondary" in names
+
+
+def test_spawned_projectiles_detected_by_structure_under_any_field(mod):
+    # ProjectileOverTimeModel holds its child under `projectileModel`, not
+    # `projectile` — structural detection (by $type) must still find it.
+    child = _projectile(name="OverTime", damage=2.0)
+    behavior = {"$type": _t("ProjectileOverTimeModel"), "projectileModel": child}
+    found = mod._spawned_projectiles(behavior)
+    assert len(found) == 1 and found[0]["id"] == "OverTime"
+
+
+def test_duplicate_projectiles_are_deduped(mod):
+    # The same explosion reached via two spawn paths is emitted once (wiki parity).
+    shell = _projectile(name="Projectile", damage=None)
+    shell["behaviors"].append(
+        {
+            "$type": _t("CreateProjectileOnContactModel"),
+            "projectile": _projectile(name="Explosion", pierce=22.0, damage=1.0),
+        },
+    )
+    shell["behaviors"].append(
+        {
+            "$type": _t("CreateProjectileOnExpireModel"),
+            "projectile": _projectile(name="Explosion", pierce=22.0, damage=1.0),
+        },
+    )
+    names = [p["name"] for p in mod._clean_attack(_attack(shell), 0)["projectiles"]]
+    assert names.count("Explosion") == 1
+
+
 def test_attack_name_strips_class_prefix_and_trailing_underscore(mod):
     attack = mod._clean_attack(_attack(_projectile()), 0)
     assert attack["name"] == "Attack"  # from "AttackModel_Attack_"
@@ -250,29 +291,33 @@ def test_pascal_name_mapping(mod):
 # --- damage-modifier fidelity (the v55 "uniform 1.0" trap) ------------------
 
 
-def _tag_mod(tag: str, multiplier: float) -> dict:
+def _tag_mod(tag: str, *, additive: float = 0.0, multiplier: float = 1.0) -> dict:
+    # The real bonus lives in `damageAddative` (sic); `damageMultiplier` is a
+    # separate, almost-always-1.0 field.
     return {
         "$type": _t("DamageModifierForTagModel"),
         "tag": tag,
         "damageMultiplier": multiplier,
+        "damageAddative": additive,
         "name": "DamageModifierForTagModel_",
     }
 
 
-def test_neutral_damage_modifier_is_not_emitted(mod):
-    # In the v55 dump every DamageModifierForTagModel is a no-op 1.0 even where
-    # the trusted wiki has a real bonus — emitting it would overwrite good data.
+def test_tag_bonus_read_from_misspelled_additive_field(mod):
+    # Ultra-Juggernaut Lead +20 is stored in `damageAddative`, not the multiplier.
     proj = _projectile()
-    proj["behaviors"].append(_tag_mod("Lead", 1.0))
+    proj["behaviors"].append(_tag_mod("Lead", additive=20.0))
     cleaned = mod._clean_projectile(proj)
-    assert "damageModifierForLead" not in cleaned
+    assert cleaned["damageModifierForLead"] == 20
 
 
-def test_real_damage_modifier_is_emitted(mod):
+def test_neutral_modifier_not_emitted(mod):
+    # additive 0 + multiplier 1 = no real bonus → emit nothing (don't overwrite
+    # curated data with a no-op).
     proj = _projectile()
-    proj["behaviors"].append(_tag_mod("Ceramic", 3.0))
+    proj["behaviors"].append(_tag_mod("Ceramic", additive=0.0, multiplier=1.0))
     cleaned = mod._clean_projectile(proj)
-    assert cleaned["damageModifierForCeramic"] == 3
+    assert "damageModifierForCeramic" not in cleaned
 
 
 # --- fidelity audit ---------------------------------------------------------

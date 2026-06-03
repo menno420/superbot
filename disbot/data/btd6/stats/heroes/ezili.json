@@ -449,6 +449,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -474,6 +475,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -537,6 +539,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -562,6 +565,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -629,6 +633,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -654,6 +659,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -721,6 +727,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -746,6 +753,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -813,6 +821,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -838,6 +847,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -909,6 +919,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -934,6 +945,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 19,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1005,6 +1017,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1030,6 +1043,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1101,6 +1115,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1126,6 +1141,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1197,6 +1213,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1222,6 +1239,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1293,6 +1311,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1318,6 +1337,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1389,6 +1409,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1414,6 +1435,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1485,6 +1507,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1510,6 +1533,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1581,6 +1605,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1606,6 +1631,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1677,6 +1703,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1702,6 +1729,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 29,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1773,6 +1801,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 49,
               "filterInvisible": false,
               "effects": [
                 {
@@ -1798,6 +1827,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 49,
               "filterInvisible": false,
               "effects": [
                 {
