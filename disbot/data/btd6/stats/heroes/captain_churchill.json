@@ -194,7 +194,7 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         }
       ],
@@ -264,7 +264,7 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         }
       ],
@@ -369,7 +369,7 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         }
       ],
@@ -474,7 +474,7 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         }
       ],
@@ -579,7 +579,7 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         }
       ],
@@ -684,7 +684,7 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         }
       ],
@@ -789,7 +789,7 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         }
       ],
@@ -894,11 +894,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1003,11 +1003,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1112,11 +1112,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1221,11 +1221,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1330,11 +1330,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1445,11 +1445,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1560,11 +1560,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1675,11 +1675,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1790,11 +1790,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -1905,11 +1905,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 60
         }
       ],
@@ -2020,11 +2020,11 @@
       ],
       "abilities": [
         {
-          "name": "ArmorPiercingShells",
+          "name": "Armor Piercing Shells",
           "cooldown": 30
         },
         {
-          "name": "MOABBarrage",
+          "name": "MOAB Barrage",
           "cooldown": 30
         }
       ],

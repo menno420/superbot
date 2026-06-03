@@ -83,7 +83,7 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 70
         }
       ],
@@ -116,7 +116,7 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 70
         }
       ],
@@ -149,7 +149,7 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 70
         }
       ],
@@ -182,7 +182,7 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         }
       ],
@@ -215,7 +215,7 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         }
       ],
@@ -277,7 +277,7 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         }
       ],
@@ -339,7 +339,7 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         }
       ],
@@ -401,11 +401,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 90
         }
       ],
@@ -467,11 +467,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 90
         }
       ],
@@ -533,11 +533,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 90
         }
       ],
@@ -599,11 +599,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],
@@ -665,11 +665,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],
@@ -731,11 +731,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 55
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],
@@ -797,11 +797,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 50
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],
@@ -863,11 +863,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 50
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],
@@ -929,11 +929,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 50
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],
@@ -995,11 +995,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 50
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],
@@ -1061,11 +1061,11 @@
       ],
       "abilities": [
         {
-          "name": "DroneSwarmAbility",
+          "name": "Drone Swarm",
           "cooldown": 50
         },
         {
-          "name": "UCAVAbility",
+          "name": "UCAV",
           "cooldown": 75
         }
       ],

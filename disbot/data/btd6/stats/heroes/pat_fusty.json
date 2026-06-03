@@ -236,7 +236,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         }
       ],
@@ -320,7 +320,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         }
       ],
@@ -421,7 +421,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         }
       ],
@@ -526,7 +526,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         }
       ],
@@ -631,7 +631,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         }
       ],
@@ -736,7 +736,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         }
       ],
@@ -841,7 +841,7 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         }
       ],
@@ -946,11 +946,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1055,11 +1055,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1164,11 +1164,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1273,11 +1273,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1382,11 +1382,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1491,11 +1491,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1600,11 +1600,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1709,11 +1709,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1818,11 +1818,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -1927,11 +1927,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],
@@ -2036,11 +2036,11 @@
       ],
       "abilities": [
         {
-          "name": "AbilityRallyingRoar",
+          "name": "Rallying Roar",
           "cooldown": 45
         },
         {
-          "name": "AbilityBigSqueeze",
+          "name": "Big Squeeze",
           "cooldown": 20
         }
       ],

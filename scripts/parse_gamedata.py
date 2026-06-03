@@ -373,7 +373,13 @@ def _clean_attack(attack: dict, index: int) -> dict:
 
 
 def _clean_ability(ability: dict, index: int) -> dict:
-    out: dict = {"name": _clean_name(ability.get("name"), f"Ability {index + 1}")}
+    # Prefer the game's own player-facing name (``displayName`` is already English
+    # — "Cocktail of Fire", "Firestorm") over the internal model name.
+    display = ability.get("displayName")
+    name = display if isinstance(display, str) and display else None
+    out: dict = {
+        "name": name or _clean_name(ability.get("name"), f"Ability {index + 1}"),
+    }
     if "cooldown" in ability:
         out["cooldown"] = _num(ability["cooldown"])
     # An ability fires its own AttackModels; surface their projectiles + bad dmg.
@@ -567,6 +573,7 @@ def _upgrades_for(tdir: Path, dump: Path) -> list[dict]:
             if isinstance(name, str) and name and name not in seen:
                 seen.add(name)
                 names.append(name)
+    tt = _text_table(dump)
     out: list[dict] = []
     for name in names:
         up = _read_upgrade(dump, name)
@@ -576,17 +583,41 @@ def _upgrades_for(tdir: Path, dump: Path) -> list[dict]:
         tier = up.get("tier")
         if not isinstance(path, int) or not isinstance(tier, int):
             continue
-        out.append(
-            {
-                "path": path + 1,
-                "tier": tier + 1,
-                "name": up.get("name", name),
-                "cost": _num(up.get("cost", 0)),
-                "xp": _num(up.get("xpCost", 0)),
-            },
-        )
+        entry = {
+            "path": path + 1,
+            "tier": tier + 1,
+            "name": up.get("name", name),
+            "cost": _num(up.get("cost", 0)),
+            "xp": _num(up.get("xpCost", 0)),
+        }
+        # Game-authored description ("what this upgrade grants"), resolved through
+        # the upgrade's localization key — the bot's most reliable upgrade prose.
+        locs = up.get("LocsKey")
+        if isinstance(locs, str) and locs:
+            description = tt.get(f"{locs} Description")
+            if isinstance(description, str) and description:
+                entry["description"] = description
+        out.append(entry)
     out.sort(key=lambda u: (u["path"], u["tier"]))
     return out
+
+
+_TEXT_TABLE_CACHE: dict[str, dict[str, str]] = {}
+
+
+def _text_table(dump: Path) -> dict[str, str]:
+    """The dump's ``textTable.json`` (game display strings + descriptions), cached
+    per dump path. Empty dict if absent — name/description lookups then no-op.
+    """
+    key = str(dump)
+    if key not in _TEXT_TABLE_CACHE:
+        fp = dump / "textTable.json"
+        try:
+            raw = json.loads(fp.read_text("utf-8")) if fp.exists() else {}
+        except (OSError, json.JSONDecodeError):
+            raw = {}
+        _TEXT_TABLE_CACHE[key] = {k: v for k, v in raw.items() if isinstance(v, str)}
+    return _TEXT_TABLE_CACHE[key]
 
 
 def _read_upgrade(dump: Path, upgrade_id: Any) -> dict | None:

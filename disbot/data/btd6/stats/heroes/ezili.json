@@ -230,7 +230,7 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         }
       ],
@@ -318,7 +318,7 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         }
       ],
@@ -406,7 +406,7 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         }
       ],
@@ -496,7 +496,7 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         }
       ],
@@ -586,11 +586,11 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         }
       ],
@@ -680,11 +680,11 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         }
       ],
@@ -774,11 +774,11 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         }
       ],
@@ -868,15 +868,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -966,15 +966,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 45
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1064,15 +1064,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1162,15 +1162,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1260,15 +1260,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1358,15 +1358,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1456,15 +1456,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1554,15 +1554,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1652,15 +1652,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1750,15 +1750,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 60
         }
       ],
@@ -1848,15 +1848,15 @@
       ],
       "abilities": [
         {
-          "name": "HeartstopperAbility",
+          "name": "Heartstopper",
           "cooldown": 40
         },
         {
-          "name": "TotemAbility",
+          "name": "Sacrificial Totem",
           "cooldown": 90
         },
         {
-          "name": "HexAbility",
+          "name": "MOAB Hex",
           "cooldown": 40
         }
       ],

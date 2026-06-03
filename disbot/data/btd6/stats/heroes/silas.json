@@ -212,7 +212,7 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         }
       ],
@@ -325,7 +325,7 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         }
       ],
@@ -438,7 +438,7 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         }
       ],
@@ -551,7 +551,7 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         }
       ],
@@ -664,11 +664,11 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         }
       ],
@@ -781,11 +781,11 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         }
       ],
@@ -898,11 +898,11 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         }
       ],
@@ -1015,15 +1015,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 90
         }
       ],
@@ -1136,15 +1136,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 90
         }
       ],
@@ -1257,15 +1257,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 90
         }
       ],
@@ -1378,15 +1378,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 90
         }
       ],
@@ -1499,15 +1499,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 60
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 90
         }
       ],
@@ -1620,15 +1620,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 45
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 75
         }
       ],
@@ -1741,15 +1741,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 45
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 75
         }
       ],
@@ -1862,15 +1862,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 45
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 75
         }
       ],
@@ -1983,15 +1983,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 45
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 75
         }
       ],
@@ -2104,15 +2104,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 45
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 75
         }
       ],
@@ -2225,15 +2225,15 @@
       ],
       "abilities": [
         {
-          "name": "FrostbiteAbility",
+          "name": "Frostbite",
           "cooldown": 30
         },
         {
-          "name": "FrozenCascade",
+          "name": "Frozen Cascade",
           "cooldown": 45
         },
         {
-          "name": "FrozenBurialAbility",
+          "name": "Frozen Burial",
           "cooldown": 75
         }
       ],

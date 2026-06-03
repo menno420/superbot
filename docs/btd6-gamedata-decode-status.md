@@ -6,6 +6,7 @@ to pick up the work: it records what's done, **how the dump's data actually
 works** (the traps we hit), and what is still un-decoded.
 
 > Companion docs — read alongside:
+> - **`btd6-gamedata-native-schema.md`** — *the game-native storage design & cutover map* (game data leads; how to store the game's structure displayably).
 > - **`btd6-gamedata-dictionary.md`** — *what data exists and where* (domains, the textTable linkage).
 > - **`btd6-game-file-extraction-plan.md`** — the mapper roadmap + the fidelity-audit findings.
 > - **`btd6-data-pipeline.md`** — the existing bloonswiki pipeline this augments.

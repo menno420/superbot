@@ -50,10 +50,14 @@ def _damage_model(damage: float, immune: int = 17) -> dict:
 
 
 def _projectile(
-    *, name="Projectile", pierce=2.0, radius=2.0, damage: float | None = 1.0
+    *,
+    name="Projectile",
+    pierce=2.0,
+    radius=2.0,
+    damage: float | None = 1.0,
 ) -> dict:
     behaviors: list[dict] = [
-        {"$type": _t("TravelStraitModel"), "speed": 300.0, "lifespan": 0.25}
+        {"$type": _t("TravelStraitModel"), "speed": 300.0, "lifespan": 0.25},
     ]
     if damage is not None:
         behaviors.insert(0, _damage_model(damage))
@@ -84,7 +88,7 @@ def _attack(projectile: dict, *, rate=0.95, rng=32.0, name="Attack") -> dict:
                 "fireWithoutTarget": False,
                 "fireBetweenRounds": False,
                 "name": "WeaponModel_Weapon",
-            }
+            },
         ],
     }
 
@@ -139,7 +143,7 @@ def test_sub_projectiles_are_flattened_as_siblings(mod):
     explosion = _projectile(name="Explosion", pierce=22.0, radius=12.0, damage=1.0)
     shell = _projectile(name="Projectile", pierce=1.0, radius=4.0, damage=None)
     shell["behaviors"].append(
-        {"$type": _t("CreateProjectileOnContactModel"), "projectile": explosion}
+        {"$type": _t("CreateProjectileOnContactModel"), "projectile": explosion},
     )
     attack = mod._clean_attack(_attack(shell), 0)
     names = [p["name"] for p in attack["projectiles"]]
@@ -216,7 +220,7 @@ def test_tower_set_maps_to_category(mod):
 def test_income_field_is_surfaced(mod):
     model = _tower_model()
     model["behaviors"].append(
-        {"$type": _t("PerRoundCashBonusTowerModel"), "cashPerRound": 4000.0}
+        {"$type": _t("PerRoundCashBonusTowerModel"), "cashPerRound": 4000.0},
     )
     tier = mod._map_tier(model)
     assert tier["cashPerRound"] == 4000
@@ -239,7 +243,7 @@ def _make_dump(tmp_path: Path) -> Path:
             "$type": _t("UpgradePathModel"),
             "tower": "TestTower-100",
             "upgrade": "Big Darts",
-        }
+        },
     ]
     _write(tdir / "TestTower.json", base)
     # a single crosspath state file
@@ -247,7 +251,19 @@ def _make_dump(tmp_path: Path) -> Path:
     # the upgrade definition (path/tier are 0-indexed in the dump)
     _write(
         dump / "Upgrades" / "Big Darts.json",
-        {"name": "Big Darts", "cost": 140, "xpCost": 0, "path": 0, "tier": 0},
+        {
+            "name": "Big Darts",
+            "cost": 140,
+            "xpCost": 0,
+            "path": 0,
+            "tier": 0,
+            "LocsKey": "Big Darts",
+        },
+    )
+    # game localization: upgrade display strings + descriptions
+    _write(
+        dump / "textTable.json",
+        {"Big Darts": "Big Darts", "Big Darts Description": "Darts are bigger."},
     )
     return dump
 
@@ -264,9 +280,17 @@ def test_map_tower_end_to_end(mod, tmp_path):
     assert p["source"] == mod._SOURCE
     # base file → tier 000, plus the -100 state.
     assert set(p["tiers"]) == {"000", "100"}
-    # upgrade resolved with 0-indexed → 1-indexed path/tier.
+    # upgrade resolved with 0-indexed → 1-indexed path/tier, plus the game's own
+    # description resolved through its LocsKey.
     assert p["upgrades"] == [
-        {"path": 1, "tier": 1, "name": "Big Darts", "cost": 140, "xp": 0}
+        {
+            "path": 1,
+            "tier": 1,
+            "name": "Big Darts",
+            "cost": 140,
+            "xp": 0,
+            "description": "Darts are bigger.",
+        },
     ]
 
 
@@ -274,7 +298,8 @@ def test_validate_anchors(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(dump / "Towers" / "DartMonkey" / "DartMonkey.json", _tower_model(cost=200.0))
     _write(
-        dump / "Towers" / "SuperMonkey" / "SuperMonkey.json", _tower_model(cost=2500.0)
+        dump / "Towers" / "SuperMonkey" / "SuperMonkey.json",
+        _tower_model(cost=2500.0),
     )
     assert mod.validate_anchors(dump) == []
     # A moved anchor must fail loudly.
@@ -295,7 +320,12 @@ def test_overlay_refreshes_tier_range_but_not_projectile_stats(mod):
             "030": {
                 "range": 28,
                 "attacks": [
-                    {"name": "Attack", "projectiles": [{"name": "Projectile", "damage": 1, "pierce": 2}]},
+                    {
+                        "name": "Attack",
+                        "projectiles": [
+                            {"name": "Projectile", "damage": 1, "pierce": 2},
+                        ],
+                    },
                 ],
             },
         },
@@ -307,7 +337,12 @@ def test_overlay_refreshes_tier_range_but_not_projectile_stats(mod):
             "030": {
                 "range": 80,
                 "attacks": [
-                    {"name": "Attack", "projectiles": [{"name": "BaseProjectile", "damage": 100, "pierce": 200}]},
+                    {
+                        "name": "Attack",
+                        "projectiles": [
+                            {"name": "BaseProjectile", "damage": 100, "pierce": 200},
+                        ],
+                    },
                 ],
             },
         },
@@ -339,7 +374,9 @@ def test_overlay_refreshes_upgrade_cost_xp_keyed_by_path_tier(mod):
     mod.overlay_payload(committed, mapped, "55.0")
 
     def up(path, tier):
-        return next(u for u in committed["upgrades"] if (u["path"], u["tier"]) == (path, tier))
+        return next(
+            u for u in committed["upgrades"] if (u["path"], u["tier"]) == (path, tier)
+        )
 
     assert up(3, 5)["cost"] == 90000  # refreshed despite reversed order
     assert up(1, 1)["xp"] == 40
@@ -347,10 +384,35 @@ def test_overlay_refreshes_upgrade_cost_xp_keyed_by_path_tier(mod):
 
 
 def test_overlay_no_change_leaves_version_and_source(mod):
-    committed = {"base_cost": 200, "category": "primary", "game_version": "54.0", "source": "w", "tiers": {}}
-    changes = mod.overlay_payload(committed, {"base_cost": 200, "category": "primary", "tiers": {}}, "55.0")
+    committed = {
+        "base_cost": 200,
+        "category": "primary",
+        "game_version": "54.0",
+        "source": "w",
+        "tiers": {},
+    }
+    changes = mod.overlay_payload(
+        committed,
+        {"base_cost": 200, "category": "primary", "tiers": {}},
+        "55.0",
+    )
     assert changes == []
     assert committed["game_version"] == "54.0"  # untouched when nothing moved
+
+
+def test_ability_uses_game_display_name(mod):
+    ability = {
+        "$type": _t("AbilityModel"),
+        "name": "AbilityModel_Ability",
+        "displayName": "Cocktail of Fire",
+        "cooldown": 15.0,
+    }
+    assert mod._clean_ability(ability, 0)["name"] == "Cocktail of Fire"
+
+
+def test_ability_falls_back_to_internal_name_without_display_name(mod):
+    ability = {"$type": _t("AbilityModel"), "name": "AbilityModel_Ability"}
+    assert mod._clean_ability(ability, 0)["name"] == "Ability"
 
 
 def test_pascal_name_mapping(mod):
@@ -409,7 +471,11 @@ def test_audit_equal_bools_compared_by_identity(mod):
 
 
 def test_align_named_pairs_by_name_not_index(mod):
-    committed = [{"name": "Projectile", "r": 4}, {"name": "Frag"}, {"name": "Explosion"}]
+    committed = [
+        {"name": "Projectile", "r": 4},
+        {"name": "Frag"},
+        {"name": "Explosion"},
+    ]
     mapped = [{"name": "Projectile", "r": 4}, {"name": "Explosion"}, {"name": "Frag"}]
     pairs = mod._align_named(committed, mapped)
     assert [n for n, _, _ in pairs] == ["Projectile", "Frag", "Explosion"]
@@ -425,7 +491,9 @@ def test_align_named_falls_back_on_duplicate_or_missing_names(mod):
 
 def test_walk_audit_tallies_named_alignment(mod):
     stats: dict = {}
-    committed = {"projectiles": [{"name": "A", "pierce": 10}, {"name": "B", "pierce": 5}]}
+    committed = {
+        "projectiles": [{"name": "A", "pierce": 10}, {"name": "B", "pierce": 5}],
+    }
     mapped = {"projectiles": [{"name": "B", "pierce": 5}, {"name": "A", "pierce": 7}]}
     mod._walk_audit(committed, mapped, "root", stats, "ctx")
     # A.pierce differs (10 vs 7), B.pierce matches → 1 diff / 2 total, despite
