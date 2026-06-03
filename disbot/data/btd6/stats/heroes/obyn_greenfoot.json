@@ -251,6 +251,35 @@
           "cooldown": 30
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -343,6 +372,35 @@
           "cooldown": 30
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -427,6 +485,35 @@
         {
           "name": "Brambles",
           "cooldown": 30
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -515,6 +602,35 @@
           "cooldown": 30
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -601,6 +717,35 @@
           "cooldown": 30
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -685,6 +830,35 @@
         {
           "name": "Brambles",
           "cooldown": 30
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -777,6 +951,35 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -865,6 +1068,35 @@
         {
           "name": "Wall of Trees",
           "cooldown": 90
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -957,6 +1189,35 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1045,6 +1306,35 @@
         {
           "name": "Wall of Trees",
           "cooldown": 90
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -1137,6 +1427,35 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1225,6 +1544,35 @@
         {
           "name": "Wall of Trees",
           "cooldown": 90
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -1317,6 +1665,35 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1405,6 +1782,35 @@
         {
           "name": "Wall of Trees",
           "cooldown": 90
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -1497,6 +1903,35 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1587,6 +2022,35 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1675,6 +2139,35 @@
         {
           "name": "Wall of Trees",
           "cooldown": 75
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "NaturesWardTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 32,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "SharedAttack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 32,
+              "attackThroughWalls": false,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,

@@ -198,6 +198,54 @@ def test_attack_name_strips_class_prefix_and_trailing_underscore(mod):
     assert attack["name"] == "Attack"  # from "AttackModel_Attack_"
 
 
+def test_subtower_mapped_from_spawn_model(mod):
+    # A minion spawned by a CreateTowerModel (inside an ability) is mapped like a
+    # tier — its attacks/projectiles surface so "minion pierce" questions resolve.
+    minion = _tower_model(
+        attacks=[_attack(_projectile(name="Sting", damage=4.0, pierce=3.0))],
+    )
+    minion["name"] = "Hornet"
+    host = _tower_model()
+    host["behaviors"].append(
+        {
+            "$type": _t("AbilityModel"),
+            "name": "AbilityModel_Ability",
+            "behaviors": [
+                {
+                    "$type": _t("CreateTowerModel"),
+                    "tower": minion,
+                    "towerLifetime": 10.0,
+                },
+            ],
+        },
+    )
+    tier = mod._map_tier(host)
+    assert "subtowers" in tier
+    sub = tier["subtowers"][0]
+    assert sub["name"] == "Hornet"
+    assert sub["lifespan"] == 10
+    assert sub["attacks"][0]["projectiles"][0]["damage"] == 4
+
+
+def test_subtower_does_not_recurse_into_nested_spawns(mod):
+    # _find_spawn_models must not descend into a spawned tower's own spawns.
+    inner = _tower_model()
+    inner["name"] = "Inner"
+    outer = _tower_model()
+    outer["name"] = "Outer"
+    outer["behaviors"].append({"$type": _t("CreateTowerModel"), "tower": inner})
+    host = _tower_model()
+    host["behaviors"].append({"$type": _t("CreateTowerModel"), "tower": outer})
+    tier = mod._map_tier(host)
+    assert [s["name"] for s in tier.get("subtowers", [])] == ["Outer"]  # not "Inner"
+
+
+def test_subtower_name_strips_trailing_level(mod):
+    assert mod._clean_subtower_name({"name": "MasquedMacaque 10"}) == "MasquedMacaque"
+    assert mod._clean_subtower_name({"name": "Phoenix"}) == "Phoenix"
+    assert mod._clean_subtower_name({"displayName": "Sun God", "name": "X"}) == "Sun God"
+
+
 def test_tier_placement_target_and_footprint(mod):
     tier = mod._map_tier(_tower_model(area=(2,)))
     assert tier["placeableOnLand"] is True
