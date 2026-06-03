@@ -19,19 +19,11 @@ from typing import Any
 import discord
 
 from utils.btd6 import tier_codes
+from utils.btd6.damage_types import DAMAGE_MODIFIER_LABELS
 
 # Damage-modifier field -> short label (the bloon class the bonus applies to).
-_DAMAGE_MODIFIERS: tuple[tuple[str, str], ...] = (
-    ("damageModifierForLead", "Lead"),
-    ("damageModifierForCeramic", "Ceramic"),
-    ("damageModifierForFortified", "Fortified"),
-    ("damageModifierForMoab", "MOABs"),
-    ("damageModifierForMoabs", "MOAB-Class"),
-    ("damageModifierForBoss", "Bosses"),
-    ("damageModifierForBad", "BADs"),
-    ("damageModifierForCamo", "Camo"),
-    ("damageModifierForStunned", "stunned"),
-)
+# Shared with the AI grounding renderer via the single source in damage_types.
+_DAMAGE_MODIFIERS = DAMAGE_MODIFIER_LABELS
 
 _PUSH_MULTIPLIERS: tuple[tuple[str, str], ...] = (
     ("pushMultiplierForMoab", "MOAB"),

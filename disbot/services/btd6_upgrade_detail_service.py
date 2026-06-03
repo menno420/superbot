@@ -15,8 +15,11 @@ on the **Reanimate** attack's projectile, not the main one. This model keeps
 every attack/minion/buff addressable so those questions resolve.
 
 Purely additive and read-only: it reads the two services above and changes
-neither. Wiring :func:`grounding_for_query` into the AI grounding path is a
-separate, behaviour-changing step left for review.
+neither. :func:`grounding_for_query` is wired into the AI grounding path via
+``btd6_context_service.build`` (its fixture-fallback pass), and the per-projectile
+``modifiers`` surface the curated ``damageModifierFor*`` bonuses (e.g. *+3 vs
+Ceramic*) the UI embed already shows, so the model can ground bonus-damage
+answers instead of refusing them.
 """
 
 from __future__ import annotations
@@ -27,6 +30,7 @@ from typing import Any
 from services import btd6_stats_service, btd6_upgrade_service
 from services.btd6_stats_service import NormalStats
 from services.btd6_upgrade_service import UpgradeIdentity
+from utils.btd6.damage_types import DAMAGE_MODIFIER_LABELS
 
 _MAX_LINE = 320
 _PATH_LABEL = {"top": "top", "mid": "middle", "bot": "bottom"}
@@ -44,7 +48,11 @@ class ProjectileSpec:
     radius: float | None
     lifespan: float | None
     can_see_camo: bool
-    moab_bonus: int | None
+    # Additive damage bonuses vs bloon classes, as ``(label, +bonus)`` in a
+    # stable order (e.g. ``("Ceramic", 3)``). Surfaces the curated
+    # ``damageModifierFor*`` numbers the UI embed already shows, so the AI can
+    # ground "bonus damage vs Lead/Ceramic/Fortified" answers.
+    modifiers: tuple[tuple[str, int], ...]
 
 
 @dataclass(frozen=True)
@@ -117,6 +125,18 @@ def _camo(node: dict[str, Any]) -> bool:
     return not bool(node.get("filterInvisible"))
 
 
+def _modifiers(proj: dict[str, Any]) -> tuple[tuple[str, int], ...]:
+    """``(label, +bonus)`` for every non-zero ``damageModifierFor*`` on a
+    projectile, in the shared canonical order (mirrors the stats embed).
+    """
+    out: list[tuple[str, int]] = []
+    for field_name, label in DAMAGE_MODIFIER_LABELS:
+        value = proj.get(field_name)
+        if isinstance(value, (int, float)) and value:
+            out.append((label, int(value)))
+    return tuple(out)
+
+
 def _projectile(proj: dict[str, Any]) -> ProjectileSpec:
     return ProjectileSpec(
         name=str(proj.get("name") or "Projectile"),
@@ -127,7 +147,7 @@ def _projectile(proj: dict[str, Any]) -> ProjectileSpec:
         radius=proj.get("radius"),
         lifespan=proj.get("lifespan"),
         can_see_camo=_camo(proj),
-        moab_bonus=proj.get("damageModifierForMoabs"),
+        modifiers=_modifiers(proj),
     )
 
 
@@ -299,8 +319,8 @@ def _projectile_bits(proj: ProjectileSpec) -> str:
                 else f"{proj.pierce} pierce"
             ),
         )
-    if proj.moab_bonus:
-        bits.append(f"+{proj.moab_bonus} vs MOAB-class")
+    for label, bonus in proj.modifiers:
+        bits.append(f"+{bonus} vs {label}")
     return ", ".join(bits)
 
 

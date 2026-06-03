@@ -177,3 +177,45 @@ def test_missing_description_grounds_no_phantom_line():
     assert lines  # still grounds
     assert not any("in-game description" in ln for ln in lines)
     assert any("main attack" in ln for ln in lines)
+
+
+# --- damage modifiers in grounding (bonus vs bloon class) -------------------
+
+
+def test_projectile_carries_damage_modifiers():
+    # Juggernaut (4-0-0) gets +3 vs Ceramic, +2 vs Fortified — the curated
+    # damageModifierFor* numbers must reach the read model, not just MOAB bonus.
+    d = det.get_upgrade_detail("dart_monkey:400")  # Juggernaut = top path tier 4
+    assert d is not None
+    main = _attack(d, "Attack")
+    assert main is not None
+    mods = dict(main.projectiles[0].modifiers)
+    assert mods.get("Ceramic") == 3
+    assert mods.get("Fortified") == 2
+
+
+def test_grounding_surfaces_bonus_vs_bloon_class():
+    # The retrieval-gap regression: the bot could recite the prose ("crushes
+    # Ceramic/Fortified") but not the numbers. Now the numbers ground.
+    blob = "\n".join(det.grounding_for_query("Juggernaut"))
+    assert "+3 vs Ceramic" in blob
+    assert "+2 vs Fortified" in blob
+
+
+def test_grounding_surfaces_lead_bonus_on_ultra_juggernaut():
+    # "Ultra-Juggernaut" resolves ambiguous by name (Juggernaut substring), so
+    # render the id (0-0-5 top path = "500") directly.
+    blob = "\n".join(
+        det.render_upgrade_grounding(det.get_upgrade_detail("dart_monkey:500")),
+    )
+    assert "+20 vs Lead" in blob
+    assert "+8 vs Ceramic" in blob
+
+
+def test_modifiers_empty_when_none_present():
+    # The base dart (tier-1 top) has no damage modifiers — no phantom bonus lines.
+    d = det.get_upgrade_detail("dart_monkey:100")
+    assert d is not None
+    main = _attack(d, "Attack")
+    assert main is not None
+    assert main.projectiles[0].modifiers == ()
