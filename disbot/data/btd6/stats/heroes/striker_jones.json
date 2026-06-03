@@ -77,7 +77,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Striker Jones shoots a powerful bazooka to explode the Bloons and push them back on hit."
     },
     "2": {
       "placeableOnLand": true,
@@ -137,7 +138,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Increased blast radius."
     },
     "3": {
       "placeableOnLand": true,
@@ -285,7 +287,8 @@
           ]
         }
       ],
-      "level": 3
+      "level": 3,
+      "description": "Concussive Shell: Shoots a guided shell following target priority, stunning whatever Bloon it hits."
     },
     "4": {
       "placeableOnLand": true,
@@ -444,7 +447,8 @@
           "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
         }
       ],
-      "level": 4
+      "level": 4,
+      "description": "All Bomb Shooters and Mortar Monkeys on screen shoot 10% faster."
     },
     "5": {
       "placeableOnLand": true,
@@ -610,7 +614,8 @@
           "chance": 0.5
         }
       ],
-      "level": 5
+      "level": 5,
+      "description": "Makes all Black Bloons less resistant to explosive damage from all Monkeys."
     },
     "6": {
       "placeableOnLand": true,
@@ -776,7 +781,8 @@
           "chance": 0.5
         }
       ],
-      "level": 6
+      "level": 6,
+      "description": "Blast radius and pops for Jones' normal attacks increases greatly."
     },
     "7": {
       "placeableOnLand": true,
@@ -864,7 +870,8 @@
           "chance": 0.5
         }
       ],
-      "level": 7
+      "level": 7,
+      "description": "Pops 4 layers per shot and Mortar Monkeys blast radius increased by 10%. Target Focus: For 15 seconds Mortar Monkeys target touch/cursor with increased accuracy."
     },
     "8": {
       "placeableOnLand": true,
@@ -952,7 +959,8 @@
           "chance": 0.5
         }
       ],
-      "level": 8
+      "level": 8,
+      "description": "Towers near the hero get +5% range and +25% pierce."
     },
     "9": {
       "placeableOnLand": true,
@@ -1096,7 +1104,8 @@
           "chance": 0.5
         }
       ],
-      "level": 9
+      "level": 9,
+      "description": "Increased attack speed and increased Concussive Shell pierce, damage, and stun."
     },
     "10": {
       "placeableOnLand": true,
@@ -1248,7 +1257,8 @@
           "chance": 0.5
         }
       ],
-      "level": 10
+      "level": 10,
+      "description": "Artillery Command: Resets cooldown on all Bomb Shooters and Mortar Monkeys."
     },
     "11": {
       "placeableOnLand": true,
@@ -1400,7 +1410,8 @@
           "chance": 0.5
         }
       ],
-      "level": 11
+      "level": 11,
+      "description": "Increased attack speed."
     },
     "12": {
       "placeableOnLand": true,
@@ -1552,7 +1563,8 @@
           "chance": 0.5
         }
       ],
-      "level": 12
+      "level": 12,
+      "description": "Slightly increased attack range and pops 2 extra layers per shot."
     },
     "13": {
       "placeableOnLand": true,
@@ -1704,7 +1716,8 @@
           "chance": 0.5
         }
       ],
-      "level": 13
+      "level": 13,
+      "description": "Increased attack speed."
     },
     "14": {
       "placeableOnLand": true,
@@ -1848,7 +1861,8 @@
           "chance": 0.5
         }
       ],
-      "level": 14
+      "level": 14,
+      "description": "Concussive Shell affects a larger area and for a longer duration."
     },
     "15": {
       "placeableOnLand": true,
@@ -1992,7 +2006,8 @@
           "chance": 0.5
         }
       ],
-      "level": 15
+      "level": 15,
+      "description": "Concussive Shell cooldown reduced to 11 seconds."
     },
     "16": {
       "placeableOnLand": true,
@@ -2136,7 +2151,8 @@
           "chance": 0.5
         }
       ],
-      "level": 16
+      "level": 16,
+      "description": "Increased attack speed."
     },
     "17": {
       "placeableOnLand": true,
@@ -2280,7 +2296,8 @@
           "chance": 0.5
         }
       ],
-      "level": 17
+      "level": 17,
+      "description": "Increased range and pops 8 layers per shot."
     },
     "18": {
       "placeableOnLand": true,
@@ -2424,7 +2441,8 @@
           "chance": 0.5
         }
       ],
-      "level": 18
+      "level": 18,
+      "description": "All Bomb Shooters and Mortar Monkeys attack an additional 10% faster."
     },
     "19": {
       "placeableOnLand": true,
@@ -2568,7 +2586,8 @@
           "chance": 1
         }
       ],
-      "level": 19
+      "level": 19,
+      "description": "Increased attack speed and makes all Black Bloons vulnerable to explosive damage."
     },
     "20": {
       "placeableOnLand": true,
@@ -2720,7 +2739,8 @@
           "chance": 1
         }
       ],
-      "level": 20
+      "level": 20,
+      "description": "Artillery Command also gives double damage and pops per shot to all Bomb Shooters and Mortar Monkeys for 10 seconds."
     }
   }
 }

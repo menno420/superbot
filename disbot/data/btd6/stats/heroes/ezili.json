@@ -80,7 +80,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Ezili curses Bloons with dark voodoo power."
     },
     "2": {
       "placeableOnLand": true,
@@ -156,7 +157,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Increased attack range."
     },
     "3": {
       "placeableOnLand": true,
@@ -238,7 +240,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Heartstopper: allows Purple popping and prevents any regrow from happening for 10 seconds."
     },
     "4": {
       "placeableOnLand": true,
@@ -326,7 +329,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "Ezili's main attack now curses multiple Bloons."
     },
     "5": {
       "placeableOnLand": true,
@@ -414,7 +418,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "Increased attack speed."
     },
     "6": {
       "placeableOnLand": true,
@@ -504,7 +509,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Ezili's attack does far more damage to MOAB-Class Bloons."
     },
     "7": {
       "placeableOnLand": true,
@@ -615,7 +621,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Sacrificial Totem: A totem that gives Camo detection, extra pierce, attack range, attack speed, and projectile speed to nearby Monkeys, especially Wizard Monkeys. Drains 10 lives."
     },
     "8": {
       "placeableOnLand": true,
@@ -726,7 +733,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Damage over time lasts longer and damages faster."
     },
     "9": {
       "placeableOnLand": true,
@@ -837,7 +845,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "Ezili's attack strips off Camo, Regrow and Fortified properties from non-MOAB class Bloons."
     },
     "10": {
       "placeableOnLand": true,
@@ -952,7 +961,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "MOAB Hex: places a curse on a MOAB-Class Bloon, it takes damage every second until annihilated."
     },
     "11": {
       "placeableOnLand": true,
@@ -1067,7 +1077,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Increased attack range. Increases pierce of reanimated Bloons by 50%."
     },
     "12": {
       "placeableOnLand": true,
@@ -1182,7 +1193,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Heartstopper reduced cooldown and increased duration. Deals increased damage to MOABs."
     },
     "13": {
       "placeableOnLand": true,
@@ -1297,7 +1309,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Base attack has larger splash radius and increased pierce."
     },
     "14": {
       "placeableOnLand": true,
@@ -1412,7 +1425,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "Heartstopper lasts much longer."
     },
     "15": {
       "placeableOnLand": true,
@@ -1527,7 +1541,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Damage over time lasts longer and damages faster."
     },
     "16": {
       "placeableOnLand": true,
@@ -1642,7 +1657,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Sacrificial Totem lasts longer and costs only 1 life to use. Main attack removes Camo from DDTs."
     },
     "17": {
       "placeableOnLand": true,
@@ -1757,7 +1773,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Base attack has larger splash radius and increased pierce."
     },
     "18": {
       "placeableOnLand": true,
@@ -1872,7 +1889,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Increased attack speed."
     },
     "19": {
       "placeableOnLand": true,
@@ -1987,7 +2005,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Dark voodoo curse pops more layers with each damage tick."
     },
     "20": {
       "placeableOnLand": true,
@@ -2102,7 +2121,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "MOAB Hex works faster and can destroy BAD Bloons."
     }
   }
 }

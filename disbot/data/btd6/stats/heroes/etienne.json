@@ -31,7 +31,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 1
+      "level": 1,
+      "description": "Flies a deadly little drone around to shoot at the Bloons."
     },
     "2": {
       "placeableOnLand": true,
@@ -58,7 +59,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 2
+      "level": 2,
+      "description": "Etienne's range increased and Monkeys in radius get 10% more range."
     },
     "3": {
       "placeableOnLand": true,
@@ -91,7 +93,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 3
+      "level": 3,
+      "description": "Drone Swarm: Etienne launches 4 more temporary drones to wreak some Bloon popping havoc."
     },
     "4": {
       "placeableOnLand": true,
@@ -124,7 +127,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 4
+      "level": 4,
+      "description": "Drones increase in popping power."
     },
     "5": {
       "placeableOnLand": true,
@@ -157,7 +161,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 5
+      "level": 5,
+      "description": "Drone increased attack speed and infrared camera allows shooting of Camo Bloons."
     },
     "6": {
       "placeableOnLand": true,
@@ -190,7 +195,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 6
+      "level": 6,
+      "description": "Drone Swarm ability cooldown reduced."
     },
     "7": {
       "placeableOnLand": true,
@@ -223,7 +229,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 7
+      "level": 7,
+      "description": "Etienne now controls 2 drones at once."
     },
     "8": {
       "placeableOnLand": true,
@@ -302,7 +309,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 8
+      "level": 8,
+      "description": "UAV: all Monkeys gain Camo Bloon detection."
     },
     "9": {
       "placeableOnLand": true,
@@ -381,7 +389,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 9
+      "level": 9,
+      "description": "Drones pop an extra Bloon layer."
     },
     "10": {
       "placeableOnLand": true,
@@ -464,7 +473,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 10
+      "level": 10,
+      "description": "UCAV: high altitude surveillance drone becomes devastating combat drone for a short time."
     },
     "11": {
       "placeableOnLand": true,
@@ -547,7 +557,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 11
+      "level": 11,
+      "description": "Etienne gains a third drone to control."
     },
     "12": {
       "placeableOnLand": true,
@@ -630,7 +641,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 12
+      "level": 12,
+      "description": "Drone upgrades! Increased popping power and flight speed."
     },
     "13": {
       "placeableOnLand": true,
@@ -713,7 +725,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 13
+      "level": 13,
+      "description": "UCAV ability cooldown reduced."
     },
     "14": {
       "placeableOnLand": true,
@@ -796,7 +809,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 14
+      "level": 14,
+      "description": "Drones damage increased greatly."
     },
     "15": {
       "placeableOnLand": true,
@@ -879,7 +893,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 15
+      "level": 15,
+      "description": "UCAV damage output and duration greatly increased."
     },
     "16": {
       "placeableOnLand": true,
@@ -962,7 +977,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 16
+      "level": 16,
+      "description": "Etienne's range, drone popping power, and Drone Swarm cooldown all improved. Monkeys in radius get 20% more range."
     },
     "17": {
       "placeableOnLand": true,
@@ -1045,7 +1061,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 17
+      "level": 17,
+      "description": "UCAV damage output greatly increased again!"
     },
     "18": {
       "placeableOnLand": true,
@@ -1128,7 +1145,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 18
+      "level": 18,
+      "description": "Drone damage increased."
     },
     "19": {
       "placeableOnLand": true,
@@ -1211,7 +1229,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 19
+      "level": 19,
+      "description": "Etienne now controls four drones all the time!"
     },
     "20": {
       "placeableOnLand": true,
@@ -1294,7 +1313,8 @@
       "targetTypeLast": false,
       "targetTypeClose": false,
       "targetTypeStrong": false,
-      "level": 20
+      "level": 20,
+      "description": "Perma-UCAV: Surveillance drone becomes permanent UCAV. When activated becomes more powerful for a short time and can pop all Bloon types."
     }
   }
 }

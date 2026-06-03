@@ -62,7 +62,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Quincy's arrows bounce to up to 3 different targets."
     },
     "2": {
       "placeableOnLand": true,
@@ -120,7 +121,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Base attack bounces to up to 4 targets."
     },
     "3": {
       "placeableOnLand": true,
@@ -195,7 +197,8 @@
           ]
         }
       ],
-      "level": 3
+      "level": 3,
+      "description": "Rapid Shot: Triple attack speed for a short time."
     },
     "4": {
       "placeableOnLand": true,
@@ -270,7 +273,8 @@
           ]
         }
       ],
-      "level": 4
+      "level": 4,
+      "description": "Slightly longer range."
     },
     "5": {
       "placeableOnLand": true,
@@ -345,7 +349,8 @@
           ]
         }
       ],
-      "level": 5
+      "level": 5,
+      "description": "Uses his sharp eyesight to shoot Camo Bloons."
     },
     "6": {
       "placeableOnLand": true,
@@ -423,7 +428,8 @@
           ]
         }
       ],
-      "level": 6
+      "level": 6,
+      "description": "Shoots 2 arrows at a time."
     },
     "7": {
       "placeableOnLand": true,
@@ -492,7 +498,8 @@
           ]
         }
       ],
-      "level": 7
+      "level": 7,
+      "description": "Fires exploding arrows every 3rd shot."
     },
     "8": {
       "placeableOnLand": true,
@@ -592,7 +599,8 @@
           ]
         }
       ],
-      "level": 8
+      "level": 8,
+      "description": "Arrows do triple damage to MOAB-Class Bloons."
     },
     "9": {
       "placeableOnLand": true,
@@ -671,7 +679,8 @@
           ]
         }
       ],
-      "level": 9
+      "level": 9,
+      "description": "Base attack bounces to up to 6 targets."
     },
     "10": {
       "placeableOnLand": true,
@@ -784,7 +793,8 @@
           "lifespan": 0
         }
       ],
-      "level": 10
+      "level": 10,
+      "description": "Storm of Arrows: Covers a large area in a deadly rain of arrows."
     },
     "11": {
       "placeableOnLand": true,
@@ -897,7 +907,8 @@
           "lifespan": 0
         }
       ],
-      "level": 11
+      "level": 11,
+      "description": "Increased attack speed."
     },
     "12": {
       "placeableOnLand": true,
@@ -1010,7 +1021,8 @@
           "lifespan": 0
         }
       ],
-      "level": 12
+      "level": 12,
+      "description": "Each arrow gets more popping power."
     },
     "13": {
       "placeableOnLand": true,
@@ -1089,7 +1101,8 @@
           ]
         }
       ],
-      "level": 13
+      "level": 13,
+      "description": "Small range increase and Rapid Shot lasts longer."
     },
     "14": {
       "placeableOnLand": true,
@@ -1189,7 +1202,8 @@
           ]
         }
       ],
-      "level": 14
+      "level": 14,
+      "description": "Arrows do quad damage to MOAB-Class Bloons."
     },
     "15": {
       "placeableOnLand": true,
@@ -1289,7 +1303,8 @@
           ]
         }
       ],
-      "level": 15
+      "level": 15,
+      "description": "Rapid Shot becomes x4 attack speed and cooldown is reduced."
     },
     "16": {
       "placeableOnLand": true,
@@ -1389,7 +1404,8 @@
           ]
         }
       ],
-      "level": 16
+      "level": 16,
+      "description": "More increased attack speed."
     },
     "17": {
       "placeableOnLand": true,
@@ -1468,7 +1484,8 @@
           ]
         }
       ],
-      "level": 17
+      "level": 17,
+      "description": "Arrows last 25% longer. Fires exploding arrows every 2nd shot."
     },
     "18": {
       "placeableOnLand": true,
@@ -1582,7 +1599,8 @@
           "lifespan": 0
         }
       ],
-      "level": 18
+      "level": 18,
+      "description": "Quincy attacks faster and Storm of Arrows is greatly enhanced."
     },
     "19": {
       "placeableOnLand": true,
@@ -1696,7 +1714,8 @@
           "lifespan": 0
         }
       ],
-      "level": 19
+      "level": 19,
+      "description": "Shoots 3 arrows at a time, and each arrow gets even more popping power."
     },
     "20": {
       "placeableOnLand": true,
@@ -1810,7 +1829,8 @@
           "lifespan": 0
         }
       ],
-      "level": 20
+      "level": 20,
+      "description": "Quincy attacks even faster. Storm of Arrows deals more damage per arrow and fires even more arrows."
     }
   }
 }

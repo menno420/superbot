@@ -150,7 +150,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Drops powerful sea mines that seek out and destroy Bloons."
     },
     "2": {
       "placeableOnLand": false,
@@ -296,7 +297,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Increased attack speed."
     },
     "3": {
       "placeableOnLand": false,
@@ -448,7 +450,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Naval Tactics: greatly increases attack speed of Brickell and nearby Monkey Subs and Monkey Buccaneers for a short time."
     },
     "4": {
       "placeableOnLand": false,
@@ -600,7 +603,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "More popping power for Sea Mines."
     },
     "5": {
       "placeableOnLand": false,
@@ -752,7 +756,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "Naval Tactics increases popping power and allows affected Monkeys to hit all Bloon types except Camo."
     },
     "6": {
       "placeableOnLand": false,
@@ -904,7 +909,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Increases the damage of Sea Mines and Pistol attacks."
     },
     "7": {
       "placeableOnLand": false,
@@ -1060,7 +1066,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Blast Chain: Sea mines fire off quicker for a short time. Brickell gains increased attack range and Camo Bloon detection."
     },
     "8": {
       "placeableOnLand": false,
@@ -1216,7 +1223,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Naval Tactics allows affected Monkeys to hit Camo Bloons. Water towers in radius gain extra pierce."
     },
     "9": {
       "placeableOnLand": false,
@@ -1372,7 +1380,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "Sea Mines do extra damage."
     },
     "10": {
       "placeableOnLand": false,
@@ -1532,7 +1541,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "Mega Mine: deploys to any water area a devastating Mine that triggers on MOABs and stuns nearby Bloons. Mega Mines last 3 rounds."
     },
     "11": {
       "placeableOnLand": false,
@@ -1692,7 +1702,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Faster deploy speed and deploy rate for Sea Mines."
     },
     "12": {
       "placeableOnLand": false,
@@ -1852,7 +1863,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Pistol attack increased speed and damage, Sea Mines increased damage."
     },
     "13": {
       "placeableOnLand": false,
@@ -2012,7 +2024,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Mega Mine cooldown reduced."
     },
     "14": {
       "placeableOnLand": false,
@@ -2172,7 +2185,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "Naval Tactics duration increased."
     },
     "15": {
       "placeableOnLand": false,
@@ -2332,7 +2346,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Enhanced Sea Mines have larger explosion, can damage Black Bloons and remove Camo property. Pistol does more damage."
     },
     "16": {
       "placeableOnLand": false,
@@ -2492,7 +2507,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Attack and Sea Mine deploy range increased slightly."
     },
     "17": {
       "placeableOnLand": false,
@@ -2652,7 +2668,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Sea Mines do greatly increased damage. Pistol does more damage."
     },
     "18": {
       "placeableOnLand": false,
@@ -2812,7 +2829,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Mega Mine cooldown reduced even further."
     },
     "19": {
       "placeableOnLand": false,
@@ -2972,7 +2990,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Naval Tactics affects all water based towers everywhere."
     },
     "20": {
       "placeableOnLand": false,
@@ -3132,7 +3151,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "Mega Mine does massively increased damage and longer stun."
     }
   }
 }

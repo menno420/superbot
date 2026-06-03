@@ -226,12 +226,19 @@ curator-supplied name is preserved, never regressed to an internal model string.
      purpose — these are **verbatim, derived** game strings that SHOULD refresh
      on every dump re-pull, unlike the curated/paraphrased paragon prose the
      sidecar exists to protect.
-   - *Follow-on (not done):* **ability descriptions** are effectively covered
-     because abilities are granted by upgrade tiers (the `AbilityModel.description`
-     field is empty in the dump). **Hero-level descriptions**
-     (`"<Hero> Level N Description"` in `textTable`, e.g. *Ezili L11 → "+50%
-     pierce to reanimated Bloons"*) are a **separate** extraction the mapper does
-     not yet do — a clean next slice.
+   - **Ability descriptions** are effectively covered because abilities are
+     granted by upgrade tiers (the `AbilityModel.description` field is empty in
+     the dump).
+   - **Hero-level descriptions** — ✅ **done (2026-06-03).** `map_hero` now reads
+     `textTable "<InternalHero> Level N Description"` per level; the same
+     `--descriptions` writer (`apply_hero_descriptions`) populates all **340**
+     committed hero levels (17 heroes × 20), names-frozen. The runtime grounds
+     them via `btd6_context_service._render_hero_descriptions` →
+     `[btd6_hero_level] <Hero> Level N: <prose> (source: BTD6 in-game
+     description)`, surfaced per named hero (all defined levels, so e.g. *Ezili
+     L11 → "+50% pierce to reanimated Bloons"* is answerable). The renderer
+     budgets the prose so the provenance suffix is never truncated by the
+     240-char fact cap.
 
 3. **Name-preservation guard** — ✅ **done (2026-06-03).** `parse_gamedata.py`
    now carries `collect_names` / `name_downgrades` / `assert_names_preserved`

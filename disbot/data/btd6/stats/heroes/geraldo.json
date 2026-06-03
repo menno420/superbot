@@ -57,7 +57,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Available Items! Shooty Turret, Stack of Old Nails, Creepy Idol, Jar of Pickles. Geraldo also has a short range magical attack."
     },
     "2": {
       "placeableOnLand": true,
@@ -110,7 +111,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "New Item! Rare Quincy Action Figure - increases in value the longer you possess it!"
     },
     "3": {
       "placeableOnLand": true,
@@ -163,7 +165,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "New Item! See Invisibility Potion - grants short term camo detection to a Monkey Tower or Hero. Geraldo's attack range increases."
     },
     "4": {
       "placeableOnLand": true,
@@ -216,7 +219,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "New Item! Tube of Amaz-o-Glue - can be placed on the track to slow Bloons down."
     },
     "5": {
       "placeableOnLand": true,
@@ -269,7 +273,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "New Item! Sharpening Stone - boosts the pierce of a Monkey Tower or Hero when doing sharp-type damage. Geraldo attacks faster."
     },
     "6": {
       "placeableOnLand": true,
@@ -322,7 +327,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "New Item! Worn Hero's Cape - converts a Tier 2 or lower Dart Monkey into a Super Monkey! These converted Super Monkeys can only be upgraded to Tier 3."
     },
     "7": {
       "placeableOnLand": true,
@@ -375,7 +381,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "New Item! Blade Trap - when a visible Bloon touches the trap, a Blade Maelstrom goes off. Geraldo's main attack increases in damage and pierce."
     },
     "8": {
       "placeableOnLand": true,
@@ -428,7 +435,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "New Item! Bottle of 'Gerry's Fire' - 2.8 million Bloonville units of pure hot sauce fire! Gives a Monkey, Hero, or minion a fiery attack for 5 rounds."
     },
     "9": {
       "placeableOnLand": true,
@@ -481,7 +489,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "New Item! Fertilizer - targeted Banana Farms increase production and get a cash bonus over several rounds. Geraldo's main attack blast radius increases."
     },
     "10": {
       "placeableOnLand": true,
@@ -534,7 +543,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "New Item! Pet Rabbit - aww what a cute widdle bunny wabbit!"
     },
     "11": {
       "placeableOnLand": true,
@@ -587,7 +597,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "New Item! Rejuv Potion - resets all Monkey Tower and Hero cooldowns, restores 50 lives. Geraldo's main attack pierce increases."
     },
     "12": {
       "placeableOnLand": true,
@@ -640,7 +651,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "New Item! Genie Bottle - summons a plasma-powered Genie Monkey that lasts for 2 rounds. Creepy Idol can now apply an occasional short stun to passing visible MOAB-class Bloons."
     },
     "13": {
       "placeableOnLand": true,
@@ -693,7 +705,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Shooty Turret fires faster with increased damage, and Stack of Old Nails do more damage."
     },
     "14": {
       "placeableOnLand": true,
@@ -746,7 +759,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "See Invisibility Potion grants additional range and lasts longer."
     },
     "15": {
       "placeableOnLand": true,
@@ -799,7 +813,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Sharpening Stone increases pierce even more, and Blade Trap creates a more powerful effect when triggered."
     },
     "16": {
       "placeableOnLand": true,
@@ -852,7 +867,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Stack of Old Nails becomes a Nail Mine, Jar of Pickles grants additional bonus damage vs. Fortified Bloons, and Gerry's Fire gains bonus burny damage and lasts 10 rounds."
     },
     "17": {
       "placeableOnLand": true,
@@ -905,7 +921,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Geraldo's main attack does more damage and Amaz-o-Glue now has a small effect on MOAB-class Bloons."
     },
     "18": {
       "placeableOnLand": true,
@@ -958,7 +975,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Genie gains a second close-target attack. When Creepy Idol expires, it covers nearby MOAB-class Bloons with a Mystical Shroud, causing damage when popped."
     },
     "19": {
       "placeableOnLand": true,
@@ -1011,7 +1029,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Geraldo's main attack greatly improved and See Invisibility Potion gains bonus damage to Camo Bloons."
     },
     "20": {
       "placeableOnLand": true,
@@ -1064,7 +1083,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "New Item! Paragon Power Totem - adds paragon power to the next paragon created. Shop restocks fully! Geraldo's main attack does more damage."
     }
   }
 }

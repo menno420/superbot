@@ -438,3 +438,32 @@ def test_deterministic_roster_reply_skips_strategy_and_specific_questions():
         is None
     )
     assert btd6_context_service.deterministic_roster_reply("dart monkey stats") is None
+
+
+# --- hero per-level game descriptions (step 4b) -----------------------------
+
+
+def test_render_hero_descriptions_grounds_every_defined_level():
+    lines = btd6_context_service._render_hero_descriptions("ezili", "Ezili")
+    # Ezili defines all 20 levels; each grounds one tagged, sourced line.
+    assert len(lines) == 20
+    assert all(ln.startswith("[btd6_hero_level] Ezili Level ") for ln in lines)
+    assert all("(source: BTD6 in-game description)" in ln for ln in lines)
+
+
+def test_render_hero_descriptions_surfaces_the_l11_showcase():
+    # The doc's marquee case: Ezili L11 grants +50% pierce to reanimated Bloons.
+    lines = btd6_context_service._render_hero_descriptions("ezili", "Ezili")
+    l11 = next(ln for ln in lines if "Level 11:" in ln)
+    assert "reanimated Bloons by 50%" in l11
+
+
+def test_render_hero_descriptions_empty_for_unknown_hero():
+    assert btd6_context_service._render_hero_descriptions("not_a_hero", "Nope") == []
+
+
+async def test_build_grounds_hero_level_descriptions():
+    ctx = await btd6_context_service.build("what does Ezili do at level 11?")
+    levels = [f for f in ctx.facts if "[btd6_hero_level] Ezili Level 11:" in f]
+    assert len(levels) == 1
+    assert "reanimated Bloons by 50%" in levels[0]
