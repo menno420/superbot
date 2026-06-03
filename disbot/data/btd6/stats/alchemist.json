@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Larger Potions",
       "cost": 250,
-      "xp": 140
+      "xp": 140,
+      "description": "Potions splash over more Bloons in a larger area."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Acidic Mixture Dip",
       "cost": 350,
-      "xp": 550
+      "xp": 550,
+      "description": "Throws a helpful potion at nearby Monkeys that allows them to pop Lead Bloons and do extra damage to Ceramic and MOAB-class Bloons. Wears off after several attacks."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Berserker Brew",
       "cost": 1400,
-      "xp": 2250
+      "xp": 2250,
+      "description": "Throws special brew to a nearby Monkey giving it increased damage, range, and attack speed briefly. Multiple Monkeys can be buffed at once."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Stronger Stimulant",
       "cost": 2850,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Extra strong berserker brew has even more powerful effect on the target. Lasts even longer."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Permanent Brew",
       "cost": 48000,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Berserker brew becomes PERMANENT on Monkeys who drink it."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Stronger Acid",
       "cost": 250,
-      "xp": 140
+      "xp": 140,
+      "description": "Acid potions dissolve Bloons faster."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Perishing Potions",
       "cost": 475,
-      "xp": 500
+      "xp": 500,
+      "description": "Attack potions deal more damage to MOAB-class Bloons and strip Fortified off smaller Bloons. Buff potions last longer."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Unstable Concoction",
       "cost": 2800,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Coats MOAB-Class in an explosive substance that causes a large explosion when they are popped."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Transforming Tonic",
       "cost": 4200,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Transformation ability: Turns Alchemist into powerful attack Monster for 20 seconds."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Total Transformation",
       "cost": 45000,
-      "xp": 28000
+      "xp": 28000,
+      "description": "Transforms five Monkeys nearby into crazy attack monsters for 20 seconds."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Faster Throwing",
       "cost": 650,
-      "xp": 145
+      "xp": 145,
+      "description": "Throws potions and attacks faster."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Acid Pool",
       "cost": 450,
-      "xp": 700
+      "xp": 700,
+      "description": "Every few attacks spills an acid pool on the track, and if no Bloons are nearby Alchemist can drench nearby track with acid."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Lead to Gold",
       "cost": 1000,
-      "xp": 2000
+      "xp": 2000,
+      "description": "Converts Lead Bloons to GOLD! Special solvents do extra damage to Lead Bloons, destroying them in one shot and generating cash."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Rubber to Gold",
       "cost": 2750,
-      "xp": 8500
+      "xp": 8500,
+      "description": "Converts all Bloons partially into gold, disabling Bloon immunity and getting more cash per pop from affected Bloons."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Bloon Master Alchemist",
       "cost": 40000,
-      "xp": 24000
+      "xp": 24000,
+      "description": "Secret shrink potion converts all affected Bloons to Red Bloons."
     }
   ],
   "tiers": {

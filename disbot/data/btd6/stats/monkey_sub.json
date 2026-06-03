@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Longer Range",
       "cost": 130,
-      "xp": 125
+      "xp": 125,
+      "description": "Increases attack range."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Advanced Intel",
       "cost": 500,
-      "xp": 750
+      "xp": 750,
+      "description": "Allows long range targeting of Bloons in radius of your other towers."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Submerge and Support",
       "cost": 700,
-      "xp": 2250
+      "xp": 2250,
+      "description": "Adds Submerge targeting option that permanently reveals Camo Bloons in its radius but does not attack while submerged."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Bloontonium Reactor",
       "cost": 2400,
-      "xp": 11000
+      "xp": 11000,
+      "description": "Submerge to detect Camo, pop Bloons and reduce ability cooldowns of nearby water-based Monkeys by 15%."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Energizer",
       "cost": 28000,
-      "xp": 33000
+      "xp": 33000,
+      "description": "Reduces ability cooldowns everywhere by 20% and by 40% for Water based Monkeys. While in radius, Heroes earn XP 50% faster."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Barbed Darts",
       "cost": 450,
-      "xp": 130
+      "xp": 130,
+      "description": "Sub's darts can pop an additional 3 Bloons. Enhances pierce of other weapons."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Heat-tipped Darts",
       "cost": 300,
-      "xp": 600
+      "xp": 600,
+      "description": "Heat tipped darts allow the Monkey Sub to pop Frozen and Lead Bloons."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Ballistic Missile",
       "cost": 1350,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Fires missiles at targets within range. Missiles fly over walls and deal extra damage to MOABs and Ceramics."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "First Strike Capability",
       "cost": 13000,
-      "xp": 20000
+      "xp": 20000,
+      "description": "First Strike Ability: A devastating missile strike targeting the largest Bloon on screen, plus splash damage."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Pre-emptive Strike",
       "cost": 29000,
-      "xp": 45000
+      "xp": 45000,
+      "description": "Automatically triggers a powerful missile attack whenever MOAB-Class Bloon spawns from the Bloon entrance."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Twin Guns",
       "cost": 450,
-      "xp": 150
+      "xp": 150,
+      "description": "Added twin gun doubles attack speed, and enhances attack speed of other weapons."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Airburst Darts",
       "cost": 1000,
-      "xp": 1000
+      "xp": 1000,
+      "description": "Airburst darts split into 3 on impact for massive popping power."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Triple Guns",
       "cost": 1100,
-      "xp": 2750
+      "xp": 2750,
+      "description": "Adds a third gun for even faster firing."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Armor Piercing Darts",
       "cost": 2500,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Special AP darts gain increased damage and popping power, plus additional damage to Fortified and MOAB class Bloons."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Sub Commander",
       "cost": 25000,
-      "xp": 25000
+      "xp": 25000,
+      "description": "Adds extra pierce and damage to Commander and all Subs in its radius."
     }
   ],
   "tiers": {

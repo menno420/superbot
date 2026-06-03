@@ -13,21 +13,24 @@
       "tier": 1,
       "name": "Rapid Fire",
       "cost": 450,
-      "xp": 160
+      "xp": 160,
+      "description": "Shoots faster than normal."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Lots More Darts",
       "cost": 550,
-      "xp": 750
+      "xp": 750,
+      "description": "Shoots 12 darts at a time."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Fighter Plane",
       "cost": 1000,
-      "xp": 2700
+      "xp": 2700,
+      "description": "Flies fast and launches anti-MOAB missiles."
     },
     {
       "path": 1,
@@ -41,77 +44,88 @@
       "tier": 5,
       "name": "Sky Shredder",
       "cost": 42500,
-      "xp": 35000
+      "xp": 35000,
+      "description": "The Bloons will wish they had never come."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Exploding Pineapple",
       "cost": 200,
-      "xp": 120
+      "xp": 120,
+      "description": "Drops pineapples to the ground that explode violently after a few seconds. Ace's explosive attacks are improved."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Spy Plane",
       "cost": 350,
-      "xp": 600
+      "xp": 600,
+      "description": "Allows Monkey Ace to hit Camo Bloons and do more damage to them."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Bomber Ace",
       "cost": 900,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Drops a line of bombs when crossing the Bloon track."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Ground Zero",
       "cost": 16000,
-      "xp": 15000
+      "xp": 15000,
+      "description": "Bomb damage increased significantly. Ground Zero Ability: Drops a huge bomb that destroys most things on screen."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Tsar Bomba",
       "cost": 26000,
-      "xp": 30000
+      "xp": 30000,
+      "description": "A very, very large bomb. Someone put a stop to this craziness!"
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Sharper Darts",
       "cost": 500,
-      "xp": 160
+      "xp": 160,
+      "description": "Darts can pop 8 Bloons each."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Centered Path",
       "cost": 550,
-      "xp": 600
+      "xp": 600,
+      "description": "New central flight path for maximum map coverage."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Neva-Miss Targeting",
       "cost": 2550,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Darts automatically seek out and pop Bloons by themselves."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Spectre",
       "cost": 23400,
-      "xp": 19000
+      "xp": 19000,
+      "description": "Rapidly fires darts and bombs, dominating most Bloon types easily."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Flying Fortress",
       "cost": 90000,
-      "xp": 45000
+      "xp": 45000,
+      "description": "This is a BIG plane."
     }
   ],
   "tiers": {

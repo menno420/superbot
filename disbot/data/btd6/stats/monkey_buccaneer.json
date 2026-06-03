@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Faster Shooting",
       "cost": 275,
-      "xp": 150
+      "xp": 150,
+      "description": "All weapons on board shoot faster."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Double Shot",
       "cost": 425,
-      "xp": 700
+      "xp": 700,
+      "description": "Increases ship weapons fired."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Destroyer",
       "cost": 3350,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Attacks super duper fast!"
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Aircraft Carrier",
       "cost": 8000,
-      "xp": 12500
+      "xp": 12500,
+      "description": "Launches waves of fighter planes that strafe their targets and fire missiles at MOAB class Bloons."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Carrier Flagship",
       "cost": 26000,
-      "xp": 37000
+      "xp": 37000,
+      "description": "Does extra damage. Can place other Monkeys on the upper decks of the ship and increases attack speed of all water based Monkeys and Monkey Aces."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Grape Shot",
       "cost": 550,
-      "xp": 200
+      "xp": 200,
+      "description": "Adds a spray of 5 sharpened grapes to the ship."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Hot Shot",
       "cost": 500,
-      "xp": 650
+      "xp": 650,
+      "description": "Burning hot grape shot can pop Lead Bloons and set Bloons on fire."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Cannon Ship",
       "cost": 900,
-      "xp": 2700
+      "xp": 2700,
+      "description": "Adds a powerful cannon that shoots out powerful bombs."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Monkey Pirates",
       "cost": 3900,
-      "xp": 13000
+      "xp": 13000,
+      "description": "Adds 2 cannons to the ship and attacks do more damage. MOAB Takedown Ability: harpoons a MOAB class Bloon and brings it down."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Pirate Lord",
       "cost": 27000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Greatly improved power and can shoot many grappling hooks at once, plundering extra cash from each MOAB-class Bloon taken down."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Long Range",
       "cost": 200,
-      "xp": 150
+      "xp": 150,
+      "description": "Much longer range, and projectiles fly faster and pierce more."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Crow's Nest",
       "cost": 350,
-      "xp": 600
+      "xp": 600,
+      "description": "Allows the ship to hit Camo Bloons."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Merchantman",
       "cost": 2400,
-      "xp": 3100
+      "xp": 3100,
+      "description": "Generates cash each round automatically, and deals more damage when over 10,000 saved cash."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Favored Trades",
       "cost": 5500,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Attacks faster and deals more damage when over 50,000 saved cash. Generates lots of money per round. Monkeys in radius have increased sell value."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Trade Empire",
       "cost": 23000,
-      "xp": 40000
+      "xp": 40000,
+      "description": "Generates more cash per round. Grants up to 20 Merchantmen bonus damage and an income bonus that increases with every Merchantman owned up to 20 times."
     }
   ],
   "tiers": {

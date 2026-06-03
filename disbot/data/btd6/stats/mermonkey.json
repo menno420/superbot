@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Trident Efficiency",
       "cost": 150,
-      "xp": 160
+      "xp": 160,
+      "description": "Acclimation to local water density allows Mermonkey to attack faster with all attacks."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Trident Swiftness",
       "cost": 250,
-      "xp": 580
+      "xp": 580,
+      "description": "Tridents are thrown faster and travel further."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Abyss Dweller",
       "cost": 1800,
-      "xp": 2800
+      "xp": 2800,
+      "description": "The Abyssal Creature awakens, angrily lashing out at Bloons with powerful tentacles and granting nearby Monkeys a small pierce increase."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Abyssal Warrior",
       "cost": 4200,
-      "xp": 11000
+      "xp": 11000,
+      "description": "Coats tridents in a thick ink that slows Bloons. Abyssal Creature grows in power, destroying most Bloons with ease and enhancing nearby Monkeys with more pierce."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Lord of the Abyss",
       "cost": 23000,
-      "xp": 68000
+      "xp": 68000,
+      "description": "The fully unleashed wrath of the Abyssal Creature brings the power of the depths to the surface, annihilating most Bloons, and greatly enhancing the pierce of nearby Monkeys."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Sharper Prongs",
       "cost": 200,
-      "xp": 150
+      "xp": 150,
+      "description": "Can pop more Bloons with each attack."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Tidal Chill",
       "cost": 225,
-      "xp": 700
+      "xp": 700,
+      "description": "Icy tridents are larger and can freeze Bloons."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Riptide Champion",
       "cost": 2000,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Mermonkey draws energy from the sea. Tridents can pop Lead Bloons, grow in power as they travel, and crash with devastating force."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Arctic Knight",
       "cost": 8000,
-      "xp": 16000
+      "xp": 16000,
+      "description": "Tridents grow in power faster. Ice Jet ability: Launches a barrage of bouncing ice balls following target priority, or targeted point."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Popseidon",
       "cost": 52000,
-      "xp": 70000
+      "xp": 70000,
+      "description": "Popseidon's Ice Jet ability draws such power that a rogue wave floods the map with supercooled water, freezing all Bloons and reclaiming the weak for the sea."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Echosense Precision",
       "cost": 200,
-      "xp": 120
+      "xp": 120,
+      "description": "Mermonkey can detect Camo Bloons and tridents seek their target."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Echosense Network",
       "cost": 280,
-      "xp": 670
+      "xp": 670,
+      "description": "Increases range for all Echosense Mermonkeys. Stacks up to 10 times."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Alluring Melody",
       "cost": 2000,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Entrances non MOAB-Class Bloons with a hypnotic tune, magically detonating all damage over time effects, disrupting Bloon movement, and strips Camo."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Symphonic Resonance",
       "cost": 7600,
-      "xp": 14500
+      "xp": 14500,
+      "description": "Hypnotic tune can affect low tier MOAB-Class Bloons. Can be set to echo from a nearby point."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "The Final Harmonic",
       "cost": 25000,
-      "xp": 52000
+      "xp": 52000,
+      "description": "This Elder can echo its irresistible tune anywhere. While devastating to Bloons, the call inspires nearby Heroes with improved range and cooldowns, and Magic Monkeys extra pierce."
     }
   ],
   "tiers": {

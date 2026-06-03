@@ -650,3 +650,54 @@ def test_audit_upgrades_aligned_by_path_tier(mod):
     mod._audit_upgrades(committed, mapped, stats, "rel")
     assert stats["cost"].diffs == 1  # only the (1,1) cost change, not a swap
     assert stats["cost"].total == 2
+
+
+# --- upgrade description overlay (step 4) -----------------------------------
+
+
+def test_apply_upgrade_descriptions_aligns_by_path_tier(mod):
+    committed = {
+        "upgrades": [
+            {"path": 1, "tier": 1, "name": "Sharp Shots", "cost": 140},
+            {"path": 3, "tier": 5, "name": "Crossbow Master", "cost": 60000},
+        ],
+    }
+    mapped = {
+        "upgrades": [  # reversed order + a description on each
+            {"path": 3, "tier": 5, "description": "Rapid long-range crossbow."},
+            {"path": 1, "tier": 1, "description": "Can pop 1 extra Bloon per shot."},
+        ],
+    }
+    changes = mod.apply_upgrade_descriptions(committed, mapped)
+    by = {(u["path"], u["tier"]): u for u in committed["upgrades"]}
+    assert by[(1, 1)]["description"] == "Can pop 1 extra Bloon per shot."
+    assert by[(3, 5)]["description"] == "Rapid long-range crossbow."
+    assert by[(1, 1)]["name"] == "Sharp Shots"  # name untouched
+    assert len(changes) == 2
+
+
+def test_apply_upgrade_descriptions_skips_unmatched_and_empty(mod):
+    committed = {
+        "upgrades": [
+            {"path": 1, "tier": 4, "name": "Operation: Dart Storm"},  # no mapped match
+            {"path": 1, "tier": 1, "name": "Sharp"},
+        ],
+    }
+    mapped = {
+        "upgrades": [
+            {"path": 1, "tier": 1, "description": ""},  # empty -> skip
+        ],
+    }
+    changes = mod.apply_upgrade_descriptions(committed, mapped)
+    assert changes == []
+    assert "description" not in committed["upgrades"][0]
+    assert "description" not in committed["upgrades"][1]
+
+
+def test_apply_upgrade_descriptions_never_downgrades_a_name(mod):
+    # A description write that somehow blanked a name must hard-stop (defence in
+    # depth — the writer only touches `description`, but the guard proves it).
+    committed = {"name": "Druid", "upgrades": []}
+    mapped = {"upgrades": []}
+    mod.apply_upgrade_descriptions(committed, mapped)  # no-op, name intact
+    assert committed["name"] == "Druid"

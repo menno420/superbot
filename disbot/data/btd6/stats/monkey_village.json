@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Bigger Radius",
       "cost": 400,
-      "xp": 160
+      "xp": 160,
+      "description": "Increases influence radius of the Village."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Jungle Drums",
       "cost": 1500,
-      "xp": 1000
+      "xp": 1000,
+      "description": "Increases attack speed of all Monkeys in the radius."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Primary Training",
       "cost": 800,
-      "xp": 2000
+      "xp": 2000,
+      "description": "All Primary Monkeys in radius get more range, pierce and projectile speed."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Primary Mentoring",
       "cost": 2500,
-      "xp": 12000
+      "xp": 12000,
+      "description": "Increased range. All Primary Monkeys in radius get tier 1 upgrades for free, increased range and reduced ability cooldowns."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Primary Expertise",
       "cost": 25000,
-      "xp": 32000
+      "xp": 32000,
+      "description": "Adds Mega Ballista attack, plus all Primary Monkeys in radius get more popping power, ability cooldowns reduced further and tier 1 and 2 upgrades for free."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Grow Blocker",
       "cost": 250,
-      "xp": 150
+      "xp": 150,
+      "description": "Prevents Regrow Bloons from working while in the radius of the Village."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Radar Scanner",
       "cost": 2000,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Allows all Monkeys in the radius to attack Camo Bloons."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Monkey Intelligence Bureau",
       "cost": 7500,
-      "xp": 3500
+      "xp": 3500,
+      "description": "The Bureau grants special Bloon popping knowledge, allowing nearby Monkeys to pop all Bloon types."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Call to Arms",
       "cost": 20000,
-      "xp": 20000
+      "xp": 20000,
+      "description": "Call to Arms Ability: Gives all Monkeys +50% attack speed and pops for a short time."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Homeland Defense",
       "cost": 40000,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Ability now increases attack speed and pops by 100% for all Monkeys for 20 seconds."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Monkey Business",
       "cost": 500,
-      "xp": 250
+      "xp": 250,
+      "description": "Provides 10% discount to all Monkeys and upgrades tier 3 or less purchased in the radius of the Village."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Monkey Commerce",
       "cost": 500,
-      "xp": 750
+      "xp": 750,
+      "description": "An additional 5% discount that can stack with up to 2 other Villages with this upgrade."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Monkey Town",
       "cost": 10000,
-      "xp": 3000
+      "xp": 3000,
+      "description": "All Monkeys within the radius of the Monkey Town get extra cash per Bloon pop."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Monkey City",
       "cost": 3000,
-      "xp": 15500
+      "xp": 15500,
+      "description": "Increases influence radius, cash generation in radius, and gives you a free Dart Monkey every round."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Monkeyopolis",
       "cost": 5000,
-      "xp": 28000
+      "xp": 28000,
+      "description": "Absorbs all nearby Banana Farms and their income, freeing up space for new Monkeys."
     }
   ],
   "tiers": {}

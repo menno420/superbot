@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Bigger Bombs",
       "cost": 250,
-      "xp": 200
+      "xp": 200,
+      "description": "Shoots larger bombs, they have a larger blast area and more popping power."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Heavy Bombs",
       "cost": 650,
-      "xp": 1000
+      "xp": 1000,
+      "description": "Heavy duty bombs can smash through 2 layers of Bloon at once and pop more Bloons."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Really Big Bombs",
       "cost": 1100,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Huge bombs deal greater damage in a large area and knock Bloons back along the path."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Bloon Impact",
       "cost": 2800,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Explosions become so violent Bloons are stunned for a short time when they are hit. Range is increased and frags are even more effective."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Bloon Crush",
       "cost": 55000,
-      "xp": 37500
+      "xp": 37500,
+      "description": "Bloon shattering explosions do massive damage and can stun MOAB-Class Bloons."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Faster Reload",
       "cost": 250,
-      "xp": 180
+      "xp": 180,
+      "description": "Reloads faster."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Missile Launcher",
       "cost": 400,
-      "xp": 650
+      "xp": 650,
+      "description": "Exchanges bombs for missiles, which fire faster, fly faster, and increase range."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "MOAB Mauler",
       "cost": 1000,
-      "xp": 2700
+      "xp": 2700,
+      "description": "MOAB Maulers do much more damage to MOAB-Class Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "MOAB Assassin",
       "cost": 3450,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Assassinate MOAB Ability: Special missile flies out and does massive damage to MOAB class Bloons. Regular attack range and MOAB-class damage also increased."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "MOAB Eliminator",
       "cost": 26000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Massive damage to MOABs and Assassinate ability deals 6x damage with a short cooldown."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Extra Range",
       "cost": 200,
-      "xp": 150
+      "xp": 150,
+      "description": "Increases attack range."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Frag Bombs",
       "cost": 300,
-      "xp": 600
+      "xp": 600,
+      "description": "Explosions throw out sharp fragments that can pop more Bloons."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Cluster Bombs",
       "cost": 700,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Throws out secondary bombs instead of sharp fragments every shot."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Recursive Cluster",
       "cost": 2500,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Every second shot the cluster bombs send out more cluster bombs for even more destruction."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Bomb Blitz",
       "cost": 30000,
-      "xp": 25000
+      "xp": 25000,
+      "description": "Deals much more damage and gains the passive Bomb Storm Ability - when lives would be lost, the Bomb Storm automatically triggers, which destroys all but the biggest of Bloons."
     }
   ],
   "tiers": {

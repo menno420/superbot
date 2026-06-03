@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Ninja Discipline",
       "cost": 350,
-      "xp": 150
+      "xp": 150,
+      "description": "Increases attack speed."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Sharp Shurikens",
       "cost": 350,
-      "xp": 550
+      "xp": 550,
+      "description": "Shurikens can pop 4 Bloons each."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Double Shot",
       "cost": 900,
-      "xp": 2000
+      "xp": 2000,
+      "description": "Throws 2 shurikens at once."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Bloonjitsu",
       "cost": 2750,
-      "xp": 16000
+      "xp": 16000,
+      "description": "Throws 5 shurikens at once!"
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Grandmaster Ninja",
       "cost": 35000,
-      "xp": 50000
+      "xp": 50000,
+      "description": "Throws incredibly fast, 8 shurikens per shot!"
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Distraction",
       "cost": 250,
-      "xp": 200
+      "xp": 200,
+      "description": "Some Bloons will become distracted and move backwards."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Counter-Espionage",
       "cost": 400,
-      "xp": 600
+      "xp": 600,
+      "description": "Ninja attacks can strip camo from Bloons they damage."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Shinobi Tactics",
       "cost": 1200,
-      "xp": 2000
+      "xp": 2000,
+      "description": "Increases attack speed and pierce of nearby Ninjas. Stacks 20 times."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Bloon Sabotage",
       "cost": 5200,
-      "xp": 14000
+      "xp": 14000,
+      "description": "Sabotage ability: Lasts 15 seconds. During the sabotage, all Bloons move at half speed."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Grand Saboteur",
       "cost": 22000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Ability duration is longer and buffs Shinobi while active, and MOAB-Class Bloons spawn with less health during the sabotage."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Seeking Shuriken",
       "cost": 300,
-      "xp": 140
+      "xp": 140,
+      "description": "Increases attack range and shurikens will seek out and pop Bloons automatically."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Caltrops",
       "cost": 450,
-      "xp": 500
+      "xp": 500,
+      "description": "Throws out spiked caltrops onto the track nearby."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Flash Bomb",
       "cost": 2250,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Combination attack! Alternates flash bombs that stun many Bloons and shuriken deal increased damage to stunned targets."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Sticky Bomb",
       "cost": 5000,
-      "xp": 15500
+      "xp": 15500,
+      "description": "Throws powerful timed charges at MOAB-Class Bloons."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Master Bomber",
       "cost": 40000,
-      "xp": 37500
+      "xp": 37500,
+      "description": "One Monkey MOAB demolition machine."
     }
   ],
   "tiers": {

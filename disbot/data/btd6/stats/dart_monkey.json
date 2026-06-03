@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Sharp Shots",
       "cost": 140,
-      "xp": 0
+      "xp": 0,
+      "description": "Can pop 1 extra Bloon per shot."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Razor Sharp Shots",
       "cost": 200,
-      "xp": 100
+      "xp": 100,
+      "description": "Can pop 2 more Bloons per shot."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Spike-o-pult",
       "cost": 320,
-      "xp": 2100
+      "xp": 2100,
+      "description": "Converts the Dart Monkey into a slower attacking Spike-o-pult that hurls large spiked balls. Each ball can pop lots of Bloons and rebounds off obstacles."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Juggernaut",
       "cost": 1800,
-      "xp": 7500
+      "xp": 7500,
+      "description": "Hurls a giant spiked ball that pops Lead and excels at crushing Ceramic and Fortified Bloons."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Ultra-Juggernaut",
       "cost": 15000,
-      "xp": 22000
+      "xp": 22000,
+      "description": "Gigantic spiked ball splits twice into 6 Juggernaut balls for even more destructive power against Ceramic, Fortified and Lead Bloons."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Quick Shots",
       "cost": 100,
-      "xp": 0
+      "xp": 0,
+      "description": "Shoots 15% faster."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Very Quick Shots",
       "cost": 190,
-      "xp": 100
+      "xp": 100,
+      "description": "Shoots 33% faster!"
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Triple Shot",
       "cost": 450,
-      "xp": 2000
+      "xp": 2000,
+      "description": "Throws 3 darts at a time instead of 1."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Super Monkey Fan Club",
       "cost": 7200,
-      "xp": 9500
+      "xp": 9500,
+      "description": "Super Monkey Fan Club Ability: Converts up to 10 nearby Dart Monkeys including itself into Super Monkeys for 15 seconds. Regular attack speed also increased."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Plasma Monkey Fan Club",
       "cost": 45000,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Elite membership of this club grants the Dart Monkeys even more power!"
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Long Range Darts",
       "cost": 90,
-      "xp": 0
+      "xp": 0,
+      "description": "Makes the Dart Monkey shoot further than normal."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Enhanced Eyesight",
       "cost": 200,
-      "xp": 100
+      "xp": 100,
+      "description": "Shoots even further and can detect Camo Bloons."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Crossbow",
       "cost": 575,
-      "xp": 1900
+      "xp": 1900,
+      "description": "Uses a long range Crossbow that can pop 3 layers of Bloon for every hit."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Sharp Shooter",
       "cost": 2050,
-      "xp": 12000
+      "xp": 12000,
+      "description": "Sharp Shooter attacks faster and does powerful Crit shots every few shots that do a lot more damage."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Crossbow Master",
       "cost": 21500,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Crossbow Master shoots really fast and devastates most Bloon types with ease."
     }
   ],
   "tiers": {

@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Full Metal Jacket",
       "cost": 350,
-      "xp": 120
+      "xp": 120,
+      "description": "Shots pop through 4 layers of Bloon, and both bullets and shrapnel can pop Lead and Frozen Bloons."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Large Calibre",
       "cost": 1300,
-      "xp": 800
+      "xp": 800,
+      "description": "Shots can pop through 7 layers of Bloon."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Deadly Precision",
       "cost": 2200,
-      "xp": 3500
+      "xp": 3500,
+      "description": "20 damage per shot, plus bonus damage to ceramics."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Maim MOAB",
       "cost": 6300,
-      "xp": 10500
+      "xp": 10500,
+      "description": "Deals much more damage and projectiles immobilize MOAB-Class Bloons for a short time."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Cripple MOAB",
       "cost": 32000,
-      "xp": 37500
+      "xp": 37500,
+      "description": "Crippled MOABs are immobilized for longer and take extra damage from all other attacks."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Night Vision Goggles",
       "cost": 250,
-      "xp": 200
+      "xp": 200,
+      "description": "Allows Sniper to detect and do an additional 2 damage to Camo Bloons."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Shrapnel Shot",
       "cost": 450,
-      "xp": 600
+      "xp": 600,
+      "description": "Damaged Bloons spray out a cone of sharp shrapnel."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Bouncing Bullet",
       "cost": 2100,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Shots bounce to new targets up to 2 times."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Supply Drop",
       "cost": 7600,
-      "xp": 11000
+      "xp": 11000,
+      "description": "Supply Drop Ability: drops a crate full of cash. Activates Supply Drop for other Snipers. Regular attack also damages Lead Bloons and increases Shrapnel popping power."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Elite Sniper",
       "cost": 12000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Supply drop gives much more cash. Grants Elite targeting prio and faster reload to all snipers."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Fast Firing",
       "cost": 450,
-      "xp": 130
+      "xp": 130,
+      "description": "Shoots faster than normal."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Even Faster Firing",
       "cost": 450,
-      "xp": 600
+      "xp": 600,
+      "description": "Shoots even faster!"
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Semi-Automatic",
       "cost": 2700,
-      "xp": 2750
+      "xp": 2750,
+      "description": "Attacks 3x as fast!"
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Full Auto Rifle",
       "cost": 4100,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Fully automatic weapon with incredible popping power."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Elite Defender",
       "cost": 14900,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Fires super fast and does more damage to MOAB-class Bloons. Fires faster the further the Bloons are along the track. Gains 4x attack speed briefly on losing lives."
     }
   ],
   "tiers": {

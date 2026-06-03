@@ -13,91 +13,104 @@
       "tier": 1,
       "name": "Guided Magic",
       "cost": 175,
-      "xp": 110
+      "xp": 110,
+      "description": "Magic shots last longer and seek out the Bloons, even behind cover."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Arcane Blast",
       "cost": 450,
-      "xp": 600
+      "xp": 600,
+      "description": "Bigger, more powerful magic blasts pop through 2 layers of Bloon."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Arcane Mastery",
       "cost": 1450,
-      "xp": 2300
+      "xp": 2300,
+      "description": "Faster attacks with increased range, damage, and popping power."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Arcane Spike",
       "cost": 10000,
-      "xp": 11000
+      "xp": 11000,
+      "description": "Faster firing magic does huge damage to most Bloon types, especially to MOABs."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Archmage",
       "cost": 32000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "A true master of magical wizardry. Attacks faster and does more damage to MOAB-class Bloons."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Fireball",
       "cost": 300,
-      "xp": 130
+      "xp": 130,
+      "description": "Every few seconds casts an explosive fireball spell."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Wall of Fire",
       "cost": 800,
-      "xp": 700
+      "xp": 700,
+      "description": "Creates a super hot wall of fire across the track to roast the Bloons as they pass."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Dragon's Breath",
       "cost": 3300,
-      "xp": 2600
+      "xp": 2600,
+      "description": "Spews endless flames at nearby Bloons and enhances Fireball and Wall of Fire."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Summon Phoenix",
       "cost": 6000,
-      "xp": 13000
+      "xp": 13000,
+      "description": "Summon Phoenix ability: Powerful phoenix wreaks Bloon havoc for 20 seconds."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Wizard Lord Phoenix",
       "cost": 50000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Wizard Lord becomes a master of the flame, turning into a super powerful Lava Phoenix for a short time."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Intense Magic",
       "cost": 300,
-      "xp": 140
+      "xp": 140,
+      "description": "More powerful magic shots move faster and can pop more Bloons."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Monkey Sense",
       "cost": 300,
-      "xp": 500
+      "xp": 500,
+      "description": "Increases range slightly and allows the Wizard to hit Camo Bloons."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Shimmer",
       "cost": 1500,
-      "xp": 2200
+      "xp": 2200,
+      "description": "Gains a dark magic attack that periodically reveals location of all nearby Camo Bloons permanently."
     },
     {
       "path": 3,
@@ -111,7 +124,8 @@
       "tier": 5,
       "name": "Prince of Darkness",
       "cost": 26500,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Reanimate even more powerful Bloon servants to obliterate the enemy and enhances all other Necromancers."
     }
   ],
   "tiers": {

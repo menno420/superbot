@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Faster Shooting",
       "cost": 150,
-      "xp": 150
+      "xp": 150,
+      "description": "Shoots tacks faster."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Even Faster Shooting",
       "cost": 300,
-      "xp": 550
+      "xp": 550,
+      "description": "Shoots tacks even faster."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Hot Shots",
       "cost": 600,
-      "xp": 2400
+      "xp": 2400,
+      "description": "Shoots superhot tacks that do extra damage and can pop Lead Bloons."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Ring of Fire",
       "cost": 3500,
-      "xp": 9500
+      "xp": 9500,
+      "description": "Damages many more Bloons with a deadly ring of flame instead of tacks."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Inferno Ring",
       "cost": 45500,
-      "xp": 32500
+      "xp": 32500,
+      "description": "Deadly inferno of flame roasts Bloons into oblivion."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Long Range Tacks",
       "cost": 100,
-      "xp": 140
+      "xp": 140,
+      "description": "Tacks fly out further than normal."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Super Range Tacks",
       "cost": 225,
-      "xp": 500
+      "xp": 500,
+      "description": "Even longer range tacks that can pop more Bloons."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Blade Shooter",
       "cost": 550,
-      "xp": 2300
+      "xp": 2300,
+      "description": "Switches tacks out for ultra-sharp, high pierce blades that can shatter frozen Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Blade Maelstrom",
       "cost": 2700,
-      "xp": 9000
+      "xp": 9000,
+      "description": "Blade Maelstrom ability: Covers the area in a storm of blades."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Super Maelstrom",
       "cost": 15000,
-      "xp": 28000
+      "xp": 28000,
+      "description": "Even more powerful Maelstrom ability and lasts longer."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "More Tacks",
       "cost": 110,
-      "xp": 150
+      "xp": 150,
+      "description": "Shoots 10 tacks instead of 8, plus increases Ring of Fire damage."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Even More Tacks",
       "cost": 110,
-      "xp": 490
+      "xp": 490,
+      "description": "Shoots out 12 tacks per shot and increases Ring of Fire damage further."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Tack Sprayer",
       "cost": 450,
-      "xp": 2450
+      "xp": 2450,
+      "description": "Sprays out 16 higher pierce tacks per volley."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Overdrive",
       "cost": 3200,
-      "xp": 8750
+      "xp": 8750,
+      "description": "Shoots incredibly fast."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "The Tack Zone",
       "cost": 20000,
-      "xp": 26500
+      "xp": 26500,
+      "description": "Many, many tacks."
     }
   ],
   "tiers": {

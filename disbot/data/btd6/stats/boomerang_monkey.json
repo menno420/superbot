@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Improved Rangs",
       "cost": 200,
-      "xp": 100
+      "xp": 100,
+      "description": "Can pop up to 8 Bloons per throw."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Glaives",
       "cost": 280,
-      "xp": 520
+      "xp": 520,
+      "description": "Throws glaives instead of boomerangs. Glaives are bigger and faster, hitting more Bloons with each throw."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Glaive Ricochet",
       "cost": 600,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Glaives will bounce from Bloon to Bloon automatically and aggressively."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "M.O.A.R Glaives",
       "cost": 2000,
-      "xp": 8500
+      "xp": 8500,
+      "description": "Multiple Object Advanced Ricochet greatly enhances the already extraordinary powers of the Glaive Ricochet Monkey."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Glaive Lord",
       "cost": 32500,
-      "xp": 37500
+      "xp": 37500,
+      "description": "Glaive Lord surrounds itself in 3 special glaives that shred anything that comes near. Glaive Lord's glaives now rip through MOAB-class Bloons, slowly tearing them apart from the inside."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Faster Throwing",
       "cost": 175,
-      "xp": 120
+      "xp": 120,
+      "description": "Throws boomerangs faster."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Faster Rangs",
       "cost": 250,
-      "xp": 550
+      "xp": 550,
+      "description": "Boomerangs fire and travel faster."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Bionic Boomerang",
       "cost": 1250,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Replaces arm with a strong bionic arm that can throw boomerangs extremely fast and do more damage to MOAB class Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Turbo Charge",
       "cost": 4200,
-      "xp": 9000
+      "xp": 9000,
+      "description": "Turbo Charge ability: Makes this Monkey attack incredibly fast for 10 seconds."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Perma Charge",
       "cost": 35000,
-      "xp": 32000
+      "xp": 32000,
+      "description": "Perma Charge has permanent super fast attack speed. Ability increases the lethality even more."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Long Range Rangs",
       "cost": 100,
-      "xp": 110
+      "xp": 110,
+      "description": "Can throw boomerangs further than normal."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Red Hot Rangs",
       "cost": 300,
-      "xp": 490
+      "xp": 490,
+      "description": "Boomerangs now pop Frozen and Lead Bloons and do more damage to all."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Kylie Boomerang",
       "cost": 1300,
-      "xp": 3000
+      "xp": 3000,
+      "description": "Throws heavy Kylie boomerangs that follow a straight path instead of curved."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "MOAB Press",
       "cost": 2700,
-      "xp": 9500
+      "xp": 9500,
+      "description": "Heavy Kylie boomerang hits MOAB-Class Bloons multiple times per throw and sometimes knocks them back a short way along the path."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "MOAB Domination",
       "cost": 50000,
-      "xp": 28000
+      "xp": 28000,
+      "description": "Special knockback kylies trigger more often and do lots of extra damage."
     }
   ],
   "tiers": {

@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Glue Soak",
       "cost": 200,
-      "xp": 150
+      "xp": 150,
+      "description": "Glue soaks through all layers of Bloon."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Corrosive Glue",
       "cost": 300,
-      "xp": 550
+      "xp": 550,
+      "description": "Glued Bloons pop one layer every few seconds."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Bloon Dissolver",
       "cost": 2000,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Can glue one additional Bloon per shot and solvents melt two layers every second."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Bloon Liquefier",
       "cost": 5000,
-      "xp": 9000
+      "xp": 9000,
+      "description": "Applies liquifying compounds that do 10 pops every second, and drops powerful acid onto the track after destroying a Bloon."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "The Bloon Solver",
       "cost": 22500,
-      "xp": 37500
+      "xp": 37500,
+      "description": "Bloons a problem? Here's the solution."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Bigger Globs",
       "cost": 100,
-      "xp": 120
+      "xp": 120,
+      "description": "Can coat 2 Bloons per shot."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Glue Splatter",
       "cost": 970,
-      "xp": 900
+      "xp": 900,
+      "description": "Splatters glue across up to 5 Bloons per shot."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Glue Hose",
       "cost": 1950,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Shoots glue 3x as fast and in a wider area!"
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Glue Strike",
       "cost": 4000,
-      "xp": 8500
+      "xp": 8500,
+      "description": "Glue Strike Ability: Glues all Bloons on screen, causing them to take more damage from all sources while it lasts."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Glue Storm",
       "cost": 16000,
-      "xp": 25000
+      "xp": 25000,
+      "description": "Glue Storm Ability: Pelts the whole screen with glue for 10 seconds."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Stickier Glue",
       "cost": 280,
-      "xp": 130
+      "xp": 130,
+      "description": "Makes glue effect last much longer."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Stronger Glue",
       "cost": 400,
-      "xp": 600
+      "xp": 600,
+      "description": "Slows down Bloons even more."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "MOAB Glue",
       "cost": 3600,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Improved glue formula allows it to stick to MOAB-Class Bloons."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Relentless Glue",
       "cost": 4000,
-      "xp": 8000
+      "xp": 8000,
+      "description": "When a glued Bloon is popped, nearby Bloons are stunned."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Super Glue",
       "cost": 24000,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Glue so strong it temporarily immobilizes all affected Bloons!"
     }
   ],
   "tiers": {

@@ -87,6 +87,9 @@ class UpgradeDetail:
     abilities: tuple[AbilitySpec, ...]
     buffs: tuple[str, ...]
     zones: tuple[str, ...]
+    # Game-authored "what this upgrade grants" prose (textTable, via the
+    # upgrade's LocsKey). Empty when the dump localizes no description.
+    description: str = ""
 
     @property
     def has_combat_stats(self) -> bool:
@@ -218,6 +221,7 @@ def get_upgrade_detail(upgrade_id: str) -> UpgradeDetail | None:
     stats = btd6_stats_service.get_tower_stats(identity.tower_id)
     tier = stats.tier(identity.code) if stats is not None else None
     game_version = stats.game_version if stats is not None else ""
+    description = _upgrade_description(stats, identity)
 
     if tier is None:
         return UpgradeDetail(
@@ -229,6 +233,7 @@ def get_upgrade_detail(upgrade_id: str) -> UpgradeDetail | None:
             abilities=(),
             buffs=(),
             zones=(),
+            description=description,
         )
 
     return UpgradeDetail(
@@ -240,7 +245,29 @@ def get_upgrade_detail(upgrade_id: str) -> UpgradeDetail | None:
         abilities=tuple(_ability(a) for a in tier.get("abilities", [])),
         buffs=tuple(_buff_text(b) for b in tier.get("buffs", [])),
         zones=tuple(_zone_text(z) for z in tier.get("zones", [])),
+        description=description,
     )
+
+
+def _upgrade_description(
+    stats: btd6_stats_service.TowerStats | None,
+    identity: UpgradeIdentity,
+) -> str:
+    """The committed upgrade's game-authored ``description``, matched by
+    ``(path, tier)`` in the tower's ``upgrades`` list. ``""`` when absent —
+    the dump doesn't localize a description for every card (2 of 375).
+    """
+    if stats is None:
+        return ""
+    for up in stats.upgrades:
+        if (
+            isinstance(up, dict)
+            and up.get("path") == identity.path_index
+            and up.get("tier") == identity.tier
+        ):
+            desc = up.get("description")
+            return desc if isinstance(desc, str) else ""
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -305,6 +332,16 @@ def render_upgrade_grounding(detail: UpgradeDetail) -> list[str]:
             f"(tier {idy.tier}, {path} path){cost}.{src}",
         ),
     ]
+
+    # Game-authored "what this grants" prose — the most useful single line, so
+    # it grounds before (and independent of) the decoded combat stats.
+    if detail.description:
+        lines.append(
+            _cap(
+                f"[btd6_upgrade] {name} — {detail.description} "
+                "(source: BTD6 in-game description)",
+            ),
+        )
 
     if not detail.has_combat_stats:
         if detail.normal is None:

@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Sentry Gun",
       "cost": 500,
-      "xp": 160
+      "xp": 160,
+      "description": "Creates temporary sentry guns and deploys them close to track anywhere in radius."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "Faster Engineering",
       "cost": 400,
-      "xp": 550
+      "xp": 550,
+      "description": "Increased efficiency allows the Engineer to produce sentries, foam and bloon traps more often."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Sprockets",
       "cost": 575,
-      "xp": 1850
+      "xp": 1850,
+      "description": "Increases sentry gun and Engineer attack speed."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Sentry Expert",
       "cost": 2500,
-      "xp": 9500
+      "xp": 9500,
+      "description": "Sentries deploy with different damage types based on your need."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Sentry Champion",
       "cost": 32000,
-      "xp": 30000
+      "xp": 30000,
+      "description": "Creates super-powerful but highly unstable sentries."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Larger Service Area",
       "cost": 250,
-      "xp": 170
+      "xp": 170,
+      "description": "Shoots further and deploys sentries in a much larger area. Sentries have longer range."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Deconstruction",
       "cost": 350,
-      "xp": 500
+      "xp": 500,
+      "description": "Nail gun and Sentry shots do extra damage to MOAB-class and Fortified Bloons."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "Cleansing Foam",
       "cost": 900,
-      "xp": 2000
+      "xp": 2000,
+      "description": "Sprays foam that removes Camo and Regrow and pops Lead Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Overclock",
       "cost": 13500,
-      "xp": 14000
+      "xp": 14000,
+      "description": "Overclock Ability: Target another tower to supercharge its attack speed for a short time."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Ultraboost",
       "cost": 72000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Ultra-Overclocked Monkeys gain a small but permanent boost every time they are overclocked."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Oversize Nails",
       "cost": 450,
-      "xp": 150
+      "xp": 150,
+      "description": "Massivization allows nails to pop 8 Bloons at once, including frozen. Also increases Foam and Sentry effectiveness."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Pin",
       "cost": 220,
-      "xp": 500
+      "xp": 500,
+      "description": "Pins Bloons in place for a short time when struck."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Double Gun",
       "cost": 450,
-      "xp": 1800
+      "xp": 1800,
+      "description": "Two guns for twice the fun."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Bloon Trap",
       "cost": 3600,
-      "xp": 11000
+      "xp": 11000,
+      "description": "Bloon trap captures Bloons until full. Select to empty full trap for cash."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "XXXL Trap",
       "cost": 45000,
-      "xp": 40000
+      "xp": 40000,
+      "description": "Huge Bloon traps can trap some of the largest Bloons in them..."
     }
   ],
   "tiers": {

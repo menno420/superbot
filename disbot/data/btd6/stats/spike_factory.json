@@ -13,105 +13,120 @@
       "tier": 1,
       "name": "Bigger Stacks",
       "cost": 800,
-      "xp": 170
+      "xp": 170,
+      "description": "Creates larger piles of spikes per shot."
     },
     {
       "path": 1,
       "tier": 2,
       "name": "White Hot Spikes",
       "cost": 600,
-      "xp": 600
+      "xp": 600,
+      "description": "Cuts through Lead Bloons and Frozen Bloons."
     },
     {
       "path": 1,
       "tier": 3,
       "name": "Spiked Balls",
       "cost": 2300,
-      "xp": 2400
+      "xp": 2400,
+      "description": "Produces spiked balls that do extra damage to Ceramic and Fortified Bloons."
     },
     {
       "path": 1,
       "tier": 4,
       "name": "Spiked Mines",
       "cost": 9500,
-      "xp": 15000
+      "xp": 15000,
+      "description": "Spiked mines explode violently when they lose all their spikes."
     },
     {
       "path": 1,
       "tier": 5,
       "name": "Super Mines",
       "cost": 125000,
-      "xp": 32500
+      "xp": 32500,
+      "description": "Creates gigantic exploding spiked mines that can wipe out almost anything."
     },
     {
       "path": 2,
       "tier": 1,
       "name": "Faster Production",
       "cost": 600,
-      "xp": 180
+      "xp": 180,
+      "description": "Rapidly increases production rate."
     },
     {
       "path": 2,
       "tier": 2,
       "name": "Even Faster Production",
       "cost": 800,
-      "xp": 650
+      "xp": 650,
+      "description": "Increases production rate even more."
     },
     {
       "path": 2,
       "tier": 3,
       "name": "MOAB SHREDR",
       "cost": 2500,
-      "xp": 2500
+      "xp": 2500,
+      "description": "Super-Hard-Rending-Engine-Driven-Razors shred MOAB-Class Bloons."
     },
     {
       "path": 2,
       "tier": 4,
       "name": "Spike Storm",
       "cost": 7000,
-      "xp": 11000
+      "xp": 11000,
+      "description": "Spike Storm ability: Shoots out a thick layer of spikes over the entire track."
     },
     {
       "path": 2,
       "tier": 5,
       "name": "Carpet of Spikes",
       "cost": 41000,
-      "xp": 35000
+      "xp": 35000,
+      "description": "Regularly sets a carpet of spikes over the whole track."
     },
     {
       "path": 3,
       "tier": 1,
       "name": "Long Reach",
       "cost": 150,
-      "xp": 120
+      "xp": 120,
+      "description": "Increases range for spike pile drops, plus piles last longer."
     },
     {
       "path": 3,
       "tier": 2,
       "name": "Smart Spikes",
       "cost": 400,
-      "xp": 550
+      "xp": 550,
+      "description": "Spike Factory gains special targeting priority and accelerated production at the start of each round."
     },
     {
       "path": 3,
       "tier": 3,
       "name": "Long Life Spikes",
       "cost": 1300,
-      "xp": 2100
+      "xp": 2100,
+      "description": "Spikes last much longer and can carry over one round."
     },
     {
       "path": 3,
       "tier": 4,
       "name": "Deadly Spikes",
       "cost": 3600,
-      "xp": 9000
+      "xp": 9000,
+      "description": "Extra deadly spikes can pop through 3 layers per spike and last another round."
     },
     {
       "path": 3,
       "tier": 5,
       "name": "Perma-Spike",
       "cost": 30000,
-      "xp": 29500
+      "xp": 29500,
+      "description": "High damage spikes become almost permanent."
     }
   ],
   "tiers": {

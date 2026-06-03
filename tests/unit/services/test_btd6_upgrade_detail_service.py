@@ -106,8 +106,12 @@ def test_render_grounding_surfaces_minion_pierce():
     # Identity line carries tower / crosspath / cost.
     assert "Prince of Darkness = Wizard Monkey 0-0-5" in blob
     assert "$26,500" in blob
-    # The Reanimate line makes "minion pierce" answerable.
-    reanimate_line = next(line for line in lines if "Reanimate" in line)
+    # The Reanimate *attack* line makes "minion pierce" answerable. (Match the
+    # attack line specifically — the textTable description line also says
+    # "Reanimate", so key off the per-attack "pierce" stat, not the word alone.)
+    reanimate_line = next(
+        line for line in lines if "Reanimate" in line and "pierce" in line
+    )
     assert "1 pierce" in reanimate_line
     assert "Undead Bloon buff" in blob
 
@@ -135,3 +139,41 @@ def test_grounding_for_query_ambiguous_and_miss():
 
     assert det.grounding_for_query("what is the best tower") == []
     assert det.grounding_for_query("") == []
+
+
+# --- game-authored textTable descriptions (step 4) --------------------------
+
+
+def test_upgrade_detail_carries_game_description():
+    # The committed stats now carry the upgrade's textTable prose, joined by
+    # (path, tier); get_upgrade_detail surfaces it.
+    d = det.get_upgrade_detail("wizard_monkey:005")
+    assert d is not None
+    assert "Reanimate" in d.description and "Necromancer" in d.description
+
+
+def test_description_grounds_with_in_game_source_label():
+    lines = det.grounding_for_query("Spike-o-pult")
+    desc = [ln for ln in lines if "in-game description" in ln]
+    assert len(desc) == 1
+    assert "Spike-o-pult" in desc[0]
+    assert "spiked ball" in desc[0].lower()
+    assert "(source: BTD6 in-game description)" in desc[0]
+    # The description grounds as its own line, distinct from the identity line.
+    assert lines[0].startswith("[btd6_upgrade] Spike-o-pult =")
+
+
+def test_description_line_present_even_with_combat_stats():
+    # Order contract: the prose line lands right after identity, before stats.
+    lines = det.grounding_for_query("Prince of Darkness")
+    assert "in-game description" in lines[1]
+
+
+def test_missing_description_grounds_no_phantom_line():
+    # 2 of 375 cards have no textTable Description (the mapper under-emits the
+    # node). The grounding must simply omit the prose line — never invent one —
+    # while still surfacing the combat stats.
+    lines = det.grounding_for_query("Operation Dart Storm")
+    assert lines  # still grounds
+    assert not any("in-game description" in ln for ln in lines)
+    assert any("main attack" in ln for ln in lines)
