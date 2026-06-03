@@ -368,14 +368,26 @@ async def test_build_grounds_paragon_roster_and_excludes_heroes():
     assert not any("paragon_roster" in f for f in specific.facts)
 
 
-async def test_build_grounds_hero_roster_for_roster_questions():
+async def test_build_grounds_hero_roster_with_costs():
     # Regression (post-#468 faithfulness guard): heroes had no roster grounding
     # (only paragons did), so "which heroes are in the game" reached the guard
-    # with zero facts and was refused. Pin the hero roster so the answer grounds.
+    # with zero facts and was refused. The roster must also carry COSTS — a
+    # name-only roster let the model's listed hero costs read as ungrounded
+    # numbers and refused the whole answer.
+    from core.runtime.ai.contracts import AITask
+    from services import btd6_grounding_service
+
     ctx = await btd6_context_service.build("which heroes are in the game?")
     blob = "\n".join(f for f in ctx.facts if "hero_roster" in f)
     assert "17 heroes" in blob
     assert "Quincy" in blob and "Gwendolin" in blob and "Benjamin" in blob
+    assert "$540" in blob  # Quincy's base cost is grounded, not just the name
+    # A realistic cost-listing answer now grounds end-to-end.
+    answer = "BTD6 has 17 heroes: Quincy ($540), Gwendolin ($725), Benjamin ($1200)."
+    verdict = btd6_grounding_service.validate_btd6_reply(
+        answer, facts=tuple(ctx.facts), task=AITask.BTD6_ANSWER,
+    )
+    assert verdict.grounded is True
     # "list all heroes" must ground too; a specific-hero question must NOT.
     listed = await btd6_context_service.build("list all heroes in btd6")
     assert any("hero_roster" in f for f in listed.facts)
@@ -383,11 +395,12 @@ async def test_build_grounds_hero_roster_for_roster_questions():
     assert not any("hero_roster" in f for f in specific.facts)
 
 
-async def test_build_grounds_tower_roster_for_roster_questions():
-    ctx = await btd6_context_service.build("list all towers")
+async def test_build_grounds_tower_roster_with_costs_and_category():
+    ctx = await btd6_context_service.build("list all primary towers")
     blob = "\n".join(f for f in ctx.facts if "tower_roster" in f)
     assert "towers" in blob
     assert "Dart Monkey" in blob
+    assert "$200" in blob and "primary" in blob  # cost + category grounded
     # A named-entity question ("dart monkey stats") must NOT dump the roster.
     specific = await btd6_context_service.build("dart monkey stats")
     assert not any("tower_roster" in f for f in specific.facts)
