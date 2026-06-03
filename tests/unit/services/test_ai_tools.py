@@ -28,6 +28,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "get_user_standing",
         "get_server_time",
         "btd6_lookup",
+        "btd6_list_roster",
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
@@ -50,6 +51,25 @@ def test_btd6_grounding_tool_allowlist_matches_registered_btd6_tools():
 
     assert ai_tools.BTD6_GROUNDING_TOOL_NAMES == btd6_registered
     assert all(name.startswith("btd6_") for name in ai_tools.BTD6_GROUNDING_TOOL_NAMES)
+
+
+async def test_btd6_list_roster_returns_full_verified_rosters():
+    """The enumeration tool returns the complete canonical roster + count so a
+    'list all heroes / paragons' question is answered, not guessed."""
+    heroes = await ai_tools._btd6_list_roster({"kind": "heroes"})
+    assert heroes["found"] is True
+    assert heroes["count"] == len(heroes["names"]) > 0
+    assert "Quincy" in heroes["names"]
+
+    paragons = await ai_tools._btd6_list_roster({"kind": "paragons"})
+    assert paragons["count"] == 13
+    assert "Apex Plasma Master" in paragons["names"]
+
+    towers = await ai_tools._btd6_list_roster({"kind": "towers"})
+    assert towers["found"] is True and towers["count"] > 0
+
+    bad = await ai_tools._btd6_list_roster({"kind": "bloons"})
+    assert bad["found"] is False
 
 
 def test_scope_gating_is_least_privilege():
@@ -282,6 +302,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "get_user_standing",
         "get_server_time",
         "btd6_lookup",
+        "btd6_list_roster",
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",

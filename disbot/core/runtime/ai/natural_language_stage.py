@@ -837,9 +837,17 @@ async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
     """
     if req.task is AITask.BTD6_ANSWER:
         from services import btd6_context_service
+        from utils.btd6.answer_embed import BTD6RenderContext
 
         ctx = await btd6_context_service.build(req.text)
-        return FeatureFactsResult(facts=tuple(ctx.facts))
+        facts = tuple(ctx.facts)
+        return FeatureFactsResult(
+            facts=facts,
+            render_context=BTD6RenderContext(
+                facts=facts,
+                game_version=_btd6_game_version(),
+            ),
+        )
     if req.task in _VIDEO_TASKS:
         from services import youtube_context_service
 
