@@ -1,19 +1,70 @@
 # BTD6 game-file extraction — plan & handoff
 
-> **Status:** MAPPER BUILT (PR 1). `scripts/parse_gamedata.py` exists and is
-> validated: anchors pass, `dart_monkey` maps byte-for-byte to the committed
-> wiki shape, and the full roster (25 towers + 17 heroes + 13 paragons) maps
-> with **zero warnings**. **PR 1 ships the foundation + closes the 11 wiki-
-> missing heroes' gap** (real, previously-absent data). The **full tower /
-> existing-hero / paragon cutover to v55 is PR 2** — it is **BLOCKED** on two
-> prerequisites (display-name localization via `textTable.json`; subtower/zone/
-> buff model mapping) plus economy-attack suppression and paragon metadata.
-> Refreshing before these land regresses trusted, human-facing names — so it is
-> deliberately not shipped yet. See "Build-session results" below.
+> **Status:** MAPPER BUILT (PR 1) + **FIDELITY AUDIT (PR 1.5, this PR).**
+> `scripts/parse_gamedata.py` maps the dump and now also self-audits
+> (`--audit`) against the committed wiki data. **PR 1.5 reframes the plan** —
+> see "Fidelity audit findings (PR 1.5)" below — because investigating the
+> cutover surfaced that the real blocker is **mapper fidelity**, not the P1/P2
+> the section further down assumed. A blind overlay would corrupt correct data.
+> The revised path is: **PR 1.5 audit foundation → PR 2 safe overlay (CLEAN/
+> DELTA fields only) → PR 3 per-entity gaps + new domains (Bosses/Powers).**
 > This is a *roadmap* doc — when it disagrees with the source, the source wins.
 >
 > **Last verified:** 2026-06-03, in-sandbox, against
 > `Btd6ModHelper/btd6-game-data` commit `a3348a89` (dumped 2026-06-02, v55.0).
+
+## Fidelity audit findings (PR 1.5) — the *real* blocker
+
+Investigating the cutover (overlay game-data numbers onto the curated wiki
+files) surfaced that the P1/P2 framing below is **secondary**. The dominant
+blocker is **mapper extraction fidelity**, now made measurable by
+`python3.10 scripts/parse_gamedata.py --dump <clone> --audit`, which maps every
+tower/hero/paragon in-memory and diffs each numeric/bool leaf against the
+committed (wiki-sourced) ground truth, classifying every field:
+
+- **CLEAN** — mapper matches the trusted data → safe to overlay.
+- **DELTA** (≤20% of leaves differ) — sparse, recognizably *genuine v55
+  changes* (e.g. `super_monkey` rate `0.06→0.05`, `desperado` range `28→80`,
+  `boomerang` pierce `30→15`) → review then overlay.
+- **SUSPECT** (>20%) — a systematic mapper/representation gap → **never overlay.**
+
+**What the audit revealed (and PR 1.5 fixes / accounts for):**
+
+1. **`DamageModifierForTagModel` is a uniform `1.0` in the v55 dump** even where
+   the wiki carries the real bonus (Ultra-Juggernaut Lead ×20, Ceramic ×8). The
+   bonus lives elsewhere in the model in a form we don't yet decode. The mapper
+   used to emit that `1.0`, which would overwrite a correct curated value with
+   "no modifier". **Fixed:** the mapper now only emits a `damageModifierFor*`
+   when it is `!= 1`. This also cleaned **130 false `…: 1` lines** from the four
+   PR-1-generated heroes that had them (captain_churchill, corvus, ezili,
+   pat_fusty) — re-emitted in this PR.
+2. **Float precision** — the wiki rounds (`0.3616`); the dump is full precision
+   (`0.36160713`). The audit compares numbers rounded to 4 dp so this
+   representation noise doesn't read as a change.
+3. **Projectile / attack ordering** — the mapper flattens sub-projectiles
+   depth-first; the wiki orders them differently, so an *index* diff reports
+   every field as a phantom swap. The audit aligns dict-lists by `name` (and
+   upgrades by `(path, tier)`); after that the whole roster is **DELTA or
+   CLEAN, nothing SUSPECT** — the mapper is far more faithful than a raw diff
+   count suggests. **Deep same-name sub-projectiles** still fall back to
+   positional and account for most residual DELTAs; PR 2's overlay must align
+   them by name **and** damage signature before writing.
+
+**Names — the part of P1 that is *unsolvable from the dump*.** Abilities carry
+`displayName` directly (100%: "Cocktail of Fire", "Firestorm"); spawned
+subtowers carry `towerModel.name` ("Phoenix"). But curated names like
+**"Arctic Wind"** (the `SlowBloonsZoneModel.name` is empty) and **"Reanimate"**
+(the attack is internally "Attack Necromancer") are **not in the dump or
+`textTable.json` at all** — they are bloonswiki-curator-supplied. So the
+overlay must *preserve* curated names, never regenerate them; `textTable` is
+**not** the missing link the P1 note below assumed.
+
+**Bottom line for PR 2 (the safe overlay):** refresh **only audit-CLEAN/DELTA
+numeric leaves** (`damage`, `range`, `rate`, `pierce`, `cost`, `xp`,
+`cooldown`, `speed`, `immuneBloonProperties`, …) onto the curated tree, align
+nested lists by name+signature, resolve ability names via `displayName`, and
+leave every curated name/description/zone/buff label untouched. The fields the
+audit flags as systematically divergent stay curated.
 
 ## Build-session results (PR 1)
 
