@@ -1,8 +1,14 @@
 # BTD6 data & stats pipeline — working doc / handoff
 
-> **Status:** towers fully done (data → service → UI → AI). Heroes and economy
-> income are the remaining pieces. This is a *working/roadmap* doc, not a binding
-> contract — when it disagrees with the source, the source wins.
+> **This documents the bloonswiki pipeline that produced the *current* committed
+> stats (the v53 reference data).** The active direction is a **game-native
+> cutover** from the BTD Mod Helper dump — bloonswiki is now a cross-check
+> reference. For current status start at **`btd6-gamedata-decode-status.md`**.
+>
+> **Status (of *this* wiki pipeline):** towers done (data → service → UI → AI);
+> heroes/economy income were its remaining pieces. This is a *working/roadmap*
+> doc, not a binding contract — when it disagrees with the source, the source
+> wins.
 >
 > Tracking PR: **#374** (`claude/youthful-wozniak-gsu57`).
 

@@ -18,10 +18,14 @@ version: a tower folder holds the base model (``<Name>.json``, tiers ``000``)
 plus one *complete* model file per crosspath state (``<Name>-NNN.json``, all
 64). Each file's ``behaviors[]`` carry ``$type``-tagged models; we walk
 ``AttackModel → weapons[] → projectile → behaviors[DamageModel/Travel…]`` and
-flatten to the same cleaned shape ``parse_bloonswiki`` produces from the wiki's
-copy of the model, so the runtime (``btd6_stats_service`` et al.) reads it
-unchanged. Heroes are one file per level (``<Hero> N.json``); paragons are a
-single flat ``<Name>-Paragon.json`` node.
+emit a cleaned shape the runtime (``btd6_stats_service`` et al.) reads — which
+is *runtime-compatible* with what ``parse_bloonswiki`` produces but **game-
+native**, not identical to it: names come from the game (``displayName`` for
+abilities, ``LocsKey`` → ``textTable`` for upgrade names/descriptions, the game
+``id`` for projectiles), sub-projectiles are grouped the game's way, and
+``subtowers[]`` are produced; ``zones[]`` / ``buffs[]`` are not yet. The runtime
+is largely name-agnostic, so this drops in. Heroes are one file per level
+(``<Hero> N.json``); paragons are a single flat ``<Name>-Paragon.json`` node.
 
 Provenance: every emitted file is stamped ``source: "BTD Mod Helper game data
 export"`` and the dump's ``_last_updated``/commit version. We commit only the
@@ -435,7 +439,70 @@ def _target_types(model: dict) -> dict:
     }
 
 
-def _map_tier(model: dict) -> dict:
+# Models that spawn a sub-tower / minion, and the field holding its TowerModel:
+# AbilityCreateTower (Phoenix, Adora's Ball of Light) / MorphTower (Druid's
+# Masqued Macaque) use ``towerModel``; CreateTower (Engineer sentries, Etienne's
+# UAV, hero totems) uses ``tower``.
+_SUBTOWER_SPAWN_TYPES = {
+    "AbilityCreateTowerModel",
+    "MorphTowerModel",
+    "CreateTowerModel",
+}
+
+
+def _find_spawn_models(node: Any) -> list[dict]:
+    """Every sub-tower-spawn model reachable from ``node``, WITHOUT descending
+    into the towers they spawn (those nested towers carry their own spawns, which
+    are not this tower's minions).
+    """
+    out: list[dict] = []
+    if isinstance(node, dict):
+        if _short_type(node) in _SUBTOWER_SPAWN_TYPES:
+            out.append(node)
+            for key, value in node.items():
+                if key not in ("towerModel", "tower"):
+                    out.extend(_find_spawn_models(value))
+            return out
+        for value in node.values():
+            out.extend(_find_spawn_models(value))
+    elif isinstance(node, list):
+        for value in node:
+            out.extend(_find_spawn_models(value))
+    return out
+
+
+def _clean_subtower_name(nested: dict) -> str:
+    display = nested.get("displayName")
+    if isinstance(display, str) and display:
+        return display
+    name = str(nested.get("name") or "Minion")
+    # strip a trailing level/index ("MasquedMacaque 10" -> "MasquedMacaque").
+    head, _, tail = name.rpartition(" ")
+    return head if head and tail.isdigit() else name
+
+
+def _subtowers(model: dict) -> list[dict]:
+    """Spawned sub-towers ("minions") as cleaned tier nodes + their lifespan.
+
+    Each nested ``TowerModel`` is mapped like any tier (its attacks/abilities),
+    so questions like "Prince of Darkness minion pierce" resolve. ``_subtower``
+    short-circuits the recursion so a minion's own (rare) spawns don't nest.
+    """
+    out: list[dict] = []
+    for spawn in _find_spawn_models(model):
+        nested = spawn.get("towerModel") or spawn.get("tower")
+        if not isinstance(nested, dict):
+            continue
+        node: dict = {"name": _clean_subtower_name(nested)}
+        node.update(_map_tier(nested, _subtower=True))
+        for src, dst in (("towerLifetime", "lifespan"), ("towerLifetimeFrames", None)):
+            if dst and src in spawn:
+                node[dst] = _num(spawn[src])
+        out.append(node)
+    return out
+
+
+def _map_tier(model: dict, _subtower: bool = False) -> dict:
     """A full tower-state model file → one cleaned tier node."""
     tier: dict = {}
     tier.update(_placement(model))
@@ -457,6 +524,10 @@ def _map_tier(model: dict) -> dict:
     abilities = _behaviors(model, "AbilityModel")
     if abilities:
         tier["abilities"] = [_clean_ability(a, i) for i, a in enumerate(abilities)]
+    if not _subtower:
+        subtowers = _subtowers(model)
+        if subtowers:
+            tier["subtowers"] = subtowers
     tier.update(_target_types(model))
     income = _income(model)
     if income:

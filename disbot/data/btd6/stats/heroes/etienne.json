@@ -281,6 +281,23 @@
           "cooldown": 55
         }
       ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -341,6 +358,23 @@
         {
           "name": "Drone Swarm",
           "cooldown": 55
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -409,6 +443,23 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -473,6 +524,23 @@
         {
           "name": "UCAV",
           "cooldown": 90
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -541,6 +609,23 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -605,6 +690,23 @@
         {
           "name": "UCAV",
           "cooldown": 75
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -673,6 +775,23 @@
           "cooldown": 75
         }
       ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -737,6 +856,23 @@
         {
           "name": "UCAV",
           "cooldown": 75
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -805,6 +941,23 @@
           "cooldown": 75
         }
       ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -869,6 +1022,23 @@
         {
           "name": "UCAV",
           "cooldown": 75
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -937,6 +1107,23 @@
           "cooldown": 75
         }
       ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -1003,6 +1190,23 @@
           "cooldown": 75
         }
       ],
+      "subtowers": [
+        {
+          "name": "UAV",
+          "placeableOnLand": false,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -1067,6 +1271,23 @@
         {
           "name": "UCAV",
           "cooldown": 75
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "UCAVPerma",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 0,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,

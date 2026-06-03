@@ -107,12 +107,50 @@ committed files become game-native:
 These are *keys for matching*, not game stats — exactly the "don't fragment what
 the bot can't reassemble" exception.
 
+## Structural completeness — subtowers / zones / buffs (the cutover gate)
+
+The curated files carry `subtowers[]`, `zones[]`, `buffs[]` (read by
+`btd6_upgrade_detail_service`). **The mapper must produce all of these before a
+towers cutover, or it silently regresses them.** Complete map of where each
+lives + status:
+
+**Subtowers** — a nested `TowerModel` (mapped like a tier). 3 spawn models cover
+the common cases; 2 mechanisms remain tower-specific.
+
+| Spawn model | Field | Examples | Status |
+|---|---|---|---|
+| `AbilityCreateTowerModel` | `towerModel` | Wizard Phoenix, Adora Ball of Light | ✅ mapped |
+| `CreateTowerModel` | `tower` | Engineer Sentry, Etienne UAV, hero totems, Super Monkey Spectre/Sun-Avatar | ✅ mapped |
+| `MorphTowerModel` (embedded) | `towerModel` | Druid Masqued Macaque | ✅ mapped |
+| `MorphTowerModel` (**named ref**) | name → other file | **Alchemist** "Transformed Monkey" | ⏳ needs file resolution |
+| `BeastHandlerPetModel` | tower-specific | **Beast Handler** beasts | ⏳ tower-specific |
+
+**Zones** (`*ZoneModel`, 12 types) — ⏳ **not yet mapped.** Headline ones to
+extract: `SlowBloonsZoneModel` (`zoneRadius`, `speedScale`→slow, `filters`),
+`DamageOverTimeZoneModel` (damage, interval), `NecromancerZoneModel`,
+`MoabShoveZoneModel`, `WindyZoneModel`; the cash/discount zones
+(`DiscountZoneModel`, `CollectCashZoneModel`, `CashbackZoneModel`) are economy.
+The zone model's own `name` is empty → resolve via the owning upgrade (`LocsKey`).
+
+**Buffs** (`*SupportModel` / `*BuffModel`, 37 types) — ⏳ **not yet mapped.** A
+common core covers most: `RangeSupportModel` (10 towers), `PierceSupportModel`
+(8), `VisibilitySupportModel` (8, camo), `RateSupportModel` (7),
+`ProjectileSpeed`/`AbilityCooldown`/`Damage` support — all share
+`multiplier`/`additive` + **`buffLocsName`** (→ `textTable` for the name). The
+long tail is tower-specific (`ObynBuffModel`, `EziliSupportModel`,
+`MonkeyFanClubModel`, `TradeEmpireBuffModel`, …) — map the common core well,
+emit a name-only node (via `buffLocsName`) for the tail.
+
 ## Cutover plan (phased)
 
 1. **Game-native names + descriptions in the mapper** — ability `displayName`,
-   upgrade `LocsKey` → name/description. ✅ **(this PR)** Generated heroes
-   re-emitted with real ability names.
-2. **Towers cutover** — adopt `parse_gamedata.py --all` output as the committed
+   upgrade `LocsKey` → name/description. ✅ Generated heroes re-emitted with real
+   ability names.
+2. **Subtowers** — common spawn models → minion stats. ✅ **(this PR)** Generated
+   heroes (obyn/etienne/ezili) re-emitted with their totems/UAV.
+3. **Zones + buffs** — map per the table above (+ the alchemist/beast subtower
+   tail). This *completes the structural map* and unblocks the cutover.
+4. **Towers cutover** — adopt `parse_gamedata.py --all` output as the committed
    tower stats (game-native ids/structure/values), do the runtime adaptations
    above, update value-pinned tests. Audit (`--audit`) gates the numbers.
 3. **Heroes + paragons cutover** + wire `textTable` descriptions into grounding

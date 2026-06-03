@@ -594,6 +594,23 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -688,6 +705,23 @@
           "cooldown": 90
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -780,6 +814,23 @@
         {
           "name": "Sacrificial Totem",
           "cooldown": 90
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -880,6 +931,23 @@
           "cooldown": 60
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -976,6 +1044,23 @@
         {
           "name": "MOAB Hex",
           "cooldown": 60
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -1076,6 +1161,23 @@
           "cooldown": 60
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1172,6 +1274,23 @@
         {
           "name": "MOAB Hex",
           "cooldown": 60
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -1272,6 +1391,23 @@
           "cooldown": 60
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1368,6 +1504,23 @@
         {
           "name": "MOAB Hex",
           "cooldown": 60
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -1468,6 +1621,23 @@
           "cooldown": 60
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1564,6 +1734,23 @@
         {
           "name": "MOAB Hex",
           "cooldown": 60
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,
@@ -1664,6 +1851,23 @@
           "cooldown": 60
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1762,6 +1966,23 @@
           "cooldown": 60
         }
       ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1858,6 +2079,23 @@
         {
           "name": "MOAB Hex",
           "cooldown": 40
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SacrificialTotem",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 78,
+          "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 6,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": false
         }
       ],
       "targetTypeFirst": true,

@@ -3,15 +3,14 @@
 > **Picking up the work?** Start at **`btd6-gamedata-decode-status.md`** (status,
 > lessons & open items), then this roadmap and `btd6-gamedata-dictionary.md`.
 
-> **Status:** MAPPER BUILT (PR 1) + **FIDELITY AUDIT (PR 1.5, this PR).**
-> `scripts/parse_gamedata.py` maps the dump and now also self-audits
-> (`--audit`) against the committed wiki data. **PR 1.5 reframes the plan** —
-> see "Fidelity audit findings (PR 1.5)" below — because investigating the
-> cutover surfaced that the real blocker is **mapper fidelity**, not the P1/P2
-> the section further down assumed. A blind overlay would corrupt correct data.
-> The revised path is: **PR 1.5 audit foundation → PR 2 safe overlay (CLEAN/
-> DELTA fields only) → PR 3 per-entity gaps + new domains (Bosses/Powers).**
-> This is a *roadmap* doc — when it disagrees with the source, the source wins.
+> **Status (historical roadmap — authoritative status is now
+> `btd6-gamedata-decode-status.md`).** The mapper (`parse_gamedata.py`) maps the
+> dump and self-audits (`--audit`). The plan was later **re-directed by the
+> maintainer to a game-native cutover** (game data leads; store the game's own
+> structure — see `btd6-gamedata-native-schema.md`), with the conservative
+> `--overlay` as an interim safe refresh. Bosses are in `Bloons/` (not a
+> separate domain). This is a *roadmap* doc — when it disagrees with the source
+> or the decode-status doc, those win.
 >
 > **Last verified:** 2026-06-03, in-sandbox, against
 > `Btd6ModHelper/btd6-game-data` commit `a3348a89` (dumped 2026-06-02, v55.0).
@@ -95,8 +94,12 @@ audit flags as systematically divergent stay curated.
   `--tower`/`--hero`/`--all`/`--validate-anchors`/`--dry-run`). Hermetic tests in
   `tests/unit/scripts/test_parse_gamedata.py` (synthetic `TowerModel` fixtures,
   no vendored dump).
-- **`dart_monkey` round-trips exactly** to the committed wiki-sourced file
-  (15 upgrades, 64 crosspath tiers, every projectile value identical).
+- `dart_monkey` maps to the **same shape** (15 upgrades, 64 crosspath tiers).
+  *(The original "every projectile value identical" claim is no longer true and
+  was always approximate — the mapper now produces v55 values, tag bonuses via
+  `damageAddative`, and a different sub-projectile flatten order; per-field
+  fidelity vs the wiki is what `--audit` measures, and it is DELTA/CLEAN, not
+  byte-identical.)*
 - **11 wiki-missing heroes now have per-level stats** (`stats/heroes/*.json`):
   admiral_brickell, benjamin, captain_churchill, corvus, etienne, ezili,
   obyn_greenfoot, pat_fusty, psi, rosalia, silas. Runtime/UI/AI pick them up
@@ -108,30 +111,43 @@ audit flags as systematically divergent stay curated.
 - `areaTypes` entries: `1=water, 2=land, 4=track` → `placeableOn*`.
 - `footprint` is a **top-level** model (not in `behaviors[]`) → `footprintRadius`.
 - Combat damage often lives on a **child** projectile, not the thrown one
-  (bomb → `CreateProjectileOnContactModel` → "Explosion"). The mapper recurses
-  `CreateProjectile*Model` and flattens children as sibling projectiles
-  (depth-capped), matching the wiki's "Projectile" + "Explosion" shape.
+  (bomb → "Explosion"). The mapper flattens children as sibling projectiles
+  (depth-capped). *(Updated since PR 1: it detects a child projectile by its own
+  `ProjectileModel` `$type` under **any** field, on both projectile and weapon
+  behaviors — not just `CreateProjectile*` — and de-dupes, after the under-
+  emission fix. See `btd6-gamedata-decode-status.md`.)*
 - Upgrades: each tower-state file lists only the upgrades reachable from it, so
   the full 15 are the **union across all crosspath files**; cost/xp/path/tier
   come from `Upgrades/<name>.json` (`path`/`tier` 0-indexed → +1).
 - Version stamp = the dump's git **commit message** (`55.0`).
 - Names: model names are `"<Class>_<Display>_"` → strip prefix + trailing `_`.
 
-**Deferred to PR 2 (the tower cutover):** three mapper features are needed
-before replacing the tower files without regression —
-1. **Subtowers / minions** — `subtowers[]` (alchemist Transformed Monkey, wizard
-   Reanimate/Prince of Darkness). Read by `btd6_upgrade_detail_service`; the
-   spawn mechanism is a separate tower model referenced from an attack — not yet
-   mapped.
-2. **Damage zones** — `zones[]` (wizard wall of fire, etc.), also read by the
-   upgrade-detail service.
-3. **Economy-tower attack suppression** — the raw model gives Banana Farm a
+**Mapper features needed before the tower cutover (current status — see
+`btd6-gamedata-decode-status.md` for the authoritative roadmap):**
+1. **Subtowers / minions** — `subtowers[]`. 🟡 **Partially done.** Nested
+   `TowerModel`s spawned via `AbilityCreateTowerModel` / `CreateTowerModel` /
+   `MorphTowerModel` (embedded) are mapped (Phoenix, Sentry, Spectre, totems,
+   UAV). Still missing: `MorphTowerModel` **named-ref** (Alchemist "Transformed
+   Monkey") and `BeastHandlerPetModel` (Beast Handler).
+2. **Damage zones** — `zones[]` (12 model types). 🔴 **Not yet mapped.**
+3. **Buffs** — `buffs[]` (37 support/buff model types). 🔴 **Not yet mapped.**
+4. **Economy-tower attack suppression** — the raw model gives Banana Farm a
    nominal `AttackModel`, so `has_combat_stats` trips true; needs a "no real
-   damage ⇒ not combat" filter so the Pro button/embed stay off.
+   damage ⇒ not combat" filter so the Pro button/embed stay off. 🔴 Not done.
    Also: tower files must carry `paragon_cost`/`paragon_name` (catalog metadata,
    not cleanly in the dump) — preserve like the paragon `cost`/`canonical`.
 
 ### ⚠ Two hard prerequisites the v55 cutover is BLOCKED on (verified PR 2 session)
+
+> **RESOLVED / RE-SCOPED — keep for history, but the claims below are outdated.**
+> **P1 (names) is solved:** abilities carry `displayName`; upgrades resolve name
+> + description via `LocsKey` → `textTable`; subtowers use the nested tower name.
+> The framing "textTable not keyed by the internal model name → must find the
+> link" was right about the symptom but the link (`displayName`/`LocsKey`)
+> exists and the mapper now uses it. **P2 is partially done:** subtowers ✅
+> (common spawn models), zones 🔴 (12 types) + buffs 🔴 (37 types) remain — and
+> the count was 12+37, not "~10". See `btd6-gamedata-decode-status.md` for the
+> authoritative status.
 
 Attempting the hero/paragon refresh surfaced two blockers that make *any*
 wholesale v55 cutover regress trusted, human-facing data unless solved first.

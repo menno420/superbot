@@ -104,7 +104,7 @@ Loose files: **`textTable.json`** (12,127 keys — every name & description),
 
 ## Open decode items (for the overlay / gaps PRs)
 
-- **Buff / zone effect models** (~30 zone + ~25 buff `$type`s, inline in tower
+- **Buff / zone effect models** (12 zone + 37 buff `$type`s, inline in tower
   models): map the headline numeric effect fields where `--audit`-stable; lean
   on the textTable description for the rest. (`btd6_upgrade_detail_service`
   already reads `buffs[]`/`zones[]`/`subtowers[]`.)

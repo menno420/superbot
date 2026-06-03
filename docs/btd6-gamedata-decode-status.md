@@ -15,25 +15,65 @@ works** (the traps we hit), and what is still un-decoded.
 > - `scripts/parse_gamedata.py --audit` — per-field fidelity vs our committed data (CLEAN / DELTA / SUSPECT).
 > - `scripts/btd6_gamedata_inventory.py` — domain/model-type/text-linkage discovery.
 
-## What this effort is (and isn't)
+## What this effort is
 
 The dump is the game's **complete** exported model, so for our needs (stats,
 names, descriptions, what an upgrade grants) **nothing is missing** — the work
-is decoding *where* each fact lives and *which field* to trust. The plan is a
-**numeric overlay onto the curated wiki files** (refresh audit-trusted numbers
-+ resolve names), **not** a wholesale rebuild (which would lose curated names
-and the wiki's clean structure). See the dictionary's "source ladder".
+is decoding *where* each fact lives and *which field* to trust, then storing it.
 
-## Done this session
+**Direction (set by the maintainer): the game data leads.** We store the game's
+**own structure** and names (`displayName` / `LocsKey` → `textTable` / projectile
+ids), with bloonswiki as a cross-check *reference* only — see
+`btd6-gamedata-native-schema.md`. The end state is a **game-native cutover**
+(adopt the mapper's output as the committed stats). The conservative
+`--overlay` (uniquely-keyed numbers only) is an *interim* safe refresh that
+keeps the curated files current without regressing them until the cutover's
+prerequisites (full subtower/zone/buff mapping) are done. *(An earlier framing
+in this doc — "numeric overlay, not a rebuild" — was superseded by that
+direction.)*
 
-| PR | What |
-|---|---|
-| **#464** (merged) | **Fidelity-audit foundation.** `parse_gamedata.py --audit` maps every tower/hero/paragon in-memory and diffs each numeric/bool leaf vs the committed wiki data, classifying each field CLEAN / DELTA / SUSPECT. Float-tolerant (4 dp), aligns dict-lists by `name` and upgrades by `(path, tier)`. |
-| **#465** (merged) | **Discovery tooling + dictionary + two mapper bug fixes**: `btd6_gamedata_inventory.py`, `docs/btd6-gamedata-dictionary.md`, the `damageAddative` fix, and the spawn-model projectile fix. |
-| **(this PR)** | **Conservative numeric overlay** (`parse_gamedata.py --overlay`, `--dry-run`): refreshes only the *unambiguously-keyed* v55 values onto the curated files — top-level cost/category, upgrade cost/xp by `(path, tier)`, and **tier-level** `range`/`footprintRadius`. Found a real wiki bug (Desperado mid-path range 28, *below* its base 60 — corrected to v55's 80) plus mermonkey xp / ace cost. **Per-projectile/ability stats are deliberately NOT overlaid** (see the naming lesson below). |
+## Completion status (verified)
 
-Two extraction bugs were found and fixed — **both the same failure mode: the
-data was always present; the mapper read the wrong field or the wrong place.**
+Only items confirmed **100% complete** are marked ✅. Anything partial is 🟡 and
+must not be treated as done. Verified against the v55 dump on 2026-06-03.
+
+### ✅ Complete & verified
+
+| Item | Where | Evidence |
+|---|---|---|
+| Fidelity-audit harness | `parse_gamedata.py --audit` | #464; tested; CLEAN/DELTA/SUSPECT per field |
+| Discovery / inventory tool | `btd6_gamedata_inventory.py` | #465; tested |
+| Data-domain dictionary (17 domains *identified*) | `btd6-gamedata-dictionary.md` | #465 |
+| **`damageAddative`** tag-bonus extraction | mapper | #465; `damageModifierFor*` now audit-CLEAN (exact wiki match) |
+| Conservative numeric **overlay engine** (uniquely-keyed only) | `parse_gamedata.py --overlay` | #466; tested. *Engine* complete; scope intentionally limited |
+| Ability names via **`displayName`** | mapper | #466; 87/87 abilities carry it |
+| Upgrade **descriptions** via `LocsKey`→`textTable` (extraction) | mapper | #466; extracts wherever the game localizes one (≈422 player upgrade cards) |
+| Core per-tier numeric extraction: base_cost, category, upgrade cost/xp/path/tier, damage, pierce, rate, range, radius, speed, lifespan, immunities→type | mapper | audit: roster is DELTA/CLEAN, nothing SUSPECT |
+
+### 🟡 Partial — NOT complete
+
+| Item | Done | Missing |
+|---|---|---|
+| **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
+| **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
+| **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
+
+### 🔴 Not started
+
+- **Zones** (`zones[]`) — **0 of 12** zone model types mapped.
+- **Buffs** (`buffs[]`) — **0 of 37** buff/support model types mapped.
+- **Economy-tower attack suppression** (Banana Farm shows a nominal AttackModel).
+- **The towers cutover itself** — blocked on zones + buffs + the subtower tail.
+- **Descriptions consumed by the runtime** — extracted into upgrade data, but
+  not yet wired into grounding / the detail UI.
+- **Bloons / bosses game-native ingestion** (still wiki-sourced).
+- **Powers / Knowledge / Rounds (all modes) / IncomeSets ingestion.**
+- **Paragon overlay / cutover** (combat in a `base` node, not `tiers`/`levels`).
+
+## Two extraction bugs found & fixed this program
+
+**Both the same failure mode: the data was always present; the mapper read the
+wrong field or the wrong place.**
 
 1. **Tag damage bonus** (Juggernaut "+20 vs Lead") read from the wrong field.
    `DamageModifierForTagModel.damageMultiplier` is a neutral `1.0` in all but 2
@@ -95,55 +135,48 @@ data was always present; the mapper read the wrong field or the wrong place.**
   *word* may still appear in description prose; the *label-on-that-object* does
   not.)
 
-## Decoded & trusted now
+## Next increments (toward the cutover)
 
-- **Towers/heroes/paragons**: base cost, category, upgrade cost/xp/path/tier,
-  per-tier/level damage, pierce, rate, range, radius, speed, lifespan,
-  `immuneBloonProperties` → damage type, and **tag damage modifiers** (via
-  `damageAddative`). Ability names via `displayName`.
-- After the fixes the whole roster is **DELTA or CLEAN — nothing SUSPECT**; the
-  DELTAs are explained: genuine v55 changes (the dump is newer than the v53
-  wiki), benign representation differences, or flattening *style*.
+The towers cutover is **gated** on completing the structural map. In order:
 
-## Not yet added / decoded (open items)
+1. **Zones** — map the 12 `*ZoneModel` types (`SlowBloonsZone` slow, `Damage
+   OverTimeZone` damage/interval, shove/windy/necromancer + economy). The zone's
+   own `name` is empty → resolve via the owning upgrade's `LocsKey`.
+2. **Buffs** — map the 37 `*SupportModel`/`*BuffModel` types: a common core
+   (`Range`/`Pierce`/`Visibility`/`Rate`/`Speed`/`Cooldown`/`Damage` support, all
+   sharing `multiplier`/`additive` + `buffLocsName`→name) covers most; tail
+   towers get a name-only node.
+3. **Subtower tail** — `MorphTowerModel` named-ref (Alchemist) + `BeastHandler
+   PetModel`.
+4. **Economy-tower attack suppression**, then the towers **cutover** (adopt
+   `--all`, runtime name-adaptations, update value-pinned tests), gated by
+   `--audit`.
 
-**Mapper / data completeness**
-- **The overlay is applied, but only for uniquely-keyed fields** (cost/category,
-  upgrade cost/xp, tier-level `range`/`footprint`). **Expanding it to
-  per-projectile/ability stats is blocked** on reconciling wiki↔dump names (a
-  `"Projectile"` ↔ `"BaseProjectile"` map, or a signature match on the
-  *un*-changed fields), or restricting to provably-unambiguous tiers (exactly
-  one attack × one projectile). Until then those stats stay curated — the audit
-  shows them mostly CLEAN, so little is lost; the DELTAs are the risky ones.
-- **Paragons not yet overlaid** (their combat lives in a `base` node, not
-  `tiers`/`levels`; metadata is curated). Easy follow-up once the per-projectile
-  story is settled.
-- **Descriptions are unused.** Wiring `textTable` upgrade/ability/hero-level
-  prose into our fixtures + AI grounding is the biggest untapped, authoritative
-  win (would answer "what does Ezili L11 do?" from the game itself).
-- **Buff / zone / subtower *effect* models** (~30 zone + ~25 buff `$type`s,
-  inline in tower models): map headline numeric effects where `--audit`-stable;
-  lean on the description for the rest. `btd6_upgrade_detail_service` already
-  reads `buffs[]`/`zones[]`/`subtowers[]`.
-- **`count`** (projectiles per shot): no single exact dump field
-  (`len(weapons)` and `emission.count` both diverge ~1/3 of tiers); stays
-  curated, never overlaid.
-- **Residual projectile flattening style**: 111 attacks still differ in
-  projectile count vs the wiki and 72 have duplicate names — the wiki
-  names/groups sub-projectiles differently. Data is present; only grouping/names
-  differ. Closing it fully means matching the wiki's naming, low priority.
-- **The 2 `damageMultiplier != 1` cases** roster-wide are not emitted (we only
-  read the additive). Negligible; revisit if a tower needs a multiplicative tag
-  bonus.
+Smaller open notes: `count` has no exact dump field (stays curated); the 2
+roster-wide `damageMultiplier != 1` tag cases aren't emitted (we read the
+additive); `textTable` descriptions are extracted but not yet *consumed* by
+grounding/UI.
 
-**New domains (in the dump, not yet ingested)**
-- **Bloons incl. bosses** from `BloonModel` (`maxHealth`/`speed`/`radius`/
-  `armourMultiplier`/children) — we currently source bloons from the wiki.
-- **Powers** (`Powers/`: Banana Farmer, Cash Drop…), **Knowledge** (Monkey
-  Knowledge), **Rounds for all modes + IncomeSets** (the dump has every mode +
-  income curves; we have only standard wiki rounds).
+## Dump areas NOT yet examined (be honest about coverage)
 
-**Freshness**
+Verified **deeply**: `Towers/` (attacks, projectiles, abilities, subtowers,
+damage modifiers, costs/upgrades) and `Upgrades/` + `textTable.json` linkage.
+
+**Not examined / only counted — do not assume:**
+- **Domains never opened:** `Achievements/`, `Artifacts/`, `BloonOverlays/`,
+  `GeraldoItems/`, `Knowledge/`, `Maps/`, `Mods/`, `Skins/`, `TrophyStoreItems/`.
+- **Only counted / single-sample (structure not mapped):** `Rounds/` (5181
+  files, counted), `IncomeSets/` (7, counted), `Powers/` (1 sampled), `Bloons/`
+  (Bloonarius sampled + the `BloonModel` field list seen via the inventory tool;
+  not all 235 bloons verified, children/immunity decode unverified).
+- **Loose files unread:** `frontierData.json`, `rogueData.json`, `resources.json`.
+  `paragonDegreeData.json` is *referenced* (we derive degrees) but never
+  cross-checked against the dump's constants.
+- **Within `Towers/` (examined domain) still undecoded:** the 12 **zone** + 37
+  **buff** model types (identified, fields not extracted); status-effect /
+  targeting / income behavior models beyond what `_map_tier` reads.
+
+## Freshness
 - Re-pull the dump per patch; re-validate anchors (Dart 200, Super 2500) and
   re-run `--audit`. Use the Steam patch-notes feed (#459) as the "time to
   re-pull" signal.
