@@ -11,7 +11,9 @@ knowing where, and which encoding to trust.
 > disagrees with the dump, the dump wins. Regenerate it per patch with
 > `scripts/btd6_gamedata_inventory.py` (overview / `--domain X` / `--text-link`)
 > and `scripts/parse_gamedata.py --audit` (numeric fidelity vs our committed
-> data). Companion docs: `btd6-game-file-extraction-plan.md` (the mapper),
+> data). Companion docs: **`btd6-gamedata-decode-status.md`** (status, lessons &
+> open items — *start there to pick up the work*),
+> `btd6-game-file-extraction-plan.md` (the mapper),
 > `btd6-data-pipeline.md` (the wiki pipeline it augments).
 
 ## TL;DR — the source ladder

@@ -1,5 +1,8 @@
 # BTD6 game-file extraction — plan & handoff
 
+> **Picking up the work?** Start at **`btd6-gamedata-decode-status.md`** (status,
+> lessons & open items), then this roadmap and `btd6-gamedata-dictionary.md`.
+
 > **Status:** MAPPER BUILT (PR 1) + **FIDELITY AUDIT (PR 1.5, this PR).**
 > `scripts/parse_gamedata.py` maps the dump and now also self-audits
 > (`--audit`) against the committed wiki data. **PR 1.5 reframes the plan** —
