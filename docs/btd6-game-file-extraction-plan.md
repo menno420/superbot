@@ -10,6 +10,69 @@
 
 ---
 
+## ⚡ UPDATE 2026-06-03 — the decryption path is SUPERSEDED (verified)
+
+A public repo, **`Btd6ModHelper/btd6-game-data`**, is the committed output of
+BTD Mod Helper's built-in **"Export Game Data"** dumper — i.e. the game's
+internal model JSON, **already decrypted** and published. This collapses the
+entire risky middle of the plan below (locate assets → UnityPy → AES key →
+IL2CPP) to **`git clone`**.
+
+**Independently verified in-sandbox (commit `a3348a89`, dumped 2026-06-02,
+message "55.0"):**
+
+- **Anchors pass exactly** (the Phase-2 gate): Dart Monkey base `cost=200.0`,
+  Super Monkey base `cost=2500.0`.
+- **Coverage is complete** — every one of the 11 wiki-missing heroes is
+  present with full per-level data (e.g. `Towers/Benjamin/Benjamin 2.json`,
+  `cost=1200.0`, full `TowerModel`, 40-48 files each), and **both** prose
+  paragons are real files: `Towers/Druid/Druid-Paragon.json` and
+  `Towers/IceMonkey/IceMonkey-Paragon.json` (cost 400).
+- **It's current** — the dump is at **v55.0**, dumped the day before this
+  note; *more current than bloonswiki*, which had 0 towers at 55.0.
+- **Layout**: `Towers/<Name>/` holds the base `<Name>.json` (tiers `[0,0,0]`),
+  one file per crosspath state `<Name>-PPP.json`, and `<Name>-Paragon.json`;
+  heroes use per-level `<Name> N.json`. Top level also has `Upgrades/`,
+  `Bloons/`, `Rounds/`, `Bosses/`, `paragonDegreeData.json`, `textTable.json`
+  (display names), etc. ~9,900 files, ~320 MB.
+- **Schema** = the raw IL2CPP `TowerModel`: top-level `cost`, `range`, `tier`,
+  `tiers`, and a `behaviors[]` list whose `$type`s include `AttackModel`
+  (combat data nested under weapon → projectile → damage/pierce).
+
+**What's resolved vs. the original open questions:** decryption (no key
+needed), scoped storage / Termux / UnityPy / rooting (no device extraction
+needed), and "untestable in sandbox" (the data is reachable here, so the
+mapper can be built and tested end-to-end in-repo).
+
+**What genuinely remains — the mapper (unchanged effort).** The hard part was
+never decryption; it's projecting the verbose, deeply-nested `TowerModel`
+onto our `stats/<id>.json` schema. Upgrade costs derive cleanly from the
+crosspath files (cost(tier) − cost(prev tier) along a path); names from
+`textTable.json`; the per-tier combat stats live in the nested `AttackModel`
+tree and are the bulk of the work.
+
+**Freshness fallback (Phase 5).** The dump refreshes only when a maintainer
+re-runs the export, not automatically on patch day. It's still strictly
+better than bloonswiki (whole-model at once, complete). For true day-one
+self-sufficiency, run the same "Export Game Data" button yourself on the PC
+build via **BTD Mod Helper + MelonLoader** — far easier than the original
+Android/UnityPy path. Use the patch-notes feed (PR #459) to know when a fresh
+pull is due, and `btd6_patch_diff.py` (PR #460) to verify the dump's currency.
+
+**Legal note (even lower risk now):** you're consuming a public dump of
+factual stat numbers, not extracting/decrypting anything yourself — same
+category as how bloonswiki sources its data. Still commit only derived stat
+values with provenance; do not vendor the 320 MB raw dump into the repo.
+
+**Revised next step:** clone `Btd6ModHelper/btd6-game-data`, build
+`scripts/parse_gamedata.py` mapping one tower (`dart_monkey`, anchor-proven)
+then one gap hero (`benjamin`) onto our schema, validate against anchors,
+wire in as a source above bloonswiki with provenance. The original
+Android-extraction sections below are kept for context but are **no longer
+the primary path**.
+
+---
+
 ## Why this exists (the problem)
 
 The BTD6 cog's structured stats (`disbot/data/btd6/stats/*.json`) come from
