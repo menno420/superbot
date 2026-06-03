@@ -125,14 +125,14 @@ the common cases; 2 mechanisms remain tower-specific.
 | `MorphTowerModel` (**named ref**) | name → other file | **Alchemist** "Transformed Monkey" | ⏳ needs file resolution |
 | `BeastHandlerPetModel` | tower-specific | **Beast Handler** beasts | ⏳ tower-specific |
 
-**Zones** (`*ZoneModel`, ~18 types) — ⏳ **not yet mapped.** Headline ones to
+**Zones** (`*ZoneModel`, 12 types) — ⏳ **not yet mapped.** Headline ones to
 extract: `SlowBloonsZoneModel` (`zoneRadius`, `speedScale`→slow, `filters`),
 `DamageOverTimeZoneModel` (damage, interval), `NecromancerZoneModel`,
 `MoabShoveZoneModel`, `WindyZoneModel`; the cash/discount zones
 (`DiscountZoneModel`, `CollectCashZoneModel`, `CashbackZoneModel`) are economy.
 The zone model's own `name` is empty → resolve via the owning upgrade (`LocsKey`).
 
-**Buffs** (`*SupportModel` / `*BuffModel`, ~40 types) — ⏳ **not yet mapped.** A
+**Buffs** (`*SupportModel` / `*BuffModel`, 37 types) — ⏳ **not yet mapped.** A
 common core covers most: `RangeSupportModel` (10 towers), `PierceSupportModel`
 (8), `VisibilitySupportModel` (8, camo), `RateSupportModel` (7),
 `ProjectileSpeed`/`AbilityCooldown`/`Damage` support — all share

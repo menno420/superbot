@@ -18,10 +18,14 @@ version: a tower folder holds the base model (``<Name>.json``, tiers ``000``)
 plus one *complete* model file per crosspath state (``<Name>-NNN.json``, all
 64). Each file's ``behaviors[]`` carry ``$type``-tagged models; we walk
 ``AttackModel → weapons[] → projectile → behaviors[DamageModel/Travel…]`` and
-flatten to the same cleaned shape ``parse_bloonswiki`` produces from the wiki's
-copy of the model, so the runtime (``btd6_stats_service`` et al.) reads it
-unchanged. Heroes are one file per level (``<Hero> N.json``); paragons are a
-single flat ``<Name>-Paragon.json`` node.
+emit a cleaned shape the runtime (``btd6_stats_service`` et al.) reads — which
+is *runtime-compatible* with what ``parse_bloonswiki`` produces but **game-
+native**, not identical to it: names come from the game (``displayName`` for
+abilities, ``LocsKey`` → ``textTable`` for upgrade names/descriptions, the game
+``id`` for projectiles), sub-projectiles are grouped the game's way, and
+``subtowers[]`` are produced; ``zones[]`` / ``buffs[]`` are not yet. The runtime
+is largely name-agnostic, so this drops in. Heroes are one file per level
+(``<Hero> N.json``); paragons are a single flat ``<Name>-Paragon.json`` node.
 
 Provenance: every emitted file is stamped ``source: "BTD Mod Helper game data
 export"`` and the dump's ``_last_updated``/commit version. We commit only the
