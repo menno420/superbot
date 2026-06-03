@@ -30,6 +30,7 @@ from typing import Any, Literal
 from services import (
     btd6_fact_store,
     btd6_fetch_service,
+    btd6_patch_service,
     btd6_source_parser,
     btd6_source_registry,
 )
@@ -265,9 +266,27 @@ async def _run_ingestion(
     except Exception as err:
         return await _fail("parse_error", "parse_exception", str(err))
 
-    # 10. Store.
+    # 10. Store. ``patch_notes`` sources own a dedicated table
+    # (btd6_patch_notes, read by btd6_knowledge_api.get_patch_notes), so
+    # route them through btd6_patch_service rather than the generic fact
+    # store. The version strings double as written_entity_keys.
+    source_kind = str(source_row.get("source_kind") or "")
     try:
-        results = await btd6_fact_store.store_facts(facts, default_source_id=source_id)
+        if source_kind == "patch_notes":
+            written_keys = tuple(
+                await btd6_patch_service.store_parsed_notes(
+                    facts,
+                    source_id=source_id,
+                ),
+            )
+            fact_count = len(written_keys)
+        else:
+            results = await btd6_fact_store.store_facts(
+                facts,
+                default_source_id=source_id,
+            )
+            fact_count = len(results)
+            written_keys = tuple(r.entity_key for r in results)
     except Exception as err:
         return await _fail("store_error", "store_exception", str(err))
 
@@ -278,7 +297,7 @@ async def _run_ingestion(
         status="ok",
         finished_at=datetime.now(timezone.utc),
         duration_ms=duration_ms,
-        fact_count=len(results),
+        fact_count=fact_count,
         raw_body_hash=fetch_result.raw_body_hash,
         status_code=fetch_result.status_code,
         path_params_hash=path_params_hash or None,
@@ -288,11 +307,11 @@ async def _run_ingestion(
     return IngestionResult(
         source_key=source_key,
         status="ok",
-        fact_count=len(results),
+        fact_count=fact_count,
         duration_ms=duration_ms,
         error_code=None,
         run_id=run_id,
-        written_entity_keys=tuple(r.entity_key for r in results),
+        written_entity_keys=written_keys,
     )
 
 

@@ -1,0 +1,99 @@
+{
+  "appnews": {
+    "appid": 960090,
+    "newsitems": [
+      {
+        "gid": "5000000000000000001",
+        "title": "Social Seasons Is Live!",
+        "url": "https://store.steampowered.com/news/app/960090/view/0001",
+        "is_external_url": true,
+        "author": "Ninja Kiwi",
+        "contents": "[h1]Social Seasons[/h1]\nTeam up and climb together!",
+        "feedlabel": "Community Announcements",
+        "date": 1777416862,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 960090
+      },
+      {
+        "gid": "5000000000000000002",
+        "title": "Bloons TD 6 - Update 54.0",
+        "url": "https://store.steampowered.com/news/app/960090/view/0002",
+        "is_external_url": true,
+        "author": "Ninja Kiwi",
+        "contents": "[h2]Tower Changes[/h2]\n[list]\n[*]Super Monkey: Sun Avatar damage 50 -> 45\n[*]Dart Monkey: base cost reduced\n[/list]\n[url=https://example.com/notes]Full notes[/url]",
+        "feedlabel": "Community Announcements",
+        "date": 1775770208,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 960090
+      },
+      {
+        "gid": "5000000000000000003",
+        "title": "PC Gamer: Bloons TD 6 Update 54.0 is huge",
+        "url": "https://www.pcgamer.com/bloons-td-6-update-54",
+        "is_external_url": true,
+        "author": "PC Gamer",
+        "contents": "An external press write-up about the 54.0 patch.",
+        "feedlabel": "PC Gamer",
+        "date": 1775780000,
+        "feedname": "PC Gamer",
+        "feed_type": 0,
+        "appid": 960090
+      },
+      {
+        "gid": "5000000000000000004",
+        "title": "Bloons TD 6 v46.0 - Update Notes!",
+        "url": "https://store.steampowered.com/news/app/960090/view/0004",
+        "is_external_url": true,
+        "author": "Ninja Kiwi",
+        "contents": "[h2]New Hero[/h2]\nGeraldo joins the fight.",
+        "feedlabel": "Community Announcements",
+        "date": 1733836800,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 960090
+      },
+      {
+        "gid": "5000000000000000005",
+        "title": "Limited Edition Plushies!",
+        "url": "https://store.steampowered.com/news/app/960090/view/0005",
+        "is_external_url": true,
+        "author": "Ninja Kiwi",
+        "contents": "Grab a Bloon plushie while stocks last.",
+        "feedlabel": "Community Announcements",
+        "date": 1771539413,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 960090
+      },
+      {
+        "gid": "5000000000000000006",
+        "title": "Bloons TD 6 - Update Notes! Version 40.0",
+        "url": "https://store.steampowered.com/news/app/960090/view/0006",
+        "is_external_url": true,
+        "author": "Ninja Kiwi",
+        "contents": "[h2]Balance[/h2]\nVarious balance changes and QoL improvements.",
+        "feedlabel": "Community Announcements",
+        "date": 1700000000,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 960090
+      },
+      {
+        "gid": "5000000000000000007",
+        "title": "Bloons TD 6 - Update 54.0 (re-share)",
+        "url": "https://store.steampowered.com/news/app/960090/view/0007",
+        "is_external_url": true,
+        "author": "Ninja Kiwi",
+        "contents": "A later re-share of the 54.0 notes; should be deduped.",
+        "feedlabel": "Community Announcements",
+        "date": 1700000001,
+        "feedname": "steam_community_announcements",
+        "feed_type": 1,
+        "appid": 960090
+      }
+    ],
+    "count": 7
+  }
+}

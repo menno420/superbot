@@ -14,7 +14,14 @@ from discord import app_commands
 
 from cogs.btd6_ops_cog import BTD6OpsCog
 
-_EXPECTED = {"readiness", "runs", "source_enable", "source_disable", "seed-data"}
+_EXPECTED = {
+    "readiness",
+    "runs",
+    "source_enable",
+    "source_disable",
+    "seed-data",
+    "announcechannel",
+}
 
 
 def _cog() -> BTD6OpsCog:

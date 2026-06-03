@@ -22,6 +22,7 @@ def test_parent_source_keys_are_pinned():
         "nk_btd6_ct",
         "nk_btd6_maps",
         "nk_btd6_challenges",
+        "steam_btd6_news",
     )
 
 
@@ -39,6 +40,8 @@ def test_source_intervals_match_parent_keys():
         assert intervals[key] == 1800
     for key in ("nk_btd6_maps", "nk_btd6_challenges"):
         assert intervals[key] == 86400
+    # Steam patch-notes feed polls every 6h.
+    assert intervals["steam_btd6_news"] == 21600
 
 
 def test_parent_source_helpers_are_sync():

@@ -68,6 +68,12 @@ _ALLOWED_PATHS = {
     # operator-tunable config with a SettingSpec, so it writes through its own
     # typed service rather than the SettingsMutationPipeline.
     _DISBOT / "services" / "btd6_ct_team_service.py",
+    # The btd6_version_announce service owns the
+    # BTD6_VERSION_ANNOUNCEMENT_CHANNEL pointer (the per-guild channel for new
+    # BTD6 version announcements, set via ``!btd6ops announcechannel``). Same
+    # rationale as btd6_ct_team_service: a runtime pointer with no SettingSpec,
+    # written through its own typed service rather than the pipeline.
+    _DISBOT / "services" / "btd6_version_announce.py",
     # Pre-existing callers — migrate to SettingsMutationPipeline in S10.
     # Each entry below corresponds to a per-subsystem S10 sub-PR
     # ("settings/<subsystem>") that will route the call through the

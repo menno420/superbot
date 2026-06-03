@@ -125,6 +125,14 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "ai.policy.role_changed",
         "ai.policy.projection_failed",
         "ai.instruction.profile_changed",
+        # ── BTD6 (services/btd6_patch_service.py) ────────────────────────
+        # Advisory. Emitted when patch-notes ingestion writes a BTD6
+        # version strictly newer than the previously-stored latest (never
+        # on the first/baseline ingest). services.btd6_version_announce
+        # subscribes and posts to each guild's configured announcement
+        # channel; subscriber failure is logged + swallowed. Payload:
+        # version, previous_version, title, url, published_at.
+        "btd6.version_detected",
         # ── Future cog-emitted facts (uncomment when first emitter lands):
         # "economy.daily_claimed",
         # "mining.harvested",

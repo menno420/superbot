@@ -50,7 +50,12 @@ from cogs.btd6._reply import reply_ephemeral
 from cogs.btd6.stage import STAGE_NAME as BTD6_STAGE_NAME
 from core.runtime import message_pipeline, tasks
 from core.runtime.interaction_helpers import safe_defer, safe_followup
-from services import btd6_ai_service, btd6_data_service, btd6_ingestion_supervisor
+from services import (
+    btd6_ai_service,
+    btd6_data_service,
+    btd6_ingestion_supervisor,
+    btd6_version_announce,
+)
 from views.btd6.panel import BTD6PanelView, build_btd6_panel_embed
 
 logger = logging.getLogger("bot")
@@ -81,6 +86,11 @@ class BTD6Cog(commands.Cog):
 
         register_schemas()
         message_pipeline.unregister(BTD6_STAGE_NAME)
+
+        # Subscribe the version-announcement service to btd6.version_detected.
+        # Subscribe-once (idempotent across reloads), and wired regardless of
+        # data availability so an enabled patch-notes source can still notify.
+        btd6_version_announce.setup(self.bot)
 
         # Warm the deterministic-data cache before starting ingestion. This is
         # a no-op for the local file provider; for the cloud provider it

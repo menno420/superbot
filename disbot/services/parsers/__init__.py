@@ -21,6 +21,7 @@ from services.parsers import (  # noqa: F401 — register-on-import side effects
     ninjakiwi_maps,
     ninjakiwi_odyssey,
     ninjakiwi_races,
+    steam_btd6_news,
 )
 
 # Implemented sub-keys (parsers serve multiple source_keys per domain).
