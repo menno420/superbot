@@ -166,11 +166,17 @@ def test_loads_quincy_hero_stats():
     assert stats.level_codes()[-1] == "20"
 
 
-def test_hero_without_module_returns_none():
-    # Obyn attacks in-game, but bloonswiki has no stats module for him, so
-    # there is no committed file — must degrade to None, not a crash.
-    assert svc.get_hero_stats("obyn_greenfoot") is None
+def test_unknown_hero_returns_none():
+    # A hero id with no committed stats file degrades to None, not a crash.
     assert svc.get_hero_stats("does_not_exist") is None
+
+
+def test_game_data_closed_the_obyn_stats_gap():
+    # Obyn attacks in-game but bloonswiki never had a stats module for him; the
+    # BTD Mod Helper game-data export does, so he now has per-level stats.
+    stats = svc.get_hero_stats("obyn_greenfoot")
+    assert stats is not None
+    assert stats.level("1") is not None
 
 
 def test_hero_level_progression_uses_normal_stats():

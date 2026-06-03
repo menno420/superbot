@@ -1,13 +1,63 @@
 # BTD6 game-file extraction — plan & handoff
 
-> **Status:** VERIFIED, ready to build the **mapper**. The data source is
-> confirmed reachable and correct (see below); no decryption, device, or
-> tablet work is needed. The next session's job is to write
-> `scripts/parse_gamedata.py`. This is a *roadmap* doc — when it disagrees
-> with the source, the source wins.
+> **Status:** MAPPER BUILT (PR 1). `scripts/parse_gamedata.py` exists and is
+> validated: anchors pass, `dart_monkey` maps byte-for-byte to the committed
+> wiki shape, and the full roster (25 towers + 17 heroes + 13 paragons) maps
+> with **zero warnings**. **PR 1 ships the foundation + closes the 11 wiki-
+> missing heroes' gap** (real, previously-absent data). The **full tower /
+> existing-hero / paragon cutover to v55 is PR 2** — it needs three more mapper
+> features (subtowers, damage zones, economy-tower attack suppression) and
+> preservation of per-tower paragon metadata. See "Build-session results" below.
+> This is a *roadmap* doc — when it disagrees with the source, the source wins.
 >
 > **Last verified:** 2026-06-03, in-sandbox, against
 > `Btd6ModHelper/btd6-game-data` commit `a3348a89` (dumped 2026-06-02, v55.0).
+
+## Build-session results (PR 1)
+
+**Done & validated in-sandbox:**
+- `scripts/parse_gamedata.py` — clones-agnostic mapper (`--dump <clone>`,
+  `--tower`/`--hero`/`--all`/`--validate-anchors`/`--dry-run`). Hermetic tests in
+  `tests/unit/scripts/test_parse_gamedata.py` (synthetic `TowerModel` fixtures,
+  no vendored dump).
+- **`dart_monkey` round-trips exactly** to the committed wiki-sourced file
+  (15 upgrades, 64 crosspath tiers, every projectile value identical).
+- **11 wiki-missing heroes now have per-level stats** (`stats/heroes/*.json`):
+  admiral_brickell, benjamin, captain_churchill, corvus, etienne, ezili,
+  obyn_greenfoot, pat_fusty, psi, rosalia, silas. Runtime/UI/AI pick them up
+  with no code change (file-presence driven). Tests that asserted the old gap
+  (obyn "no module") were flipped to assert the closed gap.
+
+**Verified source→target derivations (mapper internals):**
+- `towerSet` is a **bit-flag** enum: `1=primary, 2=military, 4=magic, 8=support`.
+- `areaTypes` entries: `1=water, 2=land, 4=track` → `placeableOn*`.
+- `footprint` is a **top-level** model (not in `behaviors[]`) → `footprintRadius`.
+- Combat damage often lives on a **child** projectile, not the thrown one
+  (bomb → `CreateProjectileOnContactModel` → "Explosion"). The mapper recurses
+  `CreateProjectile*Model` and flattens children as sibling projectiles
+  (depth-capped), matching the wiki's "Projectile" + "Explosion" shape.
+- Upgrades: each tower-state file lists only the upgrades reachable from it, so
+  the full 15 are the **union across all crosspath files**; cost/xp/path/tier
+  come from `Upgrades/<name>.json` (`path`/`tier` 0-indexed → +1).
+- Version stamp = the dump's git **commit message** (`55.0`).
+- Names: model names are `"<Class>_<Display>_"` → strip prefix + trailing `_`.
+
+**Deferred to PR 2 (the tower cutover):** three mapper features are needed
+before replacing the tower files without regression —
+1. **Subtowers / minions** — `subtowers[]` (alchemist Transformed Monkey, wizard
+   Reanimate/Prince of Darkness). Read by `btd6_upgrade_detail_service`; the
+   spawn mechanism is a separate tower model referenced from an attack — not yet
+   mapped.
+2. **Damage zones** — `zones[]` (wizard wall of fire, etc.), also read by the
+   upgrade-detail service.
+3. **Economy-tower attack suppression** — the raw model gives Banana Farm a
+   nominal `AttackModel`, so `has_combat_stats` trips true; needs a "no real
+   damage ⇒ not combat" filter so the Pro button/embed stay off.
+   Also: tower files must carry `paragon_cost`/`paragon_name` (catalog metadata,
+   not cleanly in the dump) — preserve like the paragon `cost`/`canonical`.
+PR 2 then runs `--all`, replaces every tower + refreshes the 6 module heroes and
+13 paragons (incl. upgrading the 2 prose paragons to module-exact), and updates
+the ~25 value-pinned tests for the v55 numbers.
 
 ---
 

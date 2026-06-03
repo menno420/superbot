@@ -42,11 +42,19 @@ def test_pro_button_added_for_hero_with_module():
     assert any(isinstance(c, discord.ui.Button) for c in view.children)
 
 
-def test_pro_button_skipped_for_hero_without_module():
-    # Obyn attacks in-game but has no bloonswiki stats module — no Pro button.
+def test_pro_button_skipped_for_hero_without_stats():
+    # A hero with no committed stats file (unknown id) gets no Pro button.
+    view = discord.ui.View()
+    attach_hero_pro_stats_button(view, "does_not_exist", detail_rebuilder=None)  # type: ignore[arg-type]
+    assert [c for c in view.children if isinstance(c, discord.ui.Button)] == []
+
+
+def test_pro_button_added_for_game_data_hero():
+    # Obyn had no bloonswiki module; the game-data export gives him one, so the
+    # Pro button now attaches just like any module hero.
     view = discord.ui.View()
     attach_hero_pro_stats_button(view, "obyn_greenfoot", detail_rebuilder=None)  # type: ignore[arg-type]
-    assert [c for c in view.children if isinstance(c, discord.ui.Button)] == []
+    assert any(isinstance(c, discord.ui.Button) for c in view.children)
 
 
 def test_detail_embed_includes_level1_stats_for_module_hero():
@@ -56,6 +64,6 @@ def test_detail_embed_includes_level1_stats_for_module_hero():
     assert "pierce" in field.value.lower()
 
 
-def test_detail_embed_omits_stats_field_for_prose_only_hero():
-    embed = build_hero_detail_embed(_detail_vm("obyn_greenfoot"))
+def test_detail_embed_omits_stats_field_for_hero_without_stats():
+    embed = build_hero_detail_embed(_detail_vm("does_not_exist"))
     assert not [f for f in embed.fields if "Level 1 stats" in f.name]
