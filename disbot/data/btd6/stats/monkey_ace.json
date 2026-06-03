@@ -1,8 +1,8 @@
 {
   "tower_id": "monkey_ace",
   "canonical": "Monkey Ace",
-  "game_version": "54.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.0",
+  "source": "bloonswiki.com (CC BY-NC-SA); BTD Mod Helper game data v55.0 (numeric overlay)",
   "base_cost": 800,
   "category": "military",
   "paragon_cost": 900000,
@@ -110,7 +110,7 @@
       "path": 3,
       "tier": 5,
       "name": "Flying Fortress",
-      "cost": 85000,
+      "cost": 90000,
       "xp": 45000
     }
   ],

@@ -282,6 +282,77 @@ def test_validate_anchors(mod, tmp_path):
     assert mod.validate_anchors(dump)
 
 
+def test_overlay_refreshes_tier_range_but_not_projectile_stats(mod):
+    # The safety property: tier-level scalars refresh, per-projectile stats do
+    # NOT — projectile names aren't reliable keys across wiki/dump, so writing
+    # them by name would scramble values (Druid base dart vs storm).
+    committed = {
+        "base_cost": 200,
+        "category": "primary",
+        "game_version": "54.0",
+        "source": "bloonswiki.com",
+        "tiers": {
+            "030": {
+                "range": 28,
+                "attacks": [
+                    {"name": "Attack", "projectiles": [{"name": "Projectile", "damage": 1, "pierce": 2}]},
+                ],
+            },
+        },
+    }
+    mapped = {
+        "base_cost": 200,
+        "category": "primary",
+        "tiers": {
+            "030": {
+                "range": 80,
+                "attacks": [
+                    {"name": "Attack", "projectiles": [{"name": "BaseProjectile", "damage": 100, "pierce": 200}]},
+                ],
+            },
+        },
+    }
+    changes = mod.overlay_payload(committed, mapped, "55.0")
+    assert committed["tiers"]["030"]["range"] == 80  # tier scalar refreshed
+    proj = committed["tiers"]["030"]["attacks"][0]["projectiles"][0]
+    assert proj["damage"] == 1 and proj["pierce"] == 2  # projectile LEFT CURATED
+    assert committed["game_version"] == "55.0"
+    assert "Mod Helper" in committed["source"]
+    assert any("range" in c for c in changes)
+
+
+def test_overlay_refreshes_upgrade_cost_xp_keyed_by_path_tier(mod):
+    committed = {
+        "tiers": {},
+        "upgrades": [
+            {"path": 3, "tier": 5, "name": "Flying Fortress", "cost": 85000, "xp": 0},
+            {"path": 1, "tier": 1, "name": "Sharp", "cost": 100, "xp": 50},
+        ],
+    }
+    mapped = {
+        "tiers": {},
+        "upgrades": [  # different order — must align by (path, tier), not index
+            {"path": 1, "tier": 1, "cost": 100, "xp": 40},
+            {"path": 3, "tier": 5, "cost": 90000, "xp": 0},
+        ],
+    }
+    mod.overlay_payload(committed, mapped, "55.0")
+
+    def up(path, tier):
+        return next(u for u in committed["upgrades"] if (u["path"], u["tier"]) == (path, tier))
+
+    assert up(3, 5)["cost"] == 90000  # refreshed despite reversed order
+    assert up(1, 1)["xp"] == 40
+    assert up(3, 5)["name"] == "Flying Fortress"  # curated name preserved
+
+
+def test_overlay_no_change_leaves_version_and_source(mod):
+    committed = {"base_cost": 200, "category": "primary", "game_version": "54.0", "source": "w", "tiers": {}}
+    changes = mod.overlay_payload(committed, {"base_cost": 200, "category": "primary", "tiers": {}}, "55.0")
+    assert changes == []
+    assert committed["game_version"] == "54.0"  # untouched when nothing moved
+
+
 def test_pascal_name_mapping(mod):
     assert mod._pascal("Captain Churchill") == "CaptainChurchill"
     assert mod._pascal("Dart Monkey") == "DartMonkey"
