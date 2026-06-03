@@ -64,7 +64,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Haunted Bloons are weakened and explode when popped, adding Mana to the Mana Pool. The Spirit attacks Bloons anywhere on the map at Corvus' command. Learns: Spear, Nourishment, Repel."
     },
     "2": {
       "placeableOnLand": true,
@@ -124,7 +125,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "The Spirit grows in size and can hit more Bloons."
     },
     "3": {
       "placeableOnLand": true,
@@ -190,7 +192,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Soul Harvest ability: Harvests nearby Bloons in an instant. Learns: Echo, Haste."
     },
     "4": {
       "placeableOnLand": true,
@@ -256,7 +259,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "The Spirit does more damage. Learns: Soul Barrier, Trample"
     },
     "5": {
       "placeableOnLand": true,
@@ -322,7 +326,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "Learns: Frostbound, Aggression, Vision"
     },
     "6": {
       "placeableOnLand": true,
@@ -388,7 +393,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Increased damage when Haunted Bloons explode. The Spirit does more damage. Learns: Ember"
     },
     "7": {
       "placeableOnLand": true,
@@ -540,7 +546,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Spirit Walk ability: Corvus can shift to a valid location. Learns: Ancestral Might, Malevolence"
     },
     "8": {
       "placeableOnLand": true,
@@ -692,7 +699,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Spiritual Balance means the Mana Pool fills faster when it is nearly empty. Haste gives increased speed and agility. Learns: Storm"
     },
     "9": {
       "placeableOnLand": true,
@@ -844,7 +852,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "The Spirit's base damage increased and does extra damage to MOABs. Frostbound can hit MOABs. Soul Barrier can block more Bloons from leaking."
     },
     "10": {
       "placeableOnLand": true,
@@ -1000,7 +1009,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "Dark Ritual ability: Harvests a huge number of Bloons near Corvus. Trample does more damage to more Bloons. Learns: Recovery"
     },
     "11": {
       "placeableOnLand": true,
@@ -1156,7 +1166,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Spiritual Attunement means the Spirit grows in power as the Mana Pool fills. Soul Harvest does more damage, and extra damage to Ceramic Bloons. Frostbound gains permafrost."
     },
     "12": {
       "placeableOnLand": true,
@@ -1312,7 +1323,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Increased damage when Haunted Bloons explode. Spear does more damage. Repel can push MOABs."
     },
     "13": {
       "placeableOnLand": true,
@@ -1468,7 +1480,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Ancestral Might does more damage. Learns: Overload"
     },
     "14": {
       "placeableOnLand": true,
@@ -1624,7 +1637,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "The Spirit does more damage to Bloons. Malevolence does more damage and extra damage to Ceramic Bloons."
     },
     "15": {
       "placeableOnLand": true,
@@ -1780,7 +1794,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Ember's fire drops more often and does more damage. Nourishment gives more XP per Mana."
     },
     "16": {
       "placeableOnLand": true,
@@ -1936,7 +1951,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Corvus has increased range. The Spirit does more damage to Bloons."
     },
     "17": {
       "placeableOnLand": true,
@@ -2092,7 +2108,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Haunted Bloons are weaker, and explosions do more damage. Soul Barrier can block more Bloons from leaking."
     },
     "18": {
       "placeableOnLand": true,
@@ -2248,7 +2265,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Storm's energy blades hit more Bloons and do more damage. Spear does more damage."
     },
     "19": {
       "placeableOnLand": true,
@@ -2404,7 +2422,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Corvus can Haunt MOAB-Class Bloons. Trample does more damage to Bloons."
     },
     "20": {
       "placeableOnLand": true,
@@ -2560,7 +2579,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "The Spirit base damage increases and does extra damage to MOABs. Ancestral Might does more damage. Overload does more damage."
     }
   }
 }

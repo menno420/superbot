@@ -82,7 +82,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Pat slams Bloons into the ground."
     },
     "2": {
       "placeableOnLand": true,
@@ -160,7 +161,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Increase radius of slam attack."
     },
     "3": {
       "placeableOnLand": true,
@@ -244,7 +246,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Rallying Roar: All nearby Monkeys can pop +1 layer for a short time."
     },
     "4": {
       "placeableOnLand": true,
@@ -328,7 +331,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "Increased attack speed."
     },
     "5": {
       "placeableOnLand": true,
@@ -429,7 +433,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "Sometimes does a powerful slap that pushes Bloons away from the exit."
     },
     "6": {
       "placeableOnLand": true,
@@ -534,7 +539,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Bloons struck by Pat are stunned for a short time."
     },
     "7": {
       "placeableOnLand": true,
@@ -639,7 +645,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Pat has increased pierce and deals more damage."
     },
     "8": {
       "placeableOnLand": true,
@@ -744,7 +751,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Increased attack speed."
     },
     "9": {
       "placeableOnLand": true,
@@ -849,7 +857,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "Increased attack range, and Rallying Roar further increases damage of rallied Monkeys."
     },
     "10": {
       "placeableOnLand": true,
@@ -958,7 +967,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "Big Squeeze: Grabs a MOAB, BFB, DDT (if visible), or ZOMG and crushes it to bits over 5 seconds."
     },
     "11": {
       "placeableOnLand": true,
@@ -1067,7 +1077,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Attack pops more layers."
     },
     "12": {
       "placeableOnLand": true,
@@ -1176,7 +1187,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Increased attack speed."
     },
     "13": {
       "placeableOnLand": true,
@@ -1285,7 +1297,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Attack stuns Bloons for longer and can stun MOAB-Class Bloons very briefly."
     },
     "14": {
       "placeableOnLand": true,
@@ -1394,7 +1407,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "Rallying Roar increased duration and increased damage of rallied monkeys."
     },
     "15": {
       "placeableOnLand": true,
@@ -1503,7 +1517,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Slam and Slap attacks can hit more Bloons."
     },
     "16": {
       "placeableOnLand": true,
@@ -1612,7 +1627,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Pat deals much more damage to Ceramic Bloons."
     },
     "17": {
       "placeableOnLand": true,
@@ -1721,7 +1737,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Increased attack speed."
     },
     "18": {
       "placeableOnLand": true,
@@ -1830,7 +1847,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Increased pierce."
     },
     "19": {
       "placeableOnLand": true,
@@ -1939,7 +1957,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Attack pops more layers."
     },
     "20": {
       "placeableOnLand": true,
@@ -2048,7 +2067,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "Big Squeeze can hug several big Bloons at once, with such intensity nearby Bloons are left stunned!"
     }
   }
 }

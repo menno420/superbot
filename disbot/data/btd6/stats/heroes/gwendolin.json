@@ -57,7 +57,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Blasts Bloons with fire from her pyro gun."
     },
     "2": {
       "placeableOnLand": true,
@@ -110,7 +111,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Slightly increased popping power per shot."
     },
     "3": {
       "placeableOnLand": true,
@@ -212,7 +214,8 @@
           ]
         }
       ],
-      "level": 3
+      "level": 3,
+      "description": "Cocktail of Fire: Hurls a flask of flammable liquid, burning Bloons that pass through the fire."
     },
     "4": {
       "placeableOnLand": true,
@@ -322,7 +325,8 @@
           ]
         }
       ],
-      "level": 4
+      "level": 4,
+      "description": "Heat it up - Every 40 attacks Gwendolin creates a powerful blast wave of fire that pops Bloons and adds fire to nearby Monkeys’ attacks."
     },
     "5": {
       "placeableOnLand": true,
@@ -431,7 +435,8 @@
           ]
         }
       ],
-      "level": 5
+      "level": 5,
+      "description": "Increased popping power. 10% improved attack speed and radius for Ring of Fire, Signal Flare and Dragon's Breath."
     },
     "6": {
       "placeableOnLand": true,
@@ -558,7 +563,8 @@
           ]
         }
       ],
-      "level": 6
+      "level": 6,
+      "description": "Attacks cause a burn effect on target Bloon."
     },
     "7": {
       "placeableOnLand": true,
@@ -668,7 +674,8 @@
           ]
         }
       ],
-      "level": 7
+      "level": 7,
+      "description": "Heat it up has increased radius, Cocktail of Fire is more effective."
     },
     "8": {
       "placeableOnLand": true,
@@ -798,7 +805,8 @@
           ]
         }
       ],
-      "level": 8
+      "level": 8,
+      "description": "Shoots 2 blasts of fire per shot."
     },
     "9": {
       "placeableOnLand": true,
@@ -928,7 +936,8 @@
           ]
         }
       ],
-      "level": 9
+      "level": 9,
+      "description": "Initial hit per blast pops 1 extra layer. Gains increased burn damage and duration for every level."
     },
     "10": {
       "placeableOnLand": true,
@@ -1107,7 +1116,8 @@
           ]
         }
       ],
-      "level": 10
+      "level": 10,
+      "description": "Firestorm: Sets the whole screen alight, burning all Bloons and granting the Heat It Up buff to all Monkeys."
     },
     "11": {
       "placeableOnLand": true,
@@ -1259,7 +1269,8 @@
           ]
         }
       ],
-      "level": 11
+      "level": 11,
+      "description": "Increased attack range, and Cocktail of Fire is more effective."
     },
     "12": {
       "placeableOnLand": true,
@@ -1411,7 +1422,8 @@
           ]
         }
       ],
-      "level": 12
+      "level": 12,
+      "description": "Increased attack speed and increases damage of Heat it Up."
     },
     "13": {
       "placeableOnLand": true,
@@ -1541,7 +1553,8 @@
           ]
         }
       ],
-      "level": 13
+      "level": 13,
+      "description": "Greatly increased popping power, plus projectiles move faster and last longer."
     },
     "14": {
       "placeableOnLand": true,
@@ -1691,7 +1704,8 @@
           ]
         }
       ],
-      "level": 14
+      "level": 14,
+      "description": "Cocktail of Fire does extra damage and sets MOAB class Bloons alight."
     },
     "15": {
       "placeableOnLand": true,
@@ -1863,7 +1877,8 @@
           ]
         }
       ],
-      "level": 15
+      "level": 15,
+      "description": "Increased attack speed and increases damage of Heat it Up."
     },
     "16": {
       "placeableOnLand": true,
@@ -2131,7 +2146,8 @@
           ]
         }
       ],
-      "level": 16
+      "level": 16,
+      "description": "Firestorm has increased duration and does more damage. Purple Bloons are no longer immune to Gwendolin's attacks."
     },
     "17": {
       "placeableOnLand": true,
@@ -2322,7 +2338,8 @@
           ]
         }
       ],
-      "level": 17
+      "level": 17,
+      "description": "Heat it up empowers affected Monkeys to pop 1 extra layer, and do +2 damage to Lead Bloons."
     },
     "18": {
       "placeableOnLand": true,
@@ -2535,7 +2552,8 @@
           ]
         }
       ],
-      "level": 18
+      "level": 18,
+      "description": "Increased attack speed and increases damage of Heat it Up. 20% improved attack speed and radius for Ring of Fire, Signal Flare and Dragon's Breath."
     },
     "19": {
       "placeableOnLand": true,
@@ -2726,7 +2744,8 @@
           ]
         }
       ],
-      "level": 19
+      "level": 19,
+      "description": "Shoots 3 blasts of fire per shot."
     },
     "20": {
       "placeableOnLand": true,
@@ -2984,7 +3003,8 @@
           ]
         }
       ],
-      "level": 20
+      "level": 20,
+      "description": "Firestorm does hugely increased damage."
     }
   }
 }

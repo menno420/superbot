@@ -57,7 +57,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Sends wolf spirits to attack the Bloons."
     },
     "2": {
       "placeableOnLand": true,
@@ -110,7 +111,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Nature's Wrath - all Druids in range get +1 pierce."
     },
     "3": {
       "placeableOnLand": true,
@@ -169,7 +171,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Brambles: Creates a spiked bush on the track that can pop 50 Bloons. Lasts multiple rounds if not destroyed."
     },
     "4": {
       "placeableOnLand": true,
@@ -284,7 +287,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "Every 18 seconds creates a totem that slows all Bloons near the totem by 30%. Less effective vs MOAB-class Bloons."
     },
     "5": {
       "placeableOnLand": true,
@@ -405,7 +409,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "Increased attack speed. Druids of the Jungle have increased range. Grants bonus cash generation to Druids."
     },
     "6": {
       "placeableOnLand": true,
@@ -520,7 +525,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Increased popping power and projectiles move faster."
     },
     "7": {
       "placeableOnLand": true,
@@ -635,7 +641,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Brambles can pop 100 Bloons."
     },
     "8": {
       "placeableOnLand": true,
@@ -750,7 +757,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Nature's ward totems slow Bloons 40%. All Druids in range get Camo detection."
     },
     "9": {
       "placeableOnLand": true,
@@ -865,7 +873,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "Obyn deals more damage. Druids of the Storm create larger storms more frequently."
     },
     "10": {
       "placeableOnLand": true,
@@ -984,7 +993,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "Wall of Trees: Summons a wall of trees across the track that destroy all Bloons that enter. When full, the trees burst into money."
     },
     "11": {
       "placeableOnLand": true,
@@ -1103,7 +1113,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Nature's Clarity - all Magic Monkeys in range get +5 range and +2 pierce, and Druids get an additional +1 pierce."
     },
     "12": {
       "placeableOnLand": true,
@@ -1222,7 +1233,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Increased attack speed and Magic Monkeys cooldowns reduced by 5%."
     },
     "13": {
       "placeableOnLand": true,
@@ -1341,7 +1353,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Further increased popping power and projectile speed."
     },
     "14": {
       "placeableOnLand": true,
@@ -1460,7 +1473,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "Attack pops extra layers."
     },
     "15": {
       "placeableOnLand": true,
@@ -1579,7 +1593,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Nature's Ward slows Bloons by 60%, and has reduced cooldown."
     },
     "16": {
       "placeableOnLand": true,
@@ -1698,7 +1713,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Brambles pop 500 Bloons each and can damage all Bloon types."
     },
     "17": {
       "placeableOnLand": true,
@@ -1817,7 +1833,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Increased attack speed."
     },
     "18": {
       "placeableOnLand": true,
@@ -1936,7 +1953,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Improved Wrath - all Druid of Wrath pops start each round at 200."
     },
     "19": {
       "placeableOnLand": true,
@@ -2055,7 +2073,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Attack pops extra layers."
     },
     "20": {
       "placeableOnLand": true,
@@ -2174,7 +2193,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "Wall of Trees can hold a lot more Bloons, and has shorter cooldown."
     }
   }
 }

@@ -68,7 +68,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Piercing bombs shot from the tank can explode up to 3 times."
     },
     "2": {
       "placeableOnLand": true,
@@ -132,7 +133,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Increased popping power per shot."
     },
     "3": {
       "placeableOnLand": true,
@@ -202,7 +204,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Armor Piercing Shells: Shots can pop Black Bloons and do extra damage to Ceramic Bloons. Duration increases as Churchill levels."
     },
     "4": {
       "placeableOnLand": true,
@@ -272,7 +275,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "Increased attack range."
     },
     "5": {
       "placeableOnLand": true,
@@ -377,7 +381,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "Adds a fast firing machine gun attack to the tank."
     },
     "6": {
       "placeableOnLand": true,
@@ -482,7 +487,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Binoculars allow Churchill to pop Camo Bloons."
     },
     "7": {
       "placeableOnLand": true,
@@ -587,7 +593,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Weapons deal more damage and shells can explode more times."
     },
     "8": {
       "placeableOnLand": true,
@@ -692,7 +699,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Increased attack speed."
     },
     "9": {
       "placeableOnLand": true,
@@ -797,7 +805,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "Shells can explode 5 times."
     },
     "10": {
       "placeableOnLand": true,
@@ -906,7 +915,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "MOAB Barrage: Launches a barrage of shells at up to 10 MOAB-Class Bloons on screen, dealing massive damage each time."
     },
     "11": {
       "placeableOnLand": true,
@@ -1015,7 +1025,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Increased popping power per shell."
     },
     "12": {
       "placeableOnLand": true,
@@ -1124,7 +1135,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Weapons get additional increased damage and shells can explode 6 times."
     },
     "13": {
       "placeableOnLand": true,
@@ -1233,7 +1245,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Armor Piercing Shells pop 3 layers of Bloon and do extra damage to Ceramic and higher. MOAB Barrage damage increased."
     },
     "14": {
       "placeableOnLand": true,
@@ -1342,7 +1355,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "Main Gun can pop 3 additional layers and Machine Gun can pop 1 additional layer per shot."
     },
     "15": {
       "placeableOnLand": true,
@@ -1457,7 +1471,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "All attacks do extra damage vs Camo, Lead, Fortified, and Stunned Bloons."
     },
     "16": {
       "placeableOnLand": true,
@@ -1572,7 +1587,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Armor Piercing Shells do even more damage. MOAB Barrage damage increased."
     },
     "17": {
       "placeableOnLand": true,
@@ -1687,7 +1703,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Increased attack speed."
     },
     "18": {
       "placeableOnLand": true,
@@ -1802,7 +1819,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "All shells pop 3 extra layers of Bloon and Machine Gun can pop 1 additional layer."
     },
     "19": {
       "placeableOnLand": true,
@@ -1917,7 +1935,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Shells can explode 7 times."
     },
     "20": {
       "placeableOnLand": true,
@@ -2032,7 +2051,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "MOAB Barrage shells, Main Gun, and Machine Gun do massively increased damage per hit."
     }
   }
 }

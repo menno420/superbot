@@ -563,8 +563,11 @@ def _normal_stat_bits(ns: Any) -> list[str]:
 
 
 # Headline hero levels for AI grounding — start, the two usual ability tiers,
-# and max. Keeps grounding bounded rather than dumping all 20 levels.
+# and max. Keeps the (verbose) stat lines bounded rather than dumping all 20.
 _HERO_GROUNDING_LEVELS: tuple[str, ...] = ("1", "3", "10", "20")
+# All hero levels, in order — used for the short per-level *description* lines
+# (which, unlike stats, are surfaced for every level a hero defines).
+_HERO_LEVEL_CODES_ALL: tuple[str, ...] = tuple(str(n) for n in range(1, 21))
 
 
 def _render_hero_stats(hero_id: str, canonical: str) -> list[str]:
@@ -593,6 +596,40 @@ def _render_hero_stats(hero_id: str, canonical: str) -> list[str]:
                 f"{_sanitise(', '.join(bits))} (source: bloonswiki)",
             ),
         )
+    return lines
+
+
+def _render_hero_descriptions(hero_id: str, canonical: str) -> list[str]:
+    """Per-level game-authored prose as ``[btd6_hero_level]`` grounding lines.
+
+    Heroes have no upgrade cards — they level 1..20, and the game stores a
+    description per level (e.g. *Ezili L11 → "+50% pierce to reanimated
+    Bloons"*). Unlike the verbose stat lines (bounded to 4 headline levels),
+    these are short, so every level a hero defines is surfaced — making
+    "what does <hero> level N do?" answerable for any N — bounded by the
+    20-level max and emitted only for a specifically-named hero.
+    """
+    from services import btd6_stats_service
+
+    stats = btd6_stats_service.get_hero_stats(hero_id)
+    if stats is None:
+        return []
+    suffix = " (source: BTD6 in-game description)"
+    lines: list[str] = []
+    for code in _HERO_LEVEL_CODES_ALL:
+        node = stats.level(code)
+        if not isinstance(node, dict):
+            continue
+        desc = _sanitise(node.get("description", "") or "")
+        if not desc:
+            continue
+        # Budget the prose so the provenance suffix always survives — _cap would
+        # otherwise chop the source label off a long description.
+        prefix = f"[btd6_hero_level] {canonical} Level {code}: "
+        budget = _FACT_TEXT_CAP - len(prefix) - len(suffix)
+        if budget < len(desc):
+            desc = desc[: max(budget - 1, 0)].rstrip() + "…"
+        lines.append(f"{prefix}{desc}{suffix}")
     return lines
 
 
@@ -681,7 +718,9 @@ def _render_fixture_hero(entry: Any) -> list[str]:
             ),
         )
 
-    lines.extend(_render_hero_stats(getattr(entry, "id", ""), canonical))
+    hero_id = getattr(entry, "id", "")
+    lines.extend(_render_hero_stats(hero_id, canonical))
+    lines.extend(_render_hero_descriptions(hero_id, canonical))
     return lines
 
 

@@ -752,6 +752,7 @@ def map_hero(dump: Path, hero_id: str, canonical: str, version: str) -> MapResul
     warnings: list[str] = []
     base = json.loads(base_fp.read_text("utf-8"))
 
+    tt = _text_table(dump)
     levels: dict[str, dict] = {}
     for level in range(1, 21):
         # Heroes: one file per level, named "<Folder> N.json" (level 1 is base).
@@ -763,6 +764,11 @@ def map_hero(dump: Path, hero_id: str, canonical: str, version: str) -> MapResul
             continue
         node = _map_tier(model)
         node["level"] = level
+        # Game-authored "what this level grants" prose, keyed by the internal
+        # hero name (the dump's textTable prefix == the folder name).
+        description = tt.get(f"{folder} Level {level} Description")
+        if isinstance(description, str) and description:
+            node["description"] = description
         levels[str(level)] = node
     if not levels:
         warnings.append("no level files found")
@@ -1313,12 +1319,37 @@ def apply_upgrade_descriptions(committed: dict, mapped: dict) -> list[str]:
     return changes
 
 
-def overlay_descriptions(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
-    """Write game-authored upgrade descriptions onto every curated tower file.
-    Heroes (no upgrades) and paragons (curated sidecar prose) are out of scope.
-    Returns ``{relative_path: [change, …]}`` for files that changed.
+def apply_hero_descriptions(committed: dict, mapped: dict) -> list[str]:
+    """Set each committed hero level's ``description`` from the mapped (game)
+    prose, aligned by level key; return the list of changes. Names are frozen.
     """
-    towers, _heroes = build_allowlist(dump)
+    names_before = collect_names(committed)
+    mlevels = mapped.get("levels", {}) or {}
+    changes: list[str] = []
+    for code, node in (committed.get("levels", {}) or {}).items():
+        if not isinstance(node, dict):
+            continue
+        new = (mlevels.get(code) or {}).get("description")
+        if not isinstance(new, str) or not new.strip():
+            continue
+        if node.get("description") != new:
+            verb = "set" if not node.get("description") else "refreshed"
+            node["description"] = new
+            changes.append(f"level[{code}].description {verb}")
+    assert_names_preserved(
+        names_before,
+        collect_names(committed),
+        label="hero-descriptions",
+    )
+    return changes
+
+
+def overlay_descriptions(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
+    """Write game-authored descriptions onto curated tower files (per-upgrade)
+    and hero files (per-level). Paragons (curated sidecar prose) are out of
+    scope. Returns ``{relative_path: [change, …]}`` for files that changed.
+    """
+    towers, heroes = build_allowlist(dump)
     version = _dump_version(dump)
     report: dict[str, list[str]] = {}
     for tid, canonical in towers.items():
@@ -1330,6 +1361,17 @@ def overlay_descriptions(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
         changes = apply_upgrade_descriptions(committed, mapped)
         if changes:
             report[f"stats/{tid}.json"] = changes
+            if not dry_run:
+                _write(fp, committed)
+    for hid, canonical in heroes.items():
+        fp = _STATS_DIR / "heroes" / f"{hid}.json"
+        if not fp.exists():
+            continue
+        committed = json.loads(fp.read_text("utf-8"))
+        mapped = map_hero(dump, hid, canonical, version).payload
+        changes = apply_hero_descriptions(committed, mapped)
+        if changes:
+            report[f"stats/heroes/{hid}.json"] = changes
             if not dry_run:
                 _write(fp, committed)
     return report

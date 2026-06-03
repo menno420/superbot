@@ -701,3 +701,34 @@ def test_apply_upgrade_descriptions_never_downgrades_a_name(mod):
     mapped = {"upgrades": []}
     mod.apply_upgrade_descriptions(committed, mapped)  # no-op, name intact
     assert committed["name"] == "Druid"
+
+
+# --- hero per-level description overlay (step 4b) ---------------------------
+
+
+def test_apply_hero_descriptions_aligns_by_level(mod):
+    committed = {
+        "levels": {
+            "1": {"level": 1, "range": 30},
+            "11": {"level": 11, "range": 35},
+        },
+    }
+    mapped = {
+        "levels": {
+            "1": {"description": "Curses Bloons with dark voodoo power."},
+            "11": {"description": "Increases pierce of reanimated Bloons by 50%."},
+            "12": {"description": "unmatched level — ignored"},
+        },
+    }
+    changes = mod.apply_hero_descriptions(committed, mapped)
+    assert committed["levels"]["1"]["description"].startswith("Curses Bloons")
+    assert "50%" in committed["levels"]["11"]["description"]
+    assert committed["levels"]["1"]["range"] == 30  # stats untouched
+    assert len(changes) == 2
+
+
+def test_apply_hero_descriptions_skips_empty(mod):
+    committed = {"levels": {"1": {"level": 1}}}
+    mapped = {"levels": {"1": {"description": ""}}}
+    assert mod.apply_hero_descriptions(committed, mapped) == []
+    assert "description" not in committed["levels"]["1"]

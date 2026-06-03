@@ -55,7 +55,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Over any range or obstacle, Psi sets up deadly vibrations that completely destroy one Bloon at a time. Can target Camo."
     },
     "2": {
       "placeableOnLand": true,
@@ -106,7 +107,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "The psionic vibrations destroy Bloons faster than normal."
     },
     "3": {
       "placeableOnLand": true,
@@ -163,7 +165,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Psychic Blast: Psi unleashes a wave of power that stuns nearby Bloons for a long time."
     },
     "4": {
       "placeableOnLand": true,
@@ -239,7 +242,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "Psi's attack can hit another Bloon if very close to the targeted Bloon."
     },
     "5": {
       "placeableOnLand": true,
@@ -315,7 +319,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "Attacks slightly faster."
     },
     "6": {
       "placeableOnLand": true,
@@ -391,7 +396,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Psi's powerful mind can penetrate through Lead Bloons."
     },
     "7": {
       "placeableOnLand": true,
@@ -467,7 +473,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Psychic Blast pulses twice. Psi can now destroy Ceramic Bloons."
     },
     "8": {
       "placeableOnLand": true,
@@ -562,7 +569,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Destructive Resonance causes Bloons destroyed by Psi's main attack to damage other Bloons nearby."
     },
     "9": {
       "placeableOnLand": true,
@@ -749,7 +757,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "Split the Mind. Psi can now target two different Bloons at once."
     },
     "10": {
       "placeableOnLand": true,
@@ -921,7 +930,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "Psionic Scream: Psi unleashes a silent scream that throws the Bloons into utter chaos."
     },
     "11": {
       "placeableOnLand": true,
@@ -1093,7 +1103,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Not even Purple Bloons can resist the power of Psi's mind attacks."
     },
     "12": {
       "placeableOnLand": true,
@@ -1265,7 +1276,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Psychic Blast pulses three times."
     },
     "13": {
       "placeableOnLand": true,
@@ -1437,7 +1449,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "The psionic vibrations destroy Bloons even faster."
     },
     "14": {
       "placeableOnLand": true,
@@ -1609,7 +1622,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "Psi's immense psychic power allows targeting and destruction of MOABs."
     },
     "15": {
       "placeableOnLand": true,
@@ -1781,7 +1795,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Destructive Resonance is more destructive."
     },
     "16": {
       "placeableOnLand": true,
@@ -1953,7 +1968,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "The psionic vibrations destroy Bloons very fast. Psi can now target BFBs."
     },
     "17": {
       "placeableOnLand": true,
@@ -2198,7 +2214,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Split the Mind. Psi can now target three different Bloons at once."
     },
     "18": {
       "placeableOnLand": true,
@@ -2443,7 +2460,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Psi's attacks affect Bloons within a larger radius of the target Bloon."
     },
     "19": {
       "placeableOnLand": true,
@@ -2688,7 +2706,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Destructive Resonance is much much more destructive."
     },
     "20": {
       "placeableOnLand": true,
@@ -2933,7 +2952,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "Psionic Scream holds and damages all Bloons on screen. Psi can now target DDTs and ZOMGs."
     }
   }
 }

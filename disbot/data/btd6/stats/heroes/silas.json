@@ -74,7 +74,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Silas attacks with magical ice. Hit Bloons are rimed. Already rimed Bloons are frozen. Already rimed and frozen Bloons burst in an icy explosion. Bloons are slowed near Silas."
     },
     "2": {
       "placeableOnLand": true,
@@ -144,7 +145,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Ice Monkeys in radius create orbiting Ice Fragment projectiles when they attack."
     },
     "3": {
       "placeableOnLand": true,
@@ -220,7 +222,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 3
+      "level": 3,
+      "description": "Frostbite ability: Silas can hit all Bloons while active. When hitting frozen Bloons, target takes extra damage based on remaining freeze time."
     },
     "4": {
       "placeableOnLand": true,
@@ -333,7 +336,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 4
+      "level": 4,
+      "description": "Ice Walls form on the track near Silas. Ice Walls push back and freeze Bloons. MOABs are frozen for less time."
     },
     "5": {
       "placeableOnLand": true,
@@ -446,7 +450,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 5
+      "level": 5,
+      "description": "White Bloons are less resistant to Ice attacks. Monkeys that freeze Bloons freeze them for longer."
     },
     "6": {
       "placeableOnLand": true,
@@ -559,7 +564,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 6
+      "level": 6,
+      "description": "Silas can attack Bloons in the range of Ice Monkeys anywhere."
     },
     "7": {
       "placeableOnLand": true,
@@ -676,7 +682,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 7
+      "level": 7,
+      "description": "Frozen Cascade ability: Creates a shattering blast of ice around Silas then other Ice Monkeys spreading out from Silas. Frozen Bloons take extra damage from ability."
     },
     "8": {
       "placeableOnLand": true,
@@ -793,7 +800,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 8
+      "level": 8,
+      "description": "Buffs the ranges of all Ice Monkeys & grants more Hero XP for each Tier 3 Ice Monkey."
     },
     "9": {
       "placeableOnLand": true,
@@ -910,7 +918,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 9
+      "level": 9,
+      "description": "Frozen Bloons damaged during Frostbite take more damage. Ice Fragment damage & pierce increased."
     },
     "10": {
       "placeableOnLand": true,
@@ -1031,7 +1040,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 10
+      "level": 10,
+      "description": "Frozen Burial ability: Immediately freezes and damages all Bloons, dealing far more damage to already frozen Bloons. Then fills the track with Ice Walls."
     },
     "11": {
       "placeableOnLand": true,
@@ -1152,7 +1162,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 11
+      "level": 11,
+      "description": "Slowing aura around Silas slows Bloons more, and can slow MOABs. Rime slows MOABs by more."
     },
     "12": {
       "placeableOnLand": true,
@@ -1273,7 +1284,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 12
+      "level": 12,
+      "description": "Ice Walls can hit more Bloons and last longer. Rime explosion does more damage."
     },
     "13": {
       "placeableOnLand": true,
@@ -1394,7 +1406,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 13
+      "level": 13,
+      "description": "Ice Monkey Tier 5s are cheaper, and you can build a 4th Tier 5 of any path. White Bloons lose all resistance to Ice attacks."
     },
     "14": {
       "placeableOnLand": true,
@@ -1515,7 +1528,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 14
+      "level": 14,
+      "description": "Ice Monkeys create more orbiting Ice Fragments when they attack."
     },
     "15": {
       "placeableOnLand": true,
@@ -1636,7 +1650,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 15
+      "level": 15,
+      "description": "Frozen Bloons take more damage from all abilities. Frostbite lasts longer, and Frozen Cascade and Frozen Burial have shorter cooldowns."
     },
     "16": {
       "placeableOnLand": true,
@@ -1757,7 +1772,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 16
+      "level": 16,
+      "description": "Rime explosion does even more damage, and orbiting Ice Fragments do more damage to frozen Bloons."
     },
     "17": {
       "placeableOnLand": true,
@@ -1878,7 +1894,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 17
+      "level": 17,
+      "description": "Tier 3 Ice Monkeys create even more orbiting Ice Fragments."
     },
     "18": {
       "placeableOnLand": true,
@@ -1999,7 +2016,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 18
+      "level": 18,
+      "description": "Slowing aura around Silas slows Bloons even more. Rimed Bloons take even more damage from Ice attacks, rime explosion damage increased even further."
     },
     "19": {
       "placeableOnLand": true,
@@ -2120,7 +2138,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 19
+      "level": 19,
+      "description": "Ice Walls have more pierce & lifespan. Ice Fragments pierce more and deal even more damage to frozen Bloons."
     },
     "20": {
       "placeableOnLand": true,
@@ -2241,7 +2260,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 20
+      "level": 20,
+      "description": "Frozen Bloons take even more damage during Frostbite. Silas creates Ice Walls more often. Monkeys that freeze Bloons freeze them yet longer again."
     }
   }
 }

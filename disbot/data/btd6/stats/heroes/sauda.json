@@ -58,7 +58,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 1
+      "level": 1,
+      "description": "Slashes with both swords at nearby Bloons. Can pop Camo."
     },
     "2": {
       "placeableOnLand": true,
@@ -112,7 +113,8 @@
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "level": 2
+      "level": 2,
+      "description": "Pops more Bloons per attack."
     },
     "3": {
       "placeableOnLand": true,
@@ -223,7 +225,8 @@
           ]
         }
       ],
-      "level": 3
+      "level": 3,
+      "description": "Leaping Sword Attack: Sauda's dramatic Lead popping leap attack slams down on her targeted Bloons."
     },
     "4": {
       "placeableOnLand": true,
@@ -312,7 +315,8 @@
           ]
         }
       ],
-      "level": 4
+      "level": 4,
+      "description": "Sauda's swords slice through 2 layers of Bloons."
     },
     "5": {
       "placeableOnLand": true,
@@ -401,7 +405,8 @@
           ]
         }
       ],
-      "level": 5
+      "level": 5,
+      "description": "Sauda attacks faster."
     },
     "6": {
       "placeableOnLand": true,
@@ -490,7 +495,8 @@
           ]
         }
       ],
-      "level": 6
+      "level": 6,
+      "description": "Increased attack range and popping power."
     },
     "7": {
       "placeableOnLand": true,
@@ -619,7 +625,8 @@
           ]
         }
       ],
-      "level": 7
+      "level": 7,
+      "description": "Sauda preys on the Bloons' weakness, doing extra damage if they are stunned, and she can now pop frozen Bloons."
     },
     "8": {
       "placeableOnLand": true,
@@ -720,7 +727,8 @@
           ]
         }
       ],
-      "level": 8
+      "level": 8,
+      "description": "Sauda attacks even faster."
     },
     "9": {
       "placeableOnLand": true,
@@ -856,7 +864,8 @@
           ]
         }
       ],
-      "level": 9
+      "level": 9,
+      "description": "Bloon Bleed: Sauda pops through 3 layers of Bloon with each strike, and causes a slow damage over time effect."
     },
     "10": {
       "placeableOnLand": true,
@@ -1030,7 +1039,8 @@
           ]
         }
       ],
-      "level": 10
+      "level": 10,
+      "description": "Sword Charge: Sauda slides along the whole track, devastating Bloons as she goes."
     },
     "11": {
       "placeableOnLand": true,
@@ -1232,7 +1242,8 @@
           ]
         }
       ],
-      "level": 11
+      "level": 11,
+      "description": "Sauda inflicts extra damage to any Bloon slowed, immobilized, or taking damage over time from other monkeys."
     },
     "12": {
       "placeableOnLand": true,
@@ -1396,7 +1407,8 @@
           ]
         }
       ],
-      "level": 12
+      "level": 12,
+      "description": "Leaping Sword Attack increases greatly in power."
     },
     "13": {
       "placeableOnLand": true,
@@ -1532,7 +1544,8 @@
           ]
         }
       ],
-      "level": 13
+      "level": 13,
+      "description": "Enchanted blades do more damage and allow Sauda to damage all Bloons."
     },
     "14": {
       "placeableOnLand": true,
@@ -1668,7 +1681,8 @@
           ]
         }
       ],
-      "level": 14
+      "level": 14,
+      "description": "Sauda attacks even faster, and Sword Charge sweeps all track paths two times!"
     },
     "15": {
       "placeableOnLand": true,
@@ -1870,7 +1884,8 @@
           ]
         }
       ],
-      "level": 15
+      "level": 15,
+      "description": "Increased attack range and popping power, and Leaping Sword Attack deals more damage."
     },
     "16": {
       "placeableOnLand": true,
@@ -2044,7 +2059,8 @@
           ]
         }
       ],
-      "level": 16
+      "level": 16,
+      "description": "Sword Charge greatly increased damage."
     },
     "17": {
       "placeableOnLand": true,
@@ -2180,7 +2196,8 @@
           ]
         }
       ],
-      "level": 17
+      "level": 17,
+      "description": "Sauda's sword attacks slice through many Bloon layers at once."
     },
     "18": {
       "placeableOnLand": true,
@@ -2316,7 +2333,8 @@
           ]
         }
       ],
-      "level": 18
+      "level": 18,
+      "description": "Sauda's swords attack with a blur of speed."
     },
     "19": {
       "placeableOnLand": true,
@@ -2518,7 +2536,8 @@
           ]
         }
       ],
-      "level": 19
+      "level": 19,
+      "description": "Enchanted Blades do extra damage to Regrow, Fortified, and Camo Bloons."
     },
     "20": {
       "placeableOnLand": true,
@@ -2720,7 +2739,8 @@
           ]
         }
       ],
-      "level": 20
+      "level": 20,
+      "description": "More powerful Sword Charge sweeps all track paths three times! Leaping Sword power greatly increased."
     }
   }
 }
