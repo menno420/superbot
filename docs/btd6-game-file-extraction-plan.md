@@ -5,9 +5,11 @@
 > wiki shape, and the full roster (25 towers + 17 heroes + 13 paragons) maps
 > with **zero warnings**. **PR 1 ships the foundation + closes the 11 wiki-
 > missing heroes' gap** (real, previously-absent data). The **full tower /
-> existing-hero / paragon cutover to v55 is PR 2** — it needs three more mapper
-> features (subtowers, damage zones, economy-tower attack suppression) and
-> preservation of per-tower paragon metadata. See "Build-session results" below.
+> existing-hero / paragon cutover to v55 is PR 2** — it is **BLOCKED** on two
+> prerequisites (display-name localization via `textTable.json`; subtower/zone/
+> buff model mapping) plus economy-attack suppression and paragon metadata.
+> Refreshing before these land regresses trusted, human-facing names — so it is
+> deliberately not shipped yet. See "Build-session results" below.
 > This is a *roadmap* doc — when it disagrees with the source, the source wins.
 >
 > **Last verified:** 2026-06-03, in-sandbox, against
@@ -55,9 +57,51 @@ before replacing the tower files without regression —
    damage ⇒ not combat" filter so the Pro button/embed stay off.
    Also: tower files must carry `paragon_cost`/`paragon_name` (catalog metadata,
    not cleanly in the dump) — preserve like the paragon `cost`/`canonical`.
-PR 2 then runs `--all`, replaces every tower + refreshes the 6 module heroes and
-13 paragons (incl. upgrading the 2 prose paragons to module-exact), and updates
-the ~25 value-pinned tests for the v55 numbers.
+
+### ⚠ Two hard prerequisites the v55 cutover is BLOCKED on (verified PR 2 session)
+
+Attempting the hero/paragon refresh surfaced two blockers that make *any*
+wholesale v55 cutover regress trusted, human-facing data unless solved first.
+**Do these before re-running `--all` for committed data.**
+
+**P1 — display-name localization (`textTable.json`).** The raw model names
+features with **internal identifiers**, not the player-facing names the wiki
+curated. Verified regressions a naïve refresh causes:
+- Gwendolin ability: wiki `"Cocktail of Fire"` → raw `"WallOfFire"`.
+- Wizard 0-0-5 necro attack: wiki `"Reanimate"` → raw `"Attack Necromancer"`.
+- Many tower/hero/paragon abilities, zones, buffs, and even some attack labels.
+
+`textTable.json` **does** contain the display strings (`"Cocktail of Fire"`,
+`"Reanimate"`, `"Arctic Wind"` are all present), but it is **not keyed by the
+internal model name** (`"WallOfFire"` is absent as a key). The mapper must find
+the model→textTable link — likely a `displayName`/`nameKey`/`*Description`
+reference on the model or the owning upgrade — and resolve names through it.
+Until then, refreshing any entity with abilities/zones/buffs/subtowers
+**downgrades** its names from curated to internal.
+
+**P2 — subtower / zone / buff model mapping (~10 model types).** The mapper as
+built (PR 1) flattens attacks/projectiles and nested sub-projectiles only. It
+does **not** yet produce `subtowers[]`, `zones[]`, or `buffs[]`, which the
+runtime (`btd6_upgrade_detail_service`) reads. Affected entities are widespread:
+- **subtowers** (nested `TowerModel`, e.g. via `MorphTowerModel`): alchemist
+  Total Transformation, wizard Necromancer minions, Adora (lvl 10+), paragons
+  Master Builder / Navarch of the Seas.
+- **zones** (`NecromancerZoneModel`, DoT-zone projectiles): ice_monkey Arctic
+  Wind, druid Thorn zones, heli MOAB Shove, striker_jones, paragon Mega Massive.
+- **buffs** (various buff models → `damageAdditive`/`rateMultiplier`/… fields):
+  village, ninja Shinobi, sniper, mermonkey, sub, buccaneer, engineer, druid
+  Poplust, mortar, spike, desperado Nomad, wizard Undead, several paragons.
+
+Because of P1+P2, the **only** entities that refresh cleanly today are those
+with pure attack/projectile stats and **no** abilities/zones/buffs/subtowers
+(`geraldo`, `apex_plasma_master`) — negligible value. So the cutover is
+deliberately **not** shipped yet; PR 1's gap-closure (the 11 wiki-missing
+heroes) stands as the delivered increment.
+
+**PR 2 (cutover), once P1+P2 land:** run `--all`, replace every tower + refresh
+the 6 module heroes and 13 paragons (incl. upgrading the 2 prose paragons to
+module-exact), preserve `paragon_cost`/`paragon_name`, suppress economy
+non-combat attacks, and update the ~25 value-pinned tests for the v55 numbers.
 
 ---
 
