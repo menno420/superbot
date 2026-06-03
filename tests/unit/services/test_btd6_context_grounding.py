@@ -366,3 +366,28 @@ async def test_build_grounds_paragon_roster_and_excludes_heroes():
     # A specific-paragon question must NOT trigger the roster dump.
     specific = await btd6_context_service.build("Magus Perfectus cost")
     assert not any("paragon_roster" in f for f in specific.facts)
+
+
+async def test_build_grounds_hero_roster_for_roster_questions():
+    # Regression (post-#468 faithfulness guard): heroes had no roster grounding
+    # (only paragons did), so "which heroes are in the game" reached the guard
+    # with zero facts and was refused. Pin the hero roster so the answer grounds.
+    ctx = await btd6_context_service.build("which heroes are in the game?")
+    blob = "\n".join(f for f in ctx.facts if "hero_roster" in f)
+    assert "17 heroes" in blob
+    assert "Quincy" in blob and "Gwendolin" in blob and "Benjamin" in blob
+    # "list all heroes" must ground too; a specific-hero question must NOT.
+    listed = await btd6_context_service.build("list all heroes in btd6")
+    assert any("hero_roster" in f for f in listed.facts)
+    specific = await btd6_context_service.build("Quincy cost")
+    assert not any("hero_roster" in f for f in specific.facts)
+
+
+async def test_build_grounds_tower_roster_for_roster_questions():
+    ctx = await btd6_context_service.build("list all towers")
+    blob = "\n".join(f for f in ctx.facts if "tower_roster" in f)
+    assert "towers" in blob
+    assert "Dart Monkey" in blob
+    # A named-entity question ("dart monkey stats") must NOT dump the roster.
+    specific = await btd6_context_service.build("dart monkey stats")
+    assert not any("tower_roster" in f for f in specific.facts)
