@@ -1181,23 +1181,28 @@ _ENTITY_ROSTER_VERBS = (
 )
 
 
-def _roster_lines(kind: str, names: list[str]) -> list[str]:
-    """Chunk a roster into <=230-char grounding lines tagged by ``kind``."""
-    if not names:
+def _roster_lines(kind: str, count: int, entries: list[str], note: str) -> list[str]:
+    """Chunk a roster into <=230-char grounding lines tagged by ``kind``.
+
+    Each entry carries its base cost (and, for towers, its category) so a roster
+    answer that lists costs — as the model naturally does — grounds. Name-only
+    facts left the cost numbers unsupported, which refused the whole roster.
+    """
+    if not entries:
         return []
     plural = "heroes" if kind == "hero" else f"{kind}s"
     head = (
-        f"[btd6_{kind}_roster] BTD6 has {len(names)} {plural} — the complete "
+        f"[btd6_{kind}_roster] BTD6 has {count} {plural} ({note}) — the complete "
         f"list (state these verbatim; never invent or omit one):"
     )
     lines = [head]
     prefix = f"[btd6_{kind}_roster] "
     line = prefix
-    for name in names:
-        addition = name if line == prefix else f", {name}"
+    for entry in entries:
+        addition = entry if line == prefix else f", {entry}"
         if len(line) + len(addition) > 230:
             lines.append(line)
-            line = prefix + name
+            line = prefix + entry
         else:
             line += addition
     lines.append(line)
@@ -1210,9 +1215,10 @@ def _entity_roster_facts(message_text: str) -> list[str]:
     Mirrors :func:`_paragon_roster_facts` for the two catalogs that lacked it.
     "which heroes are in the game" / "list all towers" otherwise produce no
     grounding facts at all, so the model's correct roster reads as ungrounded
-    and is refused by the faithfulness guard. Pin the real roster + count so the
-    answer grounds — independent of ``AI_TOOLS_ENABLED`` and of whether the
-    model chooses to call ``btd6_list_roster``.
+    and is refused by the faithfulness guard. Pin the real roster, count, and
+    each entry's base cost (+ tower category) so a cost-listing answer grounds —
+    independent of ``AI_TOOLS_ENABLED`` and of whether the model calls
+    ``btd6_list_roster``.
     """
     text = (message_text or "").lower()
     if not any(verb in text for verb in _ENTITY_ROSTER_VERBS):
@@ -1222,9 +1228,40 @@ def _entity_roster_facts(message_text: str) -> list[str]:
     dataset = btd6_data_service.get_dataset()
     out: list[str] = []
     if "hero" in text:
-        out.extend(_roster_lines("hero", [h.canonical for h in dataset.heroes]))
+        entries = [
+            (
+                f"{h.canonical} (${h.base_cost})"
+                if getattr(h, "base_cost", None)
+                else h.canonical
+            )
+            for h in dataset.heroes
+        ]
+        out.extend(
+            _roster_lines(
+                "hero",
+                len(dataset.heroes),
+                entries,
+                "$ = base placement cost, medium difficulty",
+            ),
+        )
     if "tower" in text:
-        out.extend(_roster_lines("tower", [t.canonical for t in dataset.towers]))
+        entries = [
+            (
+                f"{t.canonical} (${t.base_cost}, {t.category})"
+                if getattr(t, "base_cost", None)
+                else t.canonical
+            )
+            for t in dataset.towers
+        ]
+        out.extend(
+            _roster_lines(
+                "tower",
+                len(dataset.towers),
+                entries,
+                "$ = base placement cost (medium); category = "
+                "primary/military/magic/support",
+            ),
+        )
     return out
 
 

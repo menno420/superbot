@@ -325,9 +325,13 @@ class AICog(commands.Cog):
 
         # Register response renderers. Idempotent — register() replaces
         # silently so repeated cog_load() is safe. VIDEO_QA is plain-text in M1.
+        # BTD6 answers deliberately use the plain-text path (the model's
+        # guard-verified prose), not an embed: a deterministic verified-data
+        # embed was tried (#468) but surfaced raw grounding noise (live
+        # challenge/CT rows) on price/stats answers, so it was reverted in
+        # favour of clean prose.
         from core.runtime.ai import response_renderer_registry
         from views import youtube_renderers
-        from views.btd6 import answer_renderer as btd6_answer_renderer
 
         response_renderer_registry.register(
             AITask.VIDEO_DESCRIBE,
@@ -336,12 +340,6 @@ class AICog(commands.Cog):
         response_renderer_registry.register(
             AITask.VIDEO_COMPARE,
             youtube_renderers.render_compare,
-        )
-        # BTD6 answers render a verified-data embed when the reply resolved
-        # grounded facts; conversational replies fall through to plain text.
-        response_renderer_registry.register(
-            AITask.BTD6_ANSWER,
-            btd6_answer_renderer.render_btd6_answer,
         )
 
     async def cog_unload(self) -> None:
