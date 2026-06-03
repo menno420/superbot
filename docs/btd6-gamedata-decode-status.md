@@ -135,27 +135,116 @@ wrong field or the wrong place.**
   *word* may still appear in description prose; the *label-on-that-object* does
   not.)
 
-## Next increments (toward the cutover)
+## Next steps — single ordered roadmap
 
-The towers cutover is **gated** on completing the structural map. In order:
+> **Reconciled 2026-06-03 (post-#468)** against source — `parse_gamedata.py`
+> (real flags: `--validate-anchors` / `--audit` / `--overlay` / `--all` /
+> `--tower` / `--hero` / `--dry-run`; *there is no `--audit-faithful`*),
+> `btd6_gamedata_inventory.py`, the committed `stats/*.json`, and the runtime
+> (`btd6_context_service`, `btd6_upgrade_detail_service`). Tags: **[done]**,
+> **[planned-existing]** (already scoped — in `--overlay`, the cutover, or a
+> table above), **[new]** (not previously scoped). A reviewer's candidate a–e
+> sequence is folded in by letter and **re-ordered by value-per-effort** within
+> the hard safety constraints below.
 
-1. **Zones** — map the 12 `*ZoneModel` types (`SlowBloonsZone` slow, `Damage
-   OverTimeZone` damage/interval, shove/windy/necromancer + economy). The zone's
-   own `name` is empty → resolve via the owning upgrade's `LocsKey`.
-2. **Buffs** — map the 37 `*SupportModel`/`*BuffModel` types: a common core
-   (`Range`/`Pierce`/`Visibility`/`Rate`/`Speed`/`Cooldown`/`Damage` support, all
-   sharing `multiplier`/`additive` + `buffLocsName`→name) covers most; tail
-   towers get a name-only node.
-3. **Subtower tail** — `MorphTowerModel` named-ref (Alchemist) + `BeastHandler
-   PetModel`.
-4. **Economy-tower attack suppression**, then the towers **cutover** (adopt
-   `--all`, runtime name-adaptations, update value-pinned tests), gated by
-   `--audit`.
+**End goal (maintainer):** a complete **v55** dataset where every committed stat
+shows v55 and is correct for v55; every special attack / ability carries **both**
+its in-game description **and** its decoded stat-based effect; and every
+curator-supplied name is preserved, never regressed to an internal model string.
 
-Smaller open notes: `count` has no exact dump field (stays curated); the 2
-roster-wide `damageMultiplier != 1` tag cases aren't emitted (we read the
-additive); `textTable` descriptions are extracted but not yet *consumed* by
-grounding/UI.
+**What now exists (shipped this cycle):**
+- *Decode track* (tables above): `--audit` harness (#464); inventory tool +
+  17-domain dictionary (#465); `damageAddative` fix (#465); the conservative
+  `--overlay` **engine**, ability `displayName` names, and upgrade-description
+  **extraction** (#466); subtowers (2 of 4 mechanisms); 11 wiki-missing heroes.
+- *AI-answer track* — **#468**: the answer-faithfulness **verifier** (a model
+  reply can no longer state a BTD6 name/number absent from the grounded payload —
+  reject → regenerate-once → version-stamped refusal), the `btd6_list_roster`
+  enumeration tool, and a deterministic verified-data embed. This is why step
+  **2** is now pure upside (descriptions wired into grounding are guarded the
+  moment they land) and why answer-caching **(7)** is unblocked.
+
+**Hard safety constraints (not preferences):**
+- Re-validate anchors (`--validate-anchors`: Dart 200, Super 2500) before any
+  decode step; if they fail the dump moved — **stop**.
+- Wiki↔dump projectile/ability *names* are not stable keys, so **never overlay a
+  per-projectile/ability value by name**, and **never** let an overlay/cutover
+  downgrade a curated name to an internal string. Hence the name guard **(3)**
+  must precede any overlay/cutover touching ability-bearing entities (PR-1.5
+  proved a naïve refresh regresses names), and it is the join key for **(5)**.
+
+**Ordered next steps**
+
+1. **SHA-pinned inventory/audit report** — *[planned-existing tools → new report]*
+   *(reviewer a).* One re-runnable artifact keyed on the dump commit: per
+   domain/field — present? / mapped by `parse_gamedata.py`? / `--audit` verdict
+   (CLEAN/DELTA/SUSPECT) / ingest verdict (now/later/skip) — plus two columns for
+   the effect work, **decodable-number?** and **has-curated-name?**. The pieces
+   exist (`--audit`, `btd6_gamedata_inventory.py`, the dictionary); this packages
+   them and re-runs the anchor gate first. *Rationale: it sizes 3–5 and is the
+   anchor gate, so it comes first.*
+
+2. **Wire `textTable` upgrade/ability descriptions into fixtures + grounding** —
+   *[extraction done #466 → consumption new]* *(reviewer d).* The ≈422 cards are
+   already decoded (`LocsKey` → `textTable "<key> Description"`), but **0 committed
+   `stats/*.json` carry them** and the runtime reads none at the upgrade level —
+   though tower- and paragon-level descriptions already ground (`btd6_context_
+   service.py` line ~330; `paragon_descriptions.json`), so this extends a live
+   pattern. Delivers the **in-game-description half** of the end goal. *Rationale:
+   highest value-per-effort — the hard extraction is done, it is license-clean, it
+   keys off the reliable `LocsKey` (so it does NOT depend on the fragile name
+   matching that gates the overlay), and #468 guards it automatically. Decoupled
+   from 3/4 — promoted ahead of them.*
+
+3. **Name-preservation guard** — *[new]* *(reviewer b).* A hard-stop so no
+   overlay/cutover write replaces a curated name with an internal/empty dump
+   field; a name-downgrade fails loudly. Today `--overlay` sidesteps names
+   entirely, so this is the *precondition* for widening it (4) onto
+   ability-bearing entities and the join key for (5). *Rationale: cheap invariant
+   that must land before anything writes near curated names.*
+
+4. **Numeric overlay expansion** — *[engine done #466 → expansion
+   planned-existing]* *(reviewer c).* Widen `--overlay` from the 3 uniquely-keyed
+   files to all `--audit` CLEAN/DELTA leaves, aligning nested lists by **name +
+   damage signature** (never index), stamping v55. Stays in the safe envelope
+   (cost/category, upgrades by `(path,tier)`, tier-level range/footprint);
+   per-projectile/ability numbers stay curated. Delivers **stats show v55** for
+   the safe set. *Rationale: after (1) sizes the CLEAN/DELTA set and (3) guards
+   the names it touches.*
+
+5. **Zones / buffs / subtower-tail effect decoding → towers cutover** —
+   *[planned-existing — the cutover track; largest build]* *(reviewer e).* The
+   **decoded-effect half** of the end goal. Each sub-step: decode the headline
+   numeric where `--audit`-stable, else fall back to description-only (flagged).
+   In order:
+   a. **Zones** — 12 `*ZoneModel` types (`SlowBloonsZone`, `DamageOverTimeZone`,
+      shove/windy/necromancer + economy); the zone's own `name` is empty →
+      resolve via the owning upgrade's `LocsKey`.
+   b. **Buffs** — 37 `*SupportModel`/`*BuffModel` types; a common core
+      (Range/Pierce/Visibility/Rate/Speed/Cooldown/Damage support sharing
+      `multiplier`/`additive` + `buffLocsName`→name) covers most; tail towers get
+      a name-only node.
+   c. **Subtower tail** — `MorphTowerModel` named-ref (Alchemist) +
+      `BeastHandlerPetModel` (the 2 remaining mechanisms).
+   d. **Economy-tower attack suppression**, then the **towers cutover** (`--all`,
+      runtime name-adaptations, update the ~25 value-pinned tests), gated by
+      `--audit` and (3). *Rationale: largest effort and the cutover blocker; uses
+      (1) sizing and (3) name-joins.*
+
+**Lower priority — post-#468 AI-answer enhancements (not roadmap-critical)**
+
+6. **Audit-schema version column** — *[new]* the §5 observability item deferred
+   from #468: a per-answer `game_version`/`data_version` column on
+   `ai_decision_audit` so stale/disputed answers are queryable in-table (today the
+   version is structured-logged only).
+7. **Answer-caching** — *[new]* unblocked by #468's verifier: cache grounded BTD6
+   answers keyed on (question, dataset version) — a served answer is now
+   guaranteed faithful — and invalidate on a dataset-version bump.
+
+**Smaller standing notes:** `count` has no exact dump field (stays curated); the
+2 roster-wide `damageMultiplier != 1` tag cases aren't emitted (we read the
+additive); bloons/bosses, Powers/Knowledge/Rounds/IncomeSets, and the paragon
+overlay/cutover remain wiki-sourced / un-ingested (see the 🔴 table).
 
 ## Dump areas NOT yet examined (be honest about coverage)
 
