@@ -111,6 +111,45 @@ Two hard requirements this case adds to the design:
 Scope stays **narrow**: a BTD6 unsupported-negative backstop on final generated
 answers, not a global pre-answer guard — and design-first, per the standing rule.
 
+## Update 3 (2026-06-04, later) — phrasing-sensitivity cluster (the next layer)
+
+After tonight's *data-reachability* fixes (descriptions #485, costs #486), the
+remaining failures are a different layer: **the answer outcome depends on how the
+question is phrased / resolved, not on whether the data exists.** Two clean A/B
+repros, both verified in-sandbox (the data is present in every case):
+
+- **PMFC damage type.** "What's the damage type of PMFC (0-5-DART)" → **answered**
+  ideally (main attack = Sharp, *and* "the ability-conversion damage isn't in my
+  data"). "What is the damage type when plasma monkey fan club ability is
+  activated" → **refused** — even though it resolved the upgrade and had the Sharp
+  fact in its grounding. Difference: the first resolved the **tower** (Dart
+  Monkey, 63 facts); the second resolved the **upgrade** (4 facts) and the
+  conceptual "when ability activated" framing pushed it to refuse wholesale.
+- **Mermonkey bottom path.** Full per-tier stats → answered; "what does mermonkey
+  bottom path do" → **refused despite 52 grounded facts**; "explain what the
+  bottom path does" (no tower named) → refused (0 facts, routed general).
+
+Three contributing mechanisms (all reproduced via `btd6_context_service.build`):
+
+1. **Conversational context isn't carried.** A follow-up with no entity ("explain
+   what the bottom path does") routes to `general.nl_answer` with 0 facts — the
+   tower from prior turns isn't fed to resolution.
+2. **Upgrade-resolution gives thin grounding.** Resolving to an upgrade (PMFC → 4
+   facts) attaches far less than resolving to the tower (Dart Monkey → 63), so a
+   conceptual question over the thin set has little to stand on.
+3. **Partial-answer vs. refuse is inconsistent.** The *ideal* is the PMFC tower
+   phrasing: answer the grounded part, flag the ungrounded part. The model
+   instead refuses wholesale when the framing emphasizes the ungrounded part —
+   the deny/absence reflex over **present** grounding.
+
+**These are behaviour/resolution-layer fixes, not reachability fixes** (the data
+is reachable — proven). They need design + live verification, so they are
+captured here, not built blind. They share this doc's root question and the
+derived-value finding's: *what does the model treat as answerable from the
+grounding it has?* Mechanism (3) is the highest-value and most general — "answer
+what's grounded, flag the rest" should be the default, never a wholesale refusal
+when relevant grounding is present.
+
 ---
 
 ## 1. The problem
