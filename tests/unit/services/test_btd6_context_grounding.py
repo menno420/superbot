@@ -357,6 +357,56 @@ async def test_build_ignores_non_upgrade_text():
     assert not any(f.startswith("[btd6_upgrade]") for f in ctx.facts)
 
 
+async def test_build_grounds_parent_tower_for_upgrade_only_query():
+    # PMFC names the upgrade but not its tower, so resolution used to attach only
+    # the upgrade's ~4 detail lines — too thin for "what's the damage type when
+    # the ability is active" to stand on, and the model refused despite holding
+    # the Sharp fact (docs/btd6-absence-claim-guard-design.md Update 3 / §4.1,
+    # mechanism 2). The parent tower (Dart Monkey) is now grounded alongside the
+    # upgrade so a conceptual question has the full tower context to answer from.
+    ctx = await btd6_context_service.build(
+        "what is the damage type when plasma monkey fan club ability is activated",
+    )
+    # The upgrade grounding is still present...
+    assert any(
+        f.startswith("[btd6_upgrade]") and "Plasma Monkey Fan Club" in f
+        for f in ctx.facts
+    ), ctx.facts
+    # ...and now the parent Dart Monkey tower identity is grounded too.
+    assert any(
+        f.startswith("[btd6_tower] Dart Monkey") and "base cost" in f
+        for f in ctx.facts
+    ), ctx.facts
+
+
+async def test_build_grounds_parent_tower_for_abbreviation_only_query():
+    # The same enrichment for an abbreviation that resolves to a different tower:
+    # POD -> Wizard Monkey (not Dart Monkey), proving the parent is the upgrade's
+    # own tower, not a hardcoded fallback.
+    ctx = await btd6_context_service.build("POD cooldown")
+    assert any(f.startswith("[btd6_upgrade] Prince of Darkness") for f in ctx.facts)
+    assert any(
+        f.startswith("[btd6_tower] Wizard Monkey") and "base cost" in f
+        for f in ctx.facts
+    ), ctx.facts
+
+
+async def test_build_does_not_double_ground_a_named_parent_tower():
+    # When the tower IS named, Pass 3 already grounds it; the parent-tower pass
+    # must dedupe so it is not grounded a second time (which would duplicate the
+    # identity + 17 [btd6_cost] lines). This query names Dart Monkey AND resolves
+    # one of its own upgrades (PMFC) — the exact dedup path.
+    ctx = await btd6_context_service.build("dart monkey plasma monkey fan club stats")
+    identity = [
+        f
+        for f in ctx.facts
+        if f.startswith("[btd6_tower] Dart Monkey") and "base cost" in f
+    ]
+    assert len(identity) == 1, ctx.facts  # grounded exactly once, not doubled
+    cost_lines = [f for f in ctx.facts if f.startswith("[btd6_cost]")]
+    assert len(cost_lines) == 17  # header + base + 15 — not doubled
+
+
 # ---------------------------------------------------------------------------
 # build() paragon ability grounding (curated from bloonswiki)
 # ---------------------------------------------------------------------------
