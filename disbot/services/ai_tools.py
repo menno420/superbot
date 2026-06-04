@@ -742,6 +742,152 @@ async def _btd6_difficulty_cost(arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- btd6_round_composition --------------------------------------------------
+
+_BTD6_ROUND_COMPOSITION_SPEC = AIToolSpec(
+    name="btd6_round_composition",
+    description=(
+        "Exact BTD6 bloon composition for a round or a round RANGE (standard "
+        "rounds 1-140). Use for 'how many purples in rounds 35-70', 'what spawns "
+        "in round 63', 'which rounds have MOABs', 'RBE of round 80'. Pass "
+        "round_start (and round_end for a range). Pass a bloon (e.g. 'purple', "
+        "'ceramic', 'MOAB') to get its TOTAL across the range plus the per-round "
+        "counts; omit it for each round's full spawn list + RBE. Do not count or "
+        "sum yourself — this returns the exact totals."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "round_start": {
+                "type": "integer",
+                "description": "First round (1-140). For a single round, set only this.",
+            },
+            "round_end": {
+                "type": "integer",
+                "description": "Last round of the range (inclusive); omit for one round.",
+            },
+            "bloon": {
+                "type": "string",
+                "description": "Bloon to count, e.g. 'purple', 'ceramic', 'MOAB'. Omit for full composition.",
+            },
+        },
+        "required": ["round_start"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_round_composition(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    try:
+        start = int(arguments.get("round_start"))
+    except (TypeError, ValueError):
+        return {"found": False, "note": "round_start must be an integer (1-140)"}
+    raw_end = arguments.get("round_end")
+    try:
+        end = int(raw_end) if raw_end is not None else None
+    except (TypeError, ValueError):
+        end = None
+    bloon = str(arguments.get("bloon") or "").strip() or None
+    return btd6_data_service.round_composition(start, end, bloon)
+
+
+# --- btd6_map_lookup ---------------------------------------------------------
+
+_BTD6_MAP_LOOKUP_SPEC = AIToolSpec(
+    name="btd6_map_lookup",
+    description=(
+        "BTD6 map info: difficulty (Beginner / Intermediate / Advanced / Expert), "
+        "description, and line-of-sight notes. Pass a map name to look one up, or "
+        "omit it to list every map with its difficulty (use for 'which maps are "
+        "beginner', 'is Logs beginner', 'list the maps')."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "map": {
+                "type": "string",
+                "description": "Map name (e.g. 'Logs'); omit to list all maps.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _map_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "name": entry.canonical,
+        "difficulty": entry.difficulty,
+        "description": entry.description,
+        "line_of_sight_notes": entry.lines_of_sight_notes,
+    }
+
+
+async def _btd6_map_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    name = str(arguments.get("map") or "").strip()
+    if name:
+        entry = btd6_data_service.find_map(name)
+        if entry is None:
+            return {"found": False, "note": f"unknown map: {name!r}"}
+        return {"found": True, "map": _map_dict(entry)}
+    maps = btd6_data_service.get_dataset().maps
+    return {"found": True, "count": len(maps), "maps": [_map_dict(m) for m in maps]}
+
+
+# --- btd6_mode_lookup --------------------------------------------------------
+
+_BTD6_MODE_LOOKUP_SPEC = AIToolSpec(
+    name="btd6_mode_lookup",
+    description=(
+        "BTD6 game mode info: starting cash, starting lives, and rule restrictions "
+        "(e.g. CHIMPS = no Continues, Hearts lost, Income, Monkey knowledge, "
+        "Powers, Selling). Pass a mode name to look one up, or omit it to list all "
+        "modes (use for 'what are CHIMPS restrictions', 'CHIMPS starting cash', "
+        "'list game modes')."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "mode": {
+                "type": "string",
+                "description": "Mode name (e.g. 'CHIMPS'); omit to list all modes.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _mode_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "name": entry.canonical,
+        "starting_cash": entry.starting_cash,
+        "starting_lives": entry.starting_lives,
+        "description": entry.description,
+        "restrictions": list(entry.restrictions),
+    }
+
+
+async def _btd6_mode_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    name = str(arguments.get("mode") or "").strip()
+    if name:
+        entry = btd6_data_service.find_mode(name)
+        if entry is None:
+            return {"found": False, "note": f"unknown mode: {name!r}"}
+        return {"found": True, "mode": _mode_dict(entry)}
+    modes = btd6_data_service.get_dataset().modes
+    return {"found": True, "count": len(modes), "modes": [_mode_dict(m) for m in modes]}
+
+
 # --- btd6_paragon_calculate --------------------------------------------------
 
 _PARAGON_CALCULATE_SPEC = AIToolSpec(
@@ -1209,6 +1355,9 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
+        "btd6_round_composition",
+        "btd6_map_lookup",
+        "btd6_mode_lookup",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -1251,6 +1400,9 @@ def build_registry(
         (_BTD6_CAPABILITY_SPEC, _btd6_capability_lookup),
         (_BTD6_SUPERLATIVE_SPEC, _btd6_superlative_lookup),
         (_BTD6_DIFFICULTY_COST_SPEC, _btd6_difficulty_cost),
+        (_BTD6_ROUND_COMPOSITION_SPEC, _btd6_round_composition),
+        (_BTD6_MAP_LOOKUP_SPEC, _btd6_map_lookup),
+        (_BTD6_MODE_LOOKUP_SPEC, _btd6_mode_lookup),
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
         (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),

@@ -907,6 +907,134 @@ def get_bloon(bloon_id: str) -> BloonEntry | None:
     return None
 
 
+def resolve_bloon_id(name: str) -> str | None:
+    """Map a bloon name / alias / plural to its id (``"purples"`` -> ``"purple"``).
+
+    Matches id, canonical, or any committed alias; falls back to stripping a
+    trailing plural ``s`` so unlisted plurals still resolve. ``None`` if no match.
+    """
+    key = (name or "").strip().lower()
+    if not key:
+        return None
+    for bloon in get_dataset().bloons:
+        surfaces = {
+            bloon.id,
+            bloon.canonical.lower(),
+            *(a.lower() for a in bloon.aliases),
+        }
+        if key in surfaces or (key.endswith("s") and key[:-1] in surfaces):
+            return bloon.id
+    return None
+
+
+# Cap the per-round detail a round-composition query returns so a wide range
+# (e.g. "moabs in rounds 1-140") can't blow the grounding token budget.
+_ROUND_DETAIL_CAP = 40
+
+
+def round_composition(
+    round_start: int,
+    round_end: int | None = None,
+    bloon: str | None = None,
+) -> dict[str, Any]:
+    """Bloon composition for a round or inclusive round range (standard rounds).
+
+    With ``bloon``: the total count of that bloon across the range plus the
+    per-round counts (only rounds where it appears). Without: each round's
+    spawn groups + RBE. Lists are capped at :data:`_ROUND_DETAIL_CAP`.
+    """
+    lo = round_start
+    hi = round_start if round_end is None else round_end
+    if lo > hi:
+        lo, hi = hi, lo
+    rounds = [r for r in get_dataset().rounds if lo <= r.round_number <= hi]
+    if not rounds:
+        return {
+            "found": False,
+            "note": f"no standard rounds in {lo}-{hi} (valid 1-140)",
+        }
+
+    out: dict[str, Any] = {
+        "found": True,
+        "round_start": lo,
+        "round_end": hi,
+        "roundset": "default",
+        "rounds_in_range": len(rounds),
+    }
+    if bloon:
+        bid = resolve_bloon_id(bloon)
+        if bid is None:
+            return {"found": False, "note": f"unknown bloon: {bloon!r}"}
+        per_round: list[dict[str, int]] = []
+        total = 0
+        for entry in rounds:
+            count = sum(
+                int(g.get("count", 0)) for g in entry.groups if g.get("bloon_id") == bid
+            )
+            if count:
+                per_round.append({"round": entry.round_number, "count": count})
+                total += count
+        record = get_bloon(bid)
+        out.update(
+            {
+                "bloon": record.canonical if record else bid,
+                "bloon_id": bid,
+                "total": total,
+                "rounds_with_bloon": len(per_round),
+                "per_round": per_round[:_ROUND_DETAIL_CAP],
+                "truncated": len(per_round) > _ROUND_DETAIL_CAP,
+            },
+        )
+    else:
+        detail = []
+        for entry in rounds[:_ROUND_DETAIL_CAP]:
+            detail.append(
+                {
+                    "round": entry.round_number,
+                    "rbe": entry.rbe,
+                    "danger": entry.danger,
+                    "groups": [
+                        {"bloon": g.get("bloon_id"), "count": int(g.get("count", 0))}
+                        for g in entry.groups
+                    ],
+                },
+            )
+        out.update(
+            {
+                "total_rbe": sum(r.rbe or 0 for r in rounds),
+                "rounds": detail,
+                "truncated": len(rounds) > _ROUND_DETAIL_CAP,
+            },
+        )
+    return out
+
+
+def _find_by_surface(entries: tuple, name: str):
+    """First entry whose id / canonical / alias matches ``name`` (case-insensitive)."""
+    key = (name or "").strip().lower()
+    if not key:
+        return None
+    for entry in entries:
+        surfaces = {
+            entry.id,
+            entry.canonical.lower(),
+            *(a.lower() for a in entry.aliases),
+        }
+        if key in surfaces:
+            return entry
+    return None
+
+
+def find_map(name: str) -> MapEntry | None:
+    """Resolve a map by name / alias / id (``"logs"`` -> the Logs entry)."""
+    return _find_by_surface(get_dataset().maps, name)
+
+
+def find_mode(name: str) -> ModeEntry | None:
+    """Resolve a game mode by name / alias / id (``"chimps"`` -> CHIMPS)."""
+    return _find_by_surface(get_dataset().modes, name)
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics

@@ -81,9 +81,23 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 > 4. *Per-round bloon composition is unreachable, not missing.* `rounds.json`
 >    already carries each round's `groups[]` (`bloon_id` + `count`), but there is
 >    **no tool** to answer a range aggregation ("how many purples r35–r70"), so
->    the bot refuses. A `btd6_round_composition`-style query tool over the
->    committed rounds is the fix — **next slice** (data exists; no extraction
->    needed).
+>    the bot refuses. **Fixed:** `btd6_round_composition` tool
+>    (`btd6_data_service.round_composition`) — "purples r35–70" → 290.
+> 5. *Maps & modes were committed + seeded but had no grounding render AND no
+>    tool* — "which maps are beginner?" / "CHIMPS restrictions?" refused.
+>    **Fixed:** `btd6_map_lookup` / `btd6_mode_lookup` (single + roster), which
+>    bypass the missing render via the grounding-tool ledger.
+> 6. *Damage modifiers were mislabeled in grounding.* `_projectile_bits` emitted
+>    "+20 vs Lead" right after "210 pierce", and the model read it as bonus
+>    *pierce*. Now "+20 **damage** vs Lead" — unambiguous.
+>
+> **Tool-use-discipline note (open):** the model sometimes asserts a confident
+> *false negative* ("Ultra-Juggernaut has no damage multipliers") **without**
+> calling the lookup. The faithfulness guard catches ungrounded *numbers/names*
+> but NOT *absence* claims, so these slip through. Mitigations now in place:
+> (a) #478 makes the upgrade resolve so its modifiers auto-ground (Pass 3c) — the
+> data is in context without a tool call; (b) the clearer "+N damage vs X" label.
+> A guard that catches absence claims is a larger, separate change.
 
 ### ✅ Complete & verified
 

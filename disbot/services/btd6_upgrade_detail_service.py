@@ -334,7 +334,9 @@ def _projectile_bits(proj: ProjectileSpec) -> str:
             ),
         )
     for label, bonus in proj.modifiers:
-        bits.append(f"+{bonus} vs {label}")
+        # Say "damage" explicitly: next to "210 pierce" a bare "+20 vs Lead" was
+        # misread by the model as bonus pierce — these are additive damage.
+        bits.append(f"+{bonus} damage vs {label}")
     return ", ".join(bits)
 
 
