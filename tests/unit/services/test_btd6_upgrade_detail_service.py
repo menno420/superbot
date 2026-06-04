@@ -198,8 +198,8 @@ def test_grounding_surfaces_bonus_vs_bloon_class():
     # The retrieval-gap regression: the bot could recite the prose ("crushes
     # Ceramic/Fortified") but not the numbers. Now the numbers ground.
     blob = "\n".join(det.grounding_for_query("Juggernaut"))
-    assert "+3 vs Ceramic" in blob
-    assert "+2 vs Fortified" in blob
+    assert "+3 damage vs Ceramic" in blob
+    assert "+2 damage vs Fortified" in blob
 
 
 def test_grounding_surfaces_lead_bonus_on_ultra_juggernaut():
@@ -208,8 +208,8 @@ def test_grounding_surfaces_lead_bonus_on_ultra_juggernaut():
     blob = "\n".join(
         det.render_upgrade_grounding(det.get_upgrade_detail("dart_monkey:500")),
     )
-    assert "+20 vs Lead" in blob
-    assert "+8 vs Ceramic" in blob
+    assert "+20 damage vs Lead" in blob
+    assert "+8 damage vs Ceramic" in blob
 
 
 def test_modifiers_empty_when_none_present():

@@ -32,6 +32,9 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
+        "btd6_round_composition",
+        "btd6_map_lookup",
+        "btd6_mode_lookup",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -306,6 +309,9 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_capability_lookup",
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
+        "btd6_round_composition",
+        "btd6_map_lookup",
+        "btd6_mode_lookup",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -613,3 +619,46 @@ async def test_btd6_capability_lookup_paragon_camo_split():
     # Only camo is verified per-paragon.
     bad = await h({"capability": "lead_popping", "entity": "paragon"})
     assert bad["found"] is False
+
+
+# --- btd6_round_composition / map / mode (committed-data query tools) --------
+
+
+async def test_btd6_round_composition_aggregates_a_bloon_over_a_range():
+    # The live-refused question: "how many purples in rounds 35-70".
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    r = await h["btd6_round_composition"]({"round_start": 35, "round_end": 70, "bloon": "purples"})
+    assert r["found"] is True
+    assert r["bloon"] == "Purple Bloon"
+    assert r["total"] == 290
+    assert r["rounds_with_bloon"] >= 1
+    assert all({"round", "count"} <= set(pr) for pr in r["per_round"])
+
+
+async def test_btd6_round_composition_single_round_full_list_and_errors():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    one = await h["btd6_round_composition"]({"round_start": 63})
+    assert one["found"] is True and one["rounds"][0]["round"] == 63
+    assert one["rounds"][0]["groups"]
+    assert (await h["btd6_round_composition"]({"round_start": 999}))["found"] is False
+    assert (await h["btd6_round_composition"]({"round_start": 35, "bloon": "flarp"}))["found"] is False
+    assert (await h["btd6_round_composition"]({"round_start": "x"}))["found"] is False
+
+
+async def test_btd6_map_lookup_single_and_roster():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    logs = await h["btd6_map_lookup"]({"map": "Logs"})
+    assert logs["found"] is True and logs["map"]["difficulty"] == "Beginner"
+    roster = await h["btd6_map_lookup"]({})
+    assert roster["found"] is True and roster["count"] == len(roster["maps"]) >= 3
+    assert (await h["btd6_map_lookup"]({"map": "nope"}))["found"] is False
+
+
+async def test_btd6_mode_lookup_single_and_roster():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    chimps = await h["btd6_mode_lookup"]({"mode": "CHIMPS"})
+    assert chimps["found"] is True
+    assert chimps["mode"]["starting_lives"] == 1
+    assert chimps["mode"]["restrictions"]
+    roster = await h["btd6_mode_lookup"]({})
+    assert roster["found"] is True and roster["count"] == len(roster["modes"]) >= 2
