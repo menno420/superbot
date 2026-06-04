@@ -96,7 +96,7 @@ works** (the traps we hit), and what is still un-decoded.
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
 
-### Session log — per-round cash (rounds 1-80) + where the cash economy lives
+### Session log — per-round cash (all 140, derived) + where the cash economy lives
 
 Traced "cash per pop / per round" end to end:
 - **Per-pop:** flat **$1 per bloon layer** (maintainer-confirmed + BloonsWiki "Cash
@@ -108,18 +108,23 @@ Traced "cash per pop / per round" end to end:
   cashPerRound` (Benjamin 90→5000 by level, farms, SOTF) — already surfaced for
   the towers that have committed tiers.
 - **Per-round *game* cash** (pop cash + end-of-round bonus, standard/Medium, no
-  income towers) is NOT in the dump (cash is computed, never stored). Sourced it
-  from the **cyberquincy** data set (`round_sets/regular.json` →
-  `cashThisRound`/`cumulativeCash`). Cross-validated: our RBE matches cyberquincy
-  **exactly for rounds 1-80**, so imported `cash` + `cumulative_cash` into
-  `rounds.json` for **1-80** (now grounded on round questions). `RoundEntry.cash`
-  is now `float` (income decay yields .5 values) + new `cumulative_cash`.
-- **Rounds 81-140 left empty.** Our RBE and cyberquincy's diverge there (matches
-  the maintainer's belief that late-round cash changed), and **no v55-current
-  source was found**: the Steam Web API doesn't expose round economy (needs a key,
-  only has achievements/stats), the game files store emissions not cash, and the
-  cash can't be safely *derived* (it's per pop-event, not per-RBE — diverges once
-  MOAB-class appear). Needs a confirmed v55 source before populating.
+  income towers) is NOT stored anywhere (cash is computed) — but it is fully
+  **DERIVABLE**: `cash(n) = pop_count(n) × cash-per-pop-decay(n) + ($100 + n)`,
+  where `pop_count` = the round's spawn composition × each bloon's total pops (a
+  MOAB = 1 pop but 200 RBE — which is why cash ≠ RBE once blimps appear). The
+  decay bands are the v55 `DefaultIncomeSet`. **Validated 80/80** against the
+  cyberquincy data set and topper64's calculator (both use this exact formula).
+  Now derived for **all 140 rounds** straight from `rounds.json`'s own
+  composition + `bloons.json` child-trees, pinned by
+  `test_btd6_round_cash.py` (the cash analogue of the RBE test). `RoundEntry`
+  gained `cash` (float) + `cumulative_cash`.
+- **81-140 resolved (our composition is v55-current; cyberquincy was stale).**
+  The 81+ divergence was NOT a composition gap — our committed `groups` match the
+  dump's v55 `DefaultRoundSet` pop-counts exactly. It was **cyberquincy** being
+  out of date: freeplay cash-per-pop was buffed (×0.02 → ×0.04 past round 120) a
+  few updates ago. So 81-140 cash is computed from our v55 composition with the
+  current decay. (The Steam Web API doesn't expose round economy; the game files
+  store emissions, not cash — derivation from composition is the route.)
 
 ### Session log — 2026-06-04 (dump re-validation: confirmable data mapping is caught up)
 

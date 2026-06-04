@@ -124,9 +124,9 @@ class RoundEntry:
     # and which round set this is ("default"; ABR is a later addition).
     rbe: int | None = None
     # Standard/Medium per-round cash (pop cash + end-of-round bonus) and the
-    # running total. Float because income decay (rounds 51+) yields .5 values.
-    # Populated for rounds 1-80 (cyberquincy data set, cross-validated vs our
-    # RBE); None for 81+ until a v55-current source is confirmed. See
+    # running total. Float because income decay (rounds 51+) yields fractional
+    # values. Derived from this round's composition for all 140 rounds and pinned
+    # to it by tests/unit/services/test_btd6_round_cash.py. See
     # ``rounds.json:cash_source``.
     cash: float | None = None
     cumulative_cash: float | None = None
