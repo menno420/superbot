@@ -41,6 +41,19 @@ works** (the traps we hit), and what is still un-decoded.
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
    plus the `NameDowngradeError` name guard.
+6. **Map removable / blocker / destructible-object data** (NEW backlog target;
+   independent of the tower cutover; priority high-medium, *after* the live
+   phrasing/refusal fixes). A live test confirmed `which maps have water` now
+   answers from verified `has_water`, but `list maps with removables` has no
+   data: `MapEntry` / `maps.json` model only `difficulty`, `has_water`, and
+   `lines_of_sight_notes`. `map_maps()` reads only `hasWater` / `isDebug` from
+   each `Maps/<difficulty>/*.json` blob — so first **inspect a dump blob** for a
+   removable/obstacle field; if present, add a `removables` field to `MapEntry`
+   + the mapper + `_map_dict` (the `btd6_map_lookup` projection), verified
+   against in-game truth per the standing discipline (do **not** invent it).
+   Until then the bot states the gap rather than naming maps from memory — see
+   the "Unsupported BTD6 areas" clause in
+   `ai_instruction_service._TASK_CONTRACT`.
 
 **Binding discipline for every decode step:**
 - Re-validate anchors first (`--validate-anchors`); if they fail the dump moved → stop.

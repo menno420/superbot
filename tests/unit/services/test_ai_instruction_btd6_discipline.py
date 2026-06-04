@@ -78,3 +78,17 @@ def test_task_contract_routes_per_degree_paragon_stats_and_forbids_interpolation
     assert "NON-linear" in tc
     assert "square-root" in tc
     assert "interpolate" in tc  # the model must not linearly interpolate degrees
+
+
+def test_task_contract_marks_map_removables_as_unsupported_data():
+    # A live test asked "list all maps with removables": the bot correctly said
+    # the verified data doesn't cover removables, then *also* listed example maps
+    # "from general BTD6 knowledge" (Cubism/Geared). The map data set models only
+    # difficulty / water / line-of-sight, so per-map removables are an
+    # unsupported-data category — state the limit, don't improvise a list.
+    tc = instr._TASK_CONTRACT
+    assert "removable" in tc  # removables named among not-yet-modeled data
+    # Positive framing: name what map data IS covered so the limitation is clean.
+    assert "The map data set covers" in tc
+    # The behaviour fix: no general-knowledge example maps after the limitation.
+    assert "do NOT fall back to naming example maps" in tc
