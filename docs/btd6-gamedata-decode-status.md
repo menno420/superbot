@@ -211,8 +211,19 @@ game-data dump clone**, so this session did the work that is verifiable here and
     are grounded by construction, with no dependence on the model calling a tool.
     Verified in-sandbox (super monkey: 17 lines; True Sun God Impoppable per-buy
     $600,000; numbers reconcile). *Live-owed: the re-ask must now answer.*
-- **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
-  pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
+- **Live bug-report round 4 (phrasing-sensitivity cluster) — diagnosed, NOT a
+  data gap.** With tonight's reachability fixes in, the remaining failures are a
+  behaviour layer: the answer depends on phrasing/resolution, not data presence.
+  Clean A/B repros (verified in-sandbox — data present in all): "PMFC (0-5-DART)"
+  answered ideally (Sharp + flagged the ability-conversion gap) while "...when
+  plasma monkey fan club ability is activated" refused with the Sharp fact in
+  hand; "what does mermonkey bottom path do" refused despite **52** grounded
+  facts; "explain what the bottom path does" (no tower named) routed general with
+  0 facts. Three mechanisms: (1) conversational context not carried into
+  resolution; (2) upgrade-resolution gives thin grounding (4 facts) vs tower
+  (63); (3) **partial-answer-vs-refuse** — the model refuses wholesale instead of
+  answering the grounded part + flagging the gap. Captured in the absence-claim
+  design **Update 3**; behaviour/resolution-layer, design-first, not built blind.
   without), ranked over the **full** range before the detail cap, so the model
   never re-sorts and a wide range can't truncate a heavy late round. Verified vs
   ground truth: ceramics r30–80 → `[(78,147),(74,135),(63,122),(76,60),(65,50),
