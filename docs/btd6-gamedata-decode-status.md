@@ -87,6 +87,30 @@ game-data dump clone**, so this session did the work that is verifiable here and
     per-upgrade × 4-difficulty table, grounded by construction), the same pattern
     as `btd6_cumulative_cost`, replacing the fragile lookup + N×difficulty_cost
     stitch. *Not built yet — pending the tool-trace so we fix the real mechanism.*
+- **Live bug-report round 2 (maintainer + friends) — verified, two hypotheses
+  corrected.** Three reported issues:
+  - **Paragon false "no paragon" (Buccaneer).** Maintainer hypothesised a broken
+    tower→paragon linkage. **All-tower audit disproves it:** every paragon-bearing
+    tower is consistent (`monkey_buccaneer`→`paragon_cost=550000`→`navarch_of_the_
+    seas`), and `build("…buccaneer")` **emits** the correct `[btd6_paragon]`
+    Navarch line. So **no data fix** — the false "no paragon" is the model
+    confabulating an absence when that grounding wasn't surfaced → it's the **pure
+    absence-claim repro** (absence-claim design Update 2), not a linkage bug.
+  - **Upgrade-cost routing.** Maintainer hypothesised the *task router* branches
+    cost intent to general vs the cost tool. **Tested `classify()` — disproven:**
+    route ≠ outcome (`monkey ace upgrades`/`pricing of monkey buccaneer` route to
+    `btd6.answer` yet failed; `what are all the upgrade costs of the heli` routes
+    to `general.nl_answer` yet worked). Real mechanism: inconsistent model
+    invocation of the deterministic cost tools for *derived* numbers — the
+    derived-value family (finding §5.2). Fix is **auto-attached cost grounding**,
+    not a router change.
+  - **Absence-claim guard RE-ELEVATED** — the paragon case is the pure repro, and
+    a new hard requirement landed: **absence claims leave no audit row** (recent_
+    audit is denial-only), so the guard must emit an auditable signal. See the
+    absence-claim design Update 2.
+  - **Not broken (confirmed):** `btd6_cumulative_cost` arithmetic across Wizard/
+    Heli/Buccaneer; `btd6_relic_lookup`/`btd6_bloon_filter` registered (see the
+    capability-surface bullet above).
 - **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
   pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
   without), ranked over the **full** range before the detail cap, so the model

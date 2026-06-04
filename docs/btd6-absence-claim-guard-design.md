@@ -20,11 +20,13 @@
 
 ---
 
-## Evidence update (2026-06-04) — this guard is DEPRIORITIZED
+## Evidence update (2026-06-04) — RE-ELEVATED (a pure repro surfaced; see Update 2)
 
 Two more live tests (maintainer) reshaped the diagnosis after this doc's first
-draft. **Build the fix the evidence points at; this general guard is not the
-next PR.**
+draft. **Build the fix the evidence points at first** — but a later round
+(Update 2) found the *pure* absence-claim repro that was missing, so this guard
+is **back on the table**, now with a concrete reproduction case and a hard new
+requirement (absence claims must be *logged*).
 
 1. **MOAB-bonus, when the upgrade is *named*, now ANSWERS.** Asked "list the
    damage multipliers of the MOAB Mauler," the bot resolves Bomb Shooter 0-3-0,
@@ -36,11 +38,11 @@ next PR.**
    gap that explicit naming bypasses. **MOAB is no longer the canonical failing
    case — downgraded.**
 
-2. **A *pure* absence-claim ("X has no Y" with no answer attached) has NOT been
-   reproduced live.** Every failure caught is one of two narrower things —
-   derived-value rejection (total-cost, confirmed) or *deny-then-answer* (below).
-   Building the general absence-claim gate for a mode that isn't occurring is
-   premature. This design stays a **provisional backstop**, not the next PR.
+2. **~~A *pure* absence-claim has NOT been reproduced live.~~ SUPERSEDED by
+   Update 2.** At this draft's time, every failure was derived-value rejection or
+   deny-then-answer, so the guard was deprioritized. **A later round found the
+   pure repro** — "Monkey Buccaneer does not have a paragon" (it does). See
+   Update 2; the guard is re-elevated.
 
 ### The behaviour that IS occurring — deny-then-answer (the mild cousin)
 
@@ -71,10 +73,43 @@ answer survives; the framing is misleadingly negative.
 |---|---|---|
 | Derived-value rejection (total-cost) | **confirmed** (audit `grounding_failed` + provider); fix **shipped** (`btd6_cumulative_cost`, #482) | live-verify the re-ask |
 | Deny-then-answer preamble | confirmed live ×3; **mild** | framing fix + live-verify (next) |
-| Pure absence-claim ("X has no Y") | **not reproduced** live | keep this design as a backstop; do **not** build yet |
+| Pure absence-claim ("X has no Y") | **REPRODUCED** (Update 2: false "no paragon") | design now (§1–§7) + the logging requirement below |
 
-The original problem statement and design (§1–§7) remain valid as the *backstop*
-for if/when a pure absence-claim does surface — read them in that light.
+The original problem statement and design (§1–§7) are the *backstop*; Update 2
+makes them current again.
+
+## Update 2 (2026-06-04, later) — the pure repro, and a new hard requirement
+
+Asked for Monkey Buccaneer pricing, the bot ended with **"Monkey Buccaneer does
+not have a paragon"** — stated as fact. **It is false** (Navarch of the Seas).
+This is the clean pure absence-claim the earlier round was missing: no ungrounded
+number or name, so the verifier passed it, yet it is flatly wrong.
+
+**Verified it is NOT a data bug (all-tower audit).** Every paragon-bearing tower
+is consistent — `monkey_buccaneer` carries `paragon_cost=550000` and the
+`navarch_of_the_seas` stats file exists; `btd6_context_service.build("…
+buccaneer")` **does** emit `[btd6_paragon] Monkey Buccaneer's Paragon (tier 6) is
+Navarch of the Seas, costing 550000`. So the linkage is correct. The false "no
+paragon" is the model **confabulating an absence** on a turn where that grounding
+line wasn't in front of it — the exact blind spot this doc describes.
+
+Two hard requirements this case adds to the design:
+
+- **Absence claims must be LOGGED.** `recent_audit` is a *denial* log — a
+  confidently-wrong *answer* the guard passed (like this one) leaves **no audit
+  row at all**. The single most dangerous failure type is currently invisible to
+  the very tool we diagnose everything else with. The backstop must **emit an
+  auditable signal whenever it inspects/permits an absence assertion**, or we can
+  never monitor the failure we're trying to kill.
+- **Verify against DATA, not user assertion.** When a user corrected the bot
+  ("it does have a paragon, Navarch"), it instantly produced a correct Navarch
+  table — good UX, but it flipped stance on a *claim*, not on its data. The same
+  reflex could fabricate the other direction (assert a paragon for a paragon-less
+  tower because a user said so). The gate must check the committed data, not
+  defer to the user's say-so.
+
+Scope stays **narrow**: a BTD6 unsupported-negative backstop on final generated
+answers, not a global pre-answer guard — and design-first, per the standing rule.
 
 ---
 
