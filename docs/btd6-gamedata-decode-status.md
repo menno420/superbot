@@ -68,6 +68,23 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 >    to **55.0**, justified by the audit (committed numbers are 0-SUSPECT /
 >    overwhelmingly CLEAN vs the v55 dump, i.e. already v55-accurate).
 
+> **More reachability fixes (2026-06-04, live testing).** Same "extracted ≠
+> reachable" lesson, two more instances:
+> 3. *`Ultra-Juggernaut` resolved as ambiguous*, so its damage modifiers (+20
+>    Lead / +8 Ceramic / +5 Fortified) never reached the model — it confabulated
+>    "no multipliers". Root cause: the upgrade resolver matched both the full name
+>    and the embedded `Juggernaut` substring → two name-hits → ambiguous. (The
+>    #476 test masked this by resolving the raw id, bypassing the resolver.)
+>    Fixed: `_absorb_subname_hits` drops a name-hit whose surface is a contiguous
+>    sub-run of a longer matching name, so the full name wins while genuinely
+>    distinct names ("X vs Y") stay ambiguous; added `ultra jug`/`ujug` aliases.
+> 4. *Per-round bloon composition is unreachable, not missing.* `rounds.json`
+>    already carries each round's `groups[]` (`bloon_id` + `count`), but there is
+>    **no tool** to answer a range aggregation ("how many purples r35–r70"), so
+>    the bot refuses. A `btd6_round_composition`-style query tool over the
+>    committed rounds is the fix — **next slice** (data exists; no extraction
+>    needed).
+
 ### ✅ Complete & verified
 
 | Item | Where | Evidence |

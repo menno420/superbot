@@ -76,6 +76,9 @@ class UpgradeResolution:
 _CURATED_ALIASES: dict[str, str] = {
     # Dart Monkey
     "pmfc": "Plasma Monkey Fan Club",
+    "ultra jug": "Ultra-Juggernaut",
+    "ultrajug": "Ultra-Juggernaut",
+    "ujug": "Ultra-Juggernaut",
     # Super Monkey
     "smfc": "Super Monkey Fan Club",
     "sun avatar": "Sun Avatar",
@@ -281,6 +284,48 @@ def _match_surfaces(
     return hits
 
 
+def _match_surfaces_keyed(
+    query_tokens: list[str],
+    index: dict[tuple[str, ...], UpgradeIdentity],
+) -> dict[str, tuple[str, ...]]:
+    """``{upgrade_id: longest matching surface}`` — like :func:`_match_surfaces`
+    but keeps the surface that matched (for sub-name absorption below).
+    """
+    token_set = set(query_tokens)
+    hits: dict[str, tuple[str, ...]] = {}
+    for surface, identity in index.items():
+        matched = (
+            surface[0] in token_set
+            if len(surface) == 1
+            else _contains_subsequence(query_tokens, list(surface))
+        )
+        if matched:
+            prev = hits.get(identity.upgrade_id)
+            if prev is None or len(surface) > len(prev):
+                hits[identity.upgrade_id] = surface
+    return hits
+
+
+def _absorb_subname_hits(hits: dict[str, tuple[str, ...]]) -> set[str]:
+    """Drop a hit whose surface is a contiguous sub-run of a *longer* hit's
+    surface, so an exact full name wins over a substring of it (``Ultra-
+    Juggernaut`` beats the embedded ``Juggernaut``). Two names that don't overlap
+    (``juggernaut`` vs ``prince of darkness``) are both kept — genuine ambiguity.
+    """
+    keep = set(hits)
+    items = list(hits.items())
+    for uid, surface in items:
+        for other_id, other in items:
+            if (
+                other_id != uid
+                and len(surface) < len(other)
+                and _contains_subsequence(list(other), list(surface))
+            ):
+                keep.discard(uid)
+                break
+    return keep
+
+
 def _single_path_code(query: str) -> str | None:
     """The first single-path tier code in ``query`` (e.g. ``005``), or None.
 
@@ -319,7 +364,10 @@ def resolve_upgrade(query: str) -> UpgradeResolution:
     if not tokens and not (query or "").strip():
         return UpgradeResolution(query=query or "", match_type="none")
 
-    name_hits = _match_surfaces(tokens, reg.name_index)
+    # Exact names first, with sub-name absorption: a query naming "Ultra-
+    # Juggernaut" matches both that and the embedded "Juggernaut" surface, but
+    # the longer, more-specific name wins rather than reading as ambiguous.
+    name_hits = _absorb_subname_hits(_match_surfaces_keyed(tokens, reg.name_index))
     if len(name_hits) == 1:
         return UpgradeResolution(query, "exact_name", reg.by_id[next(iter(name_hits))])
 
