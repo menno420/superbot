@@ -335,7 +335,43 @@ def _render_fixture_tower(entry: Any) -> list[str]:
         )
 
     lines.extend(_render_paragon(getattr(entry, "id", ""), canonical))
+    lines.extend(_render_upgrade_descriptions(getattr(entry, "id", ""), canonical))
     lines.extend(_render_tower_stats(getattr(entry, "id", ""), canonical))
+    return lines
+
+
+def _render_upgrade_descriptions(tower_id: str, canonical: str) -> list[str]:
+    """Per-upgrade game-authored description prose as ``[btd6_upgrade]`` lines.
+
+    A tower's 15 upgrade cards each carry a localized description (extracted from
+    the dump). ``_render_tower`` lists upgrade NAMES + costs but not their prose,
+    so "list the upgrades and descriptions of X" / "what does <upgrade> do" had no
+    grounding and the model free-recalled it — which the faithfulness guard
+    rejected (live ``grounding_failed``). Surfaces every described card, bounded
+    by the 15-card max and emitted only for a specifically-named tower — the
+    tower analogue of :func:`_render_hero_descriptions`.
+    """
+    from services import btd6_stats_service
+
+    stats = btd6_stats_service.get_tower_stats(tower_id)
+    if stats is None:
+        return []
+    suffix = " (source: BTD6 in-game description)"
+    lines: list[str] = []
+    for up in stats.upgrades:
+        if not isinstance(up, dict):
+            continue
+        name = _sanitise(str(up.get("name", "") or ""))
+        desc = _sanitise(str(up.get("description", "") or ""))
+        if not name or not desc:
+            continue
+        # Budget the prose so the provenance suffix always survives (mirrors the
+        # per-level hero descriptions); _cap would otherwise chop the source off.
+        prefix = f"[btd6_upgrade] {canonical} {name}: "
+        budget = _FACT_TEXT_CAP - len(prefix) - len(suffix)
+        if budget < len(desc):
+            desc = desc[: max(budget - 1, 0)].rstrip() + "…"
+        lines.append(f"{prefix}{desc}{suffix}")
     return lines
 
 
