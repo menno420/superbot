@@ -63,6 +63,30 @@ def test_dataset_has_representative_entries():
     assert len(dataset.rounds) >= 5
 
 
+def test_map_removables_curated_for_known_maps_only():
+    # Removable obstacles are bloonswiki-curated (not in the dump). They must
+    # land on the maps we have data for, and stay blank (= "no data", not
+    # "none") everywhere else — so the bot never implies a map has no removables.
+    by_id = {m.id: m for m in get_dataset().maps}
+    assert "trucks" in by_id["cargo"].removables.lower()
+    assert "round 39" in by_id["cargo"].removables  # the unlock condition survives
+    assert by_id["cornfield"].removables  # Advanced map with curated removables
+    # A map with no curated data carries an empty string, never a fabricated note.
+    assert by_id["tree_stump"].removables == ""
+
+
+def test_map_grounding_surfaces_removables():
+    # The map fact the model sees (via btd6_response_builder.for_map) must carry
+    # removables alongside line-of-sight — answering "what removables on X".
+    from services import btd6_response_builder as rb
+
+    by_id = {m.id: m for m in get_dataset().maps}
+    why = rb.for_map(by_id["cargo"]).why_it_matters
+    assert "Removable obstacles:" in why and "trucks" in why.lower()
+    # No removables data → no removables clause (not "has none").
+    assert "Removable obstacles" not in rb.for_map(by_id["tree_stump"]).why_it_matters
+
+
 def test_tower_upgrade_paths_have_five_tiers():
     dataset = get_dataset()
     for tower in dataset.towers:

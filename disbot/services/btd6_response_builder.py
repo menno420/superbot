@@ -212,10 +212,15 @@ def for_hero(
 
 
 def for_map(game_map: MapEntry) -> BTD6Response:
+    why = game_map.lines_of_sight_notes
+    # Removable obstacles ride alongside line-of-sight (most removables ARE LoS
+    # blockers). Only present for maps with curated data; absent = unknown.
+    if game_map.removables:
+        why = f"{why} Removable obstacles: {game_map.removables}"
     return BTD6Response(
         title=f"{game_map.canonical} ({game_map.difficulty})",
         short_answer=game_map.description,
-        why_it_matters=game_map.lines_of_sight_notes,
+        why_it_matters=why,
         sources=(_source_label(),),
         confidence="high",
         follow_up="Pair with `!btd6 mode <name>` for mode-specific advice.",

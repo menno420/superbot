@@ -159,7 +159,8 @@
       "difficulty": "Beginner",
       "description": "Beginner map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "A cluster of houses (line-of-sight blockers); removing them also opens water terrain."
     },
     {
       "id": "skull_tweak",
@@ -186,7 +187,8 @@
       "difficulty": "Beginner",
       "description": "Beginner map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "A green car (line-of-sight blocker); removing it opens more terrain, and removing it in a specific way triggers an Easter-egg animation."
     },
     {
       "id": "three_mines_around",
@@ -195,7 +197,8 @@
       "difficulty": "Beginner",
       "description": "Beginner map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Six Bananite crystal rocks that pay out a profit once mined; some block line of sight, and all block placeable terrain."
     },
     {
       "id": "tinkerton",
@@ -285,7 +288,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Four groups of trees (line-of-sight blockers); removing them opens more placeable terrain."
     },
     {
       "id": "bloonarius_prime",
@@ -303,7 +307,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Two monkey statues (line-of-sight blockers); removing them opens more placeable terrain."
     },
     {
       "id": "covered_garden",
@@ -321,7 +326,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "A rock that blocks line of sight; removing it opens water terrain."
     },
     {
       "id": "downstream",
@@ -330,7 +336,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Two groups of rocks (line-of-sight blockers); removing them opens terrain."
     },
     {
       "id": "encrypted",
@@ -339,7 +346,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Four groups of rock debris around the central space; each is removable and opens placeable terrain exclusive to one tower category."
     },
     {
       "id": "firing_range",
@@ -348,7 +356,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "A central outpost (line-of-sight blocker); removing it opens placeable terrain."
     },
     {
       "id": "haunted",
@@ -357,7 +366,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Two leafless trees in front of the mansion entrance that block line of sight; removing them opens placeable terrain."
     },
     {
       "id": "karts_ndarts",
@@ -366,7 +376,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map.",
       "lines_of_sight_notes": "No water tiles — land-only tower placement.",
-      "has_water": false
+      "has_water": false,
+      "removables": "Two safety barriers of hay bales and tires in each loop; they do NOT block line of sight; removing them opens placeable terrain."
     },
     {
       "id": "lost_crevasse",
@@ -429,7 +440,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Two frozen lakes whose removal opens water terrain, plus five cars (line-of-sight blockers) whose removal opens placeable terrain."
     },
     {
       "id": "rake",
@@ -438,7 +450,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "A monkey statue (line-of-sight blocker); removing it opens placeable terrain."
     },
     {
       "id": "spice_islands",
@@ -447,7 +460,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "A coconut grove on one island (line-of-sight blocker); removing it opens placeable terrain."
     },
     {
       "id": "spring_spring",
@@ -465,7 +479,8 @@
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "A dinosaur skull in the center (line-of-sight blocker); removing it opens placeable terrain."
     },
     {
       "id": "sulfur_springs",
@@ -492,7 +507,8 @@
       "difficulty": "Advanced",
       "description": "Advanced map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Two brick pallets; removing them opens placeable terrain that is otherwise walled off from the track."
     },
     {
       "id": "cargo",
@@ -501,7 +517,8 @@
       "difficulty": "Advanced",
       "description": "Advanced map. Contains water.",
       "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
+      "has_water": true,
+      "removables": "Two trucks (line-of-sight blockers) removable only after the end of round 39 (once the cargo ramp lowers and the queuing trucks move); removal opens placeable terrain."
     },
     {
       "id": "castle_revenge",
@@ -521,7 +538,8 @@
       "difficulty": "Advanced",
       "description": "Open field with a winding path. Forgiving placement.",
       "lines_of_sight_notes": "Open layout; nearly any tower works.",
-      "has_water": false
+      "has_water": false,
+      "removables": "Thirteen patches of semi-ripe to ripe corn (line-of-sight blockers); removing them opens placeable terrain."
     },
     {
       "id": "dark_path",

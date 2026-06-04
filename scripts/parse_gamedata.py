@@ -1675,6 +1675,35 @@ def _existing_maps() -> dict[str, dict]:
     }
 
 
+# Per-map removable obstacles. NOT in the game-data dump — the map files
+# (``MapDetails``) carry only difficulty / water / theme; removables live in the
+# compiled AssetBundle scenes, which aren't queryable. This curated table is
+# bloonswiki-sourced prose: what the removable is, whether it blocks line of
+# sight, what removing it opens (water / placeable terrain), and any condition.
+# Costs are intentionally omitted (not in the source). Keyed by ``_snake`` id;
+# ``map_maps`` injects it and a ``--maps`` regen preserves it.
+_MAP_REMOVABLES: dict[str, str] = {
+    "skates": "A cluster of houses (line-of-sight blockers); removing them also opens water terrain.",
+    "the_cabin": "A green car (line-of-sight blocker); removing it opens more terrain, and removing it in a specific way triggers an Easter-egg animation.",
+    "three_mines_around": "Six Bananite crystal rocks that pay out a profit once mined; some block line of sight, and all block placeable terrain.",
+    "bazaar": "Four groups of trees (line-of-sight blockers); removing them opens more placeable terrain.",
+    "chutes": "Two monkey statues (line-of-sight blockers); removing them opens more placeable terrain.",
+    "cracked": "A rock that blocks line of sight; removing it opens water terrain.",
+    "downstream": "Two groups of rocks (line-of-sight blockers); removing them opens terrain.",
+    "encrypted": "Four groups of rock debris around the central space; each is removable and opens placeable terrain exclusive to one tower category.",
+    "firing_range": "A central outpost (line-of-sight blocker); removing it opens placeable terrain.",
+    "haunted": "Two leafless trees in front of the mansion entrance that block line of sight; removing them opens placeable terrain.",
+    "karts_ndarts": "Two safety barriers of hay bales and tires in each loop; they do NOT block line of sight; removing them opens placeable terrain.",
+    "quiet_street": "Two frozen lakes whose removal opens water terrain, plus five cars (line-of-sight blockers) whose removal opens placeable terrain.",
+    "rake": "A monkey statue (line-of-sight blocker); removing it opens placeable terrain.",
+    "spice_islands": "A coconut grove on one island (line-of-sight blocker); removing it opens placeable terrain.",
+    "streambed": "A dinosaur skull in the center (line-of-sight blocker); removing it opens placeable terrain.",
+    "another_brick": "Two brick pallets; removing them opens placeable terrain that is otherwise walled off from the track.",
+    "cargo": "Two trucks (line-of-sight blockers) removable only after the end of round 39 (once the cargo ramp lowers and the queuing trucks move); removal opens placeable terrain.",
+    "cornfield": "Thirteen patches of semi-ripe to ripe corn (line-of-sight blockers); removing them opens placeable terrain.",
+}
+
+
 def map_maps(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     """Every player map across the four difficulty folders → catalog rows.
 
@@ -1707,20 +1736,24 @@ def map_maps(dump: Path, version: str) -> tuple[list[dict], list[str]]:
             seen.add(mid)
             has_water = bool(raw.get("hasWater"))
             old = prior.get(mid, {})
-            rows.append(
-                {
-                    "id": mid,
-                    "canonical": tt.get(stem) or _decamel(stem),
-                    "aliases": list(old.get("aliases", [])),
-                    "difficulty": difficulty,
-                    # Curated prose wins where present; otherwise a factual derive.
-                    "description": old.get("description")
-                    or f"{difficulty} map.{' Contains water.' if has_water else ''}",
-                    "lines_of_sight_notes": old.get("lines_of_sight_notes")
-                    or _map_los(has_water),
-                    "has_water": has_water,
-                },
-            )
+            row = {
+                "id": mid,
+                "canonical": tt.get(stem) or _decamel(stem),
+                "aliases": list(old.get("aliases", [])),
+                "difficulty": difficulty,
+                # Curated prose wins where present; otherwise a factual derive.
+                "description": old.get("description")
+                or f"{difficulty} map.{' Contains water.' if has_water else ''}",
+                "lines_of_sight_notes": old.get("lines_of_sight_notes")
+                or _map_los(has_water),
+                "has_water": has_water,
+            }
+            # Removable obstacles: curated (not in the dump). Only carried for the
+            # maps we have wiki data on — absence means "no data", not "none".
+            removables = _MAP_REMOVABLES.get(mid) or old.get("removables")
+            if removables:
+                row["removables"] = removables
+            rows.append(row)
     rows.sort(key=lambda m: (_MAP_DIFFICULTY_DIRS.index(m["difficulty"]), m["id"]))
     return rows, warnings
 
