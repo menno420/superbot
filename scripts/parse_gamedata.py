@@ -23,8 +23,10 @@ is *runtime-compatible* with what ``parse_bloonswiki`` produces but **game-
 native**, not identical to it: names come from the game (``displayName`` for
 abilities, ``LocsKey`` → ``textTable`` for upgrade names/descriptions, the game
 ``id`` for projectiles), sub-projectiles are grouped the game's way, and
-``subtowers[]`` are produced; ``zones[]`` / ``buffs[]`` are not yet. The runtime
-is largely name-agnostic, so this drops in. Heroes are one file per level
+``subtowers[]`` are produced; ``zones[]`` and ``buffs[]`` decode is **in
+progress** (top-level ``*ZoneModel`` + confirmed ``*SupportModel`` types — see
+``_zones`` / ``_buffs`` and ``btd6-gamedata-decode-status.md`` step 5). The
+runtime is largely name-agnostic, so this drops in. Heroes are one file per level
 (``<Hero> N.json``); paragons are a single flat ``<Name>-Paragon.json`` node.
 
 Provenance: every emitted file is stamped ``source: "BTD Mod Helper game data
@@ -549,6 +551,58 @@ def _zones(model: dict) -> list[dict]:
     return out
 
 
+# Buff/support decode — start. A buff model's raw effect field → the committed
+# buff-schema field the runtime renders (``btd6_upgrade_detail_service._BUFF_FIELDS``).
+# ONLY mappings whose semantics are **confirmed against the committed wiki value
+# on a matching tier** belong here (correctness over coverage):
+#   * RateSupportModel.multiplier  → rateMultiplier   (Sniper 0-5-x: raw 0.75 == wiki 0.75)
+#   * PoplustSupportModel.ratePercentIncrease/piercePercentIncrease
+#                                  → ratePercentage / piercePercentage (Druid 0-0-5: 0.15/0.15)
+# The other ~36 *SupportModel/*BuffModel types are deferred until each is
+# likewise confirmed (e.g. PierceSupportModel.pierce was NOT confirmable — the
+# wiki's pierce buffs are multipliers from a different model). See
+# ``btd6-gamedata-decode-status.md`` step 5 for the worklist + decode classes.
+_BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
+    "RateSupportModel": {"multiplier": "rateMultiplier"},
+    "PoplustSupportModel": {
+        "ratePercentIncrease": "ratePercentage",
+        "piercePercentIncrease": "piercePercentage",
+    },
+}
+
+
+def _buffs(model: dict) -> list[dict]:
+    """Start of buff decoding: each confirmed ``*SupportModel``/``*BuffModel`` in
+    the tier's top-level behaviors → a structured entry with its decoded effect
+    field(s). ``name`` is the dump's **internal** identifier (``buffLocsName`` /
+    ``mutatorId``), never a player-facing label — curated names ("Poplust buff")
+    are not in the dump and stay wiki-owned, so the fidelity audit aligns by name
+    and ignores ours. Only confirmed types emit a number (see ``_BUFF_FIELD_MAP``).
+    """
+    out: list[dict] = []
+    for behavior in model.get("behaviors", []) or []:
+        if not isinstance(behavior, dict):
+            continue
+        short = _short_type(behavior)
+        field_map = _BUFF_FIELD_MAP.get(short)
+        if field_map is None:
+            continue  # type not yet confirmed — deferred, never guess a number
+        entry: dict = {
+            "kind": short[: -len("Model")],
+            "name": behavior.get("buffLocsName")
+            or behavior.get("mutatorId")
+            or short[: -len("Model")],
+        }
+        for raw_field, schema_field in field_map.items():
+            value = behavior.get(raw_field)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[schema_field] = _num(value)
+        if "isGlobal" in behavior:
+            entry["isGlobal"] = bool(behavior["isGlobal"])
+        out.append(entry)
+    return out
+
+
 def _map_tier(model: dict, _subtower: bool = False) -> dict:
     """A full tower-state model file → one cleaned tier node."""
     tier: dict = {}
@@ -578,6 +632,9 @@ def _map_tier(model: dict, _subtower: bool = False) -> dict:
     zones = _zones(model)
     if zones:
         tier["zones"] = zones
+    buffs = _buffs(model)
+    if buffs:
+        tier["buffs"] = buffs
     tier.update(_target_types(model))
     income = _income(model)
     if income:

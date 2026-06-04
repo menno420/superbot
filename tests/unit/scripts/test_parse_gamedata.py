@@ -868,3 +868,60 @@ def test_zones_decode_slow_and_radius(mod):
 def test_zones_absent_when_no_zone_models(mod):
     # A plain attacker has no zones[] key at all (not an empty list).
     assert "zones" not in mod._map_tier(_tower_model())
+
+
+# --- buffs (first decode slice — confirmed types only) ----------------------
+
+
+def test_buffs_rate_support_maps_to_rate_multiplier(mod):
+    # Mirrors Sniper 0-5-x Elite Defender: raw multiplier 0.75 == wiki rateMultiplier.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("RateSupportModel"),
+            "name": "RateSupportModel_Support_",
+            "buffLocsName": "EliteSniperBuff",
+            "multiplier": 0.75,
+            "isGlobal": True,
+        }
+    )
+    tier = mod._map_tier(model)
+    assert tier["buffs"] == [
+        {
+            "kind": "RateSupport",
+            "name": "EliteSniperBuff",  # internal id, never a curated label
+            "rateMultiplier": 0.75,
+            "isGlobal": True,
+        }
+    ]
+
+
+def test_buffs_poplust_maps_percent_increase_fields(mod):
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("PoplustSupportModel"),
+            "name": "",
+            "buffLocsName": "PoplustBuff",
+            "ratePercentIncrease": 0.15,
+            "piercePercentIncrease": 0.15,
+        }
+    )
+    buffs = mod._map_tier(model)["buffs"]
+    assert buffs == [
+        {
+            "kind": "PoplustSupport",
+            "name": "PoplustBuff",
+            "ratePercentage": 0.15,
+            "piercePercentage": 0.15,
+        }
+    ]
+
+
+def test_unconfirmed_buff_types_emit_nothing(mod):
+    # PierceSupportModel is deferred (not yet confirmed vs wiki) → no guess.
+    model = _tower_model()
+    model["behaviors"].append(
+        {"$type": _t("PierceSupportModel"), "pierce": 3.0, "buffLocsName": "X"}
+    )
+    assert "buffs" not in mod._map_tier(model)
