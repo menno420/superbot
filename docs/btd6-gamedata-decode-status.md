@@ -302,19 +302,37 @@ curator-supplied name is preserved, never regressed to an internal model string.
    **decoded-effect half** of the end goal. Each sub-step: decode the headline
    numeric where `--audit`-stable, else fall back to description-only (flagged).
    In order:
-   a. **Zones** — 12 `*ZoneModel` types (`SlowBloonsZone`, `DamageOverTimeZone`,
+   a. **Zones** — **28** `*ZoneModel` types (`SlowBloonsZone`, `DamageOverTimeZone`,
       shove/windy/necromancer + economy); the zone's own `name` is empty →
-      resolve via the owning upgrade's `LocsKey`.
-   b. **Buffs** — 37 `*SupportModel`/`*BuffModel` types; a common core
+      resolve via the owning upgrade's `LocsKey`. *(28, not 12 — see report §3a.)*
+   b. **Buffs** — **38** `*SupportModel`/`*BuffModel` types; a common core
       (Range/Pierce/Visibility/Rate/Speed/Cooldown/Damage support sharing
       `multiplier`/`additive` + `buffLocsName`→name) covers most; tail towers get
-      a name-only node.
+      a name-only node. *(38, not 37 — see report §3b.)*
    c. **Subtower tail** — `MorphTowerModel` named-ref (Alchemist) +
       `BeastHandlerPetModel` (the 2 remaining mechanisms).
    d. **Economy-tower attack suppression**, then the **towers cutover** (`--all`,
       runtime name-adaptations, update the ~25 value-pinned tests), gated by
       `--audit` and (3). *Rationale: largest effort and the cutover blocker; uses
       (1) sizing and (3) name-joins.*
+
+   > **Definition of done (binding, from the #476/#478 lessons).** A step-5 slice
+   > is done only when each effect is **extracted + committed + retrievable by a
+   > tool + the per-`$type` number verified individually** (never a bulk write).
+   > "Extracted ≠ reachable ≠ answerable": the data being in a committed file is
+   > not enough — a renderer/tool must surface it *and* the resolver must reach
+   > the entity (Ultra-Juggernaut's modifiers existed and grounded but were
+   > unreachable because the resolver read the name as ambiguous; #478). The
+   > schema extension for effects the current buff schema can't hold
+   > (`projectileSpeed`, `visibility`) **alters shape**, so expect an
+   > architecture / registry-snapshot invariant to bite — conform to it.
+   >
+   > **Ordering vs step 3:** the numeric-overlay envelope (`_OVERLAY_FIELDS =
+   > {range, footprintRadius}` + upgrade `cost`/`xp`) and step 5's
+   > `buffs[]`/`zones[]` are **field-disjoint**, and `overlay_payload` edits in
+   > place without stripping unrelated keys (verified) — so the two are
+   > order-safe on the same tower file (no half-populated entities); either may
+   > land first.
 
    > **Decode analysis (2026-06-04, slice 1).** Deep investigation before any
    > buff/zone *write*, with three inconsistencies flagged:
@@ -342,6 +360,15 @@ curator-supplied name is preserved, never regressed to an internal model string.
    >   semantics proven against a committed example or an unambiguous field name).
    >   *(The "37 buff / 12 zone" counts here are superseded by the SHA-pinned
    >   report's 38 / 28 — see `btd6-decode-inventory-v55.md` §3.)*
+   > - **Schema-coverage gap (slice-2 input).** Several committed buff fields are
+   >   already present but NOT in `_BUFF_FIELDS`, so they render as a bare
+   >   "buff": economy effects (`cashPerRoundPerFavouredTrades`,
+   >   `heroXpMultiplier`, `cashbackZoneMultiplier`, …). Slice 2 should widen the
+   >   schema to surface these too, not just speed/visibility.
+   >
+   > **Slice 1 shipped (#477):** the ×100 render fix only — **no buff/zone
+   > numbers were written**, so the 🔴 "0 of 28 / 0 of 38" below still stands for
+   > the *write*; only the rendering of the already-committed buffs is corrected.
 
 **Lower priority — post-#468 AI-answer enhancements (not roadmap-critical)**
 
