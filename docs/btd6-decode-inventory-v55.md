@@ -98,85 +98,87 @@ Per-field verdict for everything the mapper already extracts. `SUSPECT` (>20% di
 
 The 'stat-based effect' half of the goal. These `$type`s are **inline behaviors in the tower models** (the dump has no `zones[]`/`buffs[]` arrays — those are our *output* schema). Ranked by occurrence: decode the headline effect number where one exists, else fall back to the textTable description (flagged).
 
+**Decode-class** (slice-2 registry, classification only — no numbers written): `SAFE_WRITE` = clear semantics + a committed buff-schema field; `SCHEMA_FIRST` = real number but the schema has no field yet (extend first); `DEFER` = ambiguous semantics; `DESCRIPTION_ONLY` = name/flag only (already covered by the upgrade description).
+
 ### 3a. Zone effect models — 28 distinct `$type`s
 
 > **Doc reconciliation:** `btd6-gamedata-decode-status.md` records "0 of 12 zone" — v55 actually has **28** distinct `*ZoneModel` `$type`s. The doc's 12 is an undercount; this report is the live ground truth.
 
-| Zone `$type` | Count | Decodable-number? | Has-curated-name? |
-|---|---|---|---|
-| `DiscountZoneModel` | 110 | no (name/flag only) | yes (buffLocsName) |
-| `SlowBloonsZoneModel` | 88 | no (name/flag only) | yes (model name) |
-| `AddBehaviorToBloonInZoneModel` | 69 | no (name/flag only) | via owning upgrade |
-| `ActivateRateSupportZoneModel` | 44 | geometry-only | yes (buffLocsName) |
-| `ActivateTowerDamageSupportZoneModel` | 36 | geometry-only | yes (buffLocsName) |
-| `CollectCashZoneModel` | 19 | no (name/flag only) | yes (model name) |
-| `DamageOverTimeZoneModel` | 19 | geometry-only | yes (model name) |
-| `BuffBlowbackZoneModel` | 18 | yes (multiplier) | via owning upgrade |
-| `CashbackZoneModel` | 17 | no (name/flag only) | yes (buffLocsName) |
-| `ActivatePierceSupportZoneModel` | 16 | geometry-only | yes (buffLocsName) |
-| `ActivateDamageModifierSupportZoneModel` | 16 | geometry-only | via owning upgrade |
-| `ActivateVisibilitySupportZoneModel` | 15 | geometry-only | yes (buffLocsName) |
-| `MoabShoveZoneModel` | 15 | geometry-only | via owning upgrade |
-| `ActivateTempTargetPrioSupportZoneModel` | 14 | geometry-only | via owning upgrade |
-| `ActivateIgnoreStunSupportZoneModel` | 12 | geometry-only | yes (buffLocsName) |
-| `BonusCashZoneModel` | 10 | yes (multiplier) | yes (model name) |
-| `NecromancerZoneModel` | 10 | no (name/flag only) | via owning upgrade |
-| `ActivateRangeSupportZoneModel` | 8 | yes (additive, multiplier) | via owning upgrade |
-| `BountyHunterZoneModel` | 5 | no (name/flag only) | yes (model name) |
-| `WindyZoneModel` | 3 | no (name/flag only) | via owning upgrade |
-| `ActivateSpreadSupportZoneModel` | 2 | geometry-only | via owning upgrade |
-| `ControlledRateZoneModel` | 2 | no (name/flag only) | via owning upgrade |
-| `ControlledStaminaDrainZoneModel` | 2 | no (name/flag only) | via owning upgrade |
-| `ControlledEffectZoneModel` | 2 | no (name/flag only) | via owning upgrade |
-| `ActivateAttackCollisionSupportZoneModel` | 1 | geometry-only | via owning upgrade |
-| `ActivateControlledZoneModel` | 1 | no (name/flag only) | via owning upgrade |
-| `DeActivateControlledZoneModel` | 1 | no (name/flag only) | via owning upgrade |
-| `SpikeParagonDamageZoneModel` | 1 | no (name/flag only) | via owning upgrade |
+| Zone `$type` | Count | Decodable-number? | Has-curated-name? | Decode-class |
+|---|---|---|---|---|
+| `DiscountZoneModel` | 110 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `SlowBloonsZoneModel` | 88 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `AddBehaviorToBloonInZoneModel` | 69 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateRateSupportZoneModel` | 44 | geometry-only | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `ActivateTowerDamageSupportZoneModel` | 36 | geometry-only | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `CollectCashZoneModel` | 19 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `DamageOverTimeZoneModel` | 19 | geometry-only | yes (model name) | DESCRIPTION_ONLY |
+| `BuffBlowbackZoneModel` | 18 | yes (multiplier) | via owning upgrade | DEFER |
+| `CashbackZoneModel` | 17 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `ActivatePierceSupportZoneModel` | 16 | geometry-only | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `ActivateDamageModifierSupportZoneModel` | 16 | geometry-only | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateVisibilitySupportZoneModel` | 15 | geometry-only | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `MoabShoveZoneModel` | 15 | geometry-only | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateTempTargetPrioSupportZoneModel` | 14 | geometry-only | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateIgnoreStunSupportZoneModel` | 12 | geometry-only | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `BonusCashZoneModel` | 10 | yes (multiplier) | yes (model name) | SCHEMA_FIRST |
+| `NecromancerZoneModel` | 10 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateRangeSupportZoneModel` | 8 | yes (additive, multiplier) | via owning upgrade | DEFER |
+| `BountyHunterZoneModel` | 5 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `WindyZoneModel` | 3 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateSpreadSupportZoneModel` | 2 | geometry-only | via owning upgrade | DESCRIPTION_ONLY |
+| `ControlledRateZoneModel` | 2 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `ControlledStaminaDrainZoneModel` | 2 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `ControlledEffectZoneModel` | 2 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateAttackCollisionSupportZoneModel` | 1 | geometry-only | via owning upgrade | DESCRIPTION_ONLY |
+| `ActivateControlledZoneModel` | 1 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `DeActivateControlledZoneModel` | 1 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `SpikeParagonDamageZoneModel` | 1 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
 
 ### 3b. Buff / support effect models — 38 distinct `$type`s
 
 > **Doc reconciliation:** decode-status records "0 of 37 buff" — v55 has **38** distinct `*SupportModel`/`*BuffModel` `$type`s (the doc's 37 is close).
 
-| Buff/Support `$type` | Count | Decodable-number? | Has-curated-name? |
-|---|---|---|---|
-| `RangeSupportModel` | 163 | yes (additive, multiplier) | yes (buffLocsName) |
-| `PierceSupportModel` | 103 | yes (pierce) | yes (buffLocsName) |
-| `VisibilitySupportModel` | 94 | no (name/flag only) | yes (buffLocsName) |
-| `RateSupportModel` | 85 | yes (multiplier) | yes (buffLocsName) |
-| `PlacementAreaTypeRangeBuffModel` | 64 | no (name/flag only) | via owning upgrade |
-| `StartOfRoundRateBuffModel` | 41 | yes (modifier) | via owning upgrade |
-| `AddBehaviorToTowerSupportModel` | 39 | no (name/flag only) | yes (buffLocsName) |
-| `DroneSupportModel` | 38 | no (name/flag only) | yes (model name) |
-| `ProjectileSpeedSupportModel` | 30 | yes (multiplier) | yes (buffLocsName) |
-| `HeatItUpDamageBuffModel` | 28 | geometry-only | yes (buffLocsName) |
-| `MonkeyCityIncomeSupportModel` | 26 | no (name/flag only) | yes (buffLocsName) |
-| `DamageSupportModel` | 20 | no (name/flag only) | yes (model name) |
-| `AddBehaviorToTowerTypeSupportModel` | 19 | no (name/flag only) | yes (buffLocsName) |
-| `BananaCashIncreaseSupportModel` | 16 | yes (multiplier) | yes (buffLocsName) |
-| `PyrotechnicsSupportModel` | 16 | no (name/flag only) | yes (buffLocsName) |
-| `AbilityCooldownScaleSupportModel` | 16 | no (name/flag only) | yes (buffLocsName) |
-| `ObynGlobalSupportModel` | 16 | no (name/flag only) | via owning upgrade |
-| `FreezeDurationSupportModel` | 16 | yes (additive, multiplier) | yes (buffLocsName) |
-| `PiercePercentageSupportModel` | 15 | no (name/flag only) | yes (buffLocsName) |
-| `DamageTypeSupportModel` | 15 | no (name/flag only) | yes (buffLocsName) |
-| `BrickellFreezeMinesAbilityBuffModel` | 14 | yes (multiplier) | yes (buffLocsName) |
-| `SpiritTowerSupportModel` | 14 | no (name/flag only) | yes (model name) |
-| `ProjectileRadiusSupportModel` | 14 | yes (multiplier) | yes (model name) |
-| `CentralMarketBuffModel` | 10 | yes (multiplier) | yes (buffLocsName) |
-| `PoplustSupportModel` | 10 | no (name/flag only) | yes (buffLocsName) |
-| `EziliSupportModel` | 10 | no (name/flag only) | yes (model name) |
-| `GroundZeroBombBuffModel` | 10 | geometry-only | via owning upgrade |
-| `FreeUpgradeSupportModel` | 10 | no (name/flag only) | via owning upgrade |
-| `TradeEmpireBuffModel` | 6 | no (name/flag only) | yes (buffLocsName) |
-| `BananaCentralBuffModel` | 5 | yes (multiplier) | yes (buffLocsName) |
-| `SubCommanderSupportModel` | 5 | no (name/flag only) | yes (buffLocsName) |
-| `DamageModifierSupportModel` | 5 | no (name/flag only) | yes (model name) |
-| `TargetSupplierSupportModel` | 5 | no (name/flag only) | yes (model name) |
-| `PrinceOfDarknessZombieBuffModel` | 5 | no (name/flag only) | yes (buffLocsName) |
-| `DruidOfWrathBuffModel` | 3 | no (name/flag only) | via owning upgrade |
-| `ObynBuffModel` | 1 | no (name/flag only) | yes (buffLocsName) |
-| `MonkeySubParagonSupportModel` | 1 | no (name/flag only) | yes (buffLocsName) |
-| `GenericTowerBehaviorBuffModel` | 1 | no (name/flag only) | yes (buffLocsName) |
+| Buff/Support `$type` | Count | Decodable-number? | Has-curated-name? | Decode-class |
+|---|---|---|---|---|
+| `RangeSupportModel` | 163 | yes (additive, multiplier) | yes (buffLocsName) | DEFER |
+| `PierceSupportModel` | 103 | yes (pierce) | yes (buffLocsName) | SAFE_WRITE |
+| `VisibilitySupportModel` | 94 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `RateSupportModel` | 85 | yes (multiplier) | yes (buffLocsName) | SAFE_WRITE |
+| `PlacementAreaTypeRangeBuffModel` | 64 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `StartOfRoundRateBuffModel` | 41 | yes (modifier) | via owning upgrade | DEFER |
+| `AddBehaviorToTowerSupportModel` | 39 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `DroneSupportModel` | 38 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `ProjectileSpeedSupportModel` | 30 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
+| `HeatItUpDamageBuffModel` | 28 | geometry-only | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `MonkeyCityIncomeSupportModel` | 26 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `DamageSupportModel` | 20 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `AddBehaviorToTowerTypeSupportModel` | 19 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `BananaCashIncreaseSupportModel` | 16 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
+| `PyrotechnicsSupportModel` | 16 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `AbilityCooldownScaleSupportModel` | 16 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `ObynGlobalSupportModel` | 16 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `FreezeDurationSupportModel` | 16 | yes (additive, multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
+| `PiercePercentageSupportModel` | 15 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `DamageTypeSupportModel` | 15 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `BrickellFreezeMinesAbilityBuffModel` | 14 | yes (multiplier) | yes (buffLocsName) | DEFER |
+| `SpiritTowerSupportModel` | 14 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `ProjectileRadiusSupportModel` | 14 | yes (multiplier) | yes (model name) | SCHEMA_FIRST |
+| `CentralMarketBuffModel` | 10 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
+| `PoplustSupportModel` | 10 | no (name/flag only) | yes (buffLocsName) | SAFE_WRITE |
+| `EziliSupportModel` | 10 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `GroundZeroBombBuffModel` | 10 | geometry-only | via owning upgrade | DESCRIPTION_ONLY |
+| `FreeUpgradeSupportModel` | 10 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `TradeEmpireBuffModel` | 6 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `BananaCentralBuffModel` | 5 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
+| `SubCommanderSupportModel` | 5 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `DamageModifierSupportModel` | 5 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `TargetSupplierSupportModel` | 5 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
+| `PrinceOfDarknessZombieBuffModel` | 5 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `DruidOfWrathBuffModel` | 3 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
+| `ObynBuffModel` | 1 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `MonkeySubParagonSupportModel` | 1 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
+| `GenericTowerBehaviorBuffModel` | 1 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 
 **Ranking summary:** 3/28 zone and 11/38 buff `$type`s carry a decodable effect number; the remainder are name/flag-only and fall back to the textTable description (partial-but-honest — show the words, never a guessed number).
 

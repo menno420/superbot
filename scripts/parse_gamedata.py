@@ -1283,10 +1283,19 @@ def overlay_payload(committed: dict, mapped: dict, version: str) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def apply_upgrade_descriptions(committed: dict, mapped: dict) -> list[str]:
+def apply_upgrade_descriptions(
+    committed: dict,
+    mapped: dict,
+    text_table: dict[str, str] | None = None,
+) -> list[str]:
     """Set each committed upgrade's ``description`` from the mapped (game) prose,
     aligned by ``(path, tier)``; return the list of changes. Names are frozen —
     a description write must never disturb a curated name.
+
+    Any upgrade the mapper didn't supply (the ~2 nodes it under-emits) falls back
+    to ``text_table["<curated name> Description"]`` — a reliable join because the
+    game localizes these by the same name the curated file uses. Editorial names
+    not in ``text_table`` simply no-op (never a guessed description).
     """
     names_before = collect_names(committed)
     mmap = {
@@ -1294,14 +1303,17 @@ def apply_upgrade_descriptions(committed: dict, mapped: dict) -> list[str]:
         for u in mapped.get("upgrades", []) or []
         if isinstance(u, dict)
     }
+    tt = text_table or {}
     changes: list[str] = []
     for up in committed.get("upgrades", []) or []:
         if not isinstance(up, dict):
             continue
         m = mmap.get((up.get("path"), up.get("tier")))
-        if not m:
-            continue
-        new = m.get("description")
+        new = m.get("description") if m else None
+        if not isinstance(new, str) or not new.strip():
+            # Fallback: the game's "<curated name> Description" string.
+            name = up.get("name")
+            new = tt.get(f"{name} Description") if isinstance(name, str) else None
         if not isinstance(new, str) or not new.strip():
             continue
         if up.get("description") != new:
@@ -1358,7 +1370,7 @@ def overlay_descriptions(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
             continue
         committed = json.loads(fp.read_text("utf-8"))
         mapped = map_tower(dump, tid, canonical, version).payload
-        changes = apply_upgrade_descriptions(committed, mapped)
+        changes = apply_upgrade_descriptions(committed, mapped, _text_table(dump))
         if changes:
             report[f"stats/{tid}.json"] = changes
             if not dry_run:

@@ -184,6 +184,38 @@ _GEOMETRY_NUM = {
 # Dump keys that carry / resolve a display name for an effect node.
 _NAME_KEYS = {"buffLocsName", "locsName", "LocsKey", "displayName", "name"}
 
+# --- Step-5 decoder registry (CLASSIFICATION ONLY — writes no buff numbers) --
+# How each decodable-number effect `$type` should be handled in the slice-2
+# numeric write. This is scaffolding for that work; it does not extract or write
+# anything. Classes:
+#   SAFE_WRITE       - clear semantics + a committed buff-schema field exists
+#                      (verified vs a committed example or an unambiguous field).
+#   SCHEMA_FIRST     - real number, but NO field in the committed buff schema
+#                      (extend schema + dataclasses + renderers + tests first).
+#   DEFER            - ambiguous semantics; needs examples before any write.
+#   DESCRIPTION_ONLY - name/flag only; the upgrade description already covers it.
+# Everything not listed here is DESCRIPTION_ONLY by default.
+_DECODE_CLASS: dict[str, str] = {
+    # SAFE_WRITE — additive/multiplier maps cleanly onto _BUFF_FIELDS
+    "PierceSupportModel": "SAFE_WRITE",  # pierce -> pierceAdditive
+    "RateSupportModel": "SAFE_WRITE",  # multiplier -> rateMultiplier (x-cooldown)
+    "PoplustSupportModel": "SAFE_WRITE",  # *PercentIncrease -> *Percentage (verified)
+    # SCHEMA_FIRST — real number, no committed buff-schema field yet
+    "ProjectileSpeedSupportModel": "SCHEMA_FIRST",
+    "ProjectileRadiusSupportModel": "SCHEMA_FIRST",
+    "FreezeDurationSupportModel": "SCHEMA_FIRST",
+    "BananaCashIncreaseSupportModel": "SCHEMA_FIRST",  # economy
+    "CentralMarketBuffModel": "SCHEMA_FIRST",  # economy
+    "BananaCentralBuffModel": "SCHEMA_FIRST",  # economy
+    "BonusCashZoneModel": "SCHEMA_FIRST",  # economy zone
+    # DEFER — ambiguous magnitude/semantics until examples prove them
+    "RangeSupportModel": "DEFER",  # multiplier is an ambiguous fraction
+    "StartOfRoundRateBuffModel": "DEFER",  # bare "modifier"
+    "BrickellFreezeMinesAbilityBuffModel": "DEFER",  # niche
+    "BuffBlowbackZoneModel": "DEFER",  # knockback magnitude
+    "ActivateRangeSupportZoneModel": "DEFER",  # timed activated zone
+}
+
 
 def _dump_sha(dump: Path) -> str:
     """The pinned commit SHA of the dump clone (the report's cache key)."""
@@ -382,6 +414,14 @@ def build_report(dump: Path) -> str:
         "exists, else fall back to the textTable description (flagged).",
     )
     lines.append("")
+    lines.append(
+        "**Decode-class** (slice-2 registry, classification only — no numbers "
+        "written): `SAFE_WRITE` = clear semantics + a committed buff-schema field; "
+        "`SCHEMA_FIRST` = real number but the schema has no field yet (extend "
+        "first); `DEFER` = ambiguous semantics; `DESCRIPTION_ONLY` = name/flag "
+        "only (already covered by the upgrade description).",
+    )
+    lines.append("")
     zone_rows = tail["zone"]
     buff_rows = tail["buff"]
     lines.append(f"### 3a. Zone effect models — {len(zone_rows)} distinct `$type`s")
@@ -394,11 +434,23 @@ def build_report(dump: Path) -> str:
     )
     lines.append("")
     z_rows = [
-        [f"`{t}`", str(n), _decodable(nums), _has_name(names)]
+        [
+            f"`{t}`",
+            str(n),
+            _decodable(nums),
+            _has_name(names),
+            _DECODE_CLASS.get(t, "DESCRIPTION_ONLY"),
+        ]
         for t, n, nums, names in zone_rows
     ]
     lines += _md_table(
-        ["Zone `$type`", "Count", "Decodable-number?", "Has-curated-name?"],
+        [
+            "Zone `$type`",
+            "Count",
+            "Decodable-number?",
+            "Has-curated-name?",
+            "Decode-class",
+        ],
         z_rows,
     )
     lines.append("")
@@ -413,11 +465,23 @@ def build_report(dump: Path) -> str:
     )
     lines.append("")
     b_rows = [
-        [f"`{t}`", str(n), _decodable(nums), _has_name(names)]
+        [
+            f"`{t}`",
+            str(n),
+            _decodable(nums),
+            _has_name(names),
+            _DECODE_CLASS.get(t, "DESCRIPTION_ONLY"),
+        ]
         for t, n, nums, names in buff_rows
     ]
     lines += _md_table(
-        ["Buff/Support `$type`", "Count", "Decodable-number?", "Has-curated-name?"],
+        [
+            "Buff/Support `$type`",
+            "Count",
+            "Decodable-number?",
+            "Has-curated-name?",
+            "Decode-class",
+        ],
         b_rows,
     )
     lines.append("")

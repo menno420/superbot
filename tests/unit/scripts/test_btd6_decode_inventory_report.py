@@ -143,3 +143,13 @@ def test_md_table_shapes_header_and_rows(mod):
 def test_dump_sha_unknown_outside_git(mod, tmp_path):
     # A non-git directory yields the documented sentinel, never a crash.
     assert mod._dump_sha(tmp_path) == "unknown"
+
+
+def test_decode_class_registry_is_classification_only(mod):
+    # Slice-2 scaffolding: the registry classifies but writes no numbers.
+    c = mod._DECODE_CLASS
+    assert c["PierceSupportModel"] == "SAFE_WRITE"
+    assert c["RateSupportModel"] == "SAFE_WRITE"
+    assert c["ProjectileSpeedSupportModel"] == "SCHEMA_FIRST"
+    assert c["RangeSupportModel"] == "DEFER"  # ambiguous multiplier
+    assert set(c.values()) <= {"SAFE_WRITE", "SCHEMA_FIRST", "DEFER", "DESCRIPTION_ONLY"}
