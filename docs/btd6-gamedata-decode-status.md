@@ -52,6 +52,22 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 > (`live_entities=() ct_relics=()`), so a pricing answer's grounding cannot carry
 > CT lines. Base is solid; data work proceeded.
 
+> **Retrieval-surface + version-stamp fixes (2026-06-03, from live Discord
+> testing).** Two issues surfaced that were *not* data gaps:
+> 1. *Damage modifiers were extracted but unreachable.* The committed stats carry
+>    per-projectile `damageModifierFor*` (e.g. Juggernaut +3 vs Ceramic, +2 vs
+>    Fortified) and the Discord embed renders them, but the **AI grounding
+>    renderer** (`btd6_upgrade_detail_service`) only emitted `moab_bonus`, so the
+>    model couldn't ground "bonus vs Lead/Ceramic/Fortified" and refused.
+>    Fixed: `ProjectileSpec.modifiers` now carries all bonuses (shared
+>    `utils.btd6.damage_types.DAMAGE_MODIFIER_LABELS`, deduped with the embed) and
+>    `_projectile_bits` emits them. *Lesson: extracted ≠ reachable ≠ answerable —
+>    a tool/renderer must surface a field, not just the file containing it.*
+> 2. *Stale dataset version stamp.* The refusal stamped "54.0" — read from the
+>    dataset `game_version` (`towers/heroes/bloons.json`), the single source. Bumped
+>    to **55.0**, justified by the audit (committed numbers are 0-SUSPECT /
+>    overwhelmingly CLEAN vs the v55 dump, i.e. already v55-accurate).
+
 ### ✅ Complete & verified
 
 | Item | Where | Evidence |

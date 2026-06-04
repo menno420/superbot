@@ -34,6 +34,24 @@ _DAMAGE_TYPES: dict[int, tuple[str, str]] = {
 
 _UNKNOWN = ("Unknown", "Unknown immunities")
 
+# Additive damage-modifier field -> short label (the bloon class the bonus
+# applies to). The single source of truth shared by the stats embed (Discord
+# UI, ``utils.btd6.stats_embed``) and the AI grounding renderer
+# (``services.btd6_upgrade_detail_service``) so both surface the same set —
+# the bonus values live in the curated stats as ``damageModifierFor*`` (the
+# additive read from the dump's misspelled ``damageAddative``).
+DAMAGE_MODIFIER_LABELS: tuple[tuple[str, str], ...] = (
+    ("damageModifierForLead", "Lead"),
+    ("damageModifierForCeramic", "Ceramic"),
+    ("damageModifierForFortified", "Fortified"),
+    ("damageModifierForMoab", "MOABs"),
+    ("damageModifierForMoabs", "MOAB-Class"),
+    ("damageModifierForBoss", "Bosses"),
+    ("damageModifierForBad", "BADs"),
+    ("damageModifierForCamo", "Camo"),
+    ("damageModifierForStunned", "stunned"),
+)
+
 
 @dataclass(frozen=True)
 class DamageType:
