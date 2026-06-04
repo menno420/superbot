@@ -80,18 +80,21 @@ def test_task_contract_routes_per_degree_paragon_stats_and_forbids_interpolation
     assert "interpolate" in tc  # the model must not linearly interpolate degrees
 
 
-def test_task_contract_allows_per_round_cash_and_drops_economy_from_unsupported():
-    # Live test: "how much cash do you earn in round 50" and "from r70 to r80"
-    # were refused — the round resolved (composition + RBE grounded) but the
-    # contract still listed "in-game economy / income" as unsupported, so the
-    # model declined even though '[btd6_round]' grounding carries the cash. PR
-    # #500 added the data; this un-gates it.
+def test_task_contract_binds_cash_answers_to_grounded_numbers():
+    # Un-gating cash (PR #502) wasn't enough: the live bot then ANSWERED FROM
+    # MEMORY — "round 40 pays $14,600" (grounded: $521 this round) and a vague
+    # "$20-25k typically" for r50-r60 (grounded: cumulative(60)-cumulative(50) =
+    # $16,824). Bind cash to the grounded numbers, forbid estimates, disambiguate
+    # per-round vs cumulative, and teach the range math.
     tc = instr._TASK_CONTRACT
-    assert "in-game economy" not in tc and "economy / income" not in tc
-    # Positive: per-round cash is now an answerable area, with its grounded scope.
-    assert "Per-round cash IS modeled" in tc
-    assert "cumulative difference" in tc  # so a round-range question is answerable
-    assert "no income towers" in tc  # the scope caveat travels with the answer
+    assert "in-game economy" not in tc  # still un-gated
+    assert "Per-round cash IS in your data" in tc
+    # Forbid remembered / "typical" estimates (the $14.6k / $20-25k bug).
+    assert "never a remembered or 'typical' estimate" in tc
+    # Per-round ('cash this round') vs cumulative disambiguation.
+    assert "'cash this round' figure quoted verbatim" in tc
+    # Range = cumulative difference; the two endpoints suffice (the r50-r60 bug).
+    assert "cumulative(B) - cumulative(A)" in tc
 
 
 def test_task_contract_answers_removables_from_grounding_without_complete_list():
