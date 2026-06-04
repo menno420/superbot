@@ -340,20 +340,18 @@ def test_rounds_full_composition_loads():
     assert get_round(100).groups[0]["bloon_id"] == "bad"
 
 
-def test_round_cash_populated_for_1_to_80_only():
+def test_round_cash_populated_for_all_140_rounds():
     from services.btd6_data_service import get_round
 
-    # Standard/Medium per-round cash (cyberquincy, cross-validated vs our RBE).
-    r1 = get_round(1)
-    assert r1.cash == 121.0 and r1.cumulative_cash == 771.0
-    # Income decay (rounds 51+) yields fractional values — hence float, not int.
-    r80 = get_round(80)
-    assert r80.cash == 1400.2 and r80.cumulative_cash == 98253.6
-    # Cumulative is monotonic non-decreasing across the populated range.
-    cumulatives = [get_round(n).cumulative_cash for n in range(1, 81)]
+    # Per-round cash is derived from composition for every round (the recompute
+    # is pinned by test_btd6_round_cash.py); income decay (rounds 51+) yields
+    # fractional values, hence float.
+    assert get_round(1).cash == 121 and get_round(1).cumulative_cash == 771
+    assert get_round(80).cash == 1400.2 and get_round(80).cumulative_cash == 98253.6
+    assert all(get_round(n).cash is not None for n in range(1, 141))
+    # Cumulative is monotonic non-decreasing across all 140 rounds.
+    cumulatives = [get_round(n).cumulative_cash for n in range(1, 141)]
     assert all(a <= b for a, b in zip(cumulatives, cumulatives[1:], strict=False))
-    # 81+ deliberately left empty (RBE diverges from the cyberquincy source).
-    assert get_round(81).cash is None and get_round(140).cash is None
 
 
 def test_invalid_round_rbe_fails(tmp_path):

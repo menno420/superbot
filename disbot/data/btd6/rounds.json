@@ -3029,6 +3029,8 @@
         "BFB"
       ],
       "rbe": 53788,
+      "cash": 5366,
+      "cumulative_cash": 103619.6,
       "roundset": "default",
       "groups": [
         {
@@ -3055,6 +3057,8 @@
         "BFB"
       ],
       "rbe": 55760,
+      "cash": 4757,
+      "cumulative_cash": 108376.6,
       "roundset": "default",
       "groups": [
         {
@@ -3084,6 +3088,8 @@
         "MOAB"
       ],
       "rbe": 31360,
+      "cash": 4749,
+      "cumulative_cash": 113125.6,
       "roundset": "default",
       "groups": [
         {
@@ -3129,6 +3135,8 @@
         "BFB"
       ],
       "rbe": 62440,
+      "cash": 7044,
+      "cumulative_cash": 120169.6,
       "roundset": "default",
       "groups": [
         {
@@ -3155,6 +3163,8 @@
         "ZOMG"
       ],
       "rbe": 33312,
+      "cash": 2625.4,
+      "cumulative_cash": 122795,
       "roundset": "default",
       "groups": [
         {
@@ -3174,6 +3184,8 @@
         "BFB"
       ],
       "rbe": 24120,
+      "cash": 948.5,
+      "cumulative_cash": 123743.5,
       "roundset": "default",
       "groups": [
         {
@@ -3195,6 +3207,8 @@
         "ZOMG"
       ],
       "rbe": 66624,
+      "cash": 2627.4,
+      "cumulative_cash": 126370.9,
       "roundset": "default",
       "groups": [
         {
@@ -3216,6 +3230,8 @@
         "ZOMG"
       ],
       "rbe": 69712,
+      "cash": 3314,
+      "cumulative_cash": 129684.9,
       "roundset": "default",
       "groups": [
         {
@@ -3250,6 +3266,8 @@
         "BFB"
       ],
       "rbe": 55712,
+      "cash": 2171,
+      "cumulative_cash": 131855.9,
       "roundset": "default",
       "groups": [
         {
@@ -3281,6 +3299,8 @@
         "DDT"
       ],
       "rbe": 3748,
+      "cash": 419.3,
+      "cumulative_cash": 132275.2,
       "roundset": "default",
       "groups": [
         {
@@ -3314,6 +3334,8 @@
         "BFB"
       ],
       "rbe": 74680,
+      "cash": 4191,
+      "cumulative_cash": 136466.2,
       "roundset": "default",
       "groups": [
         {
@@ -3343,6 +3365,8 @@
         "ZOMG"
       ],
       "rbe": 109424,
+      "cash": 4537.4,
+      "cumulative_cash": 141003.6,
       "roundset": "default",
       "groups": [
         {
@@ -3372,6 +3396,8 @@
         "DDT"
       ],
       "rbe": 53136,
+      "cash": 1946.6,
+      "cumulative_cash": 142950.2,
       "roundset": "default",
       "groups": [
         {
@@ -3403,6 +3429,8 @@
         "ZOMG"
       ],
       "rbe": 179036,
+      "cash": 7667.1,
+      "cumulative_cash": 150617.3,
       "roundset": "default",
       "groups": [
         {
@@ -3429,6 +3457,8 @@
         "DDT"
       ],
       "rbe": 79280,
+      "cash": 4368,
+      "cumulative_cash": 154985.3,
       "roundset": "default",
       "groups": [
         {
@@ -3482,6 +3512,8 @@
         "ZOMG"
       ],
       "rbe": 229096,
+      "cash": 9955.6,
+      "cumulative_cash": 164940.9,
       "roundset": "default",
       "groups": [
         {
@@ -3540,6 +3572,8 @@
         "ZOMG"
       ],
       "rbe": 54592,
+      "cash": 1417.2,
+      "cumulative_cash": 166358.1,
       "roundset": "default",
       "groups": [
         {
@@ -3562,6 +3596,8 @@
         "ZOMG"
       ],
       "rbe": 277968,
+      "cash": 9653.8,
+      "cumulative_cash": 176011.9,
       "roundset": "default",
       "groups": [
         {
@@ -3591,6 +3627,8 @@
         "DDT"
       ],
       "rbe": 48264,
+      "cash": 2827.9,
+      "cumulative_cash": 178839.8,
       "roundset": "default",
       "groups": [
         {
@@ -3621,6 +3659,8 @@
         "DDT"
       ],
       "rbe": 55760,
+      "cash": 1534.6,
+      "cumulative_cash": 180374.4,
       "roundset": "default",
       "groups": [
         {
@@ -3642,6 +3682,8 @@
         "MOAB"
       ],
       "rbe": 19210,
+      "cash": 876.5,
+      "cumulative_cash": 181250.9,
       "roundset": "default",
       "groups": [
         {
@@ -3688,6 +3730,8 @@
         "ZOMG"
       ],
       "rbe": 152268,
+      "cash": 2451.2,
+      "cumulative_cash": 183702.1,
       "roundset": "default",
       "groups": [
         {
@@ -3762,6 +3806,8 @@
         "ZOMG"
       ],
       "rbe": 379538,
+      "cash": 6219.9,
+      "cumulative_cash": 189922,
       "roundset": "default",
       "groups": [
         {
@@ -3823,6 +3869,8 @@
         "MOAB"
       ],
       "rbe": 318636,
+      "cash": 7801.5,
+      "cumulative_cash": 197723.5,
       "roundset": "default",
       "groups": [
         {
@@ -3947,6 +3995,8 @@
         "Lead Bloon"
       ],
       "rbe": 140170,
+      "cash": 4421.25,
+      "cumulative_cash": 202144.75,
       "roundset": "default",
       "groups": [
         {
@@ -3991,6 +4041,8 @@
         "DDT"
       ],
       "rbe": 87768,
+      "cash": 1977.65,
+      "cumulative_cash": 204122.4,
       "roundset": "default",
       "groups": [
         {
@@ -4071,6 +4123,8 @@
         "ZOMG"
       ],
       "rbe": 289244,
+      "cash": 3976.7,
+      "cumulative_cash": 208099.1,
       "roundset": "default",
       "groups": [
         {
@@ -4110,6 +4164,8 @@
         "ZOMG"
       ],
       "rbe": 422864,
+      "cash": 6003.95,
+      "cumulative_cash": 214103.05,
       "roundset": "default",
       "groups": [
         {
@@ -4141,6 +4197,8 @@
         "Purple Bloon"
       ],
       "rbe": 395505,
+      "cash": 7652,
+      "cumulative_cash": 221755.05,
       "roundset": "default",
       "groups": [
         {
@@ -4202,6 +4260,8 @@
         "BFB"
       ],
       "rbe": 108860,
+      "cash": 2687.75,
+      "cumulative_cash": 224442.8,
       "roundset": "default",
       "groups": [
         {
@@ -4259,6 +4319,8 @@
         "ZOMG"
       ],
       "rbe": 612096,
+      "cash": 9667.55,
+      "cumulative_cash": 234110.35,
       "roundset": "default",
       "groups": [
         {
@@ -4295,6 +4357,8 @@
         "DDT"
       ],
       "rbe": 156624,
+      "cash": 2670.8,
+      "cumulative_cash": 236781.15,
       "roundset": "default",
       "groups": [
         {
@@ -4328,6 +4392,8 @@
         "BFB"
       ],
       "rbe": 145716,
+      "cash": 3184.5,
+      "cumulative_cash": 239965.65,
       "roundset": "default",
       "groups": [
         {
@@ -4379,6 +4445,8 @@
         "ZOMG"
       ],
       "rbe": 302208,
+      "cash": 5608.15,
+      "cumulative_cash": 245573.8,
       "roundset": "default",
       "groups": [
         {
@@ -4461,6 +4529,8 @@
         "ZOMG"
       ],
       "rbe": 302208,
+      "cash": 5609.15,
+      "cumulative_cash": 251182.95,
       "roundset": "default",
       "groups": [
         {
@@ -4542,6 +4612,8 @@
         "ZOMG"
       ],
       "rbe": 309600,
+      "cash": 4248.9,
+      "cumulative_cash": 255431.85,
       "roundset": "default",
       "groups": [
         {
@@ -4594,6 +4666,8 @@
         "DDT"
       ],
       "rbe": 50390,
+      "cash": 1361.75,
+      "cumulative_cash": 256793.6,
       "roundset": "default",
       "groups": [
         {
@@ -4633,6 +4707,8 @@
         "ZOMG"
       ],
       "rbe": 237552,
+      "cash": 4450.1,
+      "cumulative_cash": 261243.7,
       "roundset": "default",
       "groups": [
         {
@@ -4662,6 +4738,8 @@
         "BAD"
       ],
       "rbe": 167280,
+      "cash": 2220.9,
+      "cumulative_cash": 263464.6,
       "roundset": "default",
       "groups": [
         {
@@ -4690,6 +4768,8 @@
         "BFB"
       ],
       "rbe": 258384,
+      "cash": 5252.8,
+      "cumulative_cash": 268717.4,
       "roundset": "default",
       "groups": [
         {
@@ -4727,6 +4807,8 @@
         "ZOMG"
       ],
       "rbe": 255280,
+      "cash": 2965.96,
+      "cumulative_cash": 271683.36,
       "roundset": "default",
       "groups": [
         {
@@ -4767,6 +4849,8 @@
         "BFB"
       ],
       "rbe": 228890,
+      "cash": 4089,
+      "cumulative_cash": 275772.36,
       "roundset": "default",
       "groups": [
         {
@@ -4823,6 +4907,8 @@
         "ZOMG"
       ],
       "rbe": 341568,
+      "cash": 5223.32,
+      "cumulative_cash": 280995.68,
       "roundset": "default",
       "groups": [
         {
@@ -4851,6 +4937,8 @@
         "BFB"
       ],
       "rbe": 361800,
+      "cash": 4799,
+      "cumulative_cash": 285794.68,
       "roundset": "default",
       "groups": [
         {
@@ -4874,6 +4962,8 @@
         "ZOMG"
       ],
       "rbe": 521472,
+      "cash": 8871.96,
+      "cumulative_cash": 294666.64,
       "roundset": "default",
       "groups": [
         {
@@ -5013,6 +5103,8 @@
         "Lead Bloon"
       ],
       "rbe": 80810,
+      "cash": 1735.68,
+      "cumulative_cash": 296402.32,
       "roundset": "default",
       "groups": [
         {
@@ -5046,6 +5138,8 @@
         "BFB"
       ],
       "rbe": 105504,
+      "cash": 2422.52,
+      "cumulative_cash": 298824.84,
       "roundset": "default",
       "groups": [
         {
@@ -5074,6 +5168,8 @@
         "BFB"
       ],
       "rbe": 166704,
+      "cash": 3412.36,
+      "cumulative_cash": 302237.2,
       "roundset": "default",
       "groups": [
         {
@@ -5116,6 +5212,8 @@
         "DDT"
       ],
       "rbe": 333209,
+      "cash": 4317.2,
+      "cumulative_cash": 306554.4,
       "roundset": "default",
       "groups": [
         {
@@ -5209,6 +5307,8 @@
         "DDT"
       ],
       "rbe": 154944,
+      "cash": 3338.96,
+      "cumulative_cash": 309893.36,
       "roundset": "default",
       "groups": [
         {
@@ -5332,6 +5432,8 @@
         "ZOMG"
       ],
       "rbe": 491328,
+      "cash": 4623.72,
+      "cumulative_cash": 314517.08,
       "roundset": "default",
       "groups": [
         {
@@ -5354,6 +5456,8 @@
         "ZOMG"
       ],
       "rbe": 465784,
+      "cash": 6176.96,
+      "cumulative_cash": 320694.04,
       "roundset": "default",
       "groups": [
         {
@@ -5432,6 +5536,8 @@
         "ZOMG"
       ],
       "rbe": 429308,
+      "cash": 6378.88,
+      "cumulative_cash": 327072.92,
       "roundset": "default",
       "groups": [
         {
@@ -5561,6 +5667,8 @@
         "BFB"
       ],
       "rbe": 146480,
+      "cash": 2674,
+      "cumulative_cash": 329746.92,
       "roundset": "default",
       "groups": [
         {
@@ -5611,6 +5719,8 @@
         "ZOMG"
       ],
       "rbe": 408520,
+      "cash": 3971.6,
+      "cumulative_cash": 333718.52,
       "roundset": "default",
       "groups": [
         {
@@ -5672,6 +5782,8 @@
         "BFB"
       ],
       "rbe": 158112,
+      "cash": 3163.04,
+      "cumulative_cash": 336881.56,
       "roundset": "default",
       "groups": [
         {
@@ -5702,6 +5814,8 @@
         "ZOMG"
       ],
       "rbe": 405312,
+      "cash": 6825.24,
+      "cumulative_cash": 343706.8,
       "roundset": "default",
       "groups": [
         {
@@ -5735,6 +5849,8 @@
         "DDT"
       ],
       "rbe": 138456,
+      "cash": 2158.24,
+      "cumulative_cash": 345865.04,
       "roundset": "default",
       "groups": [
         {
@@ -5804,6 +5920,8 @@
         "MOAB"
       ],
       "rbe": 173128,
+      "cash": 4094.72,
+      "cumulative_cash": 349959.76,
       "roundset": "default",
       "groups": [
         {
@@ -5887,6 +6005,8 @@
         "BAD"
       ],
       "rbe": 154120,
+      "cash": 1307.68,
+      "cumulative_cash": 351267.44,
       "roundset": "default",
       "groups": [
         {
@@ -5908,5 +6028,5 @@
       ]
     }
   ],
-  "cash_source": "standard/Medium per-round cash (pop cash + end-of-round bonus) for rounds 1-80, from the cyberquincy bot data set (github.com/hemisemidemipresent/cyberquincy, jsons/round_sets/regular.json); cross-validated against our v55 RBE (exact match r1-80). Rounds 81+ omitted: their RBE diverges from this source and no v55-current cash source was found (Steam API doesn't expose it; the game files store emissions, not cash)."
+  "cash_source": "Standard/Medium per-round cash = pop_count x cash-per-pop decay + ($100 + n) end-of-round bonus, derived from THIS file's round composition and bloons.json child-trees (see tests/unit/services/test_btd6_round_cash.py). Decay = v55 DefaultIncomeSet (1.0 / .5@51 / .2@61 / .1@86 / .05@101 / .04@121); cumulative assumes Medium $650 start, no income towers. Validated 80/80 vs the cyberquincy data set for rounds 1-80; 81-140 are v55-current (cyberquincy is stale there — freeplay cash was buffed). Formula ref: topper64.co.uk/nk/btd6/income."
 }
