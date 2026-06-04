@@ -100,6 +100,31 @@ def test_ambiguous_query_returns_candidates():
 
 @pytest.mark.parametrize(
     "query",
+    ["Ultra-Juggernaut", "ultra juggernaut", "the ultra juggernaut", "ultra jug", "ujug"],
+)
+def test_full_name_wins_over_embedded_substring(query):
+    # Regression: "Ultra-Juggernaut" matched both its own name AND the embedded
+    # "Juggernaut" surface, reading as ambiguous — so its damage modifiers never
+    # reached the model. The longer, more-specific name (or its alias) now wins.
+    res = up.resolve_upgrade(query)
+    assert res.found, query
+    assert res.upgrade.upgrade_id == "dart_monkey:500"
+    # The base "Juggernaut" still resolves to its own tier, unaffected.
+    assert up.resolve_upgrade("juggernaut").upgrade.upgrade_id == "dart_monkey:400"
+
+
+def test_two_distinct_full_names_stay_ambiguous():
+    # Absorption must NOT collapse genuinely distinct names that don't overlap.
+    res = up.resolve_upgrade("juggernaut vs prince of darkness")
+    assert res.match_type == "ambiguous"
+    assert {c.upgrade_id for c in res.candidates} == {
+        "dart_monkey:400",
+        "wizard_monkey:005",
+    }
+
+
+@pytest.mark.parametrize(
+    "query",
     [
         "",
         "   ",
