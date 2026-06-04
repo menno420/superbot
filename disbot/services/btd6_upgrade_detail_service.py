@@ -198,6 +198,7 @@ _BUFF_FIELDS: tuple[tuple[str, str, int], ...] = (
     ("rangePercentage", "+{}% range", 100),
     ("lifespanMultiplier", "x{} lifespan", 1),
     ("abilityCooldownMultiplier", "x{} ability cooldown", 1),
+    ("heroXpMultiplier", "x{} hero XP", 1),
     # Cash / economy buffs. These were decoded into committed data
     # (TradeEmpireBuffModel, Bucc 0-0-5) but had no render field here, so the
     # renderer surfaced only the damage bonus and silently dropped the income —
@@ -231,6 +232,14 @@ def _buff_text(buff: dict[str, Any]) -> str:
     return f"{name}: {body}" if name else body
 
 
+def _zone_num(zone: dict[str, Any], field: str) -> Any:
+    """A zone's numeric field value, or None (rejecting bools)."""
+    value = zone.get(field)
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return value
+    return None
+
+
 def _zone_text(zone: dict[str, Any]) -> str:
     name = str(zone.get("name") or "Zone")
     dmg = zone.get("damage")
@@ -241,6 +250,20 @@ def _zone_text(zone: dict[str, Any]) -> str:
         bits.append(f"{dmg} {dtype} dmg" if dtype else f"{dmg} dmg")
     if interval is not None:
         bits.append(f"every {interval}s")
+    # Ice Monkey's Arctic Wind slow: 'multiplier' is the speed multiplier
+    # (0.6 = bloons move at 60% speed); MOABs are slowed less. Verified
+    # 'multiplier' only ever appears on Ice slow zones, so rendering it as a
+    # speed multiplier can't mislabel a different zone type's number.
+    slow = _zone_num(zone, "multiplier")
+    if slow is not None:
+        bits.append(f"slows bloons to x{_fmt_buff_num(slow)} speed")
+    moab_slow = _zone_num(zone, "multiplierForMoabs")
+    if moab_slow is not None:
+        bits.append(f"MOABs to x{_fmt_buff_num(moab_slow)} speed")
+    # Druid Thorn zone: flat bonus damage vs Ceramic/MOAB-class.
+    cmoab = _zone_num(zone, "damageModifierForCeramicOrMoabs")
+    if cmoab is not None:
+        bits.append(f"+{_fmt_buff_num(cmoab)} damage vs Ceramic/MOAB")
     return f"{name} ({', '.join(bits)})" if bits else name
 
 

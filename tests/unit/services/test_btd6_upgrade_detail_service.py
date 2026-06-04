@@ -280,3 +280,43 @@ def test_trade_empire_detail_surfaces_income_end_to_end():
     assert "+$10/round per Merchantman" in blob
     assert "+$20/round per Favored Trades" in blob
     assert "+4% sellback value" in blob
+
+
+def test_buff_hero_xp_multiplier_renders():
+    # Sub Energizer's global buff: abilityCooldownMultiplier already rendered, but
+    # heroXpMultiplier was dropped (the +50% hero XP was invisible).
+    text = det._buff_text(
+        {
+            "name": "Ability cooldown buff (global)",
+            "abilityCooldownMultiplier": 1.2,
+            "heroXpMultiplier": 1.5,
+        },
+    )
+    assert "x1.5 hero XP" in text
+
+
+def test_zone_slow_multiplier_renders_as_speed():
+    # Ice Monkey's Arctic Wind: 'multiplier' is a speed multiplier (0.6 = 60%
+    # speed). It was dropped, so Ice's signature slow was unstated. MOABs slow
+    # less via multiplierForMoabs.
+    text = det._zone_text(
+        {"name": "Arctic Wind", "multiplier": 0.6, "multiplierForMoabs": 0.7},
+    )
+    assert "slows bloons to x0.6 speed" in text
+    assert "MOABs to x0.7 speed" in text
+
+
+def test_zone_ceramic_moab_bonus_damage_renders():
+    text = det._zone_text(
+        {"name": "Thorn zone", "damage": 2, "damageModifierForCeramicOrMoabs": 8},
+    )
+    assert "+8 damage vs Ceramic/MOAB" in text
+
+
+def test_ice_slow_and_thorn_bonus_surface_end_to_end():
+    # Real committed data: the slow and the thorn bonus now reach the rendered
+    # detail (and thus AI grounding).
+    ice = " | ".join(det.get_upgrade_detail("ice_monkey:030").zones)
+    assert "slows bloons to x0.6 speed" in ice
+    druid = " | ".join(det.get_upgrade_detail("druid:050").zones)
+    assert "damage vs Ceramic/MOAB" in druid

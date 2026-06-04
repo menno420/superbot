@@ -40,26 +40,34 @@ works** (the traps we hit), and what is still un-decoded.
    banana-cash, etc. carry a real number but `_BUFF_FIELDS` /
    `btd6_upgrade_detail_service` has no field to render it. Extend the renderer
    first, then decode.
-   - **DONE (cash/economy):** `_BUFF_FIELDS` now renders
-     `cashPerRoundPerMechantship` / `cashPerRoundPerFavouredTrades` /
-     `cashbackZoneMultiplier`, so **Trade Empire's income + Favored Trades
-     sellback** (already decoded into committed data, but previously *dropped* by
-     the renderer) now reach the answer — "what does Trade Empire do" surfaces
-     "+$10/round per Merchantman, +$20/round per Favored Trades, +4% sellback".
-   - **NEXT — income multiplier (`incomeMultiplier`).** Banana Farm income buffs
-     are in the dump but NOT in committed data: `CentralMarketBuffModel` ×1.1
-     (10-stack, **wiki-confirmed "+10% income"** on the Central Market page) and
-     `BananaCentralBuffModel` ×1.25 (wiki says "make nearby farms generate more
-     money"; the exact % wasn't on the page — confirm before writing). Also
-     `MonkeyCityIncomeSupportModel` ×1.2 (Monkey City "+20%", wiki-confirmed).
-     Decoding these = add an `incomeMultiplier` render field + the
-     `*SupportModel`/`*BuffModel` → `incomeMultiplier` mapper mappings + author
-     the committed `buffs[]` on the matching tiers (place them so `--audit` stays
-     aligned).
-   - **Other currently-dropped committed buff fields** (separate from cash):
-     `lifespan` (Engineer/Spike start-of-round buff *duration*), `heroXpMultiplier`
-     (Sub global ability-cooldown buff), `cooldown` (Desperado Nomad buff) — each
-     needs a render field + a wiki-confirmed label.
+   - **DONE — render coverage for already-decoded-but-dropped fields** (the safe
+     `extracted ≠ answerable` fix; no new value asserted, just un-dropped):
+     - buff cash/economy: `cashPerRoundPerMechantship` /
+       `cashPerRoundPerFavouredTrades` / `cashbackZoneMultiplier` → **Trade
+       Empire income + Favored Trades sellback** now answer.
+     - buff `heroXpMultiplier` → **Sub Energizer's +50% hero XP**.
+     - zone `multiplier` / `multiplierForMoabs` → **Ice Monkey's Arctic Wind slow**
+       (×0.6/0.4 speed; MOABs ×0.7) — Ice's signature effect was unstated.
+       Verified `multiplier` only ever appears on Ice slow zones, so the generic
+       render can't mislabel another zone type.
+     - zone `damageModifierForCeramicOrMoabs` → **Druid Thorn zone** +14/8/4 vs
+       Ceramic/MOAB.
+   - **BLOCKED — income multiplier (`incomeMultiplier`).** The dump has Banana
+     Farm `CentralMarketBuffModel` ×1.1 (wiki-confirmed "+10%"),
+     `BananaCentralBuffModel` ×1.25, and Monkey Village `MonkeyCityIncomeSupportModel`
+     ×1.2 ("+20%") — but **`banana_farm.json` and `monkey_village.json` have no
+     committed `tiers`** (economy/support towers were curated without per-tier
+     stats), so there is nowhere to attach a `buffs[]` entry for the renderer to
+     surface. Also entangled with prerequisite #4 (Banana Farm's nominal
+     `AttackModel`). Needs the cutover, or a deliberate model extension that gives
+     economy/support towers a minimal tier structure — a maintainer call, not a
+     clean pass.
+   - **DEFERRED — buff duration fields.** `lifespan` (Engineer/Spike
+     start-of-round burst, Desperado Nomad) + `cooldown` (Nomad) are committed but
+     dropped. The raw dump field is `duration` (with `durationFrames`) and the
+     ability renderer already uses **seconds**, but an earlier note said "for N
+     *rounds*" — so the unit is **under-confirmed**. Do not render until
+     seconds-vs-rounds is settled in-game/wiki.
 3. **Zone effect tail** (28 types) + zones **nested in sub-towers**.
 4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
