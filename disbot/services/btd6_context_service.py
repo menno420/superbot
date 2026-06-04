@@ -28,6 +28,7 @@ from utils.btd6 import coverage as cov
 from utils.btd6 import tier_codes
 from utils.btd6.body_coerce import coerce_body
 from utils.btd6.grounding_format import DEFAULT_CAP as _FACT_TEXT_CAP
+from utils.btd6.grounding_format import is_infinite as _is_infinite
 from utils.btd6.grounding_format import relative_time as _relative_time
 from utils.btd6.grounding_format import sanitise as _sanitise_helper
 
@@ -724,7 +725,7 @@ def _render_hero_descriptions(hero_id: str, canonical: str) -> list[str]:
 
 def _big(value: int) -> str:
     """Render BTD6's 9,999,999 'infinite' sentinel as ∞."""
-    return "∞" if value >= 9_999_999 else str(value)
+    return "∞" if _is_infinite(value) else str(value)
 
 
 def _tier_name(stats: Any, code: str) -> str:

@@ -93,8 +93,26 @@ def render_grounding_line(
     return f"{safe_body}{suffix}"
 
 
+# BTD6 stores 9,999,999 as an "infinite" sentinel for instant-pop collision
+# layers (Druid's Spirit-of-the-Forest vines, etc.). It must render as ∞, never
+# the raw number — a literal "9,999,999 dmg" in grounding misleads the model into
+# reporting it as the tower's main-attack damage.
+INFINITE_SENTINEL = 9_999_999
+
+
+def is_infinite(value: object) -> bool:
+    """True for BTD6's 9,999,999 'infinite' (instant-pop) sentinel value."""
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and value >= INFINITE_SENTINEL
+    )
+
+
 __all__ = [
     "DEFAULT_CAP",
+    "INFINITE_SENTINEL",
+    "is_infinite",
     "relative_time",
     "render_grounding_line",
     "sanitise",
