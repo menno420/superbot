@@ -319,6 +319,22 @@ async def test_build_grounds_reported_upgrade_queries(query, expected):
     ), f"{query!r} did not ground {expected!r}: {ctx.facts}"
 
 
+async def test_build_grounds_tower_upgrade_descriptions():
+    # Live `grounding_failed`: "list all the upgrades and descriptions of the
+    # super monkey" — build() listed upgrade NAMES + costs but not their prose,
+    # so the model free-recalled the descriptions and the guard rejected them.
+    # Every described card is now surfaced as a [btd6_upgrade] grounding line.
+    ctx = await btd6_context_service.build(
+        "list all the upgrades and descriptions of the super monkey",
+    )
+    desc_lines = [f for f in ctx.facts if f.startswith("[btd6_upgrade] Super Monkey ")]
+    assert len(desc_lines) == 15  # all three paths, five tiers each
+    blob = "\n".join(desc_lines)
+    assert "Laser Blasts: Shoots powerful blasts of laser" in blob
+    assert "True Sun God" in blob  # the tier-5 card is present, not dropped
+    assert all("(source: BTD6 in-game description)" in f for f in desc_lines)
+
+
 async def test_build_ignores_non_upgrade_text():
     # A plain greeting must not spuriously ground an upgrade.
     ctx = await btd6_context_service.build("hello there")
@@ -389,7 +405,9 @@ async def test_build_grounds_hero_roster_with_costs():
     # A realistic cost-listing answer now grounds end-to-end.
     answer = "BTD6 has 17 heroes: Quincy ($540), Gwendolin ($725), Benjamin ($1200)."
     verdict = btd6_grounding_service.validate_btd6_reply(
-        answer, facts=tuple(ctx.facts), task=AITask.BTD6_ANSWER,
+        answer,
+        facts=tuple(ctx.facts),
+        task=AITask.BTD6_ANSWER,
     )
     assert verdict.grounded is True
     # "list all heroes" must ground too; a specific-hero question must NOT.
@@ -420,9 +438,7 @@ def test_deterministic_roster_reply_lists_full_rosters():
         assert name in heroes
     assert "$540" in heroes  # Quincy's cost is code-built
 
-    primary = btd6_context_service.deterministic_roster_reply(
-        "list all primary towers"
-    )
+    primary = btd6_context_service.deterministic_roster_reply("list all primary towers")
     assert primary is not None and "Dart Monkey" in primary
     assert "Sniper Monkey" not in primary  # military tower excluded by category
 

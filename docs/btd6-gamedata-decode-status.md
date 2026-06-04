@@ -111,6 +111,24 @@ game-data dump clone**, so this session did the work that is verifiable here and
   - **Not broken (confirmed):** `btd6_cumulative_cost` arithmetic across Wizard/
     Heli/Buccaneer; `btd6_relic_lookup`/`btd6_bloon_filter` registered (see the
     capability-surface bullet above).
+- **Live bug-report round 3 (super monkey) — route≠outcome confirmed LIVE +
+  upgrade-descriptions FIXED.** `recent_audit` showed the super-monkey upgrade
+  refusals as `grounding_failed` on **`task=btd6.answer`** — so the question
+  *did* route to BTD6 and auto-ground, yet failed: **live proof that routing is
+  not the cause** (matches the `classify()` test). Two grounding gaps isolated:
+  - **Gap A — descriptions not surfaced (FIXED).** `build()` listed upgrade
+    NAMES + costs but **not** their game-authored descriptions (all 15 exist via
+    `get_upgrade_detail`), so "list all the upgrades and descriptions of X" had
+    no grounding → the model free-recalled → `grounding_failed`. Added
+    `_render_upgrade_descriptions` (mirrors `_render_hero_descriptions`): every
+    described card now grounds as a `[btd6_upgrade]` line. Verified in-sandbox
+    (super monkey: 15/15 attached). *Live-owed: the re-ask must now answer.*
+  - **Gap B — derived prices (still open).** "list upgrade prices" failed even
+    though MEDIUM prices are grounded, because the model elaborated into
+    *difficulty-scaled/cumulative* prices it didn't route through the cost tools
+    → `grounding_failed`. The derived-value family (finding §5.2); fix is the
+    auto-attached cost grounding, **scope still to confirm** (every tower Q vs
+    cost-intent only).
 - **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
   pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
   without), ranked over the **full** range before the detail cap, so the model
