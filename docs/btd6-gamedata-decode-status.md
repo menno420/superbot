@@ -40,24 +40,44 @@ works** (the traps we hit), and what is still un-decoded.
    banana-cash, etc. carry a real number but `_BUFF_FIELDS` /
    `btd6_upgrade_detail_service` has no field to render it. Extend the renderer
    first, then decode.
+   - **DONE (cash/economy):** `_BUFF_FIELDS` now renders
+     `cashPerRoundPerMechantship` / `cashPerRoundPerFavouredTrades` /
+     `cashbackZoneMultiplier`, so **Trade Empire's income + Favored Trades
+     sellback** (already decoded into committed data, but previously *dropped* by
+     the renderer) now reach the answer — "what does Trade Empire do" surfaces
+     "+$10/round per Merchantman, +$20/round per Favored Trades, +4% sellback".
+   - **NEXT — income multiplier (`incomeMultiplier`).** Banana Farm income buffs
+     are in the dump but NOT in committed data: `CentralMarketBuffModel` ×1.1
+     (10-stack, **wiki-confirmed "+10% income"** on the Central Market page) and
+     `BananaCentralBuffModel` ×1.25 (wiki says "make nearby farms generate more
+     money"; the exact % wasn't on the page — confirm before writing). Also
+     `MonkeyCityIncomeSupportModel` ×1.2 (Monkey City "+20%", wiki-confirmed).
+     Decoding these = add an `incomeMultiplier` render field + the
+     `*SupportModel`/`*BuffModel` → `incomeMultiplier` mapper mappings + author
+     the committed `buffs[]` on the matching tiers (place them so `--audit` stays
+     aligned).
+   - **Other currently-dropped committed buff fields** (separate from cash):
+     `lifespan` (Engineer/Spike start-of-round buff *duration*), `heroXpMultiplier`
+     (Sub global ability-cooldown buff), `cooldown` (Desperado Nomad buff) — each
+     needs a render field + a wiki-confirmed label.
 3. **Zone effect tail** (28 types) + zones **nested in sub-towers**.
 4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
    plus the `NameDowngradeError` name guard.
-6. **Map removable / blocker / destructible-object data** (NEW backlog target;
-   independent of the tower cutover; priority high-medium, *after* the live
-   phrasing/refusal fixes). A live test confirmed `which maps have water` now
-   answers from verified `has_water`, but `list maps with removables` has no
-   data: `MapEntry` / `maps.json` model only `difficulty`, `has_water`, and
-   `lines_of_sight_notes`. `map_maps()` reads only `hasWater` / `isDebug` from
-   each `Maps/<difficulty>/*.json` blob — so first **inspect a dump blob** for a
-   removable/obstacle field; if present, add a `removables` field to `MapEntry`
-   + the mapper + `_map_dict` (the `btd6_map_lookup` projection), verified
-   against in-game truth per the standing discipline (do **not** invent it).
-   Until then the bot states the gap rather than naming maps from memory — see
-   the "Unsupported BTD6 areas" clause in
-   `ai_instruction_service._TASK_CONTRACT`.
+6. **Map removable / blocker / destructible-object data — INVESTIGATED; NOT
+   extractable from this dump (closed; needs a different source).** The live
+   test that opened this (`list maps with removables`) is correctly handled by
+   the "Unsupported BTD6 areas" clause in `ai_instruction_service._TASK_CONTRACT`
+   (the bot states the gap rather than naming maps from memory). Checked the v55
+   dump directly: `Maps/<difficulty>/*.json` carry only catalog metadata
+   (`difficulty`, `hasWater`, `theme`, `mapMusic`, `mapSprite`, `odysseyStatue`,
+   `coopMapDivisionType`, `unlockDifficulty`) — **0 of 89 maps** name a
+   removable/obstacle, and a whole-dump grep finds only UI strings (`"Removable
+   Cost"`, `ft_trackremovable*`) and Unity asset refs (`Removables/*.prefab`).
+   Per-map removable **placement/cost** lives in the AssetBundle map scenes,
+   which are not in this JSON export — so removables cannot be sourced here.
+   Re-open only with a different source (wiki, or a scene-data export).
 
 **Binding discipline for every decode step:**
 - Re-validate anchors first (`--validate-anchors`); if they fail the dump moved → stop.
@@ -67,6 +87,47 @@ works** (the traps we hit), and what is still un-decoded.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-04 (dump re-validation: confirmable data mapping is caught up)
+
+Cloned the v55 dump (`Btd6ModHelper/btd6-game-data` @ `a3348a89` — the pinned
+commit; `main` is still there, no drift) and re-ran the pipeline end to end.
+**The confirmable data mapping is caught up; the remaining frontier is genuinely
+cutover-gated.** Evidence:
+
+- **Anchors pass; `--audit` is nothing-SUSPECT** against the fresh dump.
+- **`--overlay --dry-run`, `--descriptions --dry-run`, and `--maps` are all
+  no-ops / byte-identical** → committed tower/hero/map data is fully in sync with
+  v55. There is no pending value to refresh.
+- **Buff decode tail (step 1) — re-confirmed exhausted via a roster-wide
+  discovery.** Of ~24 undecoded `*SupportModel`/`*BuffModel` types, **none is
+  value-confirmable now**: most (`RangeSupportModel` ×134, `PierceSupportModel`
+  ×60, `MonkeyCityIncome`/`ProjectileSpeed`/`ProjectileRadius`/`FreezeDuration`/
+  `Pyrotechnics`/`BananaCashIncrease`…) have **no committed `buffs[]` counterpart**
+  on a matching tier to verify against; the only two with a committed match
+  (`DamageModifierSupportModel`, `TargetSupplierSupportModel`) match **only** on
+  the trivial `customRadius/maxStackSize=0` — their real effect
+  (`damageAdditiveForBad`, `rateMultiplier`) lives in a *different* model, so
+  there is no raw number to confirm. The `SCHEMA_FIRST` set carries a direct
+  multiplier but with **no committed value and direction/transform ambiguity**
+  (is `0.25` ×0.25 or +25%?), so it can't be confirmed pre-cutover either. Holds
+  the standing rule: **do not write a number you can't confirm.**
+- **`theme`/`coopMapDivisionType`/`unlockDifficulty` are opaque integer enums**
+  (`theme` is 0–6) with no in-dump label source → not decodable without a
+  confirmed mapping (would be guessing).
+- **Removables: not in this dump** (see step 6 below) — closed.
+
+**Net:** for *new* numbers the next motion is the **tower cutover machinery** or
+**external value sources** — both need the maintainer's call. But one safe,
+wiki-grounded win was available without writing any new number and was taken:
+the **`SCHEMA_FIRST` cash renderer** (step 2). `_BUFF_FIELDS` had no cash field,
+so Trade Empire's income (already decoded + committed via `TradeEmpireBuffModel`)
+was silently *dropped* — "what does Trade Empire do" answered with only the +1
+damage. Added `cashPerRoundPerMechantship` / `cashPerRoundPerFavouredTrades` /
+`cashbackZoneMultiplier` render entries (labels wiki-confirmed), so the income now
+reaches the answer. This is the canonical *extracted ≠ answerable* fix — no new
+value asserted, just un-dropped. See step 2 for the income-multiplier decode that
+this renderer work teed up.
 
 ### Session log — 2026-06-04 (behaviour layer: PMFC/Mermonkey thin-grounding + guards)
 
