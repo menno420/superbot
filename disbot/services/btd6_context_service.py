@@ -1587,6 +1587,45 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
     return lines
 
 
+def _upgrade_parent_tower_facts(
+    message_text: str,
+    resolved_tower_ids: set[str],
+) -> list[str]:
+    """Ground an upgrade's PARENT TOWER when the text named the upgrade, not it.
+
+    Upgrade names / abbreviations (PMFC, POD, BEZ, "Plasma Monkey Fan Club")
+    resolve as upgrades, but the intent resolver does not extract their parent
+    tower — so a conceptual question like "what's the damage type when PMFC's
+    ability is active" attaches only the upgrade's few detail lines (Pass 3c)
+    and nothing about the tower. With so little to stand on the model tends to
+    refuse despite holding the upgrade fact. Attaching the parent tower's
+    fixture grounding (the same rich context a tower-named query gets) closes
+    that gap; ``resolved_tower_ids`` dedupes so a tower the user *did* name is
+    never grounded twice.
+
+    Retrieval only — see ``docs/btd6-absence-claim-guard-design.md`` §4.1
+    (Layer A / mechanism 2). Returns ``[]`` when no upgrade resolves or the
+    parent tower is already grounded.
+    """
+    try:
+        from services import btd6_data_service, btd6_upgrade_service
+    except Exception:  # noqa: BLE001 — defensive
+        return []
+
+    res = btd6_upgrade_service.resolve_upgrade(message_text)
+    upgrade = getattr(res, "upgrade", None)
+    if upgrade is None:
+        return []
+    tower_id = str(getattr(upgrade, "tower_id", "") or "")
+    if not tower_id or tower_id in resolved_tower_ids:
+        return []
+    record = btd6_data_service.get_tower(tower_id)
+    if record is None:
+        return []
+    resolved_tower_ids.add(tower_id)
+    return _render_fixture_tower(record)
+
+
 # Resolver live-entity kinds → coverage areas, for the grounding signals.
 _LIVE_KIND_TO_COVERAGE: dict[str, str] = {
     "btd6_boss": cov.AREA_BOSS,
@@ -1778,6 +1817,26 @@ async def build(message_text: str) -> BTD6Context:
         except Exception as exc:  # noqa: BLE001 — defensive
             logger.debug(
                 "btd6_context_service: upgrade grounding unavailable (%s)",
+                exc,
+            )
+
+        # Pass 3d: parent-tower grounding for an upgrade-only query. When the
+        # text names an upgrade (PMFC / POD / BEZ) but NOT its tower, Pass 3
+        # grounds no tower and Pass 3c attaches only the upgrade's few detail
+        # lines — too thin for a conceptual question ("what's the damage type
+        # when PMFC's ability is active") to stand on, so the model refuses
+        # despite holding the upgrade fact. Ground the parent tower (the same
+        # context a tower-named query gets), deduped against towers already
+        # grounded above. Retrieval only — see
+        # docs/btd6-absence-claim-guard-design.md §4.1 (Layer A / mechanism 2).
+        try:
+            facts.extend(
+                _upgrade_parent_tower_facts(message_text, resolved_tower_ids),
+            )
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: upgrade parent-tower grounding "
+                "unavailable (%s)",
                 exc,
             )
 

@@ -150,6 +150,18 @@ grounding it has?* Mechanism (3) is the highest-value and most general — "answ
 what's grounded, flag the rest" should be the default, never a wholesale refusal
 when relevant grounding is present.
 
+## Update 4 (2026-06-04, later) — mechanism 2 SHIPPED (retrieval side)
+
+Mechanism 2 (thin upgrade grounding) is now fixed in `btd6_context_service.build`
+(**Pass 3d**): when a query resolves an upgrade by name/abbreviation but not its
+tower (PMFC, POD, BEZ), the upgrade's **parent tower** is grounded alongside the
+upgrade detail, deduped against any tower the user already named. PMFC's ability
+query goes from **4 → 63** grounded facts (Dart Monkey context attached); POD →
+Wizard Monkey. This is the §4.1 Layer A enrichment — **retrieval only, no guard**;
+it does not touch Layer B (still design-for-review). Mechanisms 1 (conversational
+context carry) and 3 (answer-what's-grounded vs. wholesale refuse) are
+prompt/stage-layer and still owe a live repro + verification before building.
+
 ---
 
 ## 1. The problem

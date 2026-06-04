@@ -357,6 +357,56 @@ async def test_build_ignores_non_upgrade_text():
     assert not any(f.startswith("[btd6_upgrade]") for f in ctx.facts)
 
 
+async def test_build_grounds_parent_tower_for_upgrade_only_query():
+    # PMFC names the upgrade but not its tower, so resolution used to attach only
+    # the upgrade's ~4 detail lines — too thin for "what's the damage type when
+    # the ability is active" to stand on, and the model refused despite holding
+    # the Sharp fact (docs/btd6-absence-claim-guard-design.md Update 3 / §4.1,
+    # mechanism 2). The parent tower (Dart Monkey) is now grounded alongside the
+    # upgrade so a conceptual question has the full tower context to answer from.
+    ctx = await btd6_context_service.build(
+        "what is the damage type when plasma monkey fan club ability is activated",
+    )
+    # The upgrade grounding is still present...
+    assert any(
+        f.startswith("[btd6_upgrade]") and "Plasma Monkey Fan Club" in f
+        for f in ctx.facts
+    ), ctx.facts
+    # ...and now the parent Dart Monkey tower identity is grounded too.
+    assert any(
+        f.startswith("[btd6_tower] Dart Monkey") and "base cost" in f
+        for f in ctx.facts
+    ), ctx.facts
+
+
+async def test_build_grounds_parent_tower_for_abbreviation_only_query():
+    # The same enrichment for an abbreviation that resolves to a different tower:
+    # POD -> Wizard Monkey (not Dart Monkey), proving the parent is the upgrade's
+    # own tower, not a hardcoded fallback.
+    ctx = await btd6_context_service.build("POD cooldown")
+    assert any(f.startswith("[btd6_upgrade] Prince of Darkness") for f in ctx.facts)
+    assert any(
+        f.startswith("[btd6_tower] Wizard Monkey") and "base cost" in f
+        for f in ctx.facts
+    ), ctx.facts
+
+
+async def test_build_does_not_double_ground_a_named_parent_tower():
+    # When the tower IS named, Pass 3 already grounds it; the parent-tower pass
+    # must dedupe so it is not grounded a second time (which would duplicate the
+    # identity + 17 [btd6_cost] lines). This query names Dart Monkey AND resolves
+    # one of its own upgrades (PMFC) — the exact dedup path.
+    ctx = await btd6_context_service.build("dart monkey plasma monkey fan club stats")
+    identity = [
+        f
+        for f in ctx.facts
+        if f.startswith("[btd6_tower] Dart Monkey") and "base cost" in f
+    ]
+    assert len(identity) == 1, ctx.facts  # grounded exactly once, not doubled
+    cost_lines = [f for f in ctx.facts if f.startswith("[btd6_cost]")]
+    assert len(cost_lines) == 17  # header + base + 15 — not doubled
+
+
 # ---------------------------------------------------------------------------
 # build() paragon ability grounding (curated from bloonswiki)
 # ---------------------------------------------------------------------------
@@ -499,3 +549,43 @@ async def test_build_grounds_hero_level_descriptions():
     levels = [f for f in ctx.facts if "[btd6_hero_level] Ezili Level 11:" in f]
     assert len(levels) == 1
     assert "reanimated Bloons by 50%" in levels[0]
+
+
+# ---------------------------------------------------------------------------
+# grounding budget — a single named tower must not flood the prompt
+# ---------------------------------------------------------------------------
+
+# A named tower now grounds identity + paths + description + paragon + per-upgrade
+# descriptions + all-difficulty cumulative costs + stats. That broad auto-grounding
+# fixed real grounding_failed refusals, but the per-tower fact count must stay
+# bounded so it can't silently balloon the prompt. The current worst case is 60
+# lines (Bomb Shooter / Wizard / Ninja); crossing this ceiling should be a
+# deliberate decision — split grounding into intent-sensitive packets (descriptions
+# vs. costs vs. stats), per the analysis recommendation — not a quiet drift.
+_MAX_GROUNDING_LINES_PER_TOWER = 80
+
+
+def test_fixture_tower_grounding_respects_line_cap_and_budget():
+    from services import btd6_data_service
+
+    towers = btd6_data_service.get_dataset().towers
+    assert towers, "dataset has no towers — fixture load failed"
+
+    worst_name, worst_lines = "", 0
+    for tower in towers:
+        lines = btd6_context_service._render_fixture_tower(tower)
+        for line in lines:
+            # Every emitted line goes through _cap, so no single grounding fact is
+            # ever truncated mid-token (or runs unbounded) in the prompt.
+            assert len(line) <= btd6_context_service._FACT_TEXT_CAP, (
+                f"{tower.canonical} grounding line exceeds "
+                f"{btd6_context_service._FACT_TEXT_CAP}-char cap: {line!r}"
+            )
+        if len(lines) > worst_lines:
+            worst_name, worst_lines = tower.canonical, len(lines)
+
+    assert worst_lines <= _MAX_GROUNDING_LINES_PER_TOWER, (
+        f"{worst_name} now grounds {worst_lines} lines (ceiling "
+        f"{_MAX_GROUNDING_LINES_PER_TOWER}). Rich auto-grounding has grown — split "
+        "it into intent-sensitive packets before raising this ceiling."
+    )

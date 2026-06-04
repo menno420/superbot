@@ -45,6 +45,19 @@ works** (the traps we hit), and what is still un-decoded.
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
    plus the `NameDowngradeError` name guard.
+6. **Map removable / blocker / destructible-object data** (NEW backlog target;
+   independent of the tower cutover; priority high-medium, *after* the live
+   phrasing/refusal fixes). A live test confirmed `which maps have water` now
+   answers from verified `has_water`, but `list maps with removables` has no
+   data: `MapEntry` / `maps.json` model only `difficulty`, `has_water`, and
+   `lines_of_sight_notes`. `map_maps()` reads only `hasWater` / `isDebug` from
+   each `Maps/<difficulty>/*.json` blob — so first **inspect a dump blob** for a
+   removable/obstacle field; if present, add a `removables` field to `MapEntry`
+   + the mapper + `_map_dict` (the `btd6_map_lookup` projection), verified
+   against in-game truth per the standing discipline (do **not** invent it).
+   Until then the bot states the gap rather than naming maps from memory — see
+   the "Unsupported BTD6 areas" clause in
+   `ai_instruction_service._TASK_CONTRACT`.
 
 **Binding discipline for every decode step:**
 - Re-validate anchors first (`--validate-anchors`); if they fail the dump moved → stop.
@@ -54,6 +67,36 @@ works** (the traps we hit), and what is still un-decoded.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-04 (behaviour layer: PMFC/Mermonkey thin-grounding + guards)
+
+Picked up the phrasing-sensitivity cluster (PR #491 / absence-claim-guard design
+Update 3). The sandbox still can't reach Discord, so this is the retrieval-side
+work verifiable here; the prompt-layer items still owe a live check.
+
+- **Mechanism 2 fixed (thin upgrade grounding) — `btd6_context_service`.** An
+  upgrade-only query ("what's the damage type when plasma monkey fan club ability
+  is activated") resolved the *upgrade* (PMFC → 4 facts) but not its *tower*, so a
+  conceptual question had almost nothing to stand on and the model refused despite
+  holding the Sharp fact. New **Pass 3d** grounds the upgrade's **parent tower**
+  (PMFC → Dart Monkey's ~60 facts; POD → Wizard Monkey) when the tower wasn't
+  already resolved, deduped so a tower the user *named* isn't grounded twice.
+  Verified: PMFC ability query **4 → 63 facts**; "super monkey prices" still 17
+  cost lines (no double). Retrieval only — the design doc's §4.1 Layer A
+  enrichment, **not** the Layer B guard (still design-only; do not build blind).
+- **Map removables faithfulness fix** — the "Unsupported BTD6 areas" clause in
+  `_TASK_CONTRACT` now covers per-map removables, so "list maps with removables"
+  states the limitation instead of improvising example maps from memory.
+- **Guard tests** — 89-map embed pinned under Discord's field/total limits; a
+  single tower's grounding pinned ≤ 80 lines / ≤ 240 chars per line (current worst
+  60) so the rich auto-grounding can't silently balloon the prompt.
+
+**Still owed (need live Discord verification — could not run here):** mechanism 1
+(conversational context not carried — a follow-up with no entity routes to general
+with 0 facts) and mechanism 3 (answer-what's-grounded vs. wholesale refuse) are
+prompt/stage-layer; build those from a live repro. The Bomb Shooter / Mermonkey
+"path" phrasings already ground 60 / 52 facts via tower fallback, so any remaining
+failure there is mechanism 3, not retrieval.
 
 ### Session log — Maps hub button + correct difficulty/mode/modifier taxonomy
 
