@@ -295,6 +295,106 @@ def test_buff_hero_xp_multiplier_renders():
     assert "x1.5 hero XP" in text
 
 
+# --- buff stack cap (maxStacks / maxStackSize) ------------------------------
+
+
+def test_buff_stack_cap_renders_when_positive():
+    # Trade Empire stacks per Merchantman in range, up to 20 — a real cap a
+    # player asks about. It sat in committed data (maxStacks) but never
+    # surfaced; only a code comment hardcoded "up to 20".
+    text = det._buff_text(
+        {
+            "name": "Trade Empire buff",
+            "cashPerRoundPerMechantship": 10,
+            "maxStacks": 20,
+        },
+    )
+    assert "+$10/round per Merchantman" in text
+    assert "(stacks up to 20)" in text
+
+
+def test_buff_stack_cap_zero_means_no_clause():
+    # maxStacks == 0 is "applies once, does not stack" (a global aura), NOT an
+    # unlimited cap — so we render no stack clause for it.
+    text = det._buff_text(
+        {"name": "Flagship buff", "rateMultiplier": 0.8, "maxStacks": 0},
+    )
+    assert "stacks up to" not in text
+    assert text == "Flagship buff: x0.8 attack cooldown"
+
+
+def test_buff_stack_cap_reads_max_stack_size_alias():
+    # Sniper encodes the same concept under the other field name (maxStackSize);
+    # a positive value still surfaces a cap, 0 still renders nothing.
+    assert "(stacks up to 4)" in det._buff_text(
+        {"name": "X", "rateMultiplier": 0.75, "maxStackSize": 4},
+    )
+    assert "stacks up to" not in det._buff_text(
+        {"name": "Attack speed buff", "rateMultiplier": 0.75, "maxStackSize": 0},
+    )
+
+
+def test_sellback_stack_cap_surfaces_end_to_end():
+    # Real committed Buccaneer 0-0-4: +4% sellback, stacks up to 3 (= +12%).
+    d = det.get_upgrade_detail("monkey_buccaneer:004")
+    blob = " | ".join(d.buffs)
+    assert "+4% sellback value" in blob
+    assert "(stacks up to 3)" in blob
+
+
+# --- triggered-buff window + cash-on-leak (trigger fixes the duration unit) --
+
+
+def test_buff_lives_lost_trigger_renders_seconds_and_cash_on_leak():
+    # on_life_lost: the window/cooldown are SECONDS, the condition is stated, and
+    # the cash-on-leak is a separate permanent clause (not inside the timed bit).
+    text = det._buff_text(
+        {
+            "name": "Nomad buff",
+            "trigger": "on_life_lost",
+            "rateMultiplier": 0.6,
+            "rangeAdditive": 16,
+            "cashOnLeakMultiplier": 2,
+            "lifespan": 15,
+            "cooldown": 60,
+        },
+    )
+    assert "for 15s when a life is lost (60s cooldown)" in text
+    assert "leaked bloons give 2x their value as cash" in text
+
+
+def test_buff_start_of_round_trigger_renders_each_round_not_seconds():
+    # start_of_round re-applies every round, so we state the condition and never
+    # a fixed duration — duration_rounds must NOT surface as "3s".
+    text = det._buff_text(
+        {
+            "name": "Start-of-round buff",
+            "trigger": "start_of_round",
+            "rateMultiplier": 0.25,
+            "duration_rounds": 3,
+        },
+    )
+    assert text == "Start-of-round buff: x0.25 attack cooldown at the start of each round"
+    assert "3s" not in text and "3 round" not in text
+
+
+def test_lives_lost_buff_surfaces_end_to_end():
+    # Real committed Desperado Enforcer (0-0-3): event-driven buff, seconds, ×2
+    # cash-on-leak — all reaching the rendered detail / AI grounding.
+    d = det.get_upgrade_detail("desperado:003")
+    blob = " | ".join(d.buffs)
+    assert "+16 range for 15s when a life is lost (60s cooldown)" in blob
+    assert "leaked bloons give 2x their value as cash" in blob
+
+
+def test_start_of_round_buff_surfaces_end_to_end():
+    # Real committed Spike Factory Perma-Spike (0-0-5): round-start speed buff.
+    d = det.get_upgrade_detail("spike_factory:005")
+    blob = " | ".join(d.buffs)
+    assert "at the start of each round" in blob
+    assert "lifespan" not in blob
+
+
 def test_zone_slow_multiplier_renders_as_speed():
     # Ice Monkey's Arctic Wind: 'multiplier' is a speed multiplier (0.6 = 60%
     # speed). It was dropped, so Ice's signature slow was unstated. MOABs slow

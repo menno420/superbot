@@ -25,7 +25,9 @@ works** (the traps we hit), and what is still un-decoded.
 - **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
   **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
   **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
-  (**8 of 38** confirmed types in `_BUFF_FIELD_MAP`).
+  (**9 of 38** confirmed types in `_BUFF_FIELD_MAP` — incl. the
+  `VigilanteTowerBehaviorModel` lives-lost buff — each carrying its activation
+  `trigger`, which fixes the duration unit: seconds vs round-count).
 
 **Do next (ordered; correctness over speed — the maintainer's standing rule):**
 1. **Buff decode tail (8 → 38).** The cleanly value-confirmable set is now
@@ -95,6 +97,31 @@ works** (the traps we hit), and what is still un-decoded.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — temporary-buff triggers (units fixed) + Vigilante de-orphan + cash-on-leak
+
+Decoded the two **time/round-windowed** buffs whose duration field was unit-ambiguous:
+- **Desperado lives-lost buff** (`VigilanteTowerBehaviorModel`, the Nomad/Enforcer/…
+  bottom line) was **orphaned** — not in `_BUFF_FIELD_MAP`, so a re-parse dropped
+  it (committed values were right but unreproducible). Now decoded: raw
+  `loseLifeAttackSpeedBuff`/`loseLifeRangeBuff` → `rateMultiplier`/`rangeAdditive`;
+  `loseLifeBuff{Duration,Cooldown}Frames` ÷60 → `lifespan`/`cooldown` **in seconds**
+  (900f=15s, 3600f=60s); `bloonLeakValueModifier` 2.0 → `cashOnLeakMultiplier`
+  (a leaked bloon grants **2× its value as cash** — maintainer-confirmed, same
+  mechanic as Bloon Trap / Obyn trees). Trigger `on_life_lost`.
+- **Engineer/Spike start-of-round buff** (`StartOfRoundRateBuffModel`): the raw
+  `duration` is a **round count** (`durationFrames` is 0), so it now maps to
+  `duration_rounds` — keeping `lifespan` exclusively for seconds. Trigger
+  `start_of_round`; re-applies every round (effectively permanent), so the renderer
+  states the condition, not a misleading "lasts 3s".
+- **Why it matters:** the committed `lifespan` field was carrying *two units*
+  (15 = seconds on Desperado, 3/10 = rounds on Spike). The new `trigger` field is
+  the discriminator that fixes the unit downstream. `_BUFF_TRIGGER` /
+  `_BUFF_FRAME_FIELDS` in the parser; `_buff_trigger_clause` in
+  `btd6_upgrade_detail_service`. Committed data re-merged (parser-reproducible,
+  coverage unchanged: 26 Desperado + 15 Engineer + 26 Spike tiers). Pinned by
+  `test_buffs_vigilante_lives_lost` / `test_buffs_start_of_round_rate` (parser) and
+  the trigger/cash-on-leak render tests.
 
 ### Session log — per-round cash (all 140, derived) + where the cash economy lives
 

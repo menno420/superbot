@@ -1016,8 +1016,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -1079,8 +1080,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -1142,8 +1144,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -1205,8 +1208,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 10
+          "duration_rounds": 10
         }
       ],
       "footprintRadius": 8,
@@ -1531,8 +1535,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -1758,8 +1763,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -2145,8 +2151,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -2620,8 +2627,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -2839,8 +2847,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -3062,8 +3071,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -3489,8 +3499,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -3916,8 +3927,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "targetTypeCloseTrack": true,
@@ -3976,8 +3988,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4039,8 +4052,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4102,8 +4116,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4165,8 +4180,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4228,8 +4244,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4291,8 +4308,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4354,8 +4372,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4417,8 +4436,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4480,8 +4500,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4543,8 +4564,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 3
+          "duration_rounds": 3
         }
       ],
       "footprintRadius": 8,
@@ -4606,8 +4628,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 10
+          "duration_rounds": 10
         }
       ],
       "footprintRadius": 8,
@@ -4669,8 +4692,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 10
+          "duration_rounds": 10
         }
       ],
       "footprintRadius": 8,
@@ -4732,8 +4756,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 10
+          "duration_rounds": 10
         }
       ],
       "footprintRadius": 8,
@@ -4795,8 +4820,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 10
+          "duration_rounds": 10
         }
       ],
       "footprintRadius": 8,

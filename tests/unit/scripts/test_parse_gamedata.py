@@ -982,8 +982,10 @@ def test_buffs_trade_empire_cash_and_damage(mod):
 
 
 def test_buffs_start_of_round_rate(mod):
-    # Engineer/Spike start-of-round buff: modifier 0.25 -> rateMultiplier,
-    # duration -> lifespan (two-tower confirmed).
+    # Engineer/Spike start-of-round buff: modifier 0.25 -> rateMultiplier; the
+    # ``duration`` is a ROUND count (durationFrames is 0), so it maps to
+    # ``duration_rounds`` (not ``lifespan``, which stays seconds-only) and the
+    # buff is stamped with its ``start_of_round`` trigger.
     model = _tower_model()
     model["behaviors"].append(
         {
@@ -996,7 +998,34 @@ def test_buffs_start_of_round_rate(mod):
     )
     buff = mod._map_tier(model)["buffs"][0]
     assert buff["rateMultiplier"] == 0.25
-    assert buff["lifespan"] == 3
+    assert buff["duration_rounds"] == 3
+    assert buff["trigger"] == "start_of_round"
+    assert "lifespan" not in buff  # rounds, never mislabelled as a seconds window
+
+
+def test_buffs_vigilante_lives_lost(mod):
+    # Desperado bottom-path lives-lost buff: frame windows -> seconds (÷60), the
+    # two 1:1 effects, the ×2 cash-on-leak, and the on_life_lost trigger that
+    # marks the durations as seconds. De-orphans a buff the parser used to drop.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("VigilanteTowerBehaviorModel"),
+            "buffLocsName": "BuffIconVigilante",
+            "loseLifeAttackSpeedBuff": 0.6,
+            "loseLifeRangeBuff": 16.0,
+            "loseLifeBuffDurationFrames": 900,
+            "loseLifeBuffCooldownFrames": 3600,
+            "bloonLeakValueModifier": 2.0,
+        }
+    )
+    buff = mod._map_tier(model)["buffs"][0]
+    assert buff["trigger"] == "on_life_lost"
+    assert buff["rateMultiplier"] == 0.6
+    assert buff["rangeAdditive"] == 16
+    assert buff["cashOnLeakMultiplier"] == 2
+    assert buff["lifespan"] == 15  # 900 frames / 60
+    assert buff["cooldown"] == 60  # 3600 frames / 60
 
 
 def test_buffs_placement_area_range_passthrough(mod):
