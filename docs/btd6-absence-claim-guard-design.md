@@ -20,6 +20,64 @@
 
 ---
 
+## Evidence update (2026-06-04) — this guard is DEPRIORITIZED
+
+Two more live tests (maintainer) reshaped the diagnosis after this doc's first
+draft. **Build the fix the evidence points at; this general guard is not the
+next PR.**
+
+1. **MOAB-bonus, when the upgrade is *named*, now ANSWERS.** Asked "list the
+   damage multipliers of the MOAB Mauler," the bot resolves Bomb Shooter 0-3-0,
+   states +15 vs MOAB-class, gives base stats (1 dmg / 22 pierce / 0.825s),
+   explains the +15 → 16 stack, lists the MOAB-class set, and correctly calls it
+   a flat bonus, not a multiplier — a fully-grounded answer (every number is in
+   `grounding_for_query("moab mauler")`, verified). So the "middle path" refusal
+   does **not** reproduce once a tier is named; it was a resolver/query-shaping
+   gap that explicit naming bypasses. **MOAB is no longer the canonical failing
+   case — downgraded.**
+
+2. **A *pure* absence-claim ("X has no Y" with no answer attached) has NOT been
+   reproduced live.** Every failure caught is one of two narrower things —
+   derived-value rejection (total-cost, confirmed) or *deny-then-answer* (below).
+   Building the general absence-claim gate for a mode that isn't occurring is
+   premature. This design stays a **provisional backstop**, not the next PR.
+
+### The behaviour that IS occurring — deny-then-answer (the mild cousin)
+
+Three live instances now (MOAB "multipliers"; Bomb Shooter "multipliers per
+tier"; this MOAB answer): the model **answers correctly but prepends a false
+"I don't have `<X>`"** because the user's *word* ("multiplier") is not a literal
+field name — even though the flat +15 bonus *is* the answer, relabelled. The
+answer survives; the framing is misleadingly negative.
+
+- **Severity:** mild (the answer is correct; only the preamble is wrong) — vs
+  the severe derived-value case where the guard kills the answer outright.
+- **Mechanism (prompt, not guard):** `ai_instruction_service` already says
+  *"ALWAYS run the lookup before telling the user you lack a figure … only
+  report missing after found=false"* (good — covers hard refusals) **and** *"if a
+  specific figure still cannot be verified, give your general answer but flag
+  that one number"* (a hedge-then-answer pattern). The model **over-applies the
+  hedge-then-answer pattern** to a figure that is answerable under a *different
+  label* — it flags "multiplier" as missing, then answers with the bonus.
+- **Proposed fix (next session; prompt change → must live-verify; NOT now):** a
+  framing clarification that a differently-*labelled* equivalent (a flat bonus
+  answers "multiplier"; a per-tier table answers "scaling") is **not** a missing
+  figure to disclaim — answer the substance directly, and only flag a figure
+  that is genuinely absent after a `found=false` lookup.
+
+### Revised priority
+
+| Problem | Status | Next |
+|---|---|---|
+| Derived-value rejection (total-cost) | **confirmed** (audit `grounding_failed` + provider); fix **shipped** (`btd6_cumulative_cost`, #482) | live-verify the re-ask |
+| Deny-then-answer preamble | confirmed live ×3; **mild** | framing fix + live-verify (next) |
+| Pure absence-claim ("X has no Y") | **not reproduced** live | keep this design as a backstop; do **not** build yet |
+
+The original problem statement and design (§1–§7) remain valid as the *backstop*
+for if/when a pure absence-claim does surface — read them in that light.
+
+---
+
 ## 1. The problem
 
 The faithfulness verifier catches **ungrounded positives** — a number or proper

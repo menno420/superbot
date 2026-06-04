@@ -46,6 +46,18 @@ game-data dump clone**, so this session did the work that is verifiable here and
   grounded by construction. Verified vs the live screenshot (Tack Shooter top →
   Inferno Ring = $50,310 Medium / $42,760 Easy, the per-item-rounding case).
   Finding written up: **`btd6-derived-value-groundedness-finding.md`**.
+- **Refined after two more live tests (post-#482).** Asked "list the damage
+  multipliers of the MOAB Mauler," the bot now **answers correctly** (resolves
+  0-3-0, +15 vs MOAB-class, base stats, flat-bonus-not-multiplier) — so MOAB is
+  **downgraded** as the canonical failing case. A *pure* absence-claim ("X has no
+  Y", no answer) has **not** been reproduced; live failures keep landing on two
+  narrower modes: derived-value rejection (severe, fixed) and **deny-then-answer**
+  (mild — the model prepends a false "I don't have a 'multiplier' figure" then
+  answers, because the user's word isn't a literal field; seen ×3). So the
+  **absence-claim guard is deprioritized to a backstop** and the **deny-then-
+  answer framing fix** (a prompt change, live-verify next session) becomes the
+  milder concrete item. Captured in the evidence-update section of
+  `btd6-absence-claim-guard-design.md`.
 - **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
   pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
   without), ranked over the **full** range before the detail cap, so the model
@@ -89,6 +101,11 @@ game-data dump clone**, so this session did the work that is verifiable here and
    proposal written in `btd6-absence-claim-guard-design.md`. **Owed:** maintainer
    reads `recent_audit` for the live MOAB turn to confirm the reason code, then
    reviews the design. No guard code this stage, as specified.
+   **Update (post-#482):** MOAB now answers when named, and no *pure*
+   absence-claim has reproduced live → this guard is **deprioritized to a
+   backstop**. The live failures are two narrower modes (derived-value rejection
+   — fixed; deny-then-answer preamble — framing fix next). See the evidence-update
+   section of `btd6-absence-claim-guard-design.md`.
 
 2. **Finish the reachability sweep while the pattern is hot.** Two tool-gaps over
    already-committed data, same shape as the rounds/maps/modes fixes that worked:
@@ -154,7 +171,7 @@ game-data dump clone**, so this session did the work that is verifiable here and
 | `btd6_relic_lookup` | `category=economy` → 5 relics (Air and Sea, Box of Monkeys, El Dorado, Rounding Up, Starting Stash) | Ask "which CT relics are economy / list the relics / what does Super Monkey Storm do". |
 | `btd6_bloon_filter` | `property=camo` → DDT + "Camo property" modifier note; `category=moab_class` → 5 | Ask "which bloons are camo / lead", "list the MOAB-class bloons" — camo must note DDT **and** the broad modifier. |
 | `btd6_cumulative_cost` (derived-value fix) | Tack Shooter top → Inferno Ring = $50,310 Medium / $42,760 Easy | **Re-ask the refused turn:** "total cost to reach every Tack Shooter upgrade, base + all earlier costs" — must now answer with totals, not refuse (`grounding_failed`). |
-| MOAB middle-path absence | `resolve_upgrade("bomb shooter middle path")`→`none`; named tiers ground +15/+30/+99 | Ask the path-level question live, read `recent_audit`: expect empty retrieval / no upgrade provider (confirms the absence-claim hole, Task 1). |
+| MOAB bonus (named) | named tiers ground +15/+30/+99; generic "middle path"→`none` | **✅ LIVE (maintainer):** "list the MOAB Mauler's multipliers" now answers (+15, flat-bonus-not-multiplier). Caveat: it prepends a false "I don't have a multiplier figure" — the deny-then-answer mild bug, tracked separately. |
 
 ### Provenance decision (recorded, not auto-applied)
 
