@@ -58,6 +58,35 @@ game-data dump clone**, so this session did the work that is verifiable here and
   answer framing fix** (a prompt change, live-verify next session) becomes the
   milder concrete item. Captured in the evidence-update section of
   `btd6-absence-claim-guard-design.md`.
+- **Capability-surface verification (vs the bot's live self-report).** The bot
+  was asked to "list all your tools" and another reviewer flagged possible
+  doc/code drift. Verified against the real registry (`build_registry`):
+  **17 tools at USER scope, 22 at ADMIN** (with guild+member). Findings:
+  - **`btd6_relic_lookup` + `btd6_bloon_filter` + `btd6_cumulative_cost` ARE in
+    the live registry** — i.e. **this session's #482 work is registered and the
+    model sees it**, not pre-existing and not doc drift. The status doc already
+    lists them; **docs are current**, correcting the "docs undercount what's
+    shipped" read (that reviewer pre-dated #482).
+  - **Self-knowledge ≠ registry (over-claim):** the bot listed `lookup_member`
+    and `list_all_members`, which are gated behind `ai_server_member_lookup_
+    enabled` (**default False**) and were **NOT** in its toolset. There is **no
+    deterministic "list my tools" path** — the self-report is model-generated, so
+    it can (and did) name tools it doesn't currently hold. *(If that guild has the
+    member flag ON, the list is accurate — maintainer to confirm the flag.)*
+  - **Buccaneer pricing `grounding_failed` is NOT a data gap.** Verified
+    `btd6_context_service.build("pricing of monkey buccaneer")` → **found, 27
+    facts** incl. base 400 and upgrade prices ($275/$425/$3350…), identical shape
+    to sub/tack. So it is **not** "the general lookup grounds some towers and not
+    others" (correcting that reviewer's hypothesis). The medium prices are
+    groundable; the live refusal is **tool-invocation / derived-difficulty-price
+    grounding** — same family as total-cost (either the lookup wasn't invoked that
+    turn, or the model emitted Easy/Hard/Impoppable prices without calling
+    `btd6_difficulty_cost`, so the *scaled* numbers were ungrounded → rejected).
+    **Discriminator owed:** the buccaneer turn's tool-call trace. **Proposed fix:**
+    a deterministic all-difficulties tower-pricing tool (1 call → the full
+    per-upgrade × 4-difficulty table, grounded by construction), the same pattern
+    as `btd6_cumulative_cost`, replacing the fragile lookup + N×difficulty_cost
+    stitch. *Not built yet — pending the tool-trace so we fix the real mechanism.*
 - **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
   pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
   without), ranked over the **full** range before the detail cap, so the model

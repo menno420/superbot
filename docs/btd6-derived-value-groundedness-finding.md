@@ -91,6 +91,25 @@ passing genuinely-invented numbers). Option (b) is the real general fix and
 belongs in the same review as the absence-claim guard, because both ask the
 same question: *what does the guard count as grounded?*
 
+### 5.1 Next instance surfaced live — difficulty-scaled pricing ("buccaneer")
+
+"Pricing of monkey buccaneer" was refused live (`grounding_failed` + provider).
+**Verified it is not a data gap:** `btd6_context_service.build("pricing of monkey
+buccaneer")` returns **27 facts** with the base cost and upgrade prices, the same
+as sub/tack. So the *Medium* prices are grounded; what isn't is the **Easy /
+Hard / Impoppable** column the model emits in a "pricing across all difficulties"
+table — those are *derived* from Medium (×0.85 / ×1.08 / ×1.20, round-to-5) and
+are only grounded if the model calls `btd6_difficulty_cost` for **each** number.
+A full table is base + ~15 upgrades = ~16 calls; the model stitches it
+inconsistently (sub table rendered; buccaneer refused), so the guard rejects the
+ungrounded scaled prices. **Same root as total-cost: a derived value the model
+produced without routing through the deterministic tool.** The in-pattern fix is
+a single **all-difficulties tower-pricing tool** (1 call → per-upgrade × 4
+difficulties, grounded by construction) — collapsing the fragile 16-call stitch.
+**Owed first:** the buccaneer turn's tool-call trace, to confirm whether the
+model called *nothing* (pure tool-use-discipline) or called the lookup but
+freehand-scaled (the tool fixes the latter cleanly and de-risks the former).
+
 ## 6. Relationship to the absence-claim guard (the named edge)
 
 The absence-claim backstop proposed in `btd6-absence-claim-guard-design.md`
