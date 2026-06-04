@@ -551,22 +551,42 @@ def _zones(model: dict) -> list[dict]:
     return out
 
 
-# Buff/support decode — start. A buff model's raw effect field → the committed
-# buff-schema field the runtime renders (``btd6_upgrade_detail_service._BUFF_FIELDS``).
-# ONLY mappings whose semantics are **confirmed against the committed wiki value
-# on a matching tier** belong here (correctness over coverage):
-#   * RateSupportModel.multiplier  → rateMultiplier   (Sniper 0-5-x: raw 0.75 == wiki 0.75)
-#   * PoplustSupportModel.ratePercentIncrease/piercePercentIncrease
-#                                  → ratePercentage / piercePercentage (Druid 0-0-5: 0.15/0.15)
-# The other ~36 *SupportModel/*BuffModel types are deferred until each is
-# likewise confirmed (e.g. PierceSupportModel.pierce was NOT confirmable — the
-# wiki's pierce buffs are multipliers from a different model). See
+# Buff/support decode. A buff model's raw effect field → the committed
+# buff-schema field (``btd6_upgrade_detail_service._BUFF_FIELDS`` + the cash
+# fields the wiki stores). ONLY mappings whose value is **confirmed exact
+# against the committed wiki buff on a matching tier** belong here (correctness
+# over coverage); each line below was verified field-by-field:
+#   * RateSupportModel.multiplier → rateMultiplier              (Sniper 0-5-x: 0.75)
+#   * PoplustSupportModel.{rate,pierce}PercentIncrease → {rate,pierce}Percentage
+#                                                              (Druid 0-0-5: 0.15/0.15)
+#   * SubCommanderSupportModel.{pierceIncrease,damageIncrease,damageScale}
+#       → pierceAdditive / damageAdditive / damageMultiplier   (Sub 0-0-5: 4/0/2)
+#   * PiercePercentageSupportModel.percentIncrease → pierceMultiplier
+#                                                  (Mermonkey 3/4/5-xx: 1.1/1.2/1.4)
+#   * TradeEmpireBuffModel.{cashPerRoundPerMechantship,cashPerRoundPerFavouredTrades,
+#       damageBuff,ceramicDamageBuff,moabDamageBuff}
+#       → same-name cash + damageAdditive[ForCeramic/ForMoabs] (Bucc 0-0-5: 10/20/1/1/1)
+# Other types stay deferred until each is likewise confirmed (e.g.
+# PierceSupportModel.pierce was NOT confirmable). See
 # ``btd6-gamedata-decode-status.md`` step 5 for the worklist + decode classes.
 _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
     "RateSupportModel": {"multiplier": "rateMultiplier"},
     "PoplustSupportModel": {
         "ratePercentIncrease": "ratePercentage",
         "piercePercentIncrease": "piercePercentage",
+    },
+    "SubCommanderSupportModel": {
+        "pierceIncrease": "pierceAdditive",
+        "damageIncrease": "damageAdditive",
+        "damageScale": "damageMultiplier",
+    },
+    "PiercePercentageSupportModel": {"percentIncrease": "pierceMultiplier"},
+    "TradeEmpireBuffModel": {
+        "cashPerRoundPerMechantship": "cashPerRoundPerMechantship",
+        "cashPerRoundPerFavouredTrades": "cashPerRoundPerFavouredTrades",
+        "damageBuff": "damageAdditive",
+        "ceramicDamageBuff": "damageAdditiveForCeramic",
+        "moabDamageBuff": "damageAdditiveForMoabs",
     },
 }
 

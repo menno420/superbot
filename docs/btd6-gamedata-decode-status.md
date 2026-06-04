@@ -34,6 +34,15 @@ works** (the traps we hit), and what is still un-decoded.
 
 ### Session log — buff decode started (2 confirmed types)
 
+- **Buffs — decode progressing, correctness-first (5 of 38).** Added three more
+  confirmed types this pass: `SubCommanderSupportModel` (pierce/damage add +
+  damage mult, Sub 0-0-5 = 4/0/2), `PiercePercentageSupportModel.percentIncrease`
+  → `pierceMultiplier` (Mermonkey 1.1/1.2/1.4), and `TradeEmpireBuffModel`
+  (cash-per-round + flat damage additives, Buccaneer 0-0-5). A roster-wide
+  value-discovery harness surfaced candidates; each was hand-vetted on its tower
+  (it does produce false positives from value coincidence — e.g.
+  `distanceMultiplier`→`lifespanMultiplier` — so the harness is a lead, not a
+  source of truth). Original 2-type slice below.
 - **Buffs — decode started, correctness-first (2 of 38).** `_buffs()` now emits a
   `buffs[]` entry per top-level `*SupportModel`/`*BuffModel`, but **only writes a
   number for types confirmed against the committed wiki value on a matching tier**:
@@ -459,7 +468,7 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
 | **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
-| **Buffs** (`buffs[]`) — **started (2 of 38)** | `_buffs()` decodes the two types **confirmed against committed wiki values on a matching tier**: `RateSupportModel.multiplier`→`rateMultiplier` (Sniper 0.75) and `PoplustSupportModel.ratePercentIncrease`/`piercePercentIncrease`→`ratePercentage`/`piercePercentage` (Druid 0.15/0.15). Wired into `_map_tier`, audit-safe (internal names) | the other 36 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** yet confirmed; the wiki's pierce buffs are `pierceMultiplier` from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field |
+| **Buffs** (`buffs[]`) — **started (5 of 38)** | `_buffs()` decodes the five types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`→`rateMultiplier` (Sniper 0.75); `PoplustSupportModel`→`ratePercentage`/`piercePercentage` (Druid 0.15); `SubCommanderSupportModel`→`pierceAdditive`/`damageAdditive`/`damageMultiplier` (Sub 4/0/2); `PiercePercentageSupportModel.percentIncrease`→`pierceMultiplier` (Mermonkey 1.1/1.2/1.4); `TradeEmpireBuffModel`→cash-per-round + `damageAdditive[ForCeramic/ForMoabs]` (Bucc). Wired into `_map_tier`, audit-safe (internal names) | the other 33 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** confirmed; the wiki's pierce buffs are multipliers from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. **A roster-wide value-discovery harness exists** but flags false positives from value coincidence (e.g. `distanceMultiplier`→`lifespanMultiplier`), so each candidate is still hand-vetted |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started
