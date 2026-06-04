@@ -6,7 +6,7 @@ decorator side-effect on :class:`BTD6PanelView`; the persistent
 view registry then resolves the ``btd6`` subsystem when
 ``on_ready`` restores anchors.
 
-User actions: Ask / Towers / Heroes / Modes / Status. Staff actions
+User actions: Ask / Towers / Heroes / Maps / Modes / Status. Staff actions
 sit behind the **🛠️ Admin** button — opens an ephemeral
 :class:`views.btd6.admin_panel.BTD6AdminView` with manual fetch
 controls and diagnostics. Natural-language replies are owned by the
@@ -376,5 +376,28 @@ class BTD6PanelView(PersistentView):
             interaction,
             embed=embed,
             view=view,
+            ephemeral=True,
+        )
+
+    # Row 2 — info catalogs that don't fit rows 0/1 (both full at 5).
+    @discord.ui.button(
+        label="🗺️ Maps",
+        style=discord.ButtonStyle.secondary,
+        row=2,
+        custom_id="btd6:maps",
+    )
+    async def maps_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # All 89 maps grouped by difficulty (with the has_water marker).
+        from cogs.btd6._embeds import build_maps_embed
+
+        if not await safe_defer(interaction, ephemeral=True):
+            return
+        await safe_followup(
+            interaction,
+            embed=build_maps_embed(),
             ephemeral=True,
         )

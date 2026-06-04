@@ -215,18 +215,75 @@ def build_towers_embed() -> discord.Embed:
     return append_context_footer(embed, "btd6_tower:catalog")
 
 
-def build_modes_embed() -> discord.Embed:
+_MAP_DIFFICULTY_ORDER = ("Beginner", "Intermediate", "Advanced", "Expert")
+
+
+def build_maps_embed() -> discord.Embed:
+    """Map catalogue grouped by difficulty (all 89 from game data).
+
+    A water drop marks maps with water tiles (naval-tower placement) — the
+    ``has_water`` fact added in the maps cutover. One field per difficulty keeps
+    the full roster inside Discord's field limits.
+    """
     embed = discord.Embed(
-        title="🐵 BTD6 — Modes",
+        title="🗺️ BTD6 — Maps",
         color=discord.Color.green(),
     )
-    for mode in btd6_knowledge_service.list_modes():
+    maps = btd6_knowledge_service.list_maps()
+    by_difficulty: dict[str, list[str]] = {d: [] for d in _MAP_DIFFICULTY_ORDER}
+    for game_map in maps:
+        label = f"{game_map.canonical} 💧" if game_map.has_water else game_map.canonical
+        by_difficulty.setdefault(game_map.difficulty, []).append(label)
+    for difficulty in _MAP_DIFFICULTY_ORDER:
+        names = by_difficulty.get(difficulty) or []
+        if names:
+            embed.add_field(
+                name=f"{difficulty} ({len(names)})",
+                value=", ".join(names),
+                inline=False,
+            )
+    embed.set_footer(text="💧 = has water (naval towers placeable)")
+    from utils.btd6.context_footer import append_context_footer
+
+    return append_context_footer(embed, "btd6_diagnostics:maps_catalog")
+
+
+def build_modes_embed() -> discord.Embed:
+    """Difficulties, modes, and modifiers — grouped, mirroring the in-game
+    difficulty/mode select screens (difficulty sets lives/speed/prices; Standard
+    is the base mode in every difficulty; modifiers are opt-in cash/round changes).
+    """
+    embed = discord.Embed(
+        title="🐵 BTD6 — Difficulties & Modes",
+        color=discord.Color.green(),
+    )
+    modes = btd6_knowledge_service.list_modes()
+    difficulties = [m for m in modes if m.kind == "difficulty"]
+    play_modes = [m for m in modes if m.kind == "mode"]
+    modifiers = [m for m in modes if m.kind == "modifier"]
+
+    if difficulties:
+        embed.description = (
+            "**Difficulties** (set lives, bloon speed, prices)\n"
+            + "\n".join(
+                f"• **{d.canonical}** — {d.starting_lives} lives. {d.description}"
+                for d in difficulties
+            )
+        )
+    for mode in play_modes:
+        tag = (
+            f"  [{' / '.join(d.title() for d in mode.difficulties)}]"
+            if mode.difficulties
+            else ""
+        )
+        value = mode.description
+        if mode.restrictions:
+            value += "\n• " + "\n• ".join(mode.restrictions)
+        embed.add_field(name=f"{mode.canonical}{tag}", value=value[:1024], inline=False)
+    for mod in modifiers:
         embed.add_field(
-            name=mode.canonical,
-            value=(
-                f"Starting cash: {mode.starting_cash} • "
-                f"Lives: {mode.starting_lives}"
-            ),
+            name=f"⚙️ {mod.canonical} (modifier)",
+            value=mod.description[:1024],
             inline=False,
         )
     from utils.btd6.context_footer import append_context_footer
@@ -291,6 +348,7 @@ def build_test_intent_embed(text: str) -> discord.Embed:
 __all__ = [
     "build_diagnostics_embed",
     "build_heroes_embed",
+    "build_maps_embed",
     "build_modes_embed",
     "build_status_embed",
     "build_test_intent_embed",

@@ -9,6 +9,29 @@ works** (the traps we hit), and what is still un-decoded.
 
 ## ⭐ Next session — start here (updated 2026-06-04, end of v55 session)
 
+### Session log — Maps hub button + correct difficulty/mode/modifier taxonomy
+
+- **Maps button added** to the BTD6 hub (`views/btd6/panel.py`, row 2) →
+  `build_maps_embed()` lists all 89 maps grouped by difficulty with a 💧 water
+  marker (surfacing the `has_water` fact from the maps cutover).
+- **Modes corrected to the real BTD6 taxonomy** (from the in-game select
+  screens, screenshots verified). `ModeEntry` gained `kind`
+  (`difficulty`/`mode`/`modifier`) + `difficulties`:
+  - **Difficulties** (set lives/speed/prices): Easy 200 / Medium 150 / Hard 100
+    (Hard starts round 3); medal per round cap.
+  - **Modes**: Standard is the **base mode in every difficulty** (was wrongly
+    collapsed into "standard"); the specials are difficulty-scoped (Primary
+    Only/Deflation→Easy, Military/Apopalypse/Reverse→Medium, Magic/Double HP/
+    Half Cash/ABR/Impoppable/CHIMPS→Hard); Sandbox spans all.
+  - **Modifiers** (NEW finding — *are* extractable, as descriptions): Double
+    Cash and Fast Track. The dump's `textTable` carries their game-authored text
+    (`btd6_doublecashmode`/`btd6_fasttrackpack`), but their effect is **relative**
+    (Double Cash = ×2 cash forever; Fast Track = start ~¼ into the round count
+    with the cash you'd have there) — there is **no fixed starting-cash/round
+    constant** to extract, so `starting_cash`/`starting_lives` are now optional
+    (`None` for modifiers). Encoded honestly with the relative rule in
+    `restrictions`.
+
 ### Session log — buff decode started (2 confirmed types)
 
 - **Buffs — decode started, correctness-first (2 of 38).** `_buffs()` now emits a

@@ -223,13 +223,17 @@ def for_map(game_map: MapEntry) -> BTD6Response:
 
 
 def for_mode(mode: ModeEntry) -> BTD6Response:
+    # Modifiers (Double Cash, Fast Track) have no fixed cash/lives — their effect
+    # is relative — so only state those numbers when the row carries them.
+    bits: list[str] = []
+    if mode.starting_cash is not None:
+        bits.append(f"Starting cash: {mode.starting_cash}.")
+    if mode.starting_lives is not None:
+        bits.append(f"Starting lives: {mode.starting_lives}.")
     return BTD6Response(
         title=f"{mode.canonical} mode",
         short_answer=mode.description,
-        why_it_matters=(
-            f"Starting cash: {mode.starting_cash}. "
-            f"Starting lives: {mode.starting_lives}."
-        ),
+        why_it_matters=" ".join(bits),
         recommended_options=mode.restrictions,
         confidence="high",
         sources=(_source_label(),),
