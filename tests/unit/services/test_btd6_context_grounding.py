@@ -494,6 +494,21 @@ async def test_build_grounds_tower_roster_with_costs_and_category():
     assert not any("tower_roster" in f for f in specific.facts)
 
 
+@pytest.mark.asyncio
+async def test_build_grounds_map_summary_counts():
+    # Live test: the bot recited stale training counts (25/28/22/14, "~73"/"76"
+    # water — even labelled "verified") because no aggregate count was grounded.
+    # The summary now grounds the real figures (total, by-difficulty, water/land).
+    ctx = await btd6_context_service.build("how many maps have water")
+    blob = "\n".join(f for f in ctx.facts if "[btd6_map]" in f)
+    assert "89 maps total" in blob
+    assert "69 have water" in blob and "20 are land-only" in blob
+    assert "26 Beginner" in blob and "27 Intermediate" in blob
+    # A specific-map question must NOT dump the summary.
+    specific = await btd6_context_service.build("does Cargo have water")
+    assert "89 maps total" not in "\n".join(specific.facts)
+
+
 def test_deterministic_roster_reply_lists_full_rosters():
     # The model can't restate 17+ costs verbatim, so a list request floors to a
     # code-built roster that is always correct (it IS the source).

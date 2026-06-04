@@ -1400,6 +1400,26 @@ def _entity_roster_facts(message_text: str) -> list[str]:
                 "primary/military/magic/support",
             ),
         )
+    if "map" in text:
+        # Counts are a single grounded summary (not 89 names): "how many maps",
+        # "by difficulty", and "how many have water" all answer from it. Without
+        # it the model recited stale training counts (25/28/22/14, "~73 water")
+        # and even labelled them "verified" — the real figures are below.
+        maps = dataset.maps
+        water = sum(1 for m in maps if m.has_water)
+        order = ("Beginner", "Intermediate", "Advanced", "Expert")
+        diff_str = ", ".join(
+            f"{c} {d}"
+            for d in order
+            if (c := sum(1 for m in maps if m.difficulty == d))
+        )
+        out.append(
+            _cap(
+                f"[btd6_map] BTD6 has {len(maps)} maps total: {diff_str}. "
+                f"{water} have water (naval towers placeable), "
+                f"{len(maps) - water} are land-only. (source: fixture/btd6_data)",
+            ),
+        )
     return out
 
 
