@@ -31,6 +31,7 @@ from services import btd6_stats_service, btd6_upgrade_service
 from services.btd6_stats_service import NormalStats
 from services.btd6_upgrade_service import UpgradeIdentity
 from utils.btd6.damage_types import DAMAGE_MODIFIER_LABELS
+from utils.btd6.grounding_format import is_infinite
 
 _MAX_LINE = 320
 _PATH_LABEL = {"top": "top", "mid": "middle", "bot": "bottom"}
@@ -348,23 +349,23 @@ def _cap(line: str) -> str:
 def _projectile_bits(proj: ProjectileSpec) -> str:
     bits: list[str] = []
     if proj.damage is not None:
-        dmg = (
-            f"{proj.damage:,} dmg"
-            if isinstance(proj.damage, int)
-            else f"{proj.damage} dmg"
-        )
+        if is_infinite(proj.damage):
+            dmg = "∞ dmg"  # 9,999,999 instant-pop sentinel — not a real number
+        elif isinstance(proj.damage, int):
+            dmg = f"{proj.damage:,} dmg"
+        else:
+            dmg = f"{proj.damage} dmg"
         if proj.damage_type and proj.damage_type != "Normal":
             note = f", {proj.cannot_pop}" if proj.cannot_pop else ""
             dmg += f" ({proj.damage_type}{note})"
         bits.append(dmg)
     if proj.pierce is not None:
-        bits.append(
-            (
-                f"{proj.pierce:,} pierce"
-                if isinstance(proj.pierce, int)
-                else f"{proj.pierce} pierce"
-            ),
-        )
+        if is_infinite(proj.pierce):
+            bits.append("∞ pierce")
+        elif isinstance(proj.pierce, int):
+            bits.append(f"{proj.pierce:,} pierce")
+        else:
+            bits.append(f"{proj.pierce} pierce")
     for label, bonus in proj.modifiers:
         # Say "damage" explicitly: next to "210 pierce" a bare "+20 vs Lead" was
         # misread by the model as bonus pierce — these are additive damage.

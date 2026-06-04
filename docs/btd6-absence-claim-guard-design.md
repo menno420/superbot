@@ -162,6 +162,41 @@ it does not touch Layer B (still design-for-review). Mechanisms 1 (conversationa
 context carry) and 3 (answer-what's-grounded vs. wholesale refuse) are
 prompt/stage-layer and still owe a live repro + verification before building.
 
+## Update 5 (live verification round) — the frontier IS model faithfulness
+
+The maintainer ran a live Discord pass. **The data/render fixes all work live**
+(cash income on Trade Empire, Ice Arctic Wind slow "0.6x speed", Druid thorn-zone
+"+14/+8/+4 vs Ceramic/MOAB", the removable-obstacle limitation stated cleanly, the
+PMFC parent-tower grounding answering instead of refusing). The remaining failures
+are all **the model ignoring/fabricating/dropping despite correct grounding** —
+exactly this doc's family, now with three clean live repros:
+
+1. **PMFC → "Prince of Darkness" (fabrication; severe).** Asked "what is the damage
+   type when pmfc abilities is active", the bot answered with **Prince of
+   Darkness** data (Wizard 0-0-5, Reanimate, 2 dmg Normal, 0.275s) labelled
+   "Prince of Darkness (PMFC)". Verified deterministically: `resolve_upgrade("pmfc")`
+   → Plasma Monkey Fan Club, and `build(…)` grounds **58 PMFC/Dart facts, 0
+   POD/Wizard facts**. So the grounding was 100% correct — the model substituted a
+   similarly-abbreviated upgrade from training (PMFC↔POD) and the faithfulness
+   guard missed the ungrounded proper name + stats. The *same user* got the right
+   answer one turn later when the query said "it's ability" (relying on a prior
+   PMFC=Plasma turn) — so it is phrasing/recall-sensitive, not a resolver bug.
+2. **"which maps have water" dropped 5 maps + miscounted (incomplete list).** Truth
+   is **69** (Beginner 21 / Intermediate 24 / Advanced 12 / Expert 12); the bot
+   answered **64** (17/24/13/10). Full grounding was present; the model summarised
+   a long list lossily and reshuffled the difficulty buckets.
+3. **SOTF "main attack: ∞ dmg" (conflation).** The grounding correctly said "main
+   attack: 6 dmg" and separately "Vine: Collidable (9,999,999 …)", but the model
+   reported the vine's instant-pop sentinel as the *main* attack's damage. Partial
+   fix shipped this round (the grounding now renders the sentinel as ∞, not the raw
+   number — see `grounding_format.is_infinite`), but the conflation itself is the
+   same faithfulness family.
+
+**Takeaway:** continuing data extraction will not move these. The single highest-
+value next step is the faithfulness layer — "answer/list **only** the grounded
+entity, never a similarly-named one from memory; don't drop grounded list items."
+These three are the regression cases to pin before changing behaviour.
+
 ---
 
 ## 1. The problem

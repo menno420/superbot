@@ -320,3 +320,20 @@ def test_ice_slow_and_thorn_bonus_surface_end_to_end():
     assert "slows bloons to x0.6 speed" in ice
     druid = " | ".join(det.get_upgrade_detail("druid:050").zones)
     assert "damage vs Ceramic/MOAB" in druid
+
+
+def test_vine_instant_pop_sentinel_renders_as_infinity_not_raw_number():
+    # Live SOTF bug: the grounding showed "9,999,999 dmg" for the vine's instant-
+    # pop collidable (vs the deliberate ∞ convention in the tower-stats path), and
+    # the model then reported it as the MAIN attack's damage. The grounding now
+    # renders ∞ for the sentinel while the real main attack stays 6 dmg.
+    from utils.btd6.grounding_format import is_infinite
+
+    assert is_infinite(9_999_999) and not is_infinite(6)
+    assert not is_infinite(True) and not is_infinite(None)
+
+    lines = det.render_upgrade_grounding(det.get_upgrade_detail("druid:050"))
+    blob = "\n".join(lines)
+    assert "9,999,999" not in blob and "9999999" not in blob
+    assert "∞ dmg" in blob and "∞ pierce" in blob  # the vine collidable
+    assert "main attack: 6 dmg" in blob  # real main attack unaffected
