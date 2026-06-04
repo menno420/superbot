@@ -762,14 +762,20 @@ def test_snake_and_decamel(mod):
     assert mod._decamel("HighFinance") == "High Finance"
 
 
-def _map_details(*, difficulty: int, has_water: bool, debug: bool = False) -> dict:
+def _map_details(
+    *,
+    difficulty: int,
+    has_water: bool,
+    debug: bool = False,
+    is_standard: bool = True,
+) -> dict:
     return {
         "$type": "Il2Cpp….MapDetails, Assembly-CSharp",
         "difficulty": difficulty,
         "hasWater": has_water,
         "theme": 0,
         "isDebug": debug,
-        "IsStandard": True,
+        "IsStandard": is_standard,
     }
 
 
@@ -790,6 +796,12 @@ def _make_maps_dump(tmp_path: Path) -> Path:
         dump / "Maps" / "Expert" / "DebugMap.json",
         _map_details(difficulty=3, has_water=False, debug=True),
     )
+    # Browser-only / editor / dev map (IsStandard=False) — must be filtered too,
+    # like the real Blons / Base Editor Map / Protect the Yacht.
+    _write(
+        dump / "Maps" / "Expert" / "Blons.json",
+        _map_details(difficulty=3, has_water=False, is_standard=False),
+    )
     (dump / "Maps" / "Intermediate").mkdir(parents=True)  # present but empty
     _write(
         dump / "textTable.json", {"MushroomGrotto": "Mushroom Grotto", "Logs": "Logs"}
@@ -803,8 +815,9 @@ def test_map_maps_extracts_difficulty_water_and_names(mod, tmp_path, monkeypatch
     rows, warnings = mod.map_maps(dump, "55.0")
     assert warnings == []
     by_id = {r["id"]: r for r in rows}
-    # debug map filtered out
-    assert "debug_map" not in by_id and len(rows) == 2
+    # debug map AND non-standard (browser-only/dev) map filtered out
+    assert "debug_map" not in by_id and "blons" not in by_id
+    assert len(rows) == 2
     assert by_id["logs"]["difficulty"] == "Beginner"
     assert by_id["logs"]["has_water"] is True
     assert "naval" in by_id["logs"]["lines_of_sight_notes"].lower()

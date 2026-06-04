@@ -1400,6 +1400,26 @@ def _entity_roster_facts(message_text: str) -> list[str]:
                 "primary/military/magic/support",
             ),
         )
+    if "map" in text:
+        # Counts are a single grounded summary (not 89 names): "how many maps",
+        # "by difficulty", and "how many have water" all answer from it. Without
+        # it the model recited stale training counts (25/28/22/14, "~73 water")
+        # and even labelled them "verified" — the real figures are below.
+        maps = dataset.maps
+        water = sum(1 for m in maps if m.has_water)
+        order = ("Beginner", "Intermediate", "Advanced", "Expert")
+        diff_str = ", ".join(
+            f"{c} {d}"
+            for d in order
+            if (c := sum(1 for m in maps if m.difficulty == d))
+        )
+        out.append(
+            _cap(
+                f"[btd6_map] BTD6 has {len(maps)} maps total: {diff_str}. "
+                f"{water} have water (naval towers placeable), "
+                f"{len(maps) - water} are land-only. (source: fixture/btd6_data)",
+            ),
+        )
     return out
 
 
@@ -1450,8 +1470,27 @@ def deterministic_roster_reply(message_text: str) -> str | None:
     text = (message_text or "").lower()
     if any(word in text for word in _ROSTER_STRATEGY_WORDS):
         return None
-    is_list = any(phrase in text for phrase in _ROSTER_LIST_INTENT) or (
-        "all " in text or "every " in text
+    # A map water/land/removables question is a list/count request even without a
+    # generic "list/all" verb ("land-only maps", "which maps have removables").
+    map_list = "map" in text and any(
+        p in text
+        for p in (
+            "water",
+            "naval",
+            "land-only",
+            "land only",
+            "removable",
+            "obstacle",
+            "which",
+            "without water",
+            "no water",
+        )
+    )
+    is_list = (
+        any(phrase in text for phrase in _ROSTER_LIST_INTENT)
+        or "all " in text
+        or "every " in text
+        or map_list
     )
     if not is_list:
         return None
@@ -1508,7 +1547,82 @@ def deterministic_roster_reply(message_text: str) -> str | None:
             out.extend(f"• **{t.canonical}** — ${t.base_cost}" for t in group)
         return "\n".join(out)
 
+    if "map" in text:
+        return _map_roster_reply(text, list(dataset.maps))
+
     return None
+
+
+def _map_roster_reply(text: str, maps: list) -> str:
+    """Deterministic map list/count answers (water / land-only / removables).
+
+    The model proved it cannot restate these — it gave five different water
+    counts (73/75/76/77), each falsely "verified from the tool", while its own
+    land-only list held the right 20. So floor map count/list questions to
+    code-built truth, exactly like the hero/tower rosters. Returns the count
+    alone for a pure "how many", otherwise the grouped name list(s).
+    """
+    water = [m for m in maps if m.has_water]
+    land = [m for m in maps if not m.has_water]
+    removable = [m for m in maps if getattr(m, "removables", "")]
+    order = ("Beginner", "Intermediate", "Advanced", "Expert")
+
+    def grouped(rows: list) -> str:
+        out = []
+        for diff in order:
+            names = sorted(m.canonical for m in rows if m.difficulty == diff)
+            if names:
+                out.append(f"__{diff}__: " + ", ".join(names))
+        return "\n".join(out)
+
+    wants_count = ("how many" in text or "number of" in text) and not any(
+        w in text for w in ("list", "name ", "which", "what are")
+    )
+    want_rem = "removable" in text or "obstacle" in text
+    want_land = any(
+        p in text for p in ("land-only", "land only", "without water", "no water")
+    ) or ("land" in text and "water" not in text)
+    want_water = (not want_land) and ("water" in text or "naval" in text)
+
+    sections: list[str] = []
+    if want_rem:
+        sections.append(
+            f"**Maps with removable obstacles ({len(removable)} of {len(maps)})** "
+            "— ask about a specific map for what's removable:\n" + grouped(removable),
+        )
+    if want_water:
+        if wants_count and not sections:
+            return (
+                f"Of {len(maps)} BTD6 maps, **{len(water)} have water** (naval "
+                f"towers placeable) and **{len(land)} are land-only**."
+            )
+        sections.append(
+            f"**Maps with water ({len(water)} of {len(maps)})** — naval towers "
+            "placeable:\n" + grouped(water),
+        )
+    elif want_land:
+        if wants_count and not sections:
+            return (
+                f"**{len(land)}** of {len(maps)} BTD6 maps are land-only (no "
+                f"water); the other **{len(water)}** have water."
+            )
+        sections.append(
+            f"**Land-only maps ({len(land)} of {len(maps)})** — no water, land "
+            "towers only:\n" + grouped(land),
+        )
+    if sections:
+        return "\n\n".join(sections)
+
+    # Generic "how many maps" / "list all maps".
+    if wants_count:
+        by_diff = ", ".join(
+            f"{sum(1 for m in maps if m.difficulty == d)} {d}" for d in order
+        )
+        return (
+            f"BTD6 has **{len(maps)} maps**: {by_diff}. **{len(water)}** have "
+            f"water, **{len(land)}** are land-only."
+        )
+    return f"**BTD6 Maps ({len(maps)})** by difficulty:\n{grouped(maps)}"
 
 
 def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:

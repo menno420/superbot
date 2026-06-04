@@ -494,6 +494,23 @@ async def test_build_grounds_tower_roster_with_costs_and_category():
     assert not any("tower_roster" in f for f in specific.facts)
 
 
+@pytest.mark.asyncio
+async def test_build_grounds_map_summary_counts():
+    # Live test: the bot recited stale training counts (25/28/22/14, "~73"/"76"
+    # water — even labelled "verified") because no aggregate count was grounded.
+    # The summary now grounds the real figures (total, by-difficulty, water/land).
+    ctx = await btd6_context_service.build("how many maps have water")
+    blob = "\n".join(f for f in ctx.facts if "[btd6_map]" in f)
+    # 86 real player maps — the 3 non-standard (Blons / Base Editor Map / Protect
+    # the Yacht, IsStandard=False) are filtered out of the catalogue.
+    assert "86 maps total" in blob
+    assert "67 have water" in blob and "19 are land-only" in blob
+    assert "26 Beginner" in blob and "25 Intermediate" in blob
+    # A specific-map question must NOT dump the summary.
+    specific = await btd6_context_service.build("does Cargo have water")
+    assert "86 maps total" not in "\n".join(specific.facts)
+
+
 def test_deterministic_roster_reply_lists_full_rosters():
     # The model can't restate 17+ costs verbatim, so a list request floors to a
     # code-built roster that is always correct (it IS the source).
@@ -520,6 +537,29 @@ def test_deterministic_roster_reply_skips_strategy_and_specific_questions():
         is None
     )
     assert btd6_context_service.deterministic_roster_reply("dart monkey stats") is None
+
+
+def test_deterministic_roster_reply_maps_water_land_removables():
+    # The model gave FIVE different water counts (73/75/76/77), each falsely
+    # "verified from the tool", while its own land-only list held the right 20.
+    # Floor map count/list questions to code-built truth (69 water / 20 land /
+    # 18 removables) so they can't be fabricated.
+    r = btd6_context_service.deterministic_roster_reply
+    count = r("how many maps have water")
+    assert count is not None and "67 have water" in count and "19 are land-only" in count
+    water = r("list all maps with water")
+    assert water is not None and "67 of 86" in water and "Cubism" in water
+    land = r("land-only maps")  # fires without a generic list verb
+    assert land is not None and "19 of 86" in land
+    assert "Monkey Meadow" in land and "Cornfield" in land
+    rem = r("list maps with removables")
+    assert rem is not None and "18 of 86" in rem
+    assert "Cargo" in rem and "Bazaar" in rem
+    # Combined request returns both sections.
+    both = r("list all maps with water and all maps with removables")
+    assert both is not None and "Maps with water" in both and "removable obstacles" in both
+    # Strategy / opinion still reaches the model.
+    assert r("which water map is best for beginners") is None
 
 
 # --- hero per-level game descriptions (step 4b) -----------------------------

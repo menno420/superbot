@@ -273,15 +273,6 @@
       "has_water": true
     },
     {
-      "id": "base_editor_map",
-      "canonical": "Base Editor Map",
-      "aliases": [],
-      "difficulty": "Intermediate",
-      "description": "Intermediate map.",
-      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
-      "has_water": false
-    },
-    {
       "id": "bazaar",
       "canonical": "Bazaar",
       "aliases": [],
@@ -409,15 +400,6 @@
     {
       "id": "polyphemus",
       "canonical": "Polyphemus",
-      "aliases": [],
-      "difficulty": "Intermediate",
-      "description": "Intermediate map. Contains water.",
-      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
-    },
-    {
-      "id": "protect_the_yacht",
-      "canonical": "Protect The Yacht",
       "aliases": [],
       "difficulty": "Intermediate",
       "description": "Intermediate map. Contains water.",
@@ -702,15 +684,6 @@
       "description": "Advanced map.",
       "lines_of_sight_notes": "No water tiles — land-only tower placement.",
       "has_water": false
-    },
-    {
-      "id": "blons",
-      "canonical": "Blons",
-      "aliases": [],
-      "difficulty": "Expert",
-      "description": "Expert map. Contains water.",
-      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
-      "has_water": true
     },
     {
       "id": "bloody_puddles",
