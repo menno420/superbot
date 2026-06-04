@@ -1728,6 +1728,11 @@ def map_maps(dump: Path, version: str) -> tuple[list[dict], list[str]]:
                 continue
             if raw.get("isDebug"):
                 continue  # non-player / debug map
+            if raw.get("IsStandard") is False:
+                # Browser-only / editor / dev maps are flagged non-standard
+                # (Blons, Base Editor Map, Protect the Yacht) — exclude them so
+                # the roster is the 86 real player maps, not 89.
+                continue
             stem = fp.stem
             mid = _snake(stem)
             if mid in seen:

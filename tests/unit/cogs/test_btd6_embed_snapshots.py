@@ -262,7 +262,7 @@ def test_maps_embed_title() -> None:
 
 
 def test_maps_embed_stays_within_discord_limits() -> None:
-    # The catalogue grew 3 → 89 maps and joins every map in a difficulty into one
+    # The catalogue grew 3 → 86 maps and joins every map in a difficulty into one
     # field value. A future BTD6 version that adds maps to a single difficulty
     # could push that value past Discord's 1024-char cap, and the whole embed
     # would silently fail to send live. Guard every hard limit so map growth
