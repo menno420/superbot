@@ -91,6 +91,63 @@ passing genuinely-invented numbers). Option (b) is the real general fix and
 belongs in the same review as the absence-claim guard, because both ask the
 same question: *what does the guard count as grounded?*
 
+### 5.1 Next instance surfaced live — difficulty-scaled pricing ("buccaneer")
+
+"Pricing of monkey buccaneer" was refused live (`grounding_failed` + provider).
+**Verified it is not a data gap:** `btd6_context_service.build("pricing of monkey
+buccaneer")` returns **27 facts** with the base cost and upgrade prices, the same
+as sub/tack. So the *Medium* prices are grounded; what isn't is the **Easy /
+Hard / Impoppable** column the model emits in a "pricing across all difficulties"
+table — those are *derived* from Medium (×0.85 / ×1.08 / ×1.20, round-to-5) and
+are only grounded if the model calls `btd6_difficulty_cost` for **each** number.
+A full table is base + ~15 upgrades = ~16 calls; the model stitches it
+inconsistently (sub table rendered; buccaneer refused), so the guard rejects the
+ungrounded scaled prices. **Same root as total-cost: a derived value the model
+produced without routing through the deterministic tool.** The in-pattern fix is
+a single **all-difficulties tower-pricing tool** (1 call → per-upgrade × 4
+difficulties, grounded by construction) — collapsing the fragile 16-call stitch.
+**Owed first:** the buccaneer turn's tool-call trace, to confirm whether the
+model called *nothing* (pure tool-use-discipline) or called the lookup but
+freehand-scaled (the tool fixes the latter cleanly and de-risks the former).
+
+### 5.2 Tower upgrade-cost tables — and routing is NOT the cause (tested)
+
+More live repros: "upgrade prices for heli", "monkey ace upgrades", "pricing of
+monkey buccaneer" refused; "what are all the upgrade costs of the heli", "what
+about buccaneer" returned full correct cumulative/all-difficulty tables. The
+intuitive theory — *the task router sometimes sends cost questions to general
+instead of BTD6* — was **tested and disproven** against `ai_task_router.classify`:
+
+| Phrasing | Route | Live |
+|---|---|---|
+| `monkey ace upgrades` | **btd6.answer** | **FAILED** |
+| `pricing of monkey buccaneer` | **btd6.answer** | **FAILED** |
+| `what are all the upgrade costs of the heli` | **general.nl_answer** | **WORKED** |
+| `upgrade prices for heli` | general.nl_answer | FAILED |
+
+**Route does not determine outcome** — questions route to BTD6 and still fail;
+route to general and still work. So the determinant is **whether the model
+invokes the deterministic cost tool** (`btd6_cumulative_cost` /
+`btd6_difficulty_cost`) for the *derived* numbers (cumulative totals,
+difficulty-scaled prices), which it does inconsistently (temperature-driven). The
+"Cumulative Cost" column in the working tables is literally `btd6_cumulative_cost`
+output; the failing turns free-generated the derived numbers → `grounding_failed`.
+
+**The fix is not in the router** (that was the wrong location). It is to **stop
+depending on the model to call the tool**: detect tower upgrade-cost intent and
+**auto-attach the deterministic cost grounding** (cumulative + all-difficulty
+facts, built from `btd6_data_service.cumulative_upgrade_costs` +
+`difficulty_costs`) into the BTD6 context, the same way #478 auto-grounds upgrade
+modifiers. The numbers are verifiable in-sandbox; the *efficacy* (model uses them,
+guard accepts) is live-owed — a pipeline change to confirm before shipping, so it
+is **proposed, not built blind** here.
+
+> The false **"no paragon"** claim (see the absence-claim doc, Update 2) is the
+> *same shape* on a different field: the paragon grounding line exists and is
+> correct, but on a turn where it wasn't surfaced the model confabulated an
+> absence. Auto-attaching tower grounding reliably (this section's fix) also
+> removes that false negative — the two fixes overlap.
+
 ## 6. Relationship to the absence-claim guard (the named edge)
 
 The absence-claim backstop proposed in `btd6-absence-claim-guard-design.md`

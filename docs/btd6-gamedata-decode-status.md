@@ -58,6 +58,59 @@ game-data dump clone**, so this session did the work that is verifiable here and
   answer framing fix** (a prompt change, live-verify next session) becomes the
   milder concrete item. Captured in the evidence-update section of
   `btd6-absence-claim-guard-design.md`.
+- **Capability-surface verification (vs the bot's live self-report).** The bot
+  was asked to "list all your tools" and another reviewer flagged possible
+  doc/code drift. Verified against the real registry (`build_registry`):
+  **17 tools at USER scope, 22 at ADMIN** (with guild+member). Findings:
+  - **`btd6_relic_lookup` + `btd6_bloon_filter` + `btd6_cumulative_cost` ARE in
+    the live registry** — i.e. **this session's #482 work is registered and the
+    model sees it**, not pre-existing and not doc drift. The status doc already
+    lists them; **docs are current**, correcting the "docs undercount what's
+    shipped" read (that reviewer pre-dated #482).
+  - **Self-knowledge ≠ registry (over-claim):** the bot listed `lookup_member`
+    and `list_all_members`, which are gated behind `ai_server_member_lookup_
+    enabled` (**default False**) and were **NOT** in its toolset. There is **no
+    deterministic "list my tools" path** — the self-report is model-generated, so
+    it can (and did) name tools it doesn't currently hold. *(If that guild has the
+    member flag ON, the list is accurate — maintainer to confirm the flag.)*
+  - **Buccaneer pricing `grounding_failed` is NOT a data gap.** Verified
+    `btd6_context_service.build("pricing of monkey buccaneer")` → **found, 27
+    facts** incl. base 400 and upgrade prices ($275/$425/$3350…), identical shape
+    to sub/tack. So it is **not** "the general lookup grounds some towers and not
+    others" (correcting that reviewer's hypothesis). The medium prices are
+    groundable; the live refusal is **tool-invocation / derived-difficulty-price
+    grounding** — same family as total-cost (either the lookup wasn't invoked that
+    turn, or the model emitted Easy/Hard/Impoppable prices without calling
+    `btd6_difficulty_cost`, so the *scaled* numbers were ungrounded → rejected).
+    **Discriminator owed:** the buccaneer turn's tool-call trace. **Proposed fix:**
+    a deterministic all-difficulties tower-pricing tool (1 call → the full
+    per-upgrade × 4-difficulty table, grounded by construction), the same pattern
+    as `btd6_cumulative_cost`, replacing the fragile lookup + N×difficulty_cost
+    stitch. *Not built yet — pending the tool-trace so we fix the real mechanism.*
+- **Live bug-report round 2 (maintainer + friends) — verified, two hypotheses
+  corrected.** Three reported issues:
+  - **Paragon false "no paragon" (Buccaneer).** Maintainer hypothesised a broken
+    tower→paragon linkage. **All-tower audit disproves it:** every paragon-bearing
+    tower is consistent (`monkey_buccaneer`→`paragon_cost=550000`→`navarch_of_the_
+    seas`), and `build("…buccaneer")` **emits** the correct `[btd6_paragon]`
+    Navarch line. So **no data fix** — the false "no paragon" is the model
+    confabulating an absence when that grounding wasn't surfaced → it's the **pure
+    absence-claim repro** (absence-claim design Update 2), not a linkage bug.
+  - **Upgrade-cost routing.** Maintainer hypothesised the *task router* branches
+    cost intent to general vs the cost tool. **Tested `classify()` — disproven:**
+    route ≠ outcome (`monkey ace upgrades`/`pricing of monkey buccaneer` route to
+    `btd6.answer` yet failed; `what are all the upgrade costs of the heli` routes
+    to `general.nl_answer` yet worked). Real mechanism: inconsistent model
+    invocation of the deterministic cost tools for *derived* numbers — the
+    derived-value family (finding §5.2). Fix is **auto-attached cost grounding**,
+    not a router change.
+  - **Absence-claim guard RE-ELEVATED** — the paragon case is the pure repro, and
+    a new hard requirement landed: **absence claims leave no audit row** (recent_
+    audit is denial-only), so the guard must emit an auditable signal. See the
+    absence-claim design Update 2.
+  - **Not broken (confirmed):** `btd6_cumulative_cost` arithmetic across Wizard/
+    Heli/Buccaneer; `btd6_relic_lookup`/`btd6_bloon_filter` registered (see the
+    capability-surface bullet above).
 - **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
   pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
   without), ranked over the **full** range before the detail cap, so the model
