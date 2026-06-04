@@ -164,7 +164,7 @@ mapping is **correct**. The data overruled the gut. (It cuts the other way too:
 a value that coincidentally matches but is semantically absurd must be rejected —
 so single-value, single-tower "matches" get extra scrutiny.)
 
-### 5.4 Why it stopped at 8 of 38 (this is a boundary, not a quota)
+### 5.4 Why it stopped at 9 of 38 (this is a boundary, not a quota)
 The 8 confirmed types are the ones where the answer-key method *works*. The
 remaining ~30 can't be confirmed this way, for one of two reasons:
 

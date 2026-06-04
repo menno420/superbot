@@ -18,7 +18,11 @@ works** (the traps we hit), and what is still un-decoded.
 **Where the data stands (verified on `main`, full CI green):**
 - **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds/bloons still
   **wiki-sourced** (no cutover yet); the 11 wiki-missing heroes are game-data.
-- **Maps** 89 — **fully cut over to game data** (`--maps`), with `has_water`.
+  Rounds now carry derived **per-round + cumulative cash** (all 140).
+- **Maps** 86 — **fully cut over to game data** (`--maps`), with `has_water`,
+  curated **removables** (18 maps), and aggregate count/list grounding. (89 dump
+  files minus the 3 non-player `IsStandard=False` maps: Blons, Base Editor Map,
+  Protect the Yacht.)
 - **Modes** 18 — **curated** taxonomy: 3 difficulties (Easy/Medium/Hard) + 13
   modes (Standard is the base mode in every difficulty) + 2 modifiers (Double
   Cash, Fast Track; relative-effect, no fixed numbers).
@@ -30,7 +34,7 @@ works** (the traps we hit), and what is still un-decoded.
   `trigger`, which fixes the duration unit: seconds vs round-count).
 
 **Do next (ordered; correctness over speed — the maintainer's standing rule):**
-1. **Buff decode tail (8 → 38).** The cleanly value-confirmable set is now
+1. **Buff decode tail (9 → 38).** The cleanly value-confirmable set is now
    *exhausted* — every remaining committed buff field either has **no committed
    ground-truth `buffs[]` entry** to verify against (e.g. `RangeSupportModel` on
    Village) or needs a **value transformation** (raw multiplier → wiki
@@ -64,13 +68,19 @@ works** (the traps we hit), and what is still un-decoded.
      `AttackModel`). Needs the cutover, or a deliberate model extension that gives
      economy/support towers a minimal tier structure — a maintainer call, not a
      clean pass.
-   - **DEFERRED — buff duration fields.** `lifespan` (Engineer/Spike
-     start-of-round burst, Desperado Nomad) + `cooldown` (Nomad) are committed but
-     dropped. The raw dump field is `duration` (with `durationFrames`) and the
-     ability renderer already uses **seconds**, but an earlier note said "for N
-     *rounds*" — so the unit is **under-confirmed**. Do not render until
-     seconds-vs-rounds is settled in-game/wiki.
+   - **DONE — buff duration + trigger (PR #501).** The seconds-vs-rounds overload
+     is resolved by a `trigger` discriminator: `VigilanteTowerBehaviorModel`
+     (Desperado lives-lost line) was de-orphaned with frame→seconds windows
+     (`lifespan` 15 s / `cooldown` 60 s), `cashOnLeakMultiplier` 2.0, and
+     `trigger=on_life_lost`; the start-of-round buff's `duration` is a ROUND count
+     (now `duration_rounds`, `durationFrames`=0, `trigger=start_of_round`).
+     Rendered by `_buff_trigger_clause`.
 3. **Zone effect tail** (28 types) + zones **nested in sub-towers**.
+   - **NEXT — Heli Pilot `MoabShoveZoneModel`.** Decoded but **not rendered**:
+     per-blimp `*PushSpeedScaleCap` (MOAB −0.3…−0.51, BFB ~0, ZOMG 0.75…0.09).
+     Pending a maintainer call on the sign semantics (negative = shoved backward?)
+     and whether DDT should mirror ZOMG (the dump has no DDT field; committed data
+     currently copies ZOMG). See the smoke-test checklist §7.
 4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
@@ -79,7 +89,7 @@ works** (the traps we hit), and what is still un-decoded.
    now PARTIALLY sourced from the wiki (18 maps).** Confirmed the v55 dump has
    none: `Maps/<difficulty>/*.json` carry only catalog metadata (`difficulty`,
    `hasWater`, `theme`, `mapMusic`, `mapSprite`, `odysseyStatue`,
-   `coopMapDivisionType`, `unlockDifficulty`) — **0 of 89 maps** name a
+   `coopMapDivisionType`, `unlockDifficulty`) — **0 of the 89 dump map files** name a
    removable, and a whole-dump grep finds only UI strings (`"Removable Cost"`,
    `ft_trackremovable*`) and Unity asset refs (`Removables/*.prefab`). Per-map
    removable placement/cost lives in the AssetBundle map scenes, absent from
@@ -233,7 +243,7 @@ failure there is mechanism 3, not retrieval.
 ### Session log — Maps hub button + correct difficulty/mode/modifier taxonomy
 
 - **Maps button added** to the BTD6 hub (`views/btd6/panel.py`, row 2) →
-  `build_maps_embed()` lists all 89 maps grouped by difficulty with a 💧 water
+  `build_maps_embed()` lists all 86 maps grouped by difficulty with a 💧 water
   marker (surfacing the `has_water` fact from the maps cutover).
 - **Modes corrected to the real BTD6 taxonomy** (from the in-game select
   screens, screenshots verified). `ModeEntry` gained `kind`
@@ -701,7 +711,7 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | Ability names via **`displayName`** | mapper | #466; 87/87 abilities carry it |
 | Upgrade **descriptions** via `LocsKey`→`textTable` (extraction) | mapper | #466; extracts wherever the game localizes one (≈422 player upgrade cards) |
 | Core per-tier numeric extraction: base_cost, category, upgrade cost/xp/path/tier, damage, pierce, rate, range, radius, speed, lifespan, immunities→type | mapper | audit: roster is DELTA/CLEAN, nothing SUSPECT |
-| **Maps — full game-data cutover (89)** | `parse_gamedata.py --maps` → `maps.json` | this session; difficulty from the dump's folder (corrects stale curated rows, e.g. Cornfield → Advanced), names via `textTable`, `has_water` wired into `MapEntry` + `btd6_map_lookup`. Curated prose preserved where present. 89 maps load + tests green |
+| **Maps — full game-data cutover (86)** | `parse_gamedata.py --maps` → `maps.json` | difficulty from the dump's folder (corrects stale curated rows, e.g. Cornfield → Advanced), names via `textTable`, `has_water` + curated `removables` (18) wired into `MapEntry`. 3 non-player `IsStandard=False` maps filtered (Blons, Base Editor Map, Protect the Yacht) → **86** player maps load + tests green |
 | **Modes — full set (13)** | curated `modes.json` | this session; the dump has **no** game-mode rules (cash/lives/restrictions live in game code, not assets), so authored from established facts: Standard, Primary/Military/Magic Only, Deflation, Apopalypse, Reverse, Double HP MOABs, Half Cash, ABR, Impoppable, CHIMPS, Sandbox |
 
 ### 🟡 Partial — NOT complete
@@ -711,7 +721,7 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
 | **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
-| **Buffs** (`buffs[]`) — **started (8 of 38)** | `_buffs()` decodes eight types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel` (see `_BUFF_FIELD_MAP` for the exact field map + the tier each was verified on). Wired into `_map_tier`, audit-safe (internal names) | the other 30 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** confirmed; the wiki's pierce buffs are multipliers from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
+| **Buffs** (`buffs[]`) — **started (9 of 38)** | `_buffs()` decodes nine types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (the Desperado lives-lost buff: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`). See `_BUFF_FIELD_MAP` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 29 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** confirmed; the wiki's pierce buffs are multipliers from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started

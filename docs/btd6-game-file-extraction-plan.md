@@ -134,7 +134,7 @@ audit flags as systematically divergent stay curated.
 2. **Damage zones** — `zones[]` (**28** `*ZoneModel` types). 🟡 **Started** —
    `_zones()` emits every top-level zone with decodable numbers (e.g. Ice Arctic
    Wind `speedScale 0.6`). Remaining: the per-type effect tail + nested zones.
-3. **Buffs** — `buffs[]` (**38** support/buff types). 🟡 **Started — 8 of 38**
+3. **Buffs** — `buffs[]` (**38** support/buff types). 🟡 **Started — 9 of 38**
    confirmed in `_BUFF_FIELD_MAP` (each value-verified against committed wiki on
    a matching tier). The cleanly value-confirmable set is now largely exhausted;
    the rest need per-model analysis or have no committed ground truth.

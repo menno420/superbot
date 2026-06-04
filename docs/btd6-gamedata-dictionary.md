@@ -47,7 +47,7 @@ knowing where, and which encoding to trust.
 | **Knowledge/** | 134 | `KnowledgeModel` | Monkey Knowledge tree (meta-upgrade mods) | ✗ |
 | **Bosses/** | 7 | `BossData` | **cosmetic only** — portraits/music/icons + `LocsKey`. Boss *stats* are in **Bloons/**, not here | ✗ |
 | **Buffs/** | 91 | `BuffIndicatorModel` | **UI icons only** — buff *effects* are inline in the tower models | ✗ |
-| **Maps/** | 89 | `MapDetails` | map metadata: `difficulty` (== folder), `hasWater`, `theme` | ✓ (`--maps` → all 89; difficulty + `has_water`) |
+| **Maps/** | 89 files (86 player) | `MapDetails` | map metadata: `difficulty` (== folder), `hasWater`, `theme`, `IsStandard` | ✓ (`--maps` → 86 player maps; 3 non-player `IsStandard=False` filtered: Blons, Base Editor Map, Protect the Yacht) |
 | **Artifacts/**, **GeraldoItems/** | 568, 16 | `ItemArtifactData` / mods | Rogue Legends artifacts, Geraldo's shop | ✗ |
 | **Achievements/**, **TrophyStoreItems/**, **Skins/**, **BloonOverlays/**, **Mods/** | — | — | cosmetics / achievements / game-mode mods | ✗ |
 
