@@ -9,6 +9,48 @@ works** (the traps we hit), and what is still un-decoded.
 
 ## ⭐ Next session — start here (updated 2026-06-04, end of v55 session)
 
+### Current state & next actions (READ FIRST)
+
+**Where the data stands (verified on `main`, full CI green):**
+- **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds/bloons still
+  **wiki-sourced** (no cutover yet); the 11 wiki-missing heroes are game-data.
+- **Maps** 89 — **fully cut over to game data** (`--maps`), with `has_water`.
+- **Modes** 18 — **curated** taxonomy: 3 difficulties (Easy/Medium/Hard) + 13
+  modes (Standard is the base mode in every difficulty) + 2 modifiers (Double
+  Cash, Fast Track; relative-effect, no fixed numbers).
+- **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
+  **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
+  **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
+  (**8 of 38** confirmed types in `_BUFF_FIELD_MAP`).
+
+**Do next (ordered; correctness over speed — the maintainer's standing rule):**
+1. **Buff decode tail (8 → 38).** The cleanly value-confirmable set is now
+   *exhausted* — every remaining committed buff field either has **no committed
+   ground-truth `buffs[]` entry** to verify against (e.g. `RangeSupportModel` on
+   Village) or needs a **value transformation** (raw multiplier → wiki
+   percentage) that the value-coincidence harness can't confirm. So each
+   remaining type needs **per-model semantic analysis**, and for types with no
+   committed counterpart, correctness can only be validated *at/after the
+   cutover*. Do **not** write a number you can't confirm.
+2. **`SCHEMA_FIRST` buff/zone types** — projectile speed/radius, freeze duration,
+   banana-cash, etc. carry a real number but `_BUFF_FIELDS` /
+   `btd6_upgrade_detail_service` has no field to render it. Extend the renderer
+   first, then decode.
+3. **Zone effect tail** (28 types) + zones **nested in sub-towers**.
+4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
+   preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
+5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
+   plus the `NameDowngradeError` name guard.
+
+**Binding discipline for every decode step:**
+- Re-validate anchors first (`--validate-anchors`); if they fail the dump moved → stop.
+- Confirm each mapping against the **committed wiki value on a matching tier** —
+  the committed value is the arbiter, **not** semantic priors (the
+  `distanceMultiplier`→`lifespanMultiplier` case proved both directions).
+- Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
+  ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
+- `python3.10 scripts/check_quality.py --full` before pushing.
+
 ### Session log — Maps hub button + correct difficulty/mode/modifier taxonomy
 
 - **Maps button added** to the BTD6 hub (`views/btd6/panel.py`, row 2) →
@@ -742,9 +784,11 @@ curator-supplied name is preserved, never regressed to an internal model string.
    >   `heroXpMultiplier`, `cashbackZoneMultiplier`, …). Slice 2 should widen the
    >   schema to surface these too, not just speed/visibility.
    >
-   > **Slice 1 shipped (#477):** the ×100 render fix only — **no buff/zone
-   > numbers were written**, so the 🔴 "0 of 28 / 0 of 38" below still stands for
-   > the *write*; only the rendering of the already-committed buffs is corrected.
+   > **Slice 1 shipped (#477):** the ×100 render fix only — at that time no
+   > buff/zone numbers were written. **Update (later sessions):** zone decode is
+   > now started and **8 of 38 buff types are written** (`_BUFF_FIELD_MAP`); see
+   > the ✅/🟡 completion tables above for the live counts (the old "0 of 28 /
+   > 0 of 38" no longer holds).
 
 **Lower priority — post-#468 AI-answer enhancements (not roadmap-critical)**
 

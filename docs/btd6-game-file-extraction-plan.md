@@ -131,8 +131,14 @@ audit flags as systematically divergent stay curated.
    `MorphTowerModel` (embedded) are mapped (Phoenix, Sentry, Spectre, totems,
    UAV). Still missing: `MorphTowerModel` **named-ref** (Alchemist "Transformed
    Monkey") and `BeastHandlerPetModel` (Beast Handler).
-2. **Damage zones** — `zones[]` (12 model types). 🔴 **Not yet mapped.**
-3. **Buffs** — `buffs[]` (37 support/buff model types). 🔴 **Not yet mapped.**
+2. **Damage zones** — `zones[]` (**28** `*ZoneModel` types). 🟡 **Started** —
+   `_zones()` emits every top-level zone with decodable numbers (e.g. Ice Arctic
+   Wind `speedScale 0.6`). Remaining: the per-type effect tail + nested zones.
+3. **Buffs** — `buffs[]` (**38** support/buff types). 🟡 **Started — 8 of 38**
+   confirmed in `_BUFF_FIELD_MAP` (each value-verified against committed wiki on
+   a matching tier). The cleanly value-confirmable set is now largely exhausted;
+   the rest need per-model analysis or have no committed ground truth.
+   **Authoritative status: `btd6-gamedata-decode-status.md`.**
 4. **Economy-tower attack suppression** — the raw model gives Banana Farm a
    nominal `AttackModel`, so `has_combat_stats` trips true; needs a "no real
    damage ⇒ not combat" filter so the Pro button/embed stay off. 🔴 Not done.
