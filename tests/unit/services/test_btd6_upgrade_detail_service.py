@@ -219,3 +219,30 @@ def test_modifiers_empty_when_none_present():
     main = _attack(d, "Attack")
     assert main is not None
     assert main.projectiles[0].modifiers == ()
+
+
+# --- buff percentage rendering (fraction -> percent) ------------------------
+
+
+def test_buff_percentage_fields_render_as_percent_not_fraction():
+    # Regression: committed percentage buffs store fractions (0.15 = 15%, faithful
+    # to the dump's *PercentIncrease), but the render read them as a literal "%",
+    # so Poplust showed "+0.15% pierce" (wrong) instead of "+15%".
+    text = det._buff_text(
+        {"name": "Poplust buff", "ratePercentage": 0.15, "piercePercentage": 0.15},
+    )
+    assert "+15% pierce" in text
+    assert "15% attack speed" in text
+    assert "0.15%" not in text
+
+
+def test_buff_additive_and_multiplier_fields_unscaled():
+    # Only *Percentage fields scale; additive/multiplier stay verbatim.
+    text = det._buff_text(
+        {"name": "Undead Bloon buff", "damageAdditive": 3, "lifespanMultiplier": 1.5},
+    )
+    assert text == "Undead Bloon buff: +3 damage, x1.5 lifespan"
+
+
+def test_buff_range_percentage_renders_whole_percent():
+    assert "+10% range" in det._buff_text({"name": "X", "rangePercentage": 0.1})

@@ -176,32 +176,46 @@ def _ability(ability: dict[str, Any]) -> AbilitySpec:
     )
 
 
-# Buff field -> readable formatter. Only the headline effect fields; structural
-# fields (isGlobal, maxStackSize, filters) are intentionally omitted.
-_BUFF_FIELDS: tuple[tuple[str, str], ...] = (
-    ("damageAdditive", "+{} damage"),
-    ("damageMultiplier", "x{} damage"),
-    ("damageAdditiveForMoabs", "+{} damage vs MOAB-class"),
-    ("damageAdditiveForCeramic", "+{} damage vs Ceramic"),
-    ("damageAdditiveForBad", "+{} damage vs BAD"),
-    ("pierceAdditive", "+{} pierce"),
-    ("pierceMultiplier", "x{} pierce"),
-    ("piercePercentage", "+{}% pierce"),
-    ("rateMultiplier", "x{} attack cooldown"),
-    ("ratePercentage", "{}% attack speed"),
-    ("rangeAdditive", "+{} range"),
-    ("rangeMultiplier", "x{} range"),
-    ("rangePercentage", "+{}% range"),
-    ("lifespanMultiplier", "x{} lifespan"),
-    ("abilityCooldownMultiplier", "x{} ability cooldown"),
+# Buff field -> (readable formatter, scale). Only the headline effect fields;
+# structural fields (isGlobal, maxStackSize, filters) are intentionally omitted.
+# Percentage fields are stored as fractions in the data (0.15 = 15%), so they
+# carry a x100 scale — without it the render read "+0.15% pierce" (wrong: it is
+# +15%). The fraction is faithful to the dump (PoplustSupportModel
+# ``ratePercentIncrease: 0.15``); the percent is a display concern.
+_BUFF_FIELDS: tuple[tuple[str, str, int], ...] = (
+    ("damageAdditive", "+{} damage", 1),
+    ("damageMultiplier", "x{} damage", 1),
+    ("damageAdditiveForMoabs", "+{} damage vs MOAB-class", 1),
+    ("damageAdditiveForCeramic", "+{} damage vs Ceramic", 1),
+    ("damageAdditiveForBad", "+{} damage vs BAD", 1),
+    ("pierceAdditive", "+{} pierce", 1),
+    ("pierceMultiplier", "x{} pierce", 1),
+    ("piercePercentage", "+{}% pierce", 100),
+    ("rateMultiplier", "x{} attack cooldown", 1),
+    ("ratePercentage", "{}% attack speed", 100),
+    ("rangeAdditive", "+{} range", 1),
+    ("rangeMultiplier", "x{} range", 1),
+    ("rangePercentage", "+{}% range", 100),
+    ("lifespanMultiplier", "x{} lifespan", 1),
+    ("abilityCooldownMultiplier", "x{} ability cooldown", 1),
 )
+
+
+def _fmt_buff_num(value: Any) -> str:
+    """Whole floats as ints (``15.0`` -> ``15``), real fractions kept (``1.5``)."""
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    if isinstance(value, (int, float)):
+        return str(round(value, 4))
+    return str(value)
 
 
 def _buff_text(buff: dict[str, Any]) -> str:
     parts = [
-        tmpl.format(buff[field])
-        for field, tmpl in _BUFF_FIELDS
-        if buff.get(field) is not None
+        tmpl.format(_fmt_buff_num(buff[field] * scale))
+        for field, tmpl, scale in _BUFF_FIELDS
+        if isinstance(buff.get(field), (int, float))
+        and not isinstance(buff.get(field), bool)
     ]
     name = str(buff.get("name") or "").strip()
     body = ", ".join(parts) if parts else "buff"

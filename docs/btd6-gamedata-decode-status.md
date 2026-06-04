@@ -299,6 +299,33 @@ curator-supplied name is preserved, never regressed to an internal model string.
       `--audit` and (3). *Rationale: largest effort and the cutover blocker; uses
       (1) sizing and (3) name-joins.*
 
+   > **Decode analysis (2026-06-04, slice 1).** Deep investigation before any
+   > buff/zone *write*, with three inconsistencies flagged:
+   > - **Render bug FIXED.** Percentage buff fields are stored as fractions
+   >   (`0.15` = 15%, faithful to the dump's `*PercentIncrease`) but the renderer
+   >   read them literally → Poplust showed *"+0.15% pierce"* (≈100× too small).
+   >   `_buff_text` now scales `*Percentage` fields ×100 (61 committed buffs were
+   >   affected). This is the only *answerable* change in slice 1.
+   > - **The buff *prose* is already answerable** via the upgrade descriptions
+   >   (step 2) — `buffLocsName` does **not** resolve in `textTable` (it is a
+   >   buff-icon key), so step 5's only *added* value over step 2 is the
+   >   structured *numbers*.
+   > - **The numbers have mixed, per-`$type` semantics — not a uniform decode.**
+   >   Verified `PoplustSupportModel.ratePercentIncrease 0.15` == committed
+   >   `ratePercentage 0.15` (identity). But across types: `PierceSupport.pierce`
+   >   → `pierceAdditive` (clear); `RateSupport.multiplier 0.85` → `rateMultiplier`
+   >   (faithful ×-cooldown); `RangeSupport.multiplier 0.1` is an **ambiguous**
+   >   fraction (×0.1 is absurd, so it must mean +10% → `rangePercentage`); and
+   >   `ProjectileSpeedSupport` / `VisibilitySupport` have **no field in the
+   >   committed buff schema at all**. Crosspath files also list **cumulative**
+   >   buffs (need tier-diffing to attribute the granting tier) and contain
+   >   **duplicates** (need de-dupe). A bulk write would ship wrong numbers under
+   >   the faithfulness guard, so the numeric write is deferred to a per-`$type`,
+   >   verified slice (extend the buff schema for speed/visibility; map only
+   >   semantics proven against a committed example or an unambiguous field name).
+   >   *(The "37 buff / 12 zone" counts here are superseded by the SHA-pinned
+   >   report's 38 / 28 — see `btd6-decode-inventory-v55.md` §3.)*
+
 **Lower priority — post-#468 AI-answer enhancements (not roadmap-critical)**
 
 6. **Audit-schema version column** — *[new]* the §5 observability item deferred
