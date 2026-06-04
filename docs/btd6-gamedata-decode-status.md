@@ -5,6 +5,10 @@ game-data dump** (`github.com/Btd6ModHelper/btd6-game-data`, v55.0). Start here
 to pick up the work: it records what's done, **how the dump's data actually
 works** (the traps we hit), and what is still un-decoded.
 
+> **New to this effort? Read `btd6-gamedata-decode-explainer.md` first** — a
+> from-first-principles deep explanation of the what/why/how (buffs, the audit,
+> the cutover), with worked examples. *This* doc is the live status + to-do list.
+
 ---
 
 ## ⭐ Next session — start here (updated 2026-06-04, end of v55 session)
