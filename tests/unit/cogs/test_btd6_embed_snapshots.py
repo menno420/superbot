@@ -239,4 +239,4 @@ def test_modes_embed_title() -> None:
     from cogs.btd6._embeds import build_modes_embed
 
     embed = build_modes_embed()
-    assert embed.title == "🐵 BTD6 — Modes"
+    assert embed.title == "🐵 BTD6 — Difficulties & Modes"

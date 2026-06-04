@@ -1,33 +1,72 @@
 {
-  "data_version": "2.0",
+  "data_version": "3.0",
   "game_version": "55.0",
-  "source": "Curated (game modes are gameplay rules, not exported in the Mod Helper dump)",
+  "source": "Curated from the in-game difficulty/mode select screens (rules are gameplay code, not exported in the Mod Helper dump)",
   "modes": [
+    {
+      "id": "easy",
+      "canonical": "Easy",
+      "kind": "difficulty",
+      "aliases": ["beginner_difficulty"],
+      "starting_cash": 650,
+      "starting_lives": 200,
+      "description": "Monkeys cost less, Bloons move a little slower, 200 lives. Beating round 40 awards a bronze medal.",
+      "difficulties": [],
+      "restrictions": []
+    },
+    {
+      "id": "medium",
+      "canonical": "Medium",
+      "kind": "difficulty",
+      "aliases": ["normal"],
+      "starting_cash": 650,
+      "starting_lives": 150,
+      "description": "Monkeys cost normal, Bloons move normal, 150 lives. Beating round 60 awards a silver medal.",
+      "difficulties": [],
+      "restrictions": []
+    },
+    {
+      "id": "hard",
+      "canonical": "Hard",
+      "kind": "difficulty",
+      "aliases": [],
+      "starting_cash": 650,
+      "starting_lives": 100,
+      "description": "Monkeys cost more, you start at round 3, Bloons move a little faster, 100 lives. Beating round 80 awards a gold medal.",
+      "difficulties": [],
+      "restrictions": []
+    },
     {
       "id": "standard",
       "canonical": "Standard",
-      "aliases": ["easy_standard", "medium_standard", "hard_standard", "normal"],
+      "kind": "mode",
+      "aliases": ["std"],
       "starting_cash": 650,
       "starting_lives": 150,
-      "description": "Default progression with all towers available. Round ranges by difficulty: Easy 1-40, Medium 1-60, Hard 1-80. Starting lives 200 (Easy) / 150 (Medium) / 100 (Hard).",
+      "description": "The base mode, available in every difficulty — all towers, no special rules. Lives/prices follow the chosen difficulty (Easy 200 / Medium 150 / Hard 100).",
+      "difficulties": ["easy", "medium", "hard"],
       "restrictions": []
     },
     {
       "id": "primary_only",
       "canonical": "Primary Only",
+      "kind": "mode",
       "aliases": ["primary", "primary monkeys only"],
       "starting_cash": 650,
       "starting_lives": 200,
       "description": "Easy-difficulty mode: only Primary-class towers may be placed.",
+      "difficulties": ["easy"],
       "restrictions": ["Only Primary-class towers (heroes still allowed)"]
     },
     {
       "id": "deflation",
       "canonical": "Deflation",
+      "kind": "mode",
       "aliases": ["deflate"],
       "starting_cash": 20000,
       "starting_lives": 200,
       "description": "Easy-difficulty mode starting at round 31 with a fixed lump of cash and no income — win with what you can afford up front.",
+      "difficulties": ["easy"],
       "restrictions": [
         "Starts at round 31",
         "No income — popping bloons earns no cash",
@@ -37,73 +76,89 @@
     {
       "id": "military_only",
       "canonical": "Military Only",
+      "kind": "mode",
       "aliases": ["military"],
       "starting_cash": 650,
       "starting_lives": 150,
       "description": "Medium-difficulty mode: only Military-class towers may be placed.",
+      "difficulties": ["medium"],
       "restrictions": ["Only Military-class towers (heroes still allowed)"]
     },
     {
       "id": "apopalypse",
       "canonical": "Apopalypse",
+      "kind": "mode",
       "aliases": ["apop", "apocalypse"],
       "starting_cash": 650,
       "starting_lives": 150,
       "description": "Medium-difficulty mode: bloons stream in continuously with no round breaks and rounds cannot be started manually.",
+      "difficulties": ["medium"],
       "restrictions": ["Continuous bloon stream — no round breaks", "Cannot manually start rounds"]
     },
     {
       "id": "reverse",
       "canonical": "Reverse",
+      "kind": "mode",
       "aliases": ["reversed", "backwards"],
       "starting_cash": 650,
       "starting_lives": 150,
       "description": "Medium-difficulty mode: bloons enter from the normal exit and travel the track in reverse.",
+      "difficulties": ["medium"],
       "restrictions": ["Bloons travel the track in reverse (enter from the exit)"]
     },
     {
       "id": "magic_monkeys_only",
       "canonical": "Magic Monkeys Only",
+      "kind": "mode",
       "aliases": ["magic", "magic only", "magic monkeys"],
       "starting_cash": 650,
       "starting_lives": 100,
       "description": "Hard-difficulty mode: only Magic-class towers may be placed.",
+      "difficulties": ["hard"],
       "restrictions": ["Only Magic-class towers (heroes still allowed)"]
     },
     {
       "id": "double_hp_moabs",
       "canonical": "Double HP MOABs",
+      "kind": "mode",
       "aliases": ["double moabs", "double hp", "dhm"],
       "starting_cash": 650,
       "starting_lives": 100,
       "description": "Hard-difficulty mode: all MOAB-class bloons (MOAB, BFB, ZOMG, DDT, BAD) have double health.",
+      "difficulties": ["hard"],
       "restrictions": ["All MOAB-class bloons have double health"]
     },
     {
       "id": "half_cash",
       "canonical": "Half Cash",
+      "kind": "mode",
       "aliases": ["half", "halfcash"],
       "starting_cash": 650,
       "starting_lives": 100,
       "description": "Hard-difficulty mode: all cash earned (from pops and income) is halved.",
+      "difficulties": ["hard"],
       "restrictions": ["All cash earned is halved"]
     },
     {
       "id": "alternate_bloons_rounds",
       "canonical": "Alternate Bloons Rounds",
+      "kind": "mode",
       "aliases": ["abr", "alternate", "alternate bloons"],
       "starting_cash": 650,
       "starting_lives": 100,
       "description": "Hard-difficulty mode: rounds use an alternate, generally tougher bloon composition than the default round set.",
+      "difficulties": ["hard"],
       "restrictions": ["Uses the alternate (harder) round set"]
     },
     {
       "id": "impoppable",
       "canonical": "Impoppable",
+      "kind": "mode",
       "aliases": ["impop"],
       "starting_cash": 650,
       "starting_lives": 1,
       "description": "Hard-difficulty endgame mode: rounds 6-100, 1 life, full bloon speed, higher tower prices, no continues and no Monkey Knowledge.",
+      "difficulties": ["hard"],
       "restrictions": [
         "1 life",
         "Rounds 6-100",
@@ -116,10 +171,12 @@
     {
       "id": "chimps",
       "canonical": "CHIMPS",
+      "kind": "mode",
       "aliases": ["chimp", "chimp mode"],
       "starting_cash": 650,
       "starting_lives": 1,
-      "description": "Hard-mode endgame challenge. The acronym: no Continues, Hearts lost (1 life), Income, Monkey knowledge, Powers, or Selling.",
+      "description": "Hard-difficulty challenge. The acronym: no Continues, Hearts lost (1 life), Income, Monkey knowledge, Powers, or Selling.",
+      "difficulties": ["hard"],
       "restrictions": [
         "No continues",
         "1 life (any leak loses the run)",
@@ -132,11 +189,39 @@
     {
       "id": "sandbox",
       "canonical": "Sandbox",
+      "kind": "mode",
       "aliases": ["practice", "freeplay sandbox"],
       "starting_cash": 9999999,
       "starting_lives": 9999999,
-      "description": "Practice mode with unlimited cash and lives for testing tower placements and interactions.",
+      "description": "Practice mode (available in every difficulty) with unlimited cash and lives for testing tower placements and interactions.",
+      "difficulties": ["easy", "medium", "hard"],
       "restrictions": ["Unlimited cash and lives (practice only — no rewards)"]
+    },
+    {
+      "id": "double_cash",
+      "canonical": "Double Cash Mode",
+      "kind": "modifier",
+      "aliases": ["double cash", "x2 cash", "2x cash"],
+      "description": "Modifier: get double in-game cash forever (can be de-activated). All cash earned — including the difficulty's starting cash — is ×2 (so Medium's 650 start becomes 1300). Single-player only.",
+      "difficulties": [],
+      "restrictions": [
+        "All in-game cash earned is doubled (×2)",
+        "Starting cash is doubled (e.g. Medium 650 → 1300)",
+        "Single player only; can be toggled off"
+      ]
+    },
+    {
+      "id": "fast_track",
+      "canonical": "Fast Track",
+      "kind": "modifier",
+      "aliases": ["fast track mode", "fast track pack", "fasttrack"],
+      "description": "Modifier: start roughly 1/4 of the way into the round count on any map, with the cash you would normally have accumulated by that round. Not available in competitive events or CHIMPS.",
+      "difficulties": [],
+      "restrictions": [
+        "Starts ~1/4 into the round count (relative to the map's round count, not a fixed round)",
+        "Begins with the cash you'd normally have by that round (no fixed amount)",
+        "Not available in competitive events or CHIMPS"
+      ]
     }
   ]
 }

@@ -98,10 +98,19 @@ class ModeEntry:
     id: str
     canonical: str
     aliases: tuple[str, ...]
-    starting_cash: int
-    starting_lives: int
     description: str
     restrictions: tuple[str, ...]
+    # None for modifiers (relative effect, no fixed value); set for
+    # difficulties and modes.
+    starting_cash: int | None = None
+    starting_lives: int | None = None
+    # BTD6 separates *difficulty* (Easy/Medium/Hard — sets lives/speed/prices),
+    # *mode* (Standard + the rule variants), and *modifier* (Double Cash, Fast
+    # Track — opt-in cash/round changes). ``kind`` tags which this row is.
+    kind: str = "mode"
+    # For a mode: which difficulties it is offered in (Standard/Sandbox span all,
+    # the specials are single-difficulty). Empty for difficulties/modifiers.
+    difficulties: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -221,12 +230,13 @@ _REQUIRED_MAP_FIELDS = (
     "description",
     "lines_of_sight_notes",
 )
+# starting_cash / starting_lives are optional: modifiers (Double Cash, Fast
+# Track) have no fixed value — their effect is relative (×2 cash, start ¼ into
+# the rounds), so those rows omit them.
 _REQUIRED_MODE_FIELDS = (
     "id",
     "canonical",
     "aliases",
-    "starting_cash",
-    "starting_lives",
     "description",
     "restrictions",
 )
@@ -415,10 +425,18 @@ def _parse_mode(raw: dict[str, Any]) -> ModeEntry:
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
         aliases=tuple(_normalise_alias(a) for a in raw["aliases"]),
-        starting_cash=int(raw["starting_cash"]),
-        starting_lives=int(raw["starting_lives"]),
         description=str(raw["description"]),
         restrictions=tuple(str(r) for r in raw["restrictions"]),
+        kind=str(raw.get("kind", "mode")),
+        difficulties=tuple(str(d) for d in raw.get("difficulties", [])),
+        starting_cash=(
+            int(raw["starting_cash"]) if raw.get("starting_cash") is not None else None
+        ),
+        starting_lives=(
+            int(raw["starting_lives"])
+            if raw.get("starting_lives") is not None
+            else None
+        ),
     )
 
 

@@ -871,13 +871,18 @@ _BTD6_MODE_LOOKUP_SPEC = AIToolSpec(
 
 
 def _mode_dict(entry: Any) -> dict[str, Any]:
-    return {
+    out: dict[str, Any] = {
         "name": entry.canonical,
+        "kind": getattr(entry, "kind", "mode"),
         "starting_cash": entry.starting_cash,
         "starting_lives": entry.starting_lives,
         "description": entry.description,
         "restrictions": list(entry.restrictions),
     }
+    difficulties = getattr(entry, "difficulties", ())
+    if difficulties:
+        out["difficulties"] = list(difficulties)
+    return out
 
 
 async def _btd6_mode_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
