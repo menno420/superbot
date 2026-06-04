@@ -753,7 +753,10 @@ _BTD6_ROUND_COMPOSITION_SPEC = AIToolSpec(
         "round_start (and round_end for a range). Pass a bloon (e.g. 'purple', "
         "'ceramic', 'MOAB') to get its TOTAL across the range plus the per-round "
         "counts; omit it for each round's full spawn list + RBE. Do not count or "
-        "sum yourself — this returns the exact totals."
+        "sum yourself — this returns the exact totals. For 'heaviest / most / "
+        "which rounds have the most' questions, read the pre-ranked `heaviest` "
+        "(with a bloon, ranked by count) or `heaviest_by_rbe` (without, ranked "
+        "by RBE) — do NOT re-rank the per-round list yourself."
     ),
     parameters={
         "type": "object",
@@ -886,6 +889,205 @@ async def _btd6_mode_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
         return {"found": True, "mode": _mode_dict(entry)}
     modes = btd6_data_service.get_dataset().modes
     return {"found": True, "count": len(modes), "modes": [_mode_dict(m) for m in modes]}
+
+
+# --- btd6_relic_lookup -------------------------------------------------------
+
+_BTD6_RELIC_LOOKUP_SPEC = AIToolSpec(
+    name="btd6_relic_lookup",
+    description=(
+        "BTD6 Contested Territory (CT) relic info: each relic's effect and "
+        "category (offense / economy / lives / powerup / utility). Pass a relic "
+        "name to look one up, a category to list that group, or omit both to "
+        "list every relic. Use for 'list the CT relics', 'which relics are "
+        "offense', 'what does the Super Monkey Storm relic do'."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "relic": {
+                "type": "string",
+                "description": "Relic name/abbrev (e.g. 'Super Monkey Storm', 'SMS'); omit to list.",
+            },
+            "category": {
+                "type": "string",
+                "description": "Filter the roster: offense / economy / lives / powerup / utility.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _relic_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "name": entry.canonical,
+        "category": entry.category,
+        "effect": entry.effect,
+        "abbrev": entry.abbrev,
+    }
+
+
+async def _btd6_relic_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    name = str(arguments.get("relic") or "").strip()
+    if name:
+        entry = btd6_data_service.resolve_relic(name)
+        if entry is None:
+            return {"found": False, "note": f"unknown relic: {name!r}"}
+        return {"found": True, "relic": _relic_dict(entry)}
+    relics = btd6_data_service.list_ct_relics()
+    category = str(arguments.get("category") or "").strip().lower()
+    if category:
+        relics = tuple(r for r in relics if r.category == category)
+        if not relics:
+            return {"found": False, "note": f"no relics in category {category!r}"}
+    return {
+        "found": True,
+        "count": len(relics),
+        "category": category or "all",
+        "relics": [_relic_dict(r) for r in relics],
+    }
+
+
+# --- btd6_bloon_filter -------------------------------------------------------
+
+_BTD6_BLOON_FILTER_SPEC = AIToolSpec(
+    name="btd6_bloon_filter",
+    description=(
+        "Filter the BTD6 bloon catalog by trait. Use for 'which bloons are camo "
+        "/ lead / fortified / regrow', 'which bloons are immune to Explosion', "
+        "'list the MOAB-class bloons'. Pass property (camo, lead, fortified, "
+        "regrow, black, moab-class), category (basic, special, moab_class, "
+        "modifier), and/or immune (a damage type: Explosion, Sharp, Cold, "
+        "Energy, Plasma, Fire …). Omit all to list every bloon. IMPORTANT: "
+        "camo / fortified / regrow are also MODIFIERS that can be applied to "
+        "other bloons in some rounds/modes — when the result carries a "
+        "`modifiers` entry, say so rather than implying only the listed bloons "
+        "ever carry the trait."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "property": {
+                "type": "string",
+                "description": "Trait tag, e.g. 'camo', 'lead', 'fortified', 'regrow', 'moab-class'.",
+            },
+            "category": {
+                "type": "string",
+                "description": "Bloon class: basic / special / moab_class / modifier.",
+            },
+            "immune": {
+                "type": "string",
+                "description": "Damage type the bloon resists, e.g. 'Explosion', 'Sharp', 'Cold'.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _bloon_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "name": entry.canonical,
+        "category": entry.category,
+        "properties": list(entry.properties),
+        "immune_to": list(entry.immune_to),
+        "description": entry.description,
+    }
+
+
+async def _btd6_bloon_filter(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    prop = str(arguments.get("property") or "").strip() or None
+    category = str(arguments.get("category") or "").strip() or None
+    immune = str(arguments.get("immune") or "").strip() or None
+    matches = btd6_data_service.filter_bloons(
+        bloon_property=prop,
+        category=category,
+        immune=immune,
+    )
+    # Split the inherently-tagged bloons from the modifier pseudo-entries so the
+    # model can answer faithfully ("DDT is inherently Camo; Camo is also a
+    # modifier other bloons can gain") instead of implying a closed set.
+    real = [b for b in matches if b.category != "modifier"]
+    modifiers = [b for b in matches if b.category == "modifier"]
+    if not matches:
+        return {
+            "found": False,
+            "filter": {"property": prop, "category": category, "immune": immune},
+            "note": "no bloons match that filter",
+        }
+    out: dict[str, Any] = {
+        "found": True,
+        "filter": {"property": prop, "category": category, "immune": immune},
+        "count": len(real),
+        "bloons": [_bloon_dict(b) for b in real],
+    }
+    if modifiers:
+        out["modifiers"] = [
+            {"name": m.canonical, "applies_broadly": True, "note": m.description}
+            for m in modifiers
+        ]
+    return out
+
+
+# --- btd6_cumulative_cost ----------------------------------------------------
+
+_BTD6_CUMULATIVE_COST_SPEC = AIToolSpec(
+    name="btd6_cumulative_cost",
+    description=(
+        "Total cumulative cost to REACH each BTD6 upgrade tier on a tower — the "
+        "tower base cost plus every earlier tier on that path, ALREADY SUMMED. "
+        "Use for 'total cost to reach <upgrade>', 'cost to get to tier 5', 'how "
+        "much for the whole path', 'base cost and all earlier upgrades "
+        "included'. Pass the tower and optionally difficulty (easy / medium / "
+        "hard / impoppable; default medium) and/or path (top / mid / bot). "
+        "Returns the exact running totals — do NOT add the per-tier prices "
+        "yourself: difficulty pricing rounds each purchase to $5 before "
+        "summing, so a sum-then-scale total is off by a few dollars. The "
+        "returned cumulative_cost IS the grounded answer."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "tower": {
+                "type": "string",
+                "description": "Tower name (e.g. 'Tack Shooter').",
+            },
+            "difficulty": {
+                "type": "string",
+                "description": "easy / medium / hard / impoppable (default medium).",
+            },
+            "path": {
+                "type": "string",
+                "description": "Limit to one path: top / mid / bot (omit for all three).",
+            },
+        },
+        "required": ["tower"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_cumulative_cost(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    tower = str(arguments.get("tower") or "").strip()
+    if not tower:
+        return {"found": False, "note": "tower is required"}
+    difficulty = str(arguments.get("difficulty") or "medium").strip() or "medium"
+    path = str(arguments.get("path") or "").strip() or None
+    return btd6_data_service.cumulative_upgrade_costs(
+        tower,
+        difficulty=difficulty,
+        path=path,
+    )
 
 
 # --- btd6_paragon_calculate --------------------------------------------------
@@ -1358,6 +1560,9 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
         "btd6_round_composition",
         "btd6_map_lookup",
         "btd6_mode_lookup",
+        "btd6_relic_lookup",
+        "btd6_bloon_filter",
+        "btd6_cumulative_cost",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -1403,6 +1608,9 @@ def build_registry(
         (_BTD6_ROUND_COMPOSITION_SPEC, _btd6_round_composition),
         (_BTD6_MAP_LOOKUP_SPEC, _btd6_map_lookup),
         (_BTD6_MODE_LOOKUP_SPEC, _btd6_mode_lookup),
+        (_BTD6_RELIC_LOOKUP_SPEC, _btd6_relic_lookup),
+        (_BTD6_BLOON_FILTER_SPEC, _btd6_bloon_filter),
+        (_BTD6_CUMULATIVE_COST_SPEC, _btd6_cumulative_cost),
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
         (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),

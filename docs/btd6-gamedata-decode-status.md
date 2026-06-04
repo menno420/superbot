@@ -20,6 +20,55 @@ reach the entity (not reachable), or it reached the model but was mislabeled /
 the model asserted a false negative (not answerable). Verify the user-facing
 answer, not the unit test.
 
+### Session log — 2026-06-04 (reachability + absence-claim diagnosis)
+
+Picked up the v55 hand-off. The build sandbox **cannot reach Discord and has no
+game-data dump clone**, so this session did the work that is verifiable here and
+*led the maintainer to the live checks* for the rest.
+
+- **Absence-claim diagnosis (Task 1) — settled with evidence, not priors.** Ran
+  the Bomb Shooter middle-path MOAB case through the real service paths. The
+  named tiers ground perfectly — MOAB Mauler `+15`, Assassin `+30`, Eliminator
+  `+99` *damage vs MOAB-Class* — but `resolve_upgrade("bomb shooter middle
+  path")` → `none`, **0 grounding lines**. So the live refusal was the
+  **false-negative / absence-claim hole** (data sitting unqueried because the
+  path-level phrasing doesn't resolve), **not** an extraction gap. Design
+  proposal written: **`btd6-absence-claim-guard-design.md`** (design only, for
+  ChatGPT/Analysis review — no guard merged).
+- **Derived-value false-"no" (sibling bug) — diagnosed from the live audit log
+  + first fix shipped.** The maintainer pulled `recent_audit` for the Tack
+  Shooter "total cost to reach every upgrade" refusal: `denied` ·
+  `grounding_failed` · provider=anthropic/haiku ⇒ **generated-then-rejected**.
+  The guard rejected a total it could not see was *summed from grounded prices*
+  (provenance doesn't flow through arithmetic). This is **distinct from** the
+  absence-claim hole. Fix shipped (the maintainer's preferred option a): a
+  deterministic **`btd6_cumulative_cost`** tool — the total is now a tool output,
+  grounded by construction. Verified vs the live screenshot (Tack Shooter top →
+  Inferno Ring = $50,310 Medium / $42,760 Easy, the per-item-rounding case).
+  Finding written up: **`btd6-derived-value-groundedness-finding.md`**.
+- **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
+  pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
+  without), ranked over the **full** range before the detail cap, so the model
+  never re-sorts and a wide range can't truncate a heavy late round. Verified vs
+  ground truth: ceramics r30–80 → `[(78,147),(74,135),(63,122),(76,60),(65,50),
+  (69,50),(55,45),(72,38)]` (was naming r55/r50 and skipping r76/r78/r74).
+- **Reachability sweep (Task 2) — both tools added.** `btd6_relic_lookup`
+  (CT-relic roster + category filter + named lookup) and `btd6_bloon_filter`
+  (trait / category / immunity filter). The bloon filter **distinguishes
+  inherently-tagged bloons from the `modifier` pseudo-entries** (camo / fortified
+  / regrow), so "which bloons are camo" answers "DDT — and Camo is also a
+  modifier other bloons can gain", not a misleading closed set. Both registered
+  in `BTD6_GROUNDING_TOOL_NAMES`; pin tests updated. *Code + local output
+  confirmed; live confirmation owed (see table).*
+- **⚠ Provenance trigger observed.** A successful upgrade answer surfaces
+  `(source: bloonswiki 54.0)` — a **user-facing per-file 54.0 source label**,
+  the exact condition the provenance note named as the trigger to revisit (the
+  refusal stamps 55.0; a hit stamps 54.0 → the user sees both). Not acted on
+  unilaterally; see the provenance section below for the proposed fix.
+- **Deferred with reason:** Task 3 (numeric slice 2) and Task 4 (subtower tail)
+  both require the **game-data dump** (absent in this sandbox) *and* live
+  numeric verification (impossible here). Teed up, not half-done — see tasks.
+
 ### Prioritized tasks
 
 1. **Absence-claim guard — DESIGN FIRST, do NOT implement blind.** *The session's
@@ -35,6 +84,11 @@ answer, not the unit test.
    false-positive costs that need a deliberate decision. **Definition of done:** a
    written design proposal reviewed on the ChatGPT/Analysis side — **not** a
    merged guard.
+   **Status (2026-06-04):** diagnosis done with evidence (path-level resolve →
+   `none`, named tiers ground fine ⇒ absence-claim hole, not extraction);
+   proposal written in `btd6-absence-claim-guard-design.md`. **Owed:** maintainer
+   reads `recent_audit` for the live MOAB turn to confirm the reason code, then
+   reviews the design. No guard code this stage, as specified.
 
 2. **Finish the reachability sweep while the pattern is hot.** Two tool-gaps over
    already-committed data, same shape as the rounds/maps/modes fixes that worked:
@@ -44,6 +98,10 @@ answer, not the unit test.
    service fn + tool spec/handler + add to `BTD6_GROUNDING_TOOL_NAMES`, each with
    a **live** Discord confirmation of its example question. **Definition of done:**
    reachable by tool **and answerable live** — not test-green.
+   **Status (2026-06-04):** ✅ code — `btd6_relic_lookup` + `btd6_bloon_filter`
+   landed, registered, pin-tested; the bloon filter handles the
+   camo/fortified/regrow modifier nuance faithfully. **Owed:** the three live
+   confirmations in the verification table.
 
 3. **Step 5 numeric slice 2 — registry-gated, one `$type` at a time. Never
    bulk-write.** Use the **Decode-class** registry now in the inventory report
@@ -59,25 +117,44 @@ answer, not the unit test.
    committed + retrievable by tool + **verified live** + the per-`$type` number
    verified individually + schema changes conform to the architecture /
    registry-snapshot invariants (expect one to bite — conform, don't fight).
+   **Status (2026-06-04):** ⛔ **blocked in this sandbox** — needs the game-data
+   dump clone (`--dump`, absent here) to source any number, *and* live numeric
+   verification (impossible here). Not started; the registry in
+   `btd6-decode-inventory-v55.md` §3 is ready for the next dump-equipped session.
 
 4. **Subtower tail** — `MorphTowerModel` named-ref (Alchemist "Transformed
    Monkey") + `BeastHandlerPetModel` (Beast Handler pets), still missing. **Why:**
    required before any game-native tower cutover. **Definition of done:** both
    spawn mechanisms emit subtowers, answerable live.
+   **Status (2026-06-04):** ⛔ **blocked** — same as Task 3 (the mapper needs the
+   dump to emit these subtowers). Deferred to a dump-equipped session.
 
-### Verification status (this session)
+### Verification status (live backlog)
 
-> **Live-Discord verification was NOT possible from the build sandbox** (no bot
-> session). The items below are **code/behavior-confirmed** through the real
-> service paths but **UNVERIFIED live** — the next session/maintainer must run
-> the exact checks in Discord before marking them done.
+> **The build sandbox still cannot reach Discord** — every "live" check below is
+> the maintainer's to run. Two carried-over items are now **✅ LIVE-CONFIRMED**
+> (maintainer); the rest remain **UNVERIFIED-live** and rest on code paths.
 
-| Item | Code-confirmed | UNVERIFIED-live — exact manual check |
+**Carried over from the v55 session:**
+
+| Item | Code-confirmed | Live status — exact manual check |
 |---|---|---|
-| Refusal stamps v55 | `_btd6_game_version()` → `55.0` | Ask an ungroundable BTD6 question; the refusal must read "(55.0)", not 54.0. |
-| Damage modifiers ground | `grounding_for_query("ultra jug")` → "+20 damage vs Lead, +8 damage vs Ceramic, +5 damage vs Fortified" | Ask "what are Ultra-Juggernaut's damage multipliers / bonus vs Lead/Ceramic" — must return those numbers, not "no multipliers". |
-| Poplust % render | `_buff_text({ratePercentage:0.15})` → "15% attack speed" | Ask about Druid Poplust's buff — must read +15% (pierce/attack-speed), not +0.15%. |
-| Round/map/mode tools | `round_composition(35,70,'purple')`→290; Logs→Beginner; CHIMPS→cash 650 | Ask "how many purples in rounds 35-70" (→290), "which maps are beginner", "CHIMPS restrictions". |
+| Refusal stamps v55 | `_btd6_game_version()` → `55.0` | **✅ LIVE-CONFIRMED** (maintainer): refusal reads "(55.0)". |
+| Round-composition math | `round_composition(30,80,'ceramic')`→873, 22 rounds | **✅ LIVE-CONFIRMED** (maintainer): 873 ceramics r30–80, reconciles. |
+| Damage modifiers ground | `grounding_for_query("ultra jug")` → "+20 damage vs Lead, +8 vs Ceramic, +5 vs Fortified" | UNVERIFIED — ask "Ultra-Juggernaut bonus vs Lead/Ceramic/Fortified"; must return those, not "no multipliers". |
+| Poplust % render | `_buff_text({ratePercentage:0.15})` → "15% attack speed" | UNVERIFIED — ask about Druid Poplust's buff; must read **+15%**, not +0.15%. |
+| Map / mode tools | Logs→Beginner; CHIMPS→cash 650 | UNVERIFIED — ask "which maps are beginner", "CHIMPS restrictions". |
+| 2 recovered upgrade cards | Ace "Operation: Dart Storm", Wizard "Necromancer: Unpopped Army" extract a description | UNVERIFIED — ask each; the description must render and **not** be invented. |
+
+**New this session (code + local output confirmed; live owed):**
+
+| Item | Local confirmation | UNVERIFIED-live — exact manual check |
+|---|---|---|
+| Heaviest-waves ranker fix | `heaviest` = `[(78,147),(74,135),(63,122),(76,60),(65,50),(69,50),(55,45),(72,38)]` | Ask "which rounds have the most ceramics in 30–80 / heaviest ceramic waves" — top should be r78/r74/r63, **not** r55/r50. |
+| `btd6_relic_lookup` | `category=economy` → 5 relics (Air and Sea, Box of Monkeys, El Dorado, Rounding Up, Starting Stash) | Ask "which CT relics are economy / list the relics / what does Super Monkey Storm do". |
+| `btd6_bloon_filter` | `property=camo` → DDT + "Camo property" modifier note; `category=moab_class` → 5 | Ask "which bloons are camo / lead", "list the MOAB-class bloons" — camo must note DDT **and** the broad modifier. |
+| `btd6_cumulative_cost` (derived-value fix) | Tack Shooter top → Inferno Ring = $50,310 Medium / $42,760 Easy | **Re-ask the refused turn:** "total cost to reach every Tack Shooter upgrade, base + all earlier costs" — must now answer with totals, not refuse (`grounding_failed`). |
+| MOAB middle-path absence | `resolve_upgrade("bomb shooter middle path")`→`none`; named tiers ground +15/+30/+99 | Ask the path-level question live, read `recent_audit`: expect empty retrieval / no upgrade provider (confirms the absence-claim hole, Task 1). |
 
 ### Provenance decision (recorded, not auto-applied)
 
@@ -89,6 +166,19 @@ the `--audit` is per-**field**, not per-file, so there is no clean per-file gate
 and re-stamping unchanged bloonswiki files would falsely claim re-sourcing. A file
 is re-stamped only when `--overlay`/`--all` actually re-sources it. *(Open nit: 2
 economy files have an empty stamp — decide a value on the next real re-source.)*
+
+> **⚠ Trigger fired (2026-06-04).** The "watch for it" condition has occurred: a
+> *successful* upgrade answer surfaces the per-file vintage as a user-facing
+> source label — `render_upgrade_grounding` emits `(source: bloonswiki
+> {game_version})`, and `bomb_shooter`'s stats file is stamped **54.0**, so a
+> live answer reads "MOAB Mauler … (source: bloonswiki **54.0**)" while a refusal
+> stamps **55.0**. A user can see both and reasonably ask "54 or 55?". This is a
+> *label* problem, not a re-stamp trigger — the 54.0 vintage is honest. **Proposed
+> minimal fix (maintainer to decide, not applied here):** make the user-facing
+> source label not read as a bare version that contradicts the dataset stamp —
+> e.g. `(source: bloonswiki, sourced v54.0)` or drop the version from the source
+> bit and let the dataset stamp own "what version is this". Do **not** blanket
+> re-stamp `stats/*.json`.
 
 ---
 

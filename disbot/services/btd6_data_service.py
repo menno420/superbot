@@ -927,9 +927,57 @@ def resolve_bloon_id(name: str) -> str | None:
     return None
 
 
+# Natural words the model is likely to pass -> the committed ``properties`` tag,
+# so "moab" / "regrowth" resolve to the canonical trait. Tags already spelled
+# exactly (e.g. "camo", "lead") pass through the ``.get(..., default)`` below.
+_BLOON_PROPERTY_SYNONYMS: dict[str, str] = {
+    "moab": "moab-class",
+    "moab class": "moab-class",
+    "moab-class": "moab-class",
+    "regrowth": "regrow",
+}
+
+
+def filter_bloons(
+    *,
+    bloon_property: str | None = None,
+    category: str | None = None,
+    immune: str | None = None,
+) -> tuple[BloonEntry, ...]:
+    """Bloons matching ALL supplied filters, in catalog order (empty if none).
+
+    ``bloon_property`` matches a committed trait tag (``camo`` / ``lead`` /
+    ``fortified`` / ``regrow`` / ``moab-class`` …), accepting a natural word via
+    :data:`_BLOON_PROPERTY_SYNONYMS`; ``category`` matches the bloon class
+    (``basic`` / ``special`` / ``moab_class`` / ``modifier``); ``immune`` matches
+    a resisted damage-type name (``Explosion`` / ``Sharp`` / ``Cold`` …). Note
+    that ``camo`` / ``fortified`` / ``regrow`` are also ``modifier``-class
+    pseudo-entries — callers should surface those distinctly so an answer does
+    not imply only the inherently-tagged bloons can ever carry the trait.
+    """
+    out = list(get_dataset().bloons)
+    if bloon_property:
+        needle = bloon_property.strip().lower()
+        tag = _BLOON_PROPERTY_SYNONYMS.get(needle, needle)
+        out = [b for b in out if tag in b.properties]
+    if category:
+        cat = category.strip().lower()
+        out = [b for b in out if b.category == cat]
+    if immune:
+        dmg = immune.strip().lower()
+        out = [b for b in out if any(i.lower() == dmg for i in b.immune_to)]
+    return tuple(out)
+
+
 # Cap the per-round detail a round-composition query returns so a wide range
 # (e.g. "moabs in rounds 1-140") can't blow the grounding token budget.
 _ROUND_DETAIL_CAP = 40
+
+# How many "heaviest" rounds the tool ranks for the model. The tool ranks them
+# itself (so the model never re-sorts the per-round list — it did, badly) and
+# ranks from the FULL range, before _ROUND_DETAIL_CAP truncates the detail, so a
+# wide range can't hide a heavy late round out of the ranking.
+_HEAVIEST_CAP = 8
 
 
 def round_composition(
@@ -975,12 +1023,17 @@ def round_composition(
                 per_round.append({"round": entry.round_number, "count": count})
                 total += count
         record = get_bloon(bid)
+        # Rank the heaviest rounds here (count desc, ties by round asc) from the
+        # FULL list — before the detail cap — so the model never has to sort and
+        # a wide range can't truncate a heavy late round out of the ranking.
+        heaviest = sorted(per_round, key=lambda d: (-d["count"], d["round"]))
         out.update(
             {
                 "bloon": record.canonical if record else bid,
                 "bloon_id": bid,
                 "total": total,
                 "rounds_with_bloon": len(per_round),
+                "heaviest": heaviest[:_HEAVIEST_CAP],
                 "per_round": per_round[:_ROUND_DETAIL_CAP],
                 "truncated": len(per_round) > _ROUND_DETAIL_CAP,
             },
@@ -999,9 +1052,16 @@ def round_composition(
                     ],
                 },
             )
+        # Heaviest rounds by total RBE (children-inclusive), ranked over the full
+        # range so the cap on ``rounds`` can't hide a heavy late round either.
+        heaviest = sorted(
+            ({"round": r.round_number, "rbe": r.rbe or 0} for r in rounds),
+            key=lambda d: (-d["rbe"], d["round"]),
+        )
         out.update(
             {
                 "total_rbe": sum(r.rbe or 0 for r in rounds),
+                "heaviest_by_rbe": heaviest[:_HEAVIEST_CAP],
                 "rounds": detail,
                 "truncated": len(rounds) > _ROUND_DETAIL_CAP,
             },
@@ -1033,6 +1093,70 @@ def find_map(name: str) -> MapEntry | None:
 def find_mode(name: str) -> ModeEntry | None:
     """Resolve a game mode by name / alias / id (``"chimps"`` -> CHIMPS)."""
     return _find_by_surface(get_dataset().modes, name)
+
+
+def cumulative_upgrade_costs(
+    tower: str,
+    *,
+    difficulty: str = "medium",
+    path: str | None = None,
+) -> dict[str, Any]:
+    """Cumulative cost to REACH each upgrade tier on ``tower``: the tower base
+    plus every earlier tier on that path, already summed, per path.
+
+    Difficulty pricing scales and rounds **each purchase** to $5 *before*
+    summing, so a sum-then-scale total is wrong (e.g. Tack Shooter top path to
+    Inferno Ring on Easy is $42,760, not ``round5($50,310 x 0.85)`` = $42,765).
+    This returns the correct per-item running totals so the answer is a grounded
+    tool output, not a number the model has to derive. Medium by default.
+    """
+    from utils.btd6 import difficulty_costs
+
+    entry = _find_by_surface(get_dataset().towers, tower)
+    if entry is None:
+        return {"found": False, "note": f"unknown tower: {tower!r}"}
+    try:
+        diff = difficulty_costs.normalize_difficulty(difficulty)
+    except ValueError:
+        return {"found": False, "note": f"unknown difficulty: {difficulty!r}"}
+    paths = entry.upgrade_paths or {}
+    costs = entry.upgrade_costs or {}
+    wanted = path.strip().lower() if path else None
+    if wanted is not None and wanted not in paths:
+        return {"found": False, "note": f"unknown path: {path!r} (top/mid/bot)"}
+
+    base = difficulty_costs.cost_for_difficulty(entry.base_cost, diff)
+    out_paths: dict[str, list[dict[str, Any]]] = {}
+    for pkey, names in paths.items():
+        if wanted is not None and pkey != wanted:
+            continue
+        path_costs = costs.get(pkey, ())
+        running = base
+        tiers: list[dict[str, Any]] = []
+        for i, name in enumerate(names):
+            med = path_costs[i] if i < len(path_costs) else 0
+            step = difficulty_costs.cost_for_difficulty(med, diff) if med else 0
+            running += step
+            tiers.append(
+                {
+                    "tier": i + 1,
+                    "name": name,
+                    "upgrade_cost": step,
+                    "cumulative_cost": running,
+                },
+            )
+        out_paths[pkey] = tiers
+    return {
+        "found": True,
+        "tower": entry.canonical,
+        "difficulty": diff,
+        "base_cost": base,
+        "paths": out_paths,
+        "note": (
+            "cumulative_cost = tower base + all earlier tiers on that path at "
+            f"{diff} pricing (each purchase rounded to $5, then summed)."
+        ),
+    }
 
 
 def list_ct_relics() -> tuple[RelicEntry, ...]:
