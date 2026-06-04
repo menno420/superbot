@@ -106,7 +106,15 @@ it cannot see that the grounded inputs needed to be *summed*. So:
   deterministic tool now, provenance-through-arithmetic later).
 
 They share a root question (*what is grounded?*) but are separate fixes, and the
-audit `reason`/`provider` columns discriminate them turn-by-turn. **Still owed:**
-the MOAB audit row — `provider=—` means never-resolved (absence/retrieval);
-`provider` populated + `grounding_failed` means generated-then-rejected (same
-shape as total-cost). That one row decides whether these are one bug or two.
+audit `reason`/`provider` columns discriminate them turn-by-turn.
+
+**Update (post-#482):** the MOAB row chase is now moot — asked with the upgrade
+*named*, the bot **answers** (+15 vs MOAB-class), so the MOAB *refusal* no longer
+reproduces and a *pure* absence-claim hasn't surfaced live. What MOAB now shows
+instead is the **deny-then-answer** preamble (it opens "I don't have a
+'multiplier' figure", then answers) — the **mild cousin** of this derived-value
+bug: in the severe case the guard kills the answer; in the mild case the model
+just narrates a false "I don't have it" before giving the grounded answer. Both
+come from conflating *"this exact labelled figure isn't a field"* with *"I can't
+answer."* See the evidence-update + revised-priority table in
+`btd6-absence-claim-guard-design.md`.
