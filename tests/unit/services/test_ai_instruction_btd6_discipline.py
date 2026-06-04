@@ -80,6 +80,20 @@ def test_task_contract_routes_per_degree_paragon_stats_and_forbids_interpolation
     assert "interpolate" in tc  # the model must not linearly interpolate degrees
 
 
+def test_task_contract_allows_per_round_cash_and_drops_economy_from_unsupported():
+    # Live test: "how much cash do you earn in round 50" and "from r70 to r80"
+    # were refused — the round resolved (composition + RBE grounded) but the
+    # contract still listed "in-game economy / income" as unsupported, so the
+    # model declined even though '[btd6_round]' grounding carries the cash. PR
+    # #500 added the data; this un-gates it.
+    tc = instr._TASK_CONTRACT
+    assert "in-game economy" not in tc and "economy / income" not in tc
+    # Positive: per-round cash is now an answerable area, with its grounded scope.
+    assert "Per-round cash IS modeled" in tc
+    assert "cumulative difference" in tc  # so a round-range question is answerable
+    assert "no income towers" in tc  # the scope caveat travels with the answer
+
+
 def test_task_contract_marks_map_removables_as_unsupported_data():
     # A live test asked "list all maps with removables": the bot correctly said
     # the verified data doesn't cover removables, then *also* listed example maps
