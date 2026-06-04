@@ -336,6 +336,7 @@ def _render_fixture_tower(entry: Any) -> list[str]:
 
     lines.extend(_render_paragon(getattr(entry, "id", ""), canonical))
     lines.extend(_render_upgrade_descriptions(getattr(entry, "id", ""), canonical))
+    lines.extend(_render_tower_costs(getattr(entry, "id", ""), canonical))
     lines.extend(_render_tower_stats(getattr(entry, "id", ""), canonical))
     return lines
 
@@ -372,6 +373,58 @@ def _render_upgrade_descriptions(tower_id: str, canonical: str) -> list[str]:
         if budget < len(desc):
             desc = desc[: max(budget - 1, 0)].rstrip() + "…"
         lines.append(f"{prefix}{desc}{suffix}")
+    return lines
+
+
+def _render_tower_costs(tower_id: str, canonical: str) -> list[str]:
+    """All-difficulty per-buy + cumulative upgrade costs as ``[btd6_cost]`` lines.
+
+    ``_render_tower`` carries only the Medium per-buy price, so a "pricing across
+    all difficulties" or "total cost to reach tier N" table emitted *derived*
+    numbers (difficulty-scaled / summed) absent from grounding — the faithfulness
+    guard rejected them (live ``grounding_failed``) on any turn where the model
+    didn't route through the cost tools, which it does inconsistently. Surfacing
+    every derived number as a grounded fact makes those tables answerable by
+    construction, independent of tool invocation. Reuses the tested
+    :func:`btd6_data_service.cumulative_upgrade_costs` (one pass per difficulty);
+    emitted for any named tower that has cost data.
+    """
+    from services import btd6_data_service
+    from utils.btd6 import difficulty_costs
+
+    diffs = difficulty_costs.DIFFICULTIES  # easy, medium, hard, impoppable
+    per = {
+        d: btd6_data_service.cumulative_upgrade_costs(tower_id, difficulty=d)
+        for d in diffs
+    }
+    if not per["medium"].get("found"):
+        return []
+    base = {d: per[d]["base_cost"] for d in diffs}
+    lines = [
+        _cap(
+            f"[btd6_cost] {canonical} pricing — Medium from fixture/btd6_data; "
+            "Easy/Hard/Impoppable = Medium ×0.85/1.08/1.20 rounded to $5; "
+            "'to reach' = tower base + all earlier tiers on that path.",
+        ),
+        _cap(
+            f"[btd6_cost] {canonical} base placement: Easy ${base['easy']:,}, "
+            f"Medium ${base['medium']:,}, Hard ${base['hard']:,}, "
+            f"Impoppable ${base['impoppable']:,}",
+        ),
+    ]
+    for pkey, tiers in per["medium"]["paths"].items():
+        by_tier = {d: {t["tier"]: t for t in per[d]["paths"][pkey]} for d in diffs}
+        for t in tiers:
+            tier = t["tier"]
+            b = {d: by_tier[d][tier]["upgrade_cost"] for d in diffs}
+            c = {d: by_tier[d][tier]["cumulative_cost"] for d in diffs}
+            lines.append(
+                _cap(
+                    f"[btd6_cost] {canonical} {t['name']} ({pkey} tier {tier}) — "
+                    f"buy E${b['easy']:,}/M${b['medium']:,}/H${b['hard']:,}/I${b['impoppable']:,}; "
+                    f"to reach E${c['easy']:,}/M${c['medium']:,}/H${c['hard']:,}/I${c['impoppable']:,}",
+                ),
+            )
     return lines
 
 

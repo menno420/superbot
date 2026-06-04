@@ -138,9 +138,14 @@ depending on the model to call the tool**: detect tower upgrade-cost intent and
 **auto-attach the deterministic cost grounding** (cumulative + all-difficulty
 facts, built from `btd6_data_service.cumulative_upgrade_costs` +
 `difficulty_costs`) into the BTD6 context, the same way #478 auto-grounds upgrade
-modifiers. The numbers are verifiable in-sandbox; the *efficacy* (model uses them,
-guard accepts) is live-owed — a pipeline change to confirm before shipping, so it
-is **proposed, not built blind** here.
+modifiers.
+
+**SHIPPED** (`_render_tower_costs`, maintainer chose the broad scope — **every**
+resolved-tower question): each tower now grounds a `[btd6_cost]` block — base +
+each upgrade's per-buy (Easy/Med/Hard/Impop) and cumulative (base+priors) cost —
+so the all-difficulty and total-cost tables are grounded by construction, no tool
+call required. Numbers verified in-sandbox (reuses the tested cumulative engine);
+**efficacy (model uses them, guard accepts) is live-owed**.
 
 > The false **"no paragon"** claim (see the absence-claim doc, Update 2) is the
 > *same shape* on a different field: the paragon grounding line exists and is
