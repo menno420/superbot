@@ -198,6 +198,15 @@ _BUFF_FIELDS: tuple[tuple[str, str, int], ...] = (
     ("rangePercentage", "+{}% range", 100),
     ("lifespanMultiplier", "x{} lifespan", 1),
     ("abilityCooldownMultiplier", "x{} ability cooldown", 1),
+    # Cash / economy buffs. These were decoded into committed data
+    # (TradeEmpireBuffModel, Bucc 0-0-5) but had no render field here, so the
+    # renderer surfaced only the damage bonus and silently dropped the income —
+    # "what does Trade Empire do" lost its headline effect (extracted, but not
+    # answerable). Labels match the wiki: +$10/round per Merchantman (stacks up
+    # to 20), +$20/round per Favored Trades, +4% sellback value in range.
+    ("cashPerRoundPerMechantship", "+${}/round per Merchantman", 1),
+    ("cashPerRoundPerFavouredTrades", "+${}/round per Favored Trades", 1),
+    ("cashbackZoneMultiplier", "+{}% sellback value", 100),
 )
 
 

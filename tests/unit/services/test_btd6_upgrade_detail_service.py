@@ -247,3 +247,36 @@ def test_buff_additive_and_multiplier_fields_unscaled():
 
 def test_buff_range_percentage_renders_whole_percent():
     assert "+10% range" in det._buff_text({"name": "X", "rangePercentage": 0.1})
+
+
+def test_buff_cash_per_round_fields_render_with_dollar():
+    # Trade Empire's income was decoded into committed data but DROPPED by the
+    # renderer (no _BUFF_FIELDS entry), so "what does Trade Empire do" surfaced
+    # only the +1 damage and lost the headline cash effect (extracted, but not
+    # answerable). Both per-round fields now render.
+    text = det._buff_text(
+        {
+            "name": "Trade Empire buff",
+            "cashPerRoundPerMechantship": 10,
+            "cashPerRoundPerFavouredTrades": 20,
+        },
+    )
+    assert "+$10/round per Merchantman" in text
+    assert "+$20/round per Favored Trades" in text
+
+
+def test_buff_sellback_multiplier_renders_whole_percent():
+    # cashbackZoneMultiplier scales x100 like the other percent-as-fraction fields.
+    assert "+4% sellback value" in det._buff_text(
+        {"name": "Sellback rate buff", "cashbackZoneMultiplier": 0.04},
+    )
+
+
+def test_trade_empire_detail_surfaces_income_end_to_end():
+    # The real committed Buccaneer 0-0-5 data: the income buff now reaches the
+    # rendered detail (and thus AI grounding), not just the damage bonus.
+    d = det.get_upgrade_detail("monkey_buccaneer:005")
+    blob = " | ".join(d.buffs)
+    assert "+$10/round per Merchantman" in blob
+    assert "+$20/round per Favored Trades" in blob
+    assert "+4% sellback value" in blob

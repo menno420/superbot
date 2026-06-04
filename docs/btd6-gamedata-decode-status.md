@@ -36,6 +36,26 @@ works** (the traps we hit), and what is still un-decoded.
    banana-cash, etc. carry a real number but `_BUFF_FIELDS` /
    `btd6_upgrade_detail_service` has no field to render it. Extend the renderer
    first, then decode.
+   - **DONE (cash/economy):** `_BUFF_FIELDS` now renders
+     `cashPerRoundPerMechantship` / `cashPerRoundPerFavouredTrades` /
+     `cashbackZoneMultiplier`, so **Trade Empire's income + Favored Trades
+     sellback** (already decoded into committed data, but previously *dropped* by
+     the renderer) now reach the answer — "what does Trade Empire do" surfaces
+     "+$10/round per Merchantman, +$20/round per Favored Trades, +4% sellback".
+   - **NEXT — income multiplier (`incomeMultiplier`).** Banana Farm income buffs
+     are in the dump but NOT in committed data: `CentralMarketBuffModel` ×1.1
+     (10-stack, **wiki-confirmed "+10% income"** on the Central Market page) and
+     `BananaCentralBuffModel` ×1.25 (wiki says "make nearby farms generate more
+     money"; the exact % wasn't on the page — confirm before writing). Also
+     `MonkeyCityIncomeSupportModel` ×1.2 (Monkey City "+20%", wiki-confirmed).
+     Decoding these = add an `incomeMultiplier` render field + the
+     `*SupportModel`/`*BuffModel` → `incomeMultiplier` mapper mappings + author
+     the committed `buffs[]` on the matching tiers (place them so `--audit` stays
+     aligned).
+   - **Other currently-dropped committed buff fields** (separate from cash):
+     `lifespan` (Engineer/Spike start-of-round buff *duration*), `heroXpMultiplier`
+     (Sub global ability-cooldown buff), `cooldown` (Desperado Nomad buff) — each
+     needs a render field + a wiki-confirmed label.
 3. **Zone effect tail** (28 types) + zones **nested in sub-towers**.
 4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
@@ -93,10 +113,17 @@ cutover-gated.** Evidence:
   confirmed mapping (would be guessing).
 - **Removables: not in this dump** (see step 6 below) — closed.
 
-**Net:** the next real data-mapping motion is the **tower cutover machinery**
-itself (its decode prerequisites are value-unconfirmable *until* the cutover) or
-**external value sources** for specific buff types — both need the maintainer's
-call + live verification, so nothing was written this pass.
+**Net:** for *new* numbers the next motion is the **tower cutover machinery** or
+**external value sources** — both need the maintainer's call. But one safe,
+wiki-grounded win was available without writing any new number and was taken:
+the **`SCHEMA_FIRST` cash renderer** (step 2). `_BUFF_FIELDS` had no cash field,
+so Trade Empire's income (already decoded + committed via `TradeEmpireBuffModel`)
+was silently *dropped* — "what does Trade Empire do" answered with only the +1
+damage. Added `cashPerRoundPerMechantship` / `cashPerRoundPerFavouredTrades` /
+`cashbackZoneMultiplier` render entries (labels wiki-confirmed), so the income now
+reaches the answer. This is the canonical *extracted ≠ answerable* fix — no new
+value asserted, just un-dropped. See step 2 for the income-multiplier decode that
+this renderer work teed up.
 
 ### Session log — 2026-06-04 (behaviour layer: PMFC/Mermonkey thin-grounding + guards)
 
