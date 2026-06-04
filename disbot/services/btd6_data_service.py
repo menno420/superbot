@@ -88,6 +88,9 @@ class MapEntry:
     lines_of_sight_notes: str
     # Whether the map has water tiles (naval-tower placement) — from game data.
     has_water: bool = False
+    # Per-map removable obstacles (bloonswiki-curated prose). NOT in the dump —
+    # a blank "" means "no data on this map", never "this map has none".
+    removables: str = ""
     # Attribution only; never surfaced. Blank rather than the deprecated
     # Fandom pages — populate from bloonswiki if a verified link is wanted.
     wiki_url: str = ""
@@ -420,6 +423,7 @@ def _parse_map(raw: dict[str, Any]) -> MapEntry:
         description=str(raw["description"]),
         lines_of_sight_notes=str(raw["lines_of_sight_notes"]),
         has_water=bool(raw.get("has_water", False)),
+        removables=str(raw.get("removables", "")),
         wiki_url=str(raw.get("wiki_url", "")),
     )
 

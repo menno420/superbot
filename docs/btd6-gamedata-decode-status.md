@@ -75,19 +75,25 @@ works** (the traps we hit), and what is still un-decoded.
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
    plus the `NameDowngradeError` name guard.
-6. **Map removable / blocker / destructible-object data — INVESTIGATED; NOT
-   extractable from this dump (closed; needs a different source).** The live
-   test that opened this (`list maps with removables`) is correctly handled by
-   the "Unsupported BTD6 areas" clause in `ai_instruction_service._TASK_CONTRACT`
-   (the bot states the gap rather than naming maps from memory). Checked the v55
-   dump directly: `Maps/<difficulty>/*.json` carry only catalog metadata
-   (`difficulty`, `hasWater`, `theme`, `mapMusic`, `mapSprite`, `odysseyStatue`,
+6. **Map removable / blocker / destructible-object data — NOT in the dump;
+   now PARTIALLY sourced from the wiki (18 maps).** Confirmed the v55 dump has
+   none: `Maps/<difficulty>/*.json` carry only catalog metadata (`difficulty`,
+   `hasWater`, `theme`, `mapMusic`, `mapSprite`, `odysseyStatue`,
    `coopMapDivisionType`, `unlockDifficulty`) — **0 of 89 maps** name a
-   removable/obstacle, and a whole-dump grep finds only UI strings (`"Removable
-   Cost"`, `ft_trackremovable*`) and Unity asset refs (`Removables/*.prefab`).
-   Per-map removable **placement/cost** lives in the AssetBundle map scenes,
-   which are not in this JSON export — so removables cannot be sourced here.
-   Re-open only with a different source (wiki, or a scene-data export).
+   removable, and a whole-dump grep finds only UI strings (`"Removable Cost"`,
+   `ft_trackremovable*`) and Unity asset refs (`Removables/*.prefab`). Per-map
+   removable placement/cost lives in the AssetBundle map scenes, absent from
+   this JSON export — so it can't be derived like per-round cash was. Instead,
+   **maintainer-supplied bloonswiki prose** was curated into
+   `parse_gamedata._MAP_REMOVABLES` (18 maps: what each removable is, whether it
+   blocks line of sight, what removal opens, conditions like Cargo's R39 gate;
+   **costs omitted — not in the source**). `map_maps` injects it (regen-safe),
+   `MapEntry.removables` carries it, and `btd6_response_builder.for_map` grounds
+   it. The `_TASK_CONTRACT` clause was flipped from blanket-unsupported to:
+   answer from the `[btd6_map]` fact when present, say "no data" for ungrounded
+   maps, and **never claim a complete cross-map list** (coverage is partial —
+   ~18 of the ~30+ maps that have removables). Extend `_MAP_REMOVABLES` (not the
+   parser logic) to cover more maps; costs still need a verified source.
 
 **Binding discipline for every decode step:**
 - Re-validate anchors first (`--validate-anchors`); if they fail the dump moved → stop.

@@ -94,15 +94,15 @@ def test_task_contract_allows_per_round_cash_and_drops_economy_from_unsupported(
     assert "no income towers" in tc  # the scope caveat travels with the answer
 
 
-def test_task_contract_marks_map_removables_as_unsupported_data():
-    # A live test asked "list all maps with removables": the bot correctly said
-    # the verified data doesn't cover removables, then *also* listed example maps
-    # "from general BTD6 knowledge" (Cubism/Geared). The map data set models only
-    # difficulty / water / line-of-sight, so per-map removables are an
-    # unsupported-data category — state the limit, don't improvise a list.
+def test_task_contract_answers_removables_from_grounding_without_complete_list():
+    # Removables are now curated for many maps (bloonswiki-sourced, on the
+    # '[btd6_map]' fact), so the contract no longer blanket-refuses them: answer
+    # from the fact when present, say "no data" for ungrounded maps, and never
+    # claim a complete cross-map list (coverage is partial, ~18 maps).
     tc = instr._TASK_CONTRACT
-    assert "removable" in tc  # removables named among not-yet-modeled data
-    # Positive framing: name what map data IS covered so the limitation is clean.
-    assert "The map data set covers" in tc
-    # The behaviour fix: no general-knowledge example maps after the limitation.
-    assert "do NOT fall back to naming example maps" in tc
+    assert "removable obstacles" in tc
+    # Answer-from-grounding, not blanket refusal.
+    assert "when a '[btd6_map]' fact lists" in tc
+    # The honesty guards: no complete-list claim, no improvised example maps.
+    assert "complete cross-map list" in tc
+    assert "naming example maps" in tc
