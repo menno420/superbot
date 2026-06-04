@@ -499,3 +499,43 @@ async def test_build_grounds_hero_level_descriptions():
     levels = [f for f in ctx.facts if "[btd6_hero_level] Ezili Level 11:" in f]
     assert len(levels) == 1
     assert "reanimated Bloons by 50%" in levels[0]
+
+
+# ---------------------------------------------------------------------------
+# grounding budget — a single named tower must not flood the prompt
+# ---------------------------------------------------------------------------
+
+# A named tower now grounds identity + paths + description + paragon + per-upgrade
+# descriptions + all-difficulty cumulative costs + stats. That broad auto-grounding
+# fixed real grounding_failed refusals, but the per-tower fact count must stay
+# bounded so it can't silently balloon the prompt. The current worst case is 60
+# lines (Bomb Shooter / Wizard / Ninja); crossing this ceiling should be a
+# deliberate decision — split grounding into intent-sensitive packets (descriptions
+# vs. costs vs. stats), per the analysis recommendation — not a quiet drift.
+_MAX_GROUNDING_LINES_PER_TOWER = 80
+
+
+def test_fixture_tower_grounding_respects_line_cap_and_budget():
+    from services import btd6_data_service
+
+    towers = btd6_data_service.get_dataset().towers
+    assert towers, "dataset has no towers — fixture load failed"
+
+    worst_name, worst_lines = "", 0
+    for tower in towers:
+        lines = btd6_context_service._render_fixture_tower(tower)
+        for line in lines:
+            # Every emitted line goes through _cap, so no single grounding fact is
+            # ever truncated mid-token (or runs unbounded) in the prompt.
+            assert len(line) <= btd6_context_service._FACT_TEXT_CAP, (
+                f"{tower.canonical} grounding line exceeds "
+                f"{btd6_context_service._FACT_TEXT_CAP}-char cap: {line!r}"
+            )
+        if len(lines) > worst_lines:
+            worst_name, worst_lines = tower.canonical, len(lines)
+
+    assert worst_lines <= _MAX_GROUNDING_LINES_PER_TOWER, (
+        f"{worst_name} now grounds {worst_lines} lines (ceiling "
+        f"{_MAX_GROUNDING_LINES_PER_TOWER}). Rich auto-grounding has grown — split "
+        "it into intent-sensitive packets before raising this ceiling."
+    )

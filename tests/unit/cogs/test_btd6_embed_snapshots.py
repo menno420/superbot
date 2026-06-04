@@ -240,3 +240,51 @@ def test_modes_embed_title() -> None:
 
     embed = build_modes_embed()
     assert embed.title == "🐵 BTD6 — Difficulties & Modes"
+
+
+# ---------------------------------------------------------------------------
+# maps embed — Discord field/total limits (89-map catalogue)
+# ---------------------------------------------------------------------------
+
+# Discord's hard embed limits (the API rejects an embed that exceeds any of
+# these; discord.py does not pre-truncate fields for us).
+_EMBED_TITLE_MAX = 256
+_EMBED_FIELD_NAME_MAX = 256
+_EMBED_FIELD_VALUE_MAX = 1024
+_EMBED_TOTAL_MAX = 6000
+_EMBED_FIELD_COUNT_MAX = 25
+
+
+def test_maps_embed_title() -> None:
+    from cogs.btd6._embeds import build_maps_embed
+
+    assert build_maps_embed().title == "🗺️ BTD6 — Maps"
+
+
+def test_maps_embed_stays_within_discord_limits() -> None:
+    # The catalogue grew 3 → 89 maps and joins every map in a difficulty into one
+    # field value. A future BTD6 version that adds maps to a single difficulty
+    # could push that value past Discord's 1024-char cap, and the whole embed
+    # would silently fail to send live. Guard every hard limit so map growth
+    # surfaces in CI here, not as a broken panel in production.
+    from cogs.btd6._embeds import build_maps_embed
+
+    embed = build_maps_embed()
+    assert len(embed.fields) <= _EMBED_FIELD_COUNT_MAX
+    assert len(embed.title or "") <= _EMBED_TITLE_MAX
+
+    footer_text = embed.footer.text if embed.footer else None
+    total = len(embed.title or "") + len(footer_text or "")
+    for field in embed.fields:
+        name = field.name or ""
+        value = field.value or ""
+        assert len(name) <= _EMBED_FIELD_NAME_MAX, f"field name too long: {name!r}"
+        assert len(value) <= _EMBED_FIELD_VALUE_MAX, (
+            f"{name!r} value is {len(value)} chars (Discord cap "
+            f"{_EMBED_FIELD_VALUE_MAX}) — split this difficulty across multiple "
+            "fields or paginate the maps catalogue before adding more maps."
+        )
+        total += len(name) + len(value)
+    assert total <= _EMBED_TOTAL_MAX, (
+        f"maps embed total is {total} chars (Discord cap {_EMBED_TOTAL_MAX})."
+    )
