@@ -589,3 +589,19 @@ def test_fixture_tower_grounding_respects_line_cap_and_budget():
         f"{_MAX_GROUNDING_LINES_PER_TOWER}). Rich auto-grounding has grown — split "
         "it into intent-sensitive packets before raising this ceiling."
     )
+
+
+async def test_build_grounds_per_round_cash():
+    # The per-round cash (rounds 1-80) now reaches the model, so "how much money
+    # by round 80" is groundable instead of free-recalled.
+    ctx = await btd6_context_service.build("how much cash do I have by round 80")
+    line = next(f for f in ctx.facts if f.startswith("[btd6_round] Round 80"))
+    assert "cash this round ~$1,400" in line
+    assert "cumulative ~$98,254" in line
+
+
+async def test_build_round_81_has_no_cash_line():
+    # 81+ has no confirmed v55 cash source, so the round grounds without cash.
+    ctx = await btd6_context_service.build("round 81")
+    line = next(f for f in ctx.facts if f.startswith("[btd6_round] Round 81"))
+    assert "cash this round" not in line

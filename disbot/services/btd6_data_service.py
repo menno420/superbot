@@ -121,10 +121,15 @@ class RoundEntry:
     common_threats: tuple[str, ...]
     # Extended composition (Module:BTD6_rounds): total RBE (children-inclusive),
     # the ordered spawn groups ({bloon_id, count, start, duration, modifiers}),
-    # and which round set this is ("default"; ABR is a later addition). ``cash``
-    # is reserved but not yet derived (wiki computes it from per-income Lua).
+    # and which round set this is ("default"; ABR is a later addition).
     rbe: int | None = None
-    cash: int | None = None
+    # Standard/Medium per-round cash (pop cash + end-of-round bonus) and the
+    # running total. Float because income decay (rounds 51+) yields .5 values.
+    # Populated for rounds 1-80 (cyberquincy data set, cross-validated vs our
+    # RBE); None for 81+ until a v55-current source is confirmed. See
+    # ``rounds.json:cash_source``.
+    cash: float | None = None
+    cumulative_cash: float | None = None
     roundset: str = "default"
     groups: tuple[dict[str, Any], ...] = ()
 
@@ -449,7 +454,9 @@ def _parse_round(raw: dict[str, Any]) -> RoundEntry:
             f"round {raw['round']!r}: rbe must be >= 0 when present, got {rbe}",
         )
     cash_raw = raw.get("cash")
-    cash = int(cash_raw) if isinstance(cash_raw, (int, float)) else None
+    cash = float(cash_raw) if isinstance(cash_raw, (int, float)) else None
+    cumul_raw = raw.get("cumulative_cash")
+    cumulative_cash = float(cumul_raw) if isinstance(cumul_raw, (int, float)) else None
     groups = tuple(dict(g) for g in raw.get("groups", ()) if isinstance(g, dict))
     return RoundEntry(
         round_number=int(raw["round"]),
@@ -458,6 +465,7 @@ def _parse_round(raw: dict[str, Any]) -> RoundEntry:
         common_threats=tuple(str(t) for t in raw["common_threats"]),
         rbe=rbe,
         cash=cash,
+        cumulative_cash=cumulative_cash,
         roundset=str(raw.get("roundset", "default")),
         groups=groups,
     )

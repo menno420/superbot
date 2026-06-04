@@ -920,6 +920,15 @@ def _render_fixture_round(entry: Any) -> list[str]:
         head.append(f"danger: {danger}")
     if isinstance(rbe, int):
         head.append(f"total RBE {rbe:,} (hits to fully clear)")
+    cash = getattr(entry, "cash", None)
+    if isinstance(cash, (int, float)):
+        cumulative = getattr(entry, "cumulative_cash", None)
+        bit = f"cash this round ~${round(cash):,}"
+        if isinstance(cumulative, (int, float)):
+            bit += f", cumulative ~${round(cumulative):,}"
+        # Standard/Medium base economy: ~$1 per bloon pop + end-of-round bonus,
+        # before any income towers, and halved under Half Cash.
+        head.append(bit + " (standard economy, no income towers)")
     if threats:
         head.append(f"threats: {', '.join(_sanitise(t) for t in threats)}")
     headline = " | ".join(head)

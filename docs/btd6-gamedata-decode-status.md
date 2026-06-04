@@ -96,6 +96,31 @@ works** (the traps we hit), and what is still un-decoded.
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
 
+### Session log — per-round cash (rounds 1-80) + where the cash economy lives
+
+Traced "cash per pop / per round" end to end:
+- **Per-pop:** flat **$1 per bloon layer** (maintainer-confirmed + BloonsWiki "Cash
+  per pop"), ×0.5 on Half Cash, reduced in late rounds by the income-decay curve.
+  **Not in the asset dump** — it's hardcoded game logic (no `cashPerPop` field;
+  bloon `cash` is null on all bloons; the difficulty `Mods/` only carry `baseCash`
+  = starting cash). Same story as the mode rules.
+- **Per-round *tower* income** IS in the dump as `PerRoundCashBonusTowerModel.
+  cashPerRound` (Benjamin 90→5000 by level, farms, SOTF) — already surfaced for
+  the towers that have committed tiers.
+- **Per-round *game* cash** (pop cash + end-of-round bonus, standard/Medium, no
+  income towers) is NOT in the dump (cash is computed, never stored). Sourced it
+  from the **cyberquincy** data set (`round_sets/regular.json` →
+  `cashThisRound`/`cumulativeCash`). Cross-validated: our RBE matches cyberquincy
+  **exactly for rounds 1-80**, so imported `cash` + `cumulative_cash` into
+  `rounds.json` for **1-80** (now grounded on round questions). `RoundEntry.cash`
+  is now `float` (income decay yields .5 values) + new `cumulative_cash`.
+- **Rounds 81-140 left empty.** Our RBE and cyberquincy's diverge there (matches
+  the maintainer's belief that late-round cash changed), and **no v55-current
+  source was found**: the Steam Web API doesn't expose round economy (needs a key,
+  only has achievements/stats), the game files store emissions not cash, and the
+  cash can't be safely *derived* (it's per pop-event, not per-RBE — diverges once
+  MOAB-class appear). Needs a confirmed v55 source before populating.
+
 ### Session log — 2026-06-04 (dump re-validation: confirmable data mapping is caught up)
 
 Cloned the v55 dump (`Btd6ModHelper/btd6-game-data` @ `a3348a89` — the pinned

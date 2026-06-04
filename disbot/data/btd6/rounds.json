@@ -12,6 +12,8 @@
         "Red Bloon"
       ],
       "rbe": 20,
+      "cash": 121,
+      "cumulative_cash": 771,
       "roundset": "default",
       "groups": [
         {
@@ -31,6 +33,8 @@
         "Red Bloon"
       ],
       "rbe": 35,
+      "cash": 137,
+      "cumulative_cash": 908,
       "roundset": "default",
       "groups": [
         {
@@ -51,6 +55,8 @@
         "Blue Bloon"
       ],
       "rbe": 35,
+      "cash": 138,
+      "cumulative_cash": 1046,
       "roundset": "default",
       "groups": [
         {
@@ -85,6 +91,8 @@
         "Blue Bloon"
       ],
       "rbe": 71,
+      "cash": 175,
+      "cumulative_cash": 1221,
       "roundset": "default",
       "groups": [
         {
@@ -119,6 +127,8 @@
         "Red Bloon"
       ],
       "rbe": 59,
+      "cash": 164,
+      "cumulative_cash": 1385,
       "roundset": "default",
       "groups": [
         {
@@ -154,6 +164,8 @@
         "Green Bloon"
       ],
       "rbe": 57,
+      "cash": 163,
+      "cumulative_cash": 1548,
       "roundset": "default",
       "groups": [
         {
@@ -189,6 +201,8 @@
         "Green Bloon"
       ],
       "rbe": 75,
+      "cash": 182,
+      "cumulative_cash": 1730,
       "roundset": "default",
       "groups": [
         {
@@ -231,6 +245,8 @@
         "Red Bloon"
       ],
       "rbe": 92,
+      "cash": 200,
+      "cumulative_cash": 1930,
       "roundset": "default",
       "groups": [
         {
@@ -271,6 +287,8 @@
         "Green Bloon"
       ],
       "rbe": 90,
+      "cash": 199,
+      "cumulative_cash": 2129,
       "roundset": "default",
       "groups": [
         {
@@ -290,6 +308,8 @@
         "Pink"
       ],
       "rbe": 204,
+      "cash": 314,
+      "cumulative_cash": 2443,
       "roundset": "default",
       "groups": [
         {
@@ -326,6 +346,8 @@
         "Yellow Bloon"
       ],
       "rbe": 78,
+      "cash": 189,
+      "cumulative_cash": 2632,
       "roundset": "default",
       "groups": [
         {
@@ -368,6 +390,8 @@
         "Yellow Bloon"
       ],
       "rbe": 80,
+      "cash": 192,
+      "cumulative_cash": 2824,
       "roundset": "default",
       "groups": [
         {
@@ -402,6 +426,8 @@
         "Green Bloon"
       ],
       "rbe": 169,
+      "cash": 282,
+      "cumulative_cash": 3106,
       "roundset": "default",
       "groups": [
         {
@@ -431,6 +457,8 @@
         "Yellow Bloon"
       ],
       "rbe": 145,
+      "cash": 259,
+      "cumulative_cash": 3365,
       "roundset": "default",
       "groups": [
         {
@@ -502,6 +530,8 @@
         "Yellow Bloon"
       ],
       "rbe": 151,
+      "cash": 266,
+      "cumulative_cash": 3631,
       "roundset": "default",
       "groups": [
         {
@@ -550,6 +580,8 @@
         "Yellow Bloon"
       ],
       "rbe": 152,
+      "cash": 268,
+      "cumulative_cash": 3899,
       "roundset": "default",
       "groups": [
         {
@@ -583,6 +615,8 @@
         "Yellow Bloon"
       ],
       "rbe": 48,
+      "cash": 165,
+      "cumulative_cash": 4064,
       "roundset": "default",
       "groups": [
         {
@@ -604,6 +638,8 @@
         "Green Bloon"
       ],
       "rbe": 240,
+      "cash": 358,
+      "cumulative_cash": 4422,
       "roundset": "default",
       "groups": [
         {
@@ -632,6 +668,8 @@
         "Yellow Bloon"
       ],
       "rbe": 141,
+      "cash": 260,
+      "cumulative_cash": 4682,
       "roundset": "default",
       "groups": [
         {
@@ -674,6 +712,8 @@
         "Black Bloon"
       ],
       "rbe": 66,
+      "cash": 186,
+      "cumulative_cash": 4868,
       "roundset": "default",
       "groups": [
         {
@@ -693,6 +733,8 @@
         "Lead"
       ],
       "rbe": 230,
+      "cash": 351,
+      "cumulative_cash": 5219,
       "roundset": "default",
       "groups": [
         {
@@ -726,6 +768,8 @@
         "White Bloon"
       ],
       "rbe": 176,
+      "cash": 298,
+      "cumulative_cash": 5517,
       "roundset": "default",
       "groups": [
         {
@@ -746,6 +790,8 @@
         "White Bloon"
       ],
       "rbe": 154,
+      "cash": 277,
+      "cumulative_cash": 5794,
       "roundset": "default",
       "groups": [
         {
@@ -773,6 +819,8 @@
         "Green Bloon"
       ],
       "rbe": 43,
+      "cash": 167,
+      "cumulative_cash": 5961,
       "roundset": "default",
       "groups": [
         {
@@ -802,6 +850,8 @@
         "Purple Bloon"
       ],
       "rbe": 210,
+      "cash": 335,
+      "cumulative_cash": 6296,
       "roundset": "default",
       "groups": [
         {
@@ -831,6 +881,8 @@
         "Zebra Bloon"
       ],
       "rbe": 207,
+      "cash": 333,
+      "cumulative_cash": 6629,
       "roundset": "default",
       "groups": [
         {
@@ -860,6 +912,8 @@
         "Yellow Bloon"
       ],
       "rbe": 535,
+      "cash": 662,
+      "cumulative_cash": 7291,
       "roundset": "default",
       "groups": [
         {
@@ -900,6 +954,8 @@
         "Ceramic"
       ],
       "rbe": 138,
+      "cash": 266,
+      "cumulative_cash": 7557,
       "roundset": "default",
       "groups": [
         {
@@ -919,6 +975,8 @@
         "Yellow Bloon"
       ],
       "rbe": 260,
+      "cash": 389,
+      "cumulative_cash": 7946,
       "roundset": "default",
       "groups": [
         {
@@ -947,6 +1005,8 @@
         "Lead Bloon"
       ],
       "rbe": 207,
+      "cash": 337,
+      "cumulative_cash": 8283,
       "roundset": "default",
       "groups": [
         {
@@ -968,6 +1028,8 @@
         "White Bloon"
       ],
       "rbe": 406,
+      "cash": 537,
+      "cumulative_cash": 8820,
       "roundset": "default",
       "groups": [
         {
@@ -1012,6 +1074,8 @@
         "Purple Bloon"
       ],
       "rbe": 495,
+      "cash": 627,
+      "cumulative_cash": 9447,
       "roundset": "default",
       "groups": [
         {
@@ -1046,6 +1110,8 @@
         "Yellow Bloon"
       ],
       "rbe": 72,
+      "cash": 205,
+      "cumulative_cash": 9652,
       "roundset": "default",
       "groups": [
         {
@@ -1077,6 +1143,8 @@
         "Zebra Bloon"
       ],
       "rbe": 778,
+      "cash": 912,
+      "cumulative_cash": 10564,
       "roundset": "default",
       "groups": [
         {
@@ -1106,6 +1174,8 @@
         "Rainbow Bloon"
       ],
       "rbe": 1015,
+      "cash": 1150,
+      "cumulative_cash": 11714,
       "roundset": "default",
       "groups": [
         {
@@ -1147,6 +1217,8 @@
         "Green Bloon"
       ],
       "rbe": 760,
+      "cash": 896,
+      "cumulative_cash": 12610,
       "roundset": "default",
       "groups": [
         {
@@ -1203,6 +1275,8 @@
         "Zebra Bloon"
       ],
       "rbe": 1202,
+      "cash": 1339,
+      "cumulative_cash": 13949,
       "roundset": "default",
       "groups": [
         {
@@ -1255,6 +1329,8 @@
         "Zebra Bloon"
       ],
       "rbe": 1157,
+      "cash": 1277,
+      "cumulative_cash": 15226,
       "roundset": "default",
       "groups": [
         {
@@ -1305,6 +1381,8 @@
         "White Bloon"
       ],
       "rbe": 1620,
+      "cash": 1759,
+      "cumulative_cash": 16985,
       "roundset": "default",
       "groups": [
         {
@@ -1354,6 +1432,8 @@
         "BFB"
       ],
       "rbe": 616,
+      "cash": 521,
+      "cumulative_cash": 17506,
       "roundset": "default",
       "groups": [
         {
@@ -1374,6 +1454,8 @@
         "Zebra Bloon"
       ],
       "rbe": 2040,
+      "cash": 2181,
+      "cumulative_cash": 19687,
       "roundset": "default",
       "groups": [
         {
@@ -1400,6 +1482,8 @@
         "Rainbow Bloon"
       ],
       "rbe": 517,
+      "cash": 659,
+      "cumulative_cash": 20346,
       "roundset": "default",
       "groups": [
         {
@@ -1431,6 +1515,8 @@
         "Ceramic Bloon"
       ],
       "rbe": 1198,
+      "cash": 1278,
+      "cumulative_cash": 21624,
       "roundset": "default",
       "groups": [
         {
@@ -1457,6 +1543,8 @@
         "Zebra Bloon"
       ],
       "rbe": 1150,
+      "cash": 1294,
+      "cumulative_cash": 22918,
       "roundset": "default",
       "groups": [
         {
@@ -1507,6 +1595,8 @@
         "Lead Bloon"
       ],
       "rbe": 2289,
+      "cash": 2422,
+      "cumulative_cash": 25340,
       "roundset": "default",
       "groups": [
         {
@@ -1551,6 +1641,8 @@
         "Ceramic Bloon"
       ],
       "rbe": 684,
+      "cash": 716,
+      "cumulative_cash": 26056,
       "roundset": "default",
       "groups": [
         {
@@ -1573,6 +1665,8 @@
         "Ceramic Bloon"
       ],
       "rbe": 1598,
+      "cash": 1637,
+      "cumulative_cash": 27693,
       "roundset": "default",
       "groups": [
         {
@@ -1604,6 +1698,8 @@
         "Ceramic Bloon"
       ],
       "rbe": 2752,
+      "cash": 2843,
+      "cumulative_cash": 30536,
       "roundset": "default",
       "groups": [
         {
@@ -1654,6 +1750,8 @@
         "Ceramic Bloon"
       ],
       "rbe": 4771,
+      "cash": 4758,
+      "cumulative_cash": 35294,
       "roundset": "default",
       "groups": [
         {
@@ -1713,6 +1811,8 @@
         "MOAB"
       ],
       "rbe": 3540,
+      "cash": 3016,
+      "cumulative_cash": 38310,
       "roundset": "default",
       "groups": [
         {
@@ -1763,6 +1863,8 @@
         "Rainbow Bloon"
       ],
       "rbe": 2030,
+      "cash": 1098.5,
+      "cumulative_cash": 39408.5,
       "roundset": "default",
       "groups": [
         {
@@ -1795,6 +1897,8 @@
         "MOAB"
       ],
       "rbe": 3447,
+      "cash": 1595.5,
+      "cumulative_cash": 41004,
       "roundset": "default",
       "groups": [
         {
@@ -1843,6 +1947,8 @@
         "MOAB"
       ],
       "rbe": 2248,
+      "cash": 924.5,
+      "cumulative_cash": 41928.5,
       "roundset": "default",
       "groups": [
         {
@@ -1886,6 +1992,8 @@
         "MOAB"
       ],
       "rbe": 4872,
+      "cash": 2197.5,
+      "cumulative_cash": 44126,
       "roundset": "default",
       "groups": [
         {
@@ -1920,6 +2028,8 @@
         "MOAB"
       ],
       "rbe": 5296,
+      "cash": 2483,
+      "cumulative_cash": 46609,
       "roundset": "default",
       "groups": [
         {
@@ -1968,6 +2078,8 @@
         "MOAB"
       ],
       "rbe": 2496,
+      "cash": 1286.5,
+      "cumulative_cash": 47895.5,
       "roundset": "default",
       "groups": [
         {
@@ -1997,6 +2109,8 @@
         "MOAB"
       ],
       "rbe": 4344,
+      "cash": 1859,
+      "cumulative_cash": 49754.5,
       "roundset": "default",
       "groups": [
         {
@@ -2031,6 +2145,8 @@
         "MOAB"
       ],
       "rbe": 5780,
+      "cash": 2298,
+      "cumulative_cash": 52052.5,
       "roundset": "default",
       "groups": [
         {
@@ -2067,6 +2183,8 @@
         "Ceramic Bloon"
       ],
       "rbe": 4270,
+      "cash": 2159,
+      "cumulative_cash": 54211.5,
       "roundset": "default",
       "groups": [
         {
@@ -2104,6 +2222,8 @@
         "BFB"
       ],
       "rbe": 3164,
+      "cash": 922.5,
+      "cumulative_cash": 55134,
       "roundset": "default",
       "groups": [
         {
@@ -2124,6 +2244,8 @@
         "MOAB"
       ],
       "rbe": 6530,
+      "cash": 1232,
+      "cumulative_cash": 56366,
       "roundset": "default",
       "groups": [
         {
@@ -2154,6 +2276,8 @@
         "MOAB"
       ],
       "rbe": 8247,
+      "cash": 1386.4,
+      "cumulative_cash": 57752.4,
       "roundset": "default",
       "groups": [
         {
@@ -2200,6 +2324,8 @@
         "Camo Lead"
       ],
       "rbe": 14413,
+      "cash": 2826,
+      "cumulative_cash": 60578.4,
       "roundset": "default",
       "groups": [
         {
@@ -2240,6 +2366,8 @@
         "MOAB"
       ],
       "rbe": 6264,
+      "cash": 849.8,
+      "cumulative_cash": 61428.2,
       "roundset": "default",
       "groups": [
         {
@@ -2271,6 +2399,8 @@
         "MOAB"
       ],
       "rbe": 18966,
+      "cash": 3071.6,
+      "cumulative_cash": 64499.8,
       "roundset": "default",
       "groups": [
         {
@@ -2318,6 +2448,8 @@
         "MOAB"
       ],
       "rbe": 7496,
+      "cash": 1004.2,
+      "cumulative_cash": 65504,
       "roundset": "default",
       "groups": [
         {
@@ -2361,6 +2493,8 @@
         "MOAB"
       ],
       "rbe": 6410,
+      "cash": 1023.6,
+      "cumulative_cash": 66527.6,
       "roundset": "default",
       "groups": [
         {
@@ -2399,6 +2533,8 @@
         "BFB"
       ],
       "rbe": 5628,
+      "cash": 777.8,
+      "cumulative_cash": 67305.4,
       "roundset": "default",
       "groups": [
         {
@@ -2427,6 +2563,8 @@
         "Black Bloon"
       ],
       "rbe": 6680,
+      "cash": 1391,
+      "cumulative_cash": 68696.4,
       "roundset": "default",
       "groups": [
         {
@@ -2466,6 +2604,8 @@
         "MOAB"
       ],
       "rbe": 13184,
+      "cash": 2618.8,
+      "cumulative_cash": 71315.2,
       "roundset": "default",
       "groups": [
         {
@@ -2503,6 +2643,8 @@
         "MOAB"
       ],
       "rbe": 9280,
+      "cash": 1503,
+      "cumulative_cash": 72818.2,
       "roundset": "default",
       "groups": [
         {
@@ -2530,6 +2672,8 @@
         "BFB"
       ],
       "rbe": 10280,
+      "cash": 1504,
+      "cumulative_cash": 74322.2,
       "roundset": "default",
       "groups": [
         {
@@ -2566,6 +2710,8 @@
         "BFB"
       ],
       "rbe": 11256,
+      "cash": 1392.6,
+      "cumulative_cash": 75714.8,
       "roundset": "default",
       "groups": [
         {
@@ -2600,6 +2746,8 @@
         "BFB"
       ],
       "rbe": 18054,
+      "cash": 3044,
+      "cumulative_cash": 78758.8,
       "roundset": "default",
       "groups": [
         {
@@ -2648,6 +2796,8 @@
         "MOAB"
       ],
       "rbe": 25402,
+      "cash": 2667.4,
+      "cumulative_cash": 81426.2,
       "roundset": "default",
       "groups": [
         {
@@ -2715,6 +2865,8 @@
         "Ceramic Bloon"
       ],
       "rbe": 6240,
+      "cash": 1316,
+      "cumulative_cash": 82742.2,
       "roundset": "default",
       "groups": [
         {
@@ -2737,6 +2889,8 @@
         "BFB"
       ],
       "rbe": 22596,
+      "cash": 2540.2,
+      "cumulative_cash": 85282.4,
       "roundset": "default",
       "groups": [
         {
@@ -2763,6 +2917,8 @@
         "BAD"
       ],
       "rbe": 26382,
+      "cash": 4862,
+      "cumulative_cash": 90144.4,
       "roundset": "default",
       "groups": [
         {
@@ -2813,6 +2969,8 @@
         "BFB"
       ],
       "rbe": 45804,
+      "cash": 6709,
+      "cumulative_cash": 96853.4,
       "roundset": "default",
       "groups": [
         {
@@ -2850,6 +3008,8 @@
         "ZOMG"
       ],
       "rbe": 16656,
+      "cash": 1400.2,
+      "cumulative_cash": 98253.6,
       "roundset": "default",
       "groups": [
         {
@@ -5747,5 +5907,6 @@
         }
       ]
     }
-  ]
+  ],
+  "cash_source": "standard/Medium per-round cash (pop cash + end-of-round bonus) for rounds 1-80, from the cyberquincy bot data set (github.com/hemisemidemipresent/cyberquincy, jsons/round_sets/regular.json); cross-validated against our v55 RBE (exact match r1-80). Rounds 81+ omitted: their RBE diverges from this source and no v55-current cash source was found (Steam API doesn't expose it; the game files store emissions, not cash)."
 }
