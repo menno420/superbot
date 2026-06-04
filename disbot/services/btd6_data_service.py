@@ -86,6 +86,8 @@ class MapEntry:
     difficulty: str
     description: str
     lines_of_sight_notes: str
+    # Whether the map has water tiles (naval-tower placement) — from game data.
+    has_water: bool = False
     # Attribution only; never surfaced. Blank rather than the deprecated
     # Fandom pages — populate from bloonswiki if a verified link is wanted.
     wiki_url: str = ""
@@ -402,6 +404,7 @@ def _parse_map(raw: dict[str, Any]) -> MapEntry:
         difficulty=str(raw["difficulty"]),
         description=str(raw["description"]),
         lines_of_sight_notes=str(raw["lines_of_sight_notes"]),
+        has_water=bool(raw.get("has_water", False)),
         wiki_url=str(raw.get("wiki_url", "")),
     )
 

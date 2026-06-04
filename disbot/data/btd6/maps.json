@@ -1,31 +1,815 @@
 {
-  "data_version": "1.0",
-  "game_version": "41.3",
-  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "data_version": "2.0",
+  "game_version": "55.0",
+  "source": "BTD Mod Helper game data export",
   "maps": [
     {
-      "id": "logs",
-      "canonical": "Logs",
-      "aliases": ["log"],
+      "id": "alpine_run",
+      "canonical": "Alpine Run",
+      "aliases": [],
       "difficulty": "Beginner",
-      "description": "Single river-and-logs track. Heavy water coverage in places.",
-      "lines_of_sight_notes": "Open central area; water tile presence allows naval towers."
+      "description": "Beginner map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "candy_falls",
+      "canonical": "Candy Falls",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "carved",
+      "canonical": "Carved",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
     },
     {
       "id": "cubism",
       "canonical": "Cubism",
-      "aliases": ["cube", "cubes"],
-      "difficulty": "Intermediate",
+      "aliases": [
+        "cube",
+        "cubes"
+      ],
+      "difficulty": "Beginner",
       "description": "Tight quartered paths with cubes obstructing line of sight.",
-      "lines_of_sight_notes": "Cubes block towers; consider towers that ignore LoS or place near gaps."
+      "lines_of_sight_notes": "Cubes block towers; consider towers that ignore LoS or place near gaps.",
+      "has_water": true
+    },
+    {
+      "id": "end_of_the_road",
+      "canonical": "End Of The Road",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "four_circles",
+      "canonical": "Four Circles",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "frozen_over",
+      "canonical": "Frozen Over",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "hedge",
+      "canonical": "Hedge",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "in_the_loop",
+      "canonical": "In The Loop",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "logs",
+      "canonical": "Logs",
+      "aliases": [
+        "log"
+      ],
+      "difficulty": "Beginner",
+      "description": "Single river-and-logs track. Heavy water coverage in places.",
+      "lines_of_sight_notes": "Open central area; water tile presence allows naval towers.",
+      "has_water": true
+    },
+    {
+      "id": "lotus_island",
+      "canonical": "Lotus Island",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "middle_of_the_road",
+      "canonical": "Middle of the Road",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "one_two_tree",
+      "canonical": "One Two Tree",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "park_path",
+      "canonical": "Park Path",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "resort",
+      "canonical": "Resort",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "scrapyard",
+      "canonical": "Scrapyard",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "skates",
+      "canonical": "Skates",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "skull_tweak",
+      "canonical": "Skull Tweak",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "spa_pits",
+      "canonical": "Spa Pits",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "the_cabin",
+      "canonical": "The Cabin",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "three_mines_around",
+      "canonical": "Three Mines 'Round",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "tinkerton",
+      "canonical": "Tinkerton",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "town_centre",
+      "canonical": "Town Center",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "tree_stump",
+      "canonical": "Tree Stump",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "tutorial",
+      "canonical": "Monkey Meadow",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "winter_park",
+      "canonical": "Winter Park",
+      "aliases": [],
+      "difficulty": "Beginner",
+      "description": "Beginner map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "adoras_temple",
+      "canonical": "Adora's Temple",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "ancient_portal",
+      "canonical": "Ancient Portal",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "balance",
+      "canonical": "Balance",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "base_editor_map",
+      "canonical": "Base Editor Map",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "bazaar",
+      "canonical": "Bazaar",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "bloonarius_prime",
+      "canonical": "Bloonarius Prime",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "chutes",
+      "canonical": "Chutes",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "covered_garden",
+      "canonical": "Covered Garden",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "cracked",
+      "canonical": "Cracked",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "downstream",
+      "canonical": "Downstream",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "encrypted",
+      "canonical": "Encrypted",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "firing_range",
+      "canonical": "Firing Range",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "haunted",
+      "canonical": "Haunted",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "karts_ndarts",
+      "canonical": "KartsNDarts",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "lost_crevasse",
+      "canonical": "Lost Crevasse",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "luminous_cove",
+      "canonical": "Luminous Cove",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "moon_landing",
+      "canonical": "Moon Landing",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "polyphemus",
+      "canonical": "Polyphemus",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "protect_the_yacht",
+      "canonical": "Protect The Yacht",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "quarry",
+      "canonical": "Quarry",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "quiet_street",
+      "canonical": "Quiet Street",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "rake",
+      "canonical": "Rake",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "spice_islands",
+      "canonical": "Spice Islands",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "spring_spring",
+      "canonical": "Spring Spring",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "streambed",
+      "canonical": "Streambed",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "sulfur_springs",
+      "canonical": "Sulfur Springs",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "water_park",
+      "canonical": "Water Park",
+      "aliases": [],
+      "difficulty": "Intermediate",
+      "description": "Intermediate map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "another_brick",
+      "canonical": "Another Brick",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "cargo",
+      "canonical": "Cargo",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "castle_revenge",
+      "canonical": "Castle Revenge",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
     },
     {
       "id": "cornfield",
       "canonical": "Cornfield",
-      "aliases": ["corn"],
-      "difficulty": "Beginner",
+      "aliases": [
+        "corn"
+      ],
+      "difficulty": "Advanced",
       "description": "Open field with a winding path. Forgiving placement.",
-      "lines_of_sight_notes": "Open layout; nearly any tower works."
+      "lines_of_sight_notes": "Open layout; nearly any tower works.",
+      "has_water": false
+    },
+    {
+      "id": "dark_path",
+      "canonical": "Dark Path",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "enchanted_glade",
+      "canonical": "Enchanted Glade",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "erosion",
+      "canonical": "Erosion",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "geared",
+      "canonical": "Geared",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "high_finance",
+      "canonical": "High Finance",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "last_resort",
+      "canonical": "Last Resort",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "mesa",
+      "canonical": "Mesa",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "midnight_mansion",
+      "canonical": "Midnight Mansion",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "mushroom_grotto",
+      "canonical": "Mushroom Grotto",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "off_the_coast",
+      "canonical": "Off The Coast",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "party_parade",
+      "canonical": "Party Parade",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "pats_pond",
+      "canonical": "Pat's Pond",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "peninsula",
+      "canonical": "Peninsula",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "spillway",
+      "canonical": "Spillway",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "sunken_columns",
+      "canonical": "Sunken Columns",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "sunset_gulch",
+      "canonical": "Sunset Gulch",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "underground",
+      "canonical": "Underground",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "xfactor",
+      "canonical": "X Factor",
+      "aliases": [],
+      "difficulty": "Advanced",
+      "description": "Advanced map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "blons",
+      "canonical": "Blons",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "bloody_puddles",
+      "canonical": "Bloody Puddles",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "dark_castle",
+      "canonical": "Dark Castle",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "dark_dungeons",
+      "canonical": "Dark Dungeons",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "flooded_valley",
+      "canonical": "Flooded Valley",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "glacial_trail",
+      "canonical": "Glacial Trail",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "infernal",
+      "canonical": "Infernal",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "muddy_puddles",
+      "canonical": "Muddy Puddles",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "ouch",
+      "canonical": "#Ouch",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "quad",
+      "canonical": "Quad",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "ravine",
+      "canonical": "Ravine",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "sanctuary",
+      "canonical": "Sanctuary",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map. Contains water.",
+      "lines_of_sight_notes": "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed.",
+      "has_water": true
+    },
+    {
+      "id": "tricky_tracks",
+      "canonical": "Tricky Tracks",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
+    },
+    {
+      "id": "workshop",
+      "canonical": "Workshop",
+      "aliases": [],
+      "difficulty": "Expert",
+      "description": "Expert map.",
+      "lines_of_sight_notes": "No water tiles — land-only tower placement.",
+      "has_water": false
     }
   ]
 }
