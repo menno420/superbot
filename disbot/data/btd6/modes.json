@@ -65,11 +65,11 @@
       "aliases": ["deflate"],
       "starting_cash": 20000,
       "starting_lives": 200,
-      "description": "Easy-difficulty mode starting at round 31 with a fixed lump of cash and no income — win with what you can afford up front.",
+      "description": "Easy-difficulty mode: start at round 31 with $20,000 cash and earn no more — win with what you start with (verified in-game).",
       "difficulties": ["easy"],
       "restrictions": [
-        "Starts at round 31",
-        "No income — popping bloons earns no cash",
+        "Starts at round 31 with $20,000 cash",
+        "No income — you cannot earn any more cash",
         "No selling towers"
       ]
     },

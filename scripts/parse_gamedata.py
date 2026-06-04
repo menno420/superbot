@@ -588,6 +588,21 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
         "ceramicDamageBuff": "damageAdditiveForCeramic",
         "moabDamageBuff": "damageAdditiveForMoabs",
     },
+    # rangeMultiplier passes through 1:1 (Mermonkey in-water buff: 1.35).
+    "PlacementAreaTypeRangeBuffModel": {"rangeMultiplier": "rangeMultiplier"},
+    # Engineer/Spike start-of-round buff (×0.25 cooldown for N rounds): two-tower
+    # confirmation (modifier 0.25→rateMultiplier; duration 1/3→lifespan).
+    "StartOfRoundRateBuffModel": {
+        "modifier": "rateMultiplier",
+        "duration": "lifespan",
+    },
+    # Wizard Necromancer "Undead Bloon buff": the committed wiki data maps
+    # distanceMultiplier→lifespanMultiplier (raw 1.5 == wiki 1.5), so it is the
+    # correct field correspondence for this type, not a coincidence.
+    "PrinceOfDarknessZombieBuffModel": {
+        "damageIncrease": "damageAdditive",
+        "distanceMultiplier": "lifespanMultiplier",
+    },
 }
 
 
