@@ -925,3 +925,57 @@ def test_unconfirmed_buff_types_emit_nothing(mod):
         {"$type": _t("PierceSupportModel"), "pierce": 3.0, "buffLocsName": "X"}
     )
     assert "buffs" not in mod._map_tier(model)
+
+
+def test_buffs_subcommander_maps_three_fields(mod):
+    # Sub 0-0-5 Sub Commander: raw 4/0/2 == wiki pierceAdditive/damageAdditive/damageMultiplier.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("SubCommanderSupportModel"),
+            "buffLocsName": "SubCommanderBuff",
+            "pierceIncrease": 4,
+            "damageIncrease": 0,
+            "damageScale": 2.0,
+            "isGlobal": False,
+        }
+    )
+    buff = mod._map_tier(model)["buffs"][0]
+    assert buff["pierceAdditive"] == 4
+    assert buff["damageAdditive"] == 0
+    assert buff["damageMultiplier"] == 2
+
+
+def test_buffs_pierce_percentage_maps_to_pierce_multiplier(mod):
+    # Mermonkey: raw percentIncrease 1.4 == wiki pierceMultiplier 1.4.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("PiercePercentageSupportModel"),
+            "buffLocsName": "BuffMermonkeyPierce",
+            "percentIncrease": 1.4,
+        }
+    )
+    assert mod._map_tier(model)["buffs"][0]["pierceMultiplier"] == 1.4
+
+
+def test_buffs_trade_empire_cash_and_damage(mod):
+    # Buccaneer 0-0-5 Trade Empire: cash-per-round + flat damage additives.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("TradeEmpireBuffModel"),
+            "buffLocsName": "TradeEmpireBuff",
+            "cashPerRoundPerMechantship": 10.0,
+            "cashPerRoundPerFavouredTrades": 20.0,
+            "damageBuff": 1,
+            "ceramicDamageBuff": 1,
+            "moabDamageBuff": 1,
+        }
+    )
+    buff = mod._map_tier(model)["buffs"][0]
+    assert buff["cashPerRoundPerMechantship"] == 10
+    assert buff["cashPerRoundPerFavouredTrades"] == 20
+    assert buff["damageAdditive"] == 1
+    assert buff["damageAdditiveForCeramic"] == 1
+    assert buff["damageAdditiveForMoabs"] == 1
