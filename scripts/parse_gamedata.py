@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -502,6 +503,52 @@ def _subtowers(model: dict) -> list[dict]:
     return out
 
 
+# Effect numbers we can decode directly off a ``*ZoneModel``. Only a few of the
+# 28 zone types carry one (slow %, cash multiplier, radius); the rest are
+# name/flag-only and fall back to a curated/textTable description (decode-status
+# step 5). We never fabricate a player-facing zone name — the dump's are
+# internal (``"SlowBloonsZoneModel_NonMoabs"``); curated names ("Arctic Wind")
+# stay owned by the wiki layer, so the audit aligns by name and ignores ours.
+_ZONE_NUMERIC_FIELDS: tuple[str, ...] = (
+    "speedScale",
+    "speedChange",
+    "multiplier",
+    "cashMultiplier",
+    "zoneRadius",
+    "radius",
+    "range",
+    "lifespan",
+)
+
+
+def _zones(model: dict) -> list[dict]:
+    """Start of zone decoding: each ``*ZoneModel`` in the tier's top-level
+    behaviors → a structured entry (kind + internal name + any decodable
+    effect number / bloon tag). Presence-and-number only; display names and the
+    long DESCRIPTION_ONLY tail are deferred (see ``btd6-gamedata-decode-status``).
+    """
+    out: list[dict] = []
+    for behavior in model.get("behaviors", []) or []:
+        if not isinstance(behavior, dict):
+            continue
+        short = _short_type(behavior)
+        if not short.endswith("ZoneModel"):
+            continue
+        entry: dict = {
+            "kind": short[: -len("Model")],
+            "name": _clean_name(behavior.get("name"), short),
+        }
+        for field_name in _ZONE_NUMERIC_FIELDS:
+            value = behavior.get(field_name)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[field_name] = _num(value)
+        tag = behavior.get("bloonTag")
+        if isinstance(tag, str) and tag:
+            entry["bloonTag"] = tag
+        out.append(entry)
+    return out
+
+
 def _map_tier(model: dict, _subtower: bool = False) -> dict:
     """A full tower-state model file → one cleaned tier node."""
     tier: dict = {}
@@ -528,6 +575,9 @@ def _map_tier(model: dict, _subtower: bool = False) -> dict:
         subtowers = _subtowers(model)
         if subtowers:
             tier["subtowers"] = subtowers
+    zones = _zones(model)
+    if zones:
+        tier["zones"] = zones
     tier.update(_target_types(model))
     income = _income(model)
     if income:
@@ -1444,6 +1494,105 @@ def overlay_all(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
     return report
 
 
+# ---------------------------------------------------------------------------
+# Maps — the dump's Maps/<Difficulty>/<Name>.json (MapDetails)
+# ---------------------------------------------------------------------------
+#
+# The dump organises every map under a difficulty folder and stores a small
+# MapDetails per map: ``difficulty`` (int, == folder), ``hasWater`` (naval
+# placement), ``theme``, ``isDebug``/``IsStandard`` (filter non-player maps).
+# Display names come from ``textTable`` (``"MushroomGrotto" -> "Mushroom
+# Grotto"``). The rich prose (``description`` / ``lines_of_sight_notes``) is
+# curated, so we *preserve* any existing curated text and derive a factual
+# fallback from ``hasWater`` for newly-added maps.
+
+_MAP_DIFFICULTY_DIRS = ("Beginner", "Intermediate", "Advanced", "Expert")
+
+
+def _snake(name: str) -> str:
+    """``"MushroomGrotto"`` / ``"#Ouch!"`` → ``"mushroom_grotto"`` / ``"ouch"``."""
+    spaced = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name)
+    return re.sub(r"[^0-9a-zA-Z]+", "_", spaced).strip("_").lower()
+
+
+def _decamel(name: str) -> str:
+    """Fallback display name when ``textTable`` lacks one: split CamelCase."""
+    spaced = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name)
+    return re.sub(r"[^0-9a-zA-Z]+", " ", spaced).strip() or name
+
+
+def _map_los(has_water: bool) -> str:
+    return (
+        "Has water tiles — naval towers (Monkey Sub, Monkey Buccaneer) can be placed."
+        if has_water
+        else "No water tiles — land-only tower placement."
+    )
+
+
+def _existing_maps() -> dict[str, dict]:
+    """Committed maps keyed by id — to preserve curated description / LoS / aliases."""
+    fp = _DATA_ROOT / "maps.json"
+    if not fp.exists():
+        return {}
+    try:
+        raw = json.loads(fp.read_text("utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return {
+        m["id"]: m for m in raw.get("maps", []) if isinstance(m, dict) and m.get("id")
+    }
+
+
+def map_maps(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every player map across the four difficulty folders → catalog rows.
+
+    Difficulty comes from the folder (authoritative — it even corrects stale
+    curated rows, e.g. Cornfield is Advanced, not the catalog's old "Beginner").
+    """
+    tt = _text_table(dump)
+    prior = _existing_maps()
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for difficulty in _MAP_DIFFICULTY_DIRS:
+        ddir = dump / "Maps" / difficulty
+        if not ddir.is_dir():
+            warnings.append(f"missing Maps/{difficulty}")
+            continue
+        for fp in sorted(ddir.glob("*.json")):
+            try:
+                raw = json.loads(fp.read_text("utf-8"))
+            except (OSError, json.JSONDecodeError):
+                warnings.append(f"unreadable {fp.name}")
+                continue
+            if raw.get("isDebug"):
+                continue  # non-player / debug map
+            stem = fp.stem
+            mid = _snake(stem)
+            if mid in seen:
+                warnings.append(f"duplicate map id {mid!r} ({stem})")
+                continue
+            seen.add(mid)
+            has_water = bool(raw.get("hasWater"))
+            old = prior.get(mid, {})
+            rows.append(
+                {
+                    "id": mid,
+                    "canonical": tt.get(stem) or _decamel(stem),
+                    "aliases": list(old.get("aliases", [])),
+                    "difficulty": difficulty,
+                    # Curated prose wins where present; otherwise a factual derive.
+                    "description": old.get("description")
+                    or f"{difficulty} map.{' Contains water.' if has_water else ''}",
+                    "lines_of_sight_notes": old.get("lines_of_sight_notes")
+                    or _map_los(has_water),
+                    "has_water": has_water,
+                },
+            )
+    rows.sort(key=lambda m: (_MAP_DIFFICULTY_DIRS.index(m["difficulty"]), m["id"]))
+    return rows, warnings
+
+
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -1482,6 +1631,11 @@ def main(argv: list[str] | None = None) -> int:
         "--descriptions",
         action="store_true",
         help="write game-authored textTable upgrade descriptions onto tower files",
+    )
+    ap.add_argument(
+        "--maps",
+        action="store_true",
+        help="rebuild maps.json from the dump's Maps/ folders (all difficulties)",
     )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
@@ -1522,6 +1676,24 @@ def main(argv: list[str] | None = None) -> int:
         print(f"descriptions: {verb} {len(report)} file(s), {total} description(s)\n")
         for rel in sorted(report):
             print(f"  {rel}  ({len(report[rel])} change(s))")
+        return 0
+
+    if args.maps:
+        version = _dump_version(dump)
+        rows, warnings = map_maps(dump, version)
+        payload = {
+            "data_version": "2.0",
+            "game_version": version,
+            "source": _SOURCE,
+            "maps": rows,
+        }
+        if args.dry_run:
+            print(json.dumps(payload, indent=2, ensure_ascii=False)[:1500])
+        else:
+            _write(_DATA_ROOT / "maps.json", payload)
+            print(f"wrote maps.json ({len(rows)} maps)")
+        for w in warnings:
+            print(f"  warning: {w}")
         return 0
 
     towers, heroes = build_allowlist(dump)

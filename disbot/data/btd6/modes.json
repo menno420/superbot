@@ -1,16 +1,117 @@
 {
-  "data_version": "1.0",
-  "game_version": "41.3",
-  "source": "Bloons Wiki — representative sample (Module 3 of AI/BTD6 plan)",
+  "data_version": "2.0",
+  "game_version": "55.0",
+  "source": "Curated (game modes are gameplay rules, not exported in the Mod Helper dump)",
   "modes": [
     {
       "id": "standard",
       "canonical": "Standard",
-      "aliases": ["easy_standard", "medium_standard", "hard_standard"],
+      "aliases": ["easy_standard", "medium_standard", "hard_standard", "normal"],
+      "starting_cash": 650,
+      "starting_lives": 150,
+      "description": "Default progression with all towers available. Round ranges by difficulty: Easy 1-40, Medium 1-60, Hard 1-80. Starting lives 200 (Easy) / 150 (Medium) / 100 (Hard).",
+      "restrictions": []
+    },
+    {
+      "id": "primary_only",
+      "canonical": "Primary Only",
+      "aliases": ["primary", "primary monkeys only"],
+      "starting_cash": 650,
+      "starting_lives": 200,
+      "description": "Easy-difficulty mode: only Primary-class towers may be placed.",
+      "restrictions": ["Only Primary-class towers (heroes still allowed)"]
+    },
+    {
+      "id": "deflation",
+      "canonical": "Deflation",
+      "aliases": ["deflate"],
+      "starting_cash": 20000,
+      "starting_lives": 200,
+      "description": "Easy-difficulty mode starting at round 31 with a fixed lump of cash and no income — win with what you can afford up front.",
+      "restrictions": [
+        "Starts at round 31",
+        "No income — popping bloons earns no cash",
+        "No selling towers"
+      ]
+    },
+    {
+      "id": "military_only",
+      "canonical": "Military Only",
+      "aliases": ["military"],
+      "starting_cash": 650,
+      "starting_lives": 150,
+      "description": "Medium-difficulty mode: only Military-class towers may be placed.",
+      "restrictions": ["Only Military-class towers (heroes still allowed)"]
+    },
+    {
+      "id": "apopalypse",
+      "canonical": "Apopalypse",
+      "aliases": ["apop", "apocalypse"],
+      "starting_cash": 650,
+      "starting_lives": 150,
+      "description": "Medium-difficulty mode: bloons stream in continuously with no round breaks and rounds cannot be started manually.",
+      "restrictions": ["Continuous bloon stream — no round breaks", "Cannot manually start rounds"]
+    },
+    {
+      "id": "reverse",
+      "canonical": "Reverse",
+      "aliases": ["reversed", "backwards"],
+      "starting_cash": 650,
+      "starting_lives": 150,
+      "description": "Medium-difficulty mode: bloons enter from the normal exit and travel the track in reverse.",
+      "restrictions": ["Bloons travel the track in reverse (enter from the exit)"]
+    },
+    {
+      "id": "magic_monkeys_only",
+      "canonical": "Magic Monkeys Only",
+      "aliases": ["magic", "magic only", "magic monkeys"],
       "starting_cash": 650,
       "starting_lives": 100,
-      "description": "Default progression. Rounds 1-40 (Easy), 3-60 (Medium), 3-80 (Hard).",
-      "restrictions": []
+      "description": "Hard-difficulty mode: only Magic-class towers may be placed.",
+      "restrictions": ["Only Magic-class towers (heroes still allowed)"]
+    },
+    {
+      "id": "double_hp_moabs",
+      "canonical": "Double HP MOABs",
+      "aliases": ["double moabs", "double hp", "dhm"],
+      "starting_cash": 650,
+      "starting_lives": 100,
+      "description": "Hard-difficulty mode: all MOAB-class bloons (MOAB, BFB, ZOMG, DDT, BAD) have double health.",
+      "restrictions": ["All MOAB-class bloons have double health"]
+    },
+    {
+      "id": "half_cash",
+      "canonical": "Half Cash",
+      "aliases": ["half", "halfcash"],
+      "starting_cash": 650,
+      "starting_lives": 100,
+      "description": "Hard-difficulty mode: all cash earned (from pops and income) is halved.",
+      "restrictions": ["All cash earned is halved"]
+    },
+    {
+      "id": "alternate_bloons_rounds",
+      "canonical": "Alternate Bloons Rounds",
+      "aliases": ["abr", "alternate", "alternate bloons"],
+      "starting_cash": 650,
+      "starting_lives": 100,
+      "description": "Hard-difficulty mode: rounds use an alternate, generally tougher bloon composition than the default round set.",
+      "restrictions": ["Uses the alternate (harder) round set"]
+    },
+    {
+      "id": "impoppable",
+      "canonical": "Impoppable",
+      "aliases": ["impop"],
+      "starting_cash": 650,
+      "starting_lives": 1,
+      "description": "Hard-difficulty endgame mode: rounds 6-100, 1 life, full bloon speed, higher tower prices, no continues and no Monkey Knowledge.",
+      "restrictions": [
+        "1 life",
+        "Rounds 6-100",
+        "Higher tower prices",
+        "100% bloon speed",
+        "No continues",
+        "No Monkey Knowledge"
+      ]
     },
     {
       "id": "chimps",
@@ -18,14 +119,24 @@
       "aliases": ["chimp", "chimp mode"],
       "starting_cash": 650,
       "starting_lives": 1,
-      "description": "Hard-mode endgame challenge. 1 life, no continues, no income towers, no powers.",
+      "description": "Hard-mode endgame challenge. The acronym: no Continues, Hearts lost (1 life), Income, Monkey knowledge, Powers, or Selling.",
       "restrictions": [
-        "No income (no banana farms or city)",
-        "No abilities outside what towers already provide",
-        "No powers / monkey knowledge bonuses",
         "No continues",
+        "1 life (any leak loses the run)",
+        "No income (no Banana Farm / Monkey City cash generation)",
+        "No Monkey Knowledge",
+        "No powers",
         "No selling towers"
       ]
+    },
+    {
+      "id": "sandbox",
+      "canonical": "Sandbox",
+      "aliases": ["practice", "freeplay sandbox"],
+      "starting_cash": 9999999,
+      "starting_lives": 9999999,
+      "description": "Practice mode with unlimited cash and lives for testing tower placements and interactions.",
+      "restrictions": ["Unlimited cash and lives (practice only — no rewards)"]
     }
   ]
 }

@@ -243,7 +243,9 @@ def test_subtower_does_not_recurse_into_nested_spawns(mod):
 def test_subtower_name_strips_trailing_level(mod):
     assert mod._clean_subtower_name({"name": "MasquedMacaque 10"}) == "MasquedMacaque"
     assert mod._clean_subtower_name({"name": "Phoenix"}) == "Phoenix"
-    assert mod._clean_subtower_name({"displayName": "Sun God", "name": "X"}) == "Sun God"
+    assert (
+        mod._clean_subtower_name({"displayName": "Sun God", "name": "X"}) == "Sun God"
+    )
 
 
 def test_tier_placement_target_and_footprint(mod):
@@ -747,3 +749,122 @@ def test_apply_upgrade_descriptions_texttable_fallback_by_curated_name(mod):
     c2 = {"upgrades": [{"path": 3, "tier": 5, "name": "Reanimate"}]}
     assert mod.apply_upgrade_descriptions(c2, {"upgrades": []}, tt) == []
     assert "description" not in c2["upgrades"][0]
+
+
+# --- maps (synthetic Maps/<Difficulty>/<Name>.json on tmp_path) --------------
+
+
+def test_snake_and_decamel(mod):
+    assert mod._snake("MushroomGrotto") == "mushroom_grotto"
+    assert mod._snake("#Ouch!") == "ouch"
+    assert mod._snake("Logs") == "logs"
+    assert mod._decamel("CastleRevenge") == "Castle Revenge"
+    assert mod._decamel("HighFinance") == "High Finance"
+
+
+def _map_details(*, difficulty: int, has_water: bool, debug: bool = False) -> dict:
+    return {
+        "$type": "Il2Cpp….MapDetails, Assembly-CSharp",
+        "difficulty": difficulty,
+        "hasWater": has_water,
+        "theme": 0,
+        "isDebug": debug,
+        "IsStandard": True,
+    }
+
+
+def _make_maps_dump(tmp_path: Path) -> Path:
+    dump = tmp_path / "dump"
+    (dump / "Towers").mkdir(
+        parents=True
+    )  # map_maps doesn't need it, but be dump-shaped
+    _write(
+        dump / "Maps" / "Beginner" / "Logs.json",
+        _map_details(difficulty=0, has_water=True),
+    )
+    _write(
+        dump / "Maps" / "Advanced" / "MushroomGrotto.json",
+        _map_details(difficulty=2, has_water=False),
+    )
+    _write(
+        dump / "Maps" / "Expert" / "DebugMap.json",
+        _map_details(difficulty=3, has_water=False, debug=True),
+    )
+    (dump / "Maps" / "Intermediate").mkdir(parents=True)  # present but empty
+    _write(
+        dump / "textTable.json", {"MushroomGrotto": "Mushroom Grotto", "Logs": "Logs"}
+    )
+    return dump
+
+
+def test_map_maps_extracts_difficulty_water_and_names(mod, tmp_path, monkeypatch):
+    monkeypatch.setattr(mod, "_existing_maps", dict)  # isolate from committed prose
+    dump = _make_maps_dump(tmp_path)
+    rows, warnings = mod.map_maps(dump, "55.0")
+    assert warnings == []
+    by_id = {r["id"]: r for r in rows}
+    # debug map filtered out
+    assert "debug_map" not in by_id and len(rows) == 2
+    assert by_id["logs"]["difficulty"] == "Beginner"
+    assert by_id["logs"]["has_water"] is True
+    assert "naval" in by_id["logs"]["lines_of_sight_notes"].lower()
+    # difficulty comes from the folder; display name from textTable
+    assert by_id["mushroom_grotto"]["difficulty"] == "Advanced"
+    assert by_id["mushroom_grotto"]["canonical"] == "Mushroom Grotto"
+    assert by_id["mushroom_grotto"]["has_water"] is False
+    assert "no water" in by_id["mushroom_grotto"]["lines_of_sight_notes"].lower()
+
+
+def test_map_maps_preserves_curated_prose(mod, tmp_path, monkeypatch):
+    dump = _make_maps_dump(tmp_path)
+    # Pretend a curated row already exists for logs with hand-written prose.
+    monkeypatch.setattr(
+        mod,
+        "_existing_maps",
+        lambda: {
+            "logs": {
+                "id": "logs",
+                "description": "Single river-and-logs track.",
+                "lines_of_sight_notes": "Open central area.",
+                "aliases": ["log"],
+            }
+        },
+    )
+    rows, _ = mod.map_maps(dump, "55.0")
+    logs = next(r for r in rows if r["id"] == "logs")
+    assert logs["description"] == "Single river-and-logs track."  # curated kept
+    assert logs["aliases"] == ["log"]
+    assert logs["difficulty"] == "Beginner"  # but difficulty still from the dump
+
+
+# --- zones (first decode slice) ---------------------------------------------
+
+
+def test_zones_decode_slow_and_radius(mod):
+    # Mirrors Ice Monkey's Arctic Wind in the v55 dump (slow to 60% speed, r=25).
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("SlowBloonsZoneModel"),
+            "name": "SlowBloonsZoneModel",
+            "speedScale": 0.6,
+            "zoneRadius": 25.0,
+            "bloonTag": "Moabs",
+        }
+    )
+    tier = mod._map_tier(model)
+    assert tier["zones"] == [
+        {
+            # name is the dump's internal label (no curated "Arctic Wind" exists)
+            "kind": "SlowBloonsZone",
+            "name": "SlowBloonsZoneModel",
+            "speedScale": 0.6,
+            "zoneRadius": 25,
+            "bloonTag": "Moabs",
+        }
+    ]
+
+
+def test_zones_absent_when_no_zone_models(mod):
+    # A plain attacker has no zones[] key at all (not an empty list).
+    assert "zones" not in mod._map_tier(_tower_model())

@@ -803,9 +803,10 @@ _BTD6_MAP_LOOKUP_SPEC = AIToolSpec(
     name="btd6_map_lookup",
     description=(
         "BTD6 map info: difficulty (Beginner / Intermediate / Advanced / Expert), "
-        "description, and line-of-sight notes. Pass a map name to look one up, or "
-        "omit it to list every map with its difficulty (use for 'which maps are "
-        "beginner', 'is Logs beginner', 'list the maps')."
+        "whether the map has water (naval-tower placement), description, and "
+        "line-of-sight notes. Pass a map name to look one up, or omit it to list "
+        "every map with its difficulty (use for 'which maps are beginner', 'is "
+        "Logs beginner', 'which maps have water', 'list the maps')."
     ),
     parameters={
         "type": "object",
@@ -827,6 +828,7 @@ def _map_dict(entry: Any) -> dict[str, Any]:
         "difficulty": entry.difficulty,
         "description": entry.description,
         "line_of_sight_notes": entry.lines_of_sight_notes,
+        "has_water": entry.has_water,
     }
 
 

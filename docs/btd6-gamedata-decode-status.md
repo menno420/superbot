@@ -9,6 +9,27 @@ works** (the traps we hit), and what is still un-decoded.
 
 ## ⭐ Next session — start here (updated 2026-06-04, end of v55 session)
 
+### Session log — maps + modes cutover + zone decode started
+
+- **Maps — full game-data cutover (3 → 89).** `parse_gamedata.py --maps` rebuilds
+  `maps.json` from the dump's `Maps/<Difficulty>/` folders. Difficulty is taken
+  from the folder (authoritative — it corrected stale curated rows, e.g.
+  Cornfield was mis-tagged "Beginner", is actually **Advanced**); display names
+  from `textTable`; new `has_water` fact wired through `MapEntry` →
+  `btd6_map_lookup` (the bot can now answer "which maps have water"). Curated
+  prose (`description`/`lines_of_sight_notes`) is preserved where it existed.
+- **Modes — full set (2 → 13).** The dump has **no** game-mode rules (starting
+  cash/lives/restrictions are gameplay code, not exported assets — confirmed: only
+  `rogueData` carries `startingLives`, and `textTable` has mode *names* but not
+  cleanly-keyed descriptions). So `modes.json` is **curated** from established
+  facts: Standard, Primary/Military/Magic Only, Deflation, Apopalypse, Reverse,
+  Double HP MOABs, Half Cash, ABR, Impoppable, CHIMPS, Sandbox.
+- **Zones — decode started.** `_zones()` emits every top-level `*ZoneModel` as a
+  structured `{kind, name, + decodable numbers}` (Ice Arctic Wind →
+  `speedScale 0.6`, `zoneRadius 25`), wired into `_map_tier` and audit-safe.
+  Remaining: the per-type effect tail, zones nested in sub-towers, and curated
+  display names (not in the dump). See the 🟡 table.
+
 ### Operating lesson (binding — survives the session boundary)
 
 **Green tests are not the verdict; live Discord behavior is.** "Done" means
@@ -381,22 +402,19 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | Ability names via **`displayName`** | mapper | #466; 87/87 abilities carry it |
 | Upgrade **descriptions** via `LocsKey`→`textTable` (extraction) | mapper | #466; extracts wherever the game localizes one (≈422 player upgrade cards) |
 | Core per-tier numeric extraction: base_cost, category, upgrade cost/xp/path/tier, damage, pierce, rate, range, radius, speed, lifespan, immunities→type | mapper | audit: roster is DELTA/CLEAN, nothing SUSPECT |
+| **Maps — full game-data cutover (89)** | `parse_gamedata.py --maps` → `maps.json` | this session; difficulty from the dump's folder (corrects stale curated rows, e.g. Cornfield → Advanced), names via `textTable`, `has_water` wired into `MapEntry` + `btd6_map_lookup`. Curated prose preserved where present. 89 maps load + tests green |
+| **Modes — full set (13)** | curated `modes.json` | this session; the dump has **no** game-mode rules (cash/lives/restrictions live in game code, not assets), so authored from established facts: Standard, Primary/Military/Magic Only, Deflation, Apopalypse, Reverse, Double HP MOABs, Half Cash, ABR, Impoppable, CHIMPS, Sandbox |
 
 ### 🟡 Partial — NOT complete
 
 | Item | Done | Missing |
 |---|---|---|
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
+| **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started
-
-- **Zones** (`zones[]`) — **0 of 28** zone model types mapped. *(Corrected
-  2026-06-03: this doc previously said "0 of 12". The v55 dump carries **28**
-  distinct `*ZoneModel` `$type`s inline in tower behaviors — see the SHA-pinned
-  report `docs/btd6-decode-inventory-v55.md` §3a, the live ground truth. The
-  old "12" was an undercount; do not inherit it.)*
 - **Buffs** (`buffs[]`) — **0 of 38** buff/support model types mapped.
   *(Corrected from "37"; the dump has 38 distinct `*SupportModel`/`*BuffModel`
   `$type`s — report §3b. Close to the prior figure but not equal.)*
