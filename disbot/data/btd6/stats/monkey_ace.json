@@ -37,7 +37,8 @@
       "tier": 4,
       "name": "Operation: Dart Storm",
       "cost": 3300,
-      "xp": 8000
+      "xp": 8000,
+      "description": "Shoots 16 darts per volley, and twice as fast."
     },
     {
       "path": 1,

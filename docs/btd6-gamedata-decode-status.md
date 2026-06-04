@@ -5,6 +5,93 @@ game-data dump** (`github.com/Btd6ModHelper/btd6-game-data`, v55.0). Start here
 to pick up the work: it records what's done, **how the dump's data actually
 works** (the traps we hit), and what is still un-decoded.
 
+---
+
+## ⭐ Next session — start here (updated 2026-06-04, end of v55 session)
+
+### Operating lesson (binding — survives the session boundary)
+
+**Green tests are not the verdict; live Discord behavior is.** "Done" means
+**extracted + reachable + answerable live, verified** — not committed, not
+test-green. **`extracted ≠ reachable ≠ answerable`** are three different states,
+and *most of this session's bugs lived in the gaps between them*: data was in a
+committed file (extracted) but a renderer dropped it or the resolver couldn't
+reach the entity (not reachable), or it reached the model but was mislabeled /
+the model asserted a false negative (not answerable). Verify the user-facing
+answer, not the unit test.
+
+### Prioritized tasks
+
+1. **Absence-claim guard — DESIGN FIRST, do NOT implement blind.** *The session's
+   most important discovery and the faithfulness mission's real frontier.* The
+   verifier catches ungrounded **numbers/names** but **not absence claims** — the
+   bot can fluently, version-stampedly say *"Ultra-Juggernaut has no damage
+   multipliers"* when it does, and nothing stops it. A fluent false "no" is worse
+   than a refusal: it looks authoritative. **Why next:** it is the core of the
+   faithfulness mission and currently wide open in *every* domain (auto-grounding
+   from #478 only mitigates the upgrade-modifier path). **How:** a design-doc +
+   Decisions task *before any code* — verifying a negative generally means
+   forcing a lookup before an absence assertion is allowed, which has latency and
+   false-positive costs that need a deliberate decision. **Definition of done:** a
+   written design proposal reviewed on the ChatGPT/Analysis side — **not** a
+   merged guard.
+
+2. **Finish the reachability sweep while the pattern is hot.** Two tool-gaps over
+   already-committed data, same shape as the rounds/maps/modes fixes that worked:
+   a **CT-relic roster/filter** tool (only named lookup today) and a
+   **bloon-property filter** ("which bloons are camo / lead / fortified?").
+   **Why next:** cheap, proven pattern, closes live refusals. **How:** read-only
+   service fn + tool spec/handler + add to `BTD6_GROUNDING_TOOL_NAMES`, each with
+   a **live** Discord confirmation of its example question. **Definition of done:**
+   reachable by tool **and answerable live** — not test-green.
+
+3. **Step 5 numeric slice 2 — registry-gated, one `$type` at a time. Never
+   bulk-write.** Use the **Decode-class** registry now in the inventory report
+   (`btd6-decode-inventory-v55.md` §3 / `_DECODE_CLASS`). Order: start with
+   `SAFE_WRITE` additive types (`PierceSupport`, `RateSupport`); do `SCHEMA_FIRST`
+   for `ProjectileSpeed` / `Visibility` etc. (extend the buff schema + dataclasses
+   + renderers + tests **before** writing any data); **DEFER** the ambiguous
+   `RangeSupport.multiplier` until examples prove its semantics. **Why next:** the
+   decoded-effect half of the end goal, now de-risked by the classification.
+   **How:** per `$type` — verify its number individually vs a committed example,
+   write additively (never clobber curated buffs), wire through the existing
+   `buffs[]`/`zones[]` grounding. **Definition of done per slice:** extracted +
+   committed + retrievable by tool + **verified live** + the per-`$type` number
+   verified individually + schema changes conform to the architecture /
+   registry-snapshot invariants (expect one to bite — conform, don't fight).
+
+4. **Subtower tail** — `MorphTowerModel` named-ref (Alchemist "Transformed
+   Monkey") + `BeastHandlerPetModel` (Beast Handler pets), still missing. **Why:**
+   required before any game-native tower cutover. **Definition of done:** both
+   spawn mechanisms emit subtowers, answerable live.
+
+### Verification status (this session)
+
+> **Live-Discord verification was NOT possible from the build sandbox** (no bot
+> session). The items below are **code/behavior-confirmed** through the real
+> service paths but **UNVERIFIED live** — the next session/maintainer must run
+> the exact checks in Discord before marking them done.
+
+| Item | Code-confirmed | UNVERIFIED-live — exact manual check |
+|---|---|---|
+| Refusal stamps v55 | `_btd6_game_version()` → `55.0` | Ask an ungroundable BTD6 question; the refusal must read "(55.0)", not 54.0. |
+| Damage modifiers ground | `grounding_for_query("ultra jug")` → "+20 damage vs Lead, +8 damage vs Ceramic, +5 damage vs Fortified" | Ask "what are Ultra-Juggernaut's damage multipliers / bonus vs Lead/Ceramic" — must return those numbers, not "no multipliers". |
+| Poplust % render | `_buff_text({ratePercentage:0.15})` → "15% attack speed" | Ask about Druid Poplust's buff — must read +15% (pierce/attack-speed), not +0.15%. |
+| Round/map/mode tools | `round_composition(35,70,'purple')`→290; Logs→Beginner; CHIMPS→cash 650 | Ask "how many purples in rounds 35-70" (→290), "which maps are beginner", "CHIMPS restrictions". |
+
+### Provenance decision (recorded, not auto-applied)
+
+Top-level fixtures stamp **55.0** (the user-facing dataset version, read by the
+refusal). The per-file `stats/*.json` `game_version` stays **mixed** (v46.3–55.0)
+on purpose — it is the *source vintage* (when those numbers were last sourced by
+the overlay), not a correctness claim. A blanket re-stamp to 55.0 was **declined**:
+the `--audit` is per-**field**, not per-file, so there is no clean per-file gate,
+and re-stamping unchanged bloonswiki files would falsely claim re-sourcing. A file
+is re-stamped only when `--overlay`/`--all` actually re-sources it. *(Open nit: 2
+economy files have an empty stamp — decide a value on the next real re-source.)*
+
+---
+
 > Companion docs — read alongside:
 > - **`btd6-gamedata-native-schema.md`** — *the game-native storage design & cutover map* (game data leads; how to store the game's structure displayably).
 > - **`btd6-gamedata-dictionary.md`** — *what data exists and where* (domains, the textTable linkage).
@@ -132,8 +219,6 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
   `$type`s — report §3b. Close to the prior figure but not equal.)*
 - **Economy-tower attack suppression** (Banana Farm shows a nominal AttackModel).
 - **The towers cutover itself** — blocked on zones + buffs + the subtower tail.
-- **Descriptions consumed by the runtime** — extracted into upgrade data, but
-  not yet wired into grounding / the detail UI.
 - **Bloons / bosses game-native ingestion** (still wiki-sourced).
 - **Powers / Knowledge / Rounds (all modes) / IncomeSets ingestion.**
 - **Paragon overlay / cutover** (combat in a `base` node, not `tiers`/`levels`).

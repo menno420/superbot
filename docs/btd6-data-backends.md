@@ -65,7 +65,7 @@ file backend for ~6 MB of cosmetic savings, so we don't.)
 
 `btd6_data_service` (the 9 fixtures) and `btd6_stats_service` (the per-entity
 `stats/` tree, the 5.8 MB bulk) both read through the provider, so the whole
-data set honours `BTD6_DATA_BACKEND`. `!btd6ops seed-data` loads all 53 blobs
+data set honours `BTD6_DATA_BACKEND`. `!btd6ops seed-data` loads all 64 blobs
 into the table in one go.
 
 ## CI hermeticity

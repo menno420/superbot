@@ -169,13 +169,14 @@ def test_description_line_present_even_with_combat_stats():
     assert "in-game description" in lines[1]
 
 
-def test_missing_description_grounds_no_phantom_line():
-    # 2 of 375 cards have no textTable Description (the mapper under-emits the
-    # node). The grounding must simply omit the prose line — never invent one —
-    # while still surfacing the combat stats.
+def test_under_emitted_card_description_filled_via_texttable_fallback():
+    # The 2 cards the mapper under-emits (Ace "Operation: Dart Storm", Wizard
+    # "Necromancer: Unpopped Army") now get their description from the textTable
+    # "<curated name> Description" fallback — 375/375 cards carry prose.
     lines = det.grounding_for_query("Operation Dart Storm")
-    assert lines  # still grounds
-    assert not any("in-game description" in ln for ln in lines)
+    desc = [ln for ln in lines if "in-game description" in ln]
+    assert len(desc) == 1
+    assert "16 darts" in desc[0]
     assert any("main attack" in ln for ln in lines)
 
 

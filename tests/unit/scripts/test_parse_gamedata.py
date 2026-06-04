@@ -732,3 +732,18 @@ def test_apply_hero_descriptions_skips_empty(mod):
     mapped = {"levels": {"1": {"description": ""}}}
     assert mod.apply_hero_descriptions(committed, mapped) == []
     assert "description" not in committed["levels"]["1"]
+
+
+def test_apply_upgrade_descriptions_texttable_fallback_by_curated_name(mod):
+    # The 2 cards the mapper under-emits: fall back to the game's
+    # "<curated name> Description" when the mapped payload has none.
+    committed = {"upgrades": [{"path": 1, "tier": 4, "name": "Operation: Dart Storm"}]}
+    mapped = {"upgrades": []}  # mapper emitted nothing for this node
+    tt = {"Operation: Dart Storm Description": "Shoots 16 darts per volley."}
+    changes = mod.apply_upgrade_descriptions(committed, mapped, tt)
+    assert committed["upgrades"][0]["description"] == "Shoots 16 darts per volley."
+    assert len(changes) == 1
+    # An editorial name not in the textTable stays empty (never invented).
+    c2 = {"upgrades": [{"path": 3, "tier": 5, "name": "Reanimate"}]}
+    assert mod.apply_upgrade_descriptions(c2, {"upgrades": []}, tt) == []
+    assert "description" not in c2["upgrades"][0]

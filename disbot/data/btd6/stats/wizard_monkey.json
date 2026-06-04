@@ -117,7 +117,8 @@
       "tier": 4,
       "name": "Necromancer: Unpopped Army",
       "cost": 2800,
-      "xp": 10000
+      "xp": 10000,
+      "description": "Reanimate recently popped enemies as servants that can destroy Bloons of any type."
     },
     {
       "path": 3,
