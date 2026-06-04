@@ -335,6 +335,22 @@ async def test_build_grounds_tower_upgrade_descriptions():
     assert all("(source: BTD6 in-game description)" in f for f in desc_lines)
 
 
+async def test_build_grounds_tower_costs_all_difficulties_and_cumulative():
+    # Live grounding_failed: "list upgrade prices for super monkey" — build()
+    # carried only the Medium per-buy price, so the model's all-difficulty /
+    # cumulative table emitted derived numbers that weren't grounded. Every
+    # derived number is now a [btd6_cost] line (header + base + 15 upgrades).
+    ctx = await btd6_context_service.build("list me upgrade prices for super monkey")
+    cost = [f for f in ctx.facts if f.startswith("[btd6_cost]")]
+    assert len(cost) == 17
+    blob = "\n".join(cost)
+    # base scales per the documented multipliers (Easy = round5(2500 * 0.85)).
+    assert "base placement: Easy $2,125, Medium $2,500" in blob
+    # True Sun God Impoppable per-buy = round5(500000 * 1.2) = 600,000 — the kind
+    # of derived figure that previously got rejected.
+    assert "True Sun God" in blob and "I$600,000" in blob
+
+
 async def test_build_ignores_non_upgrade_text():
     # A plain greeting must not spuriously ground an upgrade.
     ctx = await btd6_context_service.build("hello there")

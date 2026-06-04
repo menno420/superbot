@@ -123,12 +123,17 @@ game-data dump clone**, so this session did the work that is verifiable here and
     `_render_upgrade_descriptions` (mirrors `_render_hero_descriptions`): every
     described card now grounds as a `[btd6_upgrade]` line. Verified in-sandbox
     (super monkey: 15/15 attached). *Live-owed: the re-ask must now answer.*
-  - **Gap B — derived prices (still open).** "list upgrade prices" failed even
+  - **Gap B — derived prices (FIXED).** "list upgrade prices" failed even
     though MEDIUM prices are grounded, because the model elaborated into
     *difficulty-scaled/cumulative* prices it didn't route through the cost tools
-    → `grounding_failed`. The derived-value family (finding §5.2); fix is the
-    auto-attached cost grounding, **scope still to confirm** (every tower Q vs
-    cost-intent only).
+    → `grounding_failed`. Maintainer chose the broad scope (**every tower
+    question**). Added `_render_tower_costs`: every resolved tower now grounds a
+    `[btd6_cost]` block — base + each upgrade's **per-buy** (Easy/Med/Hard/Impop)
+    **and cumulative** (base+priors) cost, reusing the tested
+    `cumulative_upgrade_costs` engine. So the all-difficulty / total-cost tables
+    are grounded by construction, with no dependence on the model calling a tool.
+    Verified in-sandbox (super monkey: 17 lines; True Sun God Impoppable per-buy
+    $600,000; numbers reconcile). *Live-owed: the re-ask must now answer.*
 - **Round "heaviest waves" ranker — FIXED.** `round_composition` now returns a
   pre-ranked `heaviest` (by count, with a bloon) / `heaviest_by_rbe` (by RBE,
   without), ranked over the **full** range before the detail cap, so the model
