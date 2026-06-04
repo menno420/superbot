@@ -35,6 +35,9 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_round_composition",
         "btd6_map_lookup",
         "btd6_mode_lookup",
+        "btd6_relic_lookup",
+        "btd6_bloon_filter",
+        "btd6_cumulative_cost",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -312,6 +315,9 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_round_composition",
         "btd6_map_lookup",
         "btd6_mode_lookup",
+        "btd6_relic_lookup",
+        "btd6_bloon_filter",
+        "btd6_cumulative_cost",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -627,7 +633,9 @@ async def test_btd6_capability_lookup_paragon_camo_split():
 async def test_btd6_round_composition_aggregates_a_bloon_over_a_range():
     # The live-refused question: "how many purples in rounds 35-70".
     h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
-    r = await h["btd6_round_composition"]({"round_start": 35, "round_end": 70, "bloon": "purples"})
+    r = await h["btd6_round_composition"](
+        {"round_start": 35, "round_end": 70, "bloon": "purples"}
+    )
     assert r["found"] is True
     assert r["bloon"] == "Purple Bloon"
     assert r["total"] == 290
@@ -641,7 +649,9 @@ async def test_btd6_round_composition_single_round_full_list_and_errors():
     assert one["found"] is True and one["rounds"][0]["round"] == 63
     assert one["rounds"][0]["groups"]
     assert (await h["btd6_round_composition"]({"round_start": 999}))["found"] is False
-    assert (await h["btd6_round_composition"]({"round_start": 35, "bloon": "flarp"}))["found"] is False
+    assert (await h["btd6_round_composition"]({"round_start": 35, "bloon": "flarp"}))[
+        "found"
+    ] is False
     assert (await h["btd6_round_composition"]({"round_start": "x"}))["found"] is False
 
 
@@ -662,3 +672,90 @@ async def test_btd6_mode_lookup_single_and_roster():
     assert chimps["mode"]["restrictions"]
     roster = await h["btd6_mode_lookup"]({})
     assert roster["found"] is True and roster["count"] == len(roster["modes"]) >= 2
+
+
+async def test_btd6_round_composition_ranks_heaviest_rounds():
+    # Live bug: the model named r55/r50 the "heaviest" ceramic waves and skipped
+    # the larger r76/r78/r74. The tool now ranks them so the model never re-sorts.
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    r = await h["btd6_round_composition"](
+        {"round_start": 30, "round_end": 80, "bloon": "ceramic"},
+    )
+    counts = [e["count"] for e in r["heaviest"]]
+    assert counts == sorted(counts, reverse=True)  # genuinely ranked, not round order
+    assert [(e["round"], e["count"]) for e in r["heaviest"][:3]] == [
+        (78, 147),
+        (74, 135),
+        (63, 122),
+    ]
+    ranked = [e["round"] for e in r["heaviest"]]
+    assert ranked.index(76) < ranked.index(55)  # the exact miss from the live run
+    # Without a bloon, the heaviest rounds are ranked by RBE.
+    full = await h["btd6_round_composition"]({"round_start": 30, "round_end": 80})
+    rbes = [e["rbe"] for e in full["heaviest_by_rbe"]]
+    assert rbes == sorted(rbes, reverse=True)
+
+
+async def test_btd6_relic_lookup_single_category_and_roster():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    sms = await h["btd6_relic_lookup"]({"relic": "Super Monkey Storm"})
+    assert sms["found"] is True and sms["relic"]["effect"]
+    offense = await h["btd6_relic_lookup"]({"category": "offense"})
+    assert offense["found"] is True
+    assert offense["count"] == len(offense["relics"]) >= 1
+    assert all(r["category"] == "offense" for r in offense["relics"])
+    roster = await h["btd6_relic_lookup"]({})
+    assert roster["found"] is True and roster["count"] == len(roster["relics"]) >= 24
+    assert (await h["btd6_relic_lookup"]({"relic": "nope-not-a-relic"}))[
+        "found"
+    ] is False
+    assert (await h["btd6_relic_lookup"]({"category": "bogus"}))["found"] is False
+
+
+async def test_btd6_bloon_filter_traits_and_modifier_note():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    camo = await h["btd6_bloon_filter"]({"property": "camo"})
+    assert camo["found"] is True
+    assert "DDT" in {b["name"] for b in camo["bloons"]}  # inherently camo
+    # The Camo *modifier* is surfaced separately so the answer isn't a closed set.
+    assert camo.get("modifiers") and all(
+        m["applies_broadly"] for m in camo["modifiers"]
+    )
+    lead = await h["btd6_bloon_filter"]({"property": "lead"})
+    assert {"Lead Bloon", "DDT"} <= {b["name"] for b in lead["bloons"]}
+    moab = await h["btd6_bloon_filter"]({"property": "moab"})  # synonym -> moab-class
+    assert moab["count"] == 5
+    immune = await h["btd6_bloon_filter"]({"immune": "Explosion"})
+    assert {"Black Bloon", "DDT"} <= {b["name"] for b in immune["bloons"]}
+    assert (await h["btd6_bloon_filter"]({"property": "nonsense-tag"}))[
+        "found"
+    ] is False
+    roster = await h["btd6_bloon_filter"]({})
+    assert roster["count"] >= 1 and roster["bloons"]
+
+
+async def test_btd6_cumulative_cost_sums_base_plus_priors_per_difficulty():
+    # Live `grounding_failed` case: "total cost to reach every upgrade, base +
+    # all earlier costs". The model couldn't ground the derived sum; the tool
+    # makes the total a grounded output. Pinned to the published Tack Shooter
+    # table (top path -> Inferno Ring): Medium 50,310; Easy 42,760 (the per-item
+    # rounding makes sum-then-scale give the wrong 42,765).
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    med = await h["btd6_cumulative_cost"]({"tower": "Tack Shooter", "path": "top"})
+    assert med["found"] is True and med["difficulty"] == "medium"
+    top = med["paths"]["top"]
+    assert top[0]["cumulative_cost"] == 410  # 260 base + 150
+    assert top[-1]["name"] == "Inferno Ring"
+    assert top[-1]["cumulative_cost"] == 50310
+    easy = await h["btd6_cumulative_cost"](
+        {"tower": "Tack Shooter", "difficulty": "easy", "path": "top"},
+    )
+    assert easy["base_cost"] == 220
+    assert easy["paths"]["top"][-1]["cumulative_cost"] == 42760  # not 42765
+    # Whole-tower (all three paths) + error paths.
+    full = await h["btd6_cumulative_cost"]({"tower": "Tack Shooter"})
+    assert set(full["paths"]) == {"top", "mid", "bot"}
+    assert (await h["btd6_cumulative_cost"]({"tower": "nope"}))["found"] is False
+    assert (
+        await h["btd6_cumulative_cost"]({"tower": "Tack Shooter", "difficulty": "x"})
+    )["found"] is False
