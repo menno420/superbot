@@ -41,19 +41,19 @@ works** (the traps we hit), and what is still un-decoded.
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
    plus the `NameDowngradeError` name guard.
-6. **Map removable / blocker / destructible-object data** (NEW backlog target;
-   independent of the tower cutover; priority high-medium, *after* the live
-   phrasing/refusal fixes). A live test confirmed `which maps have water` now
-   answers from verified `has_water`, but `list maps with removables` has no
-   data: `MapEntry` / `maps.json` model only `difficulty`, `has_water`, and
-   `lines_of_sight_notes`. `map_maps()` reads only `hasWater` / `isDebug` from
-   each `Maps/<difficulty>/*.json` blob — so first **inspect a dump blob** for a
-   removable/obstacle field; if present, add a `removables` field to `MapEntry`
-   + the mapper + `_map_dict` (the `btd6_map_lookup` projection), verified
-   against in-game truth per the standing discipline (do **not** invent it).
-   Until then the bot states the gap rather than naming maps from memory — see
-   the "Unsupported BTD6 areas" clause in
-   `ai_instruction_service._TASK_CONTRACT`.
+6. **Map removable / blocker / destructible-object data — INVESTIGATED; NOT
+   extractable from this dump (closed; needs a different source).** The live
+   test that opened this (`list maps with removables`) is correctly handled by
+   the "Unsupported BTD6 areas" clause in `ai_instruction_service._TASK_CONTRACT`
+   (the bot states the gap rather than naming maps from memory). Checked the v55
+   dump directly: `Maps/<difficulty>/*.json` carry only catalog metadata
+   (`difficulty`, `hasWater`, `theme`, `mapMusic`, `mapSprite`, `odysseyStatue`,
+   `coopMapDivisionType`, `unlockDifficulty`) — **0 of 89 maps** name a
+   removable/obstacle, and a whole-dump grep finds only UI strings (`"Removable
+   Cost"`, `ft_trackremovable*`) and Unity asset refs (`Removables/*.prefab`).
+   Per-map removable **placement/cost** lives in the AssetBundle map scenes,
+   which are not in this JSON export — so removables cannot be sourced here.
+   Re-open only with a different source (wiki, or a scene-data export).
 
 **Binding discipline for every decode step:**
 - Re-validate anchors first (`--validate-anchors`); if they fail the dump moved → stop.
@@ -63,6 +63,40 @@ works** (the traps we hit), and what is still un-decoded.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-04 (dump re-validation: confirmable data mapping is caught up)
+
+Cloned the v55 dump (`Btd6ModHelper/btd6-game-data` @ `a3348a89` — the pinned
+commit; `main` is still there, no drift) and re-ran the pipeline end to end.
+**The confirmable data mapping is caught up; the remaining frontier is genuinely
+cutover-gated.** Evidence:
+
+- **Anchors pass; `--audit` is nothing-SUSPECT** against the fresh dump.
+- **`--overlay --dry-run`, `--descriptions --dry-run`, and `--maps` are all
+  no-ops / byte-identical** → committed tower/hero/map data is fully in sync with
+  v55. There is no pending value to refresh.
+- **Buff decode tail (step 1) — re-confirmed exhausted via a roster-wide
+  discovery.** Of ~24 undecoded `*SupportModel`/`*BuffModel` types, **none is
+  value-confirmable now**: most (`RangeSupportModel` ×134, `PierceSupportModel`
+  ×60, `MonkeyCityIncome`/`ProjectileSpeed`/`ProjectileRadius`/`FreezeDuration`/
+  `Pyrotechnics`/`BananaCashIncrease`…) have **no committed `buffs[]` counterpart**
+  on a matching tier to verify against; the only two with a committed match
+  (`DamageModifierSupportModel`, `TargetSupplierSupportModel`) match **only** on
+  the trivial `customRadius/maxStackSize=0` — their real effect
+  (`damageAdditiveForBad`, `rateMultiplier`) lives in a *different* model, so
+  there is no raw number to confirm. The `SCHEMA_FIRST` set carries a direct
+  multiplier but with **no committed value and direction/transform ambiguity**
+  (is `0.25` ×0.25 or +25%?), so it can't be confirmed pre-cutover either. Holds
+  the standing rule: **do not write a number you can't confirm.**
+- **`theme`/`coopMapDivisionType`/`unlockDifficulty` are opaque integer enums**
+  (`theme` is 0–6) with no in-dump label source → not decodable without a
+  confirmed mapping (would be guessing).
+- **Removables: not in this dump** (see step 6 below) — closed.
+
+**Net:** the next real data-mapping motion is the **tower cutover machinery**
+itself (its decode prerequisites are value-unconfirmable *until* the cutover) or
+**external value sources** for specific buff types — both need the maintainer's
+call + live verification, so nothing was written this pass.
 
 ### Session log — 2026-06-04 (behaviour layer: PMFC/Mermonkey thin-grounding + guards)
 
