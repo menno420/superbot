@@ -204,8 +204,9 @@ _BUFF_FIELDS: tuple[tuple[str, str, int], ...] = (
     # (TradeEmpireBuffModel, Bucc 0-0-5) but had no render field here, so the
     # renderer surfaced only the damage bonus and silently dropped the income —
     # "what does Trade Empire do" lost its headline effect (extracted, but not
-    # answerable). Labels match the wiki: +$10/round per Merchantman (stacks up
-    # to 20), +$20/round per Favored Trades, +4% sellback value in range.
+    # answerable). Labels match the wiki: +$10/round per Merchantman, +$20/round
+    # per Favored Trades, +4% sellback value in range. The per-buff stack cap
+    # (Merchantman x20, sellback x3) is rendered separately — see ``_stack_cap``.
     ("cashPerRoundPerMechantship", "+${}/round per Merchantman", 1),
     ("cashPerRoundPerFavouredTrades", "+${}/round per Favored Trades", 1),
     ("cashbackZoneMultiplier", "+{}% sellback value", 100),
@@ -221,6 +222,26 @@ def _fmt_buff_num(value: Any) -> str:
     return str(value)
 
 
+def _stack_cap(buff: dict[str, Any]) -> int | None:
+    """A buff's real, positive stack cap, or ``None``.
+
+    Two field names encode the same concept — ``maxStacks`` on most towers,
+    ``maxStackSize`` on Sniper. ``0`` is *not* an unlimited cap: it means the
+    buff applies once and does not stack (a global aura like Pirate Lord's
+    Flagship or Sergeant's attack-speed buff), so we surface "up to N" only for
+    a genuine positive limit — Trade Empire (20 Merchantmen), sellback (3).
+    """
+    for field in ("maxStacks", "maxStackSize"):
+        value = buff.get(field)
+        if (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and value > 0
+        ):
+            return int(value)
+    return None
+
+
 def _buff_text(buff: dict[str, Any]) -> str:
     parts = [
         tmpl.format(_fmt_buff_num(buff[field] * scale))
@@ -230,6 +251,9 @@ def _buff_text(buff: dict[str, Any]) -> str:
     ]
     name = str(buff.get("name") or "").strip()
     body = ", ".join(parts) if parts else "buff"
+    cap = _stack_cap(buff)
+    if cap is not None:
+        body += f" (stacks up to {cap})"
     return f"{name}: {body}" if name else body
 
 

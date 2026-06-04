@@ -295,6 +295,53 @@ def test_buff_hero_xp_multiplier_renders():
     assert "x1.5 hero XP" in text
 
 
+# --- buff stack cap (maxStacks / maxStackSize) ------------------------------
+
+
+def test_buff_stack_cap_renders_when_positive():
+    # Trade Empire stacks per Merchantman in range, up to 20 — a real cap a
+    # player asks about. It sat in committed data (maxStacks) but never
+    # surfaced; only a code comment hardcoded "up to 20".
+    text = det._buff_text(
+        {
+            "name": "Trade Empire buff",
+            "cashPerRoundPerMechantship": 10,
+            "maxStacks": 20,
+        },
+    )
+    assert "+$10/round per Merchantman" in text
+    assert "(stacks up to 20)" in text
+
+
+def test_buff_stack_cap_zero_means_no_clause():
+    # maxStacks == 0 is "applies once, does not stack" (a global aura), NOT an
+    # unlimited cap — so we render no stack clause for it.
+    text = det._buff_text(
+        {"name": "Flagship buff", "rateMultiplier": 0.8, "maxStacks": 0},
+    )
+    assert "stacks up to" not in text
+    assert text == "Flagship buff: x0.8 attack cooldown"
+
+
+def test_buff_stack_cap_reads_max_stack_size_alias():
+    # Sniper encodes the same concept under the other field name (maxStackSize);
+    # a positive value still surfaces a cap, 0 still renders nothing.
+    assert "(stacks up to 4)" in det._buff_text(
+        {"name": "X", "rateMultiplier": 0.75, "maxStackSize": 4},
+    )
+    assert "stacks up to" not in det._buff_text(
+        {"name": "Attack speed buff", "rateMultiplier": 0.75, "maxStackSize": 0},
+    )
+
+
+def test_sellback_stack_cap_surfaces_end_to_end():
+    # Real committed Buccaneer 0-0-4: +4% sellback, stacks up to 3 (= +12%).
+    d = det.get_upgrade_detail("monkey_buccaneer:004")
+    blob = " | ".join(d.buffs)
+    assert "+4% sellback value" in blob
+    assert "(stacks up to 3)" in blob
+
+
 def test_zone_slow_multiplier_renders_as_speed():
     # Ice Monkey's Arctic Wind: 'multiplier' is a speed multiplier (0.6 = 60%
     # speed). It was dropped, so Ice's signature slow was unstated. MOABs slow
