@@ -9,6 +9,30 @@ works** (the traps we hit), and what is still un-decoded.
 
 ## ⭐ Next session — start here (updated 2026-06-04, end of v55 session)
 
+### Session log — buff decode started (2 confirmed types)
+
+- **Buffs — decode started, correctness-first (2 of 38).** `_buffs()` now emits a
+  `buffs[]` entry per top-level `*SupportModel`/`*BuffModel`, but **only writes a
+  number for types confirmed against the committed wiki value on a matching tier**:
+  - `RateSupportModel.multiplier` → `rateMultiplier` (Sniper Elite Defender: raw
+    `0.75` == wiki `0.75`).
+  - `PoplustSupportModel.ratePercentIncrease`/`piercePercentIncrease` →
+    `ratePercentage`/`piercePercentage` (Druid Poplust: `0.15`/`0.15`).
+  - Validated roster-wide: no tower has a raw value contradicting the committed
+    one. (Notably, `monkey_village` carries a raw `RateSupportModel 0.85` the wiki
+    omitted — game-data is richer, not wrong.)
+  - **Deferred (not yet confirmed):** `PierceSupportModel.pierce`→`pierceAdditive`
+    — the wiki's pierce buffs are `pierceMultiplier` from a *different* model, so
+    this needs same-tier confirmation before it's written. The other ~35 types
+    likewise await confirmation (or a renderer field, for the `SCHEMA_FIRST` set).
+  - Names: buff `name` is the dump's **internal** id (`buffLocsName`/`mutatorId`),
+    never a curated label — those aren't in the dump, so the audit aligns by name
+    and ignores ours (stays nothing-SUSPECT). Wired into `_map_tier`.
+- **Next buff step:** confirm one more type per pass (cross-check raw vs committed
+  on a matching tier), add to `_BUFF_FIELD_MAP`. The `SCHEMA_FIRST` types
+  (projectile speed/radius, freeze duration, banana-cash multiplier) need a new
+  field on `_BUFF_FIELDS` in `btd6_upgrade_detail_service` + its renderer first.
+
 ### Session log — maps + modes cutover + zone decode started
 
 - **Maps — full game-data cutover (3 → 89).** `parse_gamedata.py --maps` rebuilds
@@ -412,12 +436,10 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
 | **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
+| **Buffs** (`buffs[]`) — **started (2 of 38)** | `_buffs()` decodes the two types **confirmed against committed wiki values on a matching tier**: `RateSupportModel.multiplier`→`rateMultiplier` (Sniper 0.75) and `PoplustSupportModel.ratePercentIncrease`/`piercePercentIncrease`→`ratePercentage`/`piercePercentage` (Druid 0.15/0.15). Wired into `_map_tier`, audit-safe (internal names) | the other 36 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** yet confirmed; the wiki's pierce buffs are `pierceMultiplier` from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started
-- **Buffs** (`buffs[]`) — **0 of 38** buff/support model types mapped.
-  *(Corrected from "37"; the dump has 38 distinct `*SupportModel`/`*BuffModel`
-  `$type`s — report §3b. Close to the prior figure but not equal.)*
 - **Economy-tower attack suppression** (Banana Farm shows a nominal AttackModel).
 - **The towers cutover itself** — blocked on zones + buffs + the subtower tail.
 - **Bloons / bosses game-native ingestion** (still wiki-sourced).
