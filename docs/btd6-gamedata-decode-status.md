@@ -34,15 +34,26 @@ works** (the traps we hit), and what is still un-decoded.
 
 ### Session log — buff decode started (2 confirmed types)
 
-- **Buffs — decode progressing, correctness-first (5 of 38).** Added three more
-  confirmed types this pass: `SubCommanderSupportModel` (pierce/damage add +
-  damage mult, Sub 0-0-5 = 4/0/2), `PiercePercentageSupportModel.percentIncrease`
-  → `pierceMultiplier` (Mermonkey 1.1/1.2/1.4), and `TradeEmpireBuffModel`
-  (cash-per-round + flat damage additives, Buccaneer 0-0-5). A roster-wide
-  value-discovery harness surfaced candidates; each was hand-vetted on its tower
-  (it does produce false positives from value coincidence — e.g.
-  `distanceMultiplier`→`lifespanMultiplier` — so the harness is a lead, not a
-  source of truth). Original 2-type slice below.
+- **Buffs — decode progressing, correctness-first (8 of 38).** Confirmed eight
+  types across two passes (each value hand-vetted exact against committed wiki
+  data on a matching tier): `RateSupportModel`, `PoplustSupportModel`,
+  `SubCommanderSupportModel` (Sub 0-0-5 = 4/0/2), `PiercePercentageSupportModel`
+  (Mermonkey 1.1/1.2/1.4), `TradeEmpireBuffModel` (Buccaneer 0-0-5),
+  `PlacementAreaTypeRangeBuffModel` (Mermonkey in-water 1.35),
+  `StartOfRoundRateBuffModel` (Engineer/Spike: `modifier`→`rateMultiplier` 0.25,
+  `duration`→`lifespan` — two-tower), and `PrinceOfDarknessZombieBuffModel`
+  (Wizard Undead: `damageIncrease`→`damageAdditive` 3, `distanceMultiplier`→
+  `lifespanMultiplier` 1.5).
+  - **Verification discipline note:** the roster-wide discovery harness is a
+    *lead generator*, not truth — it ranks candidates by value coincidence. The
+    **committed wiki data is the arbiter**: e.g. `distanceMultiplier`→
+    `lifespanMultiplier` *looked* like a semantic false positive, but the
+    committed Undead buff carries `lifespanMultiplier 1.5` and the only raw 1.5
+    is `distanceMultiplier`, so it is in fact the correct correspondence. Vet
+    each candidate against the committed value, not against priors.
+  - Also this pass: confirmed **Deflation = start round 31 with $20,000, no
+    income** (in-game screenshots), and that **Double Cash doubles the starting
+    cash** ($40,400 = 2×$20,200 with the ×2 modifier active).
 - **Buffs — decode started, correctness-first (2 of 38).** `_buffs()` now emits a
   `buffs[]` entry per top-level `*SupportModel`/`*BuffModel`, but **only writes a
   number for types confirmed against the committed wiki value on a matching tier**:
@@ -468,7 +479,7 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
 | **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
-| **Buffs** (`buffs[]`) — **started (5 of 38)** | `_buffs()` decodes the five types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`→`rateMultiplier` (Sniper 0.75); `PoplustSupportModel`→`ratePercentage`/`piercePercentage` (Druid 0.15); `SubCommanderSupportModel`→`pierceAdditive`/`damageAdditive`/`damageMultiplier` (Sub 4/0/2); `PiercePercentageSupportModel.percentIncrease`→`pierceMultiplier` (Mermonkey 1.1/1.2/1.4); `TradeEmpireBuffModel`→cash-per-round + `damageAdditive[ForCeramic/ForMoabs]` (Bucc). Wired into `_map_tier`, audit-safe (internal names) | the other 33 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** confirmed; the wiki's pierce buffs are multipliers from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. **A roster-wide value-discovery harness exists** but flags false positives from value coincidence (e.g. `distanceMultiplier`→`lifespanMultiplier`), so each candidate is still hand-vetted |
+| **Buffs** (`buffs[]`) — **started (8 of 38)** | `_buffs()` decodes eight types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel` (see `_BUFF_FIELD_MAP` for the exact field map + the tier each was verified on). Wired into `_map_tier`, audit-safe (internal names) | the other 30 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** confirmed; the wiki's pierce buffs are multipliers from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started

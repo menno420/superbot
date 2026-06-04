@@ -979,3 +979,45 @@ def test_buffs_trade_empire_cash_and_damage(mod):
     assert buff["damageAdditive"] == 1
     assert buff["damageAdditiveForCeramic"] == 1
     assert buff["damageAdditiveForMoabs"] == 1
+
+
+def test_buffs_start_of_round_rate(mod):
+    # Engineer/Spike start-of-round buff: modifier 0.25 -> rateMultiplier,
+    # duration -> lifespan (two-tower confirmed).
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("StartOfRoundRateBuffModel"),
+            "modifier": 0.25,
+            "duration": 3.0,
+            "Duration": 3.0,
+            "durationFrames": 0,
+        }
+    )
+    buff = mod._map_tier(model)["buffs"][0]
+    assert buff["rateMultiplier"] == 0.25
+    assert buff["lifespan"] == 3
+
+
+def test_buffs_placement_area_range_passthrough(mod):
+    model = _tower_model()
+    model["behaviors"].append(
+        {"$type": _t("PlacementAreaTypeRangeBuffModel"), "rangeMultiplier": 1.35}
+    )
+    assert mod._map_tier(model)["buffs"][0]["rangeMultiplier"] == 1.35
+
+
+def test_buffs_prince_of_darkness_distance_is_lifespan_multiplier(mod):
+    # The committed wiki data maps distanceMultiplier -> lifespanMultiplier
+    # (Undead buff 1.5), so it is the correct field, not a coincidence.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("PrinceOfDarknessZombieBuffModel"),
+            "damageIncrease": 3.0,
+            "distanceMultiplier": 1.5,
+        }
+    )
+    buff = mod._map_tier(model)["buffs"][0]
+    assert buff["damageAdditive"] == 3
+    assert buff["lifespanMultiplier"] == 1.5
