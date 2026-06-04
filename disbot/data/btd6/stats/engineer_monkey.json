@@ -1246,8 +1246,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -1373,8 +1374,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -1506,8 +1508,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -5700,8 +5703,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -5886,8 +5890,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -6060,8 +6065,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -6200,8 +6206,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -6339,8 +6346,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -6543,8 +6551,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -6735,8 +6744,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -6893,8 +6903,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -7038,8 +7049,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -7248,8 +7260,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -7446,8 +7459,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,
@@ -7610,8 +7624,9 @@
       "buffs": [
         {
           "name": "Start-of-round buff",
+          "trigger": "start_of_round",
           "rateMultiplier": 0.25,
-          "lifespan": 1
+          "duration_rounds": 1
         }
       ],
       "footprintRadius": 7,

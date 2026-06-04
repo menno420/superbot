@@ -222,6 +222,14 @@ def _fmt_buff_num(value: Any) -> str:
     return str(value)
 
 
+def _num_field(node: dict[str, Any], field: str) -> Any:
+    """A node's numeric field value, or None (rejecting bools); buffs + zones."""
+    value = node.get(field)
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return value
+    return None
+
+
 def _stack_cap(buff: dict[str, Any]) -> int | None:
     """A buff's real, positive stack cap, or ``None``.
 
@@ -242,6 +250,34 @@ def _stack_cap(buff: dict[str, Any]) -> int | None:
     return None
 
 
+# A triggered buff's activation condition, keyed by the ``trigger`` the decoder
+# stamps on it (parser ``_BUFF_TRIGGER``). The trigger also fixes the duration
+# unit: ``on_life_lost`` carries a seconds ``lifespan`` window + ``cooldown``;
+# ``start_of_round`` re-applies every round, so we state the condition rather
+# than a round-count duration that would read as "lasts 3s" and mislead.
+_BUFF_TRIGGER_COND: dict[str, str] = {
+    "on_life_lost": "when a life is lost",
+    "start_of_round": "at the start of each round",
+}
+
+
+def _buff_trigger_clause(buff: dict[str, Any]) -> str:
+    """Activation condition (+ the active/cooldown window for timed triggers)."""
+    trigger = buff.get("trigger")
+    if not isinstance(trigger, str):
+        return ""
+    cond = _BUFF_TRIGGER_COND.get(trigger)
+    if cond is None:
+        return ""
+    if trigger == "on_life_lost":
+        life = _num_field(buff, "lifespan")
+        cooldown = _num_field(buff, "cooldown")
+        window = f"for {_fmt_buff_num(life)}s " if life is not None else ""
+        tail = f" ({_fmt_buff_num(cooldown)}s cooldown)" if cooldown is not None else ""
+        return f"{window}{cond}{tail}"
+    return cond
+
+
 def _buff_text(buff: dict[str, Any]) -> str:
     parts = [
         tmpl.format(_fmt_buff_num(buff[field] * scale))
@@ -251,18 +287,19 @@ def _buff_text(buff: dict[str, Any]) -> str:
     ]
     name = str(buff.get("name") or "").strip()
     body = ", ".join(parts) if parts else "buff"
+    clause = _buff_trigger_clause(buff)
+    if clause:
+        body += f" {clause}"
+    # Cash-on-leak is a permanent passive, not part of the timed window above, so
+    # it gets its own clause. cashOnLeakMultiplier 2 = a leaked bloon grants 2x
+    # its value as cash (Desperado Vigilante line; like Bloon Trap / Obyn trees).
+    leak = _num_field(buff, "cashOnLeakMultiplier")
+    if leak is not None:
+        body += f"; leaked bloons give {_fmt_buff_num(leak)}x their value as cash"
     cap = _stack_cap(buff)
     if cap is not None:
         body += f" (stacks up to {cap})"
     return f"{name}: {body}" if name else body
-
-
-def _zone_num(zone: dict[str, Any], field: str) -> Any:
-    """A zone's numeric field value, or None (rejecting bools)."""
-    value = zone.get(field)
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
-        return value
-    return None
 
 
 def _zone_text(zone: dict[str, Any]) -> str:
@@ -279,14 +316,14 @@ def _zone_text(zone: dict[str, Any]) -> str:
     # (0.6 = bloons move at 60% speed); MOABs are slowed less. Verified
     # 'multiplier' only ever appears on Ice slow zones, so rendering it as a
     # speed multiplier can't mislabel a different zone type's number.
-    slow = _zone_num(zone, "multiplier")
+    slow = _num_field(zone, "multiplier")
     if slow is not None:
         bits.append(f"slows bloons to x{_fmt_buff_num(slow)} speed")
-    moab_slow = _zone_num(zone, "multiplierForMoabs")
+    moab_slow = _num_field(zone, "multiplierForMoabs")
     if moab_slow is not None:
         bits.append(f"MOABs to x{_fmt_buff_num(moab_slow)} speed")
     # Druid Thorn zone: flat bonus damage vs Ceramic/MOAB-class.
-    cmoab = _zone_num(zone, "damageModifierForCeramicOrMoabs")
+    cmoab = _num_field(zone, "damageModifierForCeramicOrMoabs")
     if cmoab is not None:
         bits.append(f"+{_fmt_buff_num(cmoab)} damage vs Ceramic/MOAB")
     return f"{name} ({', '.join(bits)})" if bits else name

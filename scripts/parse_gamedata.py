@@ -590,11 +590,24 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
     },
     # rangeMultiplier passes through 1:1 (Mermonkey in-water buff: 1.35).
     "PlacementAreaTypeRangeBuffModel": {"rangeMultiplier": "rangeMultiplier"},
-    # Engineer/Spike start-of-round buff (×0.25 cooldown for N rounds): two-tower
-    # confirmation (modifier 0.25→rateMultiplier; duration 1/3→lifespan).
+    # Engineer/Spike start-of-round buff: modifier 0.25→rateMultiplier; the
+    # ``duration`` is a ROUND count, not seconds (the raw ``durationFrames`` is
+    # 0), so it maps to ``duration_rounds`` — keeping ``lifespan`` exclusively
+    # for second-valued windows. ``trigger`` ("start_of_round") carries the rest.
     "StartOfRoundRateBuffModel": {
         "modifier": "rateMultiplier",
-        "duration": "lifespan",
+        "duration": "duration_rounds",
+    },
+    # Desperado bottom-path lives-lost buff (the Vigilante line: Nomad/Enforcer/
+    # …). Fires when a life leaks — confirmed by the raw field names. The two 1:1
+    # effects + the cash-on-leak multiplier are here; the seconds-valued active /
+    # cooldown windows are *Frames in the dump and live in ``_BUFF_FRAME_FIELDS``.
+    # cashOnLeakMultiplier 2.0 = a leaked bloon grants 2x its value as cash (same
+    # mechanic as Bloon Trap / Obyn's trees).
+    "VigilanteTowerBehaviorModel": {
+        "loseLifeAttackSpeedBuff": "rateMultiplier",
+        "loseLifeRangeBuff": "rangeAdditive",
+        "bloonLeakValueModifier": "cashOnLeakMultiplier",
     },
     # Wizard Necromancer "Undead Bloon buff": the committed wiki data maps
     # distanceMultiplier→lifespanMultiplier (raw 1.5 == wiki 1.5), so it is the
@@ -603,6 +616,26 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
         "damageIncrease": "damageAdditive",
         "distanceMultiplier": "lifespanMultiplier",
     },
+}
+
+
+# Buff windows the dump stores as frame counts (60 fps) → seconds. Kept apart
+# from the 1:1 maps above because each needs the /60 conversion. (Only the
+# Vigilante lives-lost windows use this so far.)
+_BUFF_FRAME_FIELDS: dict[str, dict[str, str]] = {
+    "VigilanteTowerBehaviorModel": {
+        "loseLifeBuffDurationFrames": "lifespan",
+        "loseLifeBuffCooldownFrames": "cooldown",
+    },
+}
+
+# A buff's activation trigger — the discriminator that also fixes the duration
+# unit downstream: ``on_life_lost`` windows are seconds (lifespan / cooldown),
+# ``start_of_round`` is a round count (duration_rounds, re-applied every round).
+# Without it the committed numbers would be unit-ambiguous to a renderer.
+_BUFF_TRIGGER: dict[str, str] = {
+    "VigilanteTowerBehaviorModel": "on_life_lost",
+    "StartOfRoundRateBuffModel": "start_of_round",
 }
 
 
@@ -628,10 +661,17 @@ def _buffs(model: dict) -> list[dict]:
             or behavior.get("mutatorId")
             or short[: -len("Model")],
         }
+        trigger = _BUFF_TRIGGER.get(short)
+        if trigger:
+            entry["trigger"] = trigger
         for raw_field, schema_field in field_map.items():
             value = behavior.get(raw_field)
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 entry[schema_field] = _num(value)
+        for raw_field, schema_field in _BUFF_FRAME_FIELDS.get(short, {}).items():
+            value = behavior.get(raw_field)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[schema_field] = _num(value / 60.0)  # frames → seconds
         if "isGlobal" in behavior:
             entry["isGlobal"] = bool(behavior["isGlobal"])
         out.append(entry)
