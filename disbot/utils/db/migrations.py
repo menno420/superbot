@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
+from collections.abc import Iterable
 
 from utils.db import pool
 
@@ -29,6 +31,52 @@ _MIGRATIONS_DIR = os.path.join(
 
 # Stable 64-bit key for pg_advisory_lock — "superbot" interpreted as int.
 _MIGRATION_ADVISORY_LOCK = 0x73757065_72626F74
+
+# NNN_<snake_name>.sql — the contract pinned by
+# tests/unit/db/test_migrations_structure.py.  group(1)=version, group(2)=name.
+_MIGRATION_NAME_RE = re.compile(r"^(\d{3})_([a-z][a-z0-9_]*)\.sql$")
+
+
+class MigrationError(RuntimeError):
+    """The migrations directory is structurally invalid.
+
+    Raised at startup *before* any migration runs, so a malformed set fails fast
+    instead of silently skipping a file (RC-6).  Historically the runner
+    ``int(filename.split("_")[0])``-parsed names and *skipped* anything it could
+    not parse, and a duplicate leading version meant the second file was silently
+    never applied once the first was recorded.
+    """
+
+
+def _ordered_migration_versions(filenames: Iterable[str]) -> list[tuple[int, str]]:
+    """Validate ``*.sql`` migration filenames; return ``(version, filename)``
+    pairs sorted by filename.
+
+    Raises :class:`MigrationError` when a ``.sql`` file does not match
+    ``NNN_<snake_name>.sql`` or when two files share a leading version (the second
+    would never apply once the first is recorded — RC-6).  Non-``.sql`` files are
+    ignored.
+    """
+    seen: dict[int, str] = {}
+    ordered: list[tuple[int, str]] = []
+    for filename in sorted(filenames):
+        if not filename.endswith(".sql"):
+            continue
+        match = _MIGRATION_NAME_RE.match(filename)
+        if match is None:
+            raise MigrationError(
+                f"Migration file does not match NNN_<snake_name>.sql: {filename!r}",
+            )
+        version = int(match.group(1))
+        if version in seen:
+            raise MigrationError(
+                f"Duplicate migration version {version:03d}: "
+                f"{seen[version]!r} and {filename!r} — the second would never "
+                "apply (forward-only; rename, do not duplicate).",
+            )
+        seen[version] = filename
+        ordered.append((version, filename))
+    return ordered
 
 
 async def ensure_migrations_table() -> None:
@@ -62,28 +110,18 @@ async def run_migrations() -> None:
                     "SELECT version FROM schema_migrations ORDER BY version",
                 )
             }
-            migration_files = sorted(
-                f for f in os.listdir(_MIGRATIONS_DIR) if f.endswith(".sql")
-            )
-            for filename in migration_files:
-                try:
-                    version = int(filename.split("_")[0])
-                except (ValueError, IndexError):
-                    logger.warning(
-                        "Migration file with unexpected name skipped: %s",
-                        filename,
-                    )
-                    continue
+            for version, filename in _ordered_migration_versions(
+                os.listdir(_MIGRATIONS_DIR),
+            ):
                 if version in applied:
                     continue
                 path = os.path.join(_MIGRATIONS_DIR, filename)
                 with open(path, encoding="utf-8") as f:
                     sql = f.read()
-                description = (
-                    filename[len(str(version)) + 1 :]
-                    .replace("_", " ")
-                    .removesuffix(".sql")
-                )
+                # Strip the validated "NNN_" prefix + ".sql" suffix for a human
+                # description (the old slice mishandled the zero-padded version
+                # and emitted e.g. "1 initial schema").
+                description = filename[4:].removesuffix(".sql").replace("_", " ")
                 try:
                     async with conn.transaction():
                         await conn.execute(sql)
