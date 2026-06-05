@@ -1,5 +1,9 @@
 # General Discord Feature Layer Analysis — 2026-06-05
 
+> **Superseded (2026-06-05):** reconciled into
+> [`../planning/superbot-audit-consolidation-2026-06-05.md`](../planning/superbot-audit-consolidation-2026-06-05.md)
+> (verified, RC-n IDs). Read that first; this raw audit is historical context.
+
 ## Scope
 
 This document records the Agent C audit of the general Discord feature layer.

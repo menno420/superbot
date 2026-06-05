@@ -56,8 +56,10 @@ Eleven-step contract per :meth:`ResourceProvisioningPipeline.provision`:
 
 Hard limits for S4.5:
 
-* Pipeline has zero production callers; future S7 logging UI + S10
-  setup packs invoke it.
+* Pipeline is adopted (RC-13 correction; this bullet previously read
+  "zero production callers").  ``provision()`` is invoked by
+  ``services.readiness_repair``, ``services.automation_executor``, and
+  ``services.setup_operations`` (the ``create_*`` op route).
 * The :data:`core.runtime.feature_flags.RESOURCE_PROVISIONING_PRIMARY`
   flag is declared but NOT consulted by this pipeline — kill-switch
   infrastructure for future UI consumers, matching SETTINGS_MUTATION_PRIMARY.

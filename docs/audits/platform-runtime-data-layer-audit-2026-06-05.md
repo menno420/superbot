@@ -1,5 +1,9 @@
 # Platform / Runtime / Data-Layer Audit — 2026-06-05
 
+> **Superseded (2026-06-05):** reconciled into
+> [`../planning/superbot-audit-consolidation-2026-06-05.md`](../planning/superbot-audit-consolidation-2026-06-05.md)
+> (verified, RC-n IDs). Read that first; this raw audit is historical context.
+
 > **Scope:** docs-only Agent A audit of the platform foundation: startup/runtime lifecycle, task supervision, health/readiness, database/migrations/runtime lock, event bus/catalogue, session/panel/anchor infrastructure, resource provisioning foundation, architecture-rule coverage, and relevant tests.
 >
 > **Base inspected:** GitHub `main` at `d583dcb082580298e063d718ab7eb534a47ad3ea` (`Merge pull request #506 ... docs(btd6): smoke-test checklist + refresh stale counts`).
