@@ -12,13 +12,54 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Full history so the docs-only detector can diff against the base.
+          fetch-depth: 0
+
+      # Skip the expensive lint/type/test steps when ONLY docs/markdown changed.
+      # The job still runs and reports success, so a required `code-quality`
+      # status check is satisfied and docs-only PRs stay mergeable (a workflow
+      # skipped via `paths-ignore` would never report and would block merges).
+      # Pure shell — no third-party change-detection action (no supply-chain surface).
+      - name: Detect non-docs changes
+        id: changes
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE='${{ github.event.pull_request.base.sha }}'
+            HEAD='${{ github.event.pull_request.head.sha }}'
+          else
+            BASE='${{ github.event.before }}'
+            HEAD='${{ github.sha }}'
+          fi
+          # Base missing/unknown (new branch, force-push, all-zero SHA) -> run full CI.
+          if [ -z "$BASE" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            echo "Base commit unavailable — running full CI."
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          FILES="$(git diff --name-only "$BASE" "$HEAD")"
+          echo "Changed files:"
+          printf '%s\n' "$FILES"
+          if [ -z "$FILES" ]; then
+            echo "No file changes — skipping heavy steps."
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          elif printf '%s\n' "$FILES" | grep -qvE '(\.md$|^docs/|^\.session-journal\.md$)'; then
+            echo "Non-docs changes present — running full CI."
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Docs-only change — skipping lint/type/test steps."
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up Python
+        if: steps.changes.outputs.code == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
       - name: Install dependencies
+        if: steps.changes.outputs.code == 'true'
         run: |
           python -m pip install --upgrade pip
           pip install black==26.5.1 isort==8.0.1 ruff==0.15.14 mypy==2.1.0
@@ -26,16 +67,25 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Black (check only)
+        if: steps.changes.outputs.code == 'true'
         run: black --check . --exclude '(\.github|tests|venv|env|build|dist)'
 
       - name: Run isort (check only)
+        if: steps.changes.outputs.code == 'true'
         run: isort --check-only . --skip-glob '*/(\.github|tests|venv|env|build|dist)/*'
 
       - name: Run Ruff
+        if: steps.changes.outputs.code == 'true'
         run: ruff check . --exclude .github,tests,venv,env,build,dist
 
       - name: Run mypy
+        if: steps.changes.outputs.code == 'true'
         run: mypy disbot/
 
       - name: Run pytest
+        if: steps.changes.outputs.code == 'true'
         run: pytest tests/ -v --tb=short
+
+      - name: Docs-only change — heavy checks skipped
+        if: steps.changes.outputs.code != 'true'
+        run: echo "Only docs/markdown changed — black/isort/ruff/mypy/pytest were skipped."
