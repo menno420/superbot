@@ -359,6 +359,8 @@ class _RpsTournamentSubView(HubView):
             self.add_item(_RpsTournamentJoinButton())
         elif is_admin and not tournament_active:
             self.add_item(_RpsTournamentStartButton())
+        elif is_admin and tournament_active:
+            self.add_item(_RpsTournamentMatchupButton())
         self.add_item(_make_rps_back_button(grandparent=back_target))
         if back_target is not None:
             attach_back_target(self, back_target)
@@ -430,6 +432,78 @@ class _RpsTournamentJoinButton(discord.ui.Button):
                 "or short on coins for the entry fee.",
                 ephemeral=True,
             )
+
+
+class _RpsTournamentMatchupButton(discord.ui.Button):
+    """Admin-only: open a member picker to manually pair two registered players
+    (exposes the ``!rpsmatchup`` command from the panel).
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            label="⚔️ Create Matchup",
+            style=discord.ButtonStyle.primary,
+            custom_id="rps_panel:tournament:matchup",
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        cog = _resolve_rps_cog(interaction)
+        if cog is None or not cog.tournament_active:
+            await interaction.response.send_message(
+                "No tournament is active — start one before creating matchups.",
+                ephemeral=True,
+            )
+            return
+        view = HubView(interaction.user)  # invoker-locked ephemeral picker
+        view.add_item(_RpsMatchupSelect())
+        await interaction.response.send_message(
+            "Pick the two registered players to match up:",
+            view=view,
+            ephemeral=True,
+        )
+
+
+class _RpsMatchupSelect(discord.ui.UserSelect):
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Choose two registered players…",
+            min_values=2,
+            max_values=2,
+            custom_id="rps_panel:tournament:matchup_select",
+            row=0,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        cog = _resolve_rps_cog(interaction)
+        if cog is None or not cog.tournament_active:
+            await interaction.response.send_message(
+                "Tournament is no longer active.",
+                ephemeral=True,
+            )
+            return
+        picks = [m for m in self.values if isinstance(m, discord.Member)]
+        if len(picks) != 2 or picks[0].id == picks[1].id:
+            await interaction.response.send_message(
+                "Pick two different server members.",
+                ephemeral=True,
+            )
+            return
+        player1, player2 = picks
+        if player1 not in cog.players or player2 not in cog.players:
+            await interaction.response.send_message(
+                "Both players must be registered in the tournament.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            f"Creating a match: {player1.mention} vs {player2.mention}…",
+            ephemeral=True,
+        )
+        from core.runtime.interaction_helpers import help_ctx_shim
+
+        ctx = help_ctx_shim(interaction)
+        await cog.rps_matchup(ctx, player1, player2)
 
 
 def _make_rps_back_button(

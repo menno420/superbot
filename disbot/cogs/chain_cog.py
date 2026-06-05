@@ -508,6 +508,39 @@ class _SetLimitModal(discord.ui.Modal, title="Set Word Limit"):  # type: ignore[
             )
 
 
+class _ClearLimitModal(discord.ui.Modal, title="Clear Word Limit"):  # type: ignore[call-arg]
+    channel_input = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Channel (mention/ID, blank = current)",
+        max_length=40,
+        required=False,
+    )
+
+    def __init__(self, cog: ChainCog):
+        super().__init__()
+        self.cog = cog
+
+    async def on_submit(self, interaction: discord.Interaction):
+        channel = _resolve_channel(interaction, self.channel_input.value)
+        if not channel:
+            await interaction.response.send_message(
+                "❌ Channel not found.",
+                ephemeral=True,
+            )
+            return
+        existing = await db.get_chain_channel(channel.id)
+        if not existing or not existing.get("word_limit"):
+            await interaction.response.send_message(
+                f"ℹ️ No word limit is set in {channel.mention}.",
+                ephemeral=True,
+            )
+            return
+        await db.set_chain_limit(channel.id, 0)
+        await interaction.response.send_message(
+            f"✅ Word limit removed from {channel.mention}.",
+            ephemeral=True,
+        )
+
+
 class _ChainMenuView(HubView):
     """Interactive chain channel management panel."""
 
@@ -551,6 +584,18 @@ class _ChainMenuView(HubView):
         _: discord.ui.Button,
     ):
         await interaction.response.send_modal(_SetLimitModal(self.cog))
+
+    @discord.ui.button(
+        label="🚫 Clear Limit",
+        style=discord.ButtonStyle.secondary,
+        row=0,
+    )
+    async def btn_clearlimit(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        await interaction.response.send_modal(_ClearLimitModal(self.cog))
 
     @discord.ui.button(label="🔄 Refresh", style=discord.ButtonStyle.secondary, row=1)
     async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):

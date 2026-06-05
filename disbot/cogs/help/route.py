@@ -129,13 +129,39 @@ class HelpOpener:
         )
 
 
+# Discovery labels appended to help entries so operators can see at a glance how
+# a command is surfaced.  Read-only over the command-surface classification; the
+# default ``primary_entrypoint`` gets no label.
+_DISCOVERY_LABELS: dict[str, str] = {
+    "panel_action": "opens panel",
+    "power_user_shortcut": "typed-only",
+    "internal_admin": "admin-only",
+    "legacy_duplicate": "legacy",
+    "deprecated": "deprecated",
+}
+
+
+def discovery_label(cmd: commands.Command) -> str:
+    """Return a short discovery label for ``cmd`` (e.g. ``"opens panel"``), or
+    ``""`` for the default ``primary_entrypoint`` classification.
+
+    Discovery-only: reads the command-surface classification via
+    :func:`core.runtime.command_surface_ledger.classification_from_command_extras`.
+    """
+    from core.runtime.command_surface_ledger import classification_from_command_extras
+
+    return _DISCOVERY_LABELS.get(classification_from_command_extras(cmd), "")
+
+
 def build_single_command_embed(
     cmd: commands.Command,
     prefix: str,
 ) -> discord.Embed:
     """Render the single-command help embed used by ``!help <command>``."""
+    label = discovery_label(cmd)
+    title_suffix = f"  ·  {label}" if label else ""
     embed = discord.Embed(
-        title=f"`{prefix}{cmd.name}`",
+        title=f"`{prefix}{cmd.name}`{title_suffix}",
         description=cmd.help or "No description.",
         color=UTILITY_COLOR,
     )
