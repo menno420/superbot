@@ -62,6 +62,29 @@ _handlers: dict[str, _Handler] = {}
 # sitting in old Discord messages.
 _WARNED_UNHANDLED: set[str] = set()
 
+# RC-3 / ADR-004: subsystem prefixes whose interactions FAIL CLOSED when the
+# governance gate itself throws (owner-scoped / mutating / admin surfaces).
+# Every other prefix stays fail-open (availability over strictness).  Default
+# posture is fail-open; this set is the deliberate opt-in.  Entries that don't
+# correspond to a routed prefix are harmless no-ops.
+_FAIL_CLOSED_PREFIXES: frozenset[str] = frozenset(
+    {
+        "settings",
+        "setup",
+        "provisioning",
+        "admin",
+        "governance",
+        "bindings",
+        "rollout",
+        "moderation",
+        "role",
+        "ai",
+        "logging",
+        "cleanup",
+        "diagnostic",
+    },
+)
+
 
 def register(prefix: str, handler: _Handler) -> None:
     """Register *handler* to receive interactions whose custom_id starts with *prefix*."""
@@ -142,12 +165,32 @@ async def dispatch(interaction: discord.Interaction) -> None:
                     )
                 return
         except Exception as exc:
-            # Fail-open: prefer availability over security if governance
-            # itself is broken.  The metric makes the spike visible so
-            # operators can investigate before users notice.
+            # The governance gate itself threw.  The metric counts every such
+            # gate failure (by subsystem) so operators see the spike regardless
+            # of the posture taken below.
             metrics.governance_fail_open_total.labels(subsystem=prefix).inc()
+            if prefix in _FAIL_CLOSED_PREFIXES:
+                # RC-3 / ADR-004: owner / mutating / admin surfaces FAIL CLOSED —
+                # deny an action we cannot authorize rather than allow it.
+                logger.warning(
+                    "Governance gate failed for req=%s | prefix=%s: %s — "
+                    "DENYING (fail-closed surface, ADR-004)",
+                    request_id,
+                    prefix,
+                    exc,
+                )
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        "❌ This action can't be verified right now. "
+                        "Please try again shortly.",
+                        ephemeral=True,
+                    )
+                return
+            # Read-only / public surfaces stay fail-open (today's behavior):
+            # prefer availability over strictness when governance is broken.
             logger.warning(
-                "Governance gate failed for req=%s | prefix=%s: %s — allowing (fail-open fallback)",
+                "Governance gate failed for req=%s | prefix=%s: %s — "
+                "allowing (fail-open fallback)",
                 request_id,
                 prefix,
                 exc,
