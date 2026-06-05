@@ -201,7 +201,11 @@ known_violations:
     ticket: arch-fix-11
   - file: core/runtime/session_gc.py
     import: services
-    reason: Session GC imports services.
+    reason: >-
+      Session GC imports services.metrics for observability only. The
+      economy_service / game_state_service refund coupling moved to a
+      cleanup provider (services.game_state_cleanup) via the core
+      cleanup_registry — RC-7.
     ticket: arch-fix-11
   - file: core/runtime/slow_path_log.py
     import: services

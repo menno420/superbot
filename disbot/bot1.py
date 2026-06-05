@@ -853,6 +853,14 @@ async def main() -> None:
                     "continuing — probe traffic may be slow at first.",
                 )
 
+            # RC-7: register feature cleanup providers before the GC loop
+            # starts.  session_gc only schedules; feature services own the
+            # refund semantics (ADR-002).  bot1 is the composition root, so the
+            # core→services wiring lives here rather than inside session_gc.
+            from services import game_state_cleanup
+
+            game_state_cleanup.install()
+
             # PR-02c: session_gc.start() now uses tasks.spawn
             # internally (PR-02b); calling it once registers the
             # GC loop with the canonical supervisor.
