@@ -195,6 +195,10 @@ cross-check the source and the consistency ledger first.
 - `docs/ai-readiness-plan.md`
 - `docs/ai-readiness-pr-notes.md`
 - `docs/ai-service-integration-map.md`
+- `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog
+  (advisory, **except** its §2 "operating decisions" and §6 "rejection ledger",
+  which are binding "do-not-propose"). Read before proposing new
+  UX/diagnostics/feature ideas so you don't re-litigate settled rejections.
 
 ### Subsystem-specific scaffold notes
 

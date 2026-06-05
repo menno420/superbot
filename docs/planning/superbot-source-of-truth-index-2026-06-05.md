@@ -36,6 +36,7 @@
 | `docs/planning/superbot-architecture-priority-map-2026-06-05.md` | ✅ current | Priority + dependency ordering. |
 | `docs/planning/superbot-next-session-roadmap-2026-06-05.md` | ✅ current | PR/session plan. |
 | `docs/planning/superbot-source-of-truth-index-2026-06-05.md` | ✅ current | This file. |
+| `docs/planning/superbot-ideas-lab-2026-06-05.md` | ✅ current (advisory) | Brainstorm backlog. §2 (operating decisions) + §6 (rejection ledger) are binding; the rest is gated suggestions — re-verify against source before building. |
 
 ---
 
