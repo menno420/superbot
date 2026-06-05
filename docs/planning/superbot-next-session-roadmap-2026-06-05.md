@@ -356,3 +356,24 @@ Stop and report (do not push) if:
 - Decision-gated PRs (2, 6, 9) must not merge ahead of their decision; reverting
   one should never strand a dependent merged PR (hence ordering).
 - Docs/tooling/test PRs (0, 3, 4, 7, 9) are free to revert.
+
+---
+
+## Addendum (2026-06-05): Ideas Lab + committed UX follow-ups
+
+PR 1 (S1 / RC-2 + RC-5 + RC-15) merged as **#513**. A brainstorm backlog now
+lives in **`superbot-ideas-lab-2026-06-05.md`** (tiered candidate work; §2 and
+§6 there are binding). It does not change the RC-driven PR sequence above.
+
+**Committed post-PR-1 UX follow-ups** (promoted from the Ideas Lab; each is
+read-only / observability-only, rides an existing read seam, gate cleared):
+
+- **IL-1** — thread/channel-aware access explainer (validates RC-2; built on
+  `governance.snapshot` / `SubsystemEffectiveState`).
+- **IL-2** — cleanup policy dry-run (pairs with RC-5; reuses the
+  `_VALID_CLEANUP_SCOPE_TYPES` split + the setup-wizard preflight render path).
+- **IL-3** — counting persistence-health line (surfaces the RC-15
+  `task_outcome_total` + ERROR signal via `!platform`; **not** a new monitor).
+
+Everything else from the scan stays a gated suggestion in the Ideas Lab; the
+decision/test gates (RC-3, RC-4, RC-10, PR 10 guard tests, ADRs) still hold.
