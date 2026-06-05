@@ -71,11 +71,25 @@ _EMBED_FIELD_VALUE_LIMIT = 1024
 _EMBED_FOOTER_LIMIT = 2048
 _EMBED_AUTHOR_LIMIT = 256
 _EMBED_MAX_FIELDS = 25
+# Discord also caps the SUM of title + description + every field name/value +
+# footer + author at 6000; an embed can pass every per-component check above and
+# still be rejected whole on this total.
+_EMBED_TOTAL_LIMIT = 6000
 
 
 def _clip(text: str, limit: int) -> str:
     """Truncate ``text`` to ``limit`` chars (ellipsis-terminated)."""
     return text if len(text) <= limit else text[: limit - 1] + "…"
+
+
+def _embed_total_len(embed: discord.Embed) -> int:
+    """Sum of all text Discord counts toward the 6000-char embed budget."""
+    total = len(embed.title or "") + len(embed.description or "")
+    for field in embed.fields:
+        total += len(field.name or "") + len(field.value or "")
+    total += len(embed.footer.text or "")
+    total += len(embed.author.name or "")
+    return total
 
 
 def clamp_embed(embed: discord.Embed) -> discord.Embed:
@@ -134,6 +148,23 @@ def clamp_embed(embed: discord.Embed) -> discord.Embed:
             url=author.url,
             icon_url=author.icon_url,
         )
+
+    # Total-budget pass — Discord rejects the whole embed when the SUM of all
+    # text exceeds 6000, even when every individual component is within its own
+    # limit (observed: the !platform Runtime panel — many fields each <1024
+    # summing >6000 → 400, the panel edit silently dropped, so its Back button
+    # never rendered).  Trim trailing fields first (least-essential detail),
+    # then the description, so the payload renders truncated instead of
+    # hard-failing.
+    if _embed_total_len(embed) > _EMBED_TOTAL_LIMIT:
+        while embed.fields and _embed_total_len(embed) > _EMBED_TOTAL_LIMIT:
+            embed.remove_field(len(embed.fields) - 1)
+        if embed.description and _embed_total_len(embed) > _EMBED_TOTAL_LIMIT:
+            over = _embed_total_len(embed) - _EMBED_TOTAL_LIMIT
+            embed.description = _clip(
+                embed.description,
+                max(1, len(embed.description) - over),
+            )
     return embed
 
 

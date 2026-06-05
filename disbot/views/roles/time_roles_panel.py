@@ -77,7 +77,7 @@ class TimeRolesPanel(BaseView):
             embed.set_footer(text="Roles auto-assigned based on days in server.")
         return embed
 
-    async def _refresh(self) -> None:
+    async def _rerender(self) -> None:
         if self.message:
             await self.message.edit(embed=await self.build_embed(), view=self)
 
@@ -146,7 +146,7 @@ class TimeRolesPanel(BaseView):
             seeded.append(role.name)
         if not await safe_defer(interaction, ephemeral=True):
             return
-        await self._refresh()
+        await self._rerender()
         parts = []
         if seeded:
             parts.append(f"Seeded {len(seeded)}: {', '.join(seeded)}.")
@@ -233,12 +233,12 @@ class TimeDaysModal(discord.ui.Modal, title="Set Day Threshold"):  # type: ignor
         invalidate_xp_threshold_roles(interaction.guild.id)
         if not await safe_defer(interaction):
             return
-        await self.parent._refresh()
+        await self.parent._rerender()
 
 
 class _TimeRemoveSelect(discord.ui.Select):
     def __init__(self, parent: TimeRolesPanel, thresholds: list[dict]) -> None:
-        self.parent = parent  # type: ignore[misc]
+        self._panel = parent
         options = [
             discord.SelectOption(
                 label=r["role_name"],
@@ -259,7 +259,7 @@ class _TimeRemoveSelect(discord.ui.Select):
             f"✅ Removed **{self.values[0]}** from auto-assignment.",
             ephemeral=True,
         )
-        await self.parent._refresh()  # type: ignore[attr-defined]
+        await self._panel._rerender()
 
 
 class _TimeRemoveView(discord.ui.View):

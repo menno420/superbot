@@ -32,8 +32,8 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
 
     select = MagicMock()
     select.values = ["Veteran"]
-    select.parent = MagicMock()
-    select.parent._refresh = AsyncMock()
+    select._panel = MagicMock()
+    select._panel._rerender = AsyncMock()
     interaction = _interaction()
 
     order: list[str] = []
@@ -71,5 +71,5 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
     ], order
     defer.assert_awaited_once()
     inval.assert_called_once_with(99)
-    select.parent._refresh.assert_awaited_once()
+    select._panel._rerender.assert_awaited_once()
     interaction.response.send_message.assert_not_called()

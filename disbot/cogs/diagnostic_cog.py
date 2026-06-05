@@ -640,5 +640,8 @@ def _governance_context_for(ctx, target):
 
 
 async def setup(bot):
+    from cogs.diagnostic._log_buffer import install as install_log_buffer
+
+    install_log_buffer()
     await bot.add_cog(DiagnosticCog(bot))
     logger.info("DiagnosticCog loaded.")

@@ -186,7 +186,7 @@ class AIReviewPanelView(BaseView):
             embed.set_footer(text=self.last_status)
         return embed
 
-    async def _refresh(self, interaction: discord.Interaction) -> None:
+    async def _rerender(self, interaction: discord.Interaction) -> None:
         try:
             await interaction.response.edit_message(
                 embed=self._refresh_embed(),
@@ -194,7 +194,7 @@ class AIReviewPanelView(BaseView):
             )
         except discord.HTTPException:
             logger.warning(
-                "AIReviewPanelView._refresh: edit_message failed.",
+                "AIReviewPanelView._rerender: edit_message failed.",
             )
 
     @discord.ui.button(
@@ -213,7 +213,7 @@ class AIReviewPanelView(BaseView):
             f"Accepted {added} high-confidence recommendation(s); "
             f"total accepted: {self.accepted.count}."
         )
-        await self._refresh(interaction)
+        await self._rerender(interaction)
 
     @discord.ui.button(
         label="Review one-by-one",
@@ -275,7 +275,7 @@ class AIReviewPanelView(BaseView):
             f"Rejected {removed} AI suggestion(s); accepted set "
             f"refreshed to {self.accepted.count}."
         )
-        await self._refresh(interaction)
+        await self._rerender(interaction)
 
     @discord.ui.button(
         label="Rerun deterministic-only",
@@ -315,7 +315,7 @@ class AIReviewPanelView(BaseView):
             f"{len(self.draft.recommendations)} recommendation(s); "
             f"accepted set: {self.accepted.count}."
         )
-        await self._refresh(interaction)
+        await self._rerender(interaction)
 
     @discord.ui.button(
         label="Stage & open Final review",

@@ -77,7 +77,7 @@ class XpRolesPanel(BaseView):
             embed.set_footer(text="✅ auto-assign active  ⏸️ configured but paused")
         return embed
 
-    async def _refresh(self) -> None:
+    async def _rerender(self) -> None:
         if self.message:
             await self.message.edit(embed=await self.build_embed(), view=self)
 
@@ -199,12 +199,12 @@ class XpLevelModal(discord.ui.Modal, title="Set XP Threshold"):  # type: ignore[
         invalidate_xp_threshold_roles(interaction.guild.id)
         if not await safe_defer(interaction):
             return
-        await self.parent._refresh()
+        await self.parent._rerender()
 
 
 class _XpRemoveSelect(discord.ui.Select):
     def __init__(self, parent: XpRolesPanel, rows: list[dict]) -> None:
-        self.parent = parent  # type: ignore[misc]
+        self._panel = parent
         options = [
             discord.SelectOption(
                 label=r["role_name"],
@@ -230,7 +230,7 @@ class _XpRemoveSelect(discord.ui.Select):
             f"✅ Removed XP threshold for **{self.values[0]}**.",
             ephemeral=True,
         )
-        await self.parent._refresh()  # type: ignore[attr-defined]
+        await self._panel._rerender()
 
 
 class _XpRemoveView(discord.ui.View):

@@ -60,7 +60,7 @@ class XpConfigView(BaseView):
         embed.set_footer(text="Click a button below to change a setting.")
         return embed
 
-    async def _refresh(self, interaction: discord.Interaction):  # type: ignore[override]
+    async def _rerender(self, interaction: discord.Interaction):  # type: ignore[override]
         await safe_edit(interaction, embed=await self.build_embed(), view=self)
 
     @discord.ui.button(label="XP Range", style=discord.ButtonStyle.blurple, row=0)
