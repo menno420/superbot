@@ -147,3 +147,29 @@ def test_default_required_tier_is_administrator():
     # Pins the v1 floor so a future change to a capability->tier matrix is a
     # deliberate, reviewed edit.
     assert cap_mod._DEFAULT_REQUIRED_TIER == "administrator"
+
+
+@pytest.mark.asyncio
+async def test_cross_guild_actor_denied():
+    # An admin in guild 1 must NOT be able to authorize a write to guild 2.
+    actor = _FakeMember(guild=_FakeGuild(1), tier="administrator")
+    target = _FakeGuild(2)
+    decision = await actor_holds_capability(actor, target, _CAP)
+    assert decision.allowed is False
+    assert "target guild" in decision.reason
+
+
+@pytest.mark.asyncio
+async def test_overlay_uses_target_guild_id(monkeypatch):
+    # The per-guild revoke overlay is looked up with the TARGET guild's id.
+    seen: dict = {}
+
+    async def _spy(guild_id, capability):
+        seen["guild_id"] = guild_id
+        return None
+
+    monkeypatch.setattr("governance.execution.get_capability_override", _spy)
+    guild = _FakeGuild(4242)
+    actor = _FakeMember(guild=guild, tier="administrator")
+    await actor_holds_capability(actor, guild, _CAP)
+    assert seen.get("guild_id") == 4242

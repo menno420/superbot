@@ -1011,3 +1011,20 @@ async def test_kill_switch_eval_error_fails_open(monkeypatch):
     # Fail-open: a flag-store outage must not block writes.
     result = await SettingsMutationPipeline().set_value(guild, "xp", "xp_min", 5, actor)
     assert result.new_value == 5
+
+
+@pytest.mark.asyncio
+async def test_cross_guild_actor_denied(_isolated_state):
+    """Authority is bound to the target guild: an admin of a *different* guild
+    cannot authorize a write to this guild (ADR-005 hardening)."""
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    target = _FakeGuild(1)
+    foreign_admin = _FakeMember(7, guild=_FakeGuild(2), tier="administrator")
+    with pytest.raises(UnauthorizedSettingsMutationError):
+        await SettingsMutationPipeline().set_value(
+            target, "xp", "xp_min", 5, foreign_admin
+        )
+    assert _isolated_state["audit_log"] == []

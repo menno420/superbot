@@ -27,7 +27,7 @@ import logging
 import discord
 
 from utils.ui_constants import GAME_COLOR
-from views.base import HubView
+from views.base import HubView, interaction_is_admin
 from views.games.common import BackToPanelButton
 from views.navigation import BackTarget, attach_back_target
 from views.rps import _RpsPvpChallengeView, _RpsView
@@ -448,6 +448,12 @@ class _RpsTournamentMatchupButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        if not interaction_is_admin(interaction):
+            await interaction.response.send_message(
+                "Creating matchups is admin-only.",
+                ephemeral=True,
+            )
+            return
         cog = _resolve_rps_cog(interaction)
         if cog is None or not cog.tournament_active:
             await interaction.response.send_message(
@@ -475,6 +481,12 @@ class _RpsMatchupSelect(discord.ui.UserSelect):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        if not interaction_is_admin(interaction):
+            await interaction.response.send_message(
+                "Creating matchups is admin-only.",
+                ephemeral=True,
+            )
+            return
         cog = _resolve_rps_cog(interaction)
         if cog is None or not cog.tournament_active:
             await interaction.response.send_message(
@@ -621,8 +633,7 @@ class RPSPanelView(HubView):
         _button: discord.ui.Button,
     ) -> None:
         cog = _resolve_rps_cog(interaction)
-        guild_perms = getattr(interaction.user, "guild_permissions", None)
-        is_admin = bool(guild_perms and guild_perms.administrator)
+        is_admin = interaction_is_admin(interaction)
         registration_active = bool(getattr(cog, "registration_active", False))
         tournament_active = bool(getattr(cog, "tournament_active", False))
         player_count = len(getattr(cog, "players", []) or [])

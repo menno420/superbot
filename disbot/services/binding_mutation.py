@@ -147,7 +147,7 @@ class BindingMutationPipeline:
             UnauthorizedBindingMutationError: actor below the authority floor.
         """
         spec = self._resolve_spec(subsystem, binding_name, kind)
-        await self._validate_authority(spec, actor)
+        await self._validate_authority(spec, guild, actor)
 
         new_status = await validate_binding_target(guild, kind, target_id)
         old = await get_binding(guild.id, subsystem, binding_name)
@@ -178,7 +178,7 @@ class BindingMutationPipeline:
         ``unresolved``.
         """
         spec = self._resolve_spec(subsystem, binding_name, kind)
-        await self._validate_authority(spec, actor)
+        await self._validate_authority(spec, guild, actor)
 
         old = await get_binding(guild.id, subsystem, binding_name)
         if old.target_id is None and old.last_updated_at is None:
@@ -308,6 +308,7 @@ class BindingMutationPipeline:
     async def _validate_authority(
         self,
         spec: BindingSpec,
+        guild: discord.Guild,
         actor: discord.Member,
     ) -> None:
         """Step 2: capability-native authority (ADR-005 A1).
@@ -321,7 +322,7 @@ class BindingMutationPipeline:
 
         decision = await actor_holds_capability(
             actor,
-            getattr(actor, "guild", None),
+            guild,
             spec.capability_required,
             actor_type="user",
         )

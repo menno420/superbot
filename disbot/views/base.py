@@ -83,6 +83,18 @@ async def handle_view_error(
             pass
 
 
+def interaction_is_admin(interaction: discord.Interaction) -> bool:
+    """Return ``True`` when the interacting user holds Discord administrator.
+
+    Matches the ``@has_permissions(administrator=True)`` bar used by the typed
+    admin commands.  Use it as a panel-callback authority re-check: a panel's
+    entry point may not be admin-gated (e.g. opened via the Help menu), and
+    :class:`BaseView` only locks a panel to its invoker, not to an authority.
+    """
+    perms = getattr(interaction.user, "guild_permissions", None)
+    return bool(perms is not None and perms.administrator)
+
+
 class BaseView(discord.ui.View):
     """Standard base for all SuperBot interactive panels.
 

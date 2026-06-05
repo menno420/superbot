@@ -102,3 +102,64 @@ async def test_clear_limit_modal_noops_when_no_limit(monkeypatch):
     await modal.on_submit(interaction)
 
     set_limit.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# Panel authority guards (pre-merge hardening)
+# ---------------------------------------------------------------------------
+
+
+def _interaction(*, user_id: int = 7, admin: bool = True):
+    interaction = MagicMock()
+    interaction.user.id = user_id
+    interaction.user.guild_permissions.administrator = admin
+    interaction.response.send_message = AsyncMock()
+    return interaction
+
+
+@pytest.mark.asyncio
+async def test_chain_menu_blocks_non_admin_interaction():
+    from cogs.chain_cog import _ChainMenuView
+
+    ctx = MagicMock()
+    ctx.author.id = 7
+    view = _ChainMenuView(ctx, MagicMock())
+    interaction = _interaction(user_id=7, admin=False)  # invoker, but not admin
+    assert await view.interaction_check(interaction) is False
+    interaction.response.send_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_chain_menu_allows_admin_interaction():
+    from cogs.chain_cog import _ChainMenuView
+
+    ctx = MagicMock()
+    ctx.author.id = 7
+    view = _ChainMenuView(ctx, MagicMock())
+    interaction = _interaction(user_id=7, admin=True)
+    assert await view.interaction_check(interaction) is True
+
+
+@pytest.mark.asyncio
+async def test_rps_matchup_button_denies_non_admin():
+    from views.games.rps_panel import _RpsTournamentMatchupButton
+
+    btn = _RpsTournamentMatchupButton()
+    interaction = _interaction(admin=False)
+    await btn.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    args, _ = interaction.response.send_message.call_args
+    assert "admin-only" in args[0]
+
+
+@pytest.mark.asyncio
+async def test_rps_matchup_select_denies_non_admin_before_dispatch(monkeypatch):
+    from views.games import rps_panel
+
+    resolve_spy = MagicMock()
+    monkeypatch.setattr(rps_panel, "_resolve_rps_cog", resolve_spy)
+    sel = rps_panel._RpsMatchupSelect()
+    interaction = _interaction(admin=False)
+    await sel.callback(interaction)
+    interaction.response.send_message.assert_awaited_once()
+    resolve_spy.assert_not_called()  # bailed before resolving the cog / dispatch

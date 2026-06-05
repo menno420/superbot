@@ -269,7 +269,7 @@ class SettingsMutationPipeline:
         """
         spec = self._resolve_spec(subsystem, name)
         self._validate_actor_type(actor_type)
-        await self._validate_authority(spec, actor, actor_type)
+        await self._validate_authority(spec, guild, actor, actor_type)
         await self._check_mutation_enabled(guild.id)
 
         coerced, ok, coerce_diag = _coerce_for_write(value, spec.value_type)
@@ -428,6 +428,7 @@ class SettingsMutationPipeline:
     async def _validate_authority(
         self,
         spec: Any,
+        guild: Any,
         actor: Any,
         actor_type: str,
     ) -> None:
@@ -442,7 +443,7 @@ class SettingsMutationPipeline:
 
         decision = await actor_holds_capability(
             actor,
-            getattr(actor, "guild", None),
+            guild,
             spec.capability_required,
             actor_type=actor_type,
         )

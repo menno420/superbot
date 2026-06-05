@@ -398,6 +398,7 @@ class ResourceProvisioningPipeline:
 
         await self._validate_actor_authority(
             option.capability_required,
+            guild,
             actor,
             actor_type,
         )
@@ -646,6 +647,7 @@ class ResourceProvisioningPipeline:
     async def _validate_actor_authority(
         self,
         capability: str,
+        guild: Any,
         actor: Any,
         actor_type: str,
     ) -> None:
@@ -660,7 +662,7 @@ class ResourceProvisioningPipeline:
 
         decision = await actor_holds_capability(
             actor,
-            getattr(actor, "guild", None),
+            guild,
             capability,
             actor_type=actor_type,
         )

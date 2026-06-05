@@ -15,7 +15,7 @@ from core.runtime.message_pipeline import (
 )
 from services import moderation_service
 from utils import db
-from views.base import HubView, send_panel
+from views.base import HubView, interaction_is_admin, send_panel
 
 CHAIN_STAGE_NAME = "chain"
 # Auto-mod tier — last within the tier (after cleanup=10, counting=15). See
@@ -548,6 +548,20 @@ class _ChainMenuView(HubView):
         super().__init__(ctx.author)
         self.ctx = ctx
         self.cog = cog
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        # The typed chain commands are admin-only; this panel is also reachable
+        # via the Help menu (build_help_menu_view), which is not admin-gated, so
+        # re-check authority on every button — BaseView only locks to the invoker.
+        if not await super().interaction_check(interaction):
+            return False
+        if not interaction_is_admin(interaction):
+            await interaction.response.send_message(
+                "Chain management is admin-only.",
+                ephemeral=True,
+            )
+            return False
+        return True
 
     async def build_embed(self) -> discord.Embed:
         channels = await db.get_all_chain_channels(self.ctx.guild.id)
