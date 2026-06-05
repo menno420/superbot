@@ -14,6 +14,7 @@ callbacks produce the same embed as the typed command.
 from __future__ import annotations
 
 import datetime
+from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
@@ -23,6 +24,216 @@ from services.platform_consistency import (
     SectionResult,
     SectionStatus,
 )
+
+if TYPE_CHECKING:
+    from governance.models import CleanupPolicy, GovernanceSnapshot
+
+
+# ---------------------------------------------------------------------------
+# Operator explainers (IL-1 / IL-2 / IL-3) — read-only diagnostics that reuse
+# existing governance read models + the task_outcome_total metric.  No new
+# governance / preview / monitor system (Ideas Lab D1/D2): IL-1/IL-2 take a
+# pre-resolved snapshot/policy and just render it; IL-3 reads the existing
+# managed-task counter.
+# ---------------------------------------------------------------------------
+
+
+def _capped(items: list[str], *, empty: str = "*(none)*", cap: int = 1000) -> str:
+    if not items:
+        return empty
+    out = ", ".join(items)
+    return out if len(out) <= cap else out[: cap - 1] + "…"
+
+
+def build_access_explainer_embed(
+    target_label: str,
+    snapshot: GovernanceSnapshot,
+) -> discord.Embed:
+    """IL-1 — "can I use this here?" explainer over a GovernanceSnapshot.
+
+    Pure renderer: the caller resolves the snapshot (async, thread-aware) and
+    passes it in.  Validates RC-2 in production (a thread and its parent yield
+    different snapshots).
+    """
+    embed = discord.Embed(
+        title="🔎 Access — what's usable here",
+        description=(
+            f"Governance visibility for **{target_label}** "
+            f"(your member tier: `{snapshot.member_tier}`)."
+        ),
+        color=discord.Color.blurple(),
+    )
+    embed.add_field(
+        name=f"✅ Visible ({len(snapshot.visible_subsystems)})",
+        value=_capped(sorted(f"`{s}`" for s in snapshot.visible_subsystems)),
+        inline=False,
+    )
+    embed.add_field(
+        name=f"🚫 Denied ({len(snapshot.denied_subsystems)})",
+        value=_capped(sorted(f"`{s}`" for s in snapshot.denied_subsystems)),
+        inline=False,
+    )
+    if snapshot.dependency_blocks:
+        blocks = [
+            f"`{name}` ← needs {', '.join(f'`{d}`' for d in sorted(deps))}"
+            for name, deps in sorted(snapshot.dependency_blocks.items())
+        ]
+        embed.add_field(name="⛓ Dependency blocks", value=_capped(blocks), inline=False)
+    prov = [
+        f"`{name}` → {src.value}"
+        for name, src in sorted(snapshot.scope_provenance.items())
+    ]
+    if prov:
+        embed.add_field(name="📍 Resolved from", value=_capped(prov), inline=False)
+    cp = snapshot.cleanup_policy
+    embed.add_field(
+        name="🧹 Cleanup here",
+        value=(
+            f"delete: `{cp.delete_message}` · after: `{cp.delete_after_seconds}s` "
+            f"· feedback: `{cp.send_feedback}` · from: `{cp.resolved_from.value}`"
+        ),
+        inline=False,
+    )
+    embed.set_footer(text="Read-only · reflects your roles in the selected location")
+    return embed
+
+
+def build_cleanup_preview_embed(
+    target_label: str,
+    policy: CleanupPolicy,
+    *,
+    is_thread: bool,
+    valid_cleanup_scopes: frozenset[str],
+) -> discord.Embed:
+    """IL-2 — dry-run preview of the cleanup policy that WOULD apply here.
+
+    Reuses the read model (``resolve_cleanup_policy`` → ``CleanupPolicy``) and
+    the canonical cleanup-scope set; makes no writes.  There is no existing
+    resolved-policy renderer to reuse (the setup-wizard ``build_cleanup_embed``
+    is a static info page), so this follows the standard ``_platform_embeds``
+    idiom rather than introducing a second resolver/read model.
+    """
+    embed = discord.Embed(
+        title="🧹 Cleanup preview (dry run)",
+        description=(
+            f"Resolved cleanup policy for **{target_label}** — no changes made."
+        ),
+        color=discord.Color.blurple(),
+    )
+    embed.add_field(name="Delete message", value=f"`{policy.delete_message}`")
+    embed.add_field(name="Delete after", value=f"`{policy.delete_after_seconds}s`")
+    embed.add_field(name="Send feedback", value=f"`{policy.send_feedback}`")
+    embed.add_field(
+        name="Resolved from",
+        value=f"`{policy.resolved_from.value}`",
+        inline=False,
+    )
+    embed.add_field(
+        name="Cleanup write scopes",
+        value=(
+            ", ".join(f"`{s}`" for s in sorted(valid_cleanup_scopes))
+            + " — `thread` is **not** a cleanup scope (RC-5)"
+        ),
+        inline=False,
+    )
+    if is_thread:
+        embed.add_field(
+            name="ℹ️ Thread note",
+            value=(
+                "This is a thread: cleanup resolves via the **parent channel**, "
+                "and a thread-scoped cleanup write is rejected before the DB."
+            ),
+            inline=False,
+        )
+    embed.set_footer(text="Read-only dry run · no cleanup policy was written")
+    return embed
+
+
+def read_counting_save_outcomes(guild_id: int | None = None) -> dict[str, int] | None:
+    """IL-3 read helper — sum ``task_outcome_total`` for counting:save tasks.
+
+    Surfaces the EXISTING managed-task metric (RC-15 made counting save failures
+    observable through it) — not a new monitor (Ideas Lab D2).  Returns
+    ``{"ok", "error", "cancelled"}`` (process-lifetime counts), or ``None`` when
+    ``prometheus_client`` is unavailable (the counter is a silent no-op then).
+    """
+    from services import metrics
+
+    if not metrics.PROMETHEUS_AVAILABLE:
+        return None
+    prefix = "counting:save:"
+    want = f"counting:save:{guild_id}" if guild_id is not None else None
+    totals = {"ok": 0, "error": 0, "cancelled": 0}
+    for family in metrics.task_outcome_total.collect():
+        for sample in family.samples:
+            if sample.name.endswith("_created"):
+                continue
+            name = sample.labels.get("name", "")
+            outcome = sample.labels.get("outcome", "")
+            if want is not None:
+                if name != want:
+                    continue
+            elif not name.startswith(prefix):
+                continue
+            if outcome in totals:
+                totals[outcome] += int(sample.value)
+    return totals
+
+
+def build_counting_health_embed(
+    guild_id: int,
+    guild_outcomes: dict[str, int] | None,
+    global_outcomes: dict[str, int] | None,
+) -> discord.Embed:
+    """IL-3 — render counting persistence health from task_outcome_total reads."""
+    embed = discord.Embed(
+        title="🔢 Counting persistence health",
+        color=discord.Color.blurple(),
+    )
+    if global_outcomes is None:
+        embed.description = (
+            "⚠️ `prometheus_client` is not installed — task metrics are no-ops, "
+            "so save-outcome counts are unavailable. Failures still log at ERROR "
+            "via the managed-task layer (RC-15)."
+        )
+        return embed
+
+    def _line(o: dict[str, int]) -> str:
+        return (
+            f"ok: `{o.get('ok', 0)}` · error: `{o.get('error', 0)}` · "
+            f"cancelled: `{o.get('cancelled', 0)}`"
+        )
+
+    embed.add_field(
+        name=f"This guild ({guild_id})",
+        value=_line(guild_outcomes or {}),
+        inline=False,
+    )
+    embed.add_field(
+        name="All guilds (this process)",
+        value=_line(global_outcomes),
+        inline=False,
+    )
+    errors = (guild_outcomes or {}).get("error", 0) or global_outcomes.get("error", 0)
+    if errors:
+        embed.color = discord.Color.orange()
+        embed.add_field(
+            name="Verdict",
+            value=(
+                "⚠️ counting save errors observed — a guild may have lost count "
+                "progress. Check ERROR logs (`bot` logger) for the traceback "
+                "(RC-15 routes these through the managed-task done-callback)."
+            ),
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="Verdict",
+            value="✅ no save errors observed",
+            inline=False,
+        )
+    embed.set_footer(text="Counts are since process start (in-memory metric)")
+    return embed
 
 
 async def build_resources_embed(guild: discord.Guild | None) -> discord.Embed:

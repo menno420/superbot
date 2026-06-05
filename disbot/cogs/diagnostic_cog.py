@@ -534,6 +534,110 @@ class DiagnosticCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @platform_grp.command(name="access", aliases=["whyhere"])  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_access(
+        self,
+        ctx,
+        target: discord.TextChannel | discord.Thread | None = None,
+    ):
+        """Explain which subsystems you can use in a channel/thread (IL-1).
+
+        Resolves the governance snapshot for the selected location (thread-aware,
+        validates RC-2) and lists visible/denied subsystems + where each decision
+        resolved from.  Read-only.
+        """
+        from cogs.diagnostic._platform_embeds import build_access_explainer_embed
+        from governance.snapshot import build_governance_snapshot
+
+        where = target or ctx.channel
+        gctx = _governance_context_for(ctx, where)
+        snapshot = await build_governance_snapshot(gctx)
+        await ctx.send(embed=build_access_explainer_embed(where.mention, snapshot))
+
+    @platform_grp.command(  # type: ignore[arg-type]
+        name="cleanup-preview",
+        aliases=["cleanuppreview", "cleanup-policy"],
+    )
+    @commands.has_permissions(administrator=True)
+    async def platform_cleanup_preview(
+        self,
+        ctx,
+        target: discord.TextChannel | discord.Thread | None = None,
+    ):
+        """Dry-run preview of the cleanup policy resolved for a location (IL-2).
+
+        Reuses the read-only resolver; shows the resolved policy + which scope
+        types a cleanup write accepts.  Makes no changes.
+        """
+        from cogs.diagnostic._platform_embeds import build_cleanup_preview_embed
+        from governance.cleanup import resolve_cleanup_policy
+        from governance.writes import _VALID_CLEANUP_SCOPE_TYPES
+
+        where = target or ctx.channel
+        gctx = _governance_context_for(ctx, where)
+        policy = await resolve_cleanup_policy(gctx)
+        await ctx.send(
+            embed=build_cleanup_preview_embed(
+                where.mention,
+                policy,
+                is_thread=isinstance(where, discord.Thread),
+                valid_cleanup_scopes=_VALID_CLEANUP_SCOPE_TYPES,
+            ),
+        )
+
+    @platform_grp.command(  # type: ignore[arg-type]
+        name="counting-health",
+        aliases=["countinghealth"],
+    )
+    @commands.has_permissions(administrator=True)
+    async def platform_counting_health(self, ctx):
+        """Surface counting persistence health from task_outcome_total (IL-3).
+
+        Reads the existing managed-task metric (RC-15) — not a new monitor.
+        """
+        from cogs.diagnostic._platform_embeds import (
+            build_counting_health_embed,
+            read_counting_save_outcomes,
+        )
+
+        guild_id = ctx.guild.id
+        await ctx.send(
+            embed=build_counting_health_embed(
+                guild_id,
+                read_counting_save_outcomes(guild_id),
+                read_counting_save_outcomes(),
+            ),
+        )
+
+
+def _governance_context_for(ctx, target):
+    """Build a GovernanceContext for an arbitrary channel/thread (IL-1/IL-2).
+
+    Mirrors ``GovernanceContext.from_ctx`` but for a user-selected ``target``
+    instead of ``ctx.channel``, keeping the invoker's member/roles so the
+    explainer answers "can *I* use this here?".
+    """
+    from governance.models import GovernanceContext
+
+    if isinstance(target, discord.Thread):
+        thread_id = target.id
+        channel_id = target.parent_id
+        category_id = getattr(target.parent, "category_id", None)
+    else:
+        thread_id = None
+        channel_id = getattr(target, "id", None)
+        category_id = getattr(target, "category_id", None)
+    member = ctx.author
+    return GovernanceContext(
+        guild_id=ctx.guild.id,
+        channel_id=channel_id,
+        category_id=category_id,
+        thread_id=thread_id,
+        member=member if isinstance(member, discord.Member) else None,
+        role_ids={r.id for r in getattr(member, "roles", [])},
+    )
+
 
 async def setup(bot):
     await bot.add_cog(DiagnosticCog(bot))
