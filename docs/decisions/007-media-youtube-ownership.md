@@ -1,11 +1,11 @@
 # ADR-007: YouTube / media is a shared platform subsystem, not BTD6-owned
 
-**Status:** Proposed — awaiting maintainer ratification (drafted 2026-06-05)
+**Status:** Accepted (2026-06-05)
 **Supersedes:** none
 **Superseded by:** none
 
-> **This ADR is a DRAFT.** It records the ownership question and recommended
-> answer; it is **not** ratified.
+> **Accepted.** M1 is ratified: media is a shared subsystem, not BTD6-owned. The
+> `docs/ownership.md` row + service registration are a follow-on ownership PR.
 
 ## Context
 
@@ -25,9 +25,12 @@ new media feature an undeclared architectural change.
 
 ## Decision
 
-**DEFERRED — the maintainer ratifies M1/M2.** Recommended: **M1**. Once ratified,
-`docs/ownership.md` gains a media-subsystem ownership row and the relevant
-services register under it.
+**ACCEPTED — M1** (maintainer-ratified 2026-06-05). Media / `video_reference` is a
+shared platform subsystem (platform + external-API), explicitly **not** BTD6-owned;
+BTD6 and AI consume it like any other caller. As a follow-on (not this session), an
+ownership PR adds the media-subsystem row to `docs/ownership.md` and registers the
+relevant services (e.g. `services/youtube_context_service.py`,
+`services/video_reference_cache_service.py`) under it.
 
 ## Consequences (of M1)
 

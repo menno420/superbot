@@ -22,9 +22,10 @@ Eleven-step contract per :meth:`ResourceProvisioningPipeline.provision`:
   1. Resolve ``ResourceRequirement`` + ``BindingSpec`` from
      :class:`services.resource_provisioning_catalogue.ProvisioningCatalogue`.
      Raise :class:`UndeclaredResourceError` if no option matches.
-  2. Validate actor / capability (administrator-tier placeholder;
-     Phase 4.5 swaps for typed capability resolution against
-     ``BindingSpec.capability_required``).
+  2. Validate actor / capability (ADR-005 A1): the actor must hold the
+     option's ``capability_required`` (resolved via
+     :func:`governance.capability.actor_holds_capability`; empty resolves to
+     the administrator floor).
   3. Validate bot Discord permissions for the requested kind
      (``manage_channels`` for CHANNEL/CATEGORY, ``manage_roles`` for
      ROLE).  Insufficient perms → :class:`UnauthorizedProvisioningError`
@@ -60,9 +61,10 @@ Hard limits for S4.5:
   "zero production callers").  ``provision()`` is invoked by
   ``services.readiness_repair``, ``services.automation_executor``, and
   ``services.setup_operations`` (the ``create_*`` op route).
-* The :data:`core.runtime.feature_flags.RESOURCE_PROVISIONING_PRIMARY`
-  flag is declared but NOT consulted by this pipeline — kill-switch
-  infrastructure for future UI consumers, matching SETTINGS_MUTATION_PRIMARY.
+* The :data:`core.runtime.feature_flags.RESOURCE_PROVISIONING_PRIMARY` flag is a
+  real operator kill-switch (ADR-005 F1): provisioning proceeds by default and
+  is refused only on an explicit operator OFF (fail-open on eval error), matching
+  SETTINGS_MUTATION_PRIMARY.
 * No silent auto-create.  ``mode='create'`` always requires
   ``confirmed=True``; standing operator settings (e.g.
   ``logging.auto_create_channels=true``) are the only legitimate
@@ -115,8 +117,6 @@ _ALLOWED_OUTCOMES: frozenset[str] = frozenset(
     {"success", "permission_blocked", "discord_failed", "binding_failed", "declined"},
 )
 
-_WRITE_AUTHORITY_TIER = "administrator"
-
 
 # ---------------------------------------------------------------------------
 # Exceptions
@@ -133,6 +133,13 @@ class UndeclaredResourceError(ResourceProvisioningError):
 
 class UnauthorizedProvisioningError(ResourceProvisioningError):
     """Raised when actor or bot lacks the required permissions."""
+
+
+class ResourceProvisioningDisabledError(ResourceProvisioningError):
+    """Raised when the provisioning pipeline is disabled via the
+    :data:`core.runtime.feature_flags.RESOURCE_PROVISIONING_PRIMARY` operator
+    kill-switch (an explicit operator OFF; ADR-005 F1).
+    """
 
 
 class ProvisioningConfirmationRequired(  # noqa: N818 — name pinned by the roadmap spec
@@ -362,6 +369,7 @@ class ResourceProvisioningPipeline:
 
           * UndeclaredResourceError
           * UnauthorizedProvisioningError
+          * ResourceProvisioningDisabledError
           * ProvisioningConfirmationRequired
           * DiscordProvisioningFailedError
           * KindMismatchError
@@ -371,8 +379,10 @@ class ResourceProvisioningPipeline:
 
         self._validate_actor_type(actor_type)
         self._validate_mode(request.mode)
-        self._validate_actor_authority(actor, actor_type)
 
+        # Resolve the catalogue option first so authority can be checked against
+        # the option's declared capability (ADR-005 A1).  Catalogue resolution
+        # has no side effects, so doing it before the authority check is safe.
         catalogue = rpc.get_cached_provisioning_catalogue()
         if catalogue is None:
             raise UndeclaredResourceError(
@@ -385,6 +395,14 @@ class ResourceProvisioningPipeline:
                 f"no provisioning option for "
                 f"{request.subsystem!r}/{request.binding_name!r}",
             )
+
+        await self._validate_actor_authority(
+            option.capability_required,
+            guild,
+            actor,
+            actor_type,
+        )
+        await self._check_provisioning_enabled(guild.id)
 
         if request.mode == "create" and not confirmed:
             raise ProvisioningConfirmationRequired(
@@ -626,32 +644,56 @@ class ResourceProvisioningPipeline:
                 f"mode={mode!r} not in {sorted(_ALLOWED_MODES)}",
             )
 
-    def _validate_actor_authority(self, actor: Any, actor_type: str) -> None:
-        """Placeholder administrator-tier floor.
+    async def _validate_actor_authority(
+        self,
+        capability: str,
+        guild: Any,
+        actor: Any,
+        actor_type: str,
+    ) -> None:
+        """Step 2: capability-native authority (ADR-005 A1).
 
-        ``actor_type='system'`` / ``'backfill'`` bypass the check.  All
-        other types require an administrator-tier Discord member.
-        Phase 4.5 swaps this for typed capability resolution against
-        ``BindingSpec.capability_required``.
+        ``actor_type='system'`` / ``'backfill'`` bypass the check.  All other
+        types must hold ``capability`` (the option's ``capability_required``);
+        an empty capability resolves to the administrator floor.  See
+        :func:`governance.capability.actor_holds_capability`.
         """
-        if actor_type in ("system", "backfill"):
-            return
-        if actor is None or getattr(actor, "guild", None) is None:
-            raise UnauthorizedProvisioningError(
-                "resource provisioning requires a guild-member actor "
-                f"(actor_type={actor_type!r})",
-            )
-        from utils.visibility_rules import (
-            get_member_visibility_tier,
-            is_tier_sufficient,
-        )
+        from governance.capability import actor_holds_capability
 
-        guild_owner_id = actor.guild.owner_id if actor.guild else 0
-        tier = get_member_visibility_tier(actor, guild_owner_id)
-        if not is_tier_sufficient(tier, _WRITE_AUTHORITY_TIER):
-            raise UnauthorizedProvisioningError(
-                f"member {actor.id!r} (tier={tier!r}) requires at least "
-                f"{_WRITE_AUTHORITY_TIER!r} to provision resources",
+        decision = await actor_holds_capability(
+            actor,
+            guild,
+            capability,
+            actor_type=actor_type,
+        )
+        if not decision.allowed:
+            raise UnauthorizedProvisioningError(decision.reason)
+
+    async def _check_provisioning_enabled(self, guild_id: int) -> None:
+        """F1 kill-switch (ADR-005): refuse only when an operator has explicitly
+        disabled provisioning via ``RESOURCE_PROVISIONING_PRIMARY``.
+
+        Defaults to ALLOW and **fails open** — a flag-store outage must not block
+        provisioning.  Raised before any audit row or Discord call.
+        """
+        from core.runtime import feature_flags
+
+        try:
+            disabled = await feature_flags.is_operator_disabled(
+                feature_flags.RESOURCE_PROVISIONING_PRIMARY.name,
+                guild_id,
+            )
+        except Exception:  # pragma: no cover - defensive; evaluator self-protects
+            logger.warning(
+                "resource_provisioning: kill-switch flag eval raised; "
+                "allowing (fail-open).",
+            )
+            return
+        if disabled:
+            raise ResourceProvisioningDisabledError(
+                "resource provisioning pipeline is disabled for "
+                f"guild={guild_id} (operator turned "
+                f"{feature_flags.RESOURCE_PROVISIONING_PRIMARY.name!r} OFF)",
             )
 
     def _bot_can_provision(

@@ -1,12 +1,13 @@
 # ADR-006: BTD6 data provenance + owner-per-fact-type matrix
 
-**Status:** Proposed — awaiting maintainer ratification (drafted 2026-06-05)
+**Status:** Accepted (2026-06-05)
 **Supersedes:** none
 **Superseded by:** none
 
-> **This ADR is a DRAFT.** It records the decision to be made and the recommended
-> shape; it is **not** ratified and it does **not** design a schema. BTD6 data
-> extraction stays **PAUSED** until this is Accepted (the RC-10 gate).
+> **Accepted.** The provenance object + owner matrix + Hybrid storage choice are
+> ratified and binding. This ADR still does **not** hand-design the schema; a
+> follow-on docs/schema PR does that. BTD6 data extraction stays **PAUSED** until
+> that PR lands (the RC-10 gate).
 
 ## Context
 
@@ -32,9 +33,22 @@ source is always attributable and AI grounding stays auditable.
 
 ## Decision
 
-**DEFERRED — the maintainer ratifies the provenance object + matrix + storage
-choice.** This draft names owners and recommends the single-object approach; it
-does **not** design the schema or pick storage. Extraction remains paused.
+**ACCEPTED** (maintainer-ratified 2026-06-05):
+
+1. **Provenance object:** every BTD6 fact carries a single composed
+   `DataProvenance` / `SourceAttribution` value object (source, fetched-at,
+   freshness model) — binding.
+2. **Owner-per-fact-type matrix:** the view-model service
+   (`services/btd6_view_model_service.py`) composes; the query services own reads —
+   binding.
+3. **Storage = Hybrid:** extracted statics remain in `btd6_data_blobs` (the fact
+   store); the provenance object **references** source-registry rows
+   (`btd6_sources` / `btd6_source_registry`) for source health + freshness. No new
+   storage system is introduced.
+
+The provenance object + matrix are now binding, but **BTD6 extraction stays paused**
+(RC-10 gate): a follow-on docs/schema PR implements the provenance contract before
+any new extraction resumes.
 
 ## Consequences
 

@@ -58,21 +58,28 @@ def _xp_schema():
     subsystem_schema._reset_for_tests()
 
 
-def _admin_actor(member_id: int = 1):
-    """Build a Member mock that passes the administrator-tier check."""
+def _admin_actor(member_id: int = 1, guild_id: int = 1):
+    """Build a Member mock that passes the administrator-tier check.
+
+    The actor must be a member of the target guild (``guild_id`` must match the
+    guild passed to the pipeline) — ADR-005 authority is bound to the target guild.
+    """
     member = MagicMock()
     member.id = member_id
     guild = MagicMock()
-    guild.owner_id = member_id  # Owner trivially satisfies administrator tier
+    guild.id = guild_id  # must match the target guild passed to the pipeline
+    guild.owner_id = member_id
     member.guild = guild
+    member.guild_permissions = MagicMock(administrator=True)
     return member
 
 
 def _below_tier_actor(member_id: int = 2):
-    """A member with no elevated permissions."""
+    """A member of the target guild with no elevated permissions."""
     member = MagicMock()
     member.id = member_id
     guild = MagicMock()
+    guild.id = 1  # same guild as the target; denial comes from the tier check
     guild.owner_id = 999  # Different from member.id
     member.guild = guild
     member.guild_permissions = MagicMock(
@@ -572,7 +579,7 @@ async def test_set_ai_audit_log_channel_binding_writes_through_pipeline(_ai_sche
     ai_guild_policy.
     """
     pipeline = BindingMutationPipeline()
-    actor = _admin_actor()
+    actor = _admin_actor(guild_id=999)
     guild = _guild(guild_id=999)
 
     with patch(

@@ -1,13 +1,12 @@
 # ADR-005: Capability-native authority for settings/bindings + platform-flag semantics
 
-**Status:** Proposed — awaiting maintainer ratification (drafted 2026-06-05)
+**Status:** Accepted (2026-06-05)
 **Supersedes:** none
 **Superseded by:** none
 
-> **This ADR is a DRAFT.** It records the decision that must be made and the
-> recommended option, but it is **not** ratified. No code may rely on it until a
-> maintainer changes its status to Accepted. Settings/bindings UI expansion stays
-> blocked until then (the RC-4 gate).
+> **Accepted.** This ADR is ratified; the implementing change (capability resolver +
+> kill-switch wiring) lands in the same session. The capability-native settings UI
+> remains gated as a follow-on (the RC-4 gate covers the UI, not the core swap).
 
 ## Context
 
@@ -36,27 +35,50 @@ platform-consistency ledger:
   unblock.)
 
 **Flag semantics:**
-- **F1:** Wire `*_PRIMARY` as real kill-switches consulted only by
-  `core/runtime/config_arbitration.py`.
+- **F1:** Wire `*_PRIMARY` as real kill-switches consulted at the mutation /
+  provisioning pipeline entry points via the feature-flag evaluator. *(The original
+  draft named `core/runtime/config_arbitration.py`; that is a read-only config seam
+  and the wrong place — corrected at ratification.)*
 - **F2:** Remove the unconsulted flags as dead declarations.
 - (Both are internally consistent: F1 if an incident-response kill-switch is
   genuinely wanted; F2 if not.)
 
 ## Decision
 
-**DEFERRED — the maintainer ratifies A1/A2 and F1/F2.** Recommended: **A1 + (F1 or
-F2 per operational need)**. Until ratified, settings/bindings UI expansion stays
-blocked, and the implementing PR is kept OUT of the current wave (it touches many
-settings/bindings surfaces).
+**ACCEPTED — A1 + F1** (maintainer-ratified 2026-06-05).
 
-## Consequences (of the recommended A1)
+- **A1:** authority for settings/bindings is resolved from the declared
+  `SettingSpec.capability_required` / `BindingSpec.capability_required` via a
+  governance capability resolver, replacing the placeholder administrator-tier
+  floor. The `system`/`backfill` bypass, audit emission, and cache invalidation are
+  preserved. A spec with an **empty** `capability_required` resolves to the
+  administrator floor (matching existing pipeline behaviour — *not* "no auth").
+- **F1:** `SETTINGS_MUTATION_PRIMARY` and `RESOURCE_PROVISIONING_PRIMARY` become real
+  operator kill-switches, consulted at the **mutation / provisioning pipeline entry
+  points** (`SettingsMutationPipeline.set_value`,
+  `ResourceProvisioningPipeline.provision`) via the feature-flag evaluator — *not*
+  via `core/runtime/config_arbitration.py` (read-only). They default to **ALLOW**
+  (block only on an explicit operator OFF) and **fail OPEN** (a flag-store outage
+  must not brick writes).
 
-- Mutations authorized by the specific declared capability, not a broad tier.
+The capability-native settings/bindings **UI** remains a follow-on (out of this
+session's scope). The core authority swap + kill-switches land in the ratifying
+session (contained: the three mutation pipelines + a governance resolver, no public
+signature changes).
+
+## Consequences (of A1 + F1)
+
+- Mutations are authorized by the specific declared capability, not a broad tier.
 - Unblocks a capability-native settings/bindings UI as a *follow-on* (not part of
-  the implementing PR).
-- Broad surface area → the implementing PR is large; deliberately deferred.
+  the implementing change).
+- The core authority swap is contained (the three mutation pipelines + one
+  governance resolver, no public-signature changes), so it lands in the ratifying
+  session; only the broader settings UI is deferred.
+- Two operator kill-switches exist for incident response (default ALLOW, fail OPEN).
 
 ## Re-evaluation criteria
 
-Ratify (or amend) when the maintainer decides the flag fate and confirms the
-capability-native direction; the implementing PR then proceeds in its own session.
+Revisit if a per-capability authorization matrix (capability → required tier) is
+introduced (v1 keeps a single administrator floor keyed on the declared capability,
+plus a revoke-only guild overlay), or if the kill-switch fail-OPEN posture proves
+wrong in an incident.

@@ -10,6 +10,10 @@
 > tests because the guarantees are already covered — re-pinning them would be
 > redundant and risks asserting non-current behavior on a confirmed-healthy
 > subsystem (priority map: "do not refactor the AI central stage").
+>
+> **Update (2026-06-05, post-#517):** the one guard left open below — cooldown
+> ordering — has since been pinned by a focused test; the central stage was not
+> modified. See the Verdict + "Cooldown-ordering guard" section.
 
 ## The central choke point
 
@@ -26,7 +30,7 @@ for natural-language AI. Its documented steps (module docstring) end with
 |---|---|
 | **One audit row per stage invocation** (after retry/floor; exactly once, not zero/duplicate) | `tests/unit/runtime/ai/test_natural_language_stage.py::test_triggering_mention_recorded_exactly_once_after_success` and `::…_after_denied` |
 | **Every terminal outcome audits** (replied / degraded / skipped / errored / send-failure) | same file: `test_replied_audit_carries_provider_and_model`, `test_degraded_response_audits_as_degraded`, `test_healthy_empty_response_audits_as_skipped`, `test_gateway_raises_audits_as_errored`, `test_send_failure_video_task_writes_video_send_failed`, `test_send_failure_non_video_task_writes_response_send_failed` |
-| **Cooldown ordering** (checked after policy, before the provider call; denial recorded) | stage `:301-326`; the denied-path audit-once test exercises a denial → `record`. *(See "Optional refinement" below.)* |
+| **Cooldown ordering** (checked after policy, before the provider call; denial recorded) | `tests/unit/runtime/ai/test_natural_language_stage.py::test_cooldown_active_records_one_row_and_skips_gateway` — asserts exactly one `COOLDOWN_ACTIVE` row and the gateway is never called; stage `:301-329`. |
 | **Read-only grounding-tool whitelist** (no write/action tools offered) | `tests/unit/services/test_ai_tools.py` (whole file): `test_build_registry_returns_specs_and_matching_handlers`, the `BTD6_GROUNDING_TOOL_NAMES == registered` + `all(name.startswith("btd6_"))` assertions, `test_admin_scope_offers_all_read_only_tools`; plus `ai_tools.py`'s "every tool here is **read-only**" contract |
 | **Tool ledger only captures grounding results** | `tests/unit/runtime/ai/test_natural_language_stage.py::test_ledger_captures_only_btd6_tool_results` |
 | **I-2 non-mutating** (projection/readiness services never mutate/append/audit/call providers) | `tests/unit/services/test_ai_readonly_invariants.py` (AST scan) |
@@ -36,25 +40,26 @@ for natural-language AI. Its documented steps (module docstring) end with
 
 ## Verdict
 
-**The RC-11 gate is MOSTLY satisfied by existing coverage** — the audit-row-once,
-read-only-tool-whitelist, I-2 non-mutating, and grounding-guard guarantees are all
-pinned. **One guard remains before AI expansion can be cleared:** a focused
-**cooldown-ordering** test (see below) — the existing denied-path test denies via
-`BELOW_MIN_LEVEL`, not cooldown, so "records exactly one `COOLDOWN_ACTIVE` row and
-never calls the gateway" is not yet pinned. The AI-expansion session must add that
-test before treating the gate as fully cleared. No new guard test was added in
-this pass (the rest would duplicate existing coverage; the cooldown test is
-deliberately left to the session that owns the AI-stage harness).
+**The RC-11 guard set is now COMPLETE** — the audit-row-once, read-only-tool-whitelist,
+I-2 non-mutating, grounding-guard, **and cooldown-ordering** guarantees are all pinned.
+The last gap (a focused cooldown-ordering test) was closed on 2026-06-05 by
+`test_cooldown_active_records_one_row_and_skips_gateway`, which asserts that when
+`ai_permission_service.is_on_cooldown(...)` is True the stage records exactly one
+`COOLDOWN_ACTIVE` row and never calls the gateway.
 
-## Optional refinement (for the AI-expansion session, not now)
+**This clears the guard prerequisite only.** AI feature expansion and any new AI
+write/action tool remain gated by Ideas-Lab §6 and require their own affirmative
+decision — the guard tests existing is necessary, not sufficient.
 
-The one guarantee covered only *indirectly* is **cooldown ordering** — the
-denied-path audit-once test exercises a denial, but there is no test that
-specifically asserts: when `ai_permission_service.is_on_cooldown(...)` is True,
-the stage records exactly one `COOLDOWN_ACTIVE` row **and never calls the
-gateway**. A future session that owns the AI-stage test harness (`stub_services`)
-can add that focused test cheaply. It is deliberately left to that session rather
-than written here blind, per the must-not-touch-the-stage rule.
+## Cooldown-ordering guard (closed 2026-06-05)
+
+The guarantee previously covered only *indirectly* — **cooldown ordering** — is now
+pinned by `test_cooldown_active_records_one_row_and_skips_gateway`
+(`tests/unit/runtime/ai/test_natural_language_stage.py`). It mocks
+`ai_permission_service.is_on_cooldown(...)` to True over the `stub_services` harness
+(which lets policy ALLOW so the flow reaches the cooldown branch) and asserts the
+stage records exactly one `COOLDOWN_ACTIVE` row **and never calls the gateway**. The
+central stage itself was not modified.
 
 ## Before adding any AI write/action tool
 

@@ -157,3 +157,36 @@ def test_snapshot_exposes_audience_editable_label():
     assert info["db_editable"] is True
     assert info["label"]  # non-empty operator-facing label
     assert snap["by_name"]["feature_flag.primary"]["db_editable"] is False
+
+
+# ---------------------------------------------------------------------------
+# ADR-005 F1 — is_operator_disabled source discrimination
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "value,source,expected",
+    [
+        (False, "default", False),  # declared-off default is NOT a disable
+        (False, "bootstrap_fallback", False),  # DB outage is NOT a disable (fail-open)
+        (False, "env", True),  # explicit operator OFF via env
+        (False, "db_guild", True),  # explicit operator OFF via guild override
+        (False, "db_global", True),  # explicit operator OFF via global override
+        (True, "env", False),  # an enabled flag is never "disabled"
+    ],
+)
+async def test_is_operator_disabled_only_on_explicit_off(
+    monkeypatch, value, source, expected
+):
+    """The mutation kill-switches must treat only an explicit operator OFF as a
+    disable — never the declared default or a flag-store-outage fallback."""
+    from core.runtime import feature_flags
+    from core.runtime.feature_flags import _Decision
+
+    async def _fake_resolve(flag_name, guild_id=None):
+        return _Decision(value, source)
+
+    monkeypatch.setattr(feature_flags, "resolve_with_provenance", _fake_resolve)
+    result = await feature_flags.is_operator_disabled("settings.mutation.primary", 1)
+    assert result is expected

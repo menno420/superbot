@@ -29,11 +29,13 @@ Hard limits for S4:
   * No Settings Manager UI integration — that is S5.
   * No bindings, no resource provisioning, no access-policy writes,
     no participation writes, no list-setting writes.
-  * Authority check is a placeholder; Phase 4.5 swaps for typed
-    capability resolution via :data:`SettingSpec.capability_required`.
-  * The :data:`core.runtime.feature_flags.SETTINGS_MUTATION_PRIMARY`
-    flag is declared but **NOT consulted** by this pipeline — it is
-    kill-switch infrastructure for future S5+ consumers.
+  * Authority is capability-native (ADR-005 A1): the actor must hold the
+    capability declared by ``SettingSpec.capability_required``, resolved via
+    :func:`governance.capability.actor_holds_capability`.  ``system`` /
+    ``backfill`` bypass; an empty capability resolves to the administrator floor.
+  * The :data:`core.runtime.feature_flags.SETTINGS_MUTATION_PRIMARY` flag is a
+    real operator kill-switch (ADR-005 F1): mutations proceed by default and are
+    refused only when an operator explicitly turns it OFF (fail-open on eval error).
 
 Cycle discipline (mirrors
 :mod:`services.platform_consistency` and
@@ -71,11 +73,6 @@ _ALLOWED_ACTOR_TYPES: frozenset[str] = frozenset(
     {"user", "moderator", "admin", "system", "backfill"},
 )
 _ALLOWED_MUTATION_TYPES: frozenset[str] = frozenset({"set_value"})
-
-# Phase 2b authority floor — placeholder.  Phase 4.5 swaps this for
-# the typed access-control resolver consuming
-# ``SettingSpec.capability_required``.
-_WRITE_AUTHORITY_TIER = "administrator"
 
 
 # ---------------------------------------------------------------------------
@@ -118,10 +115,15 @@ class SettingsValidationError(SettingsMutationError):
 
 
 class UnauthorizedSettingsMutationError(SettingsMutationError):
-    """Raised when the actor lacks administrator-tier authority.
+    """Raised when the actor lacks the capability declared by
+    :data:`SettingSpec.capability_required` (ADR-005 A1).
+    """
 
-    Phase 4.5 replaces this with typed capability resolution against
-    :data:`SettingSpec.capability_required`.
+
+class SettingsMutationDisabledError(SettingsMutationError):
+    """Raised when the settings mutation pipeline is disabled via the
+    :data:`core.runtime.feature_flags.SETTINGS_MUTATION_PRIMARY` operator
+    kill-switch (an explicit operator OFF; ADR-005 F1).
     """
 
 
@@ -257,15 +259,18 @@ class SettingsMutationPipeline:
                 declared type.
             SettingsValidationError: ``SettingSpec.validator`` rejected
                 the coerced value.
-            UnauthorizedSettingsMutationError: ``actor`` lacks
-                administrator-tier authority and ``actor_type`` is
-                ``'user'`` / ``'moderator'`` / ``'admin'``.
+            UnauthorizedSettingsMutationError: ``actor`` lacks the
+                capability declared by ``spec.capability_required`` and
+                ``actor_type`` is ``'user'`` / ``'moderator'`` / ``'admin'``.
+            SettingsMutationDisabledError: an operator has turned the
+                ``SETTINGS_MUTATION_PRIMARY`` kill-switch OFF.
             InvalidActorTypeError: ``actor_type`` is not in the
                 allowed set.
         """
         spec = self._resolve_spec(subsystem, name)
         self._validate_actor_type(actor_type)
-        self._validate_authority(actor, actor_type)
+        await self._validate_authority(spec, guild, actor, actor_type)
+        await self._check_mutation_enabled(guild.id)
 
         coerced, ok, coerce_diag = _coerce_for_write(value, spec.value_type)
         if not ok:
@@ -420,34 +425,56 @@ class SettingsMutationPipeline:
                 f"actor_type={actor_type!r} not in {sorted(_ALLOWED_ACTOR_TYPES)}",
             )
 
-    def _validate_authority(self, actor: Any, actor_type: str) -> None:
-        """Step 3: placeholder administrator-tier floor.
+    async def _validate_authority(
+        self,
+        spec: Any,
+        guild: Any,
+        actor: Any,
+        actor_type: str,
+    ) -> None:
+        """Step 3: capability-native authority (ADR-005 A1).
 
-        ``actor_type='system'`` and ``'backfill'`` bypass the authority
-        check (they represent scripted ops and migrations).  All other
-        actor types require an administrator-tier Discord member.
-        Phase 4.5 replaces this with typed capability resolution via
-        :data:`SettingSpec.capability_required`.
+        ``actor_type='system'`` and ``'backfill'`` bypass the check (scripted
+        ops and migrations).  All other actor types must hold the capability
+        declared by ``spec.capability_required``; an empty capability resolves
+        to the administrator floor (see :mod:`governance.capability`).
         """
-        if actor_type in ("system", "backfill"):
-            return
-        if actor is None or getattr(actor, "guild", None) is None:
-            raise UnauthorizedSettingsMutationError(
-                "settings mutation requires a guild-member actor context "
-                f"(actor_type={actor_type!r})",
-            )
-        from utils.visibility_rules import (
-            get_member_visibility_tier,
-            is_tier_sufficient,
-        )
+        from governance.capability import actor_holds_capability
 
-        guild_owner_id = actor.guild.owner_id if actor.guild else 0
-        tier = get_member_visibility_tier(actor, guild_owner_id)
-        if not is_tier_sufficient(tier, _WRITE_AUTHORITY_TIER):
-            raise UnauthorizedSettingsMutationError(
-                f"member {actor.id!r} (tier={tier!r}) requires at least "
-                f"{_WRITE_AUTHORITY_TIER!r} to mutate settings "
-                "(Phase 4.5 will replace this with typed capability check)",
+        decision = await actor_holds_capability(
+            actor,
+            guild,
+            spec.capability_required,
+            actor_type=actor_type,
+        )
+        if not decision.allowed:
+            raise UnauthorizedSettingsMutationError(decision.reason)
+
+    async def _check_mutation_enabled(self, guild_id: int) -> None:
+        """F1 kill-switch (ADR-005): refuse only when an operator has
+        explicitly disabled the pipeline via ``SETTINGS_MUTATION_PRIMARY``.
+
+        Defaults to ALLOW (the declared-off default is *not* a disable) and
+        **fails open** — a flag-store outage must never brick settings writes.
+        """
+        from core.runtime import feature_flags
+
+        try:
+            disabled = await feature_flags.is_operator_disabled(
+                feature_flags.SETTINGS_MUTATION_PRIMARY.name,
+                guild_id,
+            )
+        except Exception:  # pragma: no cover - defensive; evaluator self-protects
+            logger.warning(
+                "settings_mutation: kill-switch flag eval raised; "
+                "allowing (fail-open).",
+            )
+            return
+        if disabled:
+            raise SettingsMutationDisabledError(
+                "settings mutation pipeline is disabled for "
+                f"guild={guild_id} (operator turned "
+                f"{feature_flags.SETTINGS_MUTATION_PRIMARY.name!r} OFF)",
             )
 
     async def _read_previous(

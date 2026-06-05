@@ -13,6 +13,7 @@ from cogs.help.route import (
     HelpOpener,
     HelpRoute,
 )
+from cogs.help.route import discovery_label as _discovery_label
 from cogs.help.route import open_route as _open_route
 from cogs.help.route import resolve_route as _resolve_route
 from core.runtime.persistent_views import PersistentView, register
@@ -174,8 +175,10 @@ def build_cog_embed(
     for cmd in cmds[:_FIELD_CAP]:
         aliases = f"  *(aliases: {', '.join(cmd.aliases)})*" if cmd.aliases else ""
         sig = f" {cmd.signature}".rstrip() if cmd.signature else ""
+        label = _discovery_label(cmd)
+        label_suffix = f"  ·  {label}" if label else ""
         embed.add_field(
-            name=f"`{prefix}{cmd.name}`{aliases}",
+            name=f"`{prefix}{cmd.name}`{label_suffix}{aliases}",
             value=f"{cmd.help or 'No description.'}\nUsage: `{prefix}{cmd.name}{sig}`",
             inline=False,
         )
