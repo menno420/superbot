@@ -169,3 +169,92 @@ async def test_role_override_flag_differentiates_cached_results(mock_db):
     count_after_b = mock_db.fetch.call_count
 
     assert count_after_b > count_after_a
+
+
+# ---------------------------------------------------------------------------
+# RC-2 / ISSUE-016 — thread cache identity (cross-thread / parent bleed)
+# ---------------------------------------------------------------------------
+
+
+def test_cache_key_different_threads_differ():
+    """Two threads sharing a parent channel must get distinct cache keys."""
+    k_a = _cache_key(1, 10, "user", thread_id=111)
+    k_b = _cache_key(1, 10, "user", thread_id=222)
+    assert k_a != k_b
+
+
+def test_cache_key_thread_distinct_from_parent_channel():
+    """A thread context must not share the threadless parent channel's key."""
+    k_thread = _cache_key(1, 10, "user", thread_id=111)
+    k_parent = _cache_key(1, 10, "user")  # thread_id defaults to None
+    assert k_thread != k_parent
+
+
+def test_cache_key_thread_differs_on_role_override_path():
+    """thread_id participates in the key on the role-override branch too."""
+    gs._guild_has_role_overrides[1] = True
+    roles = frozenset({100})
+    k_a = _cache_key(1, 10, "user", roles, thread_id=111)
+    k_b = _cache_key(1, 10, "user", roles, thread_id=222)
+    assert k_a != k_b
+
+
+@pytest.mark.asyncio
+async def test_thread_contexts_do_not_share_cache(mock_db):
+    """Distinct thread_ids under one parent channel each miss the cache, and
+    the threadless parent is a distinct key as well."""
+    guild_id, parent = 900, 123
+    ctx_a = make_ctx(guild_id=guild_id, channel_id=parent, thread_id=111)
+    ctx_b = make_ctx(guild_id=guild_id, channel_id=parent, thread_id=222)
+    ctx_parent = make_ctx(guild_id=guild_id, channel_id=parent)
+
+    await resolve_visibility(ctx_a)
+    c1 = mock_db.fetch.call_count
+    await resolve_visibility(ctx_b)  # sibling thread → distinct key → re-query
+    c2 = mock_db.fetch.call_count
+    assert c2 > c1
+
+    await resolve_visibility(ctx_parent)  # parent (thread_id=None) → distinct
+    c3 = mock_db.fetch.call_count
+    assert c3 > c2
+
+    # Re-resolving thread A is a genuine cache hit (no further DB query).
+    await resolve_visibility(ctx_a)
+    assert mock_db.fetch.call_count == c3
+
+
+@pytest.mark.asyncio
+async def test_thread_scoped_override_does_not_bleed_across_threads(mock_db):
+    """Regression for the RC-2 bleed: a thread-scoped override in one thread must
+    not leak to a sibling thread or to the parent channel via a shared entry.
+
+    Threads 111 and 222 share parent channel 123.  Only thread 111 carries a
+    'economy disabled' thread override.  Before the fix all three contexts
+    collided on the same channel-keyed entry, so whichever resolved first
+    poisoned the others.
+    """
+    guild_id, parent, thread_a, thread_b = 900, 123, 111, 222
+
+    def fetch_side_effect(_sql, _guild, _scope_types, scope_ids):
+        # Only thread 111's scope chain carries the disabling override.
+        if thread_a in scope_ids:
+            return [make_visibility_row("thread", thread_a, "economy", False)]
+        return []
+
+    mock_db.fetch.side_effect = fetch_side_effect
+
+    ctx_thread_a = make_ctx(guild_id=guild_id, channel_id=parent, thread_id=thread_a)
+    ctx_thread_b = make_ctx(guild_id=guild_id, channel_id=parent, thread_id=thread_b)
+    ctx_parent = make_ctx(guild_id=guild_id, channel_id=parent)
+
+    # Resolve thread A first → economy disabled, result cached under A's key.
+    res_a = await resolve_visibility(ctx_thread_a)
+    assert "economy" not in res_a.visible_subsystems
+
+    # Sibling thread B must compute its own result, not inherit A's.
+    res_b = await resolve_visibility(ctx_thread_b)
+    assert "economy" in res_b.visible_subsystems
+
+    # The parent channel (no thread) must be unaffected too.
+    res_parent = await resolve_visibility(ctx_parent)
+    assert "economy" in res_parent.visible_subsystems

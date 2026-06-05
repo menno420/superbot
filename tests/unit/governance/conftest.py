@@ -60,12 +60,19 @@ def make_ctx(
     guild_id: int = 100,
     channel_id: int | None = 200,
     category_id: int | None = 300,
+    thread_id: int | None = None,
 ) -> GovernanceContext:
-    """Build a GovernanceContext with no Discord member (yields tier='user')."""
+    """Build a GovernanceContext with no Discord member (yields tier='user').
+
+    For a thread context, pass ``thread_id`` together with ``channel_id`` set to
+    the thread's *parent* channel — mirroring GovernanceContext.from_* which
+    record channel_id = thread.parent_id.
+    """
     return GovernanceContext(
         guild_id=guild_id,
         channel_id=channel_id,
         category_id=category_id,
+        thread_id=thread_id,
         member=None,
     )
 
