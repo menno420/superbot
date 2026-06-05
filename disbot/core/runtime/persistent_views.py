@@ -52,6 +52,15 @@ class PersistentView(discord.ui.View):
 
     SUBSYSTEM: ClassVar[str] = ""
 
+    # RC-3 / ADR-004: when the panel's anchor row is missing we cannot verify
+    # ownership.  Default False keeps today's behavior (allow).  Opt in to True
+    # ONLY for panels where a missing anchor could let a non-owner take a
+    # privileged / owner-affecting action (admin/config, or guild mutations like
+    # role management).  Stateless per-clicker panels (economy, mining, btd6,
+    # help) stay False: every button acts on interaction.user.id, so a non-owner
+    # click only touches their own data and the ownership check is cosmetic.
+    FAIL_CLOSED_ON_MISSING_ANCHOR: ClassVar[bool] = False
+
     def __init__(self) -> None:
         super().__init__(timeout=None)
 
@@ -64,6 +73,14 @@ class PersistentView(discord.ui.View):
 
         anchor = await message_anchor_manager.get_by_message_id(interaction.message.id)
         if anchor is None:
+            if self.FAIL_CLOSED_ON_MISSING_ANCHOR:
+                # Owner-scoped panel + unverifiable ownership → deny (ADR-004).
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        "This panel can no longer be verified — please re-open it.",
+                        ephemeral=True,
+                    )
+                return False
             return True
 
         if interaction.user.id != anchor["user_id"]:

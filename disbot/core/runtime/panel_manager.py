@@ -10,6 +10,13 @@ bottom of the channel.  If a prior anchored message exists for the same
 accumulate orphaned panels.  This matches the user-facing expectation that
 running a command produces a new visible result.
 
+Concurrency note (RC-3 verification, 2026-06-05): the delete → mark_stale →
+send → upsert sequence below is NOT internally serialised.  Two concurrent
+invocations for the same (user, channel, subsystem) could race (double-send /
+orphaned anchor).  This is unreproduced in practice and is deliberately left
+unaddressed here — per the RC-3 plan (ADR-004) a panel-serialisation fix is a
+separate change from the fail-open posture work, not bundled into it.
+
 Public surface:
     get_or_render_panel(ctx, subsystem, embed, view) → discord.Message
 """

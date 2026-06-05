@@ -37,6 +37,10 @@ from governance.events import (
     _emit_governance_event,
 )
 from governance.models import GovernanceContext
+from governance.scopes import (
+    VALID_CLEANUP_SCOPE_TYPES,
+    VALID_VISIBILITY_SCOPE_TYPES,
+)
 from services.audit_events import emit_audit_action
 from services.governance_exceptions import (
     GovernanceError,
@@ -48,7 +52,11 @@ from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficien
 
 logger = logging.getLogger("bot")
 
-# Scope types accepted by the pipeline.
+# Scope types accepted by the pipeline.  The canonical, read-side definitions
+# live in ``governance.scopes`` (so diagnostics/explainers can consume them
+# without importing this mutation module — RC-8A dependency-direction fix);
+# these module-private aliases keep the existing write-validation call sites and
+# the RC-5 test stable.
 #
 # RC-5: visibility and cleanup do NOT share a scope set.
 #   * subsystem_visibility gained "thread" in migration 009 and the resolver
@@ -58,12 +66,8 @@ logger = logging.getLogger("bot")
 #     same migration and the cleanup resolver (governance/cleanup.py) skips
 #     thread scope, so a thread cleanup write would pass service validation only
 #     to be rejected late by Postgres.  Reject it here, before the DB.
-_VALID_VISIBILITY_SCOPE_TYPES: frozenset[str] = frozenset(
-    {"channel", "category", "guild", "thread"},
-)
-_VALID_CLEANUP_SCOPE_TYPES: frozenset[str] = frozenset(
-    {"channel", "category", "guild"},
-)
+_VALID_VISIBILITY_SCOPE_TYPES = VALID_VISIBILITY_SCOPE_TYPES
+_VALID_CLEANUP_SCOPE_TYPES = VALID_CLEANUP_SCOPE_TYPES
 
 # Minimum tier required to mutate governance state.
 _WRITE_AUTHORITY_TIER = "moderator"

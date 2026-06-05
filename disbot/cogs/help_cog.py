@@ -7,6 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+import config
 from cogs.help.route import HUB_PANEL_BUILDERS as _HUB_PANEL_BUILDERS
 from cogs.help.route import (
     HelpOpener,
@@ -479,9 +480,9 @@ class HelpPanelView(PersistentView):
                 )
 
         # Fallback: inline cog command list, keep help view's nav controls.
-        prefix = getattr(interaction.client, "command_prefix", "!")
-        if callable(prefix):
-            prefix = "!"
+        # RC-14: the prefix is operator-configurable (config.PREFIX / BOT_PREFIX);
+        # don't hardcode "!" on the slash-help path.
+        prefix = config.PREFIX
         embed = build_cog_embed(cog, prefix, subsystem_name)
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -756,7 +757,7 @@ class HelpCog(commands.Cog):
                 opener,
                 visible_subsystems=visible_set,
                 member_tier=member_tier,
-                prefix="!",
+                prefix=config.PREFIX,  # RC-14: operator-configurable, not "!"
             )
 
             if sub_view is None:

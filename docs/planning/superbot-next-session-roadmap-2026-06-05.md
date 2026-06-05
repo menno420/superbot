@@ -24,7 +24,7 @@
 | S1 | Governance correctness fixes | RC-2, RC-5, RC-15 | code | none (ready) |
 | S2 | Interaction/panel safety policy | RC-3 | decision → code | maintainer decision |
 | S3 | Architecture enforcement + migration integrity | RC-1, RC-6 | code (tooling/tests) | after S1 lands |
-| S4 | Runtime GC ownership + capability authority | RC-7, RC-4 | code | after S3 (checker) + RC-4 flag decision |
+| S4 | Runtime GC ownership + capability authority | RC-7 (✅ #516), RC-4 | code | after S3 (checker) + RC-4 flag decision |
 | S5 | General-feature cleanup | RC-8, RC-14, RC-13 | docs→code | after S1 |
 | S6 | BTD6/AI readiness | RC-10, RC-11, RC-12 | decision → docs/tests | maintainer decision; **pause extraction** |
 
@@ -37,13 +37,13 @@ plans span **2–3 PRs max per session** — the groups below respect that.
 ## Suggested PR sequence
 
 ```
-PR 0  (this)   docs(planning): consolidation + priority map + roadmap + SoT index
-PR 1  S1       fix(governance): thread cache identity + cleanup scope split + counting swallow
-PR 2  S2       feat(runtime): interaction/persistent-view fail-open policy   [needs decision]
-PR 3  S3a      tooling(arch): function-local import report mode + allowlist
-PR 4  S3b      test(db): migration integrity invariants + fresh-DB bootstrap
-PR 5  S4a      refactor(runtime): feature-cleanup-provider registry (session_gc)  [honours ADR-002]
-PR 6  S4b      feat(governance): capability-native settings/bindings authority   [gates settings UI]
+PR 0  (this)   docs(planning): consolidation + priority map + roadmap + SoT index   ✅ #512
+PR 1  S1       fix(governance): thread cache identity + cleanup scope split + counting swallow   ✅ #513
+PR 2  S2       feat(runtime): interaction/persistent-view fail-open policy   [ADR-004 Accepted → ready]
+PR 3  S3a      tooling(arch): function-local import report mode + allowlist   ✅ #515
+PR 4  S3b      test(db): migration integrity invariants + fresh-DB bootstrap   [static invariants ✅; runner guard + bootstrap remain]
+PR 5  S4a      refactor(runtime): feature-cleanup-provider registry (session_gc)  [honours ADR-002]   ✅ #516
+PR 6  S4b      feat(governance): capability-native settings/bindings authority   [gates settings UI; ADR-005 Proposed]
 PR 7  S5a      docs: Direct-DB Exception Ledger + comment/baseline drift fixes
 PR 8  S5b      refactor(cogs): move embedded views/modals out of cogs (mechanical)
 PR 9  S6a      docs(decision): BTD6 provenance + ownership matrix + YouTube ownership
@@ -163,6 +163,11 @@ fresh-DB bootstrap passes.
 ---
 
 ## PR 5 — Runtime GC ownership (S4a: RC-7)
+
+> **✅ SHIPPED in #516 (2026-06-05).** Retained for archaeology — do **not**
+> re-implement. `session_gc` is now a scheduler that calls
+> `cleanup_registry.run_all()`; `services.game_state_cleanup` owns the ADR-002
+> refund sweep. See `docs/ownership.md` §"Feature stale-state cleanup (RC-7)".
 
 **Scope:** introduce a feature-cleanup-provider registry; `session_gc` becomes
 scheduler/orchestrator; feature services register stale-state cleanup and own
@@ -385,7 +390,7 @@ decision/test gates (RC-3, RC-4, RC-10, PR 10 guard tests, ADRs) still hold.
 | S1 — governance correctness | RC-2, RC-5, RC-15 | #513 | ✅ merged |
 | (planning) Ideas Lab backlog | — | #514 | ✅ merged |
 | S3a — arch checker report mode + arch-warning summary (§4.4) | RC-1 | #515 | ✅ merged |
-| S4a — feature-cleanup-provider registry | RC-7 | (this PR) | ✅ shipped |
+| S4a — feature-cleanup-provider registry | RC-7 | #516 | ✅ merged |
 
 **RC-6 (migration integrity, S3b):** already satisfied — its static invariants
 (no-gaps, no-duplicates, filename format, non-empty, runner-dir) live and pass in
@@ -394,5 +399,30 @@ checksum guard (permanent per-migration friction — maintainer's call) and a li
 fresh-DB bootstrap (needs Postgres in CI). Not re-implemented.
 
 **Next, still gated:** S4b / **RC-4** (capability-native authority) needs the
-maintainer flag-semantics decision; S2 / **RC-3** (fail-open posture) needs the
-maintainer posture decision; the committed UX trio (IL-1/2/3) is ready to build.
+maintainer flag-semantics decision (drafted as **ADR-005 Proposed**); S6a /
+**RC-10 + RC-12** drafted as **ADR-006 / ADR-007 Proposed**. **RC-3** (fail-open
+posture) is **no longer gated** — ratified per-surface in **ADR-004 (Accepted)**;
+its implementation is in the revised wave below. The committed UX trio (IL-1/2/3)
+is ready to build.
+
+---
+
+## Addendum 2 (2026-06-05, post-#516): revised remaining wave
+
+After #515 (RC-1) and #516 (RC-7) shipped, the remaining roadmap was re-cut into
+one larger session. Full plan with per-PR scope / tests / rollback / stop
+conditions lives in `.claude/plans/use-this-revised-prompt-dazzling-cloud.md`.
+**RC-7 is complete — the "PR 5 — Runtime GC ownership" section above is
+historical; do not re-implement it.** New base = `main` @ `312bcfd`.
+
+| Wave PR | Title | Maps to | State |
+|---|---|---|---|
+| PR1 | Decision pinning + post-#516 doc reconciliation (ADR-004 Accepted; 005/006/007 Proposed) | S2 decision + this refresh | **landing now** |
+| PR2 | Operator explainers & previews (IL-1/2/3, read-only) | Ideas-Lab trio | next |
+| PR3 | Migration runner guard (RC-6 remainder) | S3b remainder | next |
+| PR4 | Interaction/panel safety impl (RC-3) — depends on ADR-004 | S2 impl | next |
+| PR5 | Boundary & consistency foundation (RC-8A ledger + RC-13 + RC-14) | S5a (PR 7) | next |
+| PR6 (optional) | AI choke-point guard tests (RC-11, tests only) | PR 10 (pulled forward, tests only) | optional |
+
+Only hard dependency: PR1 → PR4. RC-4 code, the RC-8 view-move sweep (PR 8), and
+RC-10 / RC-12 ratification remain deferred/gated as above.

@@ -189,6 +189,10 @@ utils/<helper>    →  standard library, discord (no I/O)
 
 ### Direct DB writes — explicit blocklist
 
+> See also **`docs/direct-db-exception-ledger.md`** (RC-8A) — the per-cog catalog
+> of direct `utils.db` reads/writes, classified `accepted-read` /
+> `accepted-direct-write` / `service-migration-required`.
+
 These calls are **forbidden** outside their owning module:
 
 | Symbol | Owner | Forbidden in |

@@ -1,5 +1,9 @@
 # Agent B governance/control audit — 2026-06-05
 
+> **Superseded (2026-06-05):** reconciled into
+> [`../planning/superbot-audit-consolidation-2026-06-05.md`](../planning/superbot-audit-consolidation-2026-06-05.md)
+> (verified, RC-n IDs). Read that first; this raw audit is historical context.
+
 > **Scope:** docs-only report of the Agent B audit over governance, permissions, visibility, command access, setup/onboarding, cleanup policy, interactions, sessions, panels, automation, participation, and related ownership docs.
 >
 > **Base inspected:** GitHub `main`, latest observed merge during PR creation: `eb20bac10b7b09b570c669f1c7ac150cde348a53`.

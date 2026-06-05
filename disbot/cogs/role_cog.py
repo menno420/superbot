@@ -53,6 +53,9 @@ class RoleHubPanelView(PersistentView):
     """Persistent role management hub — one panel per user per channel."""
 
     SUBSYSTEM = "role"
+    # RC-3 / ADR-004: owner-scoped mutating panel (role management) — fail closed
+    # when the anchor (ownership) cannot be verified, rather than allow any user.
+    FAIL_CLOSED_ON_MISSING_ANCHOR = True
 
     def build_embed(self) -> discord.Embed:
         return _build_role_hub_embed()
