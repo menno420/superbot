@@ -58,13 +58,40 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
 
 > 34 cogs loaded at boot. `BootstrapAccessCog` is infrastructure (the command-access
 > guard) and has no user commands. Counts are prefix / slash from the live registry.
+>
+> **Reconciliation (2026-06-05, post-#528):** statuses for cogs whose hard failures
+> already shipped fixes are corrected from source — **DiagnosticCog** `🔴`→`🟡` (its
+> Recent-Errors, schema-check, and oversized-embed failures were fixed in #528 `702cf48`,
+> test-pinned; dense `platform_*` subviews remain a pagination follow-up) and **RoleCog**
+> `🔴→✅`→`🟡` (the two discord.py-2.7 crashes were fixed in #528; the two UX warts remain).
+> Live re-confirmation of these + the remaining `❓` cogs is the ongoing PR B walk.
+>
+> **Cross-cutting findings (live walk, this session) — UX track, beyond PR B's hard-failure remit:**
+> 1. **Hub "↩ Back to Help" missing on direct invoke.** Subsystem hubs opened via their
+>    own command (`!modmenu`, `!economymenu`, `!rolemenu`, `!minemenu`, the Blackjack menu, …)
+>    render the bare view through `panel_manager.get_or_render_panel` and never attach the
+>    `cogs/help_cog.py:_attach_back_to_help_button` that the `!help` route already adds — so a
+>    directly-invoked hub has no way back. **Systemic; candidate for one central fix** in the
+>    direct-invoke render path rather than ~20 per-cog edits.
+> 2. **Moderation member entry is free-text, not a picker** (see ModerationCog) — wants a
+>    `discord.ui.UserSelect` quicksearch across all actions; needs a flow restructure
+>    (modals can't hold a Select). `unban` stays ID-based.
+> 3. **Back nav also breaks *within* hubs.** Economy loses its back/help button as you
+>    descend its sub-panels (a sub-view doesn't re-propagate the `BackTarget`), and the
+>    Wallet sub-view's "Back to Economy" button is **disabled** (concrete bug). Same class
+>    as #1 — back-nav attachment/propagation is inconsistent across the view tree.
+>
+> ⇒ Findings #1 and #3 are one **back-navigation consistency** class (root cause, not
+> per-panel symptoms). Per the maintainer's "root cause over symptom" rule, the fix is a
+> holistic pass over the `attach_back_button` / `BackTarget` / `get_or_render_panel` seam,
+> not 20 patches. Sequencing TBD (its own UX PR, distinct from PR B's hard-failure remit).
 
 ### Core · Admin · Config
 | Cog | Panel / hub | prefix | slash | Env-gate | Status |
 |---|---|---:|---:|---|:--:|
 | BootstrapAccessCog | — (infra guard) | 0 | 0 | — | ✅ infra |
 | AdminCog | `!adminmenu` | 9 | 1 | — | ❓ |
-| DiagnosticCog | `!platform` | 43 | 1 | — | 🔴 |
+| DiagnosticCog | `!platform` | 43 | 1 | — | 🟡 |
 | SettingsCog | `!settings` | 2 | 1 | — | ❓ |
 | SetupCog | `!setup` / `setup-hub` | 1 | 9 | advisor=deterministic | ❓ |
 | LoggingCog | `!logging` | 6 | 0 | webhook off; logging OFF by default | ❓ |
@@ -73,9 +100,9 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
 ### Server management
 | Cog | Panel / hub | prefix | slash | Env-gate | Status |
 |---|---|---:|---:|---|:--:|
-| RoleCog | `!rolemenu` / `!roles` | 14 | 0 | automation scheduler off | 🔴→✅ |
+| RoleCog | `!rolemenu` / `!roles` | 14 | 0 | automation scheduler off | 🟡 |
 | ChannelCog | `!channelmenu` | 15 | 0 | — | ❓ |
-| ModerationCog | `!modmenu` | 8 | 1 | logging dest off by default | ❓ |
+| ModerationCog | `!modmenu` | 8 | 1 | logging dest off by default | 🟡 |
 | Cleanup | `!wordmenu` | 7 | 0 | — | ❓ |
 | CommunityCog | `!community` | 1 | 1 | — | ❓ |
 
@@ -154,7 +181,14 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
 - **Prefix (8):** ban, clearwarnings, kick, modlogs, modmenu, timeout, unban, warn · **slash:** moderation
 - **Notes:** all manual actions route through `moderation_service` (PR1). Audit/mod
   log embeds need a logging destination configured to appear in a channel.
-- **Status:** ❓ · **Notes:** _…_
+- **Finding (live, this session):** every action modal takes the target via a free-text
+  `TextInput` ("User (mention, ID, or name)") + `_parse_member` — the outdated method.
+  Maintainer wants a **selectable member list with quicksearch** (`discord.ui.UserSelect`)
+  across all actions. NB: a Discord **modal cannot contain a Select**, so this is a flow
+  restructure (pick member in a view → reason/duration follow-up), not a component swap;
+  `unban` stays ID-based (banned users aren't guild members). Scope = moderation-UX track.
+- **Status:** 🟡 — actions work + route through `moderation_service`; member entry is the
+  UX gap above.
 
 ### Cleanup — ❓
 - **Panel:** `!wordmenu` · **Prefix (7):** cleanup, cleanuphistory, word, word add,
@@ -172,7 +206,7 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
   `restart` here will kill the container process — test last / with care.
 - **Status:** ❓ · **Notes:** _…_
 
-### DiagnosticCog — ❓
+### DiagnosticCog — 🟡 (hard failures fixed in #528; live re-confirm pending)
 - **Hub:** `!platform` (33 subcommands) · **Prefix (43):** check_database,
   diagnostics, find_command, latency, lifecycle, list_commands_detailed, platform (+
   access, anchors, automation, bindings, caches, cleanup-preview, command-access,
