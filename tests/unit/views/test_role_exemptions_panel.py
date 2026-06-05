@@ -13,7 +13,10 @@ from views.roles.exemptions_panel import RoleExemptionsPanel
 def _ctx(guild_roles: list | None = None) -> SimpleNamespace:
     guild = MagicMock()
     guild.id = 1
-    roles = {r.id: r for r in (guild_roles or [])}
+    role_list = list(guild_roles or [])
+    # The panel's shared MultiRoleSelector reads guild.roles at construction.
+    guild.roles = role_list
+    roles = {r.id: r for r in role_list}
     guild.get_role.side_effect = lambda rid: roles.get(rid)
     return SimpleNamespace(author=MagicMock(id=99), guild=guild, bot=MagicMock())
 
@@ -65,6 +68,43 @@ async def test_apply_writes_each_selected_role_through_service():
         assert call.kwargs["exempt_xp"] is True
         assert call.kwargs["exempt_time"] is False  # untouched (no prior row)
         assert call.kwargs["actor_id"] == 99
+    interaction.response.edit_message.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_role_picker_excludes_everyone_and_sets_selection():
+    from views.selectors import MultiRoleSelector
+
+    everyone = SimpleNamespace(
+        id=1,
+        name="@everyone",
+        mention="@everyone",
+        is_default=lambda: True,
+    )
+    member = SimpleNamespace(
+        id=2,
+        name="Member",
+        mention="@Member",
+        is_default=lambda: False,
+    )
+    panel = RoleExemptionsPanel(_ctx([everyone, member]))
+
+    # The bespoke native RoleSelect is gone; the shared picker excludes @everyone.
+    selector = next(c for c in panel.children if isinstance(c, MultiRoleSelector))
+    assert {o.value for o in selector.options} == {"2"}
+
+    interaction = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    with (
+        patch("utils.db.get_role_exemptions", new=AsyncMock(return_value=[])),
+        patch(
+            "services.settings_resolution.resolve_value",
+            new=AsyncMock(return_value=False),
+        ),
+    ):
+        await panel._on_roles_selected(interaction, [2])
+
+    assert panel.selected_role_ids == [2]
     interaction.response.edit_message.assert_awaited_once()
 
 

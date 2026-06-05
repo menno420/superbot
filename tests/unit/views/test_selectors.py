@@ -21,6 +21,7 @@ import pytest
 from views.selectors import (
     ChannelSelector,
     MultiChannelSelector,
+    MultiRoleSelector,
     MultiSelect,
     RoleSelector,
     ScopeSelector,
@@ -264,6 +265,58 @@ async def test_multi_channel_selector_skips_unparseable_values():
     cb = AsyncMock()
     sel = MultiChannelSelector(channels, on_select=cb)
     sel._values = ["11", "not-an-int"]
+    interaction = MagicMock()
+    await sel.callback(interaction)
+    cb.assert_awaited_once_with(interaction, [11])
+
+
+# ---------------------------------------------------------------------------
+# MultiRoleSelector (PR2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_multi_role_selector_filters_everyone_by_default():
+    roles = [_role(1, "@everyone", default=True), _role(2, "Member"), _role(3, "Admin")]
+    sel = MultiRoleSelector(roles, on_select=AsyncMock())
+    assert {o.label for o in sel.options} == {"Member", "Admin"}
+
+
+@pytest.mark.asyncio
+async def test_multi_role_selector_truncates_to_25():
+    roles = [_role(i, f"r{i}") for i in range(40)]
+    sel = MultiRoleSelector(roles, on_select=AsyncMock())
+    assert len(sel.options) == 25
+
+
+@pytest.mark.asyncio
+async def test_multi_role_selector_custom_filter():
+    roles = [_role(1, "Admin"), _role(2, "Mod"), _role(3, "User")]
+    sel = MultiRoleSelector(
+        roles,
+        on_select=AsyncMock(),
+        role_filter=lambda r: r.name in ("Admin", "Mod"),
+    )
+    assert {o.label for o in sel.options} == {"Admin", "Mod"}
+
+
+@pytest.mark.asyncio
+async def test_multi_role_selector_invokes_callback_with_int_ids():
+    roles = [_role(11, "a"), _role(22, "b"), _role(33, "c")]
+    cb = AsyncMock()
+    sel = MultiRoleSelector(roles, on_select=cb)
+    sel._values = ["11", "33"]
+    interaction = MagicMock()
+    await sel.callback(interaction)
+    cb.assert_awaited_once_with(interaction, [11, 33])
+
+
+@pytest.mark.asyncio
+async def test_multi_role_selector_skips_unparseable_values():
+    roles = [_role(11, "a")]
+    cb = AsyncMock()
+    sel = MultiRoleSelector(roles, on_select=cb)
+    sel._values = ["11", "nope"]
     interaction = MagicMock()
     await sel.callback(interaction)
     cb.assert_awaited_once_with(interaction, [11])

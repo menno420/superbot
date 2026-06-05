@@ -17,28 +17,7 @@ from utils import db
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
-
-
-class _ExemptRoleSelect(discord.ui.RoleSelect):
-    """Multi-role picker — stores the selection on the parent panel."""
-
-    def __init__(self) -> None:
-        super().__init__(
-            placeholder="Select role(s) to configure…",
-            min_values=0,
-            max_values=25,
-            row=0,
-        )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        view = self.view
-        if not isinstance(view, RoleExemptionsPanel):
-            return
-        view.selected_role_ids = [role.id for role in self.values]
-        await interaction.response.edit_message(
-            embed=await view.build_embed(),
-            view=view,
-        )
+from views.selectors import MultiRoleSelector
 
 
 class RoleExemptionsPanel(BaseView):
@@ -49,7 +28,18 @@ class RoleExemptionsPanel(BaseView):
         self.ctx = ctx
         self.parent = parent
         self.selected_role_ids: list[int] = []
-        self.add_item(_ExemptRoleSelect())
+        # Shared role picker — converged off the bespoke native RoleSelect
+        # onto the reusable primitive, which excludes @everyone via the
+        # default role_feasibility filter (a no-op exemption target).
+        self.add_item(
+            MultiRoleSelector(
+                list(getattr(ctx.guild, "roles", []) or []),
+                self._on_roles_selected,
+                placeholder="Select role(s) to configure…",
+                min_values=0,
+                row=0,
+            ),
+        )
 
         if parent is not None:
 
@@ -65,6 +55,17 @@ class RoleExemptionsPanel(BaseView):
                 parent_builder=_build_parent,
                 row=4,
             )
+
+    async def _on_roles_selected(
+        self,
+        interaction: discord.Interaction,
+        role_ids: list[int],
+    ) -> None:
+        self.selected_role_ids = role_ids
+        await interaction.response.edit_message(
+            embed=await self.build_embed(),
+            view=self,
+        )
 
     async def build_embed(self) -> discord.Embed:
         from services.settings_resolution import resolve_value
