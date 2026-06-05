@@ -21,6 +21,11 @@ from discord.ext import commands
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import help_ctx_shim
+from services.channel_lifecycle_service import (
+    ChannelLifecycleRequest,
+    ChannelLifecycleService,
+)
+from services.lifecycle import SUCCESS
 from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import INFO_COLOR, WARNING_COLOR
 from views.base import send_panel
@@ -124,6 +129,14 @@ class ChannelCog(commands.Cog):
             )
         return formatted or "No overwrites."
 
+    @staticmethod
+    def _channel_result_error(result) -> str:
+        """First human-readable error from a ChannelLifecycleService result."""
+        for step in result.failed:
+            if step.error:
+                return step.error
+        return "operation could not be completed"
+
     # -------------------
     # Commands
     # -------------------
@@ -176,11 +189,23 @@ class ChannelCog(commands.Cog):
             await ctx.send(f'Event channel "{name}" created!')
         elif action.lower() == "delete":
             channel = self._resolve_channel(ctx.guild, evt)
-            if channel:
-                await channel.delete()
-                await ctx.send(f'Event "{channel.name}" deleted!')
-            else:
+            if not channel:
                 await ctx.send(f'Event "{evt}" not found.')
+                return
+            name = channel.name
+            result = await ChannelLifecycleService().apply(
+                ctx.guild,
+                ChannelLifecycleRequest(operation="delete", channel_ids=(channel.id,)),
+                ctx.author,
+                confirmed=True,
+                actor_type="admin",
+            )
+            if result.outcome == SUCCESS:
+                await ctx.send(f'Event "{name}" deleted!')
+            else:
+                await ctx.send(
+                    f'❌ Could not delete "{name}": {self._channel_result_error(result)}',
+                )
         else:
             await ctx.send('Invalid action. Use "create" or "delete".')
 
@@ -241,16 +266,21 @@ class ChannelCog(commands.Cog):
                 self._resolve_channel(ctx.guild, n) for n in channel_names_or_word
             ]
 
-        deleted, failed = [], []
-        for channel in channels_to_delete:
-            if channel:
-                try:
-                    await channel.delete()
-                    deleted.append(channel.name)
-                except Exception:
-                    failed.append(channel.name)
-            else:
-                failed.append("Not found")
+        resolved = [ch for ch in channels_to_delete if ch]
+        not_found = len(channels_to_delete) - len(resolved)
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(
+                operation="delete",
+                channel_ids=tuple(ch.id for ch in resolved),
+            ),
+            ctx.author,
+            confirmed=True,
+            actor_type="admin",
+        )
+        deleted = [s.target_name for s in result.applied]
+        failed = [s.target_name or "?" for s in result.failed]
+        failed += ["Not found"] * not_found
 
         response = ""
         if deleted:
@@ -266,11 +296,23 @@ class ChannelCog(commands.Cog):
     @is_admin_or_owner()
     async def delete_channel(self, ctx, channel_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
-        if channel:
-            await channel.delete()
-            await ctx.send(f'Channel "{channel.name}" deleted.')
-        else:
+        if not channel:
             await ctx.send(f'Channel "{channel_name}" not found.')
+            return
+        name = channel.name
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(operation="delete", channel_ids=(channel.id,)),
+            ctx.author,
+            confirmed=True,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
+            await ctx.send(f'Channel "{name}" deleted.')
+        else:
+            await ctx.send(
+                f'❌ Could not delete "{name}": {self._channel_result_error(result)}',
+            )
 
     @commands.command(
         name="list",
@@ -330,11 +372,26 @@ class ChannelCog(commands.Cog):
     async def move_channel(self, ctx, channel_name: str, category_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
         category = self._resolve_category(ctx.guild, category_name)
-        if channel and category:
-            await channel.edit(category=category)
-            await ctx.send(f'"{channel.name}" moved to "{category.name}".')
-        else:
+        if not (channel and category):
             await ctx.send("Channel or Category not found.")
+            return
+        name = channel.name
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(
+                operation="move",
+                channel_ids=(channel.id,),
+                category_id=category.id,
+            ),
+            ctx.author,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
+            await ctx.send(f'"{name}" moved to "{category.name}".')
+        else:
+            await ctx.send(
+                f'❌ Could not move "{name}": {self._channel_result_error(result)}',
+            )
 
     @commands.command(name="lock", help="Lock a channel. Usage: !lock <name|id>")
     @is_admin_or_owner()
@@ -402,12 +459,26 @@ class ChannelCog(commands.Cog):
     @is_admin_or_owner()
     async def rename_channel(self, ctx, old_name: str, new_name: str):
         channel = self._resolve_channel(ctx.guild, old_name)
-        if channel:
-            old = channel.name
-            await channel.edit(name=new_name)
+        if not channel:
+            await ctx.send(f'"{old_name}" not found.')
+            return
+        old = channel.name
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(
+                operation="rename",
+                channel_ids=(channel.id,),
+                new_name=new_name,
+            ),
+            ctx.author,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
             await ctx.send(f'"{old}" renamed to "{new_name}".')
         else:
-            await ctx.send(f'"{old_name}" not found.')
+            await ctx.send(
+                f'❌ Could not rename "{old}": {self._channel_result_error(result)}',
+            )
 
     @commands.command(
         name="permissions",
