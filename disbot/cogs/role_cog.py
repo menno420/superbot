@@ -9,6 +9,8 @@ from core.runtime import panel_manager, resources
 from core.runtime.component_registry import stats_block
 from core.runtime.persistent_views import PersistentView, register
 from services import role_automation
+from services.lifecycle import SUCCESS
+from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleService
 from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.helpers import normalize_name
@@ -386,29 +388,38 @@ class RoleCog(commands.Cog):
             )
             return
         do_hoist = hoist.lower() in ("yes", "true", "1", "y")
-        try:
-            role = await ctx.guild.create_role(name=name, color=col, hoist=do_hoist)
-            await ctx.send(f"✅ Created role **{role.name}**.")
-        except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to create roles.")
-        except discord.HTTPException as e:
-            await ctx.send(f"❌ Failed: {e}")
+        result = await RoleLifecycleService().apply(
+            ctx.guild,
+            RoleLifecycleRequest(
+                operation="create",
+                name=name,
+                color=col,
+                hoist=do_hoist,
+            ),
+            ctx.author,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
+            await ctx.send(f"✅ Created role **{result.steps[0].target_name}**.")
+        else:
+            await ctx.send(f"❌ Could not create role: {result.first_error}")
 
     @commands.command(name="deleterole", hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def deleterole(self, ctx: commands.Context, *, role: discord.Role) -> None:
         """Delete a role by name or mention."""
-        if role >= ctx.guild.me.top_role:
-            await ctx.send("❌ That role is higher than or equal to my top role.")
-            return
         name = role.name
-        try:
-            await role.delete()
+        result = await RoleLifecycleService().apply(
+            ctx.guild,
+            RoleLifecycleRequest(operation="delete", role_id=role.id),
+            ctx.author,
+            confirmed=True,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
             await ctx.send(f"🗑️ Deleted role **{name}**.")
-        except discord.Forbidden:
-            await ctx.send("❌ I don't have permission to delete that role.")
-        except discord.HTTPException as e:
-            await ctx.send(f"❌ Failed: {e}")
+        else:
+            await ctx.send(f"❌ Could not delete **{name}**: {result.first_error}")
 
     @commands.command(name="setrole", hidden=True)
     @commands.has_permissions(administrator=True)
@@ -444,11 +455,12 @@ class RoleCog(commands.Cog):
             ),
             role_name,
         )
-        await db.remove_role_threshold(ctx.guild.id, match)
-        # Same caveat as views/roles/time_roles_panel: the DELETE wipes XP
-        # columns alongside the time-based ones, so the F-1 cache must drop.
+        await db.clear_role_time_threshold(ctx.guild.id, match)
+        # Field-specific: clears only the time tier, preserving any XP config on
+        # the row (the row is dropped only when no automation remains).  Refresh
+        # the F-1 XP-role cache in case the row was deleted.
         invalidate_xp_threshold_roles(ctx.guild.id)
-        await ctx.send(f"✅ Removed **{match}** from the auto-assignment system.")
+        await ctx.send(f"✅ Removed **{match}** from time-based assignment.")
 
     @commands.command(name="debugroles", hidden=True)
     @commands.has_permissions(administrator=True)

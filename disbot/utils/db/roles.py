@@ -41,6 +41,52 @@ async def remove_role_threshold(guild_id: int, role_name: str) -> None:
     )
 
 
+async def clear_role_time_threshold(guild_id: int, role_name: str) -> None:
+    """Remove only the *time* requirement for a role threshold.
+
+    Field-specific counterpart to the destructive full-row
+    :func:`remove_role_threshold`: it zeroes ``days_required`` but leaves any
+    XP automation (``level_required`` / ``xp_auto_assign``) on the same row
+    intact.  The row is deleted **only** when no automation field remains
+    (i.e. there is no XP config either), so clearing a role's time tier never
+    silently wipes its XP tier.
+    """
+    await pool.execute(
+        "UPDATE role_thresholds SET days_required=0 "
+        "WHERE guild_id=$1 AND role_name=$2",
+        (guild_id, role_name),
+    )
+    await pool.execute(
+        "DELETE FROM role_thresholds "
+        "WHERE guild_id=$1 AND role_name=$2 "
+        "AND days_required=0 AND level_required IS NULL",
+        (guild_id, role_name),
+    )
+
+
+async def clear_role_xp_threshold(guild_id: int, role_name: str) -> None:
+    """Remove only the *XP* automation for a role threshold.
+
+    Mirror of :func:`clear_role_time_threshold`: it clears ``level_required``
+    and ``xp_auto_assign`` while preserving any ``days_required`` time tier on
+    the same row, and deletes the row only when no time tier remains
+    (``days_required = 0``).  Improves on the previous
+    ``set_role_xp_threshold(..., None, False)`` removal, which left a stale
+    all-empty row behind when the role had no time config.
+    """
+    await pool.execute(
+        "UPDATE role_thresholds SET level_required=NULL, xp_auto_assign=FALSE "
+        "WHERE guild_id=$1 AND role_name=$2",
+        (guild_id, role_name),
+    )
+    await pool.execute(
+        "DELETE FROM role_thresholds "
+        "WHERE guild_id=$1 AND role_name=$2 "
+        "AND days_required=0 AND level_required IS NULL",
+        (guild_id, role_name),
+    )
+
+
 async def get_xp_threshold_roles(guild_id: int) -> list[dict]:
     """Rows with xp_auto_assign=TRUE and a configured level_required."""
     return await pool.fetchall(

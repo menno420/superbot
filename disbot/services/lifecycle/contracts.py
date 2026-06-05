@@ -96,6 +96,14 @@ class LifecycleResult:
     def failed(self) -> tuple[StepResult, ...]:
         return tuple(s for s in self.steps if not s.ok)
 
+    @property
+    def first_error(self) -> str:
+        """First human-readable failure reason, for cog/view error surfaces."""
+        for step in self.failed:
+            if step.error:
+                return step.error
+        return "operation could not be completed"
+
 
 def classify_outcome(steps: tuple[StepResult, ...]) -> str:
     """Map per-step results to a batch :data:`SUCCESS`/:data:`PARTIAL`/…."""

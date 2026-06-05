@@ -5,6 +5,8 @@ from discord.ext import commands
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
+from services.lifecycle import SUCCESS
+from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleService
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
@@ -123,19 +125,12 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
                 ephemeral=True,
             )
             return
-        if role >= interaction.guild.me.top_role:
-            await interaction.response.send_message(
-                "❌ That role is above my top role — I can't edit it.",
-                ephemeral=True,
-            )
-            return
 
-        kwargs: dict = {}
-        if self.new_name.value.strip():
-            kwargs["name"] = self.new_name.value.strip()
+        new_name = self.new_name.value.strip() or None
+        new_color = None
         if self.new_color.value.strip():
             try:
-                kwargs["color"] = _parse_color(self.new_color.value)
+                new_color = _parse_color(self.new_color.value)
             except (ValueError, OverflowError):
                 await interaction.response.send_message(
                     "❌ Invalid color — use hex like `#ff0000`.",
@@ -143,29 +138,38 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
                 )
                 return
 
-        if not kwargs:
+        if new_name is None and new_color is None:
             await interaction.response.send_message(
                 "Nothing to change — provide a new name or color.",
                 ephemeral=True,
             )
             return
 
-        try:
-            await role.edit(**kwargs)
-            if not await safe_defer(interaction):
-                return
-            if self.parent.message:
-                await self.parent.message.edit(
-                    embed=await self.parent.build_embed(),
-                    view=self.parent,
-                )
-        except discord.Forbidden:
+        # Manageability (bot perms + hierarchy) is enforced by the service.
+        result = await RoleLifecycleService().apply(
+            interaction.guild,
+            RoleLifecycleRequest(
+                operation="edit",
+                role_id=role.id,
+                name=new_name,
+                color=new_color,
+            ),
+            interaction.user,
+            actor_type="admin",
+        )
+        if result.outcome != SUCCESS:
             await interaction.response.send_message(
-                "❌ I don't have permission to edit that role.",
+                f"❌ Could not edit role: {result.first_error}",
                 ephemeral=True,
             )
-        except discord.HTTPException as e:
-            await interaction.response.send_message(f"❌ Failed: {e}", ephemeral=True)
+            return
+        if not await safe_defer(interaction):
+            return
+        if self.parent.message:
+            await self.parent.message.edit(
+                embed=await self.parent.build_embed(),
+                view=self.parent,
+            )
 
 
 class _DeleteRoleSelect(discord.ui.Select):
@@ -185,8 +189,14 @@ class _DeleteRoleSelect(discord.ui.Select):
             )
             return
         name = role.name
-        try:
-            await role.delete()
+        result = await RoleLifecycleService().apply(
+            interaction.guild,
+            RoleLifecycleRequest(operation="delete", role_id=role.id),
+            interaction.user,
+            confirmed=True,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
             await interaction.response.send_message(
                 f"🗑️ Deleted role **{name}**.",
                 ephemeral=True,
@@ -196,13 +206,11 @@ class _DeleteRoleSelect(discord.ui.Select):
                     embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
                     view=self.parent,  # type: ignore[attr-defined]
                 )
-        except discord.Forbidden:
+        else:
             await interaction.response.send_message(
-                "❌ I don't have permission to delete that role.",
+                f"❌ Could not delete **{name}**: {result.first_error}",
                 ephemeral=True,
             )
-        except discord.HTTPException as e:
-            await interaction.response.send_message(f"❌ Failed: {e}", ephemeral=True)
 
 
 class _DeleteRoleView(discord.ui.View):

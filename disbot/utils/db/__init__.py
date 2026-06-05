@@ -115,6 +115,8 @@ from utils.db.pool import close, execute, fetchall, fetchone, get, init
 from utils.db.roles import (
     add_reaction_role,
     clear_role_exemption,
+    clear_role_time_threshold,
+    clear_role_xp_threshold,
     get_all_reaction_roles,
     get_reaction_role,
     get_role_exemptions,
@@ -166,6 +168,8 @@ __all__ = [
     # roles
     "add_reaction_role",
     "clear_role_exemption",
+    "clear_role_time_threshold",
+    "clear_role_xp_threshold",
     "get_all_reaction_roles",
     "get_reaction_role",
     "get_role_exemptions",
