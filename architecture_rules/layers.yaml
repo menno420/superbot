@@ -331,3 +331,43 @@ known_violations:
     reason: XP rank view imports helpers from the cog.
     ticket: arch-fix-13
 
+# ---------------------------------------------------------------------------
+# Known LAZY (function-body) cross-layer imports — RC-1.
+#
+# These are surfaced only by `check_architecture.py --report-lazy-imports`
+# (off by default; lazy reporting is always WARNINGS, never errors).  The
+# module-import graph never saw these because they live inside function
+# bodies, but they ARE real cross-layer call edges.
+#
+# Allowlisted below: the documented runtime lazy-resolution seam.  core/*
+# resolves services / views / governance lazily, on purpose, to break the
+# module-load cycle (services/views import core at module level, so core
+# cannot import them back at module level — see the many "Local import — keep
+# core.runtime out of the module-load cycle" comments in the resolver and
+# friends).  `file_prefix` allowlists the whole seam with one rationale each.
+#
+# Deliberately NOT allowlisted (so the report keeps surfacing them for
+# triage): views → cogs and utils → {core,services,governance}.  Those are
+# helper-policy / thin-cog debt (RC-8 / arch-fix-13 territory), not sanctioned
+# cycle-breakers — they should be migrated, not blessed.
+known_lazy_violations:
+  - file_prefix: core/
+    import: services
+    reason: >-
+      Runtime resolves services lazily to break the core↔services module-load
+      cycle (services import core at import time). Mirrors the tracked
+      module-level core→services seam.
+    ticket: arch-fix-11
+  - file_prefix: core/
+    import: views
+    reason: >-
+      persistent_views resolves views.base's error handler lazily to avoid the
+      core↔views import cycle.
+    ticket: arch-fix-11
+  - file_prefix: core/
+    import: governance
+    reason: >-
+      interaction_router / runtime resolve governance lazily to break the
+      core↔governance import cycle.
+    ticket: arch-fix-11
+
