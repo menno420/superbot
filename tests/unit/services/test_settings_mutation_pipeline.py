@@ -12,6 +12,8 @@ in-memory store so the tests never touch a real database.
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock
+
 import pytest
 
 from core.runtime import guild_config
@@ -23,6 +25,7 @@ from services.settings_mutation import (
     EVT_SETTINGS_CHANGED,
     InvalidActorTypeError,
     SettingsCoercionError,
+    SettingsMutationDisabledError,
     SettingsMutationPipeline,
     SettingsMutationResult,
     SettingsValidationError,
@@ -879,5 +882,132 @@ async def test_non_ai_subsystem_does_not_trigger_projection(_isolated_state):
         7,
         actor,
     )
-
     assert _isolated_state["projection_calls"] == []
+
+
+# ---------------------------------------------------------------------------
+# ADR-005 A1 — capability-native authority (declared capability)
+# ---------------------------------------------------------------------------
+
+
+def _register_capability_spec() -> None:
+    _register(
+        "xp",
+        SettingSpec(
+            name="xp_min",
+            value_type=int,
+            default=1,
+            settings_key="XP_MIN",
+            capability_required="xp.settings.configure",
+        ),
+    )
+
+
+@pytest.mark.asyncio
+async def test_capability_authorized_admin_succeeds_with_declared_capability(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "governance.execution.get_capability_override",
+        AsyncMock(return_value=None),
+    )
+    _register_capability_spec()
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild, tier="administrator")
+    result = await SettingsMutationPipeline().set_value(guild, "xp", "xp_min", 5, actor)
+    assert result.new_value == 5
+
+
+@pytest.mark.asyncio
+async def test_underprivileged_denied_for_declared_capability(
+    monkeypatch, _isolated_state
+):
+    monkeypatch.setattr(
+        "governance.execution.get_capability_override",
+        AsyncMock(return_value=None),
+    )
+    _register_capability_spec()
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild, tier="staff")
+    with pytest.raises(UnauthorizedSettingsMutationError):
+        await SettingsMutationPipeline().set_value(guild, "xp", "xp_min", 5, actor)
+    # A denied mutation writes nothing.
+    assert _isolated_state["audit_log"] == []
+    assert _isolated_state["invalidations"] == []
+    assert _isolated_state["emitted"] == []
+
+
+@pytest.mark.asyncio
+async def test_revoke_overlay_denies_otherwise_allowed_admin(
+    monkeypatch, _isolated_state
+):
+    # An explicit per-guild revoke of the capability denies even an admin.
+    monkeypatch.setattr(
+        "governance.execution.get_capability_override",
+        AsyncMock(return_value=False),
+    )
+    _register_capability_spec()
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild, tier="administrator")
+    with pytest.raises(UnauthorizedSettingsMutationError):
+        await SettingsMutationPipeline().set_value(guild, "xp", "xp_min", 5, actor)
+    assert _isolated_state["audit_log"] == []
+
+
+# ---------------------------------------------------------------------------
+# ADR-005 F1 — operator kill-switch
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_kill_switch_default_allows_mutation():
+    """With no operator override the kill-switch defaults to ALLOW — proves the
+    declared-off default does not brick writes (no flag mocking)."""
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild, tier="administrator")
+    result = await SettingsMutationPipeline().set_value(guild, "xp", "xp_min", 5, actor)
+    assert result.new_value == 5
+
+
+@pytest.mark.asyncio
+async def test_kill_switch_disabled_blocks_with_no_writes(monkeypatch, _isolated_state):
+    from core.runtime import feature_flags
+
+    monkeypatch.setattr(
+        feature_flags, "is_operator_disabled", AsyncMock(return_value=True)
+    )
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild, tier="administrator")
+    with pytest.raises(SettingsMutationDisabledError):
+        await SettingsMutationPipeline().set_value(guild, "xp", "xp_min", 5, actor)
+    assert _isolated_state["audit_log"] == []
+    assert _isolated_state["invalidations"] == []
+    assert _isolated_state["emitted"] == []
+
+
+@pytest.mark.asyncio
+async def test_kill_switch_eval_error_fails_open(monkeypatch):
+    from core.runtime import feature_flags
+
+    monkeypatch.setattr(
+        feature_flags,
+        "is_operator_disabled",
+        AsyncMock(side_effect=RuntimeError("flag store down")),
+    )
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild, tier="administrator")
+    # Fail-open: a flag-store outage must not block writes.
+    result = await SettingsMutationPipeline().set_value(guild, "xp", "xp_min", 5, actor)
+    assert result.new_value == 5

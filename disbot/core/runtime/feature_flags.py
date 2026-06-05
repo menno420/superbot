@@ -268,44 +268,42 @@ FEATURE_FLAG_PRIMARY = FeatureFlag(
     label="Feature-flag runtime gate (env-only, internal)",
 )
 
-# S4 flag — kill-switch infrastructure for future Settings Manager UI
-# (S5+) consumers of :class:`services.settings_mutation.SettingsMutationPipeline`.
-# The pipeline itself does NOT consult this flag — it writes whenever
-# it is called.  Mirrors how BINDINGS_PRIMARY is declared centrally
-# but only :mod:`core.runtime.config_arbitration` consumes it.
+# S4 flag — operator kill-switch for
+# :class:`services.settings_mutation.SettingsMutationPipeline` (ADR-005 F1).
+# The pipeline consults this flag at set_value() via is_operator_disabled():
+# it writes by default and refuses ONLY when an operator explicitly flips the
+# flag OFF (env or DB override).  default_value stays False because "declared
+# default" is treated as "not disabled" — the kill-switch is opt-in.
 SETTINGS_MUTATION_PRIMARY = FeatureFlag(
     name="settings.mutation.primary",
     description=(
-        "services.settings_mutation.SettingsMutationPipeline is the primary "
-        "write path for scalar SettingSpec values; future S5+ UI consumers "
-        "gate their routing on this flag.  The pipeline itself does not "
-        "consult the flag — its existence alone changes no behaviour."
+        "Operator kill-switch for services.settings_mutation."
+        "SettingsMutationPipeline.  Mutations proceed by default; the pipeline "
+        "refuses writes only when an operator explicitly sets this flag OFF "
+        "(env/DB override).  Flag-eval failure fails OPEN (writes proceed)."
     ),
     default_value=False,
     owner="platform",
     removal_target="S5+ stable",
-    label="Settings mutation pipeline primary (internal kill-switch)",
+    label="Settings mutation pipeline primary (operator kill-switch)",
 )
 
-# S4.5 flag — kill-switch infrastructure for future ResourceProvisioning
-# UI (S7+ logging-create flow, S10 per-subsystem setup packs) consumers
-# of :class:`services.resource_provisioning.ResourceProvisioningPipeline`.
-# The pipeline itself does NOT consult this flag — it provisions
-# whenever explicitly invoked.  Mirrors the SETTINGS_MUTATION_PRIMARY
-# pattern.
+# S4.5 flag — operator kill-switch for
+# :class:`services.resource_provisioning.ResourceProvisioningPipeline`
+# (ADR-005 F1).  Consulted at provision() via is_operator_disabled(); mirrors
+# the SETTINGS_MUTATION_PRIMARY pattern (default-allow, opt-in disable).
 RESOURCE_PROVISIONING_PRIMARY = FeatureFlag(
     name="resource_provisioning.primary",
     description=(
-        "services.resource_provisioning.ResourceProvisioningPipeline is the "
-        "primary creator/binder of Discord resources (channels/roles/"
-        "categories); future S7+/S10 UI consumers gate their routing on "
-        "this flag.  The pipeline itself does not consult the flag — its "
-        "existence alone changes no behaviour."
+        "Operator kill-switch for services.resource_provisioning."
+        "ResourceProvisioningPipeline.  Provisioning proceeds by default; the "
+        "pipeline refuses only when an operator explicitly sets this flag OFF "
+        "(env/DB override).  Flag-eval failure fails OPEN (provisioning proceeds)."
     ),
     default_value=False,
     owner="platform",
     removal_target="S10+ stable",
-    label="Resource provisioning pipeline primary (internal kill-switch)",
+    label="Resource provisioning pipeline primary (operator kill-switch)",
 )
 
 # S5 flag — gates the user-facing Settings Manager cog (!settings).
@@ -731,6 +729,26 @@ async def is_enabled(flag_name: str, guild_id: int | None = None) -> bool:
     """
     decision = await resolve_with_provenance(flag_name, guild_id)
     return decision.value
+
+
+async def is_operator_disabled(
+    flag_name: str,
+    guild_id: int | None = None,
+) -> bool:
+    """``True`` only when an operator has EXPLICITLY turned ``flag_name`` OFF
+    via an env or DB override.
+
+    The declared default and the bootstrap fallback (DB unreachable) do **not**
+    count as disabled.  This is the contract mutation kill-switches need: they
+    must default to ALLOW and must not treat a flag-store outage as a disable
+    (ADR-005 F1).
+    """
+    decision = await resolve_with_provenance(flag_name, guild_id)
+    return decision.value is False and decision.source in (
+        _SOURCE_ENV,
+        _SOURCE_DB_GUILD,
+        _SOURCE_DB_GLOBAL,
+    )
 
 
 # ---------------------------------------------------------------------------

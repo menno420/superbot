@@ -89,6 +89,20 @@ def _overrides_stale(guild_id: int) -> bool:
     return (time.monotonic() - loaded_at) > _OVERRIDE_TTL
 
 
+async def get_capability_override(guild_id: int, capability: str) -> bool | None:
+    """Public read of a per-guild capability execution override.
+
+    Returns the explicit override (``True``/``False``) for ``capability`` in
+    ``guild_id``, or ``None`` when no override row exists.  Refreshes the cache
+    from DB when stale (bounded by ``_OVERRIDE_TTL``).  Used by
+    :mod:`governance.capability` so the settings/binding/provisioning authority
+    resolver can honour a per-guild revoke without owning a second DB read.
+    """
+    if _overrides_stale(guild_id):
+        await _load_capability_overrides(guild_id)
+    return _check_capability_override(guild_id, capability)
+
+
 def forget_guild_capabilities(guild_id: int) -> None:
     """Clear all capability override state for a guild.
 

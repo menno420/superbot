@@ -128,7 +128,10 @@ class SettingSpec:
         the setting is not yet migrated off ``db.get_setting``.
     capability_required:
         Three-part capability string the operator must hold to mutate.
-        Empty if no auth is required (uncommon).
+        An empty string is treated by the mutation pipelines as the
+        administrator floor (NOT "no auth") — see
+        :func:`governance.capability.actor_holds_capability`.  Production
+        specs declare a real capability.
 
     Hint:
         Short human-readable description rendered by the wizard.

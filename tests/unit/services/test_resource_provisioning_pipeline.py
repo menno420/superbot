@@ -15,6 +15,7 @@ outside the pipeline itself.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -41,6 +42,7 @@ from services.resource_provisioning import (
     ProvisioningPreview,
     ProvisioningRequest,
     ProvisioningResult,
+    ResourceProvisioningDisabledError,
     ResourceProvisioningPipeline,
     UnauthorizedProvisioningError,
     UndeclaredResourceError,
@@ -1074,3 +1076,59 @@ async def test_ensure_category_creates_when_absent():
     out = await ensure_category(guild, "Brand New")
     assert out.name == "Brand New"
     assert any(c.name == "Brand New" for c in guild.categories)
+
+
+# ---------------------------------------------------------------------------
+# ADR-005 F1 — operator kill-switch
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_provisioning_kill_switch_disabled_blocks_no_audit(
+    monkeypatch, _isolated_state
+):
+    from core.runtime import feature_flags
+
+    monkeypatch.setattr(
+        feature_flags, "is_operator_disabled", AsyncMock(return_value=True)
+    )
+    _register_logging_with_mod_channel()
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild)  # admin by default
+    request = ProvisioningRequest(
+        subsystem="logging",
+        binding_name="mod_channel",
+        mode="create",
+        custom_name="mod-logs",
+    )
+    pipeline = ResourceProvisioningPipeline()
+    with pytest.raises(ResourceProvisioningDisabledError):
+        await pipeline.provision(guild, request, actor, confirmed=True)
+    # Disabled before any audit row or binding write.
+    assert _isolated_state["audit_rows"] == []
+    assert _isolated_state["binding_calls"] == []
+
+
+@pytest.mark.asyncio
+async def test_provisioning_kill_switch_eval_error_fails_open(monkeypatch):
+    from core.runtime import feature_flags
+
+    monkeypatch.setattr(
+        feature_flags,
+        "is_operator_disabled",
+        AsyncMock(side_effect=RuntimeError("flag store down")),
+    )
+    _register_logging_with_mod_channel()
+    existing_channel = _FakeChannel(999, "mod-logs", kind="text")
+    guild = _FakeGuild(1, channels=[existing_channel])
+    actor = _FakeMember(7, guild=guild)
+    request = ProvisioningRequest(
+        subsystem="logging",
+        binding_name="mod_channel",
+        mode="use_existing",
+        existing_id=999,
+    )
+    pipeline = ResourceProvisioningPipeline()
+    # Fail-open: a flag-store outage must not block provisioning.
+    result = await pipeline.provision(guild, request, actor, confirmed=False)
+    assert result.outcome == "success"

@@ -5,8 +5,8 @@ The canonical write path for ``subsystem_bindings``.  Mirrors the
 
   1. Input validation       — subsystem declared, binding declared,
                               kind matches the declared ``BindingSpec``
-  2. Authority validation   — administrator-tier (PLACEHOLDER for
-                              Phase 4.5 typed access-control)
+  2. Authority validation   — capability-native (ADR-005 A1): the actor
+                              must hold ``BindingSpec.capability_required``
   3. Target validation      — dispatch via
                               :func:`core.runtime.bindings.validate_binding_target`
                               (resource kinds vs MEMBER kind)
@@ -29,8 +29,9 @@ Hard limits for Phase 2b:
   * No permission-aware target validation — Phase 4.5 hook
     (:func:`core.resources.discovery.validate_resource_permissions`)
     is still NotImplementedError.
-  * Authority check is a placeholder; Phase 4.5 replaces it with the
-    typed :class:`~services.access_control_service` resolver.
+  * Authority is capability-native (ADR-005 A1): resolved via
+    :func:`governance.capability.actor_holds_capability` against
+    ``BindingSpec.capability_required`` (empty resolves to the admin floor).
 """
 
 from __future__ import annotations
@@ -53,7 +54,6 @@ from core.runtime.subsystem_schema import (
 from services.audit_events import emit_audit_action
 from utils.db import bindings as bindings_db
 from utils.subsystem_registry import SUBSYSTEMS
-from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficient
 
 logger = logging.getLogger("bot.services.binding_mutation")
 
@@ -62,11 +62,6 @@ logger = logging.getLogger("bot.services.binding_mutation")
 # ---------------------------------------------------------------------------
 
 EVT_BINDING_CHANGED = "bindings.changed"
-
-# Phase 2b authority floor — placeholder.  Phase 4.5 swaps this for
-# the typed access-control resolver consuming
-# ``BindingSpec.capability_required``.
-_WRITE_AUTHORITY_TIER = "administrator"
 
 
 class BindingMutationError(Exception):
@@ -152,7 +147,7 @@ class BindingMutationPipeline:
             UnauthorizedBindingMutationError: actor below the authority floor.
         """
         spec = self._resolve_spec(subsystem, binding_name, kind)
-        self._validate_authority(actor)
+        await self._validate_authority(spec, actor)
 
         new_status = await validate_binding_target(guild, kind, target_id)
         old = await get_binding(guild.id, subsystem, binding_name)
@@ -182,8 +177,8 @@ class BindingMutationPipeline:
         discoverable; ``target_id`` is set to NULL and ``status`` to
         ``unresolved``.
         """
-        self._resolve_spec(subsystem, binding_name, kind)
-        self._validate_authority(actor)
+        spec = self._resolve_spec(subsystem, binding_name, kind)
+        await self._validate_authority(spec, actor)
 
         old = await get_binding(guild.id, subsystem, binding_name)
         if old.target_id is None and old.last_updated_at is None:
@@ -310,24 +305,28 @@ class BindingMutationPipeline:
         )
         raise UndeclaredBindingError(msg)
 
-    def _validate_authority(self, actor: discord.Member) -> None:
-        """Step 2: placeholder administrator-tier floor.
+    async def _validate_authority(
+        self,
+        spec: BindingSpec,
+        actor: discord.Member,
+    ) -> None:
+        """Step 2: capability-native authority (ADR-005 A1).
 
-        Phase 4.5 replaces with typed capability resolution via
-        :data:`~core.runtime.subsystem_schema.BindingSpec.capability_required`.
+        The actor must hold ``spec.capability_required``; an empty capability
+        resolves to the administrator floor.  Resolution (and any per-guild
+        revoke overlay) lives in
+        :func:`governance.capability.actor_holds_capability`.
         """
-        if actor is None or getattr(actor, "guild", None) is None:
-            msg = "binding mutation requires a guild member context"
-            raise UnauthorizedBindingMutationError(msg)
-        guild_owner_id = actor.guild.owner_id if actor.guild else 0
-        tier = get_member_visibility_tier(actor, guild_owner_id)
-        if not is_tier_sufficient(tier, _WRITE_AUTHORITY_TIER):
-            msg = (
-                f"member {actor.id!r} (tier={tier!r}) requires at least "
-                f"{_WRITE_AUTHORITY_TIER!r} to mutate bindings "
-                "(Phase 4.5 will replace this with typed capability check)"
-            )
-            raise UnauthorizedBindingMutationError(msg)
+        from governance.capability import actor_holds_capability
+
+        decision = await actor_holds_capability(
+            actor,
+            getattr(actor, "guild", None),
+            spec.capability_required,
+            actor_type="user",
+        )
+        if not decision.allowed:
+            raise UnauthorizedBindingMutationError(decision.reason)
 
     async def _commit(
         self,
