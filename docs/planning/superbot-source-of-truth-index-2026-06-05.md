@@ -91,9 +91,9 @@ authority.
 | `docs/decisions/002-game-state-not-restart-safe.md` | ADR (immutable) | **Reclassifies Agent C#4**: game restart behavior is accepted design, not a bug. |
 | `docs/decisions/003-deferred-followups-after-refactor-program.md` | ADR | §3 already owns several Agent C "new" items — reconcile before re-planning. |
 | `docs/decisions/004-interaction-fail-open-posture.md` | **ADR (Accepted 2026-06-05)** | Per-surface fail-open/closed posture (RC-3); the contract the RC-3 impl PR fulfils. |
-| `docs/decisions/005-capability-native-authority-and-flag-semantics.md` | ADR (**Proposed** — draft) | RC-4 authority + `*_PRIMARY` flag semantics; awaiting maintainer ratification. |
-| `docs/decisions/006-btd6-data-provenance-ownership.md` | ADR (**Proposed** — draft) | RC-10 provenance/owner-matrix; BTD6 extraction stays paused until Accepted. |
-| `docs/decisions/007-media-youtube-ownership.md` | ADR (**Proposed** — draft) | RC-12 media/YouTube ownership; awaiting ratification. |
+| `docs/decisions/005-capability-native-authority-and-flag-semantics.md` | **ADR (Accepted 2026-06-05)** | RC-4 authority + `*_PRIMARY` flag semantics; A1+F1 implemented. Capability-native settings UI is still a follow-up. |
+| `docs/decisions/006-btd6-data-provenance-ownership.md` | **ADR (Accepted 2026-06-05)** | RC-10 provenance/owner-matrix; **Hybrid** storage chosen. BTD6 extraction stays paused until the provenance schema/docs PR. |
+| `docs/decisions/007-media-youtube-ownership.md` | **ADR (Accepted 2026-06-05)** | RC-12 media/YouTube ownership; **M1** chosen. Ownership row + service registration are a follow-on. |
 | `docs/resource-provisioning-overview.md` | reference (RPM lane) | Pair with the RC-9 correction: pipeline **is** adopted. |
 | `docs/help-command-surface-map.md` | binding (doc-test pinned) | Authority for RC-14 help parity. |
 | `docs/ai-config-ownership.md` | binding (doc-test pinned) | Read before any AI-cog change (RC-11). |

@@ -29,9 +29,12 @@ neither should grow that responsibility.
 
 ## The 11-step `provision(...)` contract
 
-Every Discord resource creation in the platform runs through these eleven
-steps. The setup wizard (S12 and beyond) consumes this pipeline. No cog or
-view bypasses it.
+Every **declared subsystem-provisioning** flow that creates or reuses a Discord
+resource and binds it to a subsystem runs through these eleven steps. The setup
+wizard (S12 and beyond) consumes this pipeline. Manual channel-management creation
+paths (e.g. `channel_cog`'s operator commands) are grandfathered on the invariant
+allowlist and tracked separately by the server-management lifecycle plan — see
+§ "Sibling lane".
 
 1. **Resolve** `ResourceRequirement` + `BindingSpec` from the
    `ProvisioningCatalogue.find(...)` lookup. Raise `UndeclaredResourceError`
@@ -91,10 +94,12 @@ view bypasses it.
   undeclared side effect. Enforced by `test_no_silent_auto_create.py`
   (S4.5 invariant).
 - The pipeline is the **only** legitimate creator of Discord resources for
-  subsystem use. No cog calls `guild.create_text_channel`,
+  subsystem use. No **new** cog calls `guild.create_text_channel`,
   `guild.create_role`, `guild.create_category`, `ensure_channel`,
-  `ensure_role`, or `ensure_category` directly. Enforced by the same
-  invariant test.
+  `ensure_role`, or `ensure_category` directly. Enforced by
+  `test_no_silent_auto_create.py` — a few legacy manual-CRUD paths (e.g.
+  `channel_cog`) are grandfathered on its `_ALLOWED_PATHS` list; routing those
+  through lifecycle services is a server-management follow-up.
 - The pipeline does **not** touch scalar settings — those still go through
   `SettingsMutationPipeline`.
 - The pipeline does **not** touch access policies — those still go through
