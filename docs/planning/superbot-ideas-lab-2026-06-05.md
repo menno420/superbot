@@ -127,7 +127,7 @@ sits on the existing architecture per D1.
 | ~~**Architecture-warning summary** (count/categories from RC-1 report mode)~~ | Diagnostics | Med | S/M | Low | ✅ **shipped** in PR #515 — checker prints a `by check:` per-rule breakdown |
 | **Migration health card** (latest migration, gaps/checksum) | Diagnostics | Med | S | Low | After PR 4 / RC-6 (RC-6 invariants already exist; this surfaces them) |
 
-### 4.5 After RC-4 / PR 6 (capability-native authority) — **do not expand settings UI earlier**
+### 4.5 Capability-native authority — **RC-4 shipped (#518); these are now buildable**
 
 | Idea | Feature | Val | Size | Risk | Fit |
 |---|---|---|---|---|---|
@@ -215,7 +215,7 @@ Re-open only by amending the governing doc cited.
 | Global fail-closed for **every** interaction | Reject | priority-map (posture is **per-surface**, not blanket) |
 | Redis-backed sessions/cache | Reject | ADR-001 (no-redis-backed-state) |
 | Universal game checkpointing / restart-safe game state | Reject | ADR-002 (restart cancels games; staked coins refunded) |
-| Expand settings UI before RC-4 | Defer | RC-4 (would spread placeholder authority) |
+| Expand settings UI before RC-4 | **Cleared** | RC-4 shipped (#518): settings UI is now buildable on capability-native authority — see `docs/capability-authority.md` §5 |
 | Big "all-cogs-at-once" thin-cog sweep | Reject | RC-8 (Direct-DB ledger first; staged per-feature) |
 | One slash command per sub-action | Reject | command-integration-standard (slash = front doors to panels only) |
 | Separate "danger" dashboard | Reject | ADR-003 (extend `ReadinessSnapshot` instead) |

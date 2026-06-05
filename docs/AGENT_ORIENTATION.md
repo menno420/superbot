@@ -77,6 +77,7 @@ read **`docs/helper-policy.md`** first.
 1. `docs/ownership.md` § "Service ownership" + § "Direct DB writes — explicit blocklist".
 2. `docs/architecture.md` § "Runtime invariants (CI-enforced)" — INV-E, INV-F, INV-G are AST-checked.
 3. `docs/runtime_contracts.md` § 9 (mutation contract checklist).
+4. `docs/capability-authority.md` — how a settings/binding/provisioning mutation is authorized (capability resolver + operator kill-switches + the panel-callback re-check rule).
 
 ### Touching settings / bindings / resource provisioning
 
@@ -84,6 +85,7 @@ read **`docs/helper-policy.md`** first.
 2. `docs/resource-provisioning-overview.md` — the RPM lane.
 3. `docs/platform-consistency-ledger.md` § 1 — current state of each domain.
 4. `docs/building-roadmap/config-input-standard.md` — UI rules for setting widgets.
+5. `docs/capability-authority.md` — authorization (capability resolver), the two operator kill-switches, and the panel-callback re-check rule.
 
 ### Touching tests / docs / smoke
 

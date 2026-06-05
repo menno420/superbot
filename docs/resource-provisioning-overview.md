@@ -36,8 +36,14 @@ view bypasses it.
 1. **Resolve** `ResourceRequirement` + `BindingSpec` from the
    `ProvisioningCatalogue.find(...)` lookup. Raise `UndeclaredResourceError`
    if missing.
-2. **Validate actor / capability** — admin-tier today; future Phase 4.5
-   uses `BindingSpec.capability_required`.
+2. **Validate actor / capability** — capability-native (ADR-005 A1): the actor must
+   be a member of the target guild and hold the option's `capability_required`,
+   resolved via `governance.capability.actor_holds_capability` (administrator floor
+   in v1; an empty capability resolves to that floor). The
+   `resource_provisioning.primary` operator kill-switch is also consulted here —
+   when explicitly OFF the pipeline raises `ResourceProvisioningDisabledError`
+   before any side effect (fail-open on flag-eval error). See
+   [`docs/capability-authority.md`](capability-authority.md).
 3. **Validate bot Discord permissions** for the requested resource kind
    (`manage_channels` for CHANNEL / CATEGORY, `manage_roles` for ROLE) via
    `guild.me.guild_permissions`. Insufficient permissions →
