@@ -76,6 +76,12 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # drives cache consistency; subscriber failure is logged and
         # swallowed.
         "resource.provisioned",
+        # ── Channel lifecycle (services/channel_lifecycle_service.py, SM PR4)
+        # Advisory.  Emitted after a rename / move / delete apply (single or
+        # batch).  Payload: mutation_id, guild_id, operation, outcome,
+        # applied[], failed[], occurred_at.  Subscriber failure logged +
+        # swallowed; Discord state is authoritative.
+        "channel.lifecycle_changed",
         # ── Feature flags (services/rollout_mutation.py, Phase 2d PR-3) ───
         # Advisory events emitted after the DB commit + audit row land.
         # Subscriber failure is logged with mutation_id and never raised
