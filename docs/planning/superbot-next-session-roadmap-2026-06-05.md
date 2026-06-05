@@ -377,3 +377,22 @@ read-only / observability-only, rides an existing read seam, gate cleared):
 
 Everything else from the scan stays a gated suggestion in the Ideas Lab; the
 decision/test gates (RC-3, RC-4, RC-10, PR 10 guard tests, ADRs) still hold.
+
+### Shipped progress (as of 2026-06-05)
+
+| Session / PR | RC(s) | PR | State |
+|---|---|---|---|
+| S1 — governance correctness | RC-2, RC-5, RC-15 | #513 | ✅ merged |
+| (planning) Ideas Lab backlog | — | #514 | ✅ merged |
+| S3a — arch checker report mode + arch-warning summary (§4.4) | RC-1 | #515 | ✅ merged |
+| S4a — feature-cleanup-provider registry | RC-7 | (this PR) | ✅ shipped |
+
+**RC-6 (migration integrity, S3b):** already satisfied — its static invariants
+(no-gaps, no-duplicates, filename format, non-empty, runner-dir) live and pass in
+`tests/unit/db/test_migrations_structure.py`. Remaining: the *optional* historical
+checksum guard (permanent per-migration friction — maintainer's call) and a live
+fresh-DB bootstrap (needs Postgres in CI). Not re-implemented.
+
+**Next, still gated:** S4b / **RC-4** (capability-native authority) needs the
+maintainer flag-semantics decision; S2 / **RC-3** (fail-open posture) needs the
+maintainer posture decision; the committed UX trio (IL-1/2/3) is ready to build.

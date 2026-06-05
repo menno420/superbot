@@ -95,6 +95,21 @@ writes must come from the owning cog or a shared service.
 | `game_state` | `services/game_state_service.py` | only the service.  JSONB payload per (guild, user, channel, subsystem). |
 | `schema_migrations` | `utils/db/migrations.py` | only the migration runner. |
 
+### Feature stale-state cleanup (RC-7)
+
+Garbage-collecting stale *persisted feature state* is split so `core/runtime`
+never owns a feature's domain rules:
+
+| Concern | Owner | Notes |
+|---|---|---|
+| GC scheduling (the 5-min sweep loop) | `core.runtime.session_gc` | Calls `cleanup_registry.run_all()`; knows nothing about economy or games. |
+| The provider registry | `core.runtime.cleanup_registry` | Pure `core` (stdlib only). `register(name, provider)` / `run_all()`; isolates a failing provider so one bad sweep cannot block the rest. |
+| Stale `game_state` reclamation + refund | `services.game_state_cleanup` | Owns the ADR-002 refund-on-abandon contract (`economy_service.refund`, opt-in on a positive int `bet`). Registered via `install()` from `bot1` at startup. |
+
+A new feature that persists stakes registers **its own** provider here (a
+`services/*_cleanup.py` that `install()`s into `cleanup_registry`) instead of
+adding economy/game logic to `session_gc`.
+
 ---
 
 ## Settings & platform-flag ownership
