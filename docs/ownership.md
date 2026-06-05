@@ -130,6 +130,19 @@ Scalar settings are declared as `SettingSpec`s in
 `core.runtime.feature_flags`. `docs/settings-customization-roadmap.md`
 is the authority on the three lanes (settings / binding / provisioning).
 
+### Mutation authority + kill-switches (ADR-005)
+
+Authorizing a settings / binding / provisioning mutation is owned by the governance
+capability resolver — **not** by the pipelines themselves:
+
+| Concern | Owner | Notes |
+|---|---|---|
+| Capability resolution | `governance.capability.actor_holds_capability` | Administrator floor keyed on the declared `capability_required`; bound to the **target** guild; revoke-only per-guild overlay over `capability_execution_overrides`. v1 keeps one floor. |
+| Mutation kill-switches | `core.runtime.feature_flags.is_operator_disabled` | `settings.mutation.primary` / `resource_provisioning.primary`. Default-ALLOW; blocks only on an explicit operator OFF; **fails open**. |
+| Panel-callback re-check | `views.base.interaction_is_admin` | Mutating panels reachable without an admin-gated entry (e.g. via Help) must re-check authority. |
+
+Full contract: [`docs/capability-authority.md`](capability-authority.md).
+
 ---
 
 ## Event ownership

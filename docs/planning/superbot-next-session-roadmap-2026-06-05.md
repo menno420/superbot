@@ -450,3 +450,31 @@ Still deferred/gated: BTD6 provenance **schema/extraction** (RC-10, paused until
 follow-on docs/schema PR), ADR-007 media-subsystem **registration** + `ownership.md`
 row (follow-on), capability-native **settings UI** (follow-on after RC-4 code), and
 the broad RC-8 view-move sweep (PR 8).
+
+---
+
+## Addendum 4 (post-#518): documentation + next-session candidates
+
+PR #518 merged ADR-005 (A1 + F1) and the safe Ideas-Lab §4.1 UX. A follow-up docs PR
+added [`docs/capability-authority.md`](../capability-authority.md) (the binding
+reference for the implemented authority system) and reconciled the now-stale
+references (resource-provisioning overview, `ownership.md`, this roadmap, Ideas-Lab
+§4.5/§6).
+
+**Candidate next sessions** — each independently shippable; pick one per session:
+
+| Candidate | What | Gate / readiness | First read |
+|---|---|---|---|
+| **A. Capability-native settings UI** | Ideas-Lab §4.5 (settings capability preview, "why can't I edit this?", provenance cards, capability audit mini-report) | **Unblocked** — RC-4 shipped; build read-only over the authority result first | `docs/capability-authority.md`, Ideas-Lab §4.5 |
+| **B. Per-capability tier matrix** | Replace the v1 single administrator floor with a declared capability → required-tier map | Design decision; extend `_DEFAULT_REQUIRED_TIER`. No security regression (floors only relax with an explicit declaration); add per-tier tests | `docs/capability-authority.md` §5, ADR-005 re-eval criteria |
+| **C. Broaden the panel-authority guard** | Audit other mutating panels reachable without an admin-gated entry (Help `build_help_menu_view`, hub routes) and apply `interaction_is_admin` | Small, mechanical, per-panel; add a non-admin-blocked test each | `docs/capability-authority.md` §4 |
+| **D. ADR-006 BTD6 provenance** | Implement the single `DataProvenance` object + owner matrix; resume extraction against it | **Gated** — ADR-006 Accepted but extraction stays paused until the schema PR lands | ADR-006, `docs/btd6-data-backends.md` |
+| **E. ADR-007 media subsystem** | Add the `docs/ownership.md` media-subsystem row + register `youtube_context_service` / `video_reference_cache_service` under it | **Follow-on** of ADR-007 (Accepted); ownership-doc PR | ADR-007, `docs/ownership.md` |
+| **F. RC-8 staged cleanup** | A *tiny* mechanical view/cog slice (Direct-DB ledger → view moves → service moves), per-feature | Staged; never all-at-once; don't touch capability/BTD6/media in the same slice | priority-map §RC-8, `docs/direct-db-exception-ledger.md` |
+
+**Suggested order:** A or C first (lowest risk, immediate operator value, both build
+directly on what #518 shipped), then B, then the gated D/E when you want to open
+those lanes. F can ride alongside any of them as a small slice.
+
+Out of scope unchanged: no second governance / provenance / media system; no AI
+write/action tools (Ideas-Lab §6); no broad all-cogs thin-cog sweep.
