@@ -7,6 +7,13 @@
 **Status:** planning artifact — read-only by design. Intended next for the Revision-project
 critique, then a final Opus revision, then execution. **No source was implemented in this pass.**
 
+> **Post-merge update (2026-06-05):** this document was verified **pre-merge** at `5e62578`; it then
+> merged via **#531** (and the CI docs-skip change via **#532**), so **current `main` is `7ffe3c7`** —
+> the "`5e62578` == current main / only #530 open" lines below are **historical**. The GPT/Revision
+> pass (R1–R5) was applied and **PR A has since been implemented** off a fresh branch from current
+> `main`. All module paths in this doc are under the `disbot/` package root (e.g.
+> `disbot/cogs/cleanup_cog.py`).
+
 > **Why this exists.** Codex produced a first-draft stability sequence (A→H) but could not
 > verify it against a live bot (its container lacked the credentials/Postgres), could not check
 > open-PR state (`gh` absent), and treated several findings as gospel. This refinement verifies
@@ -151,7 +158,7 @@ and the cleanup work mapped onto the already-queued **PR8 (schema+versioning) / 
 
 **Out of scope.** Full cleanup builder UI + dry-run (PR9); destructive redesign; setup-wizard expansion; Server Management Hub.
 
-**Exact files.** `docs/ownership.md` (cleanup rows), `docs/direct-db-exception-ledger.md`; possibly a new cleanup mutation/orchestration module + `utils/db/` + an additive migration (**only if approved**); `cogs/cleanup_cog.py`, `cogs/cleanup/panel.py`, `services/cleanup_levels.py`, `services/history_cleanup.py`, `governance/writes.py`; tests under `tests/unit/{governance,services,db,invariants}`.
+**Exact files.** `docs/ownership.md` (cleanup rows), `docs/direct-db-exception-ledger.md`; possibly a new cleanup mutation/orchestration module + `disbot/utils/db/` + an additive migration (**only if approved**); `disbot/cogs/cleanup_cog.py`, `disbot/cogs/cleanup/panel.py`, `disbot/services/cleanup_levels.py`, `disbot/services/history_cleanup.py`, `disbot/governance/writes.py`; tests under `tests/unit/{governance,services,db,invariants}`.
 
 **Migration impact.** Possibly one **additive** migration (highest-risk part) → require exact legacy-default tests + bootstrap test.
 
@@ -200,6 +207,6 @@ and the cleanup work mapped onto the already-queued **PR8 (schema+versioning) / 
 - Channel views direct mutations (grep): only `delete_panel.py:239` (`.delete`, the bypass) and `restrict_panel.py:179` (`.set_permissions`, deferred — do not flag).
 - Picker: `_build_channel_options` → `core.resources.channel_service.build_select_options(guild, include_voice=True, limit=25)` (no threads).
 - discord.py compat regression: `tests/unit/views/test_role_panels_discordpy_compat.py`.
-- Cleanup: `cogs/cleanup_cog.py:76-78` (caches), `:86` (whitelist), `:354/373/450/473` (prohibited-word writes); `cogs/cleanup/panel.py`; `services/history_cleanup.py`; `governance/writes.py` (`set_cleanup_policy`). Ledger drift: `docs/direct-db-exception-ledger.md:37` vs `ownership.md:64`.
+- Cleanup: `disbot/cogs/cleanup_cog.py:76-78` (caches), `:86` (whitelist), `:354/373/450/473` (prohibited-word writes); `disbot/cogs/cleanup/panel.py`; `disbot/services/history_cleanup.py`; `disbot/governance/writes.py` (`set_cleanup_policy`). Ledger drift: `docs/direct-db-exception-ledger.md:37` vs `ownership.md:64`.
 - AI presets: `services/ai_behavior_profile_service.py:151,219`; `views/ai/behavior/chooser.py` (Channel/Category only); `docs/ai-config-ownership.md:128,219-223`; refusal test `tests/unit/services/test_ai_behavior_profile_service.py:251`.
 - BTD6 gate: `docs/decisions/006-btd6-data-provenance-ownership.md` (Accepted; paused, RC-10); providers `services/btd6_data_provider.py`; composer `services/btd6_view_model_service.py`.
