@@ -33,10 +33,17 @@
 RC-2/5/15 shipped in **#513**; the Ideas Lab backlog in **#514**; RC-1
 (lazy-import checker report) in **#515**; **RC-7** (feature-cleanup-provider
 registry — `session_gc` is now a scheduler, `services.game_state_cleanup` owns
-the ADR-002 refund sweep) in **#516**. RC-3's posture is now pinned in
-**ADR-004** (Accepted). RC-4/RC-10/RC-12 are drafted as **Proposed** ADRs
-(005/006/007). See the roadmap's "Shipped progress" table + "Addendum 2
-(post-#516)" for the revised remaining wave.
+the ADR-002 refund sweep) in **#516**. The post-#516 wave (PR1–PR6: IL-1/2/3
+operator explainers, RC-6 migration guard, RC-3 fail-open posture, RC-8A Direct-DB
+ledger + RC-13 + RC-14, and the RC-11 AI-guard coverage map) all shipped in
+**#517**. RC-3's posture is pinned in **ADR-004** (Accepted).
+
+**ADR-005 / ADR-006 / ADR-007 are now `Accepted`** (ratified this session):
+RC-4 → ADR-005 **A1 + F1** (capability-native authority + operator kill-switches,
+implemented this session); RC-10 → ADR-006 **Hybrid** provenance storage (schema/
+extraction still paused); RC-12 → ADR-007 **M1** (shared media subsystem; ownership
+row + registration are a follow-on). The RC-11 cooldown-ordering guard was pinned
+this session. See the roadmap's "Addendum 3 (post-#517)" for details.
 
 ---
 

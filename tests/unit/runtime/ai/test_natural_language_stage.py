@@ -882,6 +882,51 @@ async def test_empty_message_after_bot_mention_strip_does_not_call_provider(
     assert len(matching) == 1
 
 
+@pytest.mark.asyncio
+async def test_cooldown_active_records_one_row_and_skips_gateway(
+    monkeypatch,
+    stub_services,
+):
+    """RC-11 guard: when the user is on cooldown, the stage records
+    exactly one ``COOLDOWN_ACTIVE`` denial row and never calls the
+    gateway.
+
+    Pins the cooldown-ordering guarantee that the AI-guard coverage map
+    left covered only indirectly — the other denied-path test denies via
+    ``BELOW_MIN_LEVEL``, so "records exactly one ``COOLDOWN_ACTIVE`` row
+    and never calls the provider" was previously unpinned."""
+    from core.runtime.ai import natural_language_stage as mod
+    from services import ai_gateway
+
+    # Policy ALLOWS (stub_services default) so the flow reaches the
+    # cooldown check; force the user to be on cooldown.
+    monkeypatch.setattr(
+        mod.ai_permission_service,
+        "is_on_cooldown",
+        lambda *a, **kw: True,
+    )
+
+    called = {"v": False}
+
+    async def fake_execute(_request):
+        called["v"] = True
+        return _make_response(text="should not be sent")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message_with_mention(f"<@{_BOT_ID}> are you on cooldown")
+    await stage.process(_make_ctx_with_bot_id(msg))
+
+    # The gateway must never be reached on a cooldown denial.
+    assert called["v"] is False
+    # Exactly one audit row, and it is the cooldown denial.
+    assert len(stub_services) == 1
+    row = stub_services[0]
+    assert row["decision"] == "denied"
+    assert row["reason_code"] is PolicyDenialReason.COOLDOWN_ACTIVE
+
+
 # ---------------------------------------------------------------------------
 # PR1 — bot self-knowledge: gather call + accessible-channel gating
 # ---------------------------------------------------------------------------

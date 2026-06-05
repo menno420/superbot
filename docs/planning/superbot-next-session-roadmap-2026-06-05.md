@@ -417,12 +417,36 @@ historical; do not re-implement it.** New base = `main` @ `312bcfd`.
 
 | Wave PR | Title | Maps to | State |
 |---|---|---|---|
-| PR1 | Decision pinning + post-#516 doc reconciliation (ADR-004 Accepted; 005/006/007 Proposed) | S2 decision + this refresh | **landing now** |
-| PR2 | Operator explainers & previews (IL-1/2/3, read-only) | Ideas-Lab trio | next |
-| PR3 | Migration runner guard (RC-6 remainder) | S3b remainder | next |
-| PR4 | Interaction/panel safety impl (RC-3) — depends on ADR-004 | S2 impl | next |
-| PR5 | Boundary & consistency foundation (RC-8A ledger + RC-13 + RC-14) | S5a (PR 7) | next |
-| PR6 (optional) | AI choke-point guard tests (RC-11, tests only) | PR 10 (pulled forward, tests only) | optional |
+| PR1 | Decision pinning + post-#516 doc reconciliation (ADR-004 Accepted; 005/006/007 Proposed) | S2 decision + this refresh | **shipped (#517)** |
+| PR2 | Operator explainers & previews (IL-1/2/3, read-only) | Ideas-Lab trio | **shipped (#517)** |
+| PR3 | Migration runner guard (RC-6 remainder) | S3b remainder | **shipped (#517)** |
+| PR4 | Interaction/panel safety impl (RC-3) — depends on ADR-004 | S2 impl | **shipped (#517)** |
+| PR5 | Boundary & consistency foundation (RC-8A ledger + RC-13 + RC-14) | S5a (PR 7) | **shipped (#517)** |
+| PR6 (optional) | AI choke-point guard tests (RC-11, tests only) | PR 10 (pulled forward, tests only) | **shipped (#517)** — coverage map only; cooldown-ordering guard added this session (Addendum 3) |
 
-Only hard dependency: PR1 → PR4. RC-4 code, the RC-8 view-move sweep (PR 8), and
-RC-10 / RC-12 ratification remain deferred/gated as above.
+Hard dependency was PR1 → PR4 (both shipped). RC-4 code, the RC-8 view-move sweep
+(PR 8), and RC-10 / RC-12 ratification were deferred/gated here — **now addressed in
+Addendum 3 below.**
+
+---
+
+## Addendum 3 (2026-06-05, post-#517): decisions ratified + ADR-005 implemented
+
+Wave PR1–PR6 above all landed in **#517** (verified against the commit log). This
+session:
+
+- **Ratified ADR-005 (A1 + F1), ADR-006 (Hybrid storage), ADR-007 (M1)** — all now
+  `Accepted`. ADR-005's F1 was *amended*: kill-switches wire at the mutation-pipeline
+  entry points, not the read-only `config_arbitration.py`.
+- **Implemented ADR-005** (RC-4 closeout): a governance capability resolver +
+  two operator kill-switches across the settings / binding / provisioning pipelines.
+- **Pinned the RC-11 cooldown-ordering guard** — the one gap PR6's coverage map left
+  open. RC-11's pre-AI-expansion guard set is now complete. *AI feature/tool
+  expansion itself remains gated (Ideas-Lab §6).*
+- Shipped three no-gate Ideas-Lab §4.1 UX items (Help discovery labels, RPS-matchup
+  + Chain-clear-limit panel buttons, panel-class drift test).
+
+Still deferred/gated: BTD6 provenance **schema/extraction** (RC-10, paused until a
+follow-on docs/schema PR), ADR-007 media-subsystem **registration** + `ownership.md`
+row (follow-on), capability-native **settings UI** (follow-on after RC-4 code), and
+the broad RC-8 view-move sweep (PR 8).
