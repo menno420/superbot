@@ -177,7 +177,7 @@ async def test_xp_range_modal_writes_min_and_max():
     from views.xp import modals as xp_modals
 
     fake_view = MagicMock()
-    fake_view._refresh = AsyncMock()
+    fake_view._rerender = AsyncMock()
 
     modal = xp_modals._XpRangeModal(fake_view)
     modal.xp_min = MagicMock()
@@ -203,7 +203,7 @@ async def test_xp_range_modal_writes_min_and_max():
         ("xp_min", 12),
         ("xp_max", 28),
     ]
-    fake_view._refresh.assert_awaited_once()
+    fake_view._rerender.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -239,7 +239,7 @@ async def test_xp_cooldown_modal_writes_cooldown():
     from views.xp import modals as xp_modals
 
     fake_view = MagicMock()
-    fake_view._refresh = AsyncMock()
+    fake_view._rerender = AsyncMock()
     modal = xp_modals._XpCooldownModal(fake_view)
     modal.seconds = MagicMock()
     modal.seconds.value = "45"
@@ -259,7 +259,7 @@ async def test_xp_cooldown_modal_writes_cooldown():
 
     helper.assert_awaited_once()
     assert helper.await_args.args[1:] == ("xp_cooldown", 45)
-    fake_view._refresh.assert_awaited_once()
+    fake_view._rerender.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -267,7 +267,7 @@ async def test_xp_channel_modal_writes_channel_string():
     from views.xp import modals as xp_modals
 
     fake_view = MagicMock()
-    fake_view._refresh = AsyncMock()
+    fake_view._rerender = AsyncMock()
     modal = xp_modals._XpChannelModal(fake_view)
     modal.channel_id = MagicMock()
     modal.channel_id.value = "1234567890"
@@ -287,7 +287,7 @@ async def test_xp_channel_modal_writes_channel_string():
 
     helper.assert_awaited_once()
     assert helper.await_args.args[1:] == ("xp_announce_channel", "1234567890")
-    fake_view._refresh.assert_awaited_once()
+    fake_view._rerender.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -298,7 +298,7 @@ async def test_xp_channel_modal_writes_empty_string_to_clear():
     from views.xp import modals as xp_modals
 
     fake_view = MagicMock()
-    fake_view._refresh = AsyncMock()
+    fake_view._rerender = AsyncMock()
     modal = xp_modals._XpChannelModal(fake_view)
     modal.channel_id = MagicMock()
     modal.channel_id.value = "  "

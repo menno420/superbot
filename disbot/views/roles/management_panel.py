@@ -174,7 +174,7 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
 
 class _DeleteRoleSelect(discord.ui.Select):
     def __init__(self, parent: ManagementPanel, roles: list[discord.Role]) -> None:
-        self.parent = parent  # type: ignore[misc]
+        self._panel = parent
         options = [
             discord.SelectOption(label=r.name[:100], value=str(r.id)) for r in roles
         ][:25]
@@ -201,10 +201,10 @@ class _DeleteRoleSelect(discord.ui.Select):
                 f"🗑️ Deleted role **{name}**.",
                 ephemeral=True,
             )
-            if self.parent.message:  # type: ignore[attr-defined]
-                await self.parent.message.edit(  # type: ignore[attr-defined]
-                    embed=await self.parent.build_embed(),  # type: ignore[attr-defined]
-                    view=self.parent,  # type: ignore[attr-defined]
+            if self._panel.message:
+                await self._panel.message.edit(
+                    embed=await self._panel.build_embed(),
+                    view=self._panel,
                 )
         else:
             await interaction.response.send_message(

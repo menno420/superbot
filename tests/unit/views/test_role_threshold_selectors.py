@@ -28,7 +28,7 @@ async def test_time_days_modal_persists_role_id_and_name():
     from views.roles.time_roles_panel import TimeDaysModal
 
     parent = MagicMock()
-    parent._refresh = AsyncMock()
+    parent._rerender = AsyncMock()
     modal = TimeDaysModal(parent, SimpleNamespace(id=100, name="Veteran"))
     modal.days = MagicMock(value="30")
     interaction = _interaction()
@@ -42,7 +42,7 @@ async def test_time_days_modal_persists_role_id_and_name():
     db.set_role_threshold.assert_awaited_once_with(
         99, "Veteran", 30, role_id=100, display_name="Veteran"
     )
-    parent._refresh.assert_awaited_once()
+    parent._rerender.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -64,7 +64,7 @@ async def test_xp_level_modal_persists_role_id_and_name():
     from views.roles.xp_roles_panel import XpLevelModal
 
     parent = MagicMock()
-    parent._refresh = AsyncMock()
+    parent._rerender = AsyncMock()
     modal = XpLevelModal(parent, SimpleNamespace(id=200, name="Pro"))
     modal.level = MagicMock(value="5")
     modal.auto_assign = MagicMock(value="yes")

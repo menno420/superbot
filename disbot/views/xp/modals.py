@@ -237,7 +237,7 @@ class _XpRangeModal(discord.ui.Modal, title="Set XP Range"):  # type: ignore[cal
             return
         if not await safe_defer(interaction):
             return
-        await self.view._refresh(interaction)
+        await self.view._rerender(interaction)
 
 
 class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: ignore[call-arg]
@@ -264,7 +264,7 @@ class _XpCooldownModal(discord.ui.Modal, title="Set XP Cooldown"):  # type: igno
             return
         if not await safe_defer(interaction):
             return
-        await self.view._refresh(interaction)
+        await self.view._rerender(interaction)
 
 
 class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"):  # type: ignore[call-arg]
@@ -291,4 +291,4 @@ class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"): 
             return
         if not await safe_defer(interaction):
             return
-        await self.view._refresh(interaction)
+        await self.view._rerender(interaction)
