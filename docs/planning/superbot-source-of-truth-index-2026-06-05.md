@@ -28,6 +28,18 @@
 
 ---
 
+## Shipped since this index was written (2026-06-05)
+
+RC-2/5/15 shipped in **#513**; the Ideas Lab backlog in **#514**; RC-1
+(lazy-import checker report) in **#515**; **RC-7** (feature-cleanup-provider
+registry — `session_gc` is now a scheduler, `services.game_state_cleanup` owns
+the ADR-002 refund sweep) in **#516**. RC-3's posture is now pinned in
+**ADR-004** (Accepted). RC-4/RC-10/RC-12 are drafted as **Proposed** ADRs
+(005/006/007). See the roadmap's "Shipped progress" table + "Addendum 2
+(post-#516)" for the revised remaining wave.
+
+---
+
 ## Current planning docs (trust now)
 
 | Doc | Trust | Note |
@@ -57,6 +69,10 @@ authority.
 | `docs/decisions/001-no-redis-backed-state.md` | ADR (immutable) | Rejects external session/state store. |
 | `docs/decisions/002-game-state-not-restart-safe.md` | ADR (immutable) | **Reclassifies Agent C#4**: game restart behavior is accepted design, not a bug. |
 | `docs/decisions/003-deferred-followups-after-refactor-program.md` | ADR | §3 already owns several Agent C "new" items — reconcile before re-planning. |
+| `docs/decisions/004-interaction-fail-open-posture.md` | **ADR (Accepted 2026-06-05)** | Per-surface fail-open/closed posture (RC-3); the contract the RC-3 impl PR fulfils. |
+| `docs/decisions/005-capability-native-authority-and-flag-semantics.md` | ADR (**Proposed** — draft) | RC-4 authority + `*_PRIMARY` flag semantics; awaiting maintainer ratification. |
+| `docs/decisions/006-btd6-data-provenance-ownership.md` | ADR (**Proposed** — draft) | RC-10 provenance/owner-matrix; BTD6 extraction stays paused until Accepted. |
+| `docs/decisions/007-media-youtube-ownership.md` | ADR (**Proposed** — draft) | RC-12 media/YouTube ownership; awaiting ratification. |
 | `docs/resource-provisioning-overview.md` | reference (RPM lane) | Pair with the RC-9 correction: pipeline **is** adopted. |
 | `docs/help-command-surface-map.md` | binding (doc-test pinned) | Authority for RC-14 help parity. |
 | `docs/ai-config-ownership.md` | binding (doc-test pinned) | Read before any AI-cog change (RC-11). |
@@ -133,7 +149,7 @@ The five 2026-06-05 audits were *source-read only* and one high-impact claim
 doc claim:
 
 1. **Run the cheap checks first.** `python3.10 scripts/check_architecture.py`
-   (0 errors expected, 88 known warnings) and `check_quality.py --check-only`.
+   (0 errors expected, 87 known warnings post-#516) and `check_quality.py --check-only`.
    A doc claiming "X violates layering" is testable in seconds.
 2. **Grep for callers before trusting "unadopted"/"zero callers"/"dead".**
    CodeGraph `dead-unresolved` is ~100% false-positive here (`.claude/CLAUDE.md`);
