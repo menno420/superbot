@@ -82,6 +82,12 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # applied[], failed[], occurred_at.  Subscriber failure logged +
         # swallowed; Discord state is authoritative.
         "channel.lifecycle_changed",
+        # ── Role lifecycle (services/role_lifecycle_service.py, SM PR5) ───
+        # Advisory.  Emitted after a role create / edit / delete apply.
+        # Payload: mutation_id, guild_id, operation, outcome, applied[],
+        # failed[], occurred_at.  Subscriber failure logged + swallowed;
+        # Discord state is authoritative.
+        "role.lifecycle_changed",
         # ── Feature flags (services/rollout_mutation.py, Phase 2d PR-3) ───
         # Advisory events emitted after the DB commit + audit row land.
         # Subscriber failure is logged with mutation_id and never raised

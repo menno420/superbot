@@ -5,6 +5,8 @@ import logging
 import discord
 from discord.ext import commands
 
+from services.lifecycle import SUCCESS
+from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleService
 from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from views.base import BaseView
@@ -53,28 +55,33 @@ class RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[ca
         do_hoist = self.hoist.value.strip().lower() in ("yes", "y", "true", "1")
         do_mention = self.mentionable.value.strip().lower() in ("yes", "y", "true", "1")
 
-        try:
-            role = await interaction.guild.create_role(
+        result = await RoleLifecycleService().apply(
+            interaction.guild,
+            RoleLifecycleRequest(
+                operation="create",
                 name=self.name.value,
                 color=col,
                 hoist=do_hoist,
                 mentionable=do_mention,
-            )
-            automation_view = RoleAutomationView(self.ctx, role.name)
+            ),
+            interaction.user,
+            actor_type="admin",
+        )
+        if result.outcome != SUCCESS:
             await interaction.response.send_message(
-                f"✅ Created role **{role.name}**.\n"
-                "Would you like to configure XP-based auto-assignment for this role?",
-                ephemeral=True,
-                view=automation_view,
-            )
-            automation_view.message = await interaction.original_response()
-        except discord.Forbidden:
-            await interaction.response.send_message(
-                "❌ I don't have permission to create roles.",
+                f"❌ Could not create role: {result.first_error}",
                 ephemeral=True,
             )
-        except discord.HTTPException as e:
-            await interaction.response.send_message(f"❌ Failed: {e}", ephemeral=True)
+            return
+        role_name = result.steps[0].target_name
+        automation_view = RoleAutomationView(self.ctx, role_name)
+        await interaction.response.send_message(
+            f"✅ Created role **{role_name}**.\n"
+            "Would you like to configure XP-based auto-assignment for this role?",
+            ephemeral=True,
+            view=automation_view,
+        )
+        automation_view.message = await interaction.original_response()
 
 
 class RoleAutomationView(BaseView):

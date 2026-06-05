@@ -178,13 +178,9 @@ class _XpRemoveSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction, ephemeral=True):
             return
-        # Clear XP columns only; preserves any days_required on the same row.
-        await db.set_role_xp_threshold(
-            interaction.guild.id,
-            self.values[0],
-            None,
-            False,
-        )
+        # Field-specific: clears only the XP tier, preserves any days_required on
+        # the same row, and drops the row entirely when no time tier remains.
+        await db.clear_role_xp_threshold(interaction.guild.id, self.values[0])
         invalidate_xp_threshold_roles(interaction.guild.id)
         await safe_followup(
             interaction,

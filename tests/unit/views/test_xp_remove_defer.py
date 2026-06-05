@@ -1,10 +1,12 @@
 """Regression tests for XP-role removal interaction ACK safety.
 
-Pre-fix `_XpRemoveSelect.callback` did `db.set_role_xp_threshold`
-(write) before `interaction.response.send_message`. Under DB latency
-the 3-second window expired and the admin saw "Interaction Failed".
-The fix wraps the write in `safe_defer(ephemeral=True)` so the reply
-routes through `safe_followup` once the write completes.
+Pre-fix `_XpRemoveSelect.callback` did the threshold write before
+`interaction.response.send_message`. Under DB latency the 3-second
+window expired and the admin saw "Interaction Failed". The fix wraps
+the write in `safe_defer(ephemeral=True)` so the reply routes through
+`safe_followup` once the write completes. (PR5 switched the write from
+`set_role_xp_threshold` to the field-specific `clear_role_xp_threshold`;
+the ACK ordering is unchanged.)
 """
 
 from __future__ import annotations
@@ -41,7 +43,7 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
         return True
 
     async def _set(*_a, **_kw):
-        order.append("set_role_xp_threshold")
+        order.append("clear_role_xp_threshold")
 
     async def _followup(*_a, **_kw):
         order.append("followup")
@@ -59,12 +61,12 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
         patch("views.roles.xp_roles_panel.db") as mock_db,
         patch("views.roles.xp_roles_panel.invalidate_xp_threshold_roles") as inval,
     ):
-        mock_db.set_role_xp_threshold = AsyncMock(side_effect=_set)
+        mock_db.clear_role_xp_threshold = AsyncMock(side_effect=_set)
         await _XpRemoveSelect.callback(select, interaction)
 
     assert order == [
         "defer(ephemeral=True)",
-        "set_role_xp_threshold",
+        "clear_role_xp_threshold",
         "followup",
     ], order
     defer.assert_awaited_once()

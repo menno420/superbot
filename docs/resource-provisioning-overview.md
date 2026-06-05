@@ -129,6 +129,12 @@ catalogued domain event):
   consumer; owns channel **rename / move / delete** (shipped #523). Channel
   **creation** stays here in provisioning; clone / overwrites / reorder are
   follow-ups still on their cog paths.
+- `services/role_lifecycle_service.py` (`RoleLifecycleService`) — owns operator-driven
+  role **create / edit / delete** (shipped PR5). It is the audited `guild.create_role`
+  caller for *manual* roles and is on the `test_no_silent_auto_create.py` allowlist;
+  **subsystem-declared** role provisioning (create-or-reuse + bind) still goes through
+  this pipeline / `guild_resources.ensure_role`. Member assignment stays on its
+  current paths.
 
 See `docs/ownership.md` § "Service ownership" and
 `docs/planning/server-management-status-2026-06-05.md` for current scope.

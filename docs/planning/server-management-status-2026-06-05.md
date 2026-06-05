@@ -142,6 +142,41 @@ The shared lifecycle-mutation contract landing with its first consumer.
   **panel UI**, and first-class **category lifecycle**. The invariant pins only
   `.delete()` / `.edit()` for now — these other operations are not yet routed.
 
+### PR5 — Role lifecycle service + non-destructive time/XP thresholds *(this PR)*
+The role-domain sibling of the channel lifecycle service, plus the data-loss fix
+for threshold removal.
+
+- **`services/role_lifecycle_service.py` (new):** `RoleLifecycleService` owns
+  operator-driven role **create / edit / delete**. Checks the bot's Manage Roles
+  permission + the per-role manageability verdict (consuming **#522**
+  `utils/role_feasibility.py`); irreversible `delete` requires `confirmed=True`;
+  Discord failures become a failed `StepResult`. Built on **#523**'s
+  `services/lifecycle` contract; emits the `audit.action_recorded` companion +
+  the new catalogued **`role.lifecycle_changed`** event (shared `mutation_id`).
+  It is the audited `guild.create_role` caller for *manual* roles and is added to
+  the `test_no_silent_auto_create.py` allowlist (subsystem role provisioning still
+  goes through `ResourceProvisioningPipeline`).
+- **Routed:** `role_cog` `createrole` / `deleterole`, `views/roles/creation_panel`
+  (create), and `views/roles/management_panel` (edit + delete). `role_cog` and
+  `creation_panel` were **removed** from the no-silent-auto-create allowlist (their
+  `create_role` now routes through the service).
+- **Non-destructive threshold removal (the data-loss fix):** new field-specific
+  `db.clear_role_time_threshold` / `clear_role_xp_threshold` replace the destructive
+  full-row `remove_role_threshold` at the three removal sites (`role_cog.unsetrole`,
+  `time_roles_panel`, `xp_roles_panel`). Clearing one tier now preserves the other;
+  the row is deleted only when no automation field remains. (Previously, removing a
+  role's time tier silently wiped its XP tier — see the old `unsetrole` comment.)
+- **Shared contract:** added `LifecycleResult.first_error` (used by both the role
+  cog and views, avoiding a `cogs → views` helper dependency).
+- **Pinned by** `tests/unit/invariants/test_no_direct_role_mutations.py` (role
+  create/edit/delete must route; `*.message.edit` paginator refreshes excluded by
+  receiver), `tests/unit/services/test_role_lifecycle_service.py`, and
+  `tests/unit/db/test_roles_threshold_clear.py`.
+- **Deferred (per the PR5 scoping decision):** the `role_thresholds`
+  `role_id`/`display_name` schema migration + dual-read groundwork → **PR6** (where
+  the ID-persisting selector is its real consumer); member assignment routing
+  (reaction roles / automation `add_roles`/`remove_roles`); role reorder; templates.
+
 ---
 
 ## Reconciliations applied this pass (source ↔ docs)
@@ -164,14 +199,14 @@ The shared lifecycle-mutation contract landing with its first consumer.
 
 ---
 
-## Remaining queue (starts at PR5)
+## Remaining queue (starts at PR6)
 
-Per the implementation plan's dependency order; nothing below has started.
+Per the implementation plan's dependency order. PR5 shipped (see above); the
+deferred role-ID migration groundwork rolls into PR6 with its real consumer.
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR5** | Role lifecycle service + non-destructive time/XP threshold semantics + role-ID groundwork (consumes #522 `role_feasibility` + #523 lifecycle contract). | #522, #523 |
-| **PR6** | Dynamic time/XP role configuration (replace free-text role names with selectors). | PR5, #522 |
+| **PR6** | Dynamic time/XP role configuration: replace free-text role names with selectors, **plus** the deferred `role_thresholds` `role_id`/`display_name` migration + dual-read (the ID-persisting selector is its consumer). | PR5, #522 |
 | **PR7** | Channel/category **move & reorder** panel UI + first-class category lifecycle (the deferred half of channel lifecycle). | #523, #522 |
 | **PR8** | Cleanup policy schema + versioning (preserve RC-5 thread-inheritance behavior). | — |
 | **PR9** | Cleanup builder + dry-run + diagnostics. | PR8, #522 |
@@ -182,5 +217,5 @@ Per the implementation plan's dependency order; nothing below has started.
 | **PR14** | Server Management Hub (last). | all managers |
 
 Near-term completion items folded into the above: finish PR2's diagnostics/findings
-model and selector paging/search (in PR5/PR6 as first production consumers); finish
+model and selector paging/search (in PR6 as the first production consumer); finish
 PR4's clone / overwrites / creation routing (in PR7).

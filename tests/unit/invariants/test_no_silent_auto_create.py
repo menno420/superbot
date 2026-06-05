@@ -74,13 +74,19 @@ _ALLOWED_PATHS = {
     # Phase 2a stub — raises NotImplementedError; superseded by S4.5.
     # Future cleanup PR may remove this file.
     _DISBOT / "core" / "resources" / "mutation.py",
+    # Audited manual-role creator (server-management PR5).  The role-domain
+    # sibling of the provisioning pipeline: it owns operator-driven role
+    # create/edit/delete with manageability checks + audit + event, so it is
+    # the one sanctioned guild.create_role caller for *manual* roles (subsystem
+    # role provisioning still goes through ResourceProvisioningPipeline).
+    _DISBOT / "services" / "role_lifecycle_service.py",
     # Grandfathered legacy paths — UI CRUD and admin commands.
     # Each migrates to ResourceProvisioningPipeline in a per-subsystem
-    # S10 sub-PR.
+    # S10 sub-PR.  (role_cog / views/roles/creation_panel were removed from
+    # this list once their create_role calls routed through
+    # RoleLifecycleService in PR5.)
     _DISBOT / "views" / "channels" / "create_panel.py",
-    _DISBOT / "views" / "roles" / "creation_panel.py",
     _DISBOT / "cogs" / "channel_cog.py",
-    _DISBOT / "cogs" / "role_cog.py",
     _DISBOT / "cogs" / "counting_cog.py",  # auto-create counting channel
     _DISBOT / "cogs" / "economy_cog.py",  # auto-create economy log channel
 }

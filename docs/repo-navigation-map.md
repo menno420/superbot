@@ -62,7 +62,7 @@ layer.
 | Cogs | `disbot/cogs/<name>_cog.py` (+ `disbot/cogs/<name>/`) | One file per subsystem entry; private domain logic in the sibling package. See `docs/architecture.md` § "Subsystem decomposition". |
 | Services (mutation) | `disbot/services/<name>_service.py` or `<name>_mutation.py` | Audited writers. See `docs/ownership.md` § "Service ownership". |
 | Pure-domain services | `disbot/services/blackjack_engine.py`, `disbot/services/cog_routing_profiles.py`, … | Stateless math / catalogue logic. May be called from cogs and other services. |
-| Lifecycle contract | `disbot/services/lifecycle/` (`contracts.py`) | Shared request/preview/result/reversibility/outcome types + `emit_lifecycle_audit` for *change* ops (rename/move/delete) that `ResourceProvisioningPipeline` does not own. First consumer: `services/channel_lifecycle_service.py`. See `docs/resource-provisioning-overview.md` § "Sibling lane". |
+| Lifecycle contract | `disbot/services/lifecycle/` (`contracts.py`) | Shared request/preview/result/reversibility/outcome types + `emit_lifecycle_audit` for *change* ops (rename/move/delete/create/edit) that `ResourceProvisioningPipeline` does not own. Consumers: `services/channel_lifecycle_service.py`, `services/role_lifecycle_service.py`. See `docs/resource-provisioning-overview.md` § "Sibling lane". |
 | Platform runtime | `disbot/core/runtime/` | EventBus consumers, session_manager, panel_manager, interaction_router, navigation_stack, tasks supervisor, persistent_views, identity contract, etc. **Must not import cogs or services.** |
 | Resources runtime | `disbot/core/resources/` | Typed Discord-resource discovery / mutation / status. |
 | Governance | `disbot/governance/` | Visibility, cleanup, capability resolution + the `GovernanceMutationPipeline`. Strict internal layer order (see `governance/__init__.py` docstring). |
@@ -210,7 +210,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | mining | `cogs/mining_cog.py` (+ `cogs/mining/`) | `views/mining/` | direct CRUD | `utils/db/games/mining.py` |
 | moderation | `cogs/moderation_cog.py` (+ `cogs/moderation/`) | `views/moderation/` | `services/moderation_service.py` | `utils/db/moderation.py` |
 | proof_channel | `cogs/proof_channel_cog.py` | — | `services/economy_service.py` (coins) | n/a |
-| role | `cogs/role_cog.py` | `views/roles/` | direct CRUD | `utils/db/roles.py` |
+| role | `cogs/role_cog.py` | `views/roles/` | role create/edit/delete via `services/role_lifecycle_service.py`; thresholds/reaction-roles direct CRUD | `utils/db/roles.py` |
 | rps_tournament | `cogs/rps_tournament_cog.py` (+ `cogs/rps_tournament/`) | `views/rps/` | direct CRUD + `economy_service` | `utils/db/games/rps.py` |
 | settings | `cogs/settings_cog.py` (+ `cogs/settings/`) | `views/settings/` | `services/settings_mutation.py` | `utils/db/settings.py` |
 | setup | `cogs/setup_cog.py` (+ `cogs/setup/`) | `views/setup/` | `services/setup_operations.py` (+ companion services) | `utils/db/setup_session.py`, `utils/db/setup_draft.py` |
