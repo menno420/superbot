@@ -19,6 +19,13 @@ Two more bind common operations:
 - **`docs/helper-policy.md`** — when to create / move / promote a helper. Read this **before** putting a function in `utils/`, `services/`, or `views/base.py`.
 
 When a doc and a source file disagree, the source file wins.
+
+Also read **`.session-journal.md`** (repo root) at the **start** of every
+session — our cross-session working memory: the environment/boot runbook (how to
+boot the test bot, where the env vars live, the local-Postgres setup), maintainer
+preferences, recurring problems + fixes, past mistakes to avoid, and candidate
+rules not yet promoted into this file. Append a dated entry at the **end** of the
+session and commit it. Precedence: source code > this file (CLAUDE.md) > the journal.
 <!-- READ_FIRST_END -->
 
 <!-- SESSION_WORKFLOW_START -->
