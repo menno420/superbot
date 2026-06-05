@@ -18,19 +18,40 @@ from utils.db import pool
 
 async def get_role_thresholds(guild_id: int) -> list[dict]:
     return await pool.fetchall(
-        "SELECT role_name, days_required, level_required, xp_auto_assign "
+        "SELECT role_name, days_required, level_required, xp_auto_assign, "
+        "role_id, display_name "
         "FROM role_thresholds WHERE guild_id=$1 ORDER BY days_required",
         (guild_id,),
     )
 
 
-async def set_role_threshold(guild_id: int, role_name: str, days: int) -> None:
+async def set_role_threshold(
+    guild_id: int,
+    role_name: str,
+    days: int,
+    *,
+    role_id: int | None = None,
+    display_name: str | None = None,
+) -> None:
+    """Upsert the time tier for a role threshold.
+
+    ``role_id`` / ``display_name`` are the PR6 id-groundwork (migration 056):
+    when supplied (selector-driven writes) they are stored so readers can resolve
+    the role id-first and panels can diagnose stale rows.  On conflict they are
+    ``COALESCE``-preserved, so a later name-only or XP-only update never wipes a
+    previously-captured id.
+    """
     await pool.execute(
-        """INSERT INTO role_thresholds (guild_id, role_name, days_required)
-           VALUES ($1, $2, $3)
-           ON CONFLICT (guild_id, role_name)
-             DO UPDATE SET days_required=EXCLUDED.days_required""",
-        (guild_id, role_name, days),
+        """INSERT INTO role_thresholds
+               (guild_id, role_name, days_required, role_id, display_name)
+           VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (guild_id, role_name) DO UPDATE SET
+               days_required = EXCLUDED.days_required,
+               role_id = COALESCE(EXCLUDED.role_id, role_thresholds.role_id),
+               display_name = COALESCE(
+                   EXCLUDED.display_name, role_thresholds.display_name
+               )""",
+        (guild_id, role_name, days, role_id, display_name),
     )
 
 
@@ -90,7 +111,8 @@ async def clear_role_xp_threshold(guild_id: int, role_name: str) -> None:
 async def get_xp_threshold_roles(guild_id: int) -> list[dict]:
     """Rows with xp_auto_assign=TRUE and a configured level_required."""
     return await pool.fetchall(
-        "SELECT role_name, level_required FROM role_thresholds "
+        "SELECT role_name, level_required, role_id, display_name "
+        "FROM role_thresholds "
         "WHERE guild_id=$1 AND xp_auto_assign=TRUE AND level_required IS NOT NULL "
         "ORDER BY level_required",
         (guild_id,),
@@ -102,21 +124,31 @@ async def set_role_xp_threshold(
     role_name: str,
     level_required: int | None,
     auto_assign: bool,
+    *,
+    role_id: int | None = None,
+    display_name: str | None = None,
 ) -> None:
     """Upsert the XP automation columns for a role threshold row.
 
     If no row exists for (guild_id, role_name), inserts one with
     days_required=0.  Only updates the XP columns; existing
-    days_required is preserved on conflict.
+    days_required is preserved on conflict.  ``role_id`` / ``display_name`` are
+    the PR6 id-groundwork (migration 056), ``COALESCE``-preserved on conflict so
+    a name-only or time-only update never wipes a previously-captured id.
     """
     await pool.execute(
         """INSERT INTO role_thresholds
-               (guild_id, role_name, days_required, level_required, xp_auto_assign)
-           VALUES ($1, $2, 0, $3, $4)
+               (guild_id, role_name, days_required, level_required, xp_auto_assign,
+                role_id, display_name)
+           VALUES ($1, $2, 0, $3, $4, $5, $6)
            ON CONFLICT (guild_id, role_name) DO UPDATE SET
                level_required = EXCLUDED.level_required,
-               xp_auto_assign = EXCLUDED.xp_auto_assign""",
-        (guild_id, role_name, level_required, auto_assign),
+               xp_auto_assign = EXCLUDED.xp_auto_assign,
+               role_id = COALESCE(EXCLUDED.role_id, role_thresholds.role_id),
+               display_name = COALESCE(
+                   EXCLUDED.display_name, role_thresholds.display_name
+               )""",
+        (guild_id, role_name, level_required, auto_assign, role_id, display_name),
     )
 
 

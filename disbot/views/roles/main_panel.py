@@ -83,7 +83,7 @@ class RoleHubView(BaseView):
             return
         from views.roles.time_roles_panel import TimeRolesPanel
 
-        await _ensure_defaults(interaction.guild.id)
+        await _ensure_defaults(interaction.guild)
         panel = TimeRolesPanel(self.ctx, parent=self)
         panel.message = self.message
         await interaction.response.edit_message(

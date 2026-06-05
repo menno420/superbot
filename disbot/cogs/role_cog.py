@@ -129,7 +129,7 @@ class RoleHubPanelView(PersistentView):
             return
         from views.roles.time_roles_panel import TimeRolesPanel
 
-        await _ensure_defaults(interaction.guild.id)
+        await _ensure_defaults(interaction.guild)
         self.message = interaction.message
         panel = TimeRolesPanel(_CtxAdapter(interaction), parent=self)
         panel.message = interaction.message
@@ -281,7 +281,7 @@ class RoleCog(commands.Cog):
         the guild-wide batch shares logic with
         :meth:`on_member_join`.
         """
-        await _ensure_defaults(guild.id)
+        await _ensure_defaults(guild)
         thresholds = await db.get_role_thresholds(guild.id)
         if not thresholds:
             if ctx:
@@ -297,6 +297,7 @@ class RoleCog(commands.Cog):
             role_automation.RoleThreshold(
                 role_name=row["role_name"],
                 days_required=row["days_required"],
+                role_id=row.get("role_id"),
             )
             for row in thresholds
             # XP reward roles (xp_auto_assign) are granted by the XP listener
@@ -601,7 +602,7 @@ class RoleCog(commands.Cog):
     async def on_member_join(self, member: discord.Member) -> None:
         if member.bot:
             return
-        await _ensure_defaults(member.guild.id)
+        await _ensure_defaults(member.guild)
         thresholds = await db.get_role_thresholds(member.guild.id)
         if not thresholds:
             return
@@ -610,6 +611,7 @@ class RoleCog(commands.Cog):
             role_automation.RoleThreshold(
                 role_name=row["role_name"],
                 days_required=row["days_required"],
+                role_id=row.get("role_id"),
             )
             for row in thresholds
             # XP reward roles (xp_auto_assign) are granted by the XP listener

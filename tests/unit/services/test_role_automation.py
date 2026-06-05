@@ -221,6 +221,30 @@ def test_compute_assignments_emits_remove_when_promoting():
     assert plans[0].remove_role_names == ("Veteran",)
 
 
+def test_compute_assignments_resolves_tier_by_role_id_after_rename():
+    """PR6 id-first: a threshold keyed by role_id survives a role rename.
+
+    The row still stores the old name, but the role (id 100) was renamed to
+    "NewName"; resolution is id-first, so the tier resolves to the renamed role
+    and assigns it under its current name.
+    """
+    renamed = _role(100, "NewName")
+    member = _member(mid=1, display="u1", joined_days_ago=45)
+    g = _guild(roles=[renamed], members=[member])
+    plans = compute_assignments(g, [RoleThreshold("OldName", 30, role_id=100)])
+    assert len(plans) == 1
+    assert plans[0].add_role_id == 100
+    assert plans[0].add_role_name == "NewName"
+
+
+def test_compute_assignments_drops_tier_whose_role_is_gone():
+    """A threshold whose role resolves by neither id nor name is dropped."""
+    member = _member(mid=1, display="u1", joined_days_ago=45)
+    g = _guild(roles=[], members=[member])
+    plans = compute_assignments(g, [RoleThreshold("Ghost", 30, role_id=999)])
+    assert plans == ()
+
+
 def test_explain_assignment_for_returns_per_member_plan():
     veteran = _role(100, "Veteran")
     target = _member(mid=42, display="u42", joined_days_ago=60)

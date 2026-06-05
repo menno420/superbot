@@ -205,7 +205,13 @@ async def _apply_xp_threshold_roles(
         qualifying: list = []  # earned roles (level_required <= new_level)
         configured: list = []  # every configured XP role that resolves
         for role_cfg in xp_roles:
-            discord_role = resources.resolve_role(guild, name=role_cfg["role_name"])
+            # Id-first (PR6 migration 056), normalized-name fallback for legacy
+            # rows — a renamed role keeps its XP tier.
+            discord_role = resources.resolve_role(
+                guild,
+                role_id=role_cfg.get("role_id"),
+                name=role_cfg["role_name"],
+            )
             if discord_role is None:
                 continue
             configured.append(discord_role)
