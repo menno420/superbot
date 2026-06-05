@@ -64,6 +64,19 @@ class GovernanceScope(Enum):
 # index by string rather than enum.
 LEGACY_SCOPE_TYPES: frozenset[str] = frozenset(s.value for s in GovernanceScope)
 
+# Scope-type sets accepted by governance writes, exposed read-side so
+# diagnostics / explainers can consume them WITHOUT importing the mutation
+# module (``governance.writes``).  RC-5: visibility accepts "thread"; cleanup
+# does NOT — ``cleanup_policies`` kept its non-thread CHECK constraint and the
+# cleanup resolver skips thread scope (see ``governance.writes`` /
+# ``governance.cleanup``).
+VALID_VISIBILITY_SCOPE_TYPES: frozenset[str] = frozenset(
+    {"channel", "category", "guild", "thread"},
+)
+VALID_CLEANUP_SCOPE_TYPES: frozenset[str] = frozenset(
+    {"channel", "category", "guild"},
+)
+
 
 def from_string(value: str) -> GovernanceScope:
     """Parse a legacy scope string into a :class:`GovernanceScope`.
@@ -81,4 +94,10 @@ def from_string(value: str) -> GovernanceScope:
         ) from None
 
 
-__all__ = ["LEGACY_SCOPE_TYPES", "GovernanceScope", "from_string"]
+__all__ = [
+    "LEGACY_SCOPE_TYPES",
+    "VALID_CLEANUP_SCOPE_TYPES",
+    "VALID_VISIBILITY_SCOPE_TYPES",
+    "GovernanceScope",
+    "from_string",
+]

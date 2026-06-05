@@ -572,7 +572,7 @@ class DiagnosticCog(commands.Cog):
         """
         from cogs.diagnostic._platform_embeds import build_cleanup_preview_embed
         from governance.cleanup import resolve_cleanup_policy
-        from governance.writes import _VALID_CLEANUP_SCOPE_TYPES
+        from governance.scopes import VALID_CLEANUP_SCOPE_TYPES
 
         where = target or ctx.channel
         gctx = _governance_context_for(ctx, where)
@@ -582,7 +582,7 @@ class DiagnosticCog(commands.Cog):
                 where.mention,
                 policy,
                 is_thread=isinstance(where, discord.Thread),
-                valid_cleanup_scopes=_VALID_CLEANUP_SCOPE_TYPES,
+                valid_cleanup_scopes=VALID_CLEANUP_SCOPE_TYPES,
             ),
         )
 

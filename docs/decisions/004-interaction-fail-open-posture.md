@@ -3,9 +3,11 @@
 **Status:** Accepted (2026-06-05)
 **Supersedes:** none
 **Superseded by:** none
-**Ratified by:** maintainer, 2026-06-05 planning session — recorded here per that
-decision (it was not previously captured in repo docs; before this ADR the repo
-carried RC-3 as "maintainer-gated").
+**Ratified by:** the maintainer, in the 2026-06-05 planning session — they
+explicitly selected "ratify the recommended posture now" when asked (RC-3 was
+previously repo-gated as "maintainer-gated"; this ADR records that ratification).
+If that provenance is ever in doubt, downgrade this ADR to *Proposed* and hold
+the RC-3 implementation until re-confirmed.
 
 ## Context
 
@@ -36,6 +38,18 @@ for read-only surfaces too.
   performs a mutation or is owner-bound.
 - **Fail-OPEN** (allow, emit the existing `governance_fail_open_total` metric)
   only for read-only, public surfaces.
+
+**Refinement — what "owner/mutating" means here.** The fail-closed target is a
+panel where a *missing anchor* could let a non-owner take a **privileged or
+owner-affecting** action: settings / setup / provisioning / admin config, or a
+guild-scoped mutation (e.g. role management). It is **not** every panel that
+writes to the DB. The persistent game/economy panels (economy, mining, btd6,
+help) are **stateless per-clicker** — every button acts on `interaction.user.id`,
+so a non-owner clicking a stale-anchor panel only affects *their own* data, and
+the "only you can interact" ownership check there is cosmetic. Those stay
+fail-open (availability); their real gate is the per-button permission/data
+scoping. Implementations therefore opt **in** the privileged set (e.g.
+`RoleHubPanelView`) and leave stateless per-clicker panels fail-open.
 
 The mechanism is a small, declarative marker — a per-`PersistentView` /
 per-prefix `public` vs `owner`/`mutating` classification plus a prefix→posture

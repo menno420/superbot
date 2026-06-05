@@ -36,9 +36,15 @@ for natural-language AI. Its documented steps (module docstring) end with
 
 ## Verdict
 
-**The RC-11 gate is satisfied by existing coverage.** The audit-row-once,
+**The RC-11 gate is MOSTLY satisfied by existing coverage** — the audit-row-once,
 read-only-tool-whitelist, I-2 non-mutating, and grounding-guard guarantees are all
-pinned. No new guard test was added in this pass (it would duplicate the above).
+pinned. **One guard remains before AI expansion can be cleared:** a focused
+**cooldown-ordering** test (see below) — the existing denied-path test denies via
+`BELOW_MIN_LEVEL`, not cooldown, so "records exactly one `COOLDOWN_ACTIVE` row and
+never calls the gateway" is not yet pinned. The AI-expansion session must add that
+test before treating the gate as fully cleared. No new guard test was added in
+this pass (the rest would duplicate existing coverage; the cooldown test is
+deliberately left to the session that owns the AI-stage harness).
 
 ## Optional refinement (for the AI-expansion session, not now)
 
