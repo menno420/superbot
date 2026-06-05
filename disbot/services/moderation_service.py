@@ -2,14 +2,25 @@
 
 Mirrors :mod:`services.economy_service`: every moderation action
 (warn, timeout, kick, ban, unban, clear_warnings) routes through one
-function that:
+function that fans out **three distinct signals** via the shared
+:func:`_record_action` helper (the same shape
+:mod:`services.resource_provisioning` uses):
 
-  1. Performs the underlying Discord-API or DB write.
-  2. Appends an immutable row to ``mod_logs`` via
-     :func:`utils.db.log_mod_action`.
-  3. Emits the catalogued ``EVT_MOD_ACTION`` event on the EventBus
-     so subscribers (panel-refresh, audit dashboards, future
-     analytics) can react without polling the DB.
+  1. **``mod_logs`` row** via :func:`utils.db.log_mod_action` — the
+     authoritative, append-only moderation history.  It is the source of
+     truth for ``modlogs`` lookups and never carries a ``mutation_id``
+     column.
+  2. **``audit.action_recorded``** via :func:`services.audit_events.emit_audit_action`
+     — the *generic audit-routing companion* consumed by
+     ``services.server_logging`` (single canonical embed to the audit
+     channel).  It is NOT a second moderation-history store.
+  3. **``EVT_MOD_ACTION``** (``moderation.action_taken``) — the domain
+     event panel-refresh / analytics subscribers dispatch on, carrying
+     the same ``mutation_id`` for correlation.
+
+Signals (2) and (3) are **best-effort**: the audit companion swallows
+bus failures internally (returns ``False``) and never invalidates the
+``mod_logs`` row.
 
 The function signatures accept the resolved Discord object
 (``discord.Member`` for member actions, ``discord.Guild`` +
@@ -38,17 +49,21 @@ filter per-rule.
 Discord-API exceptions (``discord.Forbidden``, ``discord.HTTPException``)
 are NOT caught here — callers handle them, since the appropriate
 user-facing response (ephemeral DM "I can't ban that user") is
-context-dependent.
+context-dependent.  The audit/log fan-out only runs after the Discord
+action succeeds.
 """
 
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+import uuid
+from datetime import datetime, timezone
+from typing import Any
 
 import discord
 
 from core.events import bus
+from services.audit_events import emit_audit_action
 from utils import db
 
 logger = logging.getLogger("bot.moderation_service")
@@ -56,6 +71,69 @@ logger = logging.getLogger("bot.moderation_service")
 # Single event covers every moderation action; subscribers dispatch
 # on payload["action"].  Also listed in core/events_catalogue.KNOWN_EVENTS.
 EVT_MOD_ACTION = "moderation.action_taken"
+
+
+def _now_utc() -> datetime:
+    """Return a tz-aware "now" — INV-N forbids bare datetime.utcnow."""
+    return datetime.now(timezone.utc)
+
+
+async def _record_action(
+    *,
+    guild_id: int,
+    action: str,
+    target_id: int,
+    actor_id: int | None,
+    reason: str,
+    actor_type: str = "moderator",
+    event_extra: dict[str, Any] | None = None,
+) -> str:
+    """Append the canonical ``mod_logs`` row and fan out both events.
+
+    Three signals per call (see module docstring):
+
+      1. ``mod_logs`` row — authoritative history (issued first).
+      2. ``audit.action_recorded`` — best-effort audit-routing companion.
+      3. ``EVT_MOD_ACTION`` — best-effort domain event.
+
+    Returns the issued ``mutation_id`` (shared by both events).  The
+    companion / event emits are best-effort and must never invalidate
+    the ``mod_logs`` row; the audit helper already swallows bus errors,
+    and a domain-event failure is not the service's concern here.
+    """
+    mutation_id = str(uuid.uuid4())
+    await db.log_mod_action(guild_id, action, target_id, actor_id or 0, reason)
+    logger.info(
+        "MOD | %s | target=%s | actor=%s | %s",
+        action.upper(),
+        target_id,
+        actor_id,
+        reason,
+    )
+    await emit_audit_action(
+        mutation_id=mutation_id,
+        subsystem="moderation",
+        mutation_type=action,
+        target=f"user:{target_id}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=None,
+        new_value=reason or None,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=_now_utc(),
+    )
+    await bus.emit(
+        EVT_MOD_ACTION,
+        mutation_id=mutation_id,
+        guild_id=guild_id,
+        target_id=target_id,
+        actor_id=actor_id,
+        action=action,
+        reason=reason,
+        **(event_extra or {}),
+    )
+    return mutation_id
 
 
 async def warn(
@@ -75,19 +153,11 @@ async def warn(
         The post-increment warning count.
     """
     new_count = await db.add_warning(member.id, member.guild.id)
-    await db.log_mod_action(
-        member.guild.id,
-        "warn",
-        member.id,
-        actor_id or 0,
-        reason,
-    )
-    await bus.emit(
-        EVT_MOD_ACTION,
+    await _record_action(
         guild_id=member.guild.id,
+        action="warn",
         target_id=member.id,
         actor_id=actor_id,
-        action="warn",
         reason=reason,
     )
     return new_count
@@ -106,21 +176,13 @@ async def timeout(
     written on successful timeout.
     """
     await member.timeout(until, reason=reason)
-    await db.log_mod_action(
-        member.guild.id,
-        "timeout",
-        member.id,
-        actor_id or 0,
-        reason,
-    )
-    await bus.emit(
-        EVT_MOD_ACTION,
+    await _record_action(
         guild_id=member.guild.id,
+        action="timeout",
         target_id=member.id,
         actor_id=actor_id,
-        action="timeout",
         reason=reason,
-        until=until.isoformat() if until else None,
+        event_extra={"until": until.isoformat() if until else None},
     )
 
 
@@ -134,13 +196,11 @@ async def kick(
     guild_id = member.guild.id
     target_id = member.id
     await member.kick(reason=reason)
-    await db.log_mod_action(guild_id, "kick", target_id, actor_id or 0, reason)
-    await bus.emit(
-        EVT_MOD_ACTION,
+    await _record_action(
         guild_id=guild_id,
+        action="kick",
         target_id=target_id,
         actor_id=actor_id,
-        action="kick",
         reason=reason,
     )
 
@@ -158,13 +218,11 @@ async def ban(
     can ban users who are not currently in the guild.
     """
     await guild.ban(user, reason=reason)
-    await db.log_mod_action(guild.id, "ban", user.id, actor_id or 0, reason)
-    await bus.emit(
-        EVT_MOD_ACTION,
+    await _record_action(
         guild_id=guild.id,
+        action="ban",
         target_id=user.id,
         actor_id=actor_id,
-        action="ban",
         reason=reason,
     )
 
@@ -178,13 +236,11 @@ async def unban(
 ) -> None:
     """Unban *user* from *guild*; log + emit event."""
     await guild.unban(user, reason=reason)
-    await db.log_mod_action(guild.id, "unban", user.id, actor_id or 0, reason)
-    await bus.emit(
-        EVT_MOD_ACTION,
+    await _record_action(
         guild_id=guild.id,
+        action="unban",
         target_id=user.id,
         actor_id=actor_id,
-        action="unban",
         reason=reason,
     )
 
@@ -196,15 +252,19 @@ async def clear_warnings(
     actor_id: int | None = None,
     reason: str = "Warnings cleared",
 ) -> None:
-    """Reset *user_id*'s warning count to zero; log + emit event."""
+    """Reset *user_id*'s warning count to zero; log + emit event.
+
+    The stored ``mod_logs`` action token is ``"clearwarnings"`` (one
+    word) to match every row written by the pre-convergence cog/modal
+    surfaces, so history stays consistent and ``modlogs`` renders a
+    single label.
+    """
     await db.clear_warnings(user_id, guild_id)
-    await db.log_mod_action(guild_id, "clear_warnings", user_id, actor_id or 0, reason)
-    await bus.emit(
-        EVT_MOD_ACTION,
+    await _record_action(
         guild_id=guild_id,
+        action="clearwarnings",
         target_id=user_id,
         actor_id=actor_id,
-        action="clear_warnings",
         reason=reason,
     )
 
@@ -274,19 +334,12 @@ async def auto_delete(
         )
         return False
 
-    await db.log_mod_action(
-        message.guild.id,
-        composite_action,
-        message.author.id,
-        actor_id or 0,
-        reason,
-    )
-    await bus.emit(
-        EVT_MOD_ACTION,
+    await _record_action(
         guild_id=message.guild.id,
+        action=composite_action,
         target_id=message.author.id,
         actor_id=actor_id,
-        action=composite_action,
         reason=reason,
+        actor_type="system",
     )
     return True

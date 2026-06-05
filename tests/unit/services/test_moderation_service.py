@@ -12,6 +12,24 @@ from services import moderation_service
 from services.moderation_service import EVT_MOD_ACTION
 
 
+@pytest.fixture(autouse=True)
+def _mute_audit_companion():
+    """Patch the best-effort audit-routing companion for every test.
+
+    ``moderation_service`` emits ``audit.action_recorded`` via
+    :func:`emit_audit_action` (imported into its namespace) on top of the
+    domain ``EVT_MOD_ACTION``.  Both resolve to the same EventBus object,
+    so without this the per-test ``bus.emit`` patch would see two awaits.
+    Muting the companion keeps the domain-event assertions exact; the
+    companion is asserted explicitly in its own test.
+    """
+    with patch(
+        "services.moderation_service.emit_audit_action",
+        new_callable=AsyncMock,
+    ) as companion:
+        yield companion
+
+
 def test_event_is_catalogued():
     assert EVT_MOD_ACTION in KNOWN_EVENTS
 
@@ -167,7 +185,75 @@ async def test_clear_warnings_deletes_and_logs():
         )
 
     clear.assert_awaited_once_with(2, 1)
-    assert emit.await_args.kwargs["action"] == "clear_warnings"
+    # New rows align with the de-facto historical token ("clearwarnings")
+    # written by every pre-convergence cog/modal surface.
+    assert emit.await_args.kwargs["action"] == "clearwarnings"
+
+
+@pytest.mark.asyncio
+async def test_action_emits_audit_companion_with_shared_mutation_id(
+    _mute_audit_companion,
+):
+    """Each action fires the audit.action_recorded companion with a
+    mutation_id that matches the EVT_MOD_ACTION payload."""
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "services.moderation_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        await moderation_service.warn(member, reason="spam", actor_id=42)
+
+    _mute_audit_companion.assert_awaited_once()
+    ckw = _mute_audit_companion.await_args.kwargs
+    assert ckw["subsystem"] == "moderation"
+    assert ckw["mutation_type"] == "warn"
+    assert ckw["target"] == f"user:{member.id}"
+    assert ckw["scope"] == "guild"
+    assert ckw["guild_id"] == member.guild.id
+    assert ckw["actor_id"] == 42
+    # Same mutation_id correlates the companion and the domain event.
+    assert ckw["mutation_id"] == emit.await_args.kwargs["mutation_id"]
+
+
+@pytest.mark.asyncio
+async def test_audit_companion_failure_does_not_block_action(
+    _mute_audit_companion,
+):
+    """A dropped audit companion must not invalidate the mod_logs write or
+    the domain event — mod_logs is authoritative."""
+    _mute_audit_companion.return_value = False  # bus dropped the companion
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=2,
+        ),
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch(
+            "services.moderation_service.bus.emit",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        count = await moderation_service.warn(member, reason="x", actor_id=1)
+
+    assert count == 2
+    log_mod.assert_awaited_once()
+    emit.assert_awaited_once()
 
 
 @pytest.mark.asyncio

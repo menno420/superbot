@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from datetime import timedelta
 
 import discord
@@ -9,6 +8,7 @@ from discord.ext import commands
 
 from cogs.moderation._helpers import _build_mod_panel_embed
 from core.runtime import panel_manager
+from services import moderation_service
 from utils import db
 from utils.ui_constants import MOD_COLOR
 
@@ -16,8 +16,6 @@ from utils.ui_constants import MOD_COLOR
 # so the persistent-view registry is populated before on_ready runs
 # restore_anchors.  See docs/architecture.md §"PersistentView placement".
 from views.moderation import ModPanelView  # noqa: F401 — re-exported
-
-logger = logging.getLogger("bot")
 
 
 class ModerationCog(commands.Cog):
@@ -37,22 +35,6 @@ class ModerationCog(commands.Cog):
         if member.top_role >= ctx.guild.me.top_role:
             return "❌ I cannot perform this action — that member has a higher role than me."
         return None
-
-    async def log_action(
-        self,
-        ctx,
-        action: str,
-        member,
-        reason: str = "No reason provided",
-    ):
-        await db.log_mod_action(ctx.guild.id, action, member.id, ctx.author.id, reason)
-        logger.info(
-            "MOD | %s | %s | by %s | %s",
-            action.upper(),
-            member,
-            ctx.author,
-            reason,
-        )
 
     # ------------------------------------------------------------------
     # Moderation panel (action-first interactive UI)
@@ -96,6 +78,11 @@ class ModerationCog(commands.Cog):
 
     # ------------------------------------------------------------------
     # Traditional text commands (kept for direct use)
+    #
+    # Every mutating action routes through ``services.moderation_service``
+    # (the single audited writer); this cog only authorizes, parses, and
+    # renders.  Pinned by
+    # ``tests/unit/invariants/test_no_direct_moderation_writes.py``.
     # ------------------------------------------------------------------
 
     @commands.command(name="warn", hidden=True)
@@ -123,20 +110,32 @@ class ModerationCog(commands.Cog):
             "warn_timeout_minutes",
             10,
         )
-        count = await db.add_warning(member.id, ctx.guild.id)
+        count = await moderation_service.warn(
+            member,
+            reason=reason,
+            actor_id=ctx.author.id,
+        )
         await ctx.send(
             f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
         )
-        await self.log_action(ctx, "warn", member, reason)
         if count >= threshold:
             try:
                 until = discord.utils.utcnow() + timedelta(minutes=timeout_minutes)
-                await member.timeout(until, reason=f"{threshold} warnings reached.")
+                await moderation_service.timeout(
+                    member,
+                    until=until,
+                    reason=f"{threshold} warnings reached.",
+                    actor_id=ctx.author.id,
+                )
                 await ctx.send(
                     f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
                     f"({threshold} warnings).",
                 )
-                await db.clear_warnings(member.id, ctx.guild.id)
+                await moderation_service.clear_warnings(
+                    ctx.guild.id,
+                    member.id,
+                    actor_id=ctx.author.id,
+                )
             except discord.Forbidden:
                 await ctx.send(
                     f"⚠️ Reached {threshold} warnings but I lack permission to timeout this user.",
@@ -152,9 +151,13 @@ class ModerationCog(commands.Cog):
             return
         try:
             until = discord.utils.utcnow() + timedelta(minutes=duration)
-            await member.timeout(until, reason=f"Timeout by {ctx.author}")
+            await moderation_service.timeout(
+                member,
+                until=until,
+                reason=f"{duration} minutes",
+                actor_id=ctx.author.id,
+            )
             await ctx.send(f"⏳ {member.mention} timed out for {duration} minute(s).")
-            await self.log_action(ctx, "timeout", member, f"{duration} minutes")
         except discord.Forbidden:
             await ctx.send("❌ I don't have permission to timeout that user.")
         except discord.HTTPException as e:
@@ -169,9 +172,12 @@ class ModerationCog(commands.Cog):
             await ctx.send(err)
             return
         try:
-            await member.kick(reason=reason)
+            await moderation_service.kick(
+                member,
+                reason=reason,
+                actor_id=ctx.author.id,
+            )
             await ctx.send(f"👢 {member.mention} kicked. Reason: {reason}")
-            await self.log_action(ctx, "kick", member, reason)
         except discord.Forbidden:
             await ctx.send("❌ I don't have permission to kick that user.")
         except discord.HTTPException as e:
@@ -186,9 +192,13 @@ class ModerationCog(commands.Cog):
             await ctx.send(err)
             return
         try:
-            await member.ban(reason=reason)
+            await moderation_service.ban(
+                ctx.guild,
+                member,
+                reason=reason,
+                actor_id=ctx.author.id,
+            )
             await ctx.send(f"🚫 {member.mention} banned. Reason: {reason}")
-            await self.log_action(ctx, "ban", member, reason)
         except discord.Forbidden:
             await ctx.send("❌ I don't have permission to ban that user.")
         except discord.HTTPException as e:
@@ -207,9 +217,13 @@ class ModerationCog(commands.Cog):
             await ctx.send(f"❌ Failed to fetch user: {e}")
             return
         try:
-            await ctx.guild.unban(user)
+            await moderation_service.unban(
+                ctx.guild,
+                user,
+                reason="No reason provided",
+                actor_id=ctx.author.id,
+            )
             await ctx.send(f"✅ {user.mention} unbanned.")
-            await self.log_action(ctx, "unban", user)
         except discord.NotFound:
             await ctx.send(f"❌ User `{user_id}` is not banned.")
         except discord.Forbidden:
@@ -221,9 +235,12 @@ class ModerationCog(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def clearwarnings(self, ctx, member: Member):
         """Clear all warnings for a member."""
-        await db.clear_warnings(member.id, ctx.guild.id)
+        await moderation_service.clear_warnings(
+            ctx.guild.id,
+            member.id,
+            actor_id=ctx.author.id,
+        )
         await ctx.send(f"✅ Warnings cleared for {member.mention}.")
-        await self.log_action(ctx, "clearwarnings", member)
 
     @commands.command(name="modlogs", hidden=True)
     @commands.has_permissions(manage_roles=True)

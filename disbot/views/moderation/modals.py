@@ -11,11 +11,18 @@ by the corresponding ``ModPanelView`` button:
     _ModLogsModal        — view moderation log history for a member
     _ClearWarningsModal  — reset warning count for a member
 
-Each modal performs:
+Each action modal performs:
   1. parse the target via ``utils.helpers._parse_member``
   2. run ``_can_act_on_interaction`` for hierarchy/owner safety
-  3. perform the Discord-API action
-  4. write to ``mod_logs`` via ``db.log_mod_action``
+  3. ``safe_defer`` (slow-path ACK), then dispatch the action through
+     ``services.moderation_service`` — the single audited writer that
+     appends the ``mod_logs`` row, emits the ``audit.action_recorded``
+     companion, and fires ``EVT_MOD_ACTION``.  No direct Discord-API
+     mutation or ``mod_logs`` write happens here (pinned by
+     ``tests/unit/invariants/test_no_direct_moderation_writes.py``).
+
+``_ModLogsModal`` is a read-only lookup and keeps its direct
+``db.get_mod_logs`` read.
 """
 
 from __future__ import annotations
@@ -26,6 +33,7 @@ import discord
 
 from cogs.moderation._helpers import _can_act_on_interaction
 from core.runtime.interaction_helpers import safe_defer, safe_followup
+from services import moderation_service
 from utils import db
 from utils.helpers import _parse_member
 from utils.ui_constants import MOD_COLOR
@@ -79,28 +87,37 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             "warn_timeout_minutes",
             10,
         )
-        count = await db.add_warning(member.id, interaction.guild_id)
+        count = await moderation_service.warn(
+            member,
+            reason=reason,
+            actor_id=interaction.user.id,
+        )
         await safe_followup(
             interaction,
             f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
         )
-        await db.log_mod_action(
-            interaction.guild_id,
-            "warn",
-            member.id,
-            interaction.user.id,
-            reason,
-        )
         if count >= threshold:
+            # Escalation stays orchestrated at the surface (sequential
+            # service calls) until moderation config owns it; the
+            # warning reset is now audited via the service.
             try:
                 until = discord.utils.utcnow() + timedelta(minutes=timeout_minutes)
-                await member.timeout(until, reason=f"{threshold} warnings reached.")
+                await moderation_service.timeout(
+                    member,
+                    until=until,
+                    reason=f"{threshold} warnings reached.",
+                    actor_id=interaction.user.id,
+                )
                 await safe_followup(
                     interaction,
                     f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
                     f"({threshold} warnings).",
                 )
-                await db.clear_warnings(member.id, interaction.guild_id)
+                await moderation_service.clear_warnings(
+                    interaction.guild_id,
+                    member.id,
+                    actor_id=interaction.user.id,
+                )
             except discord.Forbidden:
                 await safe_followup(
                     interaction,
@@ -154,17 +171,17 @@ class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[c
             return
         try:
             until = discord.utils.utcnow() + timedelta(minutes=duration)
-            await member.timeout(until, reason=reason)
+            # Preserve the surface's historical mod_logs reason shape
+            # ("30m: reason") until moderation config models duration.
+            await moderation_service.timeout(
+                member,
+                until=until,
+                reason=f"{duration}m: {reason}",
+                actor_id=interaction.user.id,
+            )
             await safe_followup(
                 interaction,
                 f"⏳ {member.mention} timed out for {duration} minute(s).",
-            )
-            await db.log_mod_action(
-                interaction.guild_id,
-                "timeout",
-                member.id,
-                interaction.user.id,
-                f"{duration}m: {reason}",
             )
         except discord.Forbidden:
             await safe_followup(
@@ -206,17 +223,14 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
         if not await safe_defer(interaction):
             return
         try:
-            await member.kick(reason=reason)
+            await moderation_service.kick(
+                member,
+                reason=reason,
+                actor_id=interaction.user.id,
+            )
             await safe_followup(
                 interaction,
                 f"👢 {member.mention} kicked. Reason: {reason}",
-            )
-            await db.log_mod_action(
-                interaction.guild_id,
-                "kick",
-                member.id,
-                interaction.user.id,
-                reason,
             )
         except discord.Forbidden:
             await safe_followup(
@@ -258,17 +272,15 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
         if not await safe_defer(interaction):
             return
         try:
-            await member.ban(reason=reason)
+            await moderation_service.ban(
+                interaction.guild,
+                member,
+                reason=reason,
+                actor_id=interaction.user.id,
+            )
             await safe_followup(
                 interaction,
                 f"🚫 {member.mention} banned. Reason: {reason}",
-            )
-            await db.log_mod_action(
-                interaction.guild_id,
-                "ban",
-                member.id,
-                interaction.user.id,
-                reason,
             )
         except discord.Forbidden:
             await safe_followup(
@@ -305,15 +317,13 @@ class _UnbanModal(discord.ui.Modal, title="Unban Member"):  # type: ignore[call-
             await interaction.followup.send(f"❌ Failed to fetch user: {e}")
             return
         try:
-            await interaction.guild.unban(user)
-            await interaction.followup.send(f"✅ {user.mention} unbanned.")
-            await db.log_mod_action(
-                interaction.guild_id,
-                "unban",
-                user.id,
-                interaction.user.id,
-                "",
+            await moderation_service.unban(
+                interaction.guild,
+                user,
+                reason="",
+                actor_id=interaction.user.id,
             )
+            await interaction.followup.send(f"✅ {user.mention} unbanned.")
         except discord.NotFound:
             await interaction.followup.send(f"❌ User `{user_id}` is not banned.")
         except discord.Forbidden:
@@ -377,13 +387,10 @@ class _ClearWarningsModal(discord.ui.Modal, title="Clear Warnings"):  # type: ig
             return
         if not await safe_defer(interaction, ephemeral=True):
             return
-        await db.clear_warnings(member.id, interaction.guild_id)
-        await db.log_mod_action(
+        await moderation_service.clear_warnings(
             interaction.guild_id,
-            "clearwarnings",
             member.id,
-            interaction.user.id,
-            "",
+            actor_id=interaction.user.id,
         )
         await safe_followup(
             interaction,
