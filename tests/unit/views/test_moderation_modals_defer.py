@@ -154,17 +154,17 @@ async def test_warn_modal_happy_path_defers_before_db_io():
             "services.settings_resolution.resolve_value",
             tracker.slow("resolve_value", return_value=3),
         ),
-        patch("views.moderation.modals.db") as mock_db,
+        patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
-        mock_db.add_warning = tracker.slow("add_warning", return_value=1)
-        mock_db.log_mod_action = tracker.slow("log_mod_action")
+        # count (1) stays below threshold (3) → no escalation branch.
+        mock_svc.warn = tracker.slow("svc.warn", return_value=1)
         await modal.on_submit(interaction)
 
     assert (
         tracker.calls[0] == "defer"
-    ), f"defer must come before any settings/DB I/O; got {tracker.calls!r}"
+    ), f"defer must come before any settings/service I/O; got {tracker.calls!r}"
     assert "resolve_value" in tracker.calls
-    assert "add_warning" in tracker.calls
+    assert "svc.warn" in tracker.calls
     assert "followup" in tracker.calls
     interaction.response.send_message.assert_not_called()
 
@@ -203,15 +203,17 @@ async def test_warn_modal_threshold_branch_uses_followup_after_timeout():
             "services.settings_resolution.resolve_value",
             AsyncMock(return_value=3),
         ),
-        patch("views.moderation.modals.db") as mock_db,
+        patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
-        # Third warning trips the threshold.
-        mock_db.add_warning = AsyncMock(return_value=3)
-        mock_db.log_mod_action = AsyncMock()
-        mock_db.clear_warnings = AsyncMock()
+        # Third warning trips the threshold → escalation routes through
+        # the service (timeout + warning reset), not a direct API call.
+        mock_svc.warn = AsyncMock(return_value=3)
+        mock_svc.timeout = AsyncMock()
+        mock_svc.clear_warnings = AsyncMock()
         await modal.on_submit(interaction)
 
-    target.timeout.assert_awaited_once()
+    mock_svc.timeout.assert_awaited_once()
+    mock_svc.clear_warnings.assert_awaited_once()
     # Two followups: warn-confirmation + auto-timeout announcement.
     assert len(followup_calls) == 2
     assert "warned" in followup_calls[0][0]
@@ -253,7 +255,6 @@ async def test_timeout_modal_happy_path_defers_before_discord_api():
     interaction = _interaction()
     target = _member()
     tracker = _OrderTracker()
-    target.timeout = tracker.slow("member.timeout")
 
     with (
         patch("views.moderation.modals._parse_member", return_value=target),
@@ -263,13 +264,13 @@ async def test_timeout_modal_happy_path_defers_before_discord_api():
         ),
         patch("views.moderation.modals.safe_defer", tracker.defer()),
         patch("views.moderation.modals.safe_followup", tracker.followup()),
-        patch("views.moderation.modals.db") as mock_db,
+        patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
-        mock_db.log_mod_action = tracker.slow("log_mod_action")
+        mock_svc.timeout = tracker.slow("svc.timeout")
         await modal.on_submit(interaction)
 
     assert tracker.calls[0] == "defer"
-    assert tracker.calls.index("defer") < tracker.calls.index("member.timeout")
+    assert tracker.calls.index("defer") < tracker.calls.index("svc.timeout")
     assert "followup" in tracker.calls
     interaction.response.send_message.assert_not_called()
 
@@ -283,7 +284,6 @@ async def test_timeout_modal_forbidden_replies_via_followup():
     modal.reason_input = MagicMock(value="")
     interaction = _interaction()
     target = _member()
-    target.timeout = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "nope"))
 
     safe_followup = AsyncMock()
     with (
@@ -297,7 +297,11 @@ async def test_timeout_modal_forbidden_replies_via_followup():
             AsyncMock(return_value=True),
         ),
         patch("views.moderation.modals.safe_followup", safe_followup),
+        patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
+        mock_svc.timeout = AsyncMock(
+            side_effect=discord.Forbidden(MagicMock(), "nope"),
+        )
         await modal.on_submit(interaction)
 
     safe_followup.assert_awaited_once()
@@ -327,7 +331,6 @@ async def test_kick_ban_modals_defer_before_discord_api(
     interaction = _interaction()
     target = _member()
     tracker = _OrderTracker()
-    setattr(target, action_attr, tracker.slow(f"member.{action_attr}"))
 
     with (
         patch("views.moderation.modals._parse_member", return_value=target),
@@ -337,13 +340,13 @@ async def test_kick_ban_modals_defer_before_discord_api(
         ),
         patch("views.moderation.modals.safe_defer", tracker.defer()),
         patch("views.moderation.modals.safe_followup", tracker.followup()),
-        patch("views.moderation.modals.db") as mock_db,
+        patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
-        mock_db.log_mod_action = tracker.slow("log_mod_action")
+        setattr(mock_svc, action_attr, tracker.slow(f"svc.{action_attr}"))
         await modal.on_submit(interaction)
 
     assert tracker.calls[0] == "defer"
-    assert tracker.calls.index("defer") < tracker.calls.index(f"member.{action_attr}")
+    assert tracker.calls.index("defer") < tracker.calls.index(f"svc.{action_attr}")
     assert "followup" in tracker.calls
     interaction.response.send_message.assert_not_called()
 
@@ -411,14 +414,13 @@ async def test_clearwarnings_modal_defers_ephemeral_before_db_write():
         patch("views.moderation.modals._parse_member", return_value=_member()),
         patch("views.moderation.modals.safe_defer", tracker.defer()) as defer,
         patch("views.moderation.modals.safe_followup", tracker.followup()),
-        patch("views.moderation.modals.db") as mock_db,
+        patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
-        mock_db.clear_warnings = tracker.slow("clear_warnings")
-        mock_db.log_mod_action = tracker.slow("log_mod_action")
+        mock_svc.clear_warnings = tracker.slow("svc.clear_warnings")
         await modal.on_submit(interaction)
 
     assert tracker.calls[0] == "defer"
     assert defer.await_args.kwargs.get("ephemeral") is True
-    assert tracker.calls.index("defer") < tracker.calls.index("clear_warnings")
+    assert tracker.calls.index("defer") < tracker.calls.index("svc.clear_warnings")
     assert "followup" in tracker.calls
     interaction.response.send_message.assert_not_called()
