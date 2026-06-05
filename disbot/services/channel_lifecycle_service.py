@@ -43,11 +43,12 @@ logger = logging.getLogger("bot.services.channel_lifecycle")
 DOMAIN = "channel"
 EVT_CHANNEL_LIFECYCLE = "channel.lifecycle_changed"
 
-_OPERATIONS = ("rename", "move", "delete")
+_OPERATIONS = ("rename", "move", "delete", "reorder")
 _REVERSIBILITY = {
     "rename": lc.REVERSIBLE,
     "move": lc.COMPENSATABLE,
     "delete": lc.IRREVERSIBLE,
+    "reorder": lc.COMPENSATABLE,
 }
 
 
@@ -55,10 +56,11 @@ _REVERSIBILITY = {
 class ChannelLifecycleRequest:
     """Typed request — one operation over one or more channels."""
 
-    operation: str  # "rename" | "move" | "delete"
+    operation: str  # "rename" | "move" | "delete" | "reorder"
     channel_ids: tuple[int, ...]
     new_name: str | None = None  # rename
     category_id: int | None = None  # move (None = remove from category)
+    position: str | None = None  # reorder: "top" | "bottom" (default bottom)
     reason: str | None = None
 
 
@@ -235,6 +237,14 @@ class ChannelLifecycleService:
                 else None
             )
             await channel.edit(category=category, reason=reason)  # type: ignore[attr-defined]
+        elif operation == "reorder":
+            # .move lives on the abc; beginning/end repositions the channel
+            # within its category (or the guild). Discord reorder is not atomic
+            # — a partial batch records its actual final state via the steps.
+            if request.position == "top":
+                await channel.move(beginning=True, reason=reason)
+            else:
+                await channel.move(end=True, reason=reason)
         elif operation == "delete":
             await channel.delete(reason=reason)
 
@@ -261,6 +271,8 @@ class ChannelLifecycleService:
             return f"rename channel {name!r} → {request.new_name!r}{suffix}"
         if request.operation == "move":
             return f"move {n} channel(s) to category {request.category_id}{suffix}"
+        if request.operation == "reorder":
+            return f"send {n} channel(s) to {request.position or 'bottom'}{suffix}"
         return f"delete {n} channel(s){suffix}"
 
     def _terminal(

@@ -126,9 +126,10 @@ catalogued domain event):
   (`reversible`/`compensatable`/`irreversible`), the outcome set, and
   `emit_lifecycle_audit`.
 - `services/channel_lifecycle_service.py` (`ChannelLifecycleService`) — the first
-  consumer; owns channel **rename / move / delete** (shipped #523). Channel
-  **creation** stays here in provisioning; clone / overwrites / reorder are
-  follow-ups still on their cog paths.
+  consumer; owns channel **rename / move / delete / reorder** (rename/move/delete
+  shipped #523, top/bottom reorder + the move/reorder panel in PR7). Channel
+  **creation** stays here in provisioning; clone / overwrites / category-CRUD UI
+  are follow-ups still on their cog paths.
 - `services/role_lifecycle_service.py` (`RoleLifecycleService`) — owns operator-driven
   role **create / edit / delete** (shipped PR5). It is the audited `guild.create_role`
   caller for *manual* roles and is on the `test_no_silent_auto_create.py` allowlist;

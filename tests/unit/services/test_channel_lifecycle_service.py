@@ -31,6 +31,7 @@ def _channel(cid, name="general", *, fail=None):
     ch.name = name
     ch.edit = AsyncMock(side_effect=fail)
     ch.delete = AsyncMock(side_effect=fail)
+    ch.move = AsyncMock(side_effect=fail)
     return ch
 
 
@@ -106,6 +107,33 @@ async def test_move_calls_edit_with_resolved_category(svc):
     ch.edit.assert_awaited_once_with(category=category, reason=None)
     assert result.outcome == SUCCESS
     assert result.reversibility == COMPENSATABLE
+
+
+@pytest.mark.asyncio
+async def test_reorder_top_calls_move_beginning(svc):
+    ch = _channel(10, "general")
+    guild = _guild([ch])
+    result = await svc.apply(
+        guild,
+        ChannelLifecycleRequest(operation="reorder", channel_ids=(10,), position="top"),
+        _actor(),
+    )
+    ch.move.assert_awaited_once_with(beginning=True, reason=None)
+    assert result.outcome == SUCCESS
+    assert result.reversibility == COMPENSATABLE
+
+
+@pytest.mark.asyncio
+async def test_reorder_defaults_to_bottom(svc):
+    ch = _channel(10, "general")
+    guild = _guild([ch])
+    result = await svc.apply(
+        guild,
+        ChannelLifecycleRequest(operation="reorder", channel_ids=(10,)),
+        _actor(),
+    )
+    ch.move.assert_awaited_once_with(end=True, reason=None)
+    assert result.outcome == SUCCESS
 
 
 @pytest.mark.asyncio

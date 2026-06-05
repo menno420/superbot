@@ -177,7 +177,7 @@ for threshold removal.
   the ID-persisting selector is its real consumer); member assignment routing
   (reaction roles / automation `add_roles`/`remove_roles`); role reorder; templates.
 
-### PR6 — Dynamic time/XP role config + role-id dual-read *(this PR)*
+### PR6 — Dynamic time/XP role config + role-id dual-read (#526)
 Closes the free-text role-name foot-gun: both automation sections are now
 selector-driven and persist stable role ids.
 
@@ -226,14 +226,34 @@ selector-driven and persist stable role ids.
 
 ---
 
-## Remaining queue (starts at PR7)
+### PR7 — Channel move/reorder panel + reorder primitive *(this PR)*
+The deferred move/reorder UI from #523, routed through the lifecycle service.
 
-Per the implementation plan's dependency order. PR6 shipped (see above) — the
-deferred role-ID migration + dual-read landed with the selector consumer.
+- **Service: new `reorder` operation** on `ChannelLifecycleService` — sends
+  channel(s) to the **top / bottom** of their category via `channel.move`
+  (reversibility = compensatable). The service now owns
+  `rename` / `move` / `delete` / `reorder`.
+- **Move/Reorder panel** (`views/channels/move_panel._MoveSubView`) — wired into
+  the channel hub (`!channelmenu` → "Move / Reorder"). Multi-select channels →
+  **Move to Category** (destination picker) or **Send to Top / Bottom**, applied
+  through the audited service with per-channel partial-failure reporting.
+- **`channel.lifecycle_changed`** now also covers `reorder`.
+- **Pinned by** new reorder cases in
+  `tests/unit/services/test_channel_lifecycle_service.py` +
+  `tests/unit/views/test_channel_move_panel.py` (the panel routes through the
+  service and guards empty selection / unchosen destination).
+- **Deferred:** arbitrary before/after positioning, "Revert Safe Changes", and
+  first-class category create/rename/delete UI (categories are already movable /
+  renamable / deletable through the service as `GuildChannel`s).
+
+---
+
+## Remaining queue (starts at PR8)
+
+Per the implementation plan's dependency order. PR7 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR7** | Channel/category **move & reorder** panel UI + first-class category lifecycle (the deferred half of channel lifecycle). | #523, #522 |
 | **PR8** | Cleanup policy schema + versioning (preserve RC-5 thread-inheritance behavior). | — |
 | **PR9** | Cleanup builder + dry-run + diagnostics. | PR8, #522 |
 | **PR10** | Moderation first-class configuration (mod-roles, log destinations, escalation, DMs). | #521 |
