@@ -62,7 +62,16 @@ def _cache_key(
     channel_id: int | None,
     tier: str,
     role_ids: frozenset[int] = frozenset(),
+    *,
+    thread_id: int | None = None,
 ) -> tuple:
+    # RC-2 (ISSUE-016): thread_id is part of the cache identity.  For a thread
+    # context the resolver passes the *parent* channel id as channel_id
+    # (GovernanceContext.from_* set channel_id = thread.parent_id), so two
+    # sibling threads — and the threadless parent channel itself — would
+    # otherwise collide on a single channel-keyed entry and a thread-scoped
+    # override would bleed across them.  Keying on thread_id keeps each thread
+    # (and the parent, thread_id=None) isolated.
     if _guild_has_role_overrides.get(guild_id, False) and role_ids:
         # Phase 3.1: Include only the stable hash of role IDs rather than the raw
         # frozenset.  Two users with different role sets but identical governance-
@@ -70,8 +79,15 @@ def _cache_key(
         # benign — a miss just triggers a fresh resolution).  This keeps keys small
         # and prevents combinatorial cache explosion in large guilds.
         role_fingerprint = hash(role_ids)
-        return (guild_id, _cache_ver(guild_id), channel_id, tier, role_fingerprint)
-    return (guild_id, _cache_ver(guild_id), channel_id, tier)
+        return (
+            guild_id,
+            _cache_ver(guild_id),
+            channel_id,
+            thread_id,
+            tier,
+            role_fingerprint,
+        )
+    return (guild_id, _cache_ver(guild_id), channel_id, thread_id, tier)
 
 
 def _cache_get(key: tuple) -> Any:

@@ -52,7 +52,7 @@ def _build_scope_chain(ctx: GovernanceContext) -> list[tuple[str, int]]:
     This function is the ONLY place that knows the traversal order.
     """
     scope_id_map: dict[str, int | None] = {
-        "thread": ctx.thread_id,  # ISSUE-016
+        "thread": ctx.thread_id,
         "channel": ctx.channel_id,
         "category": ctx.category_id,
         "guild": ctx.guild_id,
@@ -283,12 +283,20 @@ async def resolve_visibility(ctx: GovernanceContext) -> VisibilityResult:
 
     Scope resolution: thread > channel > category > guild > registry default.
     Dependency rules applied after scope resolution (topological order).
-    Results are cached by (guild_id, version, channel_id, member_tier).
+    Results are cached by (guild_id, version, channel_id, thread_id, member_tier)
+    so a thread context never collides with a sibling thread or the parent
+    channel (RC-2 / ISSUE-016).
     """
     tier = await _resolve_member_tier(ctx)
 
     role_ids = frozenset(ctx.role_ids) if ctx.role_ids else frozenset()
-    cache_key = _cache_key(ctx.guild_id, ctx.channel_id, tier, role_ids)
+    cache_key = _cache_key(
+        ctx.guild_id,
+        ctx.channel_id,
+        tier,
+        role_ids,
+        thread_id=ctx.thread_id,
+    )
     _guild_label = str(ctx.guild_id)
 
     async with _CACHE_LOCK:

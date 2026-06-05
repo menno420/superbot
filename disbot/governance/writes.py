@@ -49,9 +49,20 @@ from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficien
 logger = logging.getLogger("bot")
 
 # Scope types accepted by the pipeline.
-# "thread" is supported since migration 009 added it to subsystem_visibility.
-_VALID_SCOPE_TYPES: frozenset[str] = frozenset(
+#
+# RC-5: visibility and cleanup do NOT share a scope set.
+#   * subsystem_visibility gained "thread" in migration 009 and the resolver
+#     walks thread → channel → category → guild, so visibility overrides may be
+#     thread-scoped.
+#   * cleanup_policies deliberately kept its non-thread CHECK constraint in that
+#     same migration and the cleanup resolver (governance/cleanup.py) skips
+#     thread scope, so a thread cleanup write would pass service validation only
+#     to be rejected late by Postgres.  Reject it here, before the DB.
+_VALID_VISIBILITY_SCOPE_TYPES: frozenset[str] = frozenset(
     {"channel", "category", "guild", "thread"},
+)
+_VALID_CLEANUP_SCOPE_TYPES: frozenset[str] = frozenset(
+    {"channel", "category", "guild"},
 )
 
 # Minimum tier required to mutate governance state.
@@ -116,10 +127,10 @@ class GovernanceMutationPipeline:
         explicitly rejected to prevent silent misconfiguration.
         """
         # 1. Validate inputs
-        if scope_type not in _VALID_SCOPE_TYPES:
+        if scope_type not in _VALID_VISIBILITY_SCOPE_TYPES:
             raise GovernanceError(
                 f"Invalid scope_type {scope_type!r}. "
-                f"Must be one of: {sorted(_VALID_SCOPE_TYPES)}. "
+                f"Must be one of: {sorted(_VALID_VISIBILITY_SCOPE_TYPES)}. "
                 "Role-scoped overrides are not yet supported.",
             )
         if subsystem not in SUBSYSTEMS:
@@ -240,11 +251,18 @@ class GovernanceMutationPipeline:
         delete_failed_commands: bool = True,
         delete_after_seconds: int = 5,
     ) -> None:
-        """Set a cleanup policy override for a scope."""
-        if scope_type not in _VALID_SCOPE_TYPES:
+        """Set a cleanup policy override for a scope.
+
+        scope_type must be one of: channel, category, guild.  Unlike visibility,
+        cleanup policies do not support thread scope — a thread (or otherwise
+        invalid) scope_type raises GovernanceError *before* any DB write (RC-5;
+        cleanup_policies kept its non-thread CHECK constraint in migration 009).
+        """
+        if scope_type not in _VALID_CLEANUP_SCOPE_TYPES:
             raise GovernanceError(
-                f"Invalid scope_type {scope_type!r}. "
-                f"Must be one of: {sorted(_VALID_SCOPE_TYPES)}.",
+                f"Invalid scope_type {scope_type!r} for cleanup policy. "
+                f"Must be one of: {sorted(_VALID_CLEANUP_SCOPE_TYPES)}. "
+                "cleanup_policies does not support thread scope (migration 009).",
             )
 
         _validate_authority(ctx)

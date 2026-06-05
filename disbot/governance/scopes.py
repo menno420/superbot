@@ -2,7 +2,8 @@
 
 The governance runtime historically referred to scopes as bare strings
 (``"guild"``, ``"category"``, ``"channel"``, ``"thread"``) — see
-:data:`governance.writes._VALID_SCOPE_TYPES`.  Phase 1d formalizes the
+:data:`governance.writes._VALID_VISIBILITY_SCOPE_TYPES` /
+:data:`governance.writes._VALID_CLEANUP_SCOPE_TYPES`.  Phase 1d formalizes the
 taxonomy as a typed enum so:
 
 * Phase 4.5's :class:`access_control_service` can statically reason
@@ -32,7 +33,7 @@ class GovernanceScope(Enum):
     Order matters for the implicit hierarchy used by
     :func:`governance.resolver.resolve_visibility`: narrower scopes
     override broader scopes.  The enum value strings match the
-    historical ``_VALID_SCOPE_TYPES`` strings so existing DB rows and
+    historical governance scope strings so existing DB rows and
     cached values continue to work.
 
     Members:

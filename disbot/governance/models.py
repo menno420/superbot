@@ -38,7 +38,7 @@ import discord
 
 SCOPE_PRIORITY: list[str] = ["thread", "channel", "category", "guild"]
 SCOPE_PARENT: dict[str, str | None] = {
-    "thread": "channel",  # ISSUE-016
+    "thread": "channel",
     "channel": "category",
     "category": "guild",
     "guild": None,
