@@ -366,6 +366,29 @@ other dense `platform_*` sub-views. **Fix:** truncate/paginate (cap the descript
 detail into fields/pages). No `attach_back_button` 25-cap warnings were logged, so the
 navigation helper itself is fine — this is purely the oversized embed.
 
+### 🔴 DiagnosticCog: "Recent Errors / Recent Logs" panel is permanently empty
+`build_query_logs_embed` (`cogs/diagnostic/_helpers.py:341`) reads
+`SELECT … FROM logs`, but **nothing ever writes to the `logs` table** — the bot logs to
+`bot.log` (file) + stdout via Python handlers (bot1.py); there's no DB log handler and
+no `INSERT INTO logs` anywhere. So "Recent Errors" always shows "No logs found," even
+right after a crash. `logs` is one of the 16 base tables, but its writer was never built
+— a long-standing dead feature. **Fix options:** (a) repoint the panel to tail/parse
+`bot.log` (simple, no new writes); or (b) add an async-safe DB log handler that persists
+ERROR/WARNING records to `logs` (survives restarts, but needs queue/loop plumbing since
+logging handlers are sync and the pool is async).
+
+### 🟡 DiagnosticCog: "Database Schema Check" expected-tables list is 52 stale
+`build_check_database_embed` (`_helpers.py:200`) hardcodes **16 expected tables** — the
+pre-migration `create_tables()` base set — so every migration-added table shows as
+"Unexpected (52)". The DB actually has 68 tables and `Missing: None` (the schema is
+fine); the "Unexpected" list is just a stale comparison. **Fix is non-trivial:**
+hand-adding 52 names re-rots on the next migration, and deriving from `migrations/*.sql`
+is incomplete — validated that ~11 tables (`bot_runtime_lock`, `setup_session`,
+`guild_command_access_*`, `automation_*`, …) are created by **runtime Python code**, not
+a `.sql` file, so no regex over migrations is complete. Cleanest: reframe to "migrations
+applied N/N" (compare `schema_migrations` to the migration files) and drop the brittle
+"Unexpected" field — or maintain a complete list guarded by a fresh-DB-bootstrap CI test.
+
 ### interaction_router warnings = benign noise (with a latent gap)
 Only **`ai`** registers a router prefix (`ai_cog.py:322`). Every other panel handles its
 components **in-memory** via the View, but discord.py fires the global `on_interaction`
