@@ -87,11 +87,18 @@ class CountingCog(commands.Cog):
             self.count_data[str(guild.id)] = await db.get_counting_state(guild.id)
 
     async def _save_guild(self, guild_id_str: str):
-        try:
-            guild_id = int(guild_id_str)
-            await db.set_counting_state(guild_id, self.count_data.get(guild_id_str, {}))
-        except Exception:
-            pass
+        """Persist one guild's counting state.
+
+        RC-15: this MUST NOT swallow persistence errors.  Every caller spawns it
+        through ``core.runtime.tasks.spawn`` ("counting:save:<guild_id>"), whose
+        done-callback already logs failures at ERROR with a traceback and
+        increments ``task_outcome_total{outcome="error"}``.  A bare
+        ``except Exception: pass`` here defeated that built-in observability and
+        let a guild silently lose its counting progress, so errors are allowed to
+        propagate to the managed-task layer instead of being discarded.
+        """
+        guild_id = int(guild_id_str)
+        await db.set_counting_state(guild_id, self.count_data.get(guild_id_str, {}))
 
     # --------------------------------------------
     # Permission Helpers
