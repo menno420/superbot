@@ -90,7 +90,8 @@ def migration_versions_on_disk() -> set[int]:
     if not os.path.isdir(_MIGRATIONS_DIR):
         return set()
     return {
-        version for version, _ in _ordered_migration_versions(os.listdir(_MIGRATIONS_DIR))
+        version
+        for version, _ in _ordered_migration_versions(os.listdir(_MIGRATIONS_DIR))
     }
 
 

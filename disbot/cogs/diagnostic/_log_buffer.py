@@ -59,7 +59,8 @@ def install() -> None:
 
 def recent(level: str | None = None, limit: int = 10) -> list[dict[str, str]]:
     """Return up to ``limit`` most-recent buffered records, newest first,
-    optionally filtered to a single level name (e.g. ``"ERROR"``)."""
+    optionally filtered to a single level name (e.g. ``"ERROR"``).
+    """
     items = list(_buffer)
     if level:
         wanted = level.upper()
