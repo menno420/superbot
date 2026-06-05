@@ -3,6 +3,17 @@
 > **Status:** source-grounded planning document; no production behavior is changed by this document.
 > **Audit date:** 2026-06-05
 > **Intended direction:** evolve SuperBot into a coherent, service-owned, button-first Guild OS without duplicating existing setup, governance, resource, or mutation systems.
+>
+> ---
+>
+> **⚠️ PR ordering superseded after #523 (2026-06-05).** This roadmap remains the
+> **target architecture** and its seven maintainer decisions still stand, but the
+> "Proposed PR Sequence" (Phase 0–5) below is **no longer the execution order**. The
+> implementation plan (#521) re-sequenced the work to lead with moderation
+> convergence, and that sequence is what shipped (#521–#523). For *what is actually
+> done and what is next*, read **`docs/planning/server-management-status-2026-06-05.md`**
+> (the live status tracker); for per-PR scope detail read
+> **`docs/planning/server-management-implementation-plan-2026-06-05.md`**.
 
 ## Audit Base
 
@@ -565,6 +576,15 @@ Primary command: `/server-management`.
 The two commands differ only in delivery and persistence, never in ownership or feature behavior.
 
 ## Proposed PR Sequence
+
+> **Superseded as an execution order (2026-06-05).** The phases below capture the
+> intended *grouping* of work, but the actual shipped sequence leads with moderation
+> convergence per the implementation plan. Shipped so far: Phase 0 (PR 0 = #520);
+> moderation convergence (PR 2A = #521); selectors partial (PR 1A = #522, model +
+> `MultiRoleSelector` only); lifecycle contract + channel rename/move/delete
+> (PR 1B + PR 2B = #523, partial). See
+> `docs/planning/server-management-status-2026-06-05.md` for the live state and the
+> remaining queue (starts at PR5).
 
 ### Phase 0 — Roadmap and contracts
 

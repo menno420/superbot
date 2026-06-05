@@ -327,6 +327,10 @@ _ACTION_COLOR: dict[str, discord.Color] = {
     "kick": discord.Color.dark_orange(),
     "ban": discord.Color.red(),
     "unban": discord.Color.green(),
+    # Canonical token emitted by moderation_service.clear_warnings (one word,
+    # matches the historical mod_logs rows); "clear_warnings" kept as a
+    # back-compat alias for any older payloads.
+    "clearwarnings": discord.Color.blurple(),
     "clear_warnings": discord.Color.blurple(),
     "auto_delete": discord.Color.dark_grey(),
 }
@@ -337,6 +341,7 @@ _ACTION_ICON: dict[str, str] = {
     "kick": "👢",
     "ban": "🔨",
     "unban": "🕊️",
+    "clearwarnings": "🧹",
     "clear_warnings": "🧹",
     "auto_delete": "🗑️",
 }

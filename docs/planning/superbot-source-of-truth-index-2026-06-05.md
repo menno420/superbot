@@ -45,6 +45,17 @@ extraction still paused); RC-12 → ADR-007 **M1** (shared media subsystem; owne
 row + registration are a follow-on). The RC-11 cooldown-ordering guard was pinned
 this session. See the roadmap's "Addendum 3 (post-#517)" for details.
 
+**Server-management initiative (#520–#523).** #520 landed the roadmap; #521 (PR1)
+converged moderation onto `services.moderation_service` (three-signal audit;
+`clearwarnings` token); #522 (PR2) added `utils/role_feasibility.py` +
+`views/selectors/multi_role.MultiRoleSelector`; #523 (PR3+PR4) added
+`services/lifecycle/contracts.py` + `services/channel_lifecycle_service.py` (channel
+rename/move/delete) and the `channel.lifecycle_changed` event. The roadmap's PR
+ordering is **superseded** by the implementation plan's sequence (which is what
+shipped). The live record is the new
+**`docs/planning/server-management-status-2026-06-05.md`** tracker — start there for
+server-management state and the remaining queue (PR5+).
+
 ---
 
 ## Current planning docs (trust now)
@@ -56,6 +67,9 @@ this session. See the roadmap's "Addendum 3 (post-#517)" for details.
 | `docs/planning/superbot-next-session-roadmap-2026-06-05.md` | ✅ current | PR/session plan. |
 | `docs/planning/superbot-source-of-truth-index-2026-06-05.md` | ✅ current | This file. |
 | `docs/planning/superbot-ideas-lab-2026-06-05.md` | ✅ current (advisory) | Brainstorm backlog. §2 (operating decisions) + §6 (rejection ledger) are binding; the rest is gated suggestions — re-verify against source before building. |
+| `docs/planning/server-management-status-2026-06-05.md` | ✅ current | **Live status tracker** for the server-management initiative — what shipped (#520–#523) and the remaining queue (PR5+). Authoritative on *what is done*. |
+| `docs/planning/server-management-implementation-plan-2026-06-05.md` | ✅ current (scope) | Per-PR scope/tests/risks for PR1→PR14. PR1–PR4 shipped; see Rev 3 note for the `clearwarnings` correction. Use with the status tracker. |
+| `docs/planning/server-management-roadmap-2026-06-05.md` | ✅ current (target arch) | Target architecture + maintainer decisions. **PR ordering superseded after #523** — use the implementation plan / status tracker for sequence. |
 
 ---
 
@@ -77,9 +91,9 @@ authority.
 | `docs/decisions/002-game-state-not-restart-safe.md` | ADR (immutable) | **Reclassifies Agent C#4**: game restart behavior is accepted design, not a bug. |
 | `docs/decisions/003-deferred-followups-after-refactor-program.md` | ADR | §3 already owns several Agent C "new" items — reconcile before re-planning. |
 | `docs/decisions/004-interaction-fail-open-posture.md` | **ADR (Accepted 2026-06-05)** | Per-surface fail-open/closed posture (RC-3); the contract the RC-3 impl PR fulfils. |
-| `docs/decisions/005-capability-native-authority-and-flag-semantics.md` | ADR (**Proposed** — draft) | RC-4 authority + `*_PRIMARY` flag semantics; awaiting maintainer ratification. |
-| `docs/decisions/006-btd6-data-provenance-ownership.md` | ADR (**Proposed** — draft) | RC-10 provenance/owner-matrix; BTD6 extraction stays paused until Accepted. |
-| `docs/decisions/007-media-youtube-ownership.md` | ADR (**Proposed** — draft) | RC-12 media/YouTube ownership; awaiting ratification. |
+| `docs/decisions/005-capability-native-authority-and-flag-semantics.md` | **ADR (Accepted 2026-06-05)** | RC-4 authority + `*_PRIMARY` flag semantics; A1+F1 implemented. Capability-native settings UI is still a follow-up. |
+| `docs/decisions/006-btd6-data-provenance-ownership.md` | **ADR (Accepted 2026-06-05)** | RC-10 provenance/owner-matrix; **Hybrid** storage chosen. BTD6 extraction stays paused until the provenance schema/docs PR. |
+| `docs/decisions/007-media-youtube-ownership.md` | **ADR (Accepted 2026-06-05)** | RC-12 media/YouTube ownership; **M1** chosen. Ownership row + service registration are a follow-on. |
 | `docs/resource-provisioning-overview.md` | reference (RPM lane) | Pair with the RC-9 correction: pipeline **is** adopted. |
 | `docs/help-command-surface-map.md` | binding (doc-test pinned) | Authority for RC-14 help parity. |
 | `docs/ai-config-ownership.md` | binding (doc-test pinned) | Read before any AI-cog change (RC-11). |

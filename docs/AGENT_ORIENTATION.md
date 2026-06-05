@@ -161,6 +161,9 @@ top before trusting the contents.
 - `docs/phase-2-completion-readiness.md`
 - `docs/settings-customization-command-map.md`
 - `docs/operator-settings-presets.md`
+- `docs/planning/server-management-status-2026-06-05.md` — live status tracker for
+  the server-management initiative (shipped #520–#523; remaining queue PR5+).
+  Authoritative on *what is done*; start here before reading the roadmap/plan.
 - `docs/games-actionability-roadmap.md` (status: complete — historical now)
 - `docs/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
 - `docs/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)
@@ -197,6 +200,11 @@ cross-check the source and the consistency ledger first.
 - `docs/ai-readiness-plan.md`
 - `docs/ai-readiness-pr-notes.md`
 - `docs/ai-service-integration-map.md`
+- `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture +
+  maintainer decisions. **PR ordering superseded after #523** — read the status
+  tracker / implementation plan for sequence.
+- `docs/planning/server-management-implementation-plan-2026-06-05.md` — per-PR scope
+  detail (PR1→PR14; PR1–PR4 shipped). Pair with the status tracker.
 - `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog
   (advisory, **except** its §2 "operating decisions" and §6 "rejection ledger",
   which are binding "do-not-propose"). Read before proposing new

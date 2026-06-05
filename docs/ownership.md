@@ -33,7 +33,9 @@ that service.  No exceptions for cogs or other services.
 |---|---|---|
 | `services/economy_service.py` | every coin-balance mutation (`xp.coins` column, `economy_audit_log` rows) | call `credit`/`debit`/`transfer`/`bet_and_settle`/`refund`. No `db.add_coins`/`db.set_coins` outside the service.  INV-F (AST test). |
 | `services/xp_service.py` | every XP mutation (`xp.xp` column, level transitions, XP row deletion) | call `award(...)` for grants and `reset(...)` for clears. No `db.add_xp`/`db.delete_xp` outside the service.  INV-G (AST test). |
-| `services/moderation_service.py` | every moderation action (`warnings`, `mod_logs`, Discord ban/kick/timeout calls) | call `warn`/`timeout`/`kick`/`ban`/`unban`/`clear_warnings`. Emits `moderation.action_taken`. |
+| `services/moderation_service.py` | every moderation action (`warnings`, `mod_logs`, Discord ban/kick/timeout calls), including system `auto_delete` | call `warn`/`timeout`/`kick`/`ban`/`unban`/`clear_warnings`/`auto_delete`. Both manual surfaces (`cogs/moderation_cog.py`, `views/moderation/modals.py`) route here — pinned by `tests/unit/invariants/test_no_direct_moderation_writes.py`. Each action fans out **three signals** via `_record_action`: the `mod_logs` row (authoritative history), the best-effort `audit.action_recorded` companion, and the `moderation.action_taken` domain event (companion + event share one `mutation_id`). Clear-warnings stores the token **`clearwarnings`** (one word). |
+| `services/channel_lifecycle_service.py` (`ChannelLifecycleService`) | channel **rename / move / delete** (single + batch) — the *change* ops `ResourceProvisioningPipeline` does not own | call `ChannelLifecycleService().apply(...)` with a `ChannelLifecycleRequest`. Checks the bot's Manage Channels permission; irreversible `delete` requires `confirmed=True`; per-channel Discord failures become failed `StepResult`s (no raise). Emits the best-effort `audit.action_recorded` companion + `channel.lifecycle_changed` (shared `mutation_id`). `ChannelCog` is pinned against direct `.delete()`/`.edit()` by `tests/unit/invariants/test_no_direct_channel_mutations.py`. **Not yet owned:** create / clone / overwrites / lock / reorder (still on cog paths). |
+| `services/lifecycle/contracts.py` | the shared lifecycle **contract types** (`StepResult`, `LifecyclePreview`, `LifecycleResult`), the reversibility vocabulary (`reversible`/`compensatable`/`irreversible`), the outcome set (`success`/`partial`/`blocked`/`declined`/`discord_failed`), and `emit_lifecycle_audit` | reuse these for any new lifecycle/change service (channels shipped; roles next). Mirrors the `ResourceProvisioningPipeline` shape for ops provisioning does not own. |
 | `services/blackjack_engine.py` | pure card/hand/deck math (no I/O) | call `rank_value`/`hand_value`/`new_deck`/`hand_str`/`is_blackjack`. No copy-pasted card logic in cogs. |
 | `services/game_state_service.py` | in-flight game state checkpoints (`game_state` table) | call `save`/`load`/`clear`/`list_active_for_subsystem`.  JSONB payload; cogs own their schemas. |
 | `services/governance_service.py` (legacy shim) | the public surface re-exported from `governance/*` | re-exports only.  No business logic should live here. |
@@ -65,7 +67,7 @@ writes must come from the owning cog or a shared service.
 | `deathmatch`   | `deathmatch_stats`                             | direct via `utils/db/games/deathmatch.py` |
 | `rps_tournament` | `rps_players`, `rps_matches`                 | direct via `utils/db/games/rps.py`; balance mutations via economy_service |
 | `blackjack`    | (uses `xp.coins`; tournament state in `guild_settings`) | balance via economy_service |
-| `channel`      | (uses Discord API; visibility via governance)  | governance pipeline |
+| `channel`      | (uses Discord API; visibility via governance)  | rename/move/delete via `services/channel_lifecycle_service.py`; visibility via governance pipeline; declared creation via `ResourceProvisioningPipeline` |
 | `proof_channel`| (uses Discord API; balance via economy)        | economy_service |
 | `utility`      | (no DB tables of its own)                      | n/a |
 | `leaderboard`  | (reads every owner's tables; no writes)        | n/a |
@@ -161,7 +163,9 @@ allowed event name.  Owners of each event:
 | `xp.awarded` | `services/xp_service.py` | `guild_id`, `user_id`, `delta`, `new_xp`, `new_level`, `source` |
 | `xp.level_up` | `services/xp_service.py` | `guild_id`, `user_id`, `new_level`, `source` |
 | `xp.reset` | `services/xp_service.py` | `guild_id`, `user_id`, `actor_id`, `source` |
-| `moderation.action_taken` | `services/moderation_service.py` | `guild_id`, `target_id`, `actor_id`, `action` (`warn`/`timeout`/`kick`/`ban`/`unban`/`clear_warnings`), `reason` |
+| `moderation.action_taken` | `services/moderation_service.py` | `mutation_id`, `guild_id`, `target_id`, `actor_id`, `action` (`warn`/`timeout`/`kick`/`ban`/`unban`/`clearwarnings`, or `auto_delete:<rule>` for system auto-mod), `reason`, plus per-action extras (e.g. `until` for timeouts) |
+| `channel.lifecycle_changed` | `services/channel_lifecycle_service.py` | `mutation_id`, `guild_id`, `operation` (`rename`/`move`/`delete`), `outcome`, `applied[]`, `failed[]`, `occurred_at`. Advisory; subscriber failure logged + swallowed (Discord state is authoritative). |
+| `audit.action_recorded` | every mutation pipeline/service via `services.audit_events.emit_audit_action` (settings, bindings, participation, resource provisioning, moderation, channel lifecycle, …) | the 11 required fields documented in `docs/server-logging.md` § "Payload contract" (`mutation_id`, `subsystem`, `mutation_type`, `target`, `scope`, `guild_id`, `prev_value`, `new_value`, `actor_id`, `actor_type`, `occurred_at`). **Best-effort** generic audit-routing companion consumed by `services.server_logging`; **not** a domain history store. |
 
 Adding a new event:
 1. Add the literal string to `core/events_catalogue.KNOWN_EVENTS`.
@@ -306,10 +310,22 @@ Three audit tables exist, all append-only:
 
 - `governance_audit_log` (migration 006) — every governance write.
 - `economy_audit_log` (migration 014) — every balance mutation.
-- `mod_logs` (migration 001) — every moderator action.
+- `mod_logs` (migration 001) — every moderator action, **and** every system
+  `auto_delete` (keyed `auto_delete:<rule>`), all written by
+  `moderation_service._record_action`.
 
 These tables are **never** updated or deleted.  Compaction belongs to
 DB-side retention policy, not application code.
+
+`mod_logs` is the **authoritative** moderation history.  The
+`audit.action_recorded` event that `_record_action` (and the lifecycle services)
+also emit is a *best-effort routing companion* for `services.server_logging`, not
+a second history store — a dropped companion never invalidates the `mod_logs` row.
+Lifecycle services (channels) currently persist **no** dedicated audit table; their
+only audit signals are the two bus events — the `audit.action_recorded` companion
+and the `channel.lifecycle_changed` domain event (both best-effort, both carrying
+the shared `mutation_id`). A dedicated `*_lifecycle_audit` table is a future option
+per the implementation plan, not shipped.
 
 ---
 

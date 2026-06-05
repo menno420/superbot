@@ -29,9 +29,12 @@ neither should grow that responsibility.
 
 ## The 11-step `provision(...)` contract
 
-Every Discord resource creation in the platform runs through these eleven
-steps. The setup wizard (S12 and beyond) consumes this pipeline. No cog or
-view bypasses it.
+Every **declared subsystem-provisioning** flow that creates or reuses a Discord
+resource and binds it to a subsystem runs through these eleven steps. The setup
+wizard (S12 and beyond) consumes this pipeline. Manual channel-management creation
+paths (e.g. `channel_cog`'s operator commands) are grandfathered on the invariant
+allowlist and tracked separately by the server-management lifecycle plan — see
+§ "Sibling lane".
 
 1. **Resolve** `ResourceRequirement` + `BindingSpec` from the
    `ProvisioningCatalogue.find(...)` lookup. Raise `UndeclaredResourceError`
@@ -91,16 +94,44 @@ view bypasses it.
   undeclared side effect. Enforced by `test_no_silent_auto_create.py`
   (S4.5 invariant).
 - The pipeline is the **only** legitimate creator of Discord resources for
-  subsystem use. No cog calls `guild.create_text_channel`,
+  subsystem use. No **new** cog calls `guild.create_text_channel`,
   `guild.create_role`, `guild.create_category`, `ensure_channel`,
-  `ensure_role`, or `ensure_category` directly. Enforced by the same
-  invariant test.
+  `ensure_role`, or `ensure_category` directly. Enforced by
+  `test_no_silent_auto_create.py` — a few legacy manual-CRUD paths (e.g.
+  `channel_cog`) are grandfathered on its `_ALLOWED_PATHS` list; routing those
+  through lifecycle services is a server-management follow-up.
 - The pipeline does **not** touch scalar settings — those still go through
   `SettingsMutationPipeline`.
 - The pipeline does **not** touch access policies — those still go through
   `GovernanceMutationPipeline`.
 - Setup wizard (S12 and onward) **consumes** provisioning packs; it never
   owns or replicates creation logic.
+
+
+## Sibling lane: lifecycle services (the *change* operations)
+
+Provisioning owns **create-or-reuse + bind**. It deliberately does **not** own the
+mutations that change or remove an already-existing resource — rename, move,
+delete, clone, overwrite, reorder. Per the server-management roadmap's maintainer
+decision #4, those are **separate coordinated domain lifecycle services**, not an
+oversized provisioning pipeline.
+
+Those services **mirror this pipeline's contract shape** (typed request →
+side-effect-free preview → `confirmed=True` gate for irreversible ops → ordered
+apply → per-step result + outcome classification → best-effort audit companion +
+catalogued domain event):
+
+- `services/lifecycle/contracts.py` — the shared `StepResult` / `LifecyclePreview`
+  / `LifecycleResult` types, the reversibility vocabulary
+  (`reversible`/`compensatable`/`irreversible`), the outcome set, and
+  `emit_lifecycle_audit`.
+- `services/channel_lifecycle_service.py` (`ChannelLifecycleService`) — the first
+  consumer; owns channel **rename / move / delete** (shipped #523). Channel
+  **creation** stays here in provisioning; clone / overwrites / reorder are
+  follow-ups still on their cog paths.
+
+See `docs/ownership.md` § "Service ownership" and
+`docs/planning/server-management-status-2026-06-05.md` for current scope.
 
 
 ## Reserved future model: `logging_routes`

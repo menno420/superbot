@@ -1,14 +1,30 @@
 # Server Management Implementation Plan
 
-> Planning-only deliverable. No production code, migrations, or PRs are created in this
-> session. Converts `docs/planning/server-management-roadmap-2026-06-05.md` into a
+> Converts `docs/planning/server-management-roadmap-2026-06-05.md` into a
 > dependency-ordered, repo-grounded, highest-value-first implementation sequence.
 >
-> **Rev 2 (external review incorporated):** PR1's moderation audit is now stated as **three distinct
+> ---
+>
+> **📦 PR1–PR4 shipped (2026-06-05).** This document is the live **scope reference**
+> for the PR sequence; for *what has actually landed and what is next*, read the
+> status tracker: **`docs/planning/server-management-status-2026-06-05.md`**.
+> Shipped: **PR1** moderation convergence (#521), **PR2** role feasibility +
+> `MultiRoleSelector` (#522, selectors-only slice), **PR3 + PR4** lifecycle contract +
+> `ChannelLifecycleService` channel rename/move/delete (#523, the `.delete`/`.edit`
+> slice). The remaining queue starts at **PR5**.
+>
+> **Rev 2 (external review incorporated):** PR1's moderation audit is stated as **three distinct
 > signals** — `mod_logs` (authoritative history) · `moderation.action_taken` (domain event) ·
 > `audit.action_recorded` (best-effort audit-routing companion, *not* a second history store). The
-> companion is explicitly best-effort/non-invalidating, `mod_logs` carries no `mutation_id` column
-> (no migration), and clear-warning label compatibility is handled by display normalization.
+> companion is explicitly best-effort/non-invalidating, and `mod_logs` carries no `mutation_id` column
+> (no migration).
+>
+> **Rev 3 (post-ship correction):** the clear-warnings label was **not** handled by display
+> normalization as Rev 2 anticipated. The shipped service standardized the stored/emitted token on
+> **`clearwarnings`** (one word) to match every historical `mod_logs` row, so no normalization was
+> needed. Wherever this plan says new rows log `clear_warnings` and the modlogs display normalizes
+> both (the Rev-2 header above, Risk (a) in PR1, and Open Question #1), read **`clearwarnings`,
+> no normalization** — source wins.
 
 ## Context
 

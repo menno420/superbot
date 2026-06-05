@@ -105,7 +105,9 @@ def test_channel_kind_for_action_routes_auto_delete_to_cleanup():
 
 
 def test_channel_kind_for_action_routes_mod_actions_to_mod():
-    for action in ("warn", "timeout", "kick", "ban", "unban", "clear_warnings"):
+    # "clearwarnings" (one word) is the canonical token moderation_service emits;
+    # "clear_warnings" stays in the loop as a back-compat alias.
+    for action in ("warn", "timeout", "kick", "ban", "unban", "clearwarnings", "clear_warnings"):
         assert _channel_kind_for_action(action) == "mod"
 
 
@@ -147,6 +149,21 @@ def test_format_log_embed_auto_delete_uses_dark_grey():
     # Action title preserves the composite form so dashboards can
     # tell which rule triggered.
     assert "auto_delete:cleanup.prohibited_words" in (embed.title or "")
+
+
+def test_format_log_embed_clearwarnings_uses_blurple():
+    # Regression guard: moderation_service emits the one-word "clearwarnings"
+    # token (server-management PR1), so the style map must recognise it rather
+    # than fall through to the generic dark-grey style.
+    embed = format_log_embed(
+        action="clearwarnings",
+        guild_id=99,
+        target_id=42,
+        actor_id=7,
+        reason="reset",
+    )
+    assert embed.color == discord.Color.blurple()
+    assert "🧹" in (embed.title or "")
 
 
 def test_format_log_embed_unknown_action_uses_generic_style():
