@@ -76,9 +76,9 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # drives cache consistency; subscriber failure is logged and
         # swallowed.
         "resource.provisioned",
-        # ── Channel lifecycle (services/channel_lifecycle_service.py, SM PR4)
-        # Advisory.  Emitted after a rename / move / delete apply (single or
-        # batch).  Payload: mutation_id, guild_id, operation, outcome,
+        # ── Channel lifecycle (services/channel_lifecycle_service.py, SM PR4/PR7)
+        # Advisory.  Emitted after a rename / move / delete / reorder apply
+        # (single or batch).  Payload: mutation_id, guild_id, operation, outcome,
         # applied[], failed[], occurred_at.  Subscriber failure logged +
         # swallowed; Discord state is authoritative.
         "channel.lifecycle_changed",

@@ -5,16 +5,18 @@
 >
 > ---
 >
-> **📦 PR1–PR6 shipped (2026-06-05).** This document is the live **scope reference**
+> **📦 PR1–PR7 shipped (2026-06-05).** This document is the live **scope reference**
 > for the PR sequence; for *what has actually landed and what is next*, read the
 > status tracker: **`docs/planning/server-management-status-2026-06-05.md`**.
 > Shipped: **PR1** moderation convergence (#521), **PR2** role feasibility +
 > `MultiRoleSelector` (#522, selectors-only slice), **PR3 + PR4** lifecycle contract +
 > `ChannelLifecycleService` channel rename/move/delete (#523, the `.delete`/`.edit`
 > slice), **PR5** `RoleLifecycleService` (role create/edit/delete) + non-destructive
-> field-specific time/XP threshold deletes (#525), and **PR6** selector-driven
+> field-specific time/XP threshold deletes (#525), **PR6** selector-driven
 > time/XP role config + the `role_thresholds` `role_id`/`display_name` migration
-> (056) + id-first dual-read resolution. The remaining queue starts at **PR7**.
+> (056) + id-first dual-read resolution (#526), and **PR7** the channel move/reorder
+> panel + a `reorder` operation on `ChannelLifecycleService`. The remaining queue
+> starts at **PR8**.
 >
 > **Rev 2 (external review incorporated):** PR1's moderation audit is stated as **three distinct
 > signals** — `mod_logs` (authoritative history) · `moderation.action_taken` (domain event) ·

@@ -53,7 +53,8 @@ class _ChannelManagerView(HubView):
                 "Select an action below to manage your server's channels.\n\n"
                 "**➕ Create Channel** — interactive channel creator\n"
                 "**🗑️ Delete Channel** — select and delete a channel\n"
-                "**🔒 Manage Restrictions** — lock or unlock a channel"
+                "**🔒 Manage Restrictions** — lock or unlock a channel\n"
+                "**↔️ Move / Reorder** — bulk-move channels or send to top/bottom"
             ),
             color=CHANNEL_COLOR,
         )
@@ -117,6 +118,25 @@ class _ChannelManagerView(HubView):
             )
             return
         sub = _RestrictSubView(self.ctx, options=options, manager_message=self.message)
+        await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
+
+    @discord.ui.button(
+        label="Move / Reorder",
+        style=discord.ButtonStyle.blurple,
+        emoji="↔️",
+        row=1,
+    )
+    async def move_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        from views.channels.move_panel import _MoveSubView
+
+        options = _build_channel_options(interaction.guild)
+        if not options:
+            await interaction.response.send_message(
+                "No text or voice channels found on this server.",
+                ephemeral=True,
+            )
+            return
+        sub = _MoveSubView(self.ctx, options=options, manager_message=self.message)
         await interaction.response.edit_message(embed=sub.build_embed(), view=sub)
 
     @discord.ui.button(
