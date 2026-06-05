@@ -124,8 +124,8 @@ sits on the existing architecture per D1.
 
 | Idea | Feature | Val | Size | Risk | Fit |
 |---|---|---|---|---|---|
-| **Architecture-warning summary** (count/categories from RC-1 report mode) | Diagnostics | Med | S/M | Low | After PR 3 checker report mode |
-| **Migration health card** (latest migration, gaps/checksum) | Diagnostics | Med | S | Low | After PR 4 / RC-6 |
+| ~~**Architecture-warning summary** (count/categories from RC-1 report mode)~~ | Diagnostics | Med | S/M | Low | ✅ **shipped** in PR #515 — checker prints a `by check:` per-rule breakdown |
+| **Migration health card** (latest migration, gaps/checksum) | Diagnostics | Med | S | Low | After PR 4 / RC-6 (RC-6 invariants already exist; this surfaces them) |
 
 ### 4.5 After RC-4 / PR 6 (capability-native authority) — **do not expand settings UI earlier**
 
@@ -246,3 +246,7 @@ Re-open only by amending the governing doc cited.
   in session S1 (post-PR #513). Collapsed scan #1 + §5 simulator into IL-1;
   promoted IL-1/2/3 to COMMITTED after verifying they ride existing seams; set
   binding decisions D1–D3 and the §6 rejection ledger.
+- **2026-06-05** — §4.4 "architecture-warning summary" shipped in PR #515
+  (alongside RC-1). RC-7 (feature-cleanup-provider registry) also shipped; the
+  "migration health card" foundation (the RC-6 invariants) is confirmed present.
+  IL-1/2/3 remain committed-but-unbuilt.
