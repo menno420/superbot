@@ -64,7 +64,7 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
 |---|---|---:|---:|---|:--:|
 | BootstrapAccessCog | — (infra guard) | 0 | 0 | — | ✅ infra |
 | AdminCog | `!adminmenu` | 9 | 1 | — | ❓ |
-| DiagnosticCog | `!platform` | 43 | 1 | — | ❓ |
+| DiagnosticCog | `!platform` | 43 | 1 | — | 🔴 |
 | SettingsCog | `!settings` | 2 | 1 | — | ❓ |
 | SetupCog | `!setup` / `setup-hub` | 1 | 9 | advisor=deterministic | ❓ |
 | LoggingCog | `!logging` | 6 | 0 | webhook off; logging OFF by default | ❓ |
@@ -73,7 +73,7 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
 ### Server management
 | Cog | Panel / hub | prefix | slash | Env-gate | Status |
 |---|---|---:|---:|---|:--:|
-| RoleCog | `!rolemenu` / `!roles` | 14 | 0 | automation scheduler off | 🟡 |
+| RoleCog | `!rolemenu` / `!roles` | 14 | 0 | automation scheduler off | 🔴→✅ |
 | ChannelCog | `!channelmenu` | 15 | 0 | — | ❓ |
 | ModerationCog | `!modmenu` | 8 | 1 | logging dest off by default | ❓ |
 | Cleanup | `!wordmenu` | 7 | 0 | — | ❓ |
@@ -332,5 +332,77 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
   findings**, `resource_provisioning_catalogue` **1 finding**. These are the bot's own
   gap detectors — pull them via `!platform customization` / `!platform consistency`
   while auditing.
+
+## Session findings — live testing 2026-06-05 (supersedes ❓ where noted)
+
+### 🔴→✅ RoleCog: two discord.py 2.7.1 crashes — FOUND & FIXED this session
+The "two warts" from last session were not the real problem. Live testing crashed the
+bot and broke role management because the panels collide with **discord.py 2.7.1**
+internals (`requirements.txt` pins `discord.py>=2.3.0` **unpinned** → resolves to 2.7.x):
+
+1. **Whole-bot crash.** `TimeRolesPanel` / `XpRolesPanel` defined `async def _refresh(self)`,
+   shadowing discord.py's `View._refresh(components)` (called on every MESSAGE_UPDATE).
+   The 1-arg override raised `TypeError` **inside the gateway poll loop** → process exit.
+   **Fix:** renamed the panel re-render helper to `_rerender`. (Same latent collision —
+   2-arg async, warn-only not crash — in `views/xp/config_panel.py` and
+   `views/setup/ai_review/main_panel.py`; also renamed.)
+2. **Delete Role + both Remove dropdowns broken.** `_DeleteRoleSelect` /
+   `_TimeRemoveSelect` / `_XpRemoveSelect` did `self.parent = parent`, colliding with
+   discord.py 2.7.1's **read-only `Item.parent`** property → `AttributeError` on click.
+   **Fix:** store the panel as `self._panel`. (Scan confirmed these 3 selects were the
+   only `self.parent`-on-an-Item assignments in the whole codebase.)
+
+Regression-pinned by `tests/unit/views/test_role_panels_discordpy_compat.py`.
+**Recommendation:** pin `discord.py>=2.7,<2.8` (CLAUDE.md "pin where the API churned")
+and sweep other `discord.ui` overrides for 2.7 collisions. The 2 prior UX warts
+(bulk "Clear missing", selector-ize Edit Role) remain open but are lower priority.
+
+### 🔴 DiagnosticCog: `!platform` Runtime sub-view = your "no back button"
+`!platform` → **Runtime** tab (`platform_hub.runtime`) builds an embed **> Discord's
+6000-char limit** → `safe_edit` returns 400 (50035 "Embed size exceeds maximum size of
+6000") → the message edit (new embed **and** its Back/Help button) never applies, so the
+panel looks frozen and loses its back button. Confirmed in `bot.log` (×2). Likely affects
+other dense `platform_*` sub-views. **Fix:** truncate/paginate (cap the description; push
+detail into fields/pages). No `attach_back_button` 25-cap warnings were logged, so the
+navigation helper itself is fine — this is purely the oversized embed.
+
+### interaction_router warnings = benign noise (with a latent gap)
+Only **`ai`** registers a router prefix (`ai_cog.py:322`). Every other panel handles its
+components **in-memory** via the View, but discord.py fires the global `on_interaction`
+for each click too, so the router logs "Unhandled interaction prefix" once per unseen
+prefix (`role`, `xp`, `help`, `community`, `settings_hub.*`, `platform_hub.*`, plus a new
+hex id per component). **Buttons still work.** Latent gap: after a view times out / on
+restart those clicks fall through to a router that can't answer them. Mirroring the AI
+cog's safety-net registration would silence the spam and let expired panels reply
+gracefully. (`role` is even in the router's `_FAIL_CLOSED_PREFIXES` with no handler, so
+that posture is currently inert.)
+
+### Bot self-audit dump (62 findings) — wiring gaps, not command breakage
+The three startup catalogues introspect the loaded cogs and flag integration gaps:
+
+- **`command_surface_ledger` — 9** · `orphan_cog_subsystems`: BTD6EventsCog, BTD6OpsCog,
+  BTD6ReferenceCog, BTD6StrategyCog, FourTwentyCog, ParagonCog, ProofChannelCog,
+  RockPaperScissorsCog, SetupCog. → work, but not first-class "subsystems" in the
+  settings/governance model.
+- **`customization_catalogue` — 52**:
+  - `subsystems_missing_panel` (4): four_twenty, help, proof_channel, rps_tournament
+  - `subsystems_missing_help_hook` (4): same 4 (not in the Help-menu hook system)
+  - `subsystems_missing_schema` (17): admin, chain, channel, cleanup, community, counting,
+    diagnostic, four_twenty, games, general, help, inventory, leaderboard, mining,
+    proof_channel, settings, utility (no `!settings` schema — some legitimately none;
+    channel/cleanup/counting arguably should have one)
+  - `panels_without_settings` (24): panels with no settings behind them (adminmenu,
+    chainmenu, wordmenu …; `<build_help_menu_view>` = auto help sub-panels)
+  - `settings_without_panel` (1): rps_tournament.default_entry_fee
+  - `regex_inferred_panels` (2): ai.aimenu, btd6.btd6menu (only detected via a fragile
+    regex fallback, not explicitly declared)
+- **`resource_provisioning_catalogue` — 1** · `orphan_requirements`: moderation/mod_log
+  (declares a mod-log channel need with no binding spec to provision/resolve it; ties to
+  logging being OFF by default).
+
+→ Net: the 62 are **integration/wiring gaps** (cogs not fully registered into the
+settings/help/governance framework), not broken commands. Good per-cog "is this fully
+wired in?" checklist; biggest clusters are the 9 orphan subsystems + 17 missing-schema
+cogs.
 
 _(running log of issues found during the walkthrough — append below)_
