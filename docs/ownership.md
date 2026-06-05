@@ -56,7 +56,7 @@ writes must come from the owning cog or a shared service.
 | `help`         | (none — read-only on registry + governance)  | n/a |
 | `diagnostic`   | (uses `logs` for queries)                    | n/a |
 | `general`      | (loads `data/json/general_content.json`)      | n/a |
-| `role`         | `role_thresholds`, `reaction_roles`            | role create/edit/delete via `services/role_lifecycle_service.py`; `role_thresholds` / `reaction_roles` direct via `utils/db/roles.py` (time/XP tier removal uses the field-specific `clear_role_time_threshold` / `clear_role_xp_threshold` — never the destructive full-row delete) |
+| `role`         | `role_thresholds`, `reaction_roles`            | role create/edit/delete via `services/role_lifecycle_service.py`; `role_thresholds` / `reaction_roles` direct via `utils/db/roles.py`. Time/XP tiers are **id-keyed dual-read** (migration 056: nullable `role_id`/`display_name`; resolved id-first, normalized-name fallback) and tier removal uses the field-specific `clear_role_time_threshold` / `clear_role_xp_threshold` — never the destructive full-row delete |
 | `moderation`   | `warnings`, `mod_logs`                         | `services/moderation_service.py` (preferred); `utils/db/moderation.py` direct for read-only / legacy callers |
 | `xp`           | `xp.xp`, `xp.level`, `xp.messages`, `xp.last_xp` | `services/xp_service.py` |
 | `economy`      | `economy`, `job_progress`, `economy_audit_log`   | `services/economy_service.py` |

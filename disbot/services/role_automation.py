@@ -49,10 +49,16 @@ logger = logging.getLogger("bot.services.role_automation")
 
 @dataclass(frozen=True)
 class RoleThreshold:
-    """One progression row: ``role_name`` requires ``days_required``."""
+    """One progression row: ``role_name`` requires ``days_required``.
+
+    ``role_id`` (PR6 id-groundwork, migration 056) lets the engine resolve the
+    tier id-first so a role rename never silently orphans it; ``None`` for legacy
+    name-only rows, which fall back to normalized-name resolution.
+    """
 
     role_name: str
     days_required: int
+    role_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -115,6 +121,22 @@ def _resolve_role(guild: Any, name: str) -> Any | None:
     return None
 
 
+def _resolve_threshold_role(guild: Any, threshold: RoleThreshold) -> Any | None:
+    """Resolve a threshold to its current role — id-first, then normalized name.
+
+    Iterating ``guild.roles`` (never ``guild.get_role``) keeps the cache-only
+    contract and the no-raw-lookup invariant.  Id-first means a renamed role
+    still resolves to the same tier; ``role_id=None`` (legacy rows) falls back to
+    the name lookup, preserving the pre-PR6 behavior exactly.
+    """
+    rid = getattr(threshold, "role_id", None)
+    if rid is not None:
+        for role in getattr(guild, "roles", ()) or ():
+            if getattr(role, "id", None) == rid:
+                return role
+    return _resolve_role(guild, threshold.role_name)
+
+
 def compute_assignments(
     guild: Any,
     thresholds: list[RoleThreshold] | tuple[RoleThreshold, ...],
@@ -139,7 +161,20 @@ def compute_assignments(
     if not thresholds:
         return ()
 
-    role_map = {t.role_name: t.days_required for t in thresholds}
+    # Resolve each tier to its CURRENT role id-first (name fallback), then key
+    # the progression by the resolved current name.  This makes a renamed role
+    # keep its tier (the id resolves, and member roles match on the current
+    # name), while legacy name-only rows behave exactly as before.  Tiers whose
+    # role no longer exists are dropped — they could never assign anything.
+    resolved = [
+        (role, t.days_required)
+        for t in thresholds
+        if (role := _resolve_threshold_role(guild, t)) is not None
+    ]
+    if not resolved:
+        return ()
+    role_map = {role.name: days for role, days in resolved}
+    role_by_name = {role.name: role for role, _ in resolved}
     progression = sorted(role_map, key=lambda r: role_map[r])
 
     out: list[Assignment] = []
@@ -162,7 +197,7 @@ def compute_assignments(
             if days >= role_map[name]:
                 target_name = name
 
-        target_role = _resolve_role(guild, target_name) if target_name else None
+        target_role = role_by_name.get(target_name) if target_name else None
         member_roles = list(getattr(member, "roles", ()) or ())
 
         # Walk through member's existing roles, find any that belong

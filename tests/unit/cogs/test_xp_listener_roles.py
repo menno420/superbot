@@ -80,7 +80,9 @@ async def test_xp_roles_stack_adds_all_qualifying():
         ),
         patch("cogs.xp.listener.resources") as res_mock,
     ):
-        res_mock.resolve_role.side_effect = lambda guild, name: roles_by_name.get(name)
+        res_mock.resolve_role.side_effect = (
+            lambda guild, *, role_id=None, name=None: roles_by_name.get(name)
+        )
         await listener._apply_xp_threshold_roles(msg, 10)
 
     member.add_roles.assert_awaited_once()
@@ -108,7 +110,9 @@ async def test_xp_roles_single_mode_keeps_highest_removes_lower():
         ),
         patch("cogs.xp.listener.resources") as res_mock,
     ):
-        res_mock.resolve_role.side_effect = lambda guild, name: roles_by_name.get(name)
+        res_mock.resolve_role.side_effect = (
+            lambda guild, *, role_id=None, name=None: roles_by_name.get(name)
+        )
         await listener._apply_xp_threshold_roles(msg, 10)
 
     member.add_roles.assert_awaited_once()

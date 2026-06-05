@@ -142,7 +142,7 @@ The shared lifecycle-mutation contract landing with its first consumer.
   **panel UI**, and first-class **category lifecycle**. The invariant pins only
   `.delete()` / `.edit()` for now — these other operations are not yet routed.
 
-### PR5 — Role lifecycle service + non-destructive time/XP thresholds *(this PR)*
+### PR5 — Role lifecycle service + non-destructive time/XP thresholds (#525)
 The role-domain sibling of the channel lifecycle service, plus the data-loss fix
 for threshold removal.
 
@@ -177,6 +177,33 @@ for threshold removal.
   the ID-persisting selector is its real consumer); member assignment routing
   (reaction roles / automation `add_roles`/`remove_roles`); role reorder; templates.
 
+### PR6 — Dynamic time/XP role config + role-id dual-read *(this PR)*
+Closes the free-text role-name foot-gun: both automation sections are now
+selector-driven and persist stable role ids.
+
+- **Migration 056** — additive nullable `role_id` / `display_name` on
+  `role_thresholds` (the deferred PR5 groundwork, landed *with* its consumer).
+- **DB layer (`utils/db/roles.py`)** — `set_role_threshold` / `set_role_xp_threshold`
+  take optional `role_id` / `display_name` (COALESCE-preserved on conflict);
+  `get_role_thresholds` / `get_xp_threshold_roles` return them. Backward-compatible
+  for legacy name-only callers.
+- **Selector-driven UI** — the free-text "role name" modals in `time_roles_panel`
+  and `xp_roles_panel` are replaced by a role **picker → numeric modal** flow
+  (`RoleSelector` → `TimeDaysModal` / `XpLevelModal`), so a persisted threshold
+  always references a role that exists, capturing its id + name snapshot.
+- **ID-first (dual-read) resolution** — `role_automation.compute_assignments` and
+  the XP listener resolve each tier id-first (normalized-name fallback), so a role
+  **rename no longer orphans its tier**. `RoleThreshold` gained `role_id`.
+- **Stale diagnostics** — both panels flag a tier whose role can no longer be
+  resolved (`⚠️ role missing`).
+- **Defaults are suggestions** — `_ensure_defaults` and the panel's "Seed Defaults"
+  button only seed defaults whose role **exists** (capturing its id); the phantom
+  `Neu/Iron/Beacon` name rows are no longer auto-persisted.
+- **Pinned by** `tests/unit/db/test_roles_role_id.py`,
+  `tests/unit/views/test_role_threshold_selectors.py`, and new id-first /
+  rename-survival cases in `test_role_automation.py` + `test_xp_listener_roles.py`.
+- **Deferred:** role reorder and templates (PR13); member-assignment routing.
+
 ---
 
 ## Reconciliations applied this pass (source ↔ docs)
@@ -199,14 +226,13 @@ for threshold removal.
 
 ---
 
-## Remaining queue (starts at PR6)
+## Remaining queue (starts at PR7)
 
-Per the implementation plan's dependency order. PR5 shipped (see above); the
-deferred role-ID migration groundwork rolls into PR6 with its real consumer.
+Per the implementation plan's dependency order. PR6 shipped (see above) — the
+deferred role-ID migration + dual-read landed with the selector consumer.
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR6** | Dynamic time/XP role configuration: replace free-text role names with selectors, **plus** the deferred `role_thresholds` `role_id`/`display_name` migration + dual-read (the ID-persisting selector is its consumer). | PR5, #522 |
 | **PR7** | Channel/category **move & reorder** panel UI + first-class category lifecycle (the deferred half of channel lifecycle). | #523, #522 |
 | **PR8** | Cleanup policy schema + versioning (preserve RC-5 thread-inheritance behavior). | — |
 | **PR9** | Cleanup builder + dry-run + diagnostics. | PR8, #522 |

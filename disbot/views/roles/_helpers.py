@@ -45,14 +45,32 @@ _COLOR_OPTIONS = [
 ]
 
 
-async def _ensure_defaults(guild_id: int) -> None:
-    """Seed default time-based thresholds for a guild that has none yet."""
+async def _ensure_defaults(guild: discord.Guild) -> None:
+    """Seed default time tiers for a guild that has none yet — *suggestions only*.
+
+    PR6: only a default whose named role **actually exists** is seeded (capturing
+    its ``role_id`` + name snapshot), so this path never persists a threshold for
+    a nonexistent role.  A brand-new guild without the default-named roles is left
+    empty; operators add tiers via the selector or the panel's "Seed Defaults"
+    button.  Accepts the guild (not just its id) to resolve role existence.
+    """
+    from core.runtime import resources
     from utils import db
 
-    existing = await db.get_role_thresholds(guild_id)
-    if not existing:
-        for name, days in _DEFAULT_THRESHOLDS:
-            await db.set_role_threshold(guild_id, name, days)
+    existing = await db.get_role_thresholds(guild.id)
+    if existing:
+        return
+    for name, days in _DEFAULT_THRESHOLDS:
+        role = resources.resolve_role(guild, name=name)
+        if role is None:
+            continue
+        await db.set_role_threshold(
+            guild.id,
+            role.name,
+            days,
+            role_id=role.id,
+            display_name=role.name,
+        )
 
 
 def _parse_color(value: str) -> discord.Color:
