@@ -196,8 +196,16 @@ def _format_table_set(names: set[str], *, limit: int = 1024) -> str:
 
 
 async def build_check_database_embed() -> discord.Embed:
-    """Verify expected PostgreSQL tables exist."""
-    expected = {
+    """Report schema health: base tables present + every migration applied.
+
+    The DB is migration-managed, so the authoritative signals are (a) the
+    pre-migration base tables exist and (b) every ``NNN_*.sql`` migration has
+    been recorded in ``schema_migrations`` — not a hand-maintained "expected
+    tables" list.  That list went stale and flagged all ~52 migration-added
+    tables as "unexpected"; several tables are also created by runtime code
+    (e.g. ``bot_runtime_lock``), so no static list can stay correct.
+    """
+    base = {
         "economy",
         "job_progress",
         "inventory",
@@ -221,6 +229,8 @@ async def build_check_database_embed() -> discord.Embed:
             (),
         )
         existing = {r["tablename"] for r in rows}
+        applied_rows = await db.fetchall("SELECT version FROM schema_migrations", ())
+        applied = {r["version"] for r in applied_rows}
     except Exception as exc:
         return discord.Embed(
             title="Database Schema Check",
@@ -228,22 +238,42 @@ async def build_check_database_embed() -> discord.Embed:
             color=discord.Color.red(),
         )
 
-    missing = expected - existing
-    extra = existing - expected
+    from utils.db.migrations import migration_versions_on_disk
 
-    embed = discord.Embed(title="Database Schema Check", color=discord.Color.purple())
+    on_disk = migration_versions_on_disk()
+    pending = on_disk - applied
+    missing_base = base - existing
+    healthy = not missing_base and not pending
+
+    embed = discord.Embed(
+        title="Database Schema Check",
+        color=discord.Color.green() if healthy else discord.Color.orange(),
+        description=(
+            "✅ Schema healthy — all base tables present and every migration applied."
+            if healthy
+            else "⚠️ Schema needs attention (details below)."
+        ),
+    )
     embed.add_field(
-        name="Missing Tables",
-        value=_format_table_set(missing),
+        name="Base tables",
+        value=(
+            f"✅ {len(base)}/{len(base)} present"
+            if not missing_base
+            else f"❌ missing {len(missing_base)}: {_format_table_set(missing_base)}"
+        ),
         inline=False,
     )
     embed.add_field(
-        name=f"Unexpected Tables ({len(extra)})",
-        value=_format_table_set(extra),
+        name="Migrations applied",
+        value=(
+            f"✅ {len(on_disk) - len(pending)}/{len(on_disk)}"
+            if not pending
+            else f"⚠️ {len(on_disk) - len(pending)}/{len(on_disk)} — pending: "
+            + ", ".join(f"{v:03d}" for v in sorted(pending))
+        ),
         inline=False,
     )
-    if not missing:
-        embed.description = "✅ All expected tables are present."
+    embed.add_field(name="Tables present", value=str(len(existing)), inline=False)
     return embed
 
 
@@ -333,27 +363,17 @@ async def build_query_logs_embed(
     event_type: str | None = None,
     limit: int = 10,
 ) -> discord.Embed:
-    """Query recent log entries (optionally filtered by level)."""
+    """Show recent in-process log records (optionally filtered by level).
+
+    Reads the in-memory ring buffer installed by ``DiagnosticCog.setup()``.
+    The legacy ``logs`` DB table was never written to (the bot logs to
+    ``bot.log`` + stdout), so the DB-backed version always returned
+    "No logs found matching the criteria".
+    """
+    from cogs.diagnostic._log_buffer import recent
+
     limit = max(1, min(limit, 25))
-    try:
-        if event_type:
-            rows = await db.fetchall(
-                "SELECT timestamp, level, message FROM logs "
-                "WHERE level=$1 ORDER BY timestamp DESC LIMIT $2",
-                (event_type.upper(), limit),
-            )
-        else:
-            rows = await db.fetchall(
-                "SELECT timestamp, level, message FROM logs "
-                "ORDER BY timestamp DESC LIMIT $1",
-                (limit,),
-            )
-    except Exception as exc:
-        return discord.Embed(
-            title="Recent Logs",
-            description=f"❌ Could not query logs: {exc}",
-            color=discord.Color.red(),
-        )
+    rows = recent(level=event_type, limit=limit)
 
     embed = discord.Embed(title="Recent Logs", color=discord.Color.dark_red())
     if not rows:

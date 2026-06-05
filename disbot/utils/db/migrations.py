@@ -79,6 +79,21 @@ def _ordered_migration_versions(filenames: Iterable[str]) -> list[tuple[int, str
     return ordered
 
 
+def migration_versions_on_disk() -> set[int]:
+    """Return the set of migration versions present as ``NNN_*.sql`` files.
+
+    Used by the diagnostic schema check to report "migrations applied N/N"
+    against the migration chain (the authoritative schema source) instead of a
+    hand-maintained expected-table list that silently goes stale as migrations
+    add tables.
+    """
+    if not os.path.isdir(_MIGRATIONS_DIR):
+        return set()
+    return {
+        version for version, _ in _ordered_migration_versions(os.listdir(_MIGRATIONS_DIR))
+    }
+
+
 async def ensure_migrations_table() -> None:
     await pool.get().execute(
         """CREATE TABLE IF NOT EXISTS schema_migrations (

@@ -42,6 +42,33 @@ def _make_interaction(*, responded: bool = False) -> MagicMock:
     return interaction
 
 
+class TestClampEmbedTotalBudget:
+    """Discord rejects an embed whose total text exceeds 6000 even when every
+    individual component is within its own limit (the !platform Runtime panel:
+    many fields each <1024 summing >6000 → 400, edit silently dropped)."""
+
+    def test_over_budget_via_many_fields_is_clamped_under_6000(self):
+        embed = discord.Embed(title="T", description="D")
+        for i in range(10):  # 10 × 800 = ~8000, each field value < the 1024 cap
+            embed.add_field(name=f"f{i}", value="x" * 800, inline=False)
+        assert ih._embed_total_len(embed) > ih._EMBED_TOTAL_LIMIT
+        ih.clamp_embed(embed)
+        assert ih._embed_total_len(embed) <= ih._EMBED_TOTAL_LIMIT
+
+    def test_over_budget_via_description_and_footer_is_clamped(self):
+        embed = discord.Embed(title="T", description="x" * 8000)
+        embed.set_footer(text="y" * 2000)
+        ih.clamp_embed(embed)
+        assert ih._embed_total_len(embed) <= ih._EMBED_TOTAL_LIMIT
+
+    def test_wellformed_embed_passes_through_unchanged(self):
+        embed = discord.Embed(title="T", description="small")
+        embed.add_field(name="a", value="b")
+        before = ih._embed_total_len(embed)
+        ih.clamp_embed(embed)
+        assert ih._embed_total_len(embed) == before
+
+
 class TestSafeDefer:
     @pytest.mark.asyncio
     async def test_defers_when_not_responded(self):
