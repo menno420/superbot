@@ -1,4 +1,4 @@
-"""Tests for the multi-channel delete sub-panel (audit P1-10).
+"""Tests for the multi-channel delete sub-panel (audit P1-10 + PR A).
 
 ``_DeleteSubView`` adopted the shared ``views.selectors.MultiSelect`` —
 the destructive sibling of the restrict panel's multi-lock.  Because
@@ -8,8 +8,11 @@ before anything happens.  These tests pin:
 - the picker is a MultiSelect recording every selected id;
 - "Delete Selected" requires a selection and hands all targets to the
   confirm view, whose embed lists them by name;
-- Confirm deletes every channel and partitions the outcome into
-  deleted / permission-denied / not-found / failed.
+- Confirm **routes through the audited ``ChannelLifecycleService``** (not a
+  direct ``channel.delete()``) with ``operation="delete", confirmed=True``,
+  and renders the typed result, partitioning deleted / permission-denied /
+  not-found / failed (re-mapping the service's id-named not-found step back
+  to the display name).
 """
 
 from __future__ import annotations
@@ -19,6 +22,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
+from services.lifecycle import SUCCESS, LifecycleResult, StepResult
 from views.selectors import MultiSelect
 
 
@@ -44,6 +48,26 @@ def _build_confirm(channels: list[tuple[int, str]]):
     ctx.author.id = 1
     ctx.guild = MagicMock()
     return _DeleteConfirmView(ctx, channels=channels, manager_message=None)
+
+
+def _result(
+    applied: list[tuple[int, str]] | None = None,
+    failed: list[tuple[int, str, str]] | None = None,
+) -> LifecycleResult:
+    """A typed delete result: ``applied`` = (id, name); ``failed`` = (id, name, error)."""
+    steps = tuple(StepResult(cid, name, True) for cid, name in (applied or []))
+    steps += tuple(
+        StepResult(cid, name, False, err) for cid, name, err in (failed or [])
+    )
+    return LifecycleResult(
+        mutation_id="m",
+        guild_id=1,
+        domain="channel",
+        operation="delete",
+        outcome=SUCCESS,
+        reversibility="irreversible",
+        steps=steps,
+    )
 
 
 async def _click(view, label: str, interaction) -> None:
@@ -118,17 +142,12 @@ def test_confirm_embed_lists_every_channel():
 
 
 @pytest.mark.asyncio
-async def test_confirm_deletes_every_selected_channel():
+async def test_confirm_routes_delete_through_service():
     view = _build_confirm([(10, "alpha"), (20, "beta")])
     interaction = MagicMock()
     interaction.guild = MagicMock()
+    interaction.user = MagicMock()
     interaction.channel = MagicMock()
-
-    ch_a = MagicMock()
-    ch_a.delete = AsyncMock()
-    ch_b = MagicMock()
-    ch_b.delete = AsyncMock()
-    by_id = {10: ch_a, 20: ch_b}
 
     captured: dict[str, discord.Embed] = {}
 
@@ -137,7 +156,6 @@ async def test_confirm_deletes_every_selected_channel():
         return True
 
     with (
-        patch("views.channels.delete_panel.resources") as mock_res,
         patch("views.channels.delete_panel.safe_defer", AsyncMock(return_value=True)),
         patch("views.channels.delete_panel.safe_edit", AsyncMock(side_effect=_edit)),
         patch(
@@ -145,17 +163,23 @@ async def test_confirm_deletes_every_selected_channel():
             AsyncMock(return_value=None),
         ),
         patch("views.channels.delete_panel.asyncio.sleep", AsyncMock()),
+        patch("views.channels.delete_panel.ChannelLifecycleService") as Svc,
     ):
-        mock_res.resolve_channel = MagicMock(
-            side_effect=lambda _g, *, channel_id, kind: by_id.get(channel_id)
+        Svc.return_value.apply = AsyncMock(
+            return_value=_result(applied=[(10, "alpha"), (20, "beta")]),
         )
         await _click(view, "Confirm Delete", interaction)
 
-    ch_a.delete.assert_awaited_once()
-    ch_b.delete.assert_awaited_once()
+    # Routed through the audited service (emits audit + lifecycle event),
+    # not a direct channel.delete():
+    Svc.return_value.apply.assert_awaited_once()
+    call = Svc.return_value.apply.await_args
+    request = call.args[1]
+    assert request.operation == "delete"
+    assert request.channel_ids == (10, 20)
+    assert call.kwargs.get("confirmed") is True
     field_values = " ".join(f.value for f in captured["embed"].fields)
-    assert "alpha" in field_values
-    assert "beta" in field_values
+    assert "alpha" in field_values and "beta" in field_values
 
 
 @pytest.mark.asyncio
@@ -163,13 +187,8 @@ async def test_confirm_partitions_partial_failures():
     view = _build_confirm([(10, "ok"), (20, "forbidden"), (30, "gone")])
     interaction = MagicMock()
     interaction.guild = MagicMock()
+    interaction.user = MagicMock()
     interaction.channel = MagicMock()
-
-    ch_ok = MagicMock()
-    ch_ok.delete = AsyncMock()
-    ch_forbidden = MagicMock()
-    ch_forbidden.delete = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "nope"))
-    by_id = {10: ch_ok, 20: ch_forbidden}  # 30 resolves to None (gone)
 
     captured: dict[str, discord.Embed] = {}
 
@@ -177,8 +196,16 @@ async def test_confirm_partitions_partial_failures():
         captured["embed"] = embed
         return True
 
+    # The service reports the channel id as the name for a not-found step;
+    # the panel must re-map it to the display name it captured ("gone").
+    result = _result(
+        applied=[(10, "ok")],
+        failed=[
+            (20, "forbidden", "missing permission"),
+            (30, "30", "channel not found"),
+        ],
+    )
     with (
-        patch("views.channels.delete_panel.resources") as mock_res,
         patch("views.channels.delete_panel.safe_defer", AsyncMock(return_value=True)),
         patch("views.channels.delete_panel.safe_edit", AsyncMock(side_effect=_edit)),
         patch(
@@ -186,14 +213,13 @@ async def test_confirm_partitions_partial_failures():
             AsyncMock(return_value=None),
         ),
         patch("views.channels.delete_panel.asyncio.sleep", AsyncMock()),
+        patch("views.channels.delete_panel.ChannelLifecycleService") as Svc,
     ):
-        mock_res.resolve_channel = MagicMock(
-            side_effect=lambda _g, *, channel_id, kind: by_id.get(channel_id)
-        )
+        Svc.return_value.apply = AsyncMock(return_value=result)
         await _click(view, "Confirm Delete", interaction)
 
-    names = {f.name: f.value for f in captured["embed"].fields}
-    joined = " || ".join(f"{k}={v}" for k, v in names.items())
-    assert "ok" in joined
-    assert "forbidden" in joined
-    assert "gone" in joined
+    fields = {f.name: f.value for f in captured["embed"].fields}
+    assert any("Deleted" in k and "ok" in v for k, v in fields.items())
+    assert any("Permission" in k and "forbidden" in v for k, v in fields.items())
+    # not-found name re-mapped from id 30 -> "gone"
+    assert any("Not found" in k and "gone" in v for k, v in fields.items())

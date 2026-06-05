@@ -19,9 +19,13 @@ import logging
 import discord
 from discord.ext import commands
 
-from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
+from services.channel_lifecycle_service import (
+    ChannelLifecycleRequest,
+    ChannelLifecycleService,
+)
+from services.lifecycle import LifecycleResult, StepResult
 from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.channels._helpers import _build_channel_options
@@ -216,41 +220,29 @@ class _DeleteConfirmView(BaseView):
         row=0,
     )
     async def confirm_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        # Defer before the Discord deletes: channel.delete() is not
-        # instant and, across several channels, the subsequent
-        # edit_message would race the 3 s interaction token.
+        # Defer before the deletes: ChannelLifecycleService.apply() is not
+        # instant and, across several channels, the subsequent edit_message
+        # would race the 3 s interaction token.
         if not await safe_defer(interaction):
             return
 
-        deleted: list[str] = []
-        not_found: list[str] = []
-        forbidden: list[str] = []
-        failed: list[str] = []
-        for channel_id, name in self.channels:
-            channel = resources.resolve_channel(
-                interaction.guild,
-                channel_id=channel_id,
-                kind="any",
-            )
-            if channel is None:
-                not_found.append(name)
-                continue
-            try:
-                await channel.delete()
-            except discord.Forbidden:
-                forbidden.append(name)
-            except discord.HTTPException as exc:
-                logger.warning("Channel delete failed | channel=%r exc=%s", name, exc)
-                failed.append(name)
-            else:
-                deleted.append(name)
-
-        result_embed = self._build_result_embed(
-            deleted=deleted,
-            not_found=not_found,
-            forbidden=forbidden,
-            failed=failed,
+        # Channel deletion is lifecycle-owned (docs/ownership.md): route through
+        # the audited ChannelLifecycleService so the delete emits its audit
+        # companion + channel.lifecycle_changed event, instead of calling
+        # channel.delete() directly. The two-stage confirm flow is the operator
+        # confirmation the service requires (confirmed=True).
+        result = await ChannelLifecycleService().apply(
+            interaction.guild,
+            ChannelLifecycleRequest(
+                operation="delete",
+                channel_ids=tuple(cid for cid, _name in self.channels),
+            ),
+            interaction.user,
+            confirmed=True,
+            actor_type="admin",
         )
+
+        result_embed = self._build_result_embed(result)
 
         for item in self.children:
             item.disabled = True
@@ -271,14 +263,29 @@ class _DeleteConfirmView(BaseView):
         if restored is not None:
             manager.message = restored
 
-    def _build_result_embed(
-        self,
-        *,
-        deleted: list[str],
-        not_found: list[str],
-        forbidden: list[str],
-        failed: list[str],
-    ) -> discord.Embed:
+    def _build_result_embed(self, result: LifecycleResult) -> discord.Embed:
+        # Reconstruct the friendly per-channel buckets from the service's typed
+        # steps. ``result.applied`` / ``result.failed`` partition the StepResults;
+        # the service reports the channel id (not its name) for a not-found step,
+        # so re-map to the display names the panel already captured.
+        names = dict(self.channels)
+
+        def _name(step: StepResult) -> str:
+            return names.get(step.target_id, step.target_name or str(step.target_id))
+
+        deleted = [_name(s) for s in result.applied]
+        not_found: list[str] = []
+        forbidden: list[str] = []
+        failed: list[str] = []
+        for s in result.failed:
+            detail = (s.error or "").lower()
+            if "not found" in detail:
+                not_found.append(_name(s))
+            elif "permission" in detail:
+                forbidden.append(_name(s))
+            else:
+                failed.append(_name(s))
+
         if not deleted:
             title, color = "❌ Deletion Failed", ERROR_COLOR
         elif not_found or forbidden or failed:
