@@ -29,8 +29,12 @@ constants live in `disbot/utils/settings_keys/logging.py`.
 
 | Action | Channel slot |
 |---|---|
-| `warn` / `timeout` / `kick` / `ban` / `unban` / `clear_warnings` | `logging.mod_channel` |
+| `warn` / `timeout` / `kick` / `ban` / `unban` / `clearwarnings` | `logging.mod_channel` |
 | `auto_delete:*` (cleanup auto-deletes) | `logging.cleanup_channel` → falls back to `logging.mod_channel` |
+
+> The clear-warnings action token is **`clearwarnings`** (one word) — the canonical
+> value `moderation_service` emits (server-management PR1 / #521). The embed style
+> map keys on it; `clear_warnings` is retained only as a back-compat alias.
 
 ## Embed style
 
@@ -41,7 +45,7 @@ constants live in `disbot/utils/settings_keys/logging.py`.
 | `kick` | dark_orange | 👢 |
 | `ban` | red | 🔨 |
 | `unban` | green | 🕊️ |
-| `clear_warnings` | blurple | 🧹 |
+| `clearwarnings` | blurple | 🧹 |
 | `auto_delete:*` | dark_grey | 🗑️ |
 | anything else | dark_grey | • |
 
@@ -81,6 +85,16 @@ canonical `audit.action_recorded` event emitted by every production
 mutation pipeline (Phase 9c.1 / 9c.2). Each accepted mutation lands a
 single embed describing what was changed, by whom, with the
 pre/post values where they are not PII.
+
+> Since server-management PR1 (#521), **moderation actions also emit
+> `audit.action_recorded`** — every manual action and every system
+> `auto_delete` (the latter with `actor_type="system"`). So a single
+> moderation action now lands **two** embeds when both slots are
+> configured: the domain embed on `mod_channel` / `cleanup_channel`
+> (from `moderation.action_taken`) **and** the generic audit embed on
+> `audit_channel` (from `audit.action_recorded`). The two share a
+> `mutation_id`. The `mod_logs` row remains the authoritative history;
+> the companion is best-effort and never blocks the action.
 
 ### Subscriber
 

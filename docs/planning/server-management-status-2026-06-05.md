@@ -1,0 +1,186 @@
+# Server Management — Status Tracker
+
+> **Status:** living status ledger. This is the **single current record** of what
+> the server-management initiative has actually shipped and what is queued next.
+> When this tracker and the roadmap / implementation plan disagree about *what is
+> done*, **this tracker (cross-checked against source) wins**; the roadmap remains
+> the target architecture and the implementation plan remains the PR-scope detail.
+>
+> **Date:** 2026-06-05 · **Verified against:** `main` @ `f0f0824` (merge of #523).
+>
+> **Companion docs (read together):**
+> - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
+>   + maintainer decisions. Its Phase 0–5 PR *ordering* is **superseded** (see below).
+> - `docs/planning/server-management-implementation-plan-2026-06-05.md` — the
+>   dependency-ordered PR1→PR14 scope detail that the shipped work follows.
+> - Binding contracts updated by this work: `docs/ownership.md`,
+>   `docs/architecture/service_ownership.md`, `docs/server-logging.md`,
+>   `docs/resource-provisioning-overview.md`, `docs/direct-db-exception-ledger.md`.
+
+---
+
+## How the two planning docs relate (PR order reconciliation)
+
+The roadmap (#520) proposed a Phase 0–5 ordering that led with **selectors
+(PR 1A) → mutation primitives (PR 1B) → moderation (PR 2A) → channel lifecycle
+(PR 2B)**. The implementation plan (#521) then **re-sequenced** that into a
+dependency-ordered PR1→PR14 list that leads with **moderation convergence**,
+because moderation was the cheapest, fully self-contained convergence win and the
+exemplar for the invariant pattern every later PR reuses.
+
+**The implementation plan's order is what shipped.** The roadmap's Phase-ordering
+is therefore superseded as an *execution sequence* (its architecture and
+maintainer decisions still stand). Mapping:
+
+| Shipped PR | Plan label | Roadmap label | Notes |
+|---|---|---|---|
+| #520 | — | Phase 0 / PR 0 | Roadmap document only. |
+| #521 | PR1 | PR 2A | Moderation convergence (led, ahead of selectors). |
+| #522 | PR2 | PR 1A (partial) | Role feasibility model + `MultiRoleSelector` only. |
+| #523 | PR3 + PR4 | PR 1B + PR 2B (partial) | Lifecycle contract + channel rename/move/delete only. |
+
+---
+
+## Shipped
+
+### #520 — Server Management Roadmap (docs only)
+Landed `docs/planning/server-management-roadmap-2026-06-05.md`: source-grounded
+target architecture, the seven settled maintainer decisions, and the capability
+matrix. No behavior change.
+
+### #521 — PR1: Moderation service convergence
+Routes **every manual moderation action** through `services/moderation_service.py`;
+no surface mutates `mod_logs` / Discord directly anymore.
+
+- **Both manual surfaces converged:** the prefix commands (`cogs/moderation_cog.py`)
+  and the 7 modals (`views/moderation/modals.py`) now call
+  `moderation_service.{warn,timeout,kick,ban,unban,clear_warnings}`. Hierarchy/owner
+  checks and the warn-threshold read stay at the cog/view layer (the service does
+  **not** re-check permissions).
+- **Three audit signals per action**, fanned out by the shared `_record_action`
+  helper (mirrors `resource_provisioning.py`):
+  1. **`mod_logs` row** (`db.log_mod_action`) — the **authoritative, append-only
+     moderation history**. Source of truth for `modlogs`; no `mutation_id` column,
+     no migration.
+  2. **`audit.action_recorded`** (`emit_audit_action`) — a **best-effort generic
+     audit-routing companion** consumed by `services.server_logging` (one canonical
+     embed to the audit channel). **NOT** a second history store; a dropped
+     companion never invalidates the `mod_logs` row.
+  3. **`moderation.action_taken`** (`EVT_MOD_ACTION`) — the domain event, now
+     carrying the **same `mutation_id`** as the companion for correlation.
+- **`clearwarnings` is the stored/domain token** (one word) — chosen to match every
+  row the pre-convergence surfaces already wrote, so history and `modlogs` rendering
+  stay consistent. (The previously-unused service path used `clear_warnings`; that
+  was changed *to* `clearwarnings`, **not** the other way around — so **no display
+  normalization was needed**, contrary to the plan's Rev-2 / Open-Question #1.)
+- **`auto_delete` also routes through `_record_action` now.** Before #521 it emitted
+  only `mod_logs` + `EVT_MOD_ACTION`; it now **also emits the `audit.action_recorded`
+  companion** (with `actor_type="system"`, `actor_id` `None`/`0`). System auto-deletes
+  therefore appear on the audit channel too, keyed `auto_delete:<rule>`.
+- **Pinned by** `tests/unit/invariants/test_no_direct_moderation_writes.py` (AST scan
+  of `cogs/moderation*` + `views/moderation*`): no direct
+  `db.add_warning|clear_warnings|log_mod_action` or `member/guild.kick|ban|unban|timeout`
+  outside `moderation_service`. Reads (`db.get_mod_logs`) stay allowed.
+
+### #522 — PR2: Role feasibility model + `MultiRoleSelector`
+The shared resource-safety foundation for roles (a partial PR 1A — selectors only,
+no diagnostics findings model yet).
+
+- **`utils/role_feasibility.py` (new, pure):** `RoleFeasibility` (frozen) + reason
+  codes (`SELECTABLE`, `EVERYONE`, `MANAGED`, `ABOVE_BOT`, `BOT_MISSING_MANAGE_ROLES`,
+  `ABOVE_ACTOR`); `evaluate_role(...)`, `manageable_roles(...)` (partition into
+  manageable vs. excluded-with-reason), `not_everyone` (default picker filter),
+  `summarize_exclusions(...)`. Decomposes the checks already embedded in
+  `services.role_automation.check_preflight` and `services.resource_health._inspect_role`
+  into one reusable source of truth. `utils` layer — stdlib + `discord` only, so both
+  `services/` and `views/` may import it.
+- **`views/selectors/multi_role.py` (new):** `MultiRoleSelector`, the role-typed
+  sibling of `MultiChannelSelector`; returns role ids, applies a `role_filter`
+  (default `not_everyone`) before Discord's 25-option cap. Exported from
+  `views/selectors/__init__.py`.
+- **Adopted in** `views/roles/exemptions_panel.py` (replaced the bespoke native
+  `RoleSelect`). Other role pickers (template_picker, ai/policy role view,
+  settings/edit_role, roles/management_panel) **still use native `RoleSelect`** — not
+  yet converged.
+- **Deferred follow-ups:** paging/search beyond 25, stale-selection revalidation, the
+  full `Finding`/`FeasibilityReport` diagnostics model, and `resource_health` taxonomy
+  alignment.
+- **Pinned by** `tests/unit/utils/test_role_feasibility.py`,
+  `tests/unit/views/test_selectors.py`, `tests/unit/views/test_role_exemptions_panel.py`.
+
+### #523 — PR3 + PR4: Lifecycle contract + `ChannelLifecycleService`
+The shared lifecycle-mutation contract landing with its first consumer.
+
+- **PR3 — `services/lifecycle/contracts.py` (new):** the reusable typed shapes for the
+  *change* operations provisioning does not own — `StepResult`, `LifecyclePreview`,
+  `LifecycleResult` (all frozen); the **reversibility vocabulary**
+  (`reversible` / `compensatable` / `irreversible`); the **outcome classifier**
+  (`success` / `partial` / `blocked` / `declined` / `discord_failed`) via
+  `classify_outcome`; and `emit_lifecycle_audit` — the best-effort
+  `audit.action_recorded` companion wrapper (mirrors the moderation three-signal
+  pattern). Re-exported from `services/lifecycle/__init__.py`.
+- **PR4 — `services/channel_lifecycle_service.py` (new):** `ChannelLifecycleService`
+  is the canonical owner of channel **rename / move / delete only** (single + batch).
+  It checks the bot's **Manage Channels** permission (actor authority stays at the cog,
+  as with `moderation_service`); requires `confirmed=True` for irreversible deletes
+  (the typed command invocation *is* the confirmation); captures per-channel Discord
+  failures as **failed steps** rather than raising (partial-failure reporting); and
+  emits the audit companion + domain event sharing one `mutation_id`.
+- **Routed:** the `channel_cog` typed commands `delete`, `bulkdelete`, `move`, `rename`,
+  and the `evt …delete` path now go through the service.
+- **New catalogued event** `channel.lifecycle_changed` (advisory; payload
+  `mutation_id, guild_id, operation, outcome, applied[], failed[], occurred_at`).
+- **Pinned by** `tests/unit/invariants/test_no_direct_channel_mutations.py` — scoped to
+  the **`ChannelCog` class body** and to `.delete()` / `.edit()` only (so the sibling
+  paginator's legitimate `self.message.edit` is not a false positive), plus
+  `tests/unit/services/test_lifecycle_contracts.py` and
+  `tests/unit/services/test_channel_lifecycle_service.py`.
+- **Deferred follow-ups (still on their current cog paths):** channel **creation**
+  (owned by `utils.channels` / `ResourceProvisioningPipeline` + the no-silent-auto-create
+  invariant — see `cogs/channel_cog.py` `evt create`), **clone**, **lock/unlock**,
+  **permission overwrites** (`set` / `set_permissions`), the channel/move-reorder
+  **panel UI**, and first-class **category lifecycle**. The invariant pins only
+  `.delete()` / `.edit()` for now — these other operations are not yet routed.
+
+---
+
+## Reconciliations applied this pass (source ↔ docs)
+
+1. **Clear-warnings token.** Docs that predicted `clear_warnings` + display
+   normalization were corrected to the shipped reality: **`clearwarnings`** (one word),
+   no normalization. Touches the implementation plan, `docs/ownership.md`,
+   `docs/architecture/service_ownership.md`, and `docs/server-logging.md`.
+2. **One tiny source fix (not docs-only).** `services/server_logging.py`'s
+   `_ACTION_COLOR` / `_ACTION_ICON` keyed the clear-warnings style on the old
+   `clear_warnings` token, so after #521 the live `clearwarnings` action rendered with
+   the generic dark-grey • style instead of the intended blurple 🧹. Added the
+   canonical `clearwarnings` key (kept `clear_warnings` as a back-compat alias) and a
+   regression test (`test_format_log_embed_clearwarnings_uses_blurple`). The previous
+   `test_server_logging.py` routing loop tested only the dead token, so CI had stayed
+   green while the live token went unstyled.
+3. **Direct-DB ledger.** `moderation_cog`'s warn/clear-warnings direct DB writes are
+   gone (routed through the service, AST-pinned); the only remaining direct `db.*` in
+   the cog is the read `db.get_mod_logs`.
+
+---
+
+## Remaining queue (starts at PR5)
+
+Per the implementation plan's dependency order; nothing below has started.
+
+| PR | Objective | Depends on |
+|---|---|---|
+| **PR5** | Role lifecycle service + non-destructive time/XP threshold semantics + role-ID groundwork (consumes #522 `role_feasibility` + #523 lifecycle contract). | #522, #523 |
+| **PR6** | Dynamic time/XP role configuration (replace free-text role names with selectors). | PR5, #522 |
+| **PR7** | Channel/category **move & reorder** panel UI + first-class category lifecycle (the deferred half of channel lifecycle). | #523, #522 |
+| **PR8** | Cleanup policy schema + versioning (preserve RC-5 thread-inheritance behavior). | — |
+| **PR9** | Cleanup builder + dry-run + diagnostics. | PR8, #522 |
+| **PR10** | Moderation first-class configuration (mod-roles, log destinations, escalation, DMs). | #521 |
+| **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
+| **PR12** | Setup diagnostics & repair. | PR5, #522 |
+| **PR13** | Deterministic + AI role templates. | PR5, #523 |
+| **PR14** | Server Management Hub (last). | all managers |
+
+Near-term completion items folded into the above: finish PR2's diagnostics/findings
+model and selector paging/search (in PR5/PR6 as first production consumers); finish
+PR4's clone / overwrites / creation routing (in PR7).

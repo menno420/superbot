@@ -62,6 +62,7 @@ layer.
 | Cogs | `disbot/cogs/<name>_cog.py` (+ `disbot/cogs/<name>/`) | One file per subsystem entry; private domain logic in the sibling package. See `docs/architecture.md` § "Subsystem decomposition". |
 | Services (mutation) | `disbot/services/<name>_service.py` or `<name>_mutation.py` | Audited writers. See `docs/ownership.md` § "Service ownership". |
 | Pure-domain services | `disbot/services/blackjack_engine.py`, `disbot/services/cog_routing_profiles.py`, … | Stateless math / catalogue logic. May be called from cogs and other services. |
+| Lifecycle contract | `disbot/services/lifecycle/` (`contracts.py`) | Shared request/preview/result/reversibility/outcome types + `emit_lifecycle_audit` for *change* ops (rename/move/delete) that `ResourceProvisioningPipeline` does not own. First consumer: `services/channel_lifecycle_service.py`. See `docs/resource-provisioning-overview.md` § "Sibling lane". |
 | Platform runtime | `disbot/core/runtime/` | EventBus consumers, session_manager, panel_manager, interaction_router, navigation_stack, tasks supervisor, persistent_views, identity contract, etc. **Must not import cogs or services.** |
 | Resources runtime | `disbot/core/resources/` | Typed Discord-resource discovery / mutation / status. |
 | Governance | `disbot/governance/` | Visibility, cleanup, capability resolution + the `GovernanceMutationPipeline`. Strict internal layer order (see `governance/__init__.py` docstring). |
@@ -95,6 +96,7 @@ Helper rules live in `docs/helper-policy.md`. The map below is just
 | `utils/channels.py` | `safe_channel_name`, `get_or_create_category`, `create_private_channel`, `cleanup_category` | Direct Discord channel manipulation. Prefer `services/resource_provisioning.py` for any **new** channel creation. |
 | `utils/cooldowns.py` | `check_cooldown`, `format_remaining` | Time-window math. Pure. |
 | `utils/visibility_rules.py` | tier helpers | Read-only governance helpers. |
+| `utils/role_feasibility.py` | `evaluate_role`, `manageable_roles`, `not_everyone`, `summarize_exclusions`, `RoleFeasibility` | Pure role manageability/exclusion model shared by selectors + services (stdlib + `discord` only). The single source of truth for "can I touch this role?". |
 | `utils/synonyms.py` | `find_command` | Command-name fuzzy matching. |
 | `utils/tournaments.py` | tournament math | Pure helpers shared between RPS / blackjack tournament cogs. |
 | `utils/ui_constants.py` | color constants | UI palette. |
@@ -192,7 +194,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | ai | `cogs/ai_cog.py` (+ `cogs/ai/`) | `views/ai/` | `services/ai_gateway.py` (read-only); `services/ai_diagnostics_service.py`; `services/ai_policy_mutation.py` (audited writes); `services/ai_config_projection_service.py` (operator-facing read model); `services/ai_readiness_service.py` (chain-check scan) — see `docs/ai-config-ownership.md` (binding) | `utils/db/ai.py` — typed `ai_guild_policy` / `ai_channel_policy` / `ai_category_policy` / `ai_role_policy` / `ai_instruction_profile` / `ai_decision_audit` |
 | blackjack | `cogs/blackjack_cog.py` (+ `cogs/blackjack/`) | `views/blackjack/` | `services/economy_service.py` (coins); `services/blackjack_engine.py` (math) | n/a |
 | btd6 | `cogs/btd6_cog.py` (+ `cogs/btd6/`) | `views/btd6/` | `services/btd6_ai_service.py` (AI augmentation) | n/a in M1 (typed `btd6_*` source/strategy tables land in M3A/M4) |
-| channel | `cogs/channel_cog.py` | `views/channels/` | `governance/writes.py` | n/a |
+| channel | `cogs/channel_cog.py` | `views/channels/` | `services/channel_lifecycle_service.py` (rename/move/delete) + `governance/writes.py` (visibility) + `services/resource_provisioning.py` (creation) | n/a |
 | chain | `cogs/chain_cog.py` | — | direct CRUD | `utils/db/games/chain.py` |
 | cleanup | `cogs/cleanup_cog.py` (+ `cogs/cleanup/`) | — | direct CRUD | `utils/db/moderation.py` |
 | community | `cogs/community_cog.py` | `views/community/` | n/a (hub) | n/a |

@@ -103,6 +103,32 @@ view bypasses it.
   owns or replicates creation logic.
 
 
+## Sibling lane: lifecycle services (the *change* operations)
+
+Provisioning owns **create-or-reuse + bind**. It deliberately does **not** own the
+mutations that change or remove an already-existing resource — rename, move,
+delete, clone, overwrite, reorder. Per the server-management roadmap's maintainer
+decision #4, those are **separate coordinated domain lifecycle services**, not an
+oversized provisioning pipeline.
+
+Those services **mirror this pipeline's contract shape** (typed request →
+side-effect-free preview → `confirmed=True` gate for irreversible ops → ordered
+apply → per-step result + outcome classification → best-effort audit companion +
+catalogued domain event):
+
+- `services/lifecycle/contracts.py` — the shared `StepResult` / `LifecyclePreview`
+  / `LifecycleResult` types, the reversibility vocabulary
+  (`reversible`/`compensatable`/`irreversible`), the outcome set, and
+  `emit_lifecycle_audit`.
+- `services/channel_lifecycle_service.py` (`ChannelLifecycleService`) — the first
+  consumer; owns channel **rename / move / delete** (shipped #523). Channel
+  **creation** stays here in provisioning; clone / overwrites / reorder are
+  follow-ups still on their cog paths.
+
+See `docs/ownership.md` § "Service ownership" and
+`docs/planning/server-management-status-2026-06-05.md` for current scope.
+
+
 ## Reserved future model: `logging_routes`
 
 Per-severity log routing is **not in v1 scope** of this roadmap. The table

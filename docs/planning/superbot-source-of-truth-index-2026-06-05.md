@@ -45,6 +45,17 @@ extraction still paused); RC-12 → ADR-007 **M1** (shared media subsystem; owne
 row + registration are a follow-on). The RC-11 cooldown-ordering guard was pinned
 this session. See the roadmap's "Addendum 3 (post-#517)" for details.
 
+**Server-management initiative (#520–#523).** #520 landed the roadmap; #521 (PR1)
+converged moderation onto `services.moderation_service` (three-signal audit;
+`clearwarnings` token); #522 (PR2) added `utils/role_feasibility.py` +
+`views/selectors/multi_role.MultiRoleSelector`; #523 (PR3+PR4) added
+`services/lifecycle/contracts.py` + `services/channel_lifecycle_service.py` (channel
+rename/move/delete) and the `channel.lifecycle_changed` event. The roadmap's PR
+ordering is **superseded** by the implementation plan's sequence (which is what
+shipped). The live record is the new
+**`docs/planning/server-management-status-2026-06-05.md`** tracker — start there for
+server-management state and the remaining queue (PR5+).
+
 ---
 
 ## Current planning docs (trust now)
@@ -56,6 +67,9 @@ this session. See the roadmap's "Addendum 3 (post-#517)" for details.
 | `docs/planning/superbot-next-session-roadmap-2026-06-05.md` | ✅ current | PR/session plan. |
 | `docs/planning/superbot-source-of-truth-index-2026-06-05.md` | ✅ current | This file. |
 | `docs/planning/superbot-ideas-lab-2026-06-05.md` | ✅ current (advisory) | Brainstorm backlog. §2 (operating decisions) + §6 (rejection ledger) are binding; the rest is gated suggestions — re-verify against source before building. |
+| `docs/planning/server-management-status-2026-06-05.md` | ✅ current | **Live status tracker** for the server-management initiative — what shipped (#520–#523) and the remaining queue (PR5+). Authoritative on *what is done*. |
+| `docs/planning/server-management-implementation-plan-2026-06-05.md` | ✅ current (scope) | Per-PR scope/tests/risks for PR1→PR14. PR1–PR4 shipped; see Rev 3 note for the `clearwarnings` correction. Use with the status tracker. |
+| `docs/planning/server-management-roadmap-2026-06-05.md` | ✅ current (target arch) | Target architecture + maintainer decisions. **PR ordering superseded after #523** — use the implementation plan / status tracker for sequence. |
 
 ---
 
