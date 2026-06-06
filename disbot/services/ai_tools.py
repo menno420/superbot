@@ -32,6 +32,7 @@ from services import (
     ai_decision_audit_service,
     ai_permission_service,
 )
+from services.health_contracts import HealthAudience
 
 # Least-privilege ordering for AIScope. A caller may be offered a tool
 # when their rank is >= the tool's ``min_scope`` rank.
@@ -195,6 +196,76 @@ def _make_recent_audit(guild_id: int) -> ToolHandler:
         limit = _coerce_limit(arguments.get("limit"), default=5, lo=1, hi=20)
         rows = await ai_decision_audit_service.query(guild_id, limit=limit)
         return {"rows": [_audit_row_summary(row) for row in rows]}
+
+    return handler
+
+
+# --- diagnostics_health_snapshot (platform owner) ----------------------
+
+# AIScope -> HealthAudience boundary. Kept explicit (and tested) even though
+# this tool is owner-gated, so the redaction audience is never derived ad hoc.
+# TODO(#536): when the AIToolDescriptor / `diagnostics` toolset lands, register
+# this tool there instead of the flat build_registry catalog.
+
+
+def _audience_for_scope(scope: AIScope) -> HealthAudience:
+    """Map an :class:`AIScope` to the health-snapshot redaction audience."""
+    if scope is AIScope.PLATFORM_OWNER:
+        return HealthAudience.PLATFORM_OWNER
+    if scope in (AIScope.SERVER_OWNER, AIScope.ADMIN):
+        return HealthAudience.GUILD_ADMIN
+    return HealthAudience.PUBLIC
+
+
+_DIAGNOSTICS_HEALTH_SPEC = AIToolSpec(
+    name="diagnostics_health_snapshot",
+    description=(
+        "Return a bounded, redacted snapshot of THIS bot's own operational "
+        "health: overall status, per-subsystem status (runtime, gateway, "
+        "database, AI, startup, tasks, …), and recent grouped findings with "
+        "occurrence counts. Platform-owner only. Call this to answer questions "
+        "about how the bot itself is doing right now — uptime, errors, degraded "
+        "or unavailable subsystems. Pass fresh=true to run bounded live checks "
+        "(database ping, fresh consistency) instead of the cached view."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "fresh": {
+                "type": "boolean",
+                "description": (
+                    "Run bounded live checks instead of the cached snapshot "
+                    "(default false)."
+                ),
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.PLATFORM_OWNER,
+)
+
+
+def _make_diagnostics_health(bot: Any, guild_id: int) -> ToolHandler:
+    async def handler(arguments: dict[str, Any]) -> dict[str, Any]:
+        # Function-local: keep the heavy health graph out of ai_tools import.
+        from services import health_snapshot_service
+        from services.health_contracts import HealthSnapshotRequest
+
+        fresh = bool(arguments.get("fresh", False))
+        audience = _audience_for_scope(AIScope.PLATFORM_OWNER)
+        request = HealthSnapshotRequest(
+            purpose="ai_context",
+            audience=audience,
+            guild_id=guild_id,
+            include_fresh_consistency=fresh,
+        )
+        # collect_*_snapshot already projects to request.audience; the payload
+        # is therefore the owner-scoped, redacted, bounded JSON view.
+        if fresh:
+            snapshot = await health_snapshot_service.collect_snapshot(request, bot=bot)
+        else:
+            snapshot = health_snapshot_service.collect_cached_snapshot(request, bot=bot)
+        return health_snapshot_service.snapshot_to_payload(snapshot)
 
     return handler
 
@@ -1585,6 +1656,7 @@ def build_registry(
     actor_id: int,
     guild: Any = None,
     member: Any = None,
+    bot: Any = None,
 ) -> ToolRegistry:
     """Build the read-only tool set the caller's ``scope`` may be offered.
 
@@ -1600,6 +1672,12 @@ def build_registry(
     data (the ``lookup_member`` and ``list_all_members`` tools, plus member
     counts) is gated behind
     :func:`feature_flags.ai_server_member_lookup_enabled` — default off.
+
+    ``bot`` (the live client) lets the platform-owner-only
+    ``diagnostics_health_snapshot`` tool include gateway/latency facts; it is
+    ``None``-tolerant, so callers without a client simply get a snapshot
+    without the gateway subsystem. That tool is filtered out for every scope
+    below ``PLATFORM_OWNER`` regardless.
     """
     from core.runtime.ai.feature_flags import ai_server_member_lookup_enabled
 
@@ -1624,6 +1702,7 @@ def build_registry(
         (_BTD6_CT_TEAM_SPEC, _make_btd6_ct_team_status(guild_id)),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
+        (_DIAGNOSTICS_HEALTH_SPEC, _make_diagnostics_health(bot, guild_id)),
     ]
     if guild is not None:
         catalog.extend(

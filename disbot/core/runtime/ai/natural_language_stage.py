@@ -901,6 +901,17 @@ def _derive_scope(message: discord.Message) -> AIScope:
     """
     author = getattr(message, "author", None)
     guild = getattr(message, "guild", None)
+    # Platform owner — the single configured operator, recognized by verified
+    # Discord user id (never message text, so it cannot be spoofed). Checked
+    # FIRST so the owner outranks even guild ownership; this is what makes the
+    # owner-gated diagnostics_health_snapshot tool reachable (D1). Mirrors the
+    # id-gated owner seams in ai_tools.get_user_standing / bot_knowledge_service;
+    # the deterministic !platform health surface uses bot.is_owner separately.
+    from config import BOT_OWNER_USER_ID
+
+    author_id = getattr(author, "id", None)
+    if BOT_OWNER_USER_ID is not None and author_id == BOT_OWNER_USER_ID:
+        return AIScope.PLATFORM_OWNER
     if (
         guild is not None
         and author is not None
@@ -1101,6 +1112,7 @@ async def _invoke_gateway(
             actor_id=ctx.actor_id,
             guild=getattr(message, "guild", None),
             member=getattr(message, "author", None),
+            bot=getattr(_ctx, "bot", None),
         )
         specs = registry.specs
         handlers = registry.handlers

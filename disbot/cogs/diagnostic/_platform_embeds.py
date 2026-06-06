@@ -898,6 +898,7 @@ def _render_health_embed(
     if snapshot.findings:
         finding_lines = [
             f"{_FINDING_EMOJI.get(f.severity.value, '•')} {f.message}"
+            + (f" (×{f.occurrence_count})" if f.occurrence_count > 1 else "")
             for f in snapshot.findings[:_HEALTH_FINDINGS_SHOWN]
         ]
         embed.add_field(
@@ -936,6 +937,63 @@ def build_startup_health_embed(snapshot: HealthSnapshot) -> discord.Embed:
         title="🚀 Startup health",
         drilldown="settled-startup snapshot · !platform health for live state",
     )
+
+
+def build_findings_embed(
+    rows: list[dict],
+    *,
+    status: str,
+    counts: dict,
+    is_owner: bool = False,
+) -> discord.Embed:
+    """Render persistent operational-health findings (``!platform findings``, PR6).
+
+    ``rows`` are DB records (already scrubbed of secrets/IDs at record time);
+    owner-only hints (file/provider) are shown only when ``is_owner``. Unlike
+    the live health embed, these persist across restarts with an accumulating
+    occurrence count.
+    """
+    from core.runtime.interaction_helpers import clamp_embed
+
+    total = sum(int(v) for v in counts.values()) if counts else 0
+    summary = (
+        f"open {counts.get('open', 0)} · resolved {counts.get('resolved', 0)} · "
+        f"ignored {counts.get('ignored', 0)} · {total} total"
+    )
+    embed = discord.Embed(
+        title=f"🩺 Health findings — {status}",
+        description=summary,
+        color=discord.Color.orange() if rows else discord.Color.green(),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    if not rows:
+        embed.add_field(name="Findings", value="*(none)*", inline=False)
+        return clamp_embed(embed)
+
+    lines: list[str] = []
+    for row in rows[:_HEALTH_FINDINGS_SHOWN]:
+        sev = str(row.get("severity", "info"))
+        count = int(row.get("occurrence_count", 1) or 1)
+        count_suffix = f" (×{count})" if count > 1 else ""
+        line = (
+            f"{_FINDING_EMOJI.get(sev, '•')} `{row.get('status', 'open')}` "
+            f"**{row.get('category', '?')}** — {row.get('message', '')}{count_suffix}"
+        )
+        if is_owner and row.get("file_hint"):
+            line += f"\n  ↳ {row['file_hint']}"
+        lines.append(line)
+    embed.add_field(
+        name=f"Findings ({len(rows)} shown)",
+        value=_health_block(lines),
+        inline=False,
+    )
+    embed.set_footer(
+        text=(
+            "persistent findings · recurrence survives restarts · "
+            f"{'owner view' if is_owner else 'admin view (redacted)'}"
+        ),
+    )
+    return clamp_embed(embed)
 
 
 _EMBED_FIELD_CAP = 24  # Discord hard limit is 25; reserve 1 for overflow note.

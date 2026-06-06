@@ -22,6 +22,7 @@ from cogs.diagnostic._platform_embeds import (
     build_caches_embed,
     build_consistency_embed,
     build_customization_embed,
+    build_findings_embed,
     build_flags_embed,
     build_health_embed,
     build_identity_embed,
@@ -385,6 +386,38 @@ class DiagnosticCog(commands.Cog):
             )
         await ctx.send(embed=build_startup_health_embed(snapshot))
 
+    @platform_grp.command(name="findings")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_findings(self, ctx, status: str = "open"):
+        """Persistent operational-health findings (open / resolved / ignored / all).
+
+        Unlike `!platform health` (a live in-memory snapshot), these survive
+        restarts: each row's occurrence count accumulates across boots so a
+        recurring problem is visible over time. Read-only and admin-gated;
+        owner-only detail (file/provider hints) is shown only to the bot owner.
+        """
+        from services import health_findings_service, health_snapshot_service
+        from services.health_contracts import HealthAudience
+
+        wanted = status.lower().strip()
+        if wanted not in ("open", "resolved", "ignored", "all"):
+            wanted = "open"
+        audience = await health_snapshot_service.resolve_audience(self.bot, ctx.author)
+        is_owner = audience is HealthAudience.PLATFORM_OWNER
+        rows = await health_findings_service.list_by_status(
+            None if wanted == "all" else wanted,
+            limit=15,
+        )
+        counts = await health_findings_service.count_by_status()
+        await ctx.send(
+            embed=build_findings_embed(
+                rows,
+                status=wanted,
+                counts=counts,
+                is_owner=is_owner,
+            ),
+        )
+
     @platform_grp.command(name="lifecycle")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_lifecycle(self, ctx):
@@ -692,7 +725,17 @@ def _governance_context_for(ctx, target):
 
 async def setup(bot):
     from cogs.diagnostic._log_buffer import install as install_log_buffer
+    from cogs.diagnostic._log_buffer import recent as recent_logs
+    from services import diagnostics_service
 
     install_log_buffer()
+    # Expose the in-memory error ring buffer to the services layer (the health
+    # read-model must not import cogs) via the diagnostics registry — cogs
+    # register *into* it. Bounded; the health aggregator normalizes + groups
+    # these before display (PR4, opt-in via HEALTH_GROUPED_FINDINGS).
+    diagnostics_service.register(
+        "recent_errors",
+        lambda: {"recent": recent_logs(level="ERROR", limit=50)},
+    )
     await bot.add_cog(DiagnosticCog(bot))
     logger.info("DiagnosticCog loaded.")

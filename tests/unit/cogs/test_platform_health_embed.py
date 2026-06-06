@@ -162,3 +162,36 @@ async def test_panel_health_routes_through_same_builder(monkeypatch) -> None:
 def test_health_is_a_runtime_panel_option() -> None:
     keys = {opt[0] for opt in panel._RUNTIME_OPTIONS}
     assert "health" in keys
+
+
+def test_build_health_embed_shows_occurrence_count() -> None:
+    """A grouped finding (PR4) renders its (×N) count."""
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    snap = HealthSnapshot(
+        snapshot_id="abc123",
+        generated_at=now,
+        purpose="summary",
+        status=SnapshotStatus.DEGRADED,
+        summary="x",
+        subsystems=(),
+        findings=(
+            OperationalHealthFinding(
+                fingerprint="grp",
+                severity=FindingSeverity.ERROR,
+                category="runtime.log_error",
+                message="KeyError: cache miss",
+                occurrence_count=7,
+                related_subsystem="errors",
+            ),
+        ),
+    )
+    field = next(f for f in build_health_embed(snap).fields if f.name.startswith("Findings"))
+    assert "(×7)" in field.value
+
+
+def test_build_health_embed_omits_count_for_single_occurrence() -> None:
+    field = next(
+        f for f in build_health_embed(_snapshot(n_findings=1)).fields
+        if f.name.startswith("Findings")
+    )
+    assert "(×" not in field.value

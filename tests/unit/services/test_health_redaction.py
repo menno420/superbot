@@ -33,6 +33,7 @@ from services.health_contracts import (
     FindingSeverity,
     HealthAudience,
     HealthSnapshot,
+    HealthSnapshotRequest,
     OperationalHealthFinding,
     SnapshotStatus,
     SubsystemHealth,
@@ -239,3 +240,40 @@ def test_startup_error_leak_is_contained() -> None:
     assert _SECRET not in _all_text(owner)
     # owner keeps the (scrubbed) file_hint; admin does not.
     assert all(f.file_hint is None for s in admin.subsystems for f in s.findings)
+
+
+# --- PR4: grouped recent-error fingerprints stay ID/secret-free ------------
+
+
+def _all_fingerprints(snapshot: HealthSnapshot) -> str:
+    fps = [f.fingerprint for f in snapshot.findings]
+    for sub in snapshot.subsystems:
+        fps.extend(f.fingerprint for f in sub.findings)
+    return " ".join(fps)
+
+
+def test_grouped_error_fingerprints_omit_secret_and_id(monkeypatch) -> None:
+    monkeypatch.setenv("HEALTH_GROUPED_FINDINGS", "1")
+    diagnostics_service.register(
+        "recent_errors",
+        lambda: {
+            "recent": [
+                {
+                    "level": "ERROR",
+                    "message": f"AuthError: token={_SECRET} for role {_SNOWFLAKE}",
+                },
+            ],
+        },
+    )
+    try:
+        snap = hss.collect_cached_snapshot(
+            HealthSnapshotRequest(audience=HealthAudience.PLATFORM_OWNER),
+        )
+    finally:
+        diagnostics_service.unregister("recent_errors")
+    # Neither the grouping key nor any operator-visible text leaks the planted
+    # secret / snowflake — even at the highest (owner) audience.
+    assert _SECRET not in _all_fingerprints(snap)
+    assert _SNOWFLAKE not in _all_fingerprints(snap)
+    assert _SECRET not in _all_text(snap)
+    assert _SNOWFLAKE not in _all_text(snap)

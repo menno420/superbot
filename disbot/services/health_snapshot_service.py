@@ -37,12 +37,13 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import re
+import os
 import uuid
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import replace
 from typing import Any
 
+from services import health_observations
 from services.health_contracts import (
     FindingSeverity,
     HealthAudience,
@@ -82,6 +83,7 @@ _SUBSYSTEM_ORDER: dict[str, int] = {
     "diagnostics": 7,
     "ai": 8,
     "resources": 9,
+    "errors": 10,
 }
 
 # Extensions whose load failure is a CRITICAL whole-bot signal (D3). Only the
@@ -102,39 +104,17 @@ def _now() -> datetime.datetime:
 
 # ---------------------------------------------------------------------------
 # Sanitization — applied to ALL free text before it enters a finding, at
-# every audience.  Guarantees no tokens, long IDs, hashes, or multi-line
-# stack traces survive into a snapshot (let alone a Discord embed / model
-# context).  ``project_for_audience`` then removes owner-only *fields*.
+# every audience.  Delegates to :mod:`services.health_observations` (the
+# single source of truth, shared with fingerprinting) so a secret / long ID /
+# hash / multi-line traceback is stripped identically everywhere — in a
+# finding, a fingerprint, an embed, or AI context.  ``project_for_audience``
+# then removes owner-only *fields* on top of this.
 # ---------------------------------------------------------------------------
-
-_SECRET_RE = re.compile(
-    r"(?i)\b(token|secret|password|passwd|api[_-]?key|authorization|bearer)\b"
-    r"\s*[=:]\s*\S+",
-)
-_JWT_RE = re.compile(
-    r"\b[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{6,}\.[A-Za-z0-9_\-]{10,}\b",
-)
-_LONG_HEX_RE = re.compile(r"\b[A-Fa-f0-9]{24,}\b")
-_LONG_DIGITS_RE = re.compile(r"\d{7,}")
 
 
 def _scrub(text: str | None, *, limit: int = MAX_MESSAGE_CHARS) -> str:
-    """Collapse, redact, and bound free text.
-
-    Removes ``key=value`` secrets, JWT-like and long-hex blobs, and long
-    digit runs (Discord snowflake IDs), flattens newlines so multi-line
-    tracebacks cannot survive, and truncates to ``limit`` chars.
-    """
-    if not text:
-        return ""
-    flattened = " ".join(str(text).split())
-    flattened = _SECRET_RE.sub("<secret>", flattened)
-    flattened = _JWT_RE.sub("<token>", flattened)
-    flattened = _LONG_HEX_RE.sub("<hash>", flattened)
-    flattened = _LONG_DIGITS_RE.sub("<id>", flattened)
-    if len(flattened) > limit:
-        flattened = flattened[: limit - 1].rstrip() + "…"
-    return flattened
+    """Collapse, redact, and bound free text (see ``health_observations``)."""
+    return health_observations.normalize_text(text, limit=limit)
 
 
 # ---------------------------------------------------------------------------
@@ -274,6 +254,69 @@ def _diagnostics_subsystem() -> SubsystemHealth:
         facts={"provider_count": len(snap), "failed_count": len(failed)},
         source="diagnostics_service",
         required=True,
+    )
+
+
+def _grouped_findings_enabled() -> bool:
+    """Opt-in flag for the grouped recent-error subsystem (PR4).
+
+    Default OFF: deterministic surfaces and the legacy ``!recent_errors``
+    command are unchanged until an operator sets ``HEALTH_GROUPED_FINDINGS``
+    truthy, so flipping it off is a complete, code-free rollback.
+    """
+    return os.getenv("HEALTH_GROUPED_FINDINGS", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _errors_subsystem() -> SubsystemHealth:
+    """Group the recent runtime-error stream into a few counted findings.
+
+    Reads the bounded ``recent_errors`` diagnostics provider (registered by
+    the DiagnosticCog from its in-memory log ring buffer — cogs register
+    *into* the registry, so this never imports cogs) and folds it through
+    :func:`health_observations.group_log_errors`.  Only added to a snapshot
+    when ``HEALTH_GROUPED_FINDINGS`` is on; an absent provider yields no
+    errors rather than an exception.
+    """
+    from services import diagnostics_service
+
+    try:
+        payload = diagnostics_service.snapshot("recent_errors")
+    except KeyError:
+        payload = None
+    if isinstance(payload, dict):
+        entries = payload.get("recent", [])
+    elif isinstance(payload, list):
+        entries = payload
+    else:
+        entries = []
+    findings = tuple(
+        health_observations.group_log_errors(
+            entries,
+            subsystem="errors",
+            max_findings=MAX_SUBSYSTEM_FINDINGS,
+        ),
+    )
+    total = sum(f.occurrence_count for f in findings)
+    if findings:
+        status = worst_status(status_for_severity(f.severity) for f in findings)
+        summary = f"{total} recent error(s) in {len(findings)} group(s)"
+    else:
+        status = SnapshotStatus.HEALTHY
+        summary = "No recent errors"
+    return SubsystemHealth(
+        name="errors",
+        status=status,
+        summary=summary,
+        generated_at=_now(),
+        findings=findings,
+        facts={"recent_error_count": total, "group_count": len(findings)},
+        source="log_buffer",
+        required=False,
     )
 
 
@@ -652,6 +695,29 @@ async def _safe_async(
 # ---------------------------------------------------------------------------
 
 
+def _group_findings(
+    findings: list[OperationalHealthFinding],
+) -> list[OperationalHealthFinding]:
+    """Collapse findings sharing a fingerprint, summing ``occurrence_count``.
+
+    Order-preserving (the first occurrence wins for display fields); a
+    defensive correctness invariant so the same problem surfaced by two
+    sources counts once.  A no-op for the already-unique per-source
+    fingerprints, and the basis PR6 dedupes / persists on.
+    """
+    grouped: dict[str, OperationalHealthFinding] = {}
+    for finding in findings:
+        existing = grouped.get(finding.fingerprint)
+        if existing is None:
+            grouped[finding.fingerprint] = finding
+        else:
+            grouped[finding.fingerprint] = replace(
+                existing,
+                occurrence_count=existing.occurrence_count + finding.occurrence_count,
+            )
+    return list(grouped.values())
+
+
 def _finalize(
     subsystems: Iterable[SubsystemHealth],
     *,
@@ -660,7 +726,7 @@ def _finalize(
 ) -> HealthSnapshot:
     ordered = tuple(sorted(subsystems, key=lambda s: _SUBSYSTEM_ORDER.get(s.name, 99)))
     overall = derive_overall_status(ordered, partial=partial)
-    all_findings = [f for s in ordered for f in s.findings]
+    all_findings = _group_findings([f for s in ordered for f in s.findings])
     all_findings.sort(
         key=lambda f: (
             -_SEVERITY_RANK[f.severity],
@@ -747,6 +813,82 @@ def _project_finding(
 
 
 # ---------------------------------------------------------------------------
+# Bounded JSON payload — for the read-only AI diagnostics tool (PR5).
+# ---------------------------------------------------------------------------
+
+_PAYLOAD_SCHEMA_VERSION = 1
+_PAYLOAD_MAX_SUBSYSTEMS = 16
+_PAYLOAD_MAX_FINDINGS = 12
+
+
+def _finding_payload(finding: OperationalHealthFinding) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "fingerprint": finding.fingerprint,
+        "severity": finding.severity.value,
+        "category": finding.category,
+        "message": finding.message,
+        "occurrence_count": finding.occurrence_count,
+    }
+    # Optional, already-scrubbed/projected fields — included only when present
+    # (``file_hint``/``related_provider`` survive only at PLATFORM_OWNER).
+    for key in (
+        "related_subsystem",
+        "related_provider",
+        "file_hint",
+        "suggested_next_step",
+    ):
+        value = getattr(finding, key)
+        if value:
+            out[key] = value
+    return out
+
+
+def snapshot_to_payload(snapshot: HealthSnapshot) -> dict[str, Any]:
+    """Serialize an (already audience-projected) snapshot to a bounded,
+    JSON-serializable dict for the read-only AI diagnostics tool.
+
+    Enums → ``.value``; datetimes → ISO-8601; only the allowlisted ``facts``
+    and the short ``suggested_next_step`` suggestion travel.  No raw provider
+    dumps, tokens, SQL, traces, or unbounded IDs: the snapshot is already
+    scrubbed (:func:`_scrub`) and projected (:func:`project_for_audience`), and
+    the gateway redacts the serialized JSON once more before the model sees it.
+    ``schema_version`` lets a future descriptor/result-contract tool migrate
+    the shape without breaking callers.
+    """
+    return {
+        "schema_version": _PAYLOAD_SCHEMA_VERSION,
+        "snapshot_id": snapshot.snapshot_id,
+        "generated_at": snapshot.generated_at.isoformat(),
+        "purpose": snapshot.purpose,
+        "status": snapshot.status.value,
+        "summary": snapshot.summary,
+        "partial": snapshot.partial,
+        "audience": (
+            snapshot.redaction_audience.value
+            if snapshot.redaction_audience is not None
+            else None
+        ),
+        "subsystems": [
+            {
+                "name": sub.name,
+                "status": sub.status.value,
+                "summary": sub.summary,
+                "stale": sub.stale,
+                "required": sub.required,
+                "facts": dict(sub.facts),
+                "findings": [
+                    _finding_payload(f) for f in sub.findings[:_PAYLOAD_MAX_FINDINGS]
+                ],
+            }
+            for sub in snapshot.subsystems[:_PAYLOAD_MAX_SUBSYSTEMS]
+        ],
+        "findings": [
+            _finding_payload(f) for f in snapshot.findings[:_PAYLOAD_MAX_FINDINGS]
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Public collection entry points
 # ---------------------------------------------------------------------------
 
@@ -810,6 +952,9 @@ def _sync_subsystems(
         subs.append(_safe(_consistency_subsystem, "consistency", required=True))
     if bot is not None:
         subs.append(_safe(lambda: _gateway_subsystem(bot), "gateway", required=True))
+    # Opt-in (PR4): grouped recent-error findings over the log ring buffer.
+    if _grouped_findings_enabled():
+        subs.append(_safe(_errors_subsystem, "errors", required=False))
     return subs
 
 
