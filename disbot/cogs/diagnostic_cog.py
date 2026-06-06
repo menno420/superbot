@@ -692,7 +692,17 @@ def _governance_context_for(ctx, target):
 
 async def setup(bot):
     from cogs.diagnostic._log_buffer import install as install_log_buffer
+    from cogs.diagnostic._log_buffer import recent as recent_logs
+    from services import diagnostics_service
 
     install_log_buffer()
+    # Expose the in-memory error ring buffer to the services layer (the health
+    # read-model must not import cogs) via the diagnostics registry — cogs
+    # register *into* it. Bounded; the health aggregator normalizes + groups
+    # these before display (PR4, opt-in via HEALTH_GROUPED_FINDINGS).
+    diagnostics_service.register(
+        "recent_errors",
+        lambda: {"recent": recent_logs(level="ERROR", limit=50)},
+    )
     await bot.add_cog(DiagnosticCog(bot))
     logger.info("DiagnosticCog loaded.")

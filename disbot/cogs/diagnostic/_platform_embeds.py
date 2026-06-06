@@ -898,6 +898,7 @@ def _render_health_embed(
     if snapshot.findings:
         finding_lines = [
             f"{_FINDING_EMOJI.get(f.severity.value, '•')} {f.message}"
+            + (f" (×{f.occurrence_count})" if f.occurrence_count > 1 else "")
             for f in snapshot.findings[:_HEALTH_FINDINGS_SHOWN]
         ]
         embed.add_field(

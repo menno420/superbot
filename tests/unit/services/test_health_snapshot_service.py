@@ -271,3 +271,74 @@ def test_collect_cached_smoke() -> None:
     assert "gateway" not in names
     assert snap.redaction_audience is HealthAudience.GUILD_ADMIN
     assert isinstance(snap.status, SnapshotStatus)
+
+
+# --- PR4: grouped findings + opt-in errors subsystem -----------------------
+
+
+def test_group_findings_collapses_shared_fingerprint() -> None:
+    findings = [
+        OperationalHealthFinding(
+            fingerprint="dup", severity=FindingSeverity.ERROR,
+            category="c", message="first", occurrence_count=2,
+        ),
+        OperationalHealthFinding(
+            fingerprint="dup", severity=FindingSeverity.ERROR,
+            category="c", message="second", occurrence_count=3,
+        ),
+        OperationalHealthFinding(
+            fingerprint="solo", severity=FindingSeverity.INFO,
+            category="c", message="x",
+        ),
+    ]
+    out = hss._group_findings(findings)
+    assert len(out) == 2
+    dup = next(f for f in out if f.fingerprint == "dup")
+    assert dup.occurrence_count == 5
+    assert dup.message == "first"  # first occurrence wins for display
+
+
+def test_group_findings_is_noop_for_unique() -> None:
+    findings = [
+        OperationalHealthFinding(
+            fingerprint=f"u{i}", severity=FindingSeverity.WARNING,
+            category="c", message="m",
+        )
+        for i in range(3)
+    ]
+    out = hss._group_findings(findings)
+    assert [f.fingerprint for f in out] == ["u0", "u1", "u2"]
+    assert all(f.occurrence_count == 1 for f in out)
+
+
+def test_errors_subsystem_absent_by_default(monkeypatch) -> None:
+    monkeypatch.delenv("HEALTH_GROUPED_FINDINGS", raising=False)
+    snap = hss.collect_cached_snapshot(HealthSnapshotRequest())
+    assert "errors" not in {s.name for s in snap.subsystems}
+
+
+def test_errors_subsystem_groups_when_enabled(monkeypatch) -> None:
+    monkeypatch.setenv("HEALTH_GROUPED_FINDINGS", "1")
+    diagnostics_service.register(
+        "recent_errors",
+        lambda: {"recent": [{"level": "ERROR", "message": "KeyError: cache miss"}] * 3},
+    )
+    try:
+        snap = hss.collect_cached_snapshot(
+            HealthSnapshotRequest(audience=HealthAudience.PLATFORM_OWNER)
+        )
+    finally:
+        diagnostics_service.unregister("recent_errors")
+    errors = next(s for s in snap.subsystems if s.name == "errors")
+    assert errors.facts["recent_error_count"] == 3
+    assert errors.facts["group_count"] == 1
+    assert any(f.occurrence_count == 3 for f in errors.findings)
+
+
+def test_errors_subsystem_handles_absent_provider(monkeypatch) -> None:
+    monkeypatch.setenv("HEALTH_GROUPED_FINDINGS", "1")
+    # No recent_errors provider registered (cog setup not run in unit tests).
+    snap = hss.collect_cached_snapshot(HealthSnapshotRequest())
+    errors = next(s for s in snap.subsystems if s.name == "errors")
+    assert errors.status is SnapshotStatus.HEALTHY
+    assert errors.findings == ()
