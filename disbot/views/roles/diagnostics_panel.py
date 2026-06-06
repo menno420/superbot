@@ -5,10 +5,31 @@ from discord.ext import commands
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
+from services import role_automation
 from utils import db
 from utils.ui_constants import WARNING_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
+
+
+def _format_preflight(pf: role_automation.PreflightResult) -> str:
+    """One-line role-automation health summary from a preflight result.
+
+    Shows the same blockers ``role_automation.apply`` now enforces before
+    mutating, so an operator can *see* why automation is failing (missing
+    permission / role above the bot / configured role gone) instead of finding
+    out only from a degraded health snapshot.
+    """
+    if not pf.bot_has_manage_roles:
+        return "🔴 I'm missing the **Manage Roles** permission."
+    problems: list[str] = []
+    if pf.hierarchy_blockers:
+        problems.append("above my top role: " + ", ".join(pf.hierarchy_blockers))
+    if pf.missing_roles:
+        problems.append("missing: " + ", ".join(pf.missing_roles))
+    if not problems:
+        return "🟢 I can manage all configured progression roles."
+    return "⚠️ " + "; ".join(problems)
 
 
 class DiagnosticsPanel(BaseView):
@@ -77,6 +98,26 @@ class DiagnosticsPanel(BaseView):
             value=str(len(guild.roles) - 1),
             inline=True,
         )
+
+        # Live role-automation health: can the bot actually apply the configured
+        # time-based progression roles?  This is the operator's window into the
+        # "role_automation.apply failed for member" degradation.
+        time_objs = tuple(
+            role_automation.RoleThreshold(
+                role_name=r["role_name"],
+                days_required=r["days_required"],
+                role_id=r.get("role_id"),
+            )
+            for r in thresholds
+            if not r.get("xp_auto_assign") and r.get("days_required") is not None
+        )
+        if time_objs:
+            ra_value = _format_preflight(
+                role_automation.check_preflight(guild, time_objs),
+            )
+        else:
+            ra_value = "*(no time-based roles configured)*"
+        embed.add_field(name="Role Automation", value=ra_value, inline=False)
         return embed
 
     @discord.ui.button(

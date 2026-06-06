@@ -20,6 +20,22 @@ from views.roles._helpers import _ensure_defaults, _find_role_normalized, _parse
 logger = logging.getLogger("bot")
 
 
+def _format_role_check_result(result: role_automation.ApplyResult) -> str:
+    """Operator-facing summary of a time-role reconciliation run.
+
+    Surfaces failures (with their classified cause) instead of the old
+    success-only line that reported "0 assignment(s) made" while every member
+    silently 403'd — the signal that hid the role-automation degradation.
+    """
+    if not result.failed:
+        return f"✅ Role check complete — {result.succeeded} assignment(s) made."
+    return (
+        f"⚠️ Role check complete — {result.succeeded} made, "
+        f"{result.failed} failed ({role_automation.summarize_failures(result)}).\n"
+        "Open **!roles → 🔧 Diagnostics** to see what's blocking role automation."
+    )
+
+
 def _build_role_hub_embed() -> discord.Embed:
     return stats_block(
         "🎭 Role Hub",
@@ -322,9 +338,7 @@ class RoleCog(commands.Cog):
         )
 
         if ctx:
-            await ctx.send(
-                f"✅ Role check complete — {result.succeeded} assignment(s) made.",
-            )
+            await ctx.send(_format_role_check_result(result))
         return result.succeeded
 
     # ------------------------------------------------------------------ primary commands
@@ -634,12 +648,23 @@ class RoleCog(commands.Cog):
         )
         if plan is None:
             return
-        await role_automation.apply(
+        result = await role_automation.apply(
             member.guild,
             (plan,),
             actor_id=None,
             actor_type="system",
         )
+        if result.failed:
+            # Don't swallow a join-time failure: log it (WARNING — a single
+            # member, not a flood) with the classified cause so an operator
+            # isn't left guessing why a new member never got their role.
+            logger.warning(
+                "on_member_join: role assignment failed for member=%s in "
+                "guild=%s — %s",
+                member.id,
+                member.guild.id,
+                role_automation.summarize_failures(result),
+            )
 
 
 async def setup(bot: commands.Bot) -> None:

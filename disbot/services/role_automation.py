@@ -32,12 +32,18 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any
+from typing import Any
+
+import discord
 
 from services.audit_events import emit_audit_action
-
-if TYPE_CHECKING:
-    pass
+from utils.role_feasibility import (
+    ABOVE_BOT,
+    BOT_MISSING_MANAGE_ROLES,
+    EVERYONE,
+    MANAGED,
+    evaluate_role,
+)
 
 logger = logging.getLogger("bot.services.role_automation")
 
@@ -92,6 +98,48 @@ class PreflightResult:
         )
 
 
+# Reason codes for a classified per-member failure.  The manageability codes
+# (BOT_MISSING_MANAGE_ROLES / ABOVE_BOT / MANAGED / EVERYONE) come from
+# utils.role_feasibility so the pre-mutation guard, check_preflight, and the
+# selector surfaces all classify "can't manage this role" identically; the rest
+# are apply-specific outcomes.
+MEMBER_NOT_CACHED = "member_not_cached"
+FORBIDDEN = "forbidden"
+NOT_FOUND = "not_found"
+HTTP_ERROR = "http_error"
+UNKNOWN = "unknown"
+
+_FAILURE_LABELS: dict[str, str] = {
+    BOT_MISSING_MANAGE_ROLES: "missing Manage Roles",
+    ABOVE_BOT: "role above my top role",
+    MANAGED: "integration-managed role",
+    EVERYONE: "the @everyone role",
+    MEMBER_NOT_CACHED: "member not in cache",
+    FORBIDDEN: "permission denied",
+    NOT_FOUND: "member or role not found",
+    HTTP_ERROR: "Discord API error",
+    UNKNOWN: "unexpected error",
+}
+
+
+@dataclass(frozen=True)
+class ApplyError:
+    """One classified per-member failure from :func:`apply`.
+
+    ``code`` is a stable reason token (the :mod:`utils.role_feasibility` codes
+    for manageability blockers, plus the apply-specific ones above) so operator
+    and diagnostics surfaces can group failures by *cause* instead of parsing
+    free text.  ``phase`` is where it happened: ``"lookup"`` (member not cached),
+    ``"preflight"`` (a role the bot can't manage) or ``"mutate"`` (the Discord
+    call raised).
+    """
+
+    member_id: int
+    phase: str
+    code: str
+    detail: str
+
+
 @dataclass(frozen=True)
 class ApplyResult:
     """Outcome of :func:`apply`."""
@@ -100,7 +148,31 @@ class ApplyResult:
     succeeded: int = 0
     failed: int = 0
     skipped: int = 0
-    errors: tuple[str, ...] = ()
+    failures: tuple[ApplyError, ...] = ()
+
+    @property
+    def errors(self) -> tuple[str, ...]:
+        """Back-compat human-readable failure strings (``failures`` is the
+        structured form).
+        """
+        return tuple(f"member {f.member_id}: {f.detail}" for f in self.failures)
+
+    def failure_counts(self) -> dict[str, int]:
+        """``{reason_code: count}`` over :attr:`failures`, busiest cause first."""
+        counts: dict[str, int] = {}
+        for f in self.failures:
+            counts[f.code] = counts.get(f.code, 0) + 1
+        return dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
+def summarize_failures(result: ApplyResult) -> str:
+    """Compact ``"missing Manage Roles: 26, role above my top role: 2"`` summary
+    of a result's failures (busiest first), or ``""`` when there were none.
+    """
+    return ", ".join(
+        f"{_FAILURE_LABELS.get(code, code)}: {n}"
+        for code, n in result.failure_counts().items()
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -327,6 +399,17 @@ class _SingleMemberGuild:
 # ---------------------------------------------------------------------------
 
 
+def _bot_has_manage_roles(me: Any) -> bool:
+    """Whether ``guild.me`` carries the ``manage_roles`` permission.
+
+    Shared by :func:`check_preflight` and :func:`apply` so the owner-facing
+    report and the mutation guard can never disagree on the permission state.
+    """
+    return bool(
+        getattr(getattr(me, "guild_permissions", None), "manage_roles", False),
+    )
+
+
 def check_preflight(
     guild: Any,
     thresholds: list[RoleThreshold] | tuple[RoleThreshold, ...],
@@ -345,23 +428,16 @@ def check_preflight(
             bot_has_manage_roles=False,
             missing_roles=tuple(t.role_name for t in thresholds),
         )
-    bot_has_manage = bool(
-        getattr(
-            getattr(me, "guild_permissions", None),
-            "manage_roles",
-            False,
-        ),
-    )
-    bot_top_position = getattr(
-        getattr(me, "top_role", None),
-        "position",
-        0,
-    )
+    bot_has_manage = _bot_has_manage_roles(me)
+    bot_top_position = getattr(getattr(me, "top_role", None), "position", 0)
 
     missing: list[str] = []
     blockers: list[str] = []
     for t in thresholds:
-        role = _resolve_role(guild, t.role_name)
+        # Resolve id-first (mirrors compute_assignments / apply) so a renamed
+        # role with a persisted role_id is NOT reported "missing" — the parity
+        # the old name-only lookup silently broke.
+        role = _resolve_threshold_role(guild, t)
         if role is None:
             missing.append(t.role_name)
             continue
@@ -380,6 +456,57 @@ def check_preflight(
 # ---------------------------------------------------------------------------
 
 
+def _classify_exception(exc: Exception) -> tuple[str, bool]:
+    """Map a mutation exception to ``(reason_code, is_unexpected)``.
+
+    Predictable Discord conditions — permission denied, gone member/role, a
+    transient HTTP error — are *expected operational states*, not bot faults,
+    so they return ``is_unexpected=False``: the caller logs them at WARNING and
+    they stay out of the ERROR-only health surface.  Anything else is genuinely
+    unexpected and is logged with a traceback at ERROR.
+    """
+    if isinstance(exc, discord.Forbidden):
+        return FORBIDDEN, False
+    if isinstance(exc, discord.NotFound):
+        return NOT_FOUND, False
+    if isinstance(exc, discord.HTTPException):
+        return HTTP_ERROR, False
+    return UNKNOWN, True
+
+
+def _blocking_verdict(guild: Any, me: Any, plan: Assignment) -> ApplyError | None:
+    """Classified :class:`ApplyError` if any role this plan touches is
+    unmanageable by the bot, else ``None``.
+
+    Delegates the per-role verdict to
+    :func:`utils.role_feasibility.evaluate_role` — the single source of truth
+    for "can the bot manage this role?" — so the pre-mutation guard,
+    :func:`check_preflight`, and the selector surfaces can never drift.  With
+    ``me`` unresolved (``guild.me is None``) the bot hierarchy / permission
+    checks are skipped, so the mutation is attempted and any raise classified;
+    we never assume a failure we cannot prove.
+    """
+    roles_by_id = {
+        r.id: r for r in (getattr(guild, "roles", ()) or ()) if getattr(r, "id", None)
+    }
+    touched: list[Any] = []
+    if plan.add_role_id is not None and plan.add_role_id in roles_by_id:
+        touched.append(roles_by_id[plan.add_role_id])
+    touched.extend(
+        roles_by_id[rid] for rid in plan.remove_role_ids if rid in roles_by_id
+    )
+    for role in touched:
+        verdict = evaluate_role(role, bot_member=me)
+        if not verdict.ok:
+            return ApplyError(
+                member_id=plan.member_id,
+                phase="preflight",
+                code=verdict.code,
+                detail=f"role '{verdict.role_name}': {verdict.reason}",
+            )
+    return None
+
+
 async def apply(
     guild: Any,
     assignments: tuple[Assignment, ...] | list[Assignment],
@@ -390,11 +517,17 @@ async def apply(
 ) -> ApplyResult:
     """Apply ``assignments`` to the live guild.
 
-    Each member is handled in isolation: an exception on one
-    ``add_roles`` / ``remove_roles`` call increments the failure
-    counter but does NOT abort subsequent members. Every successful
-    change emits a ``audit.action_recorded`` event via the Track 1
-    shared helper.
+    Preflight-guarded at the mutation point: before any API call the bot's
+    ability to manage each touched role is checked via
+    :func:`utils.role_feasibility.evaluate_role`.  Predictable blockers — the
+    bot missing ``manage_roles`` or a progression role sitting at/above the
+    bot's top role — are recorded as classified :class:`ApplyError` failures and
+    logged once for the batch, instead of letting every member raise a 403 and
+    flood the ERROR log / health surface (the "26 role automation errors" shape).
+    Each remaining member is still handled in isolation: an unexpected exception
+    increments the failure counter but does NOT abort the batch and is logged
+    with a traceback. Every successful change emits ``audit.action_recorded``
+    via the Track 1 shared helper.
     """
     if dry_run:
         return ApplyResult(
@@ -402,10 +535,37 @@ async def apply(
             skipped=len(assignments),
         )
 
+    me = getattr(guild, "me", None)
+    guild_id = getattr(guild, "id", "?")
+
+    # Systemic guard: if the bot demonstrably lacks Manage Roles, every
+    # add/remove would 403 once per member.  Catch it once, skip the batch, and
+    # return classified failures — no per-member ERROR tracebacks.
+    if me is not None and not _bot_has_manage_roles(me):
+        logger.warning(
+            "role_automation.apply: skipping %d assignment(s) in guild=%s — "
+            "bot lacks the Manage Roles permission.",
+            len(assignments),
+            guild_id,
+        )
+        return ApplyResult(
+            attempted=len(assignments),
+            failed=len(assignments),
+            failures=tuple(
+                ApplyError(
+                    member_id=p.member_id,
+                    phase="preflight",
+                    code=BOT_MISSING_MANAGE_ROLES,
+                    detail="bot lacks the Manage Roles permission",
+                )
+                for p in assignments
+            ),
+        )
+
     attempted = 0
     succeeded = 0
-    failed = 0
-    errors: list[str] = []
+    preflight_blocked = 0
+    failures: list[ApplyError] = []
 
     members_by_id = {m.id: m for m in (getattr(guild, "members", ()) or ())}
 
@@ -413,27 +573,65 @@ async def apply(
         attempted += 1
         member = members_by_id.get(plan.member_id)
         if member is None:
-            failed += 1
-            errors.append(f"member {plan.member_id} not in cache")
+            failures.append(
+                ApplyError(
+                    member_id=plan.member_id,
+                    phase="lookup",
+                    code=MEMBER_NOT_CACHED,
+                    detail="member not in guild cache",
+                ),
+            )
             continue
+
+        blocked = _blocking_verdict(guild, me, plan)
+        if blocked is not None:
+            preflight_blocked += 1
+            failures.append(blocked)
+            continue
+
         try:
             await _apply_single(guild, member, plan, actor_id, actor_type)
             succeeded += 1
         except Exception as exc:  # noqa: BLE001 — per-member boundary
-            logger.exception(
-                "role_automation.apply: failed for member=%d",
-                plan.member_id,
+            code, unexpected = _classify_exception(exc)
+            failures.append(
+                ApplyError(
+                    member_id=plan.member_id,
+                    phase="mutate",
+                    code=code,
+                    detail=f"{type(exc).__name__}: {exc}",
+                ),
             )
-            failed += 1
-            errors.append(
-                f"member {plan.member_id}: {type(exc).__name__}: {exc}",
-            )
+            if unexpected:
+                logger.exception(
+                    "role_automation.apply: failed for member=%d",
+                    plan.member_id,
+                )
+            else:
+                logger.warning(
+                    "role_automation.apply: %s for member=%d: %s",
+                    code,
+                    plan.member_id,
+                    exc,
+                )
+
+    # One WARNING for the whole batch of predictable, pre-empted blockers — keeps
+    # a roster-wide misconfiguration out of the ERROR-only health surface while
+    # still recording it (and the structured result drives the operator surface).
+    if preflight_blocked:
+        logger.warning(
+            "role_automation.apply: skipped %d assignment(s) in guild=%s — "
+            "unmanageable roles (%s).",
+            preflight_blocked,
+            guild_id,
+            summarize_failures(ApplyResult(failures=tuple(failures))),
+        )
 
     return ApplyResult(
         attempted=attempted,
         succeeded=succeeded,
-        failed=failed,
-        errors=tuple(errors),
+        failed=len(failures),
+        failures=tuple(failures),
     )
 
 
@@ -496,6 +694,7 @@ async def _apply_single(
 
 
 __all__ = [
+    "ApplyError",
     "ApplyResult",
     "Assignment",
     "PreflightResult",
@@ -504,4 +703,5 @@ __all__ = [
     "check_preflight",
     "compute_assignments",
     "explain_assignment_for",
+    "summarize_failures",
 ]
