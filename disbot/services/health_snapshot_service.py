@@ -1,0 +1,790 @@
+"""Operational bot-health aggregation (read model).
+
+PR1 of the bot-awareness programme.  Builds a typed, bounded,
+audience-projected :class:`~services.health_contracts.HealthSnapshot`
+from the observability seams the bot already exposes — it adds no new
+collection mechanism and owns no durable state.
+
+Two lanes:
+
+* :func:`collect_cached_snapshot` — **sync**, process-local facts only
+  (diagnostics registry, lifecycle, tasks, cached consistency, startup
+  outcomes, AI read-model, and gateway when a bot is supplied).
+* :func:`collect_snapshot` — **async**, the sync lane plus bounded async
+  checks (database ping, optional fresh consistency, optional
+  guild-local resource health), each isolated with its own per-source
+  timeout so one slow check never blocks the command.
+
+Invariants (pinned by tests):
+
+* never mutates anything — purely observational;
+* one failed source degrades only its own subsystem, mirroring the sync
+  provider registry's per-provider ``_error`` isolation;
+* heavy / cycle-sensitive sources are imported **function-locally** so
+  importing this module does not eagerly pull the AI/DB graph
+  (``tests/unit/services/test_health_import_safety.py``);
+* :func:`project_for_audience` is a **pure** transform tested for the
+  *omission* of seeded secrets / IDs per audience
+  (``tests/unit/services/test_health_redaction.py``).
+
+The deterministic severity mapping lives in
+:mod:`services.health_contracts`; this module only classifies each
+source and folds the results.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import datetime
+import logging
+import re
+import uuid
+from collections.abc import Awaitable, Callable, Iterable
+from dataclasses import replace
+from typing import Any
+
+from services.health_contracts import (
+    FindingSeverity,
+    HealthAudience,
+    HealthSnapshot,
+    HealthSnapshotRequest,
+    OperationalHealthFinding,
+    SnapshotStatus,
+    SubsystemHealth,
+    derive_overall_status,
+    status_for_severity,
+    worst_status,
+)
+
+logger = logging.getLogger("bot.health_snapshot")
+
+# --- bounds & thresholds ---------------------------------------------------
+MAX_SUBSYSTEM_FINDINGS = 5
+MAX_TOTAL_FINDINGS = 12
+MAX_MESSAGE_CHARS = 180
+STALE_SECONDS = 300.0  # cached consistency older than this is flagged stale
+
+# Per-source async timeouts (seconds) — bounded so a wedged check never
+# blocks the whole command.
+DB_TIMEOUT = 2.0
+CONSISTENCY_TIMEOUT = 5.0
+RESOURCE_TIMEOUT = 3.0
+
+# Stable render/aggregation order for subsystems.
+_SUBSYSTEM_ORDER: dict[str, int] = {
+    "runtime": 0,
+    "gateway": 1,
+    "database": 2,
+    "consistency": 3,
+    "startup": 4,
+    "tasks": 5,
+    "diagnostics": 6,
+    "ai": 7,
+    "resources": 8,
+}
+
+_SEVERITY_RANK: dict[FindingSeverity, int] = {
+    FindingSeverity.INFO: 0,
+    FindingSeverity.WARNING: 1,
+    FindingSeverity.ERROR: 2,
+    FindingSeverity.CRITICAL: 3,
+}
+
+
+def _now() -> datetime.datetime:
+    return datetime.datetime.now(tz=datetime.timezone.utc)
+
+
+# ---------------------------------------------------------------------------
+# Sanitization — applied to ALL free text before it enters a finding, at
+# every audience.  Guarantees no tokens, long IDs, hashes, or multi-line
+# stack traces survive into a snapshot (let alone a Discord embed / model
+# context).  ``project_for_audience`` then removes owner-only *fields*.
+# ---------------------------------------------------------------------------
+
+_SECRET_RE = re.compile(
+    r"(?i)\b(token|secret|password|passwd|api[_-]?key|authorization|bearer)\b"
+    r"\s*[=:]\s*\S+",
+)
+_JWT_RE = re.compile(
+    r"\b[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{6,}\.[A-Za-z0-9_\-]{10,}\b",
+)
+_LONG_HEX_RE = re.compile(r"\b[A-Fa-f0-9]{24,}\b")
+_LONG_DIGITS_RE = re.compile(r"\d{7,}")
+
+
+def _scrub(text: str | None, *, limit: int = MAX_MESSAGE_CHARS) -> str:
+    """Collapse, redact, and bound free text.
+
+    Removes ``key=value`` secrets, JWT-like and long-hex blobs, and long
+    digit runs (Discord snowflake IDs), flattens newlines so multi-line
+    tracebacks cannot survive, and truncates to ``limit`` chars.
+    """
+    if not text:
+        return ""
+    flattened = " ".join(str(text).split())
+    flattened = _SECRET_RE.sub("<secret>", flattened)
+    flattened = _JWT_RE.sub("<token>", flattened)
+    flattened = _LONG_HEX_RE.sub("<hash>", flattened)
+    flattened = _LONG_DIGITS_RE.sub("<id>", flattened)
+    if len(flattened) > limit:
+        flattened = flattened[: limit - 1].rstrip() + "…"
+    return flattened
+
+
+# ---------------------------------------------------------------------------
+# Status maps from existing source vocabularies → SnapshotStatus
+# ---------------------------------------------------------------------------
+
+_PHASE_STATUS: dict[str, SnapshotStatus] = {
+    "STARTING": SnapshotStatus.UNKNOWN,
+    "RUNNING": SnapshotStatus.HEALTHY,
+    "DRAINING": SnapshotStatus.DEGRADED,
+    "SHUTTING_DOWN": SnapshotStatus.DEGRADED,
+    "RESTARTING": SnapshotStatus.DEGRADED,
+    "STOPPED": SnapshotStatus.DEGRADED,
+    "FAILED_STARTUP": SnapshotStatus.CRITICAL,
+}
+
+# platform_consistency.SectionStatus values (clean|warning|fatal|skipped).
+_SECTION_STATUS: dict[str, SnapshotStatus] = {
+    "clean": SnapshotStatus.HEALTHY,
+    "warning": SnapshotStatus.DEGRADED,
+    "fatal": SnapshotStatus.CRITICAL,
+    "skipped": SnapshotStatus.UNKNOWN,
+}
+
+# startup_outcome.SummaryStatus values (ok|degraded|failed|empty).
+_SUMMARY_STATUS: dict[str, SnapshotStatus] = {
+    "ok": SnapshotStatus.HEALTHY,
+    "degraded": SnapshotStatus.DEGRADED,
+    "failed": SnapshotStatus.CRITICAL,
+    "empty": SnapshotStatus.UNKNOWN,
+}
+
+# resource_health severity values (info|warn|error) → FindingSeverity.
+_RESOURCE_SEVERITY: dict[str, FindingSeverity] = {
+    "info": FindingSeverity.INFO,
+    "warn": FindingSeverity.WARNING,
+    "error": FindingSeverity.ERROR,
+}
+
+
+def _is_stale(report_at: datetime.datetime | None) -> bool:
+    if report_at is None:
+        return False
+    return (_now() - report_at).total_seconds() > STALE_SECONDS
+
+
+# ---------------------------------------------------------------------------
+# Sync subsystem adapters (each builds one SubsystemHealth; never raises —
+# _safe() wraps them and substitutes an UNKNOWN subsystem on failure).
+# ---------------------------------------------------------------------------
+
+
+def _runtime_subsystem() -> SubsystemHealth:
+    from core.runtime import lifecycle
+
+    snap = lifecycle.diagnostics_snapshot()
+    phase = str(snap.get("phase", "UNKNOWN"))
+    status = _PHASE_STATUS.get(phase, SnapshotStatus.UNKNOWN)
+    findings: tuple[OperationalHealthFinding, ...] = ()
+    if phase == "FAILED_STARTUP":
+        findings = (
+            OperationalHealthFinding(
+                fingerprint="runtime.failed_startup",
+                severity=FindingSeverity.CRITICAL,
+                category="runtime.failed_startup",
+                message="Runtime reported a failed startup.",
+                related_subsystem="runtime",
+                suggested_next_step="Inspect `!platform lifecycle` and boot logs.",
+                source="lifecycle",
+            ),
+        )
+    return SubsystemHealth(
+        name="runtime",
+        status=status,
+        summary=f"Lifecycle phase: {phase}",
+        generated_at=_now(),
+        findings=findings,
+        facts={
+            "phase": phase,
+            "can_accept_commands": bool(snap.get("can_accept_commands")),
+            "uptime_seconds": round(float(snap.get("module_load_age_seconds", 0.0))),
+        },
+        source="lifecycle",
+        required=True,
+    )
+
+
+def _tasks_subsystem() -> SubsystemHealth:
+    from core.runtime import tasks
+
+    active = tasks.count()
+    return SubsystemHealth(
+        name="tasks",
+        status=SnapshotStatus.HEALTHY,
+        summary=f"{active} managed task(s) active",
+        generated_at=_now(),
+        facts={"active_count": active},
+        source="tasks",
+        required=True,
+    )
+
+
+def _diagnostics_subsystem() -> SubsystemHealth:
+    from services import diagnostics_service
+
+    snap = diagnostics_service.snapshot_all()
+    failed = [
+        (name, str(payload.get("_error")))
+        for name, payload in sorted(snap.items())
+        if isinstance(payload, dict) and "_error" in payload
+    ]
+    findings = tuple(
+        OperationalHealthFinding(
+            fingerprint=f"diagnostics.provider_failed:{name}",
+            severity=FindingSeverity.ERROR,
+            category="diagnostics.provider_failed",
+            message="A diagnostics provider reported an error.",
+            related_subsystem="diagnostics",
+            related_provider=name,  # owner-only (stripped for admins)
+            file_hint=_scrub(err),  # owner-only (stripped for admins)
+            source="diagnostics_service",
+        )
+        for name, err in failed[:MAX_SUBSYSTEM_FINDINGS]
+    )
+    status = SnapshotStatus.DEGRADED if failed else SnapshotStatus.HEALTHY
+    summary = (
+        f"{len(failed)} of {len(snap)} providers failing"
+        if failed
+        else f"{len(snap)} providers healthy"
+    )
+    return SubsystemHealth(
+        name="diagnostics",
+        status=status,
+        summary=summary,
+        generated_at=_now(),
+        findings=findings,
+        facts={"provider_count": len(snap), "failed_count": len(failed)},
+        source="diagnostics_service",
+        required=True,
+    )
+
+
+def _build_consistency_subsystem(
+    *,
+    overall_value: str | None,
+    report_at: datetime.datetime | None,
+    blocking: tuple[Any, ...],
+    source: str,
+) -> SubsystemHealth:
+    status = (
+        _SECTION_STATUS.get(overall_value, SnapshotStatus.UNKNOWN)
+        if overall_value is not None
+        else SnapshotStatus.UNKNOWN
+    )
+    stale = _is_stale(report_at)
+    findings = tuple(
+        OperationalHealthFinding(
+            fingerprint=(
+                "consistency.blocking:"
+                f"{getattr(getattr(s, 'kind', None), 'value', None) or s.name}"
+            ),
+            severity=(
+                FindingSeverity.CRITICAL
+                if getattr(s.status, "value", "") == "fatal"
+                else FindingSeverity.WARNING
+            ),
+            category="consistency.blocking_section",
+            message=_scrub(f"Consistency check needs attention: {s.name}"),
+            related_subsystem="consistency",
+            file_hint=_scrub(getattr(s, "summary", "")),  # owner-only
+            source=source,
+        )
+        for s in blocking[:MAX_SUBSYSTEM_FINDINGS]
+    )
+    age = None if report_at is None else round((_now() - report_at).total_seconds())
+    return SubsystemHealth(
+        name="consistency",
+        status=status,
+        summary=(
+            f"Consistency: {overall_value or 'not yet collected'}"
+            + (" (stale)" if stale else "")
+        ),
+        generated_at=_now(),
+        findings=findings,
+        facts={
+            "consistency_status": overall_value,
+            "blocking_sections": len(blocking),
+            "report_age_seconds": age,
+        },
+        source=source,
+        stale=stale,
+        required=True,
+    )
+
+
+def _consistency_subsystem() -> SubsystemHealth:
+    from services import platform_consistency as pc
+
+    snap = pc.build_readiness_snapshot()
+    overall = snap.consistency_overall_status
+    return _build_consistency_subsystem(
+        overall_value=overall.value if overall is not None else None,
+        report_at=snap.consistency_report_at,
+        blocking=tuple(snap.consistency_blocking_sections),
+        source="platform_readiness_cache",
+    )
+
+
+def _startup_subsystem() -> SubsystemHealth:
+    from core.runtime import startup_outcome as so
+
+    outcomes = so.all_outcomes()
+    summary_status = so.summary_status(outcomes)
+    status = _SUMMARY_STATUS.get(summary_status.value, SnapshotStatus.UNKNOWN)
+    failed = [o for o in outcomes if not o.success]
+    findings = tuple(
+        OperationalHealthFinding(
+            fingerprint=f"startup.phase_failed:{o.name}",
+            severity=FindingSeverity.ERROR,
+            category="startup.phase_failed",
+            message=_scrub(f"Startup phase '{o.name}' did not complete."),
+            related_subsystem="startup",
+            file_hint=_scrub(o.error),  # owner-only
+            source="startup_outcome",
+        )
+        for o in failed[:MAX_SUBSYSTEM_FINDINGS]
+    )
+    return SubsystemHealth(
+        name="startup",
+        status=status,
+        summary=f"Startup phases: {summary_status.value}",
+        generated_at=_now(),
+        findings=findings,
+        facts={
+            "phases_recorded": len(outcomes),
+            "phases_failed": len(failed),
+        },
+        source="startup_outcome",
+        required=True,
+    )
+
+
+def _ai_subsystem() -> SubsystemHealth:
+    from services import ai_diagnostics_service
+
+    d = ai_diagnostics_service.snapshot_for_cog()
+    enabled = bool(d.get("enabled"))
+    degraded = bool(d.get("degraded"))
+    if not enabled:
+        status = SnapshotStatus.UNKNOWN
+        summary = "AI disabled"
+    elif degraded:
+        status = SnapshotStatus.DEGRADED
+        summary = "AI provider degraded"
+    else:
+        status = SnapshotStatus.HEALTHY
+        summary = "AI healthy"
+    findings: tuple[OperationalHealthFinding, ...] = ()
+    if degraded:
+        findings = (
+            OperationalHealthFinding(
+                fingerprint="ai.provider_degraded",
+                severity=FindingSeverity.WARNING,
+                category="ai.provider_degraded",
+                message="The AI provider is degraded; deterministic paths unaffected.",
+                related_subsystem="ai",
+                file_hint=_scrub(  # owner-only
+                    f"{d.get('last_error_type')} / {d.get('last_fallback_reason')}",
+                ),
+                source="ai_diagnostics_service",
+            ),
+        )
+    return SubsystemHealth(
+        name="ai",
+        status=status,
+        summary=summary,
+        generated_at=_now(),
+        findings=findings,
+        facts={
+            "enabled": enabled,
+            "degraded": degraded,
+            "requests_observed": int(d.get("requests_observed") or 0),
+            "failures_observed": int(d.get("failures_observed") or 0),
+        },
+        source="ai_diagnostics_service",
+        required=False,  # AI is optional — never drives whole-bot CRITICAL
+    )
+
+
+def _gateway_subsystem(bot: Any) -> SubsystemHealth:
+    is_ready = bool(getattr(bot, "is_ready", lambda: False)())
+    guilds = list(getattr(bot, "guilds", []) or [])
+    unavailable = sum(1 for g in guilds if getattr(g, "unavailable", False))
+    latency = getattr(bot, "latency", None)
+    latency_ms: float | None = None
+    if isinstance(latency, (int, float)) and latency == latency:  # not NaN
+        latency_ms = round(float(latency) * 1000.0, 1)
+
+    status = SnapshotStatus.HEALTHY if is_ready else SnapshotStatus.UNKNOWN
+    findings: tuple[OperationalHealthFinding, ...] = ()
+    if unavailable:
+        status = SnapshotStatus.DEGRADED
+        findings = (
+            OperationalHealthFinding(
+                fingerprint="gateway.unavailable_guilds",
+                severity=FindingSeverity.WARNING,
+                category="gateway.unavailable_guilds",
+                message=f"{unavailable} guild(s) currently unavailable.",
+                related_subsystem="gateway",
+                source="gateway",
+            ),
+        )
+    return SubsystemHealth(
+        name="gateway",
+        status=status,
+        summary="Gateway ready" if is_ready else "Gateway not ready",
+        generated_at=_now(),
+        findings=findings,
+        facts={
+            "ready": is_ready,
+            "latency_ms": latency_ms,
+            "guild_count": len(guilds),
+            "unavailable_guilds": unavailable,
+        },
+        source="gateway",
+        required=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Async subsystem adapters
+# ---------------------------------------------------------------------------
+
+
+async def _database_subsystem() -> SubsystemHealth:
+    from utils.db import health as db_health
+
+    ok = await db_health.ping()
+    return SubsystemHealth(
+        name="database",
+        status=SnapshotStatus.HEALTHY if ok else SnapshotStatus.CRITICAL,
+        summary="Database reachable" if ok else "Database unreachable",
+        generated_at=_now(),
+        facts={"reachable": ok},
+        source="utils.db.health",
+        required=True,
+    )
+
+
+async def _fresh_consistency_subsystem(bot: Any) -> SubsystemHealth:
+    from services import platform_consistency as pc
+
+    report = await pc.collect_report(bot=bot)
+    blocking = pc.iter_blocking_sections(report)
+    return _build_consistency_subsystem(
+        overall_value=report.overall_status.value,
+        report_at=report.generated_at,
+        blocking=tuple(blocking),
+        source="platform_consistency_fresh",
+    )
+
+
+async def _resources_subsystem(bot: Any, guild_id: int) -> SubsystemHealth:
+    from services import resource_health
+
+    guild = bot.get_guild(guild_id) if bot is not None else None
+    if guild is None:
+        return SubsystemHealth(
+            name="resources",
+            status=SnapshotStatus.UNKNOWN,
+            summary="Guild not available for resource health",
+            generated_at=_now(),
+            source="resource_health",
+            required=False,
+        )
+    raw = await resource_health.inspect(guild)
+    problems = [f for f in raw if f.severity in ("warn", "error")]
+    findings = tuple(
+        OperationalHealthFinding(
+            fingerprint=f"resource.{f.status}:{f.subsystem}:{f.binding_name}",
+            severity=_RESOURCE_SEVERITY.get(f.severity, FindingSeverity.INFO),
+            category=f"resource.{f.status}",
+            message=_scrub(f"{f.subsystem}/{f.binding_name}: {f.message}"),
+            related_subsystem="resources",
+            source="resource_health",
+        )
+        for f in problems[:MAX_SUBSYSTEM_FINDINGS]
+    )
+    status = (
+        worst_status(status_for_severity(x.severity) for x in findings)
+        if findings
+        else SnapshotStatus.HEALTHY
+    )
+    return SubsystemHealth(
+        name="resources",
+        status=status,
+        summary=f"{len(problems)} of {len(raw)} bindings need attention",
+        generated_at=_now(),
+        findings=findings,
+        facts={"bindings_checked": len(raw), "problems": len(problems)},
+        source="resource_health",
+        required=False,  # guild-local; never drives whole-bot CRITICAL
+    )
+
+
+# ---------------------------------------------------------------------------
+# Isolation wrappers
+# ---------------------------------------------------------------------------
+
+
+def _safe(
+    builder: Callable[[], SubsystemHealth],
+    name: str,
+    *,
+    required: bool,
+    failure_status: SnapshotStatus = SnapshotStatus.UNKNOWN,
+) -> SubsystemHealth:
+    try:
+        return builder()
+    except Exception as exc:  # noqa: BLE001 — one source must not break the rest
+        logger.warning("health adapter %r failed: %s", name, exc, exc_info=True)
+        return SubsystemHealth(
+            name=name,
+            status=failure_status,
+            summary=f"{name} health unavailable",
+            generated_at=_now(),
+            source=name,
+            required=required,
+        )
+
+
+async def _safe_async(
+    name: str,
+    factory: Callable[[], Awaitable[SubsystemHealth]],
+    *,
+    required: bool,
+    failure_status: SnapshotStatus,
+    timeout: float,
+) -> tuple[SubsystemHealth, bool]:
+    """Run an async adapter with a per-source timeout.
+
+    Returns ``(subsystem, degraded_visibility)`` — the boolean is ``True``
+    when the source timed out or errored, so the caller can flag the
+    whole snapshot ``partial``.
+    """
+    try:
+        sub = await asyncio.wait_for(factory(), timeout=timeout)
+        return sub, False
+    except (asyncio.TimeoutError, Exception) as exc:  # noqa: BLE001
+        logger.warning("health async adapter %r failed: %s", name, exc, exc_info=True)
+        return (
+            SubsystemHealth(
+                name=name,
+                status=failure_status,
+                summary=f"{name} check unavailable",
+                generated_at=_now(),
+                source=name,
+                required=required,
+            ),
+            True,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Finalize + projection
+# ---------------------------------------------------------------------------
+
+
+def _finalize(
+    subsystems: Iterable[SubsystemHealth],
+    *,
+    purpose: str,
+    partial: bool,
+) -> HealthSnapshot:
+    ordered = tuple(sorted(subsystems, key=lambda s: _SUBSYSTEM_ORDER.get(s.name, 99)))
+    overall = derive_overall_status(ordered, partial=partial)
+    all_findings = [f for s in ordered for f in s.findings]
+    all_findings.sort(
+        key=lambda f: (
+            -_SEVERITY_RANK[f.severity],
+            f.related_subsystem or "",
+            f.fingerprint,
+        ),
+    )
+    return HealthSnapshot(
+        snapshot_id=uuid.uuid4().hex[:12],
+        generated_at=_now(),
+        purpose=purpose,
+        status=overall,
+        summary=_overall_summary(overall, ordered),
+        subsystems=ordered,
+        findings=tuple(all_findings[:MAX_TOTAL_FINDINGS]),
+        partial=partial,
+        redaction_audience=None,
+    )
+
+
+def _overall_summary(
+    status: SnapshotStatus,
+    subsystems: tuple[SubsystemHealth, ...],
+) -> str:
+    bad = [
+        s.name
+        for s in subsystems
+        if s.status in (SnapshotStatus.DEGRADED, SnapshotStatus.CRITICAL)
+    ]
+    if not bad:
+        return f"Overall status: {status.value}."
+    return f"Overall status: {status.value} — attention: {', '.join(bad)}."
+
+
+def project_for_audience(
+    snapshot: HealthSnapshot,
+    audience: HealthAudience,
+) -> HealthSnapshot:
+    """Pure downscoping transform.
+
+    * ``PLATFORM_OWNER`` — full detail (findings already scrubbed of
+      secrets/IDs at adapter time).
+    * ``GUILD_ADMIN`` — strips owner-only finding fields (``file_hint``,
+      ``related_provider``); keeps statuses, summaries, admin-safe facts,
+      and scrubbed messages.
+    * ``PUBLIC`` — only subsystem name + status; no findings, no facts.
+    """
+    subs = tuple(_project_subsystem(s, audience) for s in snapshot.subsystems)
+    if audience is HealthAudience.PUBLIC:
+        top: tuple[OperationalHealthFinding, ...] = ()
+    else:
+        top = tuple(_project_finding(f, audience) for f in snapshot.findings)
+    return replace(
+        snapshot,
+        subsystems=subs,
+        findings=top,
+        redaction_audience=audience,
+    )
+
+
+def _project_subsystem(
+    subsystem: SubsystemHealth,
+    audience: HealthAudience,
+) -> SubsystemHealth:
+    if audience is HealthAudience.PUBLIC:
+        return replace(
+            subsystem,
+            summary=f"{subsystem.name}: {subsystem.status.value}",
+            findings=(),
+            facts={},
+        )
+    findings = tuple(_project_finding(f, audience) for f in subsystem.findings)
+    return replace(subsystem, findings=findings)
+
+
+def _project_finding(
+    finding: OperationalHealthFinding,
+    audience: HealthAudience,
+) -> OperationalHealthFinding:
+    if audience is HealthAudience.PLATFORM_OWNER:
+        return finding
+    # GUILD_ADMIN: drop owner-only internals.
+    return replace(finding, file_hint=None, related_provider=None)
+
+
+# ---------------------------------------------------------------------------
+# Public collection entry points
+# ---------------------------------------------------------------------------
+
+
+def _sync_subsystems(
+    request: HealthSnapshotRequest,
+    bot: Any,
+) -> list[SubsystemHealth]:
+    subs = [
+        _safe(_runtime_subsystem, "runtime", required=True),
+        _safe(_tasks_subsystem, "tasks", required=True),
+        _safe(_diagnostics_subsystem, "diagnostics", required=True),
+        _safe(_startup_subsystem, "startup", required=True),
+        _safe(_ai_subsystem, "ai", required=False),
+    ]
+    # Cached consistency only when a fresh collection was not requested
+    # (the async lane substitutes the fresh subsystem to avoid duplicates).
+    if not request.include_fresh_consistency:
+        subs.append(_safe(_consistency_subsystem, "consistency", required=True))
+    if bot is not None:
+        subs.append(_safe(lambda: _gateway_subsystem(bot), "gateway", required=True))
+    return subs
+
+
+def collect_cached_snapshot(
+    request: HealthSnapshotRequest,
+    *,
+    bot: Any = None,
+) -> HealthSnapshot:
+    """Sync, process-local snapshot. Safe from any sync render path."""
+    subs = _sync_subsystems(replace(request, include_fresh_consistency=False), bot)
+    snap = _finalize(subs, purpose=request.purpose, partial=False)
+    return project_for_audience(snap, request.audience)
+
+
+async def collect_snapshot(
+    request: HealthSnapshotRequest,
+    *,
+    bot: Any = None,
+) -> HealthSnapshot:
+    """Async snapshot: the sync lane plus bounded, isolated async checks."""
+    subs = _sync_subsystems(request, bot)
+    partial = False
+
+    async_specs: list[
+        tuple[
+            str,
+            Callable[[], Awaitable[SubsystemHealth]],
+            bool,
+            SnapshotStatus,
+            float,
+        ]
+    ] = [
+        ("database", _database_subsystem, True, SnapshotStatus.CRITICAL, DB_TIMEOUT),
+    ]
+    if request.include_fresh_consistency:
+        async_specs.append(
+            (
+                "consistency",
+                lambda: _fresh_consistency_subsystem(bot),
+                True,
+                SnapshotStatus.UNKNOWN,
+                CONSISTENCY_TIMEOUT,
+            ),
+        )
+    if bot is not None and request.guild_id is not None:
+        guild_id = request.guild_id
+        async_specs.append(
+            (
+                "resources",
+                lambda: _resources_subsystem(bot, guild_id),
+                False,
+                SnapshotStatus.UNKNOWN,
+                RESOURCE_TIMEOUT,
+            ),
+        )
+
+    results = await asyncio.gather(
+        *(
+            _safe_async(
+                name,
+                factory,
+                required=required,
+                failure_status=failure_status,
+                timeout=timeout,
+            )
+            for name, factory, required, failure_status, timeout in async_specs
+        ),
+    )
+    for sub, degraded in results:
+        subs.append(sub)
+        partial = partial or degraded
+
+    snap = _finalize(subs, purpose=request.purpose, partial=partial)
+    return project_for_audience(snap, request.audience)
