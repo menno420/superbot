@@ -35,8 +35,11 @@ resource-pointer **bindings**, and confirmed **resource provisioning**. Start in
 - Settings UI includes typed editors, invalid-setting and missing-binding surfaces;
   setup includes scan/draft/review/provisioning flows. Source remains authoritative
   on which entries are actually registered and exposed.
-- Platform consistency is an active drift ledger, not proof that every possible
-  configuration surface has converged.
+- Platform consistency remains a useful contract/reference inventory, but its
+  Phase-2 implementation-status cells are stale as of the 2026-06-06 readiness review.
+  Verify a cell against source before treating it as pending work. The settings
+  roadmap's S7–S12 milestone labels likewise need reconciliation before use as current
+  sequencing.
 
 ## Plans / pending approval
 

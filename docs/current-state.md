@@ -6,13 +6,11 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · #551 merged (role-automation degradation fix —
-> `role_automation.apply` preflight-guards at the mutation seam + classifies
-> failures; live health "Errors" surface back to ✅). This session: made the
-> **session journal lean + self-maintaining** (archive split → `.session-journal-
-> archive.md`, a Quick reference, and a "reorganize-each-session" protocol step;
-> PR pending). Verify open PRs against live GitHub (`list_pull_requests`); this
-> snapshot names none on purpose.
+> **Last updated:** 2026-06-06 · implementation-readiness reconciliation at
+> `docs/audits/implementation-readiness-review-2026-06-06.md`. Health/diagnostics is
+> verification-only; server-management remains current through PR9 and its tracker
+> starts the remaining queue at PR10; AI/BTD6 expansion remains gated. Legacy Phase-2
+> status cells were reclassified so they are not mistaken for current queues.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -58,12 +56,12 @@ Source code and merged PRs win over anything written here.
 
 ## Next candidates
 
+- Highest-value approved implementation lane: start from the server-management status
+  tracker's first remaining item (PR10); do not duplicate its queue here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
-  see `docs/subsystems/health-diagnostics.md`. The migration `057`
-  persistence/dedupe/retention integration gap is **closed** (this session — real-PG
-  integration suite + static SQL-shape pin; CI-safe skip).
-- Use the canonical subsystem folios for area-specific implementation/planning; keep
-  this global router thin.
+  see `docs/subsystems/health-diagnostics.md`.
+- Use the canonical subsystem folios for area-specific implementation/planning. The
+  2026-06-06 readiness audit classifies stale, gated, and ready workstreams.
 
 ## Gates / blocked work
 

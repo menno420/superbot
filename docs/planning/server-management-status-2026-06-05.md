@@ -228,7 +228,7 @@ selector-driven and persist stable role ids.
 
 ---
 
-### PR7 — Channel move/reorder panel + reorder primitive *(this PR)*
+### PR7 — Channel move/reorder panel + reorder primitive *(shipped)*
 The deferred move/reorder UI from #523, routed through the lifecycle service.
 
 - **Service: new `reorder` operation** on `ChannelLifecycleService` — sends

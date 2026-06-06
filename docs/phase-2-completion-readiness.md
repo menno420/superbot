@@ -1,10 +1,12 @@
 # Phase 2 — Completion readiness
 
-> **Status:** working snapshot.  Updated whenever a Phase 2 PR
-> changes the picture.  Treat this file as a punch-list, not a plan
-> document; the consistency ledger
-> (`docs/platform-consistency-ledger.md`) remains the long-form
-> ownership map.
+> **Status (reconciled 2026-06-06):** **historical Phase-2 snapshot; superseded as
+> a live next-work queue.** PR-10 consistency diagnostics and later setup work shipped
+> after this snapshot. Preserve this file for blocker-name/doc-test and migration
+> history, but use `docs/current-state.md`, subsystem folios, source, and active
+> initiative trackers for current status. The platform-consistency ledger's contract
+> shapes remain useful, but its implementation-status cells also require source
+> verification.
 
 This page captures **what is done**, **what is open**, and **what
 should NOT start yet** as Phase 2 reaches completion.  It exists to
@@ -39,7 +41,7 @@ help the next contributor avoid:
 
 Migration ladder on `main` after PR #86: `022` → `028`.
 
-## Open right now
+## Open right now (historical snapshot — not current)
 
 | PR | Title | State |
 |---|---|---|
@@ -66,7 +68,7 @@ These guarantees hold without operator action:
 
 ---
 
-## Still pending — recommended next PRs
+## Still pending at the time (historical — do not execute as a current queue)
 
 ### PR-10 — diagnostics consistency surface (recommended next)
 

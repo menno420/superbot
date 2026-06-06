@@ -81,28 +81,12 @@ path rather than adding ad-hoc diagnostics tools.
 
 ## Next candidates
 
-> **DONE (this session):** the migration-`057` persistence/dedupe/retention integration
-> gap is closed — test-only, no runtime/architecture change. New
-> `tests/unit/db/test_health_findings_integration.py` (real-Postgres; module-local
-> `postgres_pool` fixture that `pytest.skip`s when `DATABASE_URL` is unset/unreachable,
-> so CI stays green) exercises upsert → occurrence delta-add + `last_seen` advance →
-> reopen-on-recurrence → keep-ignored → `list`/`count` by status → roll-up-then-prune
-> (summed `total_occurrences`, open rows survive) → `record_findings` /
-> `run_retention` end-to-end. New `tests/unit/db/test_migration_057_operational_health_findings.py`
-> is the CI-safe static SQL-shape pin (tables, fingerprint PKs, status/severity CHECK
-> sets, the `(status, last_seen_at)` index, and the writer's ON CONFLICT delta-add /
-> reopen `CASE` / roll-up `GREATEST`/`LEAST` / prune `WHERE status IN`). The false
-> "integration-tested against real Postgres" docstring in
-> `test_health_findings_service.py` is corrected to point at these files. Verified live:
-> local Postgres boot → migration `057` applies clean → `\d` on both tables → clean bot
-> boot with `Startup health findings: recorded=0 pruned=0`.
-
 1. Maintainer live-test the production AI path: owner receives
    `diagnostics_health_snapshot`; a non-owner admin does not. **Sandbox cannot do
    this** (no AI-provider key) — it is owed to the maintainer on production.
 2. Maintainer live-test grouped findings and recurring-failure count behavior
    (`HEALTH_GROUPED_FINDINGS=1` + induced repeated errors). The cross-restart recurrence
-   *persistence* path is now integration-tested (see DONE above); the live Discord render
+   *persistence* path is integration-tested; the live Discord render
    of `!platform findings`/`health`/`startup` remains owed to a maintainer walk.
 
 ## Related docs

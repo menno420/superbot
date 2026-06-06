@@ -215,14 +215,15 @@ top before trusting the contents.
 - `docs/current-state.md` — the cross-cutting "what is true right now?"
   router (read 2nd, after CLAUDE.md): stability baseline, in-flight work,
   gates, off-limits. Source code and merged PRs win over it.
-- `docs/platform-consistency-ledger.md`
+- `docs/platform-consistency-ledger.md` — contract/reference shape with stale
+  Phase-2 implementation-status cells; verify every cell against source + the relevant
+  folio/tracker before treating it as work.
 - `docs/bot-awareness-implementation-plan.md` — the bot-awareness / health-diagnostics
   programme. **Execution authority** for that work + live delivery status (**all 6 PRs
   shipped — PR1–PR3 in #537, PR4–PR6 in #541; D1 resolved**). Read
   this before touching `services/health_snapshot_service.py`,
   `services/health_contracts.py`, or the `!platform health` / `!platform startup`
   surfaces. The Codex map `docs/bot-awareness-diagnostics-plan.md` is context only.
-- `docs/phase-2-completion-readiness.md`
 - `docs/settings-customization-command-map.md`
 - `docs/operator-settings-presets.md`
 - `docs/planning/server-management-status-2026-06-05.md` — live status tracker for
@@ -269,11 +270,18 @@ cross-check the source and the consistency ledger first.
   maintainer decisions. **PR ordering superseded after #523** — read the status
   tracker / implementation plan for sequence.
 - `docs/planning/server-management-implementation-plan-2026-06-05.md` — per-PR scope
-  detail (PR1→PR14; PR1–PR4 shipped). Pair with the status tracker.
+  detail (PR1→PR14; PR1–PR9 shipped). Pair with the status tracker.
 - `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog
   (advisory, **except** its §2 "operating decisions" and §6 "rejection ledger",
   which are binding "do-not-propose"). Read before proposing new
   UX/diagnostics/feature ideas so you don't re-litigate settled rejections.
+
+### Historical snapshots (context only)
+
+- `docs/phase-2-completion-readiness.md` — old Phase-2 punch list; retained for
+  blocker/migration history, not current next-work status.
+- Raw dated audits and the superseded superbot planning routers under `docs/planning/`;
+  obey their banners and start from `docs/current-state.md` instead.
 
 ### Ideas / brainstorms (not approved)
 

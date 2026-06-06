@@ -58,13 +58,11 @@ def test_migration_028_on_main(doc_lines: list[str]):
     )
 
 
-def test_pr_10_listed_as_current_next_work(doc_text: str):
-    """PR-10 should be referenced as current next work in the doc."""
+def test_doc_marks_phase_2_queue_historical(doc_text: str):
+    """The old PR-10 queue must not present itself as current next work."""
     lowered = doc_text.lower()
-    assert "pr-10" in lowered or "unified consistency" in lowered, (
-        "Expected 'PR-10' or 'Unified Consistency' to appear so reviewers "
-        "can locate the current next-work item."
-    )
+    assert "historical phase-2 snapshot" in lowered
+    assert "superseded as" in lowered and "live next-work queue" in lowered
 
 
 def test_every_setup_readiness_blocker_appears_in_doc(doc_text: str):
