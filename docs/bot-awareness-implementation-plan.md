@@ -1,13 +1,19 @@
 # Bot-Awareness / AI-Assisted Diagnostics — Revised Implementation Plan
 
-> **Session type:** dedicated read-only planning/revision session (Opus 4.8). No code changed.
-> **Status:** implementation-ready, pending maintainer approval.
-> **Maintainer constraint folded in:** the maintainer will be asleep during execution,
-> so this plan defines the **maximum slice that is safe to execute UNATTENDED in one
-> structured session** (PR1→PR3, with PR4 as a gated stretch), plus hard stop-conditions.
-> **Inputs reconciled:** Codex map (PR #534), a ChatGPT revision pass, and the newer
-> Codex AI-tool-orchestration plan (PR #536, on `main` but not in this worktree).
-> **Supersedes (execution authority):** `docs/bot-awareness-diagnostics-plan.md`.
+> **Status (2026-06-06): approved → foundation SHIPPED.** PR1–PR3 of this plan are
+> merged to `main` in **#537** (typed health read model + deterministic
+> `!platform health` + panel-only startup health). Verified: `check_architecture
+> --mode strict` 0 errors, `check_quality --full` green, and an integration check of
+> the aggregator against real Postgres (DB ping reachable, redaction clean). The live
+> Discord walk of `!platform health` / `!platform startup` is still pending (the
+> sandbox blocks booting the `*_PRODUCTION`-named test-bot token).
+> **Remaining:** PR4 (structured observations) + PR6 (persistent findings) are queued
+> for an attended session; **PR5 (AI tool) is blocked on decision D1** (`_derive_scope`
+> reachability — see §4).
+> **Inputs reconciled:** Codex map (PR #534), a ChatGPT revision pass, and the Codex
+> AI-tool-orchestration successor plan (PR #536).
+> **Execution authority:** this doc; the Codex map
+> `docs/bot-awareness-diagnostics-plan.md` is the repository map.
 
 ---
 
@@ -234,9 +240,12 @@ Read-only, bounded, JSON-serializable, scope-gated, operates on the **already-re
 
 ## 5. Final PR sequence
 
+> **Delivery status (2026-06-06):** PR1 ✅, PR2 ✅, PR3 ✅ — all shipped in **#537**
+> (commits `1296d25`, `b052a4a`, `aa5b153`). PR4 / PR6 queued; PR5 blocked on D1.
+
 Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ PR4 gated stretch). Every PR ends with both gates: `python3.10 scripts/check_architecture.py --mode strict` (0 errors) **and** `python3.10 scripts/check_quality.py --full` (CI mirror). **If a gate cannot be made green within a PR's own scope, STOP — commit what is green, leave a note, and do not start the next PR.**
 
-### PR1 — Health contracts + aggregator (Codex A+B merged) — *unattended*
+### PR1 — Health contracts + aggregator (Codex A+B merged) — ✅ SHIPPED (#537)
 
 - **Goal:** frozen typed read-model + two-lane `health_snapshot_service` + deterministic severity + stable ordering + pure `project_for_audience`. No UI/AI/persistence/events.
 - **Files:** NEW `services/health_contracts.py`, `services/health_snapshot_service.py`; read-only **function-local** adapters over the §3.2 sources; `docs/ownership.md` read-contract row.
@@ -244,7 +253,7 @@ Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ P
 - **Tests:** `test_health_snapshot_service.py` (severity table; one failed sync provider → partial/degraded not exception; per-async-source timeout isolation; stable ordering; bounded facts/findings). `test_health_redaction.py` (**per-adapter planted leaks** → assert omission per audience). **Import-safety test** (mirror `test_consistency_import_cycle.py`: importing the service doesn't eagerly import heavy AI/DB). Read-only AST pin (model on `test_ai_readonly_invariants.py`, **not** the economy INV-F file).
 - **Manual:** none (pure + unit). **Risks:** heterogeneous payloads → allowlist `facts`; LOC creep. **Rollback:** delete two modules + tests. **Stop:** prod LOC > ~700 → split by lane (ship sync lane + redaction first); any arch error; a projection that can't prove omission.
 
-### PR2 — Deterministic `!platform health` UX — *unattended*
+### PR2 — Deterministic `!platform health` UX — ✅ SHIPPED (#537)
 
 - **Goal:** admin-gated, guild-redacted compact health embed, AI-independent.
 - **Files:** `diagnostic_cog.py` (`!platform health`, `@has_permissions(administrator=True)`, **function-local** service import; derive `HealthAudience` from ctx), `_platform_embeds.py` (`build_health_embed`, reuse `clamp_embed`), `platform_panel.py` (Runtime tuple + `_dispatch` case).
@@ -252,7 +261,7 @@ Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ P
 - **Manual (boot the test bot):** embed within limits after `clamp_embed`; panel readable; degraded snapshot caps rows + drilldown (no JSON truncation); admin view hides cross-guild/provider internals.
 - **Risks:** cog ceiling; accidental module-top heavy import; embed overflow. **Rollback:** revert 3 files. **Stop:** `diagnostic_cog.py` projected > ~760 LOC → **first** extract the `!platform` group into a `cogs/diagnostic/` submodule as a self-contained mechanical commit (test-covered), then add `health`.
 
-### PR3 — Startup integration (panel-only) — *unattended*
+### PR3 — Startup integration (panel-only) — ✅ SHIPPED (#537)
 
 - **Goal:** record extension-load outcomes + reconnect-safe post-ready startup snapshot; `!platform startup`. Pre-connect webhook untouched.
 - **Files:** `startup_outcome.py` (**sibling** `ExtensionLoadSnapshot`/`extension_load_recorder` — **do NOT** add to `KNOWN_PHASES`), `bot1.py` (record per-extension in `_load_cogs()`; collect `purpose="startup"` snapshot at the **end** of `on_ready` after `set_phase(RUNNING)`, guarded by a new module-level one-shot mirroring `_startup_duration_observed`), `diagnostic_cog.py` (`!platform startup`), `_platform_embeds.py` (`build_startup_health_embed`).
