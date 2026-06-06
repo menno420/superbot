@@ -861,6 +861,15 @@ async def main() -> None:
 
             game_state_cleanup.install()
 
+            # Navigation: wire the "↩ Back to Help" hook into the hub render
+            # path so directly-invoked subsystem hubs (!modmenu, !economymenu,
+            # …) get a Back button + seeded _back_target, like the !help route.
+            # Composition-root wiring (cogs.help_cog → core.panel_manager).
+            from cogs.help_cog import _attach_back_to_help_button
+            from core.runtime import panel_manager as _panel_manager
+
+            _panel_manager.register_back_to_help_attacher(_attach_back_to_help_button)
+
             # PR-02c: session_gc.start() now uses tasks.spawn
             # internally (PR-02b); calling it once registers the
             # GC loop with the canonical supervisor.
