@@ -19,8 +19,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from cogs.role_cog import RoleCog
+from cogs.role_cog import RoleCog, _format_role_check_result
 from services import role_automation
+from utils.role_feasibility import BOT_MISSING_MANAGE_ROLES
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _ROLE_COG = _REPO_ROOT / "disbot" / "cogs" / "role_cog.py"
@@ -347,6 +348,35 @@ def test_role_cog_threshold_paths_do_not_call_member_role_apis_directly():
             "Threshold path must not call member.remove_roles directly — "
             "route through services.role_automation.apply (PR-G)."
         )
+
+
+def test_format_role_check_result_reports_failures():
+    """The operator summary must surface failures + their cause — not the old
+    success-only line that read "0 made" while every member silently 403'd.
+    """
+    ok = role_automation.ApplyResult(attempted=3, succeeded=3, failed=0)
+    assert _format_role_check_result(ok) == (
+        "✅ Role check complete — 3 assignment(s) made."
+    )
+
+    failed = role_automation.ApplyResult(
+        attempted=3,
+        succeeded=0,
+        failed=3,
+        failures=tuple(
+            role_automation.ApplyError(
+                member_id=i,
+                phase="preflight",
+                code=BOT_MISSING_MANAGE_ROLES,
+                detail="no perms",
+            )
+            for i in (1, 2, 3)
+        ),
+    )
+    summary = _format_role_check_result(failed)
+    assert "0 made, 3 failed" in summary
+    assert "missing Manage Roles: 3" in summary
+    assert "Diagnostics" in summary  # points the operator at the fix surface
 
 
 def _extract_method(src: str, name: str) -> str | None:

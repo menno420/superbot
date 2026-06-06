@@ -22,23 +22,29 @@ Pins:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
+import discord
 import pytest
 
 from services.role_automation import (
+    FORBIDDEN,
+    UNKNOWN,
+    ApplyError,
     ApplyResult,
     Assignment,
     PreflightResult,
     RoleThreshold,
+    _classify_exception,
     apply,
     check_preflight,
     compute_assignments,
     explain_assignment_for,
+    summarize_failures,
 )
+from utils.role_feasibility import ABOVE_BOT, BOT_MISSING_MANAGE_ROLES
 
 
 def _role(rid: int, name: str, position: int = 1):
@@ -394,3 +400,127 @@ async def test_apply_emits_one_audit_event_per_change():
         await apply(g, plans)
     # Promote = 1 remove + 1 add = 2 audit events
     assert emit_mock.await_count == 2
+
+
+# ---------------------------------------------------------------------------
+# check_preflight — id-first parity (must match compute_assignments / apply)
+# ---------------------------------------------------------------------------
+
+
+def test_preflight_resolves_role_by_id_after_rename():
+    """A threshold carrying a persisted role_id must NOT report 'missing' when
+    the role was renamed — preflight has to resolve id-first like the assignment
+    path, or it diverges from what apply() can actually do.
+    """
+    renamed = _role(100, "NewName", position=5)
+    g = _guild(roles=[renamed], me=_me_member(top_position=10))
+    result = check_preflight(g, [RoleThreshold("OldName", 30, role_id=100)])
+    assert result.missing_roles == ()  # resolved by id, not flagged missing
+    assert result.ok is True
+
+
+# ---------------------------------------------------------------------------
+# apply — preflight guard + failure classification (the 26-errors fix)
+# ---------------------------------------------------------------------------
+
+
+def _forbidden() -> discord.Forbidden:
+    resp = SimpleNamespace(status=403, reason="Forbidden")
+    return discord.Forbidden(resp, "Missing Permissions")
+
+
+@pytest.mark.asyncio
+async def test_apply_blocks_entire_batch_when_bot_lacks_manage_roles():
+    """No Manage Roles ⇒ every member would 403. apply() must detect it ONCE,
+    skip the batch, and classify each failure — never call Discord, never emit
+    one ERROR traceback per member (the health-flooding shape).
+    """
+    veteran = _role(100, "Veteran", position=5)
+    members = [
+        _member(mid=i, display=f"u{i}", joined_days_ago=60) for i in (1, 2, 3)
+    ]
+    g = _guild(
+        roles=[veteran],
+        members=members,
+        me=_me_member(manage_roles=False, top_position=10),
+    )
+    plans = compute_assignments(g, [RoleThreshold("Veteran", 30)])
+    assert len(plans) == 3
+    with patch(
+        "services.role_automation.emit_audit_action",
+        new_callable=AsyncMock,
+    ):
+        result = await apply(g, plans)
+    assert result.succeeded == 0
+    assert result.failed == 3
+    assert result.failure_counts() == {BOT_MISSING_MANAGE_ROLES: 3}
+    for m in members:
+        m.add_roles.assert_not_awaited()
+        m.remove_roles.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_apply_skips_role_above_bot_without_calling_discord():
+    """A progression role at/above the bot's top role is pre-empted per-member
+    with an ABOVE_BOT failure instead of a raised 403.
+    """
+    above = _role(100, "Veteran", position=20)  # above the bot's top (10)
+    member = _member(mid=1, display="u1", joined_days_ago=60)
+    g = _guild(roles=[above], members=[member], me=_me_member(top_position=10))
+    plans = compute_assignments(g, [RoleThreshold("Veteran", 30)])
+    assert len(plans) == 1
+    with patch(
+        "services.role_automation.emit_audit_action",
+        new_callable=AsyncMock,
+    ):
+        result = await apply(g, plans)
+    assert result.succeeded == 0
+    assert result.failed == 1
+    assert result.failures[0].code == ABOVE_BOT
+    assert result.failures[0].phase == "preflight"
+    member.add_roles.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_apply_classifies_forbidden_raised_during_mutation():
+    """A Forbidden that slips past the precheck (e.g. integration-managed
+    target) is classified FORBIDDEN, not the catch-all UNKNOWN.
+    """
+    veteran = _role(100, "Veteran", position=5)
+    member = _member(mid=1, display="u1", joined_days_ago=60)
+    member.add_roles = AsyncMock(side_effect=_forbidden())
+    g = _guild(roles=[veteran], members=[member], me=_me_member(top_position=10))
+    plans = compute_assignments(g, [RoleThreshold("Veteran", 30)])
+    with patch(
+        "services.role_automation.emit_audit_action",
+        new_callable=AsyncMock,
+    ):
+        result = await apply(g, plans)
+    assert result.failed == 1
+    assert result.failures[0].code == FORBIDDEN
+    assert result.failures[0].phase == "mutate"
+
+
+def test_classify_exception_maps_discord_errors():
+    """Predictable Discord errors are 'expected' (warn, stay out of ERROR
+    health); anything else is unexpected (ERROR + traceback).
+    """
+    assert _classify_exception(_forbidden()) == (FORBIDDEN, False)
+    assert _classify_exception(RuntimeError("boom")) == (UNKNOWN, True)
+
+
+def test_apply_result_errors_property_and_failure_counts():
+    """The structured ``failures`` drives both the back-compat ``errors`` strings
+    and the grouped ``failure_counts`` / ``summarize_failures`` operator surface.
+    """
+    failures = (
+        ApplyError(1, "preflight", BOT_MISSING_MANAGE_ROLES, "no perms"),
+        ApplyError(2, "preflight", BOT_MISSING_MANAGE_ROLES, "no perms"),
+        ApplyError(3, "mutate", UNKNOWN, "boom"),
+    )
+    r = ApplyResult(attempted=3, failed=3, failures=failures)
+    assert r.failure_counts() == {BOT_MISSING_MANAGE_ROLES: 2, UNKNOWN: 1}
+    assert "member 3: boom" in r.errors
+    # Busiest cause first, human-labelled.
+    assert summarize_failures(r) == "missing Manage Roles: 2, unexpected error: 1"
+    assert summarize_failures(ApplyResult()) == ""
