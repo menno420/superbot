@@ -9,8 +9,9 @@
 > RESOLVED** (option a): `_derive_scope` maps `config.BOT_OWNER_USER_ID` →
 > `AIScope.PLATFORM_OWNER` (owner-only). **The sections below are the original plan,
 > kept for rationale — per-PR delivery status is in §5 and is the source of truth.**
-> Remaining: maintainer live-test on the production bot (the sandbox can't boot); PR4
-> grouping is opt-in (`HEALTH_GROUPED_FINDINGS`, default off).
+> Remaining: maintainer live-test of the PR5 **AI path** on production (the sandbox has no
+> AI-provider key; deterministic + DB paths are bootable in-sandbox); PR4 grouping is
+> opt-in (`HEALTH_GROUPED_FINDINGS`, default off).
 > **Inputs reconciled:** Codex map (PR #534), a ChatGPT revision pass, and the Codex
 > AI-tool-orchestration successor plan (PR #536).
 > **Execution authority:** this doc; the Codex map
