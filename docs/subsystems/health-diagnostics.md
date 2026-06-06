@@ -36,8 +36,12 @@ health system for a failure it merely displays.
   (`_build_consistency_subsystem`, 2026-06-06). Known-benign states (verified live):
   **Bindings SKIPPED** = health asked from a **DM** (runs CLEAN inside a guild);
   **Binding backfill SKIPPED** = no checkpoint rows (no backfill has run — normal);
-  **Config arbitration WARNING with `missing=0`** = legacy reads while
-  `bindings.primary` is not production-flipped (the designed pre-flip state — ledger §6).
+  **Config arbitration WARNING with `missing=0`** = a real "migration unfinished"
+  signal, *not* noise: `fallback` is only recorded when `bindings.primary` evaluates
+  **ON** (`config_arbitration` source semantics), so it means the flag is on for the
+  guild but the binding rows were never backfilled — reads fall back to legacy and
+  `missing=0` confirms nothing is lost. Clear it by finishing the binding backfill
+  (PR-5/6) *or* turning `bindings.primary` off; don't just downgrade the warning.
 - **`diagnostics_health_snapshot` returned nothing for a user** → it's owner-gated and
   read-only by design; a non-owner getting nothing is correct, not a bug.
 - **A health card itself errors / is empty** → check provider isolation in
