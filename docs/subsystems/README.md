@@ -16,8 +16,10 @@ Each `docs/subsystems/<area>.md` should carry:
    don't restate) + any approved patterns.
 3. **Current state** — what works / what's degraded *for this area* (links to
    `docs/current-state.md`).
-4. **Ideas (not approved)** — link to `docs/ideas/…`.
-5. **Next candidates** — ranked, with enough context to self-direct the next session.
+4. **Plans / pending approval** — link to authoritative plans; do not duplicate them.
+5. **Ideas (not approved)** — link to `docs/ideas/…` when one exists.
+6. **Next candidates** — ranked, with enough context to self-direct the next session.
+7. **Related docs** — the authoritative contracts, plans, and references.
 
 **Drift-guard:** a folio's "Current state / Next candidates" is the area's *detail*
 home; the global `docs/current-state.md` stays a *thin index* over them. One fact,
@@ -25,18 +27,16 @@ one home — vertically too.
 
 ## Subsystem index
 
-Until an area has a folio, jump straight to its key docs.
-
 | Subsystem | Folio | Key docs |
 |---|---|---|
 | AI | ✅ [`ai.md`](./ai.md) | (see folio) |
-| Health / diagnostics | _todo_ | `bot-awareness-implementation-plan.md` + health source |
-| Server management | _todo_ | `planning/server-management-status-2026-06-05.md` (+ roadmap / impl plan) |
-| Settings / bindings / provisioning | _todo_ | `settings-customization-roadmap.md`, `resource-provisioning-overview.md`, `capability-authority.md`, `platform-consistency-ledger.md` |
-| BTD6 data / tools | _todo_ | `btd6-*.md` (15+), `decisions/006` |
-| Games | _todo_ | `games-actionability-roadmap.md`, `decisions/002` |
-| Media / YouTube | _todo_ | `decisions/007`, `server-logging.md` |
+| Health / diagnostics | ✅ [`health-diagnostics.md`](./health-diagnostics.md) | (see folio) |
+| Server management | ✅ [`server-management.md`](./server-management.md) | (see folio) |
+| Settings / bindings / provisioning | ✅ [`settings-bindings-provisioning.md`](./settings-bindings-provisioning.md) | (see folio) |
+| BTD6 data / tools | ✅ [`btd6.md`](./btd6.md) | (see folio) |
+| Games | ✅ [`games.md`](./games.md) | (see folio) |
+| Media / YouTube | ✅ [`media-youtube.md`](./media-youtube.md) | (see folio) |
 
-> Building out a folio (consolidating an area's docs into the template above, and
-> physically moving the area's `docs/*.md` under here when safe — mind doc-test-pinned
-> files) is itself a good self-directed **next session**: pick the area you're in.
+> These folios intentionally link to existing contracts, ledgers, plans, and history.
+> Move an underlying doc only when doing so reduces drift without obscuring authority or
+> creating risky reference/doc-test churn.

@@ -41,7 +41,7 @@ read **`docs/helper-policy.md`** first.
 
 > **Working in one area?** Start at its folio — `docs/subsystems/<area>.md`
 > (consolidates that area's rules · current state · ideas · next candidates). The
-> routes below are the cross-cutting fallback when no folio fits yet.
+> routes below add the binding/cross-cutting reading needed after the folio.
 
 ### Any task
 
@@ -86,11 +86,12 @@ read **`docs/helper-policy.md`** first.
 
 ### Touching settings / bindings / resource provisioning
 
-1. `docs/settings-customization-roadmap.md` — the three lanes (settings / binding / provisioning) and which pipeline owns which.
-2. `docs/resource-provisioning-overview.md` — the RPM lane.
-3. `docs/platform-consistency-ledger.md` § 1 — current state of each domain.
-4. `docs/building-roadmap/config-input-standard.md` — UI rules for setting widgets.
-5. `docs/capability-authority.md` — authorization (capability resolver), the two operator kill-switches, and the panel-callback re-check rule.
+1. `docs/subsystems/settings-bindings-provisioning.md` — canonical area entry point.
+2. `docs/settings-customization-roadmap.md` — the three lanes (settings / binding / provisioning) and which pipeline owns which.
+3. `docs/resource-provisioning-overview.md` — the RPM lane.
+4. `docs/platform-consistency-ledger.md` § 1 — current state of each domain.
+5. `docs/building-roadmap/config-input-standard.md` — UI rules for setting widgets.
+6. `docs/capability-authority.md` — authorization (capability resolver), the two operator kill-switches, and the panel-callback re-check rule.
 
 ### Touching tests / docs / smoke
 

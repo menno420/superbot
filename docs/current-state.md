@@ -6,7 +6,7 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · `147f396` (post-#543) · doc-restructure session.
+> **Last updated:** 2026-06-06 · post-#544 · subsystem-folio mapping session.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -24,12 +24,13 @@ in the sandbox**, not broken. Known UX follow-ups remain (below).
 
 ## In flight (verify against live GitHub)
 
-As of this stamp: the **docs-restructure** work on branch
-`claude/friendly-babbage-0BkSu` (PR being opened this session). **Verify open PRs
-against live GitHub** — this line goes stale the moment a branch is pushed or merged.
+The docs-restructure work recorded here previously is no longer in flight: **PR #544
+is merged**. **Verify open PRs against live GitHub** before starting work; this dated
+snapshot does not claim that no other PR is open.
 
 ## Recently shipped (newest first)
 
+- **#544** — freshness-oriented docs route, lifecycle labels, ideas area, and subsystem-folio model.
 - **#543** — boot / test-bot capability doc correction.
 - **#542** — docs reconciled to shipped bot-awareness status.
 - **#541** — bot-awareness **PR4–PR6**: grouped recent-error findings (opt-in),
@@ -44,14 +45,10 @@ against live GitHub** — this line goes stale the moment a branch is pushed or 
 
 ## Next candidates
 
-- **Maintainer live-tests owed** (need a prod AI key + a human in Discord): PR5 — ask
-  the bot "how healthy are you?" → it calls `diagnostics_health_snapshot` (a non-owner
-  admin must NOT be offered it); PR4 — `HEALTH_GROUPED_FINDINGS=1` → grouped `(×N)`
-  findings; PR6 — restart with a recurring failure → `occurrence_count` increments.
-- **In-sandbox integration test** of PR4/PR6: boot the test bot + local Postgres →
-  migration `057` applies → findings persist → `SELECT` to confirm `ON CONFLICT`
-  dedupe (the PR6 unit tests mock the DB, so this closes a real gap).
-- **This doc-restructure** (in progress).
+- Health/diagnostics maintainer live-tests and the migration `057` persistence/dedupe
+  integration gap: see `docs/subsystems/health-diagnostics.md`.
+- Use the canonical subsystem folios for area-specific implementation/planning; keep
+  this global router thin.
 
 ## Gates / blocked work
 
@@ -64,10 +61,10 @@ against live GitHub** — this line goes stale the moment a branch is pushed or 
 
 ## Known UX follow-ups (not stability bugs)
 
-- Moderation member entry wants a `discord.ui.UserSelect` quicksearch picker
-  (modal→view restructure; `unban` stays ID-based).
-- Role UX: bulk "Clear missing" on time/XP panels; selector-ize Edit Role.
-- DiagnosticCog `platform_*` subviews are dense — could paginate.
+- Server-management member/role UX follow-ups: see
+  `docs/subsystems/server-management.md`.
+- Dense DiagnosticCog platform-subview pagination idea: see
+  `docs/subsystems/health-diagnostics.md`.
 
 ## Off-limits / do-not-propose
 
