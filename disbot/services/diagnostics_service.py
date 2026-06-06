@@ -81,7 +81,10 @@ def snapshot_all() -> dict[str, Any]:
     the full diagnostic page.
     """
     result: dict[str, Any] = {}
-    for name, provider in _PROVIDERS.items():
+    # Iterate a stable copy: a provider may lazily import a module that
+    # self-registers another provider on first call (common during startup),
+    # which would otherwise raise "dict changed size during iteration".
+    for name, provider in list(_PROVIDERS.items()):
         try:
             result[name] = provider()
         except Exception as exc:

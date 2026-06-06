@@ -233,21 +233,82 @@ def summary_status(
     return SummaryStatus.DEGRADED
 
 
+# ---------------------------------------------------------------------------
+# Extension-load recorder (LP — bot awareness PR3)
+#
+# A SIBLING of the catalogue-phase recorder above — deliberately *not* a
+# KNOWN_PHASES entry.  Cog loading is a separate, higher-cardinality concern
+# (one row per extension), and KNOWN_PHASES is pinned by the readiness
+# snapshot + smoke-test docs; widening it would churn those contracts.  The
+# health snapshot's ``extensions`` adapter reads these outcomes.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ExtensionLoadOutcome:
+    """One cog/extension load result, recorded by ``bot1._load_cogs()``.
+
+    ``error`` is ``None`` on success and a short ``type:message`` string on
+    failure (no traceback, mirroring :class:`StartupOutcome`).
+    """
+
+    name: str
+    success: bool
+    error: str | None
+    recorded_at: datetime.datetime
+
+
+_EXTENSIONS: dict[str, ExtensionLoadOutcome] = {}
+
+
+def record_extension_success(name: str) -> None:
+    """Record a successful extension load. Overwrites prior state; never raises."""
+    _EXTENSIONS[name] = ExtensionLoadOutcome(
+        name=name,
+        success=True,
+        error=None,
+        recorded_at=_now(),
+    )
+
+
+def record_extension_failure(name: str, exc: BaseException) -> None:
+    """Record a failed extension load (short ``type:message``; no traceback)."""
+    summary = f"{type(exc).__name__}: {exc}"
+    if len(summary) > 200:
+        summary = summary[:197] + "..."
+    _EXTENSIONS[name] = ExtensionLoadOutcome(
+        name=name,
+        success=False,
+        error=summary,
+        recorded_at=_now(),
+    )
+
+
+def all_extension_outcomes() -> tuple[ExtensionLoadOutcome, ...]:
+    """Every recorded extension outcome, sorted by name."""
+    return tuple(sorted(_EXTENSIONS.values(), key=lambda o: o.name))
+
+
 def reset_for_tests() -> None:
-    """Clear every recorded outcome.
+    """Clear every recorded outcome (catalogue phases + extensions).
 
     Test isolation hook — call from a ``pytest.fixture(autouse=True)``
     so module-level state does not leak between cases.
     """
     _RECORDED.clear()
+    _EXTENSIONS.clear()
 
 
 __all__ = [
     "KNOWN_PHASES",
+    "ExtensionLoadOutcome",
     "StartupOutcome",
     "SummaryStatus",
+    "all_extension_outcomes",
     "all_outcomes",
     "get",
+    "record_extension_failure",
+    "record_extension_success",
     "record_failure",
     "record_phase",
     "record_success",

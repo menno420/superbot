@@ -77,11 +77,16 @@ _SUBSYSTEM_ORDER: dict[str, int] = {
     "database": 2,
     "consistency": 3,
     "startup": 4,
-    "tasks": 5,
-    "diagnostics": 6,
-    "ai": 7,
-    "resources": 8,
+    "extensions": 5,
+    "tasks": 6,
+    "diagnostics": 7,
+    "ai": 8,
+    "resources": 9,
 }
+
+# Extensions whose load failure is a CRITICAL whole-bot signal (D3). Only the
+# load-first command-access gate qualifies; every other cog degrades gracefully.
+REQUIRED_EXTENSIONS: frozenset[str] = frozenset({"cogs.bootstrap_access_cog"})
 
 _SEVERITY_RANK: dict[FindingSeverity, int] = {
     FindingSeverity.INFO: 0,
@@ -367,6 +372,55 @@ def _startup_subsystem() -> SubsystemHealth:
             "phases_recorded": len(outcomes),
             "phases_failed": len(failed),
         },
+        source="startup_outcome",
+        required=True,
+    )
+
+
+def _extensions_subsystem() -> SubsystemHealth:
+    from core.runtime import startup_outcome as so
+
+    outcomes = so.all_extension_outcomes()
+    if not outcomes:
+        return SubsystemHealth(
+            name="extensions",
+            status=SnapshotStatus.UNKNOWN,
+            summary="Extension load not yet recorded",
+            generated_at=_now(),
+            source="startup_outcome",
+            required=True,
+        )
+    failed = [o for o in outcomes if not o.success]
+    critical = [o for o in failed if o.name in REQUIRED_EXTENSIONS]
+    if critical:
+        status = SnapshotStatus.CRITICAL
+    elif failed:
+        status = SnapshotStatus.DEGRADED
+    else:
+        status = SnapshotStatus.HEALTHY
+    findings = tuple(
+        OperationalHealthFinding(
+            fingerprint=f"extension.load_failed:{o.name}",
+            severity=(
+                FindingSeverity.CRITICAL
+                if o.name in REQUIRED_EXTENSIONS
+                else FindingSeverity.ERROR
+            ),
+            category="extension.load_failed",
+            message=_scrub(f"Extension '{o.name}' failed to load."),
+            related_subsystem="extensions",
+            file_hint=_scrub(o.error),  # owner-only
+            source="startup_outcome",
+        )
+        for o in failed[:MAX_SUBSYSTEM_FINDINGS]
+    )
+    return SubsystemHealth(
+        name="extensions",
+        status=status,
+        summary=f"{len(outcomes) - len(failed)} of {len(outcomes)} extensions loaded",
+        generated_at=_now(),
+        findings=findings,
+        facts={"loaded": len(outcomes) - len(failed), "failed": len(failed)},
         source="startup_outcome",
         required=True,
     )
@@ -715,6 +769,29 @@ async def resolve_audience(bot: Any, user: Any) -> HealthAudience:
     return HealthAudience.GUILD_ADMIN
 
 
+# Process-local cache of the settled-startup snapshot (PLATFORM_OWNER-level,
+# re-projected per viewer by ``!platform startup``).  Mirrors the benign
+# read-side cache pattern of ``platform_consistency._LAST_REPORT`` — it is not
+# durable/domain state, just the last startup report this process produced.
+_LAST_STARTUP_SNAPSHOT: HealthSnapshot | None = None
+
+
+def record_startup_snapshot(snapshot: HealthSnapshot) -> None:
+    """Cache the settled-startup snapshot for ``!platform startup`` to render.
+
+    Called once per process from ``bot1.on_ready`` after startup settles.
+    Store the full (PLATFORM_OWNER) snapshot; the command re-projects it to
+    each viewer's audience.
+    """
+    global _LAST_STARTUP_SNAPSHOT
+    _LAST_STARTUP_SNAPSHOT = snapshot
+
+
+def get_last_startup_snapshot() -> HealthSnapshot | None:
+    """Return the cached settled-startup snapshot, or ``None`` if not yet set."""
+    return _LAST_STARTUP_SNAPSHOT
+
+
 def _sync_subsystems(
     request: HealthSnapshotRequest,
     bot: Any,
@@ -724,6 +801,7 @@ def _sync_subsystems(
         _safe(_tasks_subsystem, "tasks", required=True),
         _safe(_diagnostics_subsystem, "diagnostics", required=True),
         _safe(_startup_subsystem, "startup", required=True),
+        _safe(_extensions_subsystem, "extensions", required=True),
         _safe(_ai_subsystem, "ai", required=False),
     ]
     # Cached consistency only when a fresh collection was not requested

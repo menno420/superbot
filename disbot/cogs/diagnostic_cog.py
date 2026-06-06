@@ -38,6 +38,7 @@ from cogs.diagnostic._platform_embeds import (
     build_setting_detail_embed,
     build_settings_registry_embed,
     build_slow_embed,
+    build_startup_health_embed,
     build_status_embed,
     build_tasks_embed,
     build_views_embed,
@@ -356,6 +357,33 @@ class DiagnosticCog(commands.Cog):
         )
         snapshot = await health_snapshot_service.collect_snapshot(request, bot=self.bot)
         await ctx.send(embed=build_health_embed(snapshot))
+
+    @platform_grp.command(name="startup")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_startup(self, ctx):
+        """Settled-startup health report (extension load, gateway, DB, …).
+
+        Shows the one-shot snapshot captured after the bot reached a stable
+        post-ready state (re-projected to the caller's audience). Falls back
+        to a fresh collection if the settled snapshot is not available yet.
+        """
+        from services import health_snapshot_service
+        from services.health_contracts import HealthSnapshotRequest
+
+        audience = await health_snapshot_service.resolve_audience(self.bot, ctx.author)
+        stored = health_snapshot_service.get_last_startup_snapshot()
+        if stored is not None:
+            snapshot = health_snapshot_service.project_for_audience(stored, audience)
+        else:
+            snapshot = await health_snapshot_service.collect_snapshot(
+                HealthSnapshotRequest(
+                    purpose="startup",
+                    audience=audience,
+                    guild_id=ctx.guild.id if ctx.guild is not None else None,
+                ),
+                bot=self.bot,
+            )
+        await ctx.send(embed=build_startup_health_embed(snapshot))
 
     @platform_grp.command(name="lifecycle")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
