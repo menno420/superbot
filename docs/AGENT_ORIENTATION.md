@@ -41,7 +41,7 @@ read **`docs/helper-policy.md`** first.
 
 > **Working in one area?** Start at its folio — `docs/subsystems/<area>.md`
 > (consolidates that area's rules · current state · ideas · next candidates). The
-> routes below are the cross-cutting fallback when no folio fits yet.
+> routes below add the binding/cross-cutting reading needed after the folio.
 
 ### Any task
 
@@ -84,13 +84,46 @@ read **`docs/helper-policy.md`** first.
 3. `docs/runtime_contracts.md` § 9 (mutation contract checklist).
 4. `docs/capability-authority.md` — how a settings/binding/provisioning mutation is authorized (capability resolver + operator kill-switches + the panel-callback re-check rule).
 
+### Touching health / diagnostics
+
+1. `docs/subsystems/health-diagnostics.md` — canonical area entry point and verification gaps.
+2. `docs/bot-awareness-implementation-plan.md` — shipped programme status and execution authority.
+3. `docs/platform-consistency-ledger.md` — cross-subsystem consistency/readiness state.
+4. `docs/smoke-test-checklist.md` — doc-test-pinned runtime smoke expectations.
+
+### Touching server management
+
+1. `docs/subsystems/server-management.md` — canonical area entry point.
+2. `docs/planning/server-management-status-2026-06-05.md` — authoritative shipped/remaining tracker; trust its body over older ordering.
+3. `docs/resource-provisioning-overview.md` — resource-creation ownership and confirmation rules.
+4. `docs/capability-authority.md` — operator authority and callback re-check rules.
+
+### Touching BTD6 data / tools
+
+1. `docs/subsystems/btd6.md` — canonical area entry point and extraction/expansion gates.
+2. `docs/decisions/006-btd6-data-provenance-ownership.md` — binding provenance and owner-per-fact-type decision.
+3. `docs/current-state.md` — global BTD6/AI expansion gate.
+
+### Touching games
+
+1. `docs/subsystems/games.md` — canonical area entry point and accepted boundaries.
+2. `docs/decisions/002-game-state-not-restart-safe.md` — binding restart-safety decision.
+3. `docs/games-actionability-roadmap.md` — shipped actionability baseline and deferred context.
+
+### Touching media / YouTube
+
+1. `docs/subsystems/media-youtube.md` — canonical area entry point and verification/risk gates.
+2. `docs/decisions/007-media-youtube-ownership.md` — binding shared-media ownership decision.
+3. `docs/server-logging.md` — logging/audit routing and fail-safe expectations.
+
 ### Touching settings / bindings / resource provisioning
 
-1. `docs/settings-customization-roadmap.md` — the three lanes (settings / binding / provisioning) and which pipeline owns which.
-2. `docs/resource-provisioning-overview.md` — the RPM lane.
-3. `docs/platform-consistency-ledger.md` § 1 — current state of each domain.
-4. `docs/building-roadmap/config-input-standard.md` — UI rules for setting widgets.
-5. `docs/capability-authority.md` — authorization (capability resolver), the two operator kill-switches, and the panel-callback re-check rule.
+1. `docs/subsystems/settings-bindings-provisioning.md` — canonical area entry point.
+2. `docs/settings-customization-roadmap.md` — the three lanes (settings / binding / provisioning) and which pipeline owns which.
+3. `docs/resource-provisioning-overview.md` — the RPM lane.
+4. `docs/platform-consistency-ledger.md` § 1 — current state of each domain.
+5. `docs/building-roadmap/config-input-standard.md` — UI rules for setting widgets.
+6. `docs/capability-authority.md` — authorization (capability resolver), the two operator kill-switches, and the panel-callback re-check rule.
 
 ### Touching tests / docs / smoke
 
@@ -122,12 +155,13 @@ read **`docs/helper-policy.md`** first.
 
 ### Touching AI / setup advisor
 
-1. `docs/ai-config-ownership.md` — binding contract for the AI cog's
+1. `docs/subsystems/ai.md` — canonical area entry point and expansion gates.
+2. `docs/ai-config-ownership.md` — binding contract for the AI cog's
    read model, projection rules, mutation seam, and UI surface
    pinning. Read this before any AI-cog change.
-2. `docs/ai-readiness-plan.md` — the inert scaffold + planned layer.
-3. `docs/ai-service-integration-map.md` — current setup advisor integration shape.
-4. `disbot/core/runtime/ai/README.md` — package-level intent.
+3. `docs/ai-readiness-plan.md` — the inert scaffold + planned layer.
+4. `docs/ai-service-integration-map.md` — current setup advisor integration shape.
+5. `disbot/core/runtime/ai/README.md` — package-level intent.
 
 ---
 

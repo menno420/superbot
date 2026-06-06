@@ -34,7 +34,7 @@ scoped tools (including owner-gated diagnostics). Source:
   provenance + caching/source-health clarity + AI behavior/config correctness — see
   `docs/current-state.md` "Gates / blocked work".
 
-## Plans (pending approval — not raw ideas)
+## Plans / pending approval
 
 - `docs/ai-complex-request-tool-orchestration-plan.md` (`plan`) — research-backed
   reusable tool orchestration (toolsets, tool-choice, budgets, evidence). Approve this
