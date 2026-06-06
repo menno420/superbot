@@ -22,6 +22,7 @@ from cogs.diagnostic._platform_embeds import (
     build_caches_embed,
     build_consistency_embed,
     build_customization_embed,
+    build_findings_embed,
     build_flags_embed,
     build_health_embed,
     build_identity_embed,
@@ -384,6 +385,38 @@ class DiagnosticCog(commands.Cog):
                 bot=self.bot,
             )
         await ctx.send(embed=build_startup_health_embed(snapshot))
+
+    @platform_grp.command(name="findings")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_findings(self, ctx, status: str = "open"):
+        """Persistent operational-health findings (open / resolved / ignored / all).
+
+        Unlike `!platform health` (a live in-memory snapshot), these survive
+        restarts: each row's occurrence count accumulates across boots so a
+        recurring problem is visible over time. Read-only and admin-gated;
+        owner-only detail (file/provider hints) is shown only to the bot owner.
+        """
+        from services import health_findings_service, health_snapshot_service
+        from services.health_contracts import HealthAudience
+
+        wanted = status.lower().strip()
+        if wanted not in ("open", "resolved", "ignored", "all"):
+            wanted = "open"
+        audience = await health_snapshot_service.resolve_audience(self.bot, ctx.author)
+        is_owner = audience is HealthAudience.PLATFORM_OWNER
+        rows = await health_findings_service.list_by_status(
+            None if wanted == "all" else wanted,
+            limit=15,
+        )
+        counts = await health_findings_service.count_by_status()
+        await ctx.send(
+            embed=build_findings_embed(
+                rows,
+                status=wanted,
+                counts=counts,
+                is_owner=is_owner,
+            ),
+        )
 
     @platform_grp.command(name="lifecycle")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)

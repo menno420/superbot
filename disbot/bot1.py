@@ -214,6 +214,26 @@ async def _report_startup_health() -> None:
             snapshot.status.value,
             snapshot.summary,
         )
+        # Bot-awareness PR6: persist this snapshot's findings (best-effort, off
+        # the readiness path) so recurrence survives restarts, then run the
+        # 30-day retention sweep. Both calls are internally best-effort; the
+        # extra guard covers the function-local imports themselves.
+        try:
+            from services import health_findings_service
+            from services.runtime import BOOT_ID
+
+            recorded = await health_findings_service.record_findings(
+                snapshot,
+                session_id=str(BOOT_ID),
+            )
+            pruned = await health_findings_service.run_retention()
+            logger.info(
+                "Startup health findings: recorded=%d pruned=%d",
+                recorded,
+                pruned,
+            )
+        except Exception:
+            logger.warning("startup health findings persistence failed", exc_info=True)
     except Exception:
         logger.warning("startup health snapshot failed", exc_info=True)
 

@@ -133,6 +133,20 @@ task_outcome_total = Counter(
     ["name", "outcome"],  # outcome: ok | error | cancelled
 )
 
+# Bot-awareness PR6: persistent operational-health findings. Labels are
+# deliberately low-cardinality (category/severity/outcome) — the unbounded
+# `fingerprint` is NEVER a label; it lives only in the DB row.
+health_finding_recorded_total = Counter(
+    "health_finding_recorded_total",
+    "Operational-health findings upserted into the persistent store.",
+    ["category", "severity"],
+)
+
+health_finding_retention_pruned_total = Counter(
+    "health_finding_retention_pruned_total",
+    "Resolved/ignored health-finding rows pruned by the retention sweep.",
+)
+
 # LP-4: rolling-deploy handoff for the runtime lock. ``acquired_immediate``
 # is the happy path (no peer held the lock); ``acquired_after_wait`` means
 # the old replica drained and we took over; ``timeout`` means the boot

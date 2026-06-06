@@ -42,6 +42,14 @@ _FORBIDDEN_CALLS: frozenset[tuple[str, str]] = frozenset(
         ("db", "execute"),
         ("db", "set_setting"),
         ("db_health", "execute"),
+        # PR6: the read model must never write the persistent findings store —
+        # recording is driven from the composition root via the sole-writer
+        # service, never from the aggregator.
+        ("health_findings_service", "record_findings"),
+        ("health_findings_service", "run_retention"),
+        ("health_findings", "upsert_finding"),
+        ("health_findings", "prune_expired"),
+        ("health_findings", "roll_up_to_aggregates"),
     },
 )
 
