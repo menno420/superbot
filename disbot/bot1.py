@@ -182,6 +182,56 @@ signal.signal(signal.SIGTERM, _begin_shutdown)
 # ---------------------------------------------------------------------------
 
 
+# Bot-awareness PR3: one-shot guard so the post-ready startup-health snapshot
+# is reported exactly once per process — a gateway reconnect re-fires on_ready
+# and must not re-report. Mirrors lifecycle._startup_duration_observed.
+_startup_health_reported = False
+
+
+async def _report_startup_health() -> None:
+    """Collect + cache the settled-startup health snapshot (best-effort).
+
+    Runs off the on_ready path via the managed task supervisor (INV-K) so it
+    never blocks readiness; every failure is isolated and swallowed so a
+    health-reporting hiccup can never affect the running bot. Panel-only —
+    the snapshot is cached for ``!platform startup`` and logged at INFO, with
+    no webhook/admin-channel push.
+    """
+    try:
+        from services import health_snapshot_service
+        from services.health_contracts import HealthAudience, HealthSnapshotRequest
+
+        snapshot = await health_snapshot_service.collect_snapshot(
+            HealthSnapshotRequest(
+                purpose="startup",
+                audience=HealthAudience.PLATFORM_OWNER,
+            ),
+            bot=bot,
+        )
+        health_snapshot_service.record_startup_snapshot(snapshot)
+        logger.info(
+            "Startup health: %s — %s",
+            snapshot.status.value,
+            snapshot.summary,
+        )
+    except Exception:
+        logger.warning("startup health snapshot failed", exc_info=True)
+
+
+def _maybe_report_startup_health() -> None:
+    """Spawn the startup-health report once per process (reconnect-safe).
+
+    Extracted from ``on_ready`` so the one-shot guard is unit-testable
+    without booting: a gateway reconnect re-fires ``on_ready`` and must not
+    re-spawn the report.
+    """
+    global _startup_health_reported
+    if _startup_health_reported:
+        return
+    _startup_health_reported = True
+    _runtime_tasks.spawn("startup:health_report", _report_startup_health())
+
+
 @bot.event
 async def on_ready() -> None:
     bot.uptime = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[attr-defined]
@@ -199,6 +249,8 @@ async def on_ready() -> None:
     # when no shutdown was requested mid-startup; otherwise stay in DRAINING.
     if _lifecycle.get_phase() is _lifecycle.Phase.STARTING:
         _lifecycle.set_phase(_lifecycle.Phase.RUNNING, reason="on_ready")
+    # Bot-awareness PR3: post-ready startup-health snapshot, exactly once.
+    _maybe_report_startup_health()
 
 
 @bot.event
@@ -544,6 +596,7 @@ async def force(ctx: commands.Context, command_name: str, *args) -> None:
 
 
 async def _load_cogs() -> None:
+    from core.runtime import startup_outcome
     from services import governance_service
     from utils.subsystem_registry import SUBSYSTEMS
 
@@ -551,8 +604,10 @@ async def _load_cogs() -> None:
     for ext in config.INITIAL_EXTENSIONS:
         try:
             await bot.load_extension(ext)
+            startup_outcome.record_extension_success(ext)
             logger.info("✅ Loaded %s", ext)
         except Exception as exc:
+            startup_outcome.record_extension_failure(ext, exc)
             failed_exts.add(ext)
             logger.error(
                 "❌ Failed to load %s: %s: %s",

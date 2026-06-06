@@ -5,6 +5,13 @@ this document alone
 **Verified against:** the current repository worktree on 2026-06-06  
 **Audience:** maintainers and follow-up implementation agents
 
+> **➡ Execution authority has moved.** This doc is the repository *map*. The
+> approved, source-verified, PR-by-PR implementation plan lives in
+> **`docs/bot-awareness-implementation-plan.md`** (contracts → deterministic
+> `!platform health` → startup health → structured observations → AI tool →
+> persistent findings). When the two disagree, the implementation plan and the
+> source win.
+
 ## 1. Executive decision
 
 SuperBot should implement **AI-assisted diagnostics over the existing observability

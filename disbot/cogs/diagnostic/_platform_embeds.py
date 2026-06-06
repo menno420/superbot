@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
+from services.health_contracts import HealthSnapshot
 from services.platform_consistency import (
     ConsistencyReport,
     SectionResult,
@@ -820,6 +821,121 @@ def build_status_embed(bot: commands.Bot) -> discord.Embed:
         failed = "?"
     embed.add_field(name="Failed subsystems", value=failed, inline=False)
     return embed
+
+
+# --- !platform health (deterministic operational health) -------------------
+
+_HEALTH_STATUS_EMOJI = {
+    "healthy": "🟢",
+    "degraded": "🟡",
+    "critical": "🔴",
+    "unknown": "⚪",
+}
+_HEALTH_STATUS_COLOR = {
+    "healthy": discord.Color.green(),
+    "degraded": discord.Color.gold(),
+    "critical": discord.Color.red(),
+    "unknown": discord.Color.light_grey(),
+}
+_FINDING_EMOJI = {
+    "info": "ℹ️",
+    "warning": "⚠️",
+    "error": "⛔",
+    "critical": "🔴",
+}
+_HEALTH_FINDINGS_SHOWN = 8
+_HEALTH_FIELD_CAP = 1000
+
+
+def _health_block(lines: list[str]) -> str:
+    """Join ``lines`` into one bounded field value."""
+    block = "\n".join(lines)
+    if len(block) > _HEALTH_FIELD_CAP:
+        block = block[: _HEALTH_FIELD_CAP - 1].rstrip() + "…"
+    return block or "*(none)*"
+
+
+def _render_health_embed(
+    snapshot: HealthSnapshot,
+    *,
+    title: str,
+    drilldown: str,
+) -> discord.Embed:
+    """Render an already-projected snapshot into a bounded embed.
+
+    Shared by ``build_health_embed`` and ``build_startup_health_embed`` —
+    the snapshot is audience-projected + redacted by
+    ``services.health_snapshot_service`` before it reaches here; this only
+    renders and bounds it (it never re-fetches or widens).
+    """
+    from core.runtime.interaction_helpers import clamp_embed
+
+    status = snapshot.status.value
+    description = (
+        f"{_HEALTH_STATUS_EMOJI.get(status, '⚪')} **{status.upper()}** — "
+        f"{snapshot.summary}"
+    )
+    if snapshot.partial:
+        description += "\n*(partial — some checks timed out or were unavailable)*"
+    embed = discord.Embed(
+        title=title,
+        description=description,
+        color=_HEALTH_STATUS_COLOR.get(status, discord.Color.light_grey()),
+        timestamp=snapshot.generated_at,
+    )
+
+    sub_lines = [
+        f"{_HEALTH_STATUS_EMOJI.get(s.status.value, '⚪')} **{s.name}**"
+        f"{' ⏳' if s.stale else ''} — {s.summary}"
+        for s in snapshot.subsystems
+    ]
+    embed.add_field(
+        name="Subsystems",
+        value=_health_block(sub_lines),
+        inline=False,
+    )
+
+    if snapshot.findings:
+        finding_lines = [
+            f"{_FINDING_EMOJI.get(f.severity.value, '•')} {f.message}"
+            for f in snapshot.findings[:_HEALTH_FINDINGS_SHOWN]
+        ]
+        embed.add_field(
+            name=f"Findings ({len(snapshot.findings)})",
+            value=_health_block(finding_lines),
+            inline=False,
+        )
+
+    audience = (
+        snapshot.redaction_audience.value
+        if snapshot.redaction_audience is not None
+        else "n/a"
+    )
+    embed.set_footer(
+        text=(
+            f"snapshot {snapshot.snapshot_id} · {audience} · deterministic "
+            f"(AI not involved) · {drilldown}"
+        ),
+    )
+    return clamp_embed(embed)
+
+
+def build_health_embed(snapshot: HealthSnapshot) -> discord.Embed:
+    """Render ``!platform health`` (live operational health)."""
+    return _render_health_embed(
+        snapshot,
+        title="🩺 Bot health",
+        drilldown="drill down: !platform runtime / lifecycle / tasks / consistency",
+    )
+
+
+def build_startup_health_embed(snapshot: HealthSnapshot) -> discord.Embed:
+    """Render ``!platform startup`` (the settled-startup health report)."""
+    return _render_health_embed(
+        snapshot,
+        title="🚀 Startup health",
+        drilldown="settled-startup snapshot · !platform health for live state",
+    )
 
 
 _EMBED_FIELD_CAP = 24  # Discord hard limit is 25; reserve 1 for overflow note.
@@ -1793,6 +1909,7 @@ __all__ = [
     "build_consistency_embed",
     "build_customization_embed",
     "build_flags_embed",
+    "build_health_embed",
     "build_identity_embed",
     "build_lifecycle_embed",
     "build_locks_embed",
@@ -1808,6 +1925,7 @@ __all__ = [
     "build_settings_registry_embed",
     "build_setup_readiness_embed",
     "build_slow_embed",
+    "build_startup_health_embed",
     "build_status_embed",
     "build_tasks_embed",
     "build_views_embed",

@@ -36,6 +36,7 @@ from cogs.diagnostic._platform_embeds import (
     build_consistency_embed,
     build_customization_embed,
     build_flags_embed,
+    build_health_embed,
     build_identity_embed,
     build_lifecycle_embed,
     build_locks_embed,
@@ -58,6 +59,7 @@ from core.runtime.interaction_helpers import safe_defer, safe_edit
 from views.base import HubView
 
 _RUNTIME_OPTIONS = (
+    ("health", "🩺", "Deterministic operational health snapshot (redacted)"),
     ("status", "🛠", "Uptime, cogs, guilds, scheduler, failed subsystems"),
     ("runtime", "🛰", "snapshot_all roll-up across every provider"),
     ("lifecycle", "♻️", "Lifecycle phase, pending requests, recent events"),
@@ -163,6 +165,18 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
     """Map a Select value to its embed builder."""
     bot = interaction.client
     guild = interaction.guild
+    if name == "health":
+        from services import health_snapshot_service
+        from services.health_contracts import HealthSnapshotRequest
+
+        audience = await health_snapshot_service.resolve_audience(bot, interaction.user)
+        request = HealthSnapshotRequest(
+            purpose="summary",
+            audience=audience,
+            guild_id=guild.id if guild is not None else None,
+        )
+        snapshot = await health_snapshot_service.collect_snapshot(request, bot=bot)
+        return build_health_embed(snapshot)
     if name == "status":
         return build_status_embed(bot)  # type: ignore[arg-type]
     if name == "runtime":
