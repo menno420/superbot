@@ -1,11 +1,13 @@
 <!-- READ_FIRST_START -->
 ## Read first — agent orientation
 
-Before proposing or implementing **any** non-trivial change, open
-**`docs/AGENT_ORIENTATION.md`** and follow the "Reading order by
-task" section that matches what you are doing. It is short, points
-you at the binding contracts, and distinguishes them from the
-historical roadmap docs.
+At the **start** of every session, read in this order: **this file**
+(`.claude/CLAUDE.md`) → **`docs/current-state.md`** (what's true now) →
+**`.session-journal.md`** (process memory) → **`docs/AGENT_ORIENTATION.md`** for the
+task-specific reading route. Before proposing or implementing **any** non-trivial
+change, follow the "Reading order by task" section in `docs/AGENT_ORIENTATION.md` that
+matches what you are doing — it is short, points you at the binding contracts, and
+distinguishes them from the historical roadmap docs.
 
 Three binding docs underlie almost every decision in this codebase:
 
@@ -20,7 +22,7 @@ Two more bind common operations:
 
 When a doc and a source file disagree, the source file wins.
 
-Then read **`docs/current-state.md`** — the living "what is true right now?"
+**`docs/current-state.md`** (step 2 above) is the living "what is true right now?"
 ledger (stability baseline, in-flight work, recently shipped, gates,
 off-limits, where to read next). It is a **dated snapshot**: source code and
 merged PRs win over it, and you must verify in-flight PRs against live GitHub.

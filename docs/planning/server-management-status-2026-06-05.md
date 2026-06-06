@@ -6,7 +6,9 @@
 > done*, **this tracker (cross-checked against source) wins**; the roadmap remains
 > the target architecture and the implementation plan remains the PR-scope detail.
 >
-> **Date:** 2026-06-05 · **Verified against:** `main` @ `f0f0824` (merge of #523).
+> **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523). **Body is current
+> through PR7; remaining queue starts at PR8** — the "Shipped" + "Remaining queue"
+> sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture

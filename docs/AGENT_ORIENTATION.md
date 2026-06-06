@@ -190,8 +190,9 @@ top before trusting the contents.
 - `docs/settings-customization-command-map.md`
 - `docs/operator-settings-presets.md`
 - `docs/planning/server-management-status-2026-06-05.md` — live status tracker for
-  the server-management initiative (shipped #520–#523; remaining queue PR5+).
-  Authoritative on *what is done*; start here before reading the roadmap/plan.
+  the server-management initiative. Authoritative on *what is done* + the remaining
+  queue; **trust the tracker's "Shipped" / "Remaining queue" sections over any summary
+  here** — don't restate its PR numbers (they drift). Start here before the roadmap/plan.
 - `docs/games-actionability-roadmap.md` (status: complete — historical now)
 - `docs/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
 - `docs/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)

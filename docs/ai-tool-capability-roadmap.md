@@ -4,10 +4,12 @@
 > **Purpose:** refine the open AI extra-tool ideas backlog into a source-verified,
 > implementation-ready sequence without replacing the approved bot-awareness plan or the
 > research-backed BTD6 orchestration planning document.
-> **Current gate:** do not begin implementation from this roadmap until bot-awareness
-> PR4–PR6 have been reconciled and the `PLATFORM_OWNER` reachability decision is made.
-> At verification time, GitHub reported only PR #539 open; source still leaves PR5
-> blocked because `_derive_scope()` cannot return `AIScope.PLATFORM_OWNER`.
+> **Current gate (updated 2026-06-06):** bot-awareness PR4–PR6 shipped (#541) and the
+> `PLATFORM_OWNER` reachability decision (D1) is **resolved** — `_derive_scope()` now
+> returns `AIScope.PLATFORM_OWNER` for the bot owner. The remaining gate is **maintainer
+> approval of the orchestration foundation**
+> (`ai-complex-request-tool-orchestration-plan.md`) before any net-new tool. (The
+> pre-#541 verification snapshot in §2.1 is historical.)
 >
 > **Authority:** this document governs prioritization and integration boundaries for
 > net-new AI tool capability families only. It is subordinate to the binding architecture
@@ -76,7 +78,10 @@
 
 ## 2. Current repo state verification
 
-### 2.1 Verification method and snapshot
+### 2.1 Verification method and snapshot (historical — pre-#541)
+
+> **Historical snapshot.** Captured before #541 merged; PR4–PR6 have since shipped and
+> D1 is resolved (see §1). Kept to show the verification *method*, not current state.
 
 Verified on **2026-06-06** against local `main` equivalent commit `60f1cd2` and the
 GitHub API for `menno420/superbot`:
@@ -149,9 +154,9 @@ GitHub API for `menno420/superbot`:
 
 ### 2.5 Source/doc mismatches and stop conditions
 
-1. **Platform-owner reachability remains unresolved.** `AIScope.PLATFORM_OWNER` exists,
-   but `_derive_scope()` never returns it. This blocks owner-only AI tools and must be a
-   product/security decision, not an incidental roadmap implementation.
+1. **Platform-owner reachability — RESOLVED (#541).** `_derive_scope()` now returns
+   `AIScope.PLATFORM_OWNER` for the bot owner, so owner-only AI tools are no longer
+   blocked on D1. (Pre-#541 this was the blocker: `_derive_scope()` never returned it.)
 2. **Planned orchestration names are not shipped abstractions.** Backlog language can
    sound present-tense, but source has only `AIToolSpec`, `ToolRegistry`, and the current
    provider loops. Implementations must first land or reconcile the BTD6 plan's types.
@@ -382,8 +387,9 @@ facts from model memory where grounding is required.
 - Query open/merged PRs and compare `main` source, not branch names alone.
 - Reconcile PR4 structured observations, PR5 diagnostics tool, and PR6 persistent
   findings against the approved health plan.
-- Decide D1: how, if at all, natural-language AI requests can resolve platform-owner
-  scope. Add tests proving no impersonation or accidental widening.
+- D1 **decided & shipped (#541)**: `_derive_scope()` resolves platform-owner scope for
+  the bot owner. Before building owner-only tools, re-confirm the anti-impersonation /
+  no-widening tests still hold.
 - Decide PR6 retention/history, ownership, deletion, and migration boundaries.
 - Re-run targeted searches for all planned orchestration types; remove roadmap work that
   Claude has already shipped.
@@ -718,7 +724,7 @@ closed for sensitive content.
 | Shell/Python/code execution | Reject | No safe bounded ownership/rollback | None | Remote code execution/outage |
 | Direct destructive Discord actions | Reject | High-impact and often irreversible | Not proposed; service-owned manual workflows remain | Bans/deletes/permission damage |
 | Mass DM/mass messaging/uncontrolled mentions | Reject | Abuse/spam risk | Fixed automation templates/targets with mention suppression | Harassment, Discord enforcement |
-| Platform-owner AI tools before D1 | Defer | Currently unreachable; security decision unresolved | Approved owner resolution + anti-impersonation tests | False sense of protection or privilege widening |
+| Platform-owner AI tools | Unblocked (was Defer) | D1 **resolved (#541)**: owner scope reachable; still needs per-tool owner-gating + anti-impersonation tests | Owner resolution shipped | Privilege widening if scope checks regress |
 | Persistent tool traces/raw results | Defer/reject raw | No retention owner; content is sensitive | Bounded summary schema + retention/deletion approval | Privacy breach and storage growth |
 | Generic connector before registry ADR | Defer | Equivalent to arbitrary network access | Provider/operation registry and egress/credential policy | SSRF, token leakage, uncontrolled cost |
 | Private GitHub/CI lookup | Defer | Private code/log/token scope not approved | Binding/revocation/redaction/retention design | Source/secrets leakage |

@@ -93,4 +93,6 @@ against live GitHub** — this line goes stale the moment a branch is pushed or 
 | Plans / target architecture (historical once shipped) | `docs/planning/` |
 
 **One-fact-one-home rule:** if a fact belongs in one of the homes above, **link** to
-it — do not restate it here. Restatement across files is where drift breeds.
+it — do not restate it here. Restatement across files is where drift breeds. In
+particular, **don't summarize plans'/trackers' PR numbers or status here** — link to the
+folio or tracker, which is authoritative for its own area.

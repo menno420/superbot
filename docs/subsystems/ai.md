@@ -34,14 +34,18 @@ scoped tools (including owner-gated diagnostics). Source:
   provenance + caching/source-health clarity + AI behavior/config correctness — see
   `docs/current-state.md` "Gates / blocked work".
 
+## Plans (pending approval — not raw ideas)
+
+- `docs/ai-complex-request-tool-orchestration-plan.md` (`plan`) — research-backed
+  reusable tool orchestration (toolsets, tool-choice, budgets, evidence). Approve this
+  foundation **before** net-new tools.
+- `docs/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
+  the ideas backlog onto that foundation.
+
 ## Ideas (not approved)
 
 - `docs/ideas/ai-extra-tool-capability-ideas.md` — capability backlog (web/vision/
   file/KB/connectors/scheduler/etc.). Promotion path: `docs/ideas/README.md`.
-- `docs/ai-tool-capability-roadmap.md` — non-authoritative triage/sequencing of that
-  backlog onto the existing orchestration foundation.
-- `docs/ai-complex-request-tool-orchestration-plan.md` (`plan`) — reusable tool
-  orchestration (toolsets, tool-choice, budgets, evidence); pending approval.
 
 ## Next candidates (self-direct from here)
 

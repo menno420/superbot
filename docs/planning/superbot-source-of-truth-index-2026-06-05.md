@@ -14,7 +14,10 @@
 
 ---
 
-## Read first (in this order)
+## Original 2026-06-05 read path (historical — superseded)
+
+> Preserved for history; **not** current startup instructions. Start at
+> `docs/current-state.md`, then `docs/AGENT_ORIENTATION.md`.
 
 1. `.claude/CLAUDE.md` — session workflow + CI parity + CodeGraph + arch invariants.
 2. `docs/AGENT_ORIENTATION.md` — binding "reading order by task".
@@ -58,7 +61,11 @@ server-management state and the remaining queue (PR5+).
 
 ---
 
-## Current planning docs (trust now)
+## Planning docs as classified on 2026-06-05 (historical snapshot)
+
+> The "✅ current" / "trust now" marks below were accurate on 2026-06-05; some have
+> since shipped or been superseded. Use the live trackers + `docs/current-state.md`
+> for current status.
 
 | Doc | Trust | Note |
 |---|---|---|
