@@ -117,6 +117,7 @@ def test_select_values_cover_every_platform_subcommand():
                 seen.add(opt.value)
     expected = {
         # Runtime / status
+        "health",
         "status",
         "runtime",
         "lifecycle",

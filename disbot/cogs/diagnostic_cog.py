@@ -23,6 +23,7 @@ from cogs.diagnostic._platform_embeds import (
     build_consistency_embed,
     build_customization_embed,
     build_flags_embed,
+    build_health_embed,
     build_identity_embed,
     build_lifecycle_embed,
     build_locks_embed,
@@ -333,6 +334,28 @@ class DiagnosticCog(commands.Cog):
     async def platform_runtime(self, ctx):
         """High-level runtime snapshot: every registered diagnostic provider."""
         await ctx.send(embed=build_runtime_embed())
+
+    @platform_grp.command(name="health")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_health(self, ctx):
+        """Deterministic operational health snapshot (admin-gated, redacted).
+
+        Aggregates runtime / gateway / database / consistency / startup /
+        tasks / diagnostics / AI subsystem health into one bounded view.
+        Works with AI disabled; the bot owner sees the full cross-process
+        projection, other admins a guild-local redacted one.
+        """
+        from services import health_snapshot_service
+        from services.health_contracts import HealthSnapshotRequest
+
+        audience = await health_snapshot_service.resolve_audience(self.bot, ctx.author)
+        request = HealthSnapshotRequest(
+            purpose="summary",
+            audience=audience,
+            guild_id=ctx.guild.id if ctx.guild is not None else None,
+        )
+        snapshot = await health_snapshot_service.collect_snapshot(request, bot=self.bot)
+        await ctx.send(embed=build_health_embed(snapshot))
 
     @platform_grp.command(name="lifecycle")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)

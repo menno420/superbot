@@ -697,6 +697,24 @@ def _project_finding(
 # ---------------------------------------------------------------------------
 
 
+async def resolve_audience(bot: Any, user: Any) -> HealthAudience:
+    """Map a Discord invoker to a :class:`HealthAudience`.
+
+    The deterministic command/panel surfaces are administrator-gated, so a
+    non-owner caller is a guild admin (``GUILD_ADMIN``); the bot/platform
+    owner gets the full cross-process view (``PLATFORM_OWNER``).  Centralised
+    here so the cog and the panel never diverge on the owner check.  Falls
+    back to ``GUILD_ADMIN`` (the safer, more-redacted projection) if the
+    owner check is unavailable.
+    """
+    try:
+        if await bot.is_owner(user):
+            return HealthAudience.PLATFORM_OWNER
+    except Exception:  # noqa: BLE001 — never widen access on a failed check
+        logger.debug("resolve_audience: is_owner check failed", exc_info=True)
+    return HealthAudience.GUILD_ADMIN
+
+
 def _sync_subsystems(
     request: HealthSnapshotRequest,
     bot: Any,
