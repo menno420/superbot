@@ -6,12 +6,13 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · #551 merged (role-automation degradation fix —
-> `role_automation.apply` preflight-guards at the mutation seam + classifies
-> failures; live health "Errors" surface back to ✅). This session: made the
-> **session journal lean + self-maintaining** (archive split → `.session-journal-
-> archive.md`, a Quick reference, and a "reorganize-each-session" protocol step;
-> PR pending). Verify open PRs against live GitHub (`list_pull_requests`); this
+> **Last updated:** 2026-06-06 · #552 merged (session journal made lean +
+> self-maintaining). This session: **consistency-warning presentation fix** —
+> the health snapshot no longer renders benign `SKIPPED` consistency sections
+> ("not applicable", e.g. bindings-from-DM / no-backfill-rows) as WARNING "needs
+> attention"; only WARNING/FATAL count as blocking. Plus live verification of the
+> role-automation diagnostic (above-bot/missing-role/happy all confirmed). PR
+> pending. Verify open PRs against live GitHub (`list_pull_requests`); this
 > snapshot names none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
@@ -38,6 +39,7 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
+- **#552** — session journal made lean + self-maintaining: archive split (`.session-journal-archive.md`), a Quick reference, Rules regrouped, and a "tidy-each-session" protocol step (mirrored in `.claude/CLAUDE.md`); docs-only.
 - **#551** — role-automation degradation fix: `role_automation.apply` preflight-guards at the mutation seam (via `utils.role_feasibility`), classifies failures, and keeps predictable Manage-Roles/hierarchy blockers off the ERROR-only health surface; operator + role-Diagnostics surfaces show the cause.
 - **#550** — collaboration-model doc + truth-layer restructure (goal-first, prompts-as-guidance); docs-only.
 - **#549** — server-management cleanup PR8+PR9: `policy_version` marker, presets builder + dry-run + panel diagnostics, and the guild-default `scope_id=0` no-op fix.

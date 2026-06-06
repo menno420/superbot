@@ -30,7 +30,14 @@ health system for a failure it merely displays.
   Use the finding's `related_subsystem` / `related_command` to locate it.
 - **"Consistency" / bindings-backfill / config-arbitration warnings** → a **separate**
   layer: `services/platform_consistency.py`. Distinguish benign warnings from blockers
-  via `docs/platform-consistency-ledger.md`; they are not health findings.
+  via `docs/platform-consistency-ledger.md`. The health snapshot renders only
+  **WARNING/FATAL** sections as "needs attention"; **SKIPPED** ("not applicable / no
+  data / no context") go to `facts.skipped_sections`, not findings
+  (`_build_consistency_subsystem`, 2026-06-06). Known-benign states (verified live):
+  **Bindings SKIPPED** = health asked from a **DM** (runs CLEAN inside a guild);
+  **Binding backfill SKIPPED** = no checkpoint rows (no backfill has run — normal);
+  **Config arbitration WARNING with `missing=0`** = legacy reads while
+  `bindings.primary` is not production-flipped (the designed pre-flip state — ledger §6).
 - **`diagnostics_health_snapshot` returned nothing for a user** → it's owner-gated and
   read-only by design; a non-owner getting nothing is correct, not a bug.
 - **A health card itself errors / is empty** → check provider isolation in
