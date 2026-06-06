@@ -238,10 +238,10 @@ def _collect_categories(guild: Any, me: Any) -> tuple[CategoryMeta, ...]:
 
 
 def _collect_roles(guild: Any, me: Any) -> tuple[RoleMeta, ...]:
+    from utils import role_feasibility
+
     out: list[RoleMeta] = []
-    bot_top_position = (
-        getattr(getattr(me, "top_role", None), "position", 0) if me is not None else 0
-    )
+    bot_top = getattr(me, "top_role", None) if me is not None else None
     bot_can_manage_roles = (
         bool(getattr(getattr(me, "guild_permissions", None), "manage_roles", False))
         if me is not None
@@ -249,8 +249,12 @@ def _collect_roles(guild: Any, me: Any) -> tuple[RoleMeta, ...]:
     )
     for role in getattr(guild, "roles", ()) or ():
         position = getattr(role, "position", 0)
+        # Hierarchy via the shared (position, id) tiebreak — raw `position <`
+        # mis-ranks roles that tie the bot's position (the common all-at-1 case).
         manageable = bool(
-            bot_can_manage_roles and position < bot_top_position,
+            bot_can_manage_roles
+            and bot_top is not None
+            and role_feasibility.is_below(role, bot_top),
         )
         out.append(
             RoleMeta(

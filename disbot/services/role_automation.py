@@ -429,7 +429,6 @@ def check_preflight(
             missing_roles=tuple(t.role_name for t in thresholds),
         )
     bot_has_manage = _bot_has_manage_roles(me)
-    bot_top_position = getattr(getattr(me, "top_role", None), "position", 0)
 
     missing: list[str] = []
     blockers: list[str] = []
@@ -441,7 +440,11 @@ def check_preflight(
         if role is None:
             missing.append(t.role_name)
             continue
-        if getattr(role, "position", 0) >= bot_top_position:
+        # Delegate the hierarchy verdict to the single source of truth, which
+        # compares with Discord's (position, id) tiebreak — raw `position >=`
+        # mis-flagged roles that merely tie the bot's position (the common case
+        # when every role sits at position 1).
+        if evaluate_role(role, bot_member=me).code == ABOVE_BOT:
             blockers.append(t.role_name)
 
     return PreflightResult(

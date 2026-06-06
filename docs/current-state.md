@@ -7,13 +7,14 @@
 > contradicted each other across a single merge).
 >
 > **Last updated:** 2026-06-06 · #552 merged (session journal made lean +
-> self-maintaining). This session: **consistency-warning presentation fix** —
-> the health snapshot no longer renders benign `SKIPPED` consistency sections
-> ("not applicable", e.g. bindings-from-DM / no-backfill-rows) as WARNING "needs
-> attention"; only WARNING/FATAL count as blocking. Plus live verification of the
-> role-automation diagnostic (above-bot/missing-role/happy all confirmed). PR
-> pending. Verify open PRs against live GitHub (`list_pull_requests`); this
-> snapshot names none on purpose.
+> self-maintaining). This session (PR pending): (1) **consistency-warning
+> presentation fix** — the health snapshot no longer renders benign `SKIPPED`
+> sections (bindings-from-DM / no-backfill-rows) as WARNING "needs attention";
+> (2) **role-hierarchy tiebreak fix** — `role_feasibility` / `role_automation`
+> now compare role hierarchy by (position, id) like discord.py, not raw
+> `position` (which mis-flagged manageable roles when every role sits at
+> position 1; caught live). Verify open PRs against live GitHub
+> (`list_pull_requests`); this snapshot names none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
