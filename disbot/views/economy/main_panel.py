@@ -162,7 +162,12 @@ class EconomyPanelView(PersistentView):
         embed.add_field(name="Coins", value=f"{xp_row.get('coins', 0)} 🪙", inline=True)
         embed.set_footer(text="Pick a job from the dropdown, or click ↩ Back.")
 
-        work_view = _WorkSubView(uid, gid, available)
+        work_view = _WorkSubView(
+            uid,
+            gid,
+            available,
+            back_target=getattr(self, "_back_target", None),
+        )
         await safe_edit(interaction, embed=embed, view=work_view)
 
     @discord.ui.button(

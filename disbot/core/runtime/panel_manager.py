@@ -24,6 +24,7 @@ Public surface:
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 
 import discord
 from discord.ext import commands
@@ -31,6 +32,23 @@ from discord.ext import commands
 from core.runtime import message_anchor_manager
 
 logger = logging.getLogger("bot.runtime.panels")
+
+# Optional hook, registered once at startup by ``HelpCog``, that appends a
+# "↩ Back to Help" button (and seeds ``view._back_target``) on a freshly
+# rendered hub view so directly-invoked hubs (`!modmenu`, `!economymenu`, …)
+# get the same back-navigation as the `!help` route.  Core stays decoupled
+# from the cogs/views layer by holding an opaque callable — the same
+# register-at-startup pattern as ``cleanup_registry``.  A failure in the hook
+# must never break panel rendering.
+_back_to_help_attacher: Callable[[discord.ui.View], None] | None = None
+
+
+def register_back_to_help_attacher(
+    attacher: Callable[[discord.ui.View], None],
+) -> None:
+    """Register the hub back-to-help hook (idempotent; last registration wins)."""
+    global _back_to_help_attacher
+    _back_to_help_attacher = attacher
 
 
 async def get_or_render_panel(
@@ -75,6 +93,18 @@ async def get_or_render_panel(
                 exc,
             )
         await message_anchor_manager.mark_stale(str(anchor["anchor_id"]))
+
+    # Give directly-invoked hubs the same "↩ Back to Help" affordance as the
+    # !help route (and seed view._back_target so sub-panels inherit the chain).
+    if _back_to_help_attacher is not None:
+        try:
+            _back_to_help_attacher(view)
+        except Exception:  # noqa: BLE001 — back-nav must never break rendering
+            logger.warning(
+                "get_or_render_panel: back-to-help attach failed | subsystem=%s",
+                subsystem,
+                exc_info=True,
+            )
 
     msg = await ctx.send(embed=embed, view=view)
     await message_anchor_manager.upsert(

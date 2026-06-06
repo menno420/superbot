@@ -206,3 +206,95 @@ async def test_re_invocation_produces_new_message_id_each_time():
     assert upsert.await_args_list[0].args == (111, 222, 333, "economy", 1001)
     assert upsert.await_args_list[1].args == (111, 222, 333, "economy", 1002)
     old_msg.delete.assert_awaited_once()
+
+
+@pytest.fixture(autouse=True)
+def _isolate_back_to_help_attacher():
+    """Keep the module-global attacher from leaking across tests/modules."""
+    saved = panel_manager._back_to_help_attacher
+    panel_manager._back_to_help_attacher = None
+    try:
+        yield
+    finally:
+        panel_manager._back_to_help_attacher = saved
+
+
+def _anchor_patches():
+    return (
+        patch(
+            "core.runtime.panel_manager.message_anchor_manager.get",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "core.runtime.panel_manager.message_anchor_manager.mark_stale",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "core.runtime.panel_manager.message_anchor_manager.upsert",
+            new_callable=AsyncMock,
+        ),
+    )
+
+
+@pytest.mark.asyncio
+async def test_back_to_help_attacher_is_invoked_when_registered():
+    """A registered hook is applied to the hub view before it's sent
+    (directly-invoked hubs get "↩ Back to Help")."""
+    ctx = _make_ctx()
+    embed, view = MagicMock(), MagicMock()
+    attacher = MagicMock()
+    panel_manager.register_back_to_help_attacher(attacher)
+
+    get_p, stale_p, upsert_p = _anchor_patches()
+    with get_p, stale_p, upsert_p:
+        await panel_manager.get_or_render_panel(ctx, "economy", embed, view)
+
+    attacher.assert_called_once_with(view)
+    ctx.send.assert_awaited_once_with(embed=embed, view=view)
+
+
+@pytest.mark.asyncio
+async def test_back_to_help_attacher_failure_never_breaks_render():
+    """A hook that raises is logged + swallowed — the panel still renders."""
+    ctx = _make_ctx()
+    embed, view = MagicMock(), MagicMock()
+    panel_manager.register_back_to_help_attacher(
+        MagicMock(side_effect=RuntimeError("boom")),
+    )
+
+    get_p, stale_p, upsert_p = _anchor_patches()
+    with get_p, stale_p, upsert_p:
+        await panel_manager.get_or_render_panel(ctx, "role", embed, view)
+
+    ctx.send.assert_awaited_once_with(embed=embed, view=view)
+
+
+@pytest.mark.asyncio
+async def test_no_attacher_registered_is_a_noop():
+    ctx = _make_ctx()
+    embed, view = MagicMock(), MagicMock()
+    assert panel_manager._back_to_help_attacher is None
+    get_p, stale_p, upsert_p = _anchor_patches()
+    with get_p, stale_p, upsert_p:
+        await panel_manager.get_or_render_panel(ctx, "mining", embed, view)
+    ctx.send.assert_awaited_once_with(embed=embed, view=view)
+
+
+def test_back_to_help_attacher_is_registerable():
+    """help_cog's back-to-help helper is the registerable hook — the call the
+    bot1 composition root makes at startup."""
+    from cogs.help_cog import _attach_back_to_help_button
+
+    panel_manager.register_back_to_help_attacher(_attach_back_to_help_button)
+    assert panel_manager._back_to_help_attacher is _attach_back_to_help_button
+
+
+def test_bot1_wires_back_to_help_at_startup():
+    """The composition root (bot1) registers the hook so directly-invoked
+    hubs get back-navigation."""
+    from pathlib import Path
+
+    bot1_src = (Path(__file__).resolve().parents[3] / "disbot" / "bot1.py").read_text()
+    assert "register_back_to_help_attacher" in bot1_src
+    assert "_attach_back_to_help_button" in bot1_src

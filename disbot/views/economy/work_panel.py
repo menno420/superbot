@@ -26,7 +26,7 @@ from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
 from utils.ui_constants import SUCCESS_COLOR
-from views.navigation import attach_back_button
+from views.navigation import BackTarget, attach_back_button, chain_back
 
 
 class _WorkView(discord.ui.View):
@@ -156,7 +156,10 @@ class _JobSelect(discord.ui.Select):
         # ↩ Back to Economy button stays enabled. The previous flow
         # disabled every child on ``_work_view`` (including Back),
         # leaving the user on a dead-end result screen.
-        result_view = _WorkResultView(interaction.user)
+        result_view = _WorkResultView(
+            interaction.user,
+            back_target=getattr(self._work_view, "_back_target", None),
+        )
         await safe_edit(interaction, embed=embed, view=result_view)
         result_view.message = interaction.message
         self._work_view.stop()
@@ -177,8 +180,17 @@ class _JobSelect(discord.ui.Select):
 class _WorkSubView(_WorkView):
     """Work sub-panel with a Back button to return to the economy hub."""
 
-    def __init__(self, user_id: int, guild_id: int, available: list[str]):
+    def __init__(
+        self,
+        user_id: int,
+        guild_id: int,
+        available: list[str],
+        back_target: BackTarget | None = None,
+    ):
         super().__init__(user_id, guild_id, available)
+        # AB2: propagate the hub's back chain (e.g. back-to-Help when opened via
+        # !economymenu) so "↩ Back" rebuilds Economy with the chain re-attached.
+        self._back_target = back_target
 
         async def _build_parent(
             interaction: discord.Interaction,
@@ -193,7 +205,7 @@ class _WorkSubView(_WorkView):
             self,
             label="↩ Back",
             custom_id="economy:work:back",
-            parent_builder=_build_parent,
+            parent_builder=chain_back(_build_parent, back_target),
             row=1,
         )
 
@@ -206,10 +218,15 @@ class _WorkResultView(discord.ui.View):
     Back and left the user with no escape).
     """
 
-    def __init__(self, author: discord.Member | discord.User):
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        back_target: BackTarget | None = None,
+    ):
         super().__init__(timeout=60)
         self._author = author
         self.message: discord.Message | None = None
+        self._back_target = back_target
 
         async def _build_parent(
             interaction: discord.Interaction,
@@ -224,7 +241,7 @@ class _WorkResultView(discord.ui.View):
             self,
             label="↩ Back to Economy",
             custom_id="economy:back",
-            parent_builder=_build_parent,
+            parent_builder=chain_back(_build_parent, back_target),
             row=0,
         )
 

@@ -209,3 +209,60 @@ async def test_work_result_back_button_returns_to_economy_panel():
     interaction.response.edit_message.assert_awaited_once()
     kwargs = interaction.response.edit_message.await_args.kwargs
     assert isinstance(kwargs["view"], EconomyPanelView)
+
+
+# ---------------------------------------------------------------------------
+# #2 regression — the Work path propagates the hub back chain (no lost back)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_work_subview_back_re_attaches_grandparent_chain():
+    """Opened with a back_target (e.g. back-to-Help from !economymenu), the
+    Work sub-view's ↩ Back rebuilds Economy with the grandparent re-attached —
+    the back button is no longer dropped mid-navigation.
+    """
+    from views.economy.main_panel import EconomyPanelView
+    from views.navigation import BackTarget
+
+    async def _grandparent_builder(_interaction):  # pragma: no cover - not invoked
+        return discord.Embed(title="Help"), EconomyPanelView()
+
+    grandparent = BackTarget(
+        builder=_grandparent_builder,
+        label="↩ Back to Help",
+        custom_id="help:back",
+    )
+    sub = _WorkSubView(
+        user_id=1, guild_id=2, available=["janitor"], back_target=grandparent
+    )
+    # stored for further-down propagation (e.g. the result view)
+    assert sub._back_target is grandparent
+    back_btn = next(
+        c
+        for c in sub.children
+        if isinstance(c, discord.ui.Button) and c.custom_id == "economy:work:back"
+    )
+
+    interaction = MagicMock()
+    interaction.user = _author(id_=1)
+    interaction.guild_id = 2
+    interaction.response.is_done = MagicMock(return_value=False)
+    interaction.response.defer = AsyncMock()
+    interaction.response.edit_message = AsyncMock()
+
+    with patch(
+        "views.economy.work_panel._build_economy_embed",
+        new_callable=AsyncMock,
+        return_value=discord.Embed(title="Economy"),
+    ):
+        await back_btn.callback(interaction)
+
+    rebuilt = interaction.response.edit_message.await_args.kwargs["view"]
+    assert isinstance(rebuilt, EconomyPanelView)
+    # chain_back re-attached the grandparent's back button + target on Economy:
+    assert getattr(rebuilt, "_back_target", None) is grandparent
+    assert any(
+        isinstance(c, discord.ui.Button) and c.custom_id == "help:back"
+        for c in rebuilt.children
+    )
