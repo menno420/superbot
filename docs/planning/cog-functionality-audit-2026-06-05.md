@@ -81,10 +81,15 @@ keys off the hardcoded `config.BOT_OWNER_USER_ID` (and AI is off anyway).
 >    Wallet sub-view's "Back to Economy" button is **disabled** (concrete bug). Same class
 >    as #1 — back-nav attachment/propagation is inconsistent across the view tree.
 >
-> ⇒ Findings #1 and #3 are one **back-navigation consistency** class (root cause, not
-> per-panel symptoms). Per the maintainer's "root cause over symptom" rule, the fix is a
-> holistic pass over the `attach_back_button` / `BackTarget` / `get_or_render_panel` seam,
-> not 20 patches. Sequencing TBD (its own UX PR, distinct from PR B's hard-failure remit).
+> ⇒ Findings #1 and #3 are one **back-navigation consistency** class — **FIXED this
+> session** (live-confirmed) by a holistic, layer-clean change at the shared seam:
+> `get_or_render_panel` now calls a registered back-to-help hook (wired from `bot1`'s
+> composition root), so every directly-invoked hub gets "↩ Back to Help" + a seeded
+> `_back_target`; the Economy Work sub-views now `chain_back` the grandparent so the chain
+> survives `Economy → Work → Back`. Verified on `!modmenu`, `!economymenu`, and the Work
+> path. The Wallet "disabled back" (part of #3) was **not reproducible** and is dropped.
+> **Item #2 (moderation member-selector / `UserSelect` quicksearch) remains open** — a
+> feature for the moderation-UX track, needs a modal→view flow restructure.
 
 ### Core · Admin · Config
 | Cog | Panel / hub | prefix | slash | Env-gate | Status |
