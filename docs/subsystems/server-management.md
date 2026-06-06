@@ -44,11 +44,12 @@ cleanup policy, setup, and the future unified hub. Inspect first:
 
 ## Plans / pending approval
 
-The status tracker's remaining queue is the only current sequencing authority:
-cleanup policy schema/versioning, cleanup builder/dry-run/diagnostics, moderation
-configuration, setup role/moderation/governance and repair sections, role templates,
-and finally the unified Server Management Hub. Link to the tracker for exact order
-and dependencies rather than copying them here.
+The status tracker's remaining queue is the only current sequencing authority.
+Cleanup versioning + builder/dry-run/panel diagnostics shipped 2026-06-06 (PR8+PR9,
+presets-only); the queue now starts at moderation configuration, then setup
+role/moderation/governance and repair sections, role templates, and finally the
+unified Server Management Hub. Link to the tracker for exact order and dependencies
+rather than copying them here.
 
 ## Ideas (not approved)
 

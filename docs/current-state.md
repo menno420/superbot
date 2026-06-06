@@ -6,9 +6,11 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · post-#547 · closed the health/diagnostics
-> migration-`057` persistence/dedupe/retention integration-test gap (test-only;
-> verified live: 1 open PR — this session's end-of-session PR).
+> **Last updated:** 2026-06-06 · post-#548 (merged) · this session shipped
+> server-management cleanup **PR8** (policy_version marker + level round-trip) and
+> **PR9** (cleanup builder + dry-run + dedicated-panel diagnostics; fixed the
+> guild-default `scope_id=0` silent no-op). Detail/status: server-management
+> folio + tracker. Verify open PRs against live GitHub.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -26,13 +28,15 @@ in the sandbox**, not broken. Known UX follow-ups remain (below).
 
 ## In flight (verify against live GitHub)
 
-**1 open PR** as of this snapshot: **#548** — closes the migration-`057`
-integration-test gap (test-only — see the health/diagnostics folio).
+**1 open PR** as of this snapshot: this session's end-of-session PR —
+server-management cleanup **PR8 + PR9** on `claude/nifty-cerf-59MKG` (see the
+server-management folio/tracker). **#548 has merged.**
 **Always re-verify open PRs against live GitHub** before starting work — this is a dated
 snapshot, and a later PR may have opened since.
 
 ## Recently shipped (newest first)
 
+- **#548** — closed the migration-`057` persistence/dedupe/retention integration-test gap (test-only).
 - **#546** — canonical subsystem folios (health/diagnostics, server-mgmt, settings, BTD6, games, media).
 - **#544** — freshness-oriented docs route, lifecycle labels, ideas area, and subsystem-folio model.
 - **#543** — boot / test-bot capability doc correction.

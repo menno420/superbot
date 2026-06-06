@@ -6,9 +6,9 @@
 > done*, **this tracker (cross-checked against source) wins**; the roadmap remains
 > the target architecture and the implementation plan remains the PR-scope detail.
 >
-> **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523). **Body is current
-> through PR7; remaining queue starts at PR8** — the "Shipped" + "Remaining queue"
-> sections below are authoritative.
+> **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523; updated 2026-06-06
+> for PR8+PR9). **Body is current through PR9; remaining queue starts at PR10** —
+> the "Shipped" + "Remaining queue" sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -248,16 +248,41 @@ The deferred move/reorder UI from #523, routed through the lifecycle service.
   first-class category create/rename/delete UI (categories are already movable /
   renamable / deletable through the service as `GuildChannel`s).
 
+### PR8 + PR9 — Cleanup versioning, builder, dry-run, panel diagnostics *(shipped 2026-06-06)*
+
+Shipped together on one branch (`claude/nifty-cerf-59MKG`). **Presets-only (lean)**
+per maintainer decision — every write maps to the existing three `cleanup_policies`
+columns through the unchanged governance pipeline.
+
+- **PR8** — migration `058` adds `policy_version INTEGER NOT NULL DEFAULT 1`
+  (additive; PK + RC-5 `scope_type` CHECK untouched; resolved behaviour
+  byte-identical). `services.cleanup_levels`: `level_for_columns` round-trip +
+  `POLICY_VERSION`. `get_all_cleanup_for_guild` returns `policy_version`.
+- **PR9** — `services/cleanup_diagnostics.py` (async, presets-only):
+  `collect_cleanup_diagnostics` (per-scope levels, stale-scope + ineffective-row
+  detection), `preview_cleanup_change` (side-effect-free dry-run via the **real**
+  resolver, so preview == runtime), `apply_cleanup_change` (audited apply through
+  the unchanged pipeline). `views/cleanup/policy_panel.py`: diagnostics view +
+  presets builder (scope → level → dry-run → confirm → apply), admin re-check at
+  the mutation point. Surfaced via a "Cleanup Policies" button on the cleanup hub
+  (`cogs/cleanup/panel.py`).
+- **Root-cause fix (found while building):** the setup wizard wrote guild-default
+  cleanup at `scope_id=0`, but the resolver looks up guild policy at
+  `scope_id=guild_id` — so **guild-default never took effect**. Centralised the
+  write-side convention in `cleanup_levels.cleanup_scope_id()` and fixed
+  `setup_operations._apply_set_cleanup_policy`. Verified live + regression-pinned.
+- **Descope vs the implementation plan:** the plan's PR8 JSONB "dimensions" column
+  is **deferred** (no consumer yet); only `policy_version` shipped. Diagnostics
+  flag legacy `scope_id=0` guild rows as ineffective (re-set to fix).
+
 ---
 
-## Remaining queue (starts at PR8)
+## Remaining queue (starts at PR10)
 
-Per the implementation plan's dependency order. PR7 shipped (see above).
+Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR8** | Cleanup policy schema + versioning (preserve RC-5 thread-inheritance behavior). | — |
-| **PR9** | Cleanup builder + dry-run + diagnostics. | PR8, #522 |
 | **PR10** | Moderation first-class configuration (mod-roles, log destinations, escalation, DMs). | #521 |
 | **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
