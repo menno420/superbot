@@ -1,5 +1,9 @@
 # AI Extra Tool Capability Ideas Backlog
 
+> **`ideas` — not approved for implementation.** Promotion path + criteria:
+> [`docs/ideas/README.md`](./README.md). For what is true now, see
+> `docs/current-state.md`.
+
 **Status:** ideas backlog — not approved for implementation yet.  
 **Created:** 2026-06-06  
 **Purpose:** capture AI tool/capability ideas that are not already covered by the current bot-awareness diagnostics plan or the BTD6 complex tool-orchestration plan.  

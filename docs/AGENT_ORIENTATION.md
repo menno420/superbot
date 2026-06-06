@@ -39,14 +39,19 @@ read **`docs/helper-policy.md`** first.
 
 ## Reading order by task
 
+> **Working in one area?** Start at its folio — `docs/subsystems/<area>.md`
+> (consolidates that area's rules · current state · ideas · next candidates). The
+> routes below are the cross-cutting fallback when no folio fits yet.
+
 ### Any task
 
 | Order | Doc | Why |
 |---|---|---|
 | 1 | `.claude/CLAUDE.md` | Session workflow, CI parity rules, CodeGraph quick-reference, and architecture invariants. Auto-loaded every session. |
-| 2 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
-| 3 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
-| 4 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
+| 2 | `docs/current-state.md` | **What is true right now**: stability baseline, in-flight work, recently shipped, gates, off-limits. A dated snapshot — source & merged PRs win; verify in-flight PRs against live GitHub. |
+| 3 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
+| 4 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
+| 5 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
 
 ### Adding a new subsystem / cog
 
@@ -132,6 +137,20 @@ The taxonomy below is the only reliable way to tell "what does the
 project still care about?" from "what was the plan a year ago?". When
 in doubt, treat the source files as authoritative over any doc.
 
+### Status badges (put one in each doc's header)
+
+So a doc's authority is self-declaring (no inferring from filename/date),
+each major doc should carry a one-line badge in its header. Use one of:
+
+- **`binding`** — authoritative contract; changing it is an architecture change.
+- **`living-ledger`** — current status, updated as work lands (carry a date).
+- **`reference`** — a standard / how-to; stable.
+- **`plan`** — a planned end-state; cross-check source before implementing.
+- **`historical`** — superseded; kept for context. Start at `docs/current-state.md`.
+- **`ideas`** — brainstorm; not approved for implementation.
+
+When a doc has no badge, the classification lists below are authoritative.
+
 ### Binding (treat as authoritative)
 
 These define the platform contract. Changing them is an architecture
@@ -157,6 +176,9 @@ something that conflicts with them.
 Updated as work lands. Always check the date / referenced PRs at the
 top before trusting the contents.
 
+- `docs/current-state.md` — the cross-cutting "what is true right now?"
+  router (read 2nd, after CLAUDE.md): stability baseline, in-flight work,
+  gates, off-limits. Source code and merged PRs win over it.
 - `docs/platform-consistency-ledger.md`
 - `docs/bot-awareness-implementation-plan.md` — the bot-awareness / health-diagnostics
   programme. **Execution authority** for that work + live delivery status (**all 6 PRs
@@ -168,8 +190,9 @@ top before trusting the contents.
 - `docs/settings-customization-command-map.md`
 - `docs/operator-settings-presets.md`
 - `docs/planning/server-management-status-2026-06-05.md` — live status tracker for
-  the server-management initiative (shipped #520–#523; remaining queue PR5+).
-  Authoritative on *what is done*; start here before reading the roadmap/plan.
+  the server-management initiative. Authoritative on *what is done* + the remaining
+  queue; **trust the tracker's "Shipped" / "Remaining queue" sections over any summary
+  here** — don't restate its PR numbers (they drift). Start here before the roadmap/plan.
 - `docs/games-actionability-roadmap.md` (status: complete — historical now)
 - `docs/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
 - `docs/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)
@@ -215,6 +238,15 @@ cross-check the source and the consistency ledger first.
   (advisory, **except** its §2 "operating decisions" and §6 "rejection ledger",
   which are binding "do-not-propose"). Read before proposing new
   UX/diagnostics/feature ideas so you don't re-litigate settled rejections.
+
+### Ideas / brainstorms (not approved)
+
+Capture, not commitment. Refine into a plan before implementing.
+
+- `docs/ideas/` — pure idea backlogs (e.g. AI extra-tool capabilities). See
+  `docs/ideas/README.md` for the promotion path + criteria.
+- `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog whose §2
+  (operating decisions) + §6 (rejection ledger) are **binding**.
 
 ### Subsystem-specific scaffold notes
 
