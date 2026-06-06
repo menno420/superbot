@@ -54,12 +54,25 @@ path rather than adding ad-hoc diagnostics tools.
 
 ## Next candidates
 
-1. Maintainer live-test the production AI path: owner receives
-   `diagnostics_health_snapshot`; a non-owner admin does not.
-2. Maintainer live-test grouped findings and recurring-failure count behavior.
-3. Boot the sandbox with local Postgres and integration-test migration `057`,
-   persistence, and `ON CONFLICT` dedupe/counting; existing PR4/PR6 unit coverage
-   mocks the DB and leaves this integration gap.
+1. **Close the migration-`057` persistence/dedupe integration gap (ready — test-only,
+   sandbox-verifiable, no runtime/architecture change).** Existing coverage mocks the
+   DB: `tests/unit/services/test_health_findings_service.py` monkeypatches `svc._db`,
+   and its docstring **wrongly** claims the `ON CONFLICT` path "is integration-tested
+   against real Postgres" — no such test exists. Two blockers the implementer must know:
+   `tests/conftest.py` has **no** Postgres fixture, and CI (`code-quality.yml`) runs
+   **no** Postgres service, so a real-DB test must **skip cleanly** in CI. Deliver, in
+   one PR: a CI-safe static SQL-shape test for migration `057` (mirror
+   `tests/unit/db/test_migration_051_main_server_backfill.py`) + a real-Postgres
+   integration test (module-local `postgres_pool` fixture, `pytest.skip` when
+   `DATABASE_URL` is unreachable) exercising upsert → occurrence delta-add → reopen-on-
+   recurrence → keep-ignored → `list`/`count` → roll-up-then-prune, and correct the
+   false docstring. Boot local Postgres per the journal runbook to run it live.
+2. Maintainer live-test the production AI path: owner receives
+   `diagnostics_health_snapshot`; a non-owner admin does not. **Sandbox cannot do
+   this** (no AI-provider key) — it is owed to the maintainer on production.
+3. Maintainer live-test grouped findings and recurring-failure count behavior
+   (`HEALTH_GROUPED_FINDINGS=1` + induced repeated errors; recurrence count across a
+   restart overlaps candidate #1's persistence path).
 
 ## Related docs
 

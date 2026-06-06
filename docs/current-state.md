@@ -6,7 +6,8 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · post-#544 · subsystem-folio mapping session.
+> **Last updated:** 2026-06-06 · post-#546 · workflow-validation / next-task scoping session
+> (verified live: **0 open PRs**, #546 newest merged).
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -24,12 +25,13 @@ in the sandbox**, not broken. Known UX follow-ups remain (below).
 
 ## In flight (verify against live GitHub)
 
-The docs-restructure work recorded here previously is no longer in flight: **PR #544
-is merged**. **Verify open PRs against live GitHub** before starting work; this dated
-snapshot does not claim that no other PR is open.
+**0 open PRs** as of this snapshot (verified live against GitHub, post-#546).
+**Always re-verify open PRs against live GitHub** before starting work — this is a dated
+snapshot, and a later PR may have opened since.
 
 ## Recently shipped (newest first)
 
+- **#546** — canonical subsystem folios (health/diagnostics, server-mgmt, settings, BTD6, games, media).
 - **#544** — freshness-oriented docs route, lifecycle labels, ideas area, and subsystem-folio model.
 - **#543** — boot / test-bot capability doc correction.
 - **#542** — docs reconciled to shipped bot-awareness status.
