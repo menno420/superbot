@@ -39,6 +39,10 @@ read **`docs/helper-policy.md`** first.
 
 ## Reading order by task
 
+> **Working in one area?** Start at its folio — `docs/subsystems/<area>.md`
+> (consolidates that area's rules · current state · ideas · next candidates). The
+> routes below are the cross-cutting fallback when no folio fits yet.
+
 ### Any task
 
 | Order | Doc | Why |

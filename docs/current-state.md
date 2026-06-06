@@ -86,6 +86,7 @@ goes stale the moment a branch is pushed.
 | How to boot/operate the sandbox · maintainer preferences · hard-won rules · gotchas | `.session-journal.md` (guidebook head) |
 | What happened in past sessions | `.session-journal.md` (session log) |
 | Which docs to read for a specific task | `docs/AGENT_ORIENTATION.md` |
+| Deep-dive on one part of the bot (AI, BTD6, server-mgmt…) | `docs/subsystems/<area>.md` (start here for an area) |
 | Architecture / ownership / runtime contracts (binding) | `docs/architecture.md` · `docs/ownership.md` · `docs/runtime_contracts.md` |
 | Brainstorms (not approved) | `docs/ideas/` |
 | Plans / target architecture (historical once shipped) | `docs/planning/` |
