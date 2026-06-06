@@ -44,9 +44,10 @@ read **`docs/helper-policy.md`** first.
 | Order | Doc | Why |
 |---|---|---|
 | 1 | `.claude/CLAUDE.md` | Session workflow, CI parity rules, CodeGraph quick-reference, and architecture invariants. Auto-loaded every session. |
-| 2 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
-| 3 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
-| 4 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
+| 2 | `docs/current-state.md` | **What is true right now**: stability baseline, in-flight work, recently shipped, gates, off-limits. A dated snapshot — source & merged PRs win; verify in-flight PRs against live GitHub. |
+| 3 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
+| 4 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
+| 5 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
 
 ### Adding a new subsystem / cog
 
@@ -157,6 +158,9 @@ something that conflicts with them.
 Updated as work lands. Always check the date / referenced PRs at the
 top before trusting the contents.
 
+- `docs/current-state.md` — the cross-cutting "what is true right now?"
+  router (read 2nd, after CLAUDE.md): stability baseline, in-flight work,
+  gates, off-limits. Source code and merged PRs win over it.
 - `docs/platform-consistency-ledger.md`
 - `docs/bot-awareness-implementation-plan.md` — the bot-awareness / health-diagnostics
   programme. **Execution authority** for that work + live delivery status (**all 6 PRs

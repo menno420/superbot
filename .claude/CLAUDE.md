@@ -20,12 +20,19 @@ Two more bind common operations:
 
 When a doc and a source file disagree, the source file wins.
 
+Then read **`docs/current-state.md`** — the living "what is true right now?"
+ledger (stability baseline, in-flight work, recently shipped, gates,
+off-limits, where to read next). It is a **dated snapshot**: source code and
+merged PRs win over it, and you must verify in-flight PRs against live GitHub.
+Read it before task-specific docs so you don't act on stale state.
+
 Also read **`.session-journal.md`** (repo root) at the **start** of every
 session — our cross-session working memory: the environment/boot runbook (how to
 boot the test bot, where the env vars live, the local-Postgres setup), maintainer
 preferences, recurring problems + fixes, past mistakes to avoid, and candidate
 rules not yet promoted into this file. Append a dated entry at the **end** of the
-session and commit it. Precedence: source code > this file (CLAUDE.md) > the journal.
+session and commit it. Precedence: source code & merged PRs > this file
+(CLAUDE.md) > `docs/current-state.md` (live status) > the journal.
 <!-- READ_FIRST_END -->
 
 <!-- SESSION_WORKFLOW_START -->
