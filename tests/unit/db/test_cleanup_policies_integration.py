@@ -84,3 +84,35 @@ async def test_get_all_cleanup_returns_policy_version_per_scope(postgres_pool):
     rows = await gov_db.get_all_cleanup_for_guild(_TEST_GUILD)
     assert {r["scope_type"] for r in rows} == {"guild", "channel"}
     assert all(r.get("policy_version") == 1 for r in rows)
+
+
+async def test_guild_default_keyed_by_guild_id_resolves(postgres_pool):
+    """Regression (PR9 root-cause fix): a guild-default policy keyed by guild_id
+    is actually read by the resolver and yields a GUILD_OVERRIDE."""
+    from governance.cleanup import resolve_cleanup_policy
+    from governance.models import GovernanceContext, PolicySource
+    from services.cleanup_levels import cleanup_scope_id
+
+    sid = cleanup_scope_id("guild", _TEST_GUILD, None)
+    assert sid == _TEST_GUILD
+    await gov_db.set_cleanup_policy(_TEST_GUILD, "guild", sid, True, True, 2)
+
+    # A channel with no own/category override inherits the guild default.
+    ctx = GovernanceContext(guild_id=_TEST_GUILD, channel_id=999000111)
+    policy = await resolve_cleanup_policy(ctx)
+    assert policy.resolved_from == PolicySource.GUILD_OVERRIDE
+    assert policy.delete_after_seconds == 2
+
+
+async def test_legacy_guild_scope_zero_is_not_resolved(postgres_pool):
+    """The pre-fix convention (scope_id=0) is a silent no-op: the resolver looks
+    up guild policy at scope_id=guild_id, so a 0 row is never read.  Guards
+    against a regression back to 0."""
+    from governance.cleanup import resolve_cleanup_policy
+    from governance.models import GovernanceContext, PolicySource
+
+    await gov_db.set_cleanup_policy(_TEST_GUILD, "guild", 0, True, True, 2)
+    ctx = GovernanceContext(guild_id=_TEST_GUILD, channel_id=999000111)
+    policy = await resolve_cleanup_policy(ctx)
+    assert policy.resolved_from == PolicySource.FALLBACK_DEFAULT
+    assert policy.delete_after_seconds == 5

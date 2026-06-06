@@ -13,6 +13,7 @@ import pytest
 from services.cleanup_levels import (
     LEVELS,
     POLICY_VERSION,
+    cleanup_scope_id,
     columns_for_level,
     known_level_names,
     level_for_columns,
@@ -57,3 +58,20 @@ def test_level_for_columns_returns_none_for_custom():
         )
         is None
     )
+
+
+def test_cleanup_scope_id_guild_uses_guild_id():
+    """Guild scope must key on guild_id (the resolver's lookup), NOT 0."""
+    assert cleanup_scope_id("guild", guild_id=789, scope_id=None) == 789
+    # Even if a (legacy) scope_id is supplied, guild scope normalises to guild_id.
+    assert cleanup_scope_id("guild", guild_id=789, scope_id=0) == 789
+
+
+def test_cleanup_scope_id_channel_category_use_snowflake():
+    assert cleanup_scope_id("channel", guild_id=789, scope_id=123) == 123
+    assert cleanup_scope_id("category", guild_id=789, scope_id=456) == 456
+
+
+def test_cleanup_scope_id_requires_id_for_non_guild():
+    with pytest.raises(ValueError, match="scope_id"):
+        cleanup_scope_id("channel", guild_id=789, scope_id=None)

@@ -82,7 +82,7 @@ def test_overview_embed_when_guild_unloaded():
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_four_buttons_with_expected_custom_ids():
+def test_view_has_expected_button_custom_ids():
     view = CleanupPanelView(_author(), _cog(), guild_id=42)
     custom_ids = {
         c.custom_id  # type: ignore[attr-defined]
@@ -93,6 +93,7 @@ def test_view_has_four_buttons_with_expected_custom_ids():
         "cleanup:words",
         "cleanup:logging",
         "cleanup:settings",
+        "cleanup:policies",
         "cleanup:refresh",
     }
 
@@ -104,7 +105,7 @@ def test_view_buttons_use_two_rows():
         for c in view.children
         if isinstance(c, discord.ui.Button)
     }
-    # Three top-row routing buttons + the refresh button on a second row.
+    # Top-row routing buttons + the refresh button on a second row.
     assert rows == {0, 1}
 
 
@@ -217,6 +218,41 @@ async def test_logging_button_handles_missing_logging_cog():
 
     interaction.response.send_message.assert_awaited_once()
     interaction.response.edit_message.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_policies_button_opens_policy_panel_with_diagnostics():
+    cog = _cog()
+    view = CleanupPanelView(_author(), cog, guild_id=42)
+    interaction = MagicMock(spec=discord.Interaction)
+    interaction.user = view._author
+    interaction.client = MagicMock()
+    interaction.guild = MagicMock()
+    interaction.guild.id = 42
+    interaction.response = MagicMock()
+    interaction.response.edit_message = AsyncMock()
+    interaction.response.send_message = AsyncMock()
+
+    fake_embed = discord.Embed(title="Cleanup Policies — Diagnostics")
+    with patch(
+        "views.cleanup.policy_panel.build_cleanup_diagnostics_embed",
+        AsyncMock(return_value=fake_embed),
+    ):
+        btn = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button) and c.custom_id == "cleanup:policies"
+        )
+        await btn.callback(interaction)  # type: ignore[union-attr,misc]
+
+    from views.cleanup.policy_panel import CleanupPolicyPanelView
+
+    interaction.response.edit_message.assert_awaited_once()
+    _args, kwargs = interaction.response.edit_message.call_args
+    assert isinstance(kwargs["view"], CleanupPolicyPanelView)
+    assert kwargs["embed"] is fake_embed
+    back = _back_button(kwargs["view"])
+    assert back is not None, "Policy panel must have a cleanup:back button"
 
 
 @pytest.mark.asyncio

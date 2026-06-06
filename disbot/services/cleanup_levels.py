@@ -24,6 +24,7 @@ from typing import Any
 __all__ = [
     "LEVELS",
     "POLICY_VERSION",
+    "cleanup_scope_id",
     "columns_for_level",
     "known_level_names",
     "level_for_columns",
@@ -97,3 +98,24 @@ def level_for_columns(
         ):
             return name
     return None
+
+
+def cleanup_scope_id(scope_type: str, guild_id: int, scope_id: int | None) -> int:
+    """Return the ``cleanup_policies.scope_id`` to key a write to ``scope_type``.
+
+    Single source of truth for the write-side scope-id convention so writers and
+    the resolver agree.  The cleanup resolver
+    (:func:`governance.resolver._build_scope_chain`) looks up a guild-scope row at
+    ``scope_id == guild_id``; therefore a guild-default policy **must** be stored
+    at ``guild_id``, not at ``0``.  (A guild row written at ``scope_id=0`` is never
+    read by the resolver — the silent-no-op bug this helper exists to prevent.)
+    Category/channel rows are keyed by their snowflake.
+
+    Note: this is the cleanup convention only.  ``cog_routing`` keys guild scope
+    with SQL ``NULL`` and is unrelated.
+    """
+    if scope_type == "guild":
+        return guild_id
+    if scope_id is None:
+        raise ValueError(f"{scope_type} cleanup scope requires a scope_id")
+    return int(scope_id)
