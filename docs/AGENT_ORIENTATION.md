@@ -234,6 +234,15 @@ cross-check the source and the consistency ledger first.
   which are binding "do-not-propose"). Read before proposing new
   UX/diagnostics/feature ideas so you don't re-litigate settled rejections.
 
+### Ideas / brainstorms (not approved)
+
+Capture, not commitment. Refine into a plan before implementing.
+
+- `docs/ideas/` — pure idea backlogs (e.g. AI extra-tool capabilities). See
+  `docs/ideas/README.md` for the promotion path + criteria.
+- `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog whose §2
+  (operating decisions) + §6 (rejection ledger) are **binding**.
+
 ### Subsystem-specific scaffold notes
 
 - `disbot/core/runtime/ai/README.md`

@@ -85,7 +85,7 @@ GitHub API for `menno420/superbot`:
   `main` by `GET /repos/menno420/superbot/branches/main`.
 - GitHub reported one open pull request: **#539**, branch
   `chatgpt/ai-extra-tool-capability-ideas`, one commit ahead of `main`, adding only
-  `docs/ai-extra-tool-capability-ideas.md`.
+  `docs/ai-extra-tool-capability-ideas.md` (now relocated to `docs/ideas/`).
 - GitHub reported no open PR corresponding to bot-awareness PR4, PR5, or PR6. Branch
   names are not proof of active work, so Phase 0 must query open PRs and compare source
   again before implementation.
@@ -143,7 +143,7 @@ GitHub API for `menno420/superbot`:
 | `docs/bot-awareness-implementation-plan.md` | Approved execution authority for bot-awareness/health PR4–PR6. |
 | `docs/bot-awareness-diagnostics-plan.md` | Repository map/context only; explicitly defers execution authority to the implementation plan. |
 | `docs/ai-complex-request-tool-orchestration-plan.md` | Research-backed planning/design direction for reusable orchestration and BTD6 complex requests; source does not label it approved execution authority. |
-| PR #539 `docs/ai-extra-tool-capability-ideas.md` | Ideas backlog only; useful inventory, not approval or execution authority. |
+| PR #539 `docs/ideas/ai-extra-tool-capability-ideas.md` | Ideas backlog only; useful inventory, not approval or execution authority. |
 | This roadmap | Prioritization/integration proposal for net-new capability families; not runtime approval. |
 | `.session-journal.md` | Cross-session state and cautions; source and binding docs outrank it. |
 
@@ -179,7 +179,7 @@ approve PR4–PR6 changes, migrations, connectors, or action tools.
 | Health snapshots, structured observations, AI diagnostics explanation, persistent findings | `docs/bot-awareness-implementation-plan.md` | Waits for and consumes that work; never duplicates it. |
 | Bot-awareness repository/source context | `docs/bot-awareness-diagnostics-plan.md` | Use as a map only; correct against source and the implementation plan. |
 | Canonical tool catalogue, named toolsets, neutral tool choice, requirements, budgets, evidence, traces, BTD6 complex workflows | `docs/ai-complex-request-tool-orchestration-plan.md` — research-backed planning direction pending explicit implementation approval | Reuses its names and recommends approving/executing its foundation before net-new tools. |
-| Candidate capability inventory | PR #539 `docs/ai-extra-tool-capability-ideas.md` | Keep as backlog with a status/cross-link; this roadmap triages and sequences it. |
+| Candidate capability inventory | PR #539 `docs/ideas/ai-extra-tool-capability-ideas.md` | Keep as backlog with a status/cross-link; this roadmap triages and sequences it. |
 | Cross-session operational state | `.session-journal.md` | Record decisions and verified PR status; do not promote journal assumptions over source. |
 | Reading order and document classes | `docs/AGENT_ORIENTATION.md` | Add this roadmap only as a non-binding planning reference after approval. |
 
