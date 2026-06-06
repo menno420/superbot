@@ -122,7 +122,10 @@ async def test_set_cleanup_policy_routes_through_governance_writer():
     # Positional args: ctx, scope_type, scope_id.
     ctx_arg, scope_type, scope_id = writer.await_args.args
     assert scope_type == "guild"
-    assert scope_id == 0  # guild scope uses 0 (column is NOT NULL)
+    # Guild scope is keyed by guild_id (NOT 0): the resolver looks up guild
+    # policy at scope_id=guild_id, so 0 was a silent no-op.  See
+    # services.cleanup_levels.cleanup_scope_id.
+    assert scope_id == 1  # == _guild().id
     assert ctx_arg.guild_id == 1
     assert ctx_arg.member is not None  # actor passed through
 

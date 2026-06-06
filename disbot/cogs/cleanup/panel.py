@@ -242,6 +242,35 @@ class CleanupPanelView(HubView):
         await interaction.response.edit_message(embed=embed, view=view)
 
     @discord.ui.button(
+        label="🧹 Cleanup Policies",
+        style=discord.ButtonStyle.blurple,
+        custom_id="cleanup:policies",
+        row=0,
+    )
+    async def btn_policies(
+        self,
+        interaction: discord.Interaction,
+        _button: discord.ui.Button,
+    ) -> None:
+        # Local import keeps this module import-safe (no view-package import at
+        # cleanup-panel load time) and avoids any import cycle.
+        from views.cleanup.policy_panel import (
+            CleanupPolicyPanelView,
+            build_cleanup_diagnostics_embed,
+        )
+
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "Cleanup policies require a server context.",
+                ephemeral=True,
+            )
+            return
+        view = CleanupPolicyPanelView(interaction.user, interaction.guild)
+        _attach_back_to_cleanup_button(view, self)
+        embed = await build_cleanup_diagnostics_embed(interaction.guild)
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    @discord.ui.button(
         label="🔄 Refresh",
         style=discord.ButtonStyle.secondary,
         custom_id="cleanup:refresh",

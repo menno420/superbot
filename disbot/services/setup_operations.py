@@ -1203,7 +1203,11 @@ async def _apply_set_cleanup_policy(
     """
     from governance.models import GovernanceContext
     from governance.writes import set_cleanup_policy_for_scope
-    from services.cleanup_levels import columns_for_level, known_level_names
+    from services.cleanup_levels import (
+        cleanup_scope_id,
+        columns_for_level,
+        known_level_names,
+    )
 
     scope_kind = (op.target_kind or "").strip().lower()
     if scope_kind not in _CLEANUP_SCOPE_TYPES:
@@ -1229,24 +1233,25 @@ async def _apply_set_cleanup_policy(
             ),
         )
 
-    # Guild-scope writes use scope_id=0 (the column is NOT NULL on the
-    # governance table) — see governance/writes.py.  Category/channel
-    # writes carry the snowflake.
-    scope_id = op.target_id if scope_kind != "guild" else 0
-    if scope_kind != "guild" and scope_id is None:
+    # Category/channel writes need a target_id snowflake.  Guild scope is keyed
+    # by guild_id (NOT 0): the resolver looks up guild policy at
+    # scope_id=guild_id, so a 0 here was a silent no-op — guild-default cleanup
+    # never took effect.  cleanup_scope_id() is the single source of truth.
+    if scope_kind != "guild" and op.target_id is None:
         return SetupOperationResult(
             status="failed",
             operation=op,
             label=label,
             error=f"set_cleanup_policy: {scope_kind} scope requires target_id",
         )
+    scope_id = cleanup_scope_id(scope_kind, guild.id, op.target_id)
 
     columns = columns_for_level(level)
     ctx = GovernanceContext(guild_id=guild.id, member=actor)
     await set_cleanup_policy_for_scope(
         ctx,
         scope_kind,
-        scope_id or 0,
+        scope_id,
         delete_invalid_commands=columns["delete_invalid_commands"],
         delete_failed_commands=columns["delete_failed_commands"],
         delete_after_seconds=columns["delete_after_seconds"],

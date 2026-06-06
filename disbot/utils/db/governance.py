@@ -110,10 +110,16 @@ async def get_cleanup_policy(
 
 
 async def get_all_cleanup_for_guild(guild_id: int) -> list[dict]:
-    """All cleanup policy rows for a guild (every scope)."""
+    """All cleanup policy rows for a guild (every scope).
+
+    Includes ``policy_version`` (migration 058) so the read model / cleanup
+    diagnostics can show which policy schema produced each row.  The cleanup
+    resolver does not use this function — it reads via ``get_cleanup_policy`` —
+    so the extra column is purely informational and does not affect resolution.
+    """
     rows = await pool.get().fetch(
         "SELECT scope_type, scope_id, delete_invalid_commands,"
-        " delete_failed_commands, delete_after_seconds"
+        " delete_failed_commands, delete_after_seconds, policy_version"
         " FROM cleanup_policies WHERE guild_id=$1",
         guild_id,
     )
