@@ -759,3 +759,90 @@ async def test_btd6_cumulative_cost_sums_base_plus_priors_per_difficulty():
     assert (
         await h["btd6_cumulative_cost"]({"tower": "Tack Shooter", "difficulty": "x"})
     )["found"] is False
+
+
+# --- diagnostics_health_snapshot (platform owner, PR5) ------------------
+
+
+def test_diagnostics_tool_absent_below_platform_owner():
+    for scope in (AIScope.USER, AIScope.MODERATOR, AIScope.ADMIN, AIScope.SERVER_OWNER):
+        registry = build_registry(scope=scope, guild_id=1, actor_id=2)
+        assert "diagnostics_health_snapshot" not in {s.name for s in registry.specs}
+        assert "diagnostics_health_snapshot" not in registry.handlers
+
+
+def test_diagnostics_tool_present_at_platform_owner():
+    registry = build_registry(scope=AIScope.PLATFORM_OWNER, guild_id=1, actor_id=2)
+    assert "diagnostics_health_snapshot" in {s.name for s in registry.specs}
+    assert "diagnostics_health_snapshot" in registry.handlers
+
+
+def test_audience_for_scope_mapping():
+    from services.health_contracts import HealthAudience
+
+    assert (
+        ai_tools._audience_for_scope(AIScope.PLATFORM_OWNER)
+        is HealthAudience.PLATFORM_OWNER
+    )
+    assert (
+        ai_tools._audience_for_scope(AIScope.SERVER_OWNER) is HealthAudience.GUILD_ADMIN
+    )
+    assert ai_tools._audience_for_scope(AIScope.ADMIN) is HealthAudience.GUILD_ADMIN
+    assert ai_tools._audience_for_scope(AIScope.USER) is HealthAudience.PUBLIC
+
+
+async def test_diagnostics_tool_returns_bounded_json_payload():
+    import json
+
+    registry = build_registry(scope=AIScope.PLATFORM_OWNER, guild_id=1, actor_id=2)
+    payload = await registry.handlers["diagnostics_health_snapshot"]({})
+    json.dumps(payload)  # must be JSON-serializable (no datetimes / enums)
+    assert payload["schema_version"] == 1
+    assert payload["audience"] == "platform_owner"
+    assert isinstance(payload["status"], str)
+    assert isinstance(payload["generated_at"], str)  # ISO string, not datetime
+    assert len(payload["subsystems"]) <= 16
+    assert len(payload["findings"]) <= 12
+
+
+async def test_diagnostics_tool_fresh_selects_async_lane(monkeypatch):
+    import datetime as _dt
+
+    from services import health_snapshot_service as hss
+    from services.health_contracts import (
+        HealthAudience,
+        HealthSnapshot,
+        SnapshotStatus,
+    )
+
+    def _bare() -> HealthSnapshot:
+        return HealthSnapshot(
+            snapshot_id="x",
+            generated_at=_dt.datetime.now(tz=_dt.timezone.utc),
+            purpose="ai_context",
+            status=SnapshotStatus.HEALTHY,
+            summary="ok",
+            subsystems=(),
+            findings=(),
+            redaction_audience=HealthAudience.PLATFORM_OWNER,
+        )
+
+    calls = {"cached": 0, "async": 0}
+
+    def _cached(request, *, bot=None):
+        calls["cached"] += 1
+        return _bare()
+
+    async def _fresh(request, *, bot=None):
+        calls["async"] += 1
+        return _bare()
+
+    monkeypatch.setattr(hss, "collect_cached_snapshot", _cached)
+    monkeypatch.setattr(hss, "collect_snapshot", _fresh)
+
+    handler = build_registry(
+        scope=AIScope.PLATFORM_OWNER, guild_id=1, actor_id=2
+    ).handlers["diagnostics_health_snapshot"]
+    await handler({})
+    await handler({"fresh": True})
+    assert calls == {"cached": 1, "async": 1}

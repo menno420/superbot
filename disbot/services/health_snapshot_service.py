@@ -813,6 +813,82 @@ def _project_finding(
 
 
 # ---------------------------------------------------------------------------
+# Bounded JSON payload — for the read-only AI diagnostics tool (PR5).
+# ---------------------------------------------------------------------------
+
+_PAYLOAD_SCHEMA_VERSION = 1
+_PAYLOAD_MAX_SUBSYSTEMS = 16
+_PAYLOAD_MAX_FINDINGS = 12
+
+
+def _finding_payload(finding: OperationalHealthFinding) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "fingerprint": finding.fingerprint,
+        "severity": finding.severity.value,
+        "category": finding.category,
+        "message": finding.message,
+        "occurrence_count": finding.occurrence_count,
+    }
+    # Optional, already-scrubbed/projected fields — included only when present
+    # (``file_hint``/``related_provider`` survive only at PLATFORM_OWNER).
+    for key in (
+        "related_subsystem",
+        "related_provider",
+        "file_hint",
+        "suggested_next_step",
+    ):
+        value = getattr(finding, key)
+        if value:
+            out[key] = value
+    return out
+
+
+def snapshot_to_payload(snapshot: HealthSnapshot) -> dict[str, Any]:
+    """Serialize an (already audience-projected) snapshot to a bounded,
+    JSON-serializable dict for the read-only AI diagnostics tool.
+
+    Enums → ``.value``; datetimes → ISO-8601; only the allowlisted ``facts``
+    and the short ``suggested_next_step`` suggestion travel.  No raw provider
+    dumps, tokens, SQL, traces, or unbounded IDs: the snapshot is already
+    scrubbed (:func:`_scrub`) and projected (:func:`project_for_audience`), and
+    the gateway redacts the serialized JSON once more before the model sees it.
+    ``schema_version`` lets a future descriptor/result-contract tool migrate
+    the shape without breaking callers.
+    """
+    return {
+        "schema_version": _PAYLOAD_SCHEMA_VERSION,
+        "snapshot_id": snapshot.snapshot_id,
+        "generated_at": snapshot.generated_at.isoformat(),
+        "purpose": snapshot.purpose,
+        "status": snapshot.status.value,
+        "summary": snapshot.summary,
+        "partial": snapshot.partial,
+        "audience": (
+            snapshot.redaction_audience.value
+            if snapshot.redaction_audience is not None
+            else None
+        ),
+        "subsystems": [
+            {
+                "name": sub.name,
+                "status": sub.status.value,
+                "summary": sub.summary,
+                "stale": sub.stale,
+                "required": sub.required,
+                "facts": dict(sub.facts),
+                "findings": [
+                    _finding_payload(f) for f in sub.findings[:_PAYLOAD_MAX_FINDINGS]
+                ],
+            }
+            for sub in snapshot.subsystems[:_PAYLOAD_MAX_SUBSYSTEMS]
+        ],
+        "findings": [
+            _finding_payload(f) for f in snapshot.findings[:_PAYLOAD_MAX_FINDINGS]
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Public collection entry points
 # ---------------------------------------------------------------------------
 

@@ -15,6 +15,10 @@ These tests pin the places that recognition lives:
   verified owner's edit claims while keeping text-only claims untrusted.
 * ``ai_tools.get_user_standing`` — reports ``is_bot_owner`` for the verified
   actor id.
+* ``natural_language_stage._derive_scope`` — maps the verified owner id to
+  ``AIScope.PLATFORM_OWNER`` (so the owner-gated ``diagnostics_health_snapshot``
+  tool is offered), checked before any guild-owner/permission rung and never
+  from message text.
 """
 
 from __future__ import annotations
@@ -137,3 +141,57 @@ async def test_user_standing_flags_verified_bot_owner(monkeypatch):
         actor_id=_not_owner_id(),
     ).handlers["get_user_standing"]({})
     assert other["is_bot_owner"] is False
+
+
+# --- _derive_scope platform-owner recognition (D1) ----------------------
+
+
+def _msg(author_id: int, *, guild_owner_id: int = 999, perms: dict | None = None):
+    perms_ns = SimpleNamespace(
+        administrator=False,
+        manage_guild=False,
+        manage_messages=False,
+        kick_members=False,
+        ban_members=False,
+        moderate_members=False,
+    )
+    for key, value in (perms or {}).items():
+        setattr(perms_ns, key, value)
+    author = SimpleNamespace(id=author_id, guild_permissions=perms_ns)
+    guild = SimpleNamespace(owner_id=guild_owner_id)
+    return SimpleNamespace(author=author, guild=guild)
+
+
+def test_derive_scope_recognizes_platform_owner_even_as_plain_member():
+    from core.runtime.ai.natural_language_stage import _derive_scope
+
+    # The owner with no elevated perms, in a guild they do not own, is still
+    # the platform owner — recognition is id-gated, not permission-gated.
+    msg = _msg(BOT_OWNER_USER_ID, guild_owner_id=_not_owner_id())
+    assert _derive_scope(msg) is AIScope.PLATFORM_OWNER
+
+
+def test_derive_scope_owner_outranks_guild_ownership_and_admin():
+    from core.runtime.ai.natural_language_stage import _derive_scope
+
+    msg = _msg(
+        BOT_OWNER_USER_ID,
+        guild_owner_id=BOT_OWNER_USER_ID,
+        perms={"administrator": True},
+    )
+    assert _derive_scope(msg) is AIScope.PLATFORM_OWNER
+
+
+def test_derive_scope_non_owner_guild_owner_caps_at_server_owner():
+    from core.runtime.ai.natural_language_stage import _derive_scope
+
+    other = _not_owner_id()
+    assert _derive_scope(_msg(other, guild_owner_id=other)) is AIScope.SERVER_OWNER
+
+
+def test_derive_scope_impostor_id_is_never_platform_owner():
+    from core.runtime.ai.natural_language_stage import _derive_scope
+
+    # A different id can never be the platform owner — text claims are
+    # irrelevant because _derive_scope never reads message text.
+    assert _derive_scope(_msg(_not_owner_id())) is AIScope.USER

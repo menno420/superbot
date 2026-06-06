@@ -84,8 +84,7 @@ def test_overall_critical_only_from_required() -> None:
     optional_crit = _sub("ai", SnapshotStatus.CRITICAL, required=False)
     healthy_req = _sub("runtime", SnapshotStatus.HEALTHY, required=True)
     assert (
-        derive_overall_status((optional_crit, healthy_req))
-        is SnapshotStatus.DEGRADED
+        derive_overall_status((optional_crit, healthy_req)) is SnapshotStatus.DEGRADED
     )
     # Required subsystem critical -> overall critical.
     req_crit = _sub("database", SnapshotStatus.CRITICAL, required=True)
@@ -186,12 +185,18 @@ def test_finalize_sorts_findings_by_severity() -> None:
         generated_at=datetime.datetime.now(tz=datetime.timezone.utc),
         findings=(
             OperationalHealthFinding(
-                fingerprint="info", severity=FindingSeverity.INFO,
-                category="c", message="m", related_subsystem="d",
+                fingerprint="info",
+                severity=FindingSeverity.INFO,
+                category="c",
+                message="m",
+                related_subsystem="d",
             ),
             OperationalHealthFinding(
-                fingerprint="crit", severity=FindingSeverity.CRITICAL,
-                category="c", message="m", related_subsystem="d",
+                fingerprint="crit",
+                severity=FindingSeverity.CRITICAL,
+                category="c",
+                message="m",
+                related_subsystem="d",
             ),
         ),
     )
@@ -279,16 +284,24 @@ def test_collect_cached_smoke() -> None:
 def test_group_findings_collapses_shared_fingerprint() -> None:
     findings = [
         OperationalHealthFinding(
-            fingerprint="dup", severity=FindingSeverity.ERROR,
-            category="c", message="first", occurrence_count=2,
+            fingerprint="dup",
+            severity=FindingSeverity.ERROR,
+            category="c",
+            message="first",
+            occurrence_count=2,
         ),
         OperationalHealthFinding(
-            fingerprint="dup", severity=FindingSeverity.ERROR,
-            category="c", message="second", occurrence_count=3,
+            fingerprint="dup",
+            severity=FindingSeverity.ERROR,
+            category="c",
+            message="second",
+            occurrence_count=3,
         ),
         OperationalHealthFinding(
-            fingerprint="solo", severity=FindingSeverity.INFO,
-            category="c", message="x",
+            fingerprint="solo",
+            severity=FindingSeverity.INFO,
+            category="c",
+            message="x",
         ),
     ]
     out = hss._group_findings(findings)
@@ -301,8 +314,10 @@ def test_group_findings_collapses_shared_fingerprint() -> None:
 def test_group_findings_is_noop_for_unique() -> None:
     findings = [
         OperationalHealthFinding(
-            fingerprint=f"u{i}", severity=FindingSeverity.WARNING,
-            category="c", message="m",
+            fingerprint=f"u{i}",
+            severity=FindingSeverity.WARNING,
+            category="c",
+            message="m",
         )
         for i in range(3)
     ]
@@ -342,3 +357,23 @@ def test_errors_subsystem_handles_absent_provider(monkeypatch) -> None:
     errors = next(s for s in snap.subsystems if s.name == "errors")
     assert errors.status is SnapshotStatus.HEALTHY
     assert errors.findings == ()
+
+
+# --- PR5: bounded JSON payload for the AI tool -----------------------------
+
+
+def test_snapshot_to_payload_is_bounded_and_json_serializable() -> None:
+    import json
+
+    snap = hss.collect_cached_snapshot(
+        HealthSnapshotRequest(audience=HealthAudience.PLATFORM_OWNER),
+    )
+    payload = hss.snapshot_to_payload(snap)
+    json.dumps(payload)  # enums/datetimes already coerced -> must not raise
+    assert payload["schema_version"] == 1
+    assert payload["audience"] == "platform_owner"
+    assert isinstance(payload["generated_at"], str)  # ISO string, not datetime
+    assert isinstance(payload["status"], str)
+    assert all(isinstance(s["status"], str) for s in payload["subsystems"])
+    assert len(payload["subsystems"]) <= 16
+    assert len(payload["findings"]) <= 12
