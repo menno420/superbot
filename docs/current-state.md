@@ -6,15 +6,13 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · #550 merged (collaboration-model docs +
-> truth-layer restructure). This session: **fixed the role-automation
-> degradation** — `role_automation.apply` now preflight-guards at the mutation
-> seam and classifies failures, so a roster-wide Manage-Roles / hierarchy
-> blocker no longer floods the ERROR-only health surface (the "26 role
-> automation errors"); operator + role-Diagnostics surfaces now show the cause.
-> Branch `claude/epic-tesla-IGJ21` (PR pending) — detail in the session journal.
-> Verify open PRs against live GitHub (`list_pull_requests`); this snapshot
-> names none on purpose.
+> **Last updated:** 2026-06-06 · #551 merged (role-automation degradation fix —
+> `role_automation.apply` preflight-guards at the mutation seam + classifies
+> failures; live health "Errors" surface back to ✅). This session: made the
+> **session journal lean + self-maintaining** (archive split → `.session-journal-
+> archive.md`, a Quick reference, and a "reorganize-each-session" protocol step;
+> PR pending). Verify open PRs against live GitHub (`list_pull_requests`); this
+> snapshot names none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -40,6 +38,7 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
+- **#551** — role-automation degradation fix: `role_automation.apply` preflight-guards at the mutation seam (via `utils.role_feasibility`), classifies failures, and keeps predictable Manage-Roles/hierarchy blockers off the ERROR-only health surface; operator + role-Diagnostics surfaces show the cause.
 - **#550** — collaboration-model doc + truth-layer restructure (goal-first, prompts-as-guidance); docs-only.
 - **#549** — server-management cleanup PR8+PR9: `policy_version` marker, presets builder + dry-run + panel diagnostics, and the guild-default `scope_id=0` no-op fix.
 - **#548** — closed the migration-`057` persistence/dedupe/retention integration-test gap (test-only).
