@@ -2,14 +2,33 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import discord
 import pytest
 
 from core.events_catalogue import KNOWN_EVENTS
 from services import moderation_service
+from services.moderation_config import ModerationPolicy
 from services.moderation_service import EVT_MOD_ACTION
+
+
+@pytest.fixture(autouse=True)
+def _default_policy():
+    """Patch the PR10 policy loader for every service test.
+
+    Default is the behaviour-preserving baseline (DMs off, no ban purge,
+    28-day timeout ceiling), so the convergence-era exact-call assertions
+    still hold.  Config-behaviour tests set ``.return_value`` to a
+    configured :class:`ModerationPolicy`.
+    """
+    with patch(
+        "services.moderation_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=ModerationPolicy(),
+    ) as loader:
+        yield loader
 
 
 @pytest.fixture(autouse=True)
@@ -78,12 +97,18 @@ async def test_warn_increments_count_and_emits_event():
         ) as emit,
     ):
         new_count = await moderation_service.warn(
-            member, reason="spam", actor_id=42,
+            member,
+            reason="spam",
+            actor_id=42,
         )
 
     assert new_count == 3
     log_mod.assert_awaited_once_with(
-        member.guild.id, "warn", member.id, 42, "spam",
+        member.guild.id,
+        "warn",
+        member.id,
+        42,
+        "spam",
     )
     emit.assert_awaited_once()
     assert emit.await_args.args[0] == EVT_MOD_ACTION
@@ -103,7 +128,9 @@ async def test_timeout_calls_discord_api_and_emits_event():
         ) as emit,
     ):
         await moderation_service.timeout(
-            member, until=until, reason="cooldown",
+            member,
+            until=until,
+            reason="cooldown",
         )
 
     member.timeout.assert_awaited_once_with(until, reason="cooldown")
@@ -181,7 +208,9 @@ async def test_clear_warnings_deletes_and_logs():
         ) as emit,
     ):
         await moderation_service.clear_warnings(
-            guild_id=1, user_id=2, actor_id=42,
+            guild_id=1,
+            user_id=2,
+            actor_id=42,
         )
 
     clear.assert_awaited_once_with(2, 1)
@@ -279,6 +308,169 @@ async def test_discord_forbidden_propagates_unmodified():
 
     log_mod.assert_not_awaited()
     emit.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# PR10 — config-backed behaviour (DM, ban purge, timeout ceiling)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_warn_dms_member_when_enabled(_default_policy):
+    _default_policy.return_value = ModerationPolicy(dm_on_action=True)
+    member = _make_member()
+    member.guild.name = "Guildy"
+    member.display_name = "Bob"
+    member.send = AsyncMock()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    member.send.assert_awaited_once()
+    body = member.send.await_args.args[0]
+    assert "warned" in body
+    assert "Guildy" in body
+    assert "spam" in body
+
+
+@pytest.mark.asyncio
+async def test_no_dm_when_dm_on_action_disabled():
+    """Default policy (DMs off) never messages the member."""
+    member = _make_member()
+    member.send = AsyncMock()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    member.send.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_dm_failure_does_not_block_action(_default_policy):
+    """A closed-DM member must not stop the warning being recorded."""
+    _default_policy.return_value = ModerationPolicy(dm_on_action=True)
+    member = _make_member()
+    member.guild.name = "G"
+    member.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "dms closed"))
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=4,
+        ),
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        count = await moderation_service.warn(member, reason="x", actor_id=1)
+
+    assert count == 4
+    log_mod.assert_awaited_once()
+    member.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_kick_dms_before_removal(_default_policy):
+    """The notify DM is sent before the member is kicked (still reachable)."""
+    _default_policy.return_value = ModerationPolicy(dm_on_action=True)
+    member = _make_member()
+    member.guild.name = "G"
+    member.send = AsyncMock()
+    member.kick = AsyncMock()
+    manager = MagicMock()
+    manager.attach_mock(member.send, "send")
+    manager.attach_mock(member.kick, "kick")
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.kick(member, reason="x", actor_id=1)
+
+    order = [call[0] for call in manager.mock_calls]
+    assert order.index("send") < order.index("kick")
+
+
+@pytest.mark.asyncio
+async def test_ban_dms_target_when_enabled(_default_policy):
+    _default_policy.return_value = ModerationPolicy(dm_on_action=True)
+    guild = _make_guild()
+    guild.name = "G"
+    user = _make_user()
+    user.send = AsyncMock()
+    user.display_name = "Eve"
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.ban(guild, user, reason="raids", actor_id=1)
+
+    user.send.assert_awaited_once()
+    assert "banned" in user.send.await_args.args[0]
+
+
+@pytest.mark.asyncio
+async def test_ban_purges_messages_when_configured(_default_policy):
+    _default_policy.return_value = ModerationPolicy(ban_delete_message_days=7)
+    guild = _make_guild()
+    user = _make_user()
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.ban(guild, user, reason="raid", actor_id=1)
+
+    guild.ban.assert_awaited_once_with(
+        user,
+        reason="raid",
+        delete_message_seconds=7 * 86400,
+    )
+
+
+@pytest.mark.asyncio
+async def test_timeout_clamps_to_configured_ceiling(_default_policy):
+    _default_policy.return_value = ModerationPolicy(max_timeout_minutes=60)
+    member = _make_member()
+    requested = discord.utils.utcnow() + timedelta(days=1)
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.timeout(member, until=requested, reason="x")
+
+    called_until = member.timeout.await_args.args[0]
+    assert called_until < requested  # clamped down to the ceiling
+    expected_cap = discord.utils.utcnow() + timedelta(minutes=60)
+    assert abs((called_until - expected_cap).total_seconds()) < 5
+
+
+@pytest.mark.asyncio
+async def test_timeout_within_ceiling_is_not_clamped(_default_policy):
+    _default_policy.return_value = ModerationPolicy(max_timeout_minutes=40320)
+    member = _make_member()
+    requested = discord.utils.utcnow() + timedelta(minutes=30)
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.timeout(member, until=requested, reason="x")
+
+    member.timeout.assert_awaited_once_with(requested, reason="x")
 
 
 # ---------------------------------------------------------------------------

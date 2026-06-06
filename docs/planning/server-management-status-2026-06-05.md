@@ -275,6 +275,44 @@ columns through the unchanged governance pipeline.
   is **deferred** (no consumer yet); only `policy_version` shipped. Diagnostics
   flag legacy `scope_id=0` guild rows as ineffective (re-set to fix).
 
+### PR10 (first slice) — Config-backed moderation behaviour *(shipped 2026-06-06)*
+
+The first slice of PR10's "first-class moderation configuration": the
+behaviour knobs that map directly to a Discord API effect, applied **at the
+`services.moderation_service` mutation seam** so every surface (prefix
+commands, the seven panel modals, and the future hub) honours them without
+re-reading config — the same "guard at the mutation seam" discipline PR1 used
+for the audit fan-out. **No migration** — the settings are ordinary scalar
+guild settings, operator-editable today through the `!settings → Moderation`
+widget dispatcher.
+
+- **`services/moderation_config.py` (new):** `ModerationPolicy` (frozen read
+  model) + `load_policy(guild_id)` (composed via `settings_resolution.resolve_value`)
+  + `render_dm_message(...)` (a **pure**, no-I/O DM renderer). Owns the canonical
+  default constants shared with the schema (drift-pinned).
+- **Four settings** (`cogs/moderation/schemas.py`, schema → v2): `dm_on_action`
+  (bool toggle), `dm_template` (free-text, `{guild}`/`{action}`/`{reason}`/`{user}`
+  tokens — plain replacement, never `str.format`), `ban_delete_message_days`
+  (numeric-presets 0/1/7), `max_timeout_minutes` (numeric-presets; default 40320 =
+  Discord's 28-day max). New keys in `utils/settings_keys/moderation.py`.
+- **Service wiring (`services/moderation_service.py`):** `warn`/`timeout`/`kick`/`ban`
+  load the policy and apply it — best-effort notify-the-member DM (before removal
+  for kick/ban so the user is still reachable; after the action for warn/timeout),
+  ban message-purge via `delete_message_seconds` (only when configured), timeout
+  clamped down to the configured ceiling. **Behaviour-preserving by default**: an
+  unconfigured guild gets the exact pre-PR10 calls.
+- **Pinned by** `tests/unit/services/test_moderation_config.py`,
+  new config cases in `tests/unit/services/test_moderation_service.py`, and
+  `tests/unit/cogs/test_moderation_schemas.py` (incl. a spec-default ↔ policy-default
+  drift guard). Booted live (boot_id `a6a24aea`) — ModerationCog loads with the v2
+  schema, 0 ERROR/CRITICAL.
+- **Remaining PR10 queue (next slice):** moderator/trusted **roles + capabilities**,
+  dedicated **log destinations** (today rides `logging_mod_channel` + the generic
+  audit channel), **required/optional reason** enforcement, **escalation-rule**
+  config, **post-action cleanup** hook, and **hierarchy diagnostics**. These either
+  touch the capability-authority seam or other subsystems and are the natural second
+  PR10 slice.
+
 ---
 
 ## Remaining queue (starts at PR10)
@@ -283,7 +321,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR10** | Moderation first-class configuration (mod-roles, log destinations, escalation, DMs). | #521 |
+| **PR10** | Moderation first-class configuration. **First slice shipped** (DMs, ban message-purge, timeout ceiling — see above). Remaining: mod-roles + capabilities, log destinations, escalation rules, required-reason, post-action cleanup, hierarchy diagnostics. | #521 |
 | **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |

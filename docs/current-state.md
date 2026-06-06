@@ -7,14 +7,15 @@
 > contradicted each other across a single merge).
 >
 > **Last updated:** 2026-06-06 · #552 merged (session journal made lean +
-> self-maintaining). This session (PR pending): (1) **consistency-warning
-> presentation fix** — the health snapshot no longer renders benign `SKIPPED`
-> sections (bindings-from-DM / no-backfill-rows) as WARNING "needs attention";
-> (2) **role-hierarchy tiebreak fix** — `role_feasibility` / `role_automation`
-> now compare role hierarchy by (position, id) like discord.py, not raw
-> `position` (which mis-flagged manageable roles when every role sits at
-> position 1; caught live). Verify open PRs against live GitHub
-> (`list_pull_requests`); this snapshot names none on purpose.
+> self-maintaining). This session (PR pending): **server-management PR10 —
+> config-backed moderation behaviour (first slice)**: a `moderation_config`
+> policy read model + four operator settings (`dm_on_action`, `dm_template`,
+> `ban_delete_message_days`, `max_timeout_minutes`) applied at the
+> `moderation_service` mutation seam — member DMs on action, ban message-purge,
+> and a timeout ceiling, behaviour-preserving by default. See the
+> server-management tracker's PR10 entry for the remaining queue. Verify open
+> PRs against live GitHub (`list_pull_requests`); this snapshot names none on
+> purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
