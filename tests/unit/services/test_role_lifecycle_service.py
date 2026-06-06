@@ -158,9 +158,12 @@ async def test_blocked_when_bot_cannot_manage(svc):
 
 @pytest.mark.asyncio
 async def test_blocked_when_role_above_bot(svc):
-    # role.position >= bot top position → role_feasibility ABOVE_BOT
+    # Role STRICTLY above the bot's top role → role_feasibility ABOVE_BOT.
+    # (Equal positions are not automatically "above" — Discord breaks position
+    # ties by id — so use a strictly-higher position; see the role-hierarchy
+    # (position, id) tiebreak in utils.role_feasibility.)
     role = _role(10, "Admins", position=100)
-    guild = _guild([role], bot_top_position=100)
+    guild = _guild([role], bot_top_position=50)
     result = await svc.apply(
         guild,
         RoleLifecycleRequest(operation="edit", role_id=10, name="x"),

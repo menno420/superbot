@@ -76,6 +76,41 @@ def test_selectable_when_all_clear():
     assert v.reason == ""
 
 
+def _member_with_top(*, top_position, top_id, manage_roles=True):
+    return SimpleNamespace(
+        guild_permissions=SimpleNamespace(manage_roles=manage_roles),
+        top_role=SimpleNamespace(position=top_position, id=top_id),
+    )
+
+
+def test_tied_position_role_created_after_bot_is_manageable():
+    """Discord role positions are NOT unique. A role at the SAME position as the
+    bot's top role but created AFTER it (larger id) ranks BELOW the bot, so it is
+    manageable — the raw `position >=` check wrongly flagged it (the live
+    'testrole2 at pos 1, bot Galaxy Bot also pos 1' case).
+    """
+    bot = _member_with_top(top_position=1, top_id=100)
+    v = rf.evaluate_role(_role(200, "testrole2", position=1), bot_member=bot)
+    assert v.ok
+    assert v.code == rf.SELECTABLE
+
+
+def test_tied_position_role_created_before_bot_is_above():
+    """At equal position the OLDER role (smaller id) outranks the bot."""
+    bot = _member_with_top(top_position=1, top_id=200)
+    v = rf.evaluate_role(_role(100, "OldAdmin", position=1), bot_member=bot)
+    assert not v.ok
+    assert v.code == rf.ABOVE_BOT
+
+
+def test_strictly_higher_position_is_above_regardless_of_id():
+    """A higher position always outranks, even with a larger (newer) id."""
+    bot = _member_with_top(top_position=5, top_id=100)
+    v = rf.evaluate_role(_role(999, "Admin", position=9), bot_member=bot)
+    assert not v.ok
+    assert v.code == rf.ABOVE_BOT
+
+
 def test_precedence_everyone_before_managed():
     v = rf.evaluate_role(_role(7, "x", default=True, managed=True))
     assert v.code == rf.EVERYONE

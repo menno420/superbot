@@ -377,3 +377,77 @@ def test_snapshot_to_payload_is_bounded_and_json_serializable() -> None:
     assert all(isinstance(s["status"], str) for s in payload["subsystems"])
     assert len(payload["subsystems"]) <= 16
     assert len(payload["findings"]) <= 12
+
+
+# --- consistency presentation: SKIPPED != "needs attention" ----------------
+
+
+def test_consistency_subsystem_skipped_sections_are_not_needs_attention() -> None:
+    """A SKIPPED consistency section ("not applicable / no data / no context",
+    e.g. Bindings checked from a DM, or no binding_backfill rows) must NOT be
+    rendered as a WARNING finding or counted as a "blocking section" — only
+    WARNING/FATAL sections are actionable.  Regression for the misleading
+    "3 blocking sections need attention" health surface.
+    """
+    from services import platform_consistency as pc
+
+    blocking = (
+        pc.SectionResult(
+            name="Bindings",
+            status=pc.SectionStatus.SKIPPED,
+            summary="No guild context (DM invocation).",
+            kind=pc.ReadinessKind.BINDINGS,
+        ),
+        pc.SectionResult(
+            name="Binding backfill",
+            status=pc.SectionStatus.SKIPPED,
+            summary="no `binding_backfill` checkpoint rows.",
+            kind=pc.ReadinessKind.BINDING_BACKFILL,
+        ),
+        pc.SectionResult(
+            name="Config arbitration",
+            status=pc.SectionStatus.WARNING,
+            summary="calls_total=2; fallback=2; missing=0.",
+            kind=pc.ReadinessKind.CONFIG_ARBITRATION,
+        ),
+    )
+    sub = hss._build_consistency_subsystem(
+        overall_value="warning",
+        report_at=hss._now(),
+        blocking=blocking,
+        source="test",
+    )
+    # Only the real WARNING section is an actionable finding.
+    assert len(sub.findings) == 1
+    assert sub.findings[0].related_subsystem == "consistency"
+    assert "Config arbitration" in sub.findings[0].message
+    # Facts separate actionable from "not applicable".
+    assert sub.facts["blocking_sections"] == 1
+    assert sub.facts["skipped_sections"] == 2
+    assert "Bindings" in sub.facts["skipped_section_names"]
+    assert "Binding backfill" in sub.facts["skipped_section_names"]
+
+
+def test_consistency_subsystem_all_skipped_has_no_findings() -> None:
+    """If every blocking section is SKIPPED (e.g. health asked from a DM with no
+    backfill rows), the subsystem surfaces zero "needs attention" findings.
+    """
+    from services import platform_consistency as pc
+
+    blocking = (
+        pc.SectionResult(
+            name="Bindings",
+            status=pc.SectionStatus.SKIPPED,
+            summary="No guild context (DM invocation).",
+            kind=pc.ReadinessKind.BINDINGS,
+        ),
+    )
+    sub = hss._build_consistency_subsystem(
+        overall_value="clean",
+        report_at=hss._now(),
+        blocking=blocking,
+        source="test",
+    )
+    assert sub.findings == ()
+    assert sub.facts["blocking_sections"] == 0
+    assert sub.facts["skipped_sections"] == 1
