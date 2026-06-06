@@ -1,5 +1,8 @@
 # SuperBot — Architecture Priority Map
 
+> **`historical` — 2026-06-05.** For *what is true now*, start at
+> **`docs/current-state.md`**. Kept for the RC-n priority / dependency rationale.
+
 > **Status:** planning artifact. Companion to
 > `superbot-audit-consolidation-2026-06-05.md` (the verified findings) and
 > `superbot-next-session-roadmap-2026-06-05.md` (the PR sequence). This doc

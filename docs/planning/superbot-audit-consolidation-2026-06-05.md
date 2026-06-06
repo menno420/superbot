@@ -1,5 +1,9 @@
 # SuperBot — Audit Consolidation (Codex + Agent A/B/C/D)
 
+> **`historical` — 2026-06-05.** For *what is true now*, start at
+> **`docs/current-state.md`**. Kept for the RC-1…RC-15 audit reconciliation
+> history (the *why* behind decisions), not current state.
+
 > **Status:** planning / verification artifact (not a binding contract, not
 > implementation approval). Read this before acting on any of the five
 > source audit docs — it supersedes their individual confidence claims

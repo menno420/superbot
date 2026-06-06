@@ -133,6 +133,20 @@ The taxonomy below is the only reliable way to tell "what does the
 project still care about?" from "what was the plan a year ago?". When
 in doubt, treat the source files as authoritative over any doc.
 
+### Status badges (put one in each doc's header)
+
+So a doc's authority is self-declaring (no inferring from filename/date),
+each major doc should carry a one-line badge in its header. Use one of:
+
+- **`binding`** — authoritative contract; changing it is an architecture change.
+- **`living-ledger`** — current status, updated as work lands (carry a date).
+- **`reference`** — a standard / how-to; stable.
+- **`plan`** — a planned end-state; cross-check source before implementing.
+- **`historical`** — superseded; kept for context. Start at `docs/current-state.md`.
+- **`ideas`** — brainstorm; not approved for implementation.
+
+When a doc has no badge, the classification lists below are authoritative.
+
 ### Binding (treat as authoritative)
 
 These define the platform contract. Changing them is an architecture

@@ -1,10 +1,10 @@
 # SuperBot — Planning Source-of-Truth Index
 
-> **Status:** planning artifact / navigation aid. Tells a future session which
-> docs to trust *now*, which are historical context, and which contradict
-> current source. It does **not** replace `docs/AGENT_ORIENTATION.md` (the
-> binding orientation) — it layers the 2026-06-05 audit-consolidation outcome
-> on top of it.
+> **`historical` — superseded as a daily router by `docs/current-state.md`.**
+> Start at `docs/current-state.md` for *what is true now*. This file is kept for
+> its RC-1…RC-15 audit-reconciliation history (useful for *why* a decision was
+> made, not *what is current*). It layered the 2026-06-05 audit-consolidation
+> outcome on top of `docs/AGENT_ORIENTATION.md` (the binding orientation).
 >
 > **Date:** 2026-06-05
 >
