@@ -26,8 +26,8 @@ in the sandbox**, not broken. Known UX follow-ups remain (below).
 
 ## In flight (verify against live GitHub)
 
-**1 open PR** as of this snapshot: this session's end-of-session PR closing the
-migration-`057` integration-test gap (test-only — see the health/diagnostics folio).
+**1 open PR** as of this snapshot: **#548** — closes the migration-`057`
+integration-test gap (test-only — see the health/diagnostics folio).
 **Always re-verify open PRs against live GitHub** before starting work — this is a dated
 snapshot, and a later PR may have opened since.
 
