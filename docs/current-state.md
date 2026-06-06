@@ -6,11 +6,11 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · post-#548 (merged) · this session shipped
-> server-management cleanup **PR8** (policy_version marker + level round-trip) and
-> **PR9** (cleanup builder + dry-run + dedicated-panel diagnostics; fixed the
-> guild-default `scope_id=0` silent no-op). Detail/status: server-management
-> folio + tracker. Verify open PRs against live GitHub.
+> **Last updated:** 2026-06-06 · #549 merged (server-mgmt cleanup PR8+PR9 +
+> guild-default `scope_id` fix). This session: collaboration-model docs
+> restructure — see **`docs/collaboration-model.md`** (binding, read first).
+> Verify open PRs against live GitHub (`list_pull_requests`); this snapshot
+> names none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -28,14 +28,15 @@ in the sandbox**, not broken. Known UX follow-ups remain (below).
 
 ## In flight (verify against live GitHub)
 
-**1 open PR** as of this snapshot: this session's end-of-session PR —
-server-management cleanup **PR8 + PR9** on `claude/nifty-cerf-59MKG` (see the
-server-management folio/tracker). **#548 has merged.**
-**Always re-verify open PRs against live GitHub** before starting work — this is a dated
-snapshot, and a later PR may have opened since.
+**Do not trust a hard-coded PR count here — it goes stale on every push.** Get the
+real list at session start from live GitHub (`list_pull_requests`, state=open);
+this snapshot deliberately names no open PRs. For an initiative's shipped/queued
+status read its tracker (e.g. the server-management tracker), not this section.
+Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
+- **#549** — server-management cleanup PR8+PR9: `policy_version` marker, presets builder + dry-run + panel diagnostics, and the guild-default `scope_id=0` no-op fix.
 - **#548** — closed the migration-`057` persistence/dedupe/retention integration-test gap (test-only).
 - **#546** — canonical subsystem folios (health/diagnostics, server-mgmt, settings, BTD6, games, media).
 - **#544** — freshness-oriented docs route, lifecycle labels, ideas area, and subsystem-folio model.
@@ -89,6 +90,7 @@ snapshot, and a later PR may have opened since.
 
 | Need | Read |
 |---|---|
+| **How we collaborate** (all agents — the working model, read first) | `docs/collaboration-model.md` |
 | Rules of engagement (CI parity, CodeGraph, arch invariants, workflow) | `.claude/CLAUDE.md` |
 | **What's true right now** | this file |
 | How to boot/operate the sandbox · maintainer preferences · hard-won rules · gotchas | `.session-journal.md` (guidebook head) |

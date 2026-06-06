@@ -14,6 +14,29 @@ signals into bounded operator-facing snapshots. Start in
 `disbot/utils/db/health_findings.py` and migration
 `disbot/migrations/057_operational_health_findings.sql`.
 
+## Debug router (if X, inspect Y first)
+
+Health/diagnostics is a **reporting layer**. When it surfaces a problem the root
+cause is almost always in the subsystem it *reports on*, not here — don't "fix" the
+health system for a failure it merely displays.
+
+- **A finding/health card names a failure (e.g. "role automation")** → the bug is in
+  that **execution** subsystem, not health. Jump to that subsystem's folio + debug
+  router (e.g. server-management for role/cleanup) and to the **runtime logs** for the
+  exact exception — grouped findings intentionally scrub/aggregate the raw trace.
+- **A repeated error you can't pinpoint from the snapshot** → findings are
+  fingerprinted in `services/health_findings_service.py` / `utils/db/health_findings.py`
+  (detail redacted); the unredacted exception lives in runtime logs, not the DB row.
+  Use the finding's `related_subsystem` / `related_command` to locate it.
+- **"Consistency" / bindings-backfill / config-arbitration warnings** → a **separate**
+  layer: `services/platform_consistency.py`. Distinguish benign warnings from blockers
+  via `docs/platform-consistency-ledger.md`; they are not health findings.
+- **`diagnostics_health_snapshot` returned nothing for a user** → it's owner-gated and
+  read-only by design; a non-owner getting nothing is correct, not a bug.
+- **A health card itself errors / is empty** → check provider isolation in
+  `health_snapshot_service` (a failing provider must degrade, not crash the card) and
+  the cached-vs-async lane split in `health_contracts`.
+
 ## Rules & approved structures (binding — link, don't restate)
 
 - `docs/bot-awareness-implementation-plan.md` is the execution/status authority;

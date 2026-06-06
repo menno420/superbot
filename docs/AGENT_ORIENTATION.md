@@ -47,11 +47,12 @@ read **`docs/helper-policy.md`** first.
 
 | Order | Doc | Why |
 |---|---|---|
-| 1 | `.claude/CLAUDE.md` | Session workflow, CI parity rules, CodeGraph quick-reference, and architecture invariants. Auto-loaded every session. |
-| 2 | `docs/current-state.md` | **What is true right now**: stability baseline, in-flight work, recently shipped, gates, off-limits. A dated snapshot — source & merged PRs win; verify in-flight PRs against live GitHub. |
-| 3 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
-| 4 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
-| 5 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
+| 1 | `docs/collaboration-model.md` | **How we work** (binding, all agents): the goal comes first; session prompts are guidance not orders; approved plan = execute; act-vs-ask; bugs first. Read this before treating any prompt as a command. |
+| 2 | `.claude/CLAUDE.md` | Working agreement + session workflow, CI parity rules, CodeGraph quick-reference, architecture invariants. Auto-loaded every session. |
+| 3 | `docs/current-state.md` | **What is true right now**: stability baseline, in-flight work, recently shipped, gates, off-limits. A dated snapshot — source & merged PRs win; verify in-flight PRs against live GitHub. |
+| 4 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
+| 5 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
+| 6 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
 
 ### Adding a new subsystem / cog
 
@@ -191,6 +192,7 @@ These define the platform contract. Changing them is an architecture
 change — open an issue or a separate doc-only PR before implementing
 something that conflicts with them.
 
+- `docs/collaboration-model.md` (how every agent works together; read first)
 - `.claude/CLAUDE.md`
 - `docs/architecture.md`
 - `docs/ownership.md`
@@ -306,6 +308,11 @@ Before proposing or implementing any non-trivial change:
    asked. Plans span 2–3 PRs max (foundation first, implementation
    second). Plan approval means full execution in one session — do not
    stop for confirmation or wait for merges between PRs.
+6. **Treat the session prompt as guidance, not orders, and use your own
+   judgment** (`docs/collaboration-model.md`). Act on contained, reversible,
+   verifiable changes — including a root-cause fix you find mid-task; ask only
+   when something is irreversible, large/cross-cutting, or the goal itself is
+   ambiguous. Aim for a positive, noticeable result every session.
 
 This is not a courtesy — repeated rediscovery is the main reason
 SuperBot accumulates duplicate helpers and orphan plans. The minutes
