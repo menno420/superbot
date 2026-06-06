@@ -6,8 +6,9 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · post-#546 · workflow-validation / next-task scoping session
-> (verified live: **0 open PRs**, #546 newest merged).
+> **Last updated:** 2026-06-06 · post-#547 · closed the health/diagnostics
+> migration-`057` persistence/dedupe/retention integration-test gap (test-only;
+> verified live: 1 open PR — this session's end-of-session PR).
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -25,7 +26,8 @@ in the sandbox**, not broken. Known UX follow-ups remain (below).
 
 ## In flight (verify against live GitHub)
 
-**0 open PRs** as of this snapshot (verified live against GitHub, post-#546).
+**1 open PR** as of this snapshot: this session's end-of-session PR closing the
+migration-`057` integration-test gap (test-only — see the health/diagnostics folio).
 **Always re-verify open PRs against live GitHub** before starting work — this is a dated
 snapshot, and a later PR may have opened since.
 
@@ -47,8 +49,10 @@ snapshot, and a later PR may have opened since.
 
 ## Next candidates
 
-- Health/diagnostics maintainer live-tests and the migration `057` persistence/dedupe
-  integration gap: see `docs/subsystems/health-diagnostics.md`.
+- Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
+  see `docs/subsystems/health-diagnostics.md`. The migration `057`
+  persistence/dedupe/retention integration gap is **closed** (this session — real-PG
+  integration suite + static SQL-shape pin; CI-safe skip).
 - Use the canonical subsystem folios for area-specific implementation/planning; keep
   this global router thin.
 

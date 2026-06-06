@@ -1,10 +1,16 @@
 """Tests for services.health_findings_service — PR6 (bot awareness).
 
-The sole writer of the persistent findings store. The SQL-level dedupe / reopen
-(ON CONFLICT) is integration-tested against real Postgres; here we pin the
-service contract: it records each finding through utils.db.health_findings with
-the right arguments, is best-effort (swallows DB errors), and runs retention as
-roll-up-then-prune.
+The sole writer of the persistent findings store. These tests mock ``svc._db``
+to pin the *service* contract: it records each finding through
+utils.db.health_findings with the right arguments, is best-effort (swallows DB
+errors), and runs retention as roll-up-then-prune.
+
+The SQL itself — the ON CONFLICT dedupe / occurrence delta-add / reopen-on-
+recurrence / keep-ignored / roll-up-then-prune — is exercised against a real
+Postgres in ``tests/unit/db/test_health_findings_integration.py`` (which skips
+cleanly when no database is reachable, e.g. in CI), and the migration's static
+SQL shape is pinned by
+``tests/unit/db/test_migration_057_operational_health_findings.py``.
 """
 
 from __future__ import annotations
