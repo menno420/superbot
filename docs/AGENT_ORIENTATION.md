@@ -159,8 +159,8 @@ top before trusting the contents.
 
 - `docs/platform-consistency-ledger.md`
 - `docs/bot-awareness-implementation-plan.md` — the bot-awareness / health-diagnostics
-  programme. **Execution authority** for that work + live delivery status (PR1–PR3
-  shipped in #537; PR4/PR6 queued; PR5 blocked on the `_derive_scope` decision). Read
+  programme. **Execution authority** for that work + live delivery status (**all 6 PRs
+  shipped — PR1–PR3 in #537, PR4–PR6 in #541; D1 resolved**). Read
   this before touching `services/health_snapshot_service.py`,
   `services/health_contracts.py`, or the `!platform health` / `!platform startup`
   surfaces. The Codex map `docs/bot-awareness-diagnostics-plan.md` is context only.

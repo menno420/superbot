@@ -17,9 +17,9 @@
 
 ## 1. Executive recommendation
 
-1. Finish or explicitly re-scope bot-awareness PR4–PR6 before starting a new tool
-   capability programme. PR5 remains blocked on the platform-owner scope decision; PR6
-   needs an approved retention/history decision.
+1. Bot-awareness PR4–PR6 are **complete (shipped in #541)** — D1 (platform-owner scope)
+   is resolved and the retention/history decision (D8/D11) is approved (30-day TTL). A new
+   tool-capability programme may now build on the delivered health stack.
 2. Treat `docs/bot-awareness-implementation-plan.md` as the sole execution authority for
    health diagnostics. Future diagnostics AI tools must consume `HealthSnapshot` and
    `OperationalHealthFinding`; never create a second bot-awareness service.
@@ -125,14 +125,12 @@ GitHub API for `menno420/superbot`:
 
 ### 2.3 In-progress or uncertain
 
-- The approved health plan says PR4 (structured observations) and PR6 (persistent
-  findings) are queued for an attended session. No open PR exposed that work at the
-  verification snapshot; private/local Claude work cannot be ruled out.
-- PR5 (read-only AI diagnostics tool) is explicitly blocked on decision D1. Source
-  confirms `_derive_scope()` returns at most `SERVER_OWNER`, so a
-  `min_scope=PLATFORM_OWNER` tool remains unreachable.
-- Persistent findings would require durable ownership, an additive migration, a
-  retention decision, and sole-writer tests. None is authorized by this roadmap.
+- Bot-awareness PR4–PR6 are **shipped (#541)** — no longer in-progress: PR4 added the
+  opt-in grouped recent-error subsystem, PR5 the owner-gated `diagnostics_health_snapshot`
+  tool, PR6 the persistent findings store (migration `057`, sole-writer service, 30-day
+  retention).
+- D1 is **resolved**: `_derive_scope()` now returns `AIScope.PLATFORM_OWNER` for the
+  verified bot owner, so owner-gated diagnostics tools are reachable.
 - The BTD6 orchestration document defines the desired reusable architecture, but its
   proposed descriptor/policy/budget types have not landed in source.
 
@@ -486,9 +484,10 @@ or safe failure, fairness/privacy review for moderation, and complete audit cove
 
 ## 7. Conditional first 2–3 PR recommendation
 
-> **Do not start these PRs yet.** First complete Phase 0. If Claude's PR4–PR6 work or
-> the BTD6 orchestration implementation has landed, re-scope these PRs against source
-> and avoid duplication. If D1 remains unresolved, keep all owner-only tooling out.
+> **Do not start these PRs yet.** First complete Phase 0. Bot-awareness PR4–PR6 have
+> landed (#541) and D1 is resolved, so re-scope these PRs against the delivered health
+> stack and avoid duplication; owner-only tooling is now reachable via
+> `_derive_scope` → `PLATFORM_OWNER`.
 
 ### PR A — Canonical read-only tool catalogue and compatibility invariants
 

@@ -1,17 +1,16 @@
 # Bot-Awareness / AI-Assisted Diagnostics — Revised Implementation Plan
 
-> **Status (2026-06-06): approved → foundation SHIPPED.** PR1–PR3 of this plan are
-> merged to `main` in **#537** (typed health read model + deterministic
-> `!platform health` + panel-only startup health). Verified: `check_architecture
-> --mode strict` 0 errors, `check_quality --full` green, and an integration check of
-> the aggregator against real Postgres (DB ping reachable, redaction clean). The live
-> Discord walk of `!platform health` / `!platform startup` is still pending (the
-> sandbox blocks booting the `*_PRODUCTION`-named test-bot token).
-> **In progress (attended, branch `claude/gifted-mayer-LGraE`):** PR4 (grouped
-> recent-error findings, opt-in via `HEALTH_GROUPED_FINDINGS`), PR5 (read-only AI
-> diagnostics tool), PR6 (persistent findings). **Decision D1 is DECIDED:**
-> `_derive_scope` maps `config.BOT_OWNER_USER_ID` → `AIScope.PLATFORM_OWNER`
-> (owner-only), unblocking PR5 — see §4.
+> **Status (2026-06-06): PROGRAMME COMPLETE — all 6 PRs shipped.** PR1–PR3 merged in
+> **#537** (typed health read model + deterministic `!platform health` + panel-only
+> startup health); **PR4–PR6 merged in #541** (opt-in grouped recent-error findings,
+> the owner-gated `diagnostics_health_snapshot` AI tool, and persistent findings with
+> 30-day retention). Every PR shipped green on `check_architecture --mode strict`
+> (0 errors) + `check_quality --full` (final suite 7565 passed). **Decision D1 is
+> RESOLVED** (option a): `_derive_scope` maps `config.BOT_OWNER_USER_ID` →
+> `AIScope.PLATFORM_OWNER` (owner-only). **The sections below are the original plan,
+> kept for rationale — per-PR delivery status is in §5 and is the source of truth.**
+> Remaining: maintainer live-test on the production bot (the sandbox can't boot); PR4
+> grouping is opt-in (`HEALTH_GROUPED_FINDINGS`, default off).
 > **Inputs reconciled:** Codex map (PR #534), a ChatGPT revision pass, and the Codex
 > AI-tool-orchestration successor plan (PR #536).
 > **Execution authority:** this doc; the Codex map
@@ -41,8 +40,8 @@ services/health_snapshot_service.py   ← typed read-model aggregation (2 lanes)
         │
         ├─────────────────────────────┬───────────────────────────────┐
         ▼                             ▼                               ▼
- deterministic DiagnosticCog/   Platform panel item            read-only AI tool (PR5,
- !platform health (admin,       (same shared embed builder)    deferred: blocked on D1)
+ deterministic DiagnosticCog/   Platform panel item            read-only AI tool
+ !platform health (admin,       (same shared embed builder)    (PR5 ✅ #541, owner-gated)
  guild-redacted)
         ▼                                                             ▼
  operator-visible facts                                    optional AI explanation
@@ -102,8 +101,8 @@ PR3** — foundation, deterministic `!platform health`, and panel-only startup h
 All three are fully deterministic, need **no maintainer decision**, and are live-verifiable
 by booting the test bot (runbook in `.session-journal.md`). **PR4** (structured
 observations) is a **gated stretch** — include only if PR1-3 are green with session
-appetite *and* fingerprints prove stable; otherwise stop. **PR5 is deferred** (blocked on
-D1) and **PR6 is deferred** (durable state — stabilize contracts first). This honors the
+appetite *and* fingerprints prove stable; otherwise stop. PR5 and PR6 were the
+attended-session work. *(Historical: all of PR4–PR6 have since shipped in #541.)* This honors the
 maintainer's explicit authorization to do "as much as can be safely executed in one
 structured session" while protecting an unattended run.
 
@@ -166,10 +165,10 @@ structured session" while protecting an unattended run.
 |---|---|---|
 | `services/health_contracts.py` | services | Frozen `HealthSnapshot`, `SubsystemHealth`, `OperationalHealthFinding`, `HealthSnapshotRequest`; enums `SnapshotStatus`, `FindingSeverity`, **`HealthAudience`**. **No AI/core-AI import.** Light deps → safe for module-top import by cogs/views. |
 | `services/health_snapshot_service.py` | services | Two-lane aggregator + deterministic severity + stable ordering + pure `project_for_audience()`. Heavy-source adapters **function-local**. Never mutates. |
-| `services/health_findings_service.py` *(PR6, deferred)* | services | **Sole writer** of findings table; dedupe/recurrence/lifecycle/retention. |
-| `migrations/057_operational_health_findings.sql` *(PR6, deferred)* | — | Additive `CREATE TABLE IF NOT EXISTS`. |
+| `services/health_findings_service.py` *(PR6 ✅ #541)* | services | **Sole writer** of findings table; dedupe/recurrence/lifecycle/retention. |
+| `migrations/057_operational_health_findings.sql` *(PR6 ✅ #541)* | — | Additive `CREATE TABLE IF NOT EXISTS` (+ aggregates companion). |
 
-Extend: `cogs/diagnostic_cog.py` (`!platform health` PR2, `!platform startup` PR3 — small methods, **function-local** service import), `cogs/diagnostic/_platform_embeds.py` (`build_health_embed`, `build_startup_health_embed`), `views/diagnostic/platform_panel.py` (Runtime-category item + `_dispatch`), `core/runtime/startup_outcome.py` (sibling extension-load recorder, PR3), `bot1.py` (per-extension recording + post-ready snapshot, PR3), `services/ai_tools.py` + `core/runtime/ai/natural_language_stage.py` (PR5, deferred).
+Extend: `cogs/diagnostic_cog.py` (`!platform health` PR2, `!platform startup` PR3 — small methods, **function-local** service import), `cogs/diagnostic/_platform_embeds.py` (`build_health_embed`, `build_startup_health_embed`), `views/diagnostic/platform_panel.py` (Runtime-category item + `_dispatch`), `core/runtime/startup_outcome.py` (sibling extension-load recorder, PR3), `bot1.py` (per-extension recording + post-ready snapshot, PR3), `services/ai_tools.py` + `core/runtime/ai/natural_language_stage.py` (PR5 ✅ #541).
 
 ### 3.2 Read/write ownership, data flow, sync/async
 
@@ -207,9 +206,9 @@ Extend: `cogs/diagnostic_cog.py` (`!platform health` PR2, `!platform startup` PR
 
 **Hard rule:** never put raw `snapshot_all()`, stack traces, env, tokens, message content, raw SQL, or unbounded IDs into `facts`, an embed, or AI context. `facts` is allowlisted + bounded.
 
-### 3.5 AI boundary (PR5, deferred)
+### 3.5 AI boundary (PR5 ✅ #541)
 
-Read-only, bounded, JSON-serializable, scope-gated, operates on the **already-redacted** projection. One coarse tool: `diagnostics_health_snapshot`. AI may explain/summarize/suggest commands+files; may **not** restart, mutate config, edit files, query arbitrary tables, ack/resolve findings, or remediate. Output separates **facts** (tied to a finding/fingerprint) from **suggestions**/**uncertainty**; deterministic fallback always available. **Reachability blocked on D1.** **Must reuse #536's tool primitives if they land first (§8).**
+Read-only, bounded, JSON-serializable, scope-gated, operates on the **already-redacted** projection. One coarse tool: `diagnostics_health_snapshot`. AI may explain/summarize/suggest commands+files; may **not** restart, mutate config, edit files, query arbitrary tables, ack/resolve findings, or remediate. Output separates **facts** (tied to a finding/fingerprint) from **suggestions**/**uncertainty**; deterministic fallback always available. **Shipped in #541** — D1 resolved; registered at `min_scope=PLATFORM_OWNER` via the current `build_registry` path (#536 primitives were doc-only; left a `TODO(#536)` to migrate into the `diagnostics` toolset later).
 
 ### 3.6 Event / metrics boundary
 
@@ -242,9 +241,9 @@ Read-only, bounded, JSON-serializable, scope-gated, operates on the **already-re
 
 ## 5. Final PR sequence
 
-> **Delivery status (2026-06-06):** PR1 ✅, PR2 ✅, PR3 ✅ — all shipped in **#537**
-> (commits `1296d25`, `b052a4a`, `aa5b153`). PR4–PR6 in progress this session
-> (branch `claude/gifted-mayer-LGraE`); D1 DECIDED — option (a), see §4.
+> **Delivery status (2026-06-06): ALL SHIPPED.** PR1 ✅, PR2 ✅, PR3 ✅ in **#537**
+> (`1296d25`, `b052a4a`, `aa5b153`); PR4 ✅, PR5 ✅, PR6 ✅ in **#541**. D1 RESOLVED
+> (option a, see §4). Remaining: maintainer live-test on the production bot.
 
 Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ PR4 gated stretch). Every PR ends with both gates: `python3.10 scripts/check_architecture.py --mode strict` (0 errors) **and** `python3.10 scripts/check_quality.py --full` (CI mirror). **If a gate cannot be made green within a PR's own scope, STOP — commit what is green, leave a note, and do not start the next PR.**
 
@@ -272,20 +271,27 @@ Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ P
 - **Manual (boot + simulate reconnect):** captures a real cog-load failure without racing anchor restore/scheduler setup; multi-reconnect doesn't duplicate.
 - **Risks:** **reconnect double-fire** (implement the one-shot, don't assume); document ordering vs `set_phase(RUNNING)` L200-201. **Rollback:** revert `on_ready` block + recorder. **Stop:** can't prove one-shot under simulated reconnect → don't merge PR3, keep PR1-PR2.
 
-### PR4 — Structured observations / grouped errors — *gated stretch (only if PR1-3 green + appetite)*
+### PR4 — Structured observations / grouped errors — ✅ SHIPPED (#541)
+
+> **Shipped (re-scoped from the sketch below):** the PR1 adapters already emit stable
+> per-source fingerprints, so PR4 did **not** rewrite them — it ADDED an opt-in grouped
+> recent-error subsystem (`services/health_observations.py` +
+> `health_snapshot_service._errors_subsystem`) over a bounded `recent_errors` diagnostics
+> provider, gated by `HEALTH_GROUPED_FINDINGS` (default off → legacy `!recent_errors` is
+> the unchanged fallback). `!platform health` renders `(×N)`.
 
 - **Goal:** safe classification/grouping of current-process failures; structured observations at a few high-value boundaries; bounded grouped-error adapter; ring buffer stays fallback.
 - **Files:** `_log_buffer.py` or a new classifier; selected boundaries (provider-failure, cog-load, DB-timeout) emit structured observations; aggregator wiring.
 - **Tests:** fingerprint determinism (`<category>:<subsystem>:<operation>:<exc-type>:<code>`; normalized repeats dedupe; meaningful diffs distinguish); redaction of IDs/tokens/SQL/user-text from fingerprints + messages.
 - **Risks:** fragile log-parsing → prefer structured observations at source; never feed raw buffer messages to AI. **Stop (autonomy guard):** if fingerprints look unstable on real logs, ship grouping **disabled** (keep deterministic `recent_errors`) and stop — do **not** iterate on heuristics unattended.
 
-### PR5 — AI tool + explainer — *in progress (D1 decided: owner → PLATFORM_OWNER)*
+### PR5 — AI tool + explainer — ✅ SHIPPED (#541)
 
-Register `diagnostics_health_snapshot`; resolve D1 first; **reuse #536's `AIToolDescriptor`/`diagnostics` toolset + `AIToolBudget` if landed (§8)**, else current `build_registry` path + a migration note; optional panel "Ask AI to explain" with deterministic fallback. Tests mirror `test_ai_tools.py`. **Not for the unattended session.**
+✅ `diagnostics_health_snapshot` registered at `min_scope=PLATFORM_OWNER`; D1 resolved (`_derive_scope` → `PLATFORM_OWNER` by verified id); `_audience_for_scope` boundary + bounded `snapshot_to_payload` (`schema_version=1`); `build_registry` gained a `None`-tolerant `bot` kwarg. #536's `AIToolDescriptor`/`diagnostics` toolset were doc-only, so the current `build_registry` path is used with a `TODO(#536)` to migrate. The optional panel "Ask AI to explain" was **deferred** (the tool itself is reachable; an AI-on render path can't be sandbox-verified). Tests mirror `test_ai_tools.py`.
 
-### PR6 — Persistent findings — *DEFERRED (durable state; stabilize first)*
+### PR6 — Persistent findings — ✅ SHIPPED (#541)
 
-Migration 057, sole-writer `health_findings_service`, fingerprint dedupe, open/resolved/ignored, TTL/caps (D8/D11). Sole-writer AST guard modeled on `test_inv_f_economy_service.py`. **Not for the unattended session.**
+✅ Migration `057` (`operational_health_findings` + an `operational_health_finding_aggregates` companion), sole-writer `services/health_findings_service.py` over pool-only `utils/db/health_findings.py` (fingerprint dedupe, reopen-on-recurrence, keep-ignored), recorded + pruned best-effort from `bot1._report_startup_health` keyed to `services.runtime.BOOT_ID`, 30-day TTL with roll-up-to-aggregates (D8/D11), `!platform findings [open|resolved|ignored|all]`, metrics only (no new events). Sole-writer AST guard `test_inv_health_findings_service.py`.
 
 ---
 
@@ -347,11 +353,15 @@ Migration 057, sole-writer `health_findings_service`, fingerprint dedupe, open/r
 - **Answer contracts** (`research_summary` / a future `diagnostics_explanation`) → the explainer's "facts vs suggestions vs uncertainty" should be a typed answer contract, aligning with #536 §10.
 - **Shared dependency:** #536-**D5** ("who may configure toolsets — admin/server-owner/platform-owner") needs the same **platform-owner scope plumbing** as my **D1**. Fixing `_derive_scope` once serves both → consider a tiny standalone "platform-owner scope" PR ahead of either programme's AI phase.
 
-**Net for the unattended slice:** #536 changes **nothing** in PR1-PR3 (deterministic, no AI). It only constrains PR5 (deferred). Captured here so the next AI-phase session reuses #536's contracts.
+**Net:** #536 changed **nothing** in PR1-PR3 (deterministic, no AI); it only constrained PR5, which shipped in #541 via the current `build_registry` path (#536's primitives were doc-only). Captured here so a future toolset migration reuses #536's contracts.
 
 ---
 
 ## 9. Final handoff prompt (copy-paste for the UNATTENDED implementation session)
+
+> **HISTORICAL — superseded.** This was the prompt for the original unattended PR1–PR3
+> session. PR4–PR6 and D1 have since been completed (#541); the "Do NOT start PR5/PR6"
+> instruction below no longer applies. Kept for provenance.
 
 ```
 You are Claude Opus 4.8 implementing the approved Bot-Awareness / AI-Assisted
@@ -438,6 +448,6 @@ stopped early, say exactly where and why in the PR body and the journal.
 - **PR2:** panel/command tests + `test_cog_size.py`; **live** boot — `!platform health` + panel within Discord limits; admin redaction confirmed.
 - **PR3:** reconnect one-shot test + **live** multi-reconnect (no duplicate).
 - **PR4 (if gated-in):** fingerprint determinism + redaction; ships disabled if unstable.
-- **PR5/PR6 (deferred):** D1 resolved; model calls the tool live; sole-writer AST guard fails on a planted violation; `057` confirmed free.
+- **PR5/PR6 (✅ #541):** D1 resolved; the model calls the tool live (owner scope); the sole-writer AST guard fails on a planted violation; migration `057` applied.
 ```
 ```
