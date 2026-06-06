@@ -24,8 +24,9 @@ in the sandbox**, not broken. Known UX follow-ups remain (below).
 
 ## In flight (verify against live GitHub)
 
-As of this stamp: **none — 0 open PRs.** Re-check on every session start; this line
-goes stale the moment a branch is pushed.
+As of this stamp: the **docs-restructure** work on branch
+`claude/friendly-babbage-0BkSu` (PR being opened this session). **Verify open PRs
+against live GitHub** — this line goes stale the moment a branch is pushed or merged.
 
 ## Recently shipped (newest first)
 
