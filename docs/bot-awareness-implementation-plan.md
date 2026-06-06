@@ -7,9 +7,11 @@
 > the aggregator against real Postgres (DB ping reachable, redaction clean). The live
 > Discord walk of `!platform health` / `!platform startup` is still pending (the
 > sandbox blocks booting the `*_PRODUCTION`-named test-bot token).
-> **Remaining:** PR4 (structured observations) + PR6 (persistent findings) are queued
-> for an attended session; **PR5 (AI tool) is blocked on decision D1** (`_derive_scope`
-> reachability — see §4).
+> **In progress (attended, branch `claude/gifted-mayer-LGraE`):** PR4 (grouped
+> recent-error findings, opt-in via `HEALTH_GROUPED_FINDINGS`), PR5 (read-only AI
+> diagnostics tool), PR6 (persistent findings). **Decision D1 is DECIDED:**
+> `_derive_scope` maps `config.BOT_OWNER_USER_ID` → `AIScope.PLATFORM_OWNER`
+> (owner-only), unblocking PR5 — see §4.
 > **Inputs reconciled:** Codex map (PR #534), a ChatGPT revision pass, and the Codex
 > AI-tool-orchestration successor plan (PR #536).
 > **Execution authority:** this doc; the Codex map
@@ -219,9 +221,9 @@ Read-only, bounded, JSON-serializable, scope-gated, operates on the **already-re
 
 **Answered this session (folded in):** `!platform health` = **admin-gated + guild-local redaction** (owner sees full); startup report = **panel-only** (`!platform startup`), pre-connect webhook kept.
 
-### Blocking (must resolve before its PR — NOT in the unattended slice)
+### Blocking — RESOLVED this session
 
-- **D1 — AI scope reachability (before PR5; shared with #536-D5).** `_derive_scope` never yields PLATFORM_OWNER. Options: **(a, recommended)** extend `_derive_scope` to recognize the bot/platform owner (`config.BOT_OWNER_USER_ID` / `bot.is_owner`) and register at `PLATFORM_OWNER` — a small, *security-relevant* contract change with its own tests, and it **also unblocks #536's platform-owner config**; **(b)** register at `SERVER_OWNER` (reachable now, broader audience — only with proven redaction). *(Confirm the exact owner seam at PR5 — `services/bot_owner_recognition.py` does not exist; identity comes from config/`bot.is_owner`.)* **Could be its own tiny foundational PR benefiting both programmes.**
+- **D1 — AI scope reachability (before PR5; shared with #536-D5). DECIDED (2026-06-06, attended): option (a).** `_derive_scope` now recognizes the platform owner by verified id (`config.BOT_OWNER_USER_ID == message.author.id`, checked **first**, before guild-owner/permission checks) and returns `AIScope.PLATFORM_OWNER`, so the owner-gated `diagnostics_health_snapshot` tool (PR5) is reachable; this also unblocks #536's platform-owner config. Option (b) — register the tool at `SERVER_OWNER` — was rejected (broader audience). The AI scope seam uses `config.BOT_OWNER_USER_ID` (sync, id-gated, unspoofable) to match the other AI owner seams (`ai_tools.get_user_standing`, `bot_knowledge_service`); the deterministic surface keeps using `bot.is_owner` via `resolve_audience`. Pinned by `tests/unit/services/test_bot_owner_recognition.py`.
 
 ### Deferrable (recommended defaults — safe to apply unattended in PR1-PR3)
 
@@ -241,7 +243,8 @@ Read-only, bounded, JSON-serializable, scope-gated, operates on the **already-re
 ## 5. Final PR sequence
 
 > **Delivery status (2026-06-06):** PR1 ✅, PR2 ✅, PR3 ✅ — all shipped in **#537**
-> (commits `1296d25`, `b052a4a`, `aa5b153`). PR4 / PR6 queued; PR5 blocked on D1.
+> (commits `1296d25`, `b052a4a`, `aa5b153`). PR4–PR6 in progress this session
+> (branch `claude/gifted-mayer-LGraE`); D1 DECIDED — option (a), see §4.
 
 Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ PR4 gated stretch). Every PR ends with both gates: `python3.10 scripts/check_architecture.py --mode strict` (0 errors) **and** `python3.10 scripts/check_quality.py --full` (CI mirror). **If a gate cannot be made green within a PR's own scope, STOP — commit what is green, leave a note, and do not start the next PR.**
 
@@ -276,7 +279,7 @@ Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ P
 - **Tests:** fingerprint determinism (`<category>:<subsystem>:<operation>:<exc-type>:<code>`; normalized repeats dedupe; meaningful diffs distinguish); redaction of IDs/tokens/SQL/user-text from fingerprints + messages.
 - **Risks:** fragile log-parsing → prefer structured observations at source; never feed raw buffer messages to AI. **Stop (autonomy guard):** if fingerprints look unstable on real logs, ship grouping **disabled** (keep deterministic `recent_errors`) and stop — do **not** iterate on heuristics unattended.
 
-### PR5 — AI tool + explainer — *DEFERRED (blocked on D1)*
+### PR5 — AI tool + explainer — *in progress (D1 decided: owner → PLATFORM_OWNER)*
 
 Register `diagnostics_health_snapshot`; resolve D1 first; **reuse #536's `AIToolDescriptor`/`diagnostics` toolset + `AIToolBudget` if landed (§8)**, else current `build_registry` path + a migration note; optional panel "Ask AI to explain" with deterministic fallback. Tests mirror `test_ai_tools.py`. **Not for the unattended session.**
 
