@@ -1,5 +1,7 @@
 # BTD6 game-native storage — schema design & cutover map
 
+> **Status:** `reference` — BTD6 game-data native-schema reference.
+
 **Principle (set by the maintainer):** the **game data leads**; bloonswiki is a
 cross-check *reference*, not the source of truth. We store the game's **own
 structure** and resolve names from the **game's own** strings — we do **not**

@@ -1,5 +1,7 @@
 # AI Readiness Scaffold PR Notes
 
+> **Status:** `plan` — AI-readiness PR notes; read for context, cross-check source.
+
 ## Intent
 
 This PR prepares connector points for broader AI support without changing runtime behavior.

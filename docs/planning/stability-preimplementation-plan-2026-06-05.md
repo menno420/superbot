@@ -1,5 +1,7 @@
 # Stability Preimplementation Plan — First Preparation Pass
 
+> **Status:** `historical` — Superseded by the refined stability plan; context only.
+
 **Date:** 2026-06-05
 **Base reviewed:** `8d47035` (`work`, equivalent to the repository state immediately after merge PR #528)
 **Purpose:** repo-grounded audit and first-draft implementation sequence for Claude Opus refinement. This document proposes no implementation and intentionally does not restart BTD6 extraction or expand AI features.

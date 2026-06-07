@@ -1,6 +1,7 @@
 # SuperBot Canonical Mother-Hub Map
 
-Status: Committed structure  
+> **Status:** `reference` — mother-hub structure map.
+
 Runtime impact: None (this document; subsequent PRs implement)  
 Scope: Defines the mother-hub structure, Help category index, navigation doctrine, settings doctrine, and PR sequence (S1–S13) that bring SuperBot into the committed structure.
 

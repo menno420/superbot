@@ -1,5 +1,7 @@
 # BTD6 data backends
 
+> **Status:** `reference` — BTD6 data-backend reference.
+
 The BTD6 deterministic data (fixtures: towers/heroes/maps/modes/rounds/bloons/
 ct_relics, plus the per-entity `stats/` tree + paragon descriptions/abilities)
 is read through one swappable seam — `services/btd6_data_provider.py`

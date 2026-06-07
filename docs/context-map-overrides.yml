@@ -1,0 +1,117 @@
+# Context-map overrides — maps a source file's location to its area folio and the
+# binding/contract docs an agent should read before editing it. Consumed by
+# scripts/context_map.py. Paths under `prefix:` are relative to disbot/; the
+# LONGEST matching prefix wins. `layer_docs` is the fallback when no prefix matches.
+#
+# This is the one curated source for the docs/risk routing that cannot be inferred
+# from imports alone. Keep it small and link to authoritative docs — do not restate
+# their contents here (one fact, one home).
+
+overrides:
+  # --- server management / moderation / roles / channels ---
+  - prefix: services/moderation
+    folio: docs/subsystems/server-management.md
+    docs: [docs/ownership.md, docs/runtime_contracts.md, docs/capability-authority.md]
+  - prefix: cogs/moderation
+    folio: docs/subsystems/server-management.md
+    docs: [docs/ownership.md, docs/help-command-surface-map.md]
+  - prefix: services/role_
+    folio: docs/subsystems/server-management.md
+    docs: [docs/ownership.md, docs/resource-provisioning-overview.md]
+  - prefix: services/channel_lifecycle
+    folio: docs/subsystems/server-management.md
+    docs: [docs/resource-provisioning-overview.md, docs/ownership.md]
+  - prefix: services/resource_provisioning
+    folio: docs/subsystems/server-management.md
+    docs: [docs/resource-provisioning-overview.md]
+
+  # --- settings / bindings / provisioning ---
+  - prefix: services/settings_mutation
+    folio: docs/subsystems/settings-bindings-provisioning.md
+    docs: [docs/settings-customization-roadmap.md, docs/capability-authority.md]
+  - prefix: services/binding
+    folio: docs/subsystems/settings-bindings-provisioning.md
+    docs: [docs/settings-customization-roadmap.md, docs/ownership.md]
+  - prefix: cogs/settings
+    folio: docs/subsystems/settings-bindings-provisioning.md
+    docs: [docs/building-roadmap/config-input-standard.md]
+  - prefix: cogs/setup
+    folio: docs/subsystems/settings-bindings-provisioning.md
+    docs: [docs/setup_wizard_finalization_plan.md, docs/resource-provisioning-overview.md]
+
+  # --- health / diagnostics ---
+  - prefix: services/health
+    folio: docs/subsystems/health-diagnostics.md
+    docs: [docs/bot-awareness-implementation-plan.md, docs/platform-consistency-ledger.md]
+  - prefix: services/diagnostics
+    folio: docs/subsystems/health-diagnostics.md
+    docs: [docs/platform-consistency-ledger.md, docs/smoke-test-checklist.md]
+  - prefix: services/platform_consistency
+    folio: docs/subsystems/health-diagnostics.md
+    docs: [docs/platform-consistency-ledger.md]
+  - prefix: cogs/diagnostic
+    folio: docs/subsystems/health-diagnostics.md
+    docs: [docs/subsystems/health-diagnostics.md]
+
+  # --- AI ---
+  - prefix: services/ai
+    folio: docs/subsystems/ai.md
+    docs: [docs/ai-config-ownership.md, docs/current-state.md]
+  - prefix: cogs/ai
+    folio: docs/subsystems/ai.md
+    docs: [docs/ai-config-ownership.md]
+  - prefix: core/runtime/ai
+    folio: docs/subsystems/ai.md
+    docs: [docs/ai-config-ownership.md, docs/runtime_contracts.md]
+
+  # --- BTD6 ---
+  - prefix: services/btd6
+    folio: docs/subsystems/btd6.md
+    docs: [docs/decisions/006-btd6-data-provenance-ownership.md]
+  - prefix: cogs/btd6
+    folio: docs/subsystems/btd6.md
+    docs: [docs/decisions/006-btd6-data-provenance-ownership.md]
+
+  # --- games ---
+  - prefix: services/economy
+    folio: docs/subsystems/games.md
+    docs: [docs/ownership.md, docs/decisions/002-game-state-not-restart-safe.md]
+  - prefix: services/game_state
+    folio: docs/subsystems/games.md
+    docs: [docs/decisions/002-game-state-not-restart-safe.md]
+  - prefix: services/blackjack
+    folio: docs/subsystems/games.md
+    docs: [docs/subsystems/games.md]
+  - prefix: cogs/blackjack
+    folio: docs/subsystems/games.md
+    docs: [docs/subsystems/games.md]
+  - prefix: cogs/mining
+    folio: docs/subsystems/games.md
+    docs: [docs/mining_exploration_brainstorm.md]
+
+  # --- media / youtube ---
+  - prefix: services/server_logging
+    folio: docs/subsystems/media-youtube.md
+    docs: [docs/server-logging.md]
+  - prefix: cogs/logging
+    folio: docs/subsystems/media-youtube.md
+    docs: [docs/server-logging.md]
+
+  # --- governance / capability ---
+  - prefix: governance
+    folio: null
+    docs: [docs/ownership.md, docs/capability-authority.md, docs/architecture.md]
+
+  # --- shared runtime ---
+  - prefix: core/runtime
+    folio: null
+    docs: [docs/runtime_contracts.md, docs/architecture.md, docs/decisions/001-no-redis-backed-state.md]
+
+# Fallback contract docs by layer when no prefix above matches.
+layer_docs:
+  services: [docs/ownership.md, docs/runtime_contracts.md]
+  views: [docs/building-roadmap/hub-ui-standard.md, docs/architecture.md]
+  core: [docs/runtime_contracts.md, docs/architecture.md]
+  governance: [docs/ownership.md, docs/capability-authority.md]
+  cogs: [docs/architecture.md, docs/help-command-surface-map.md]
+  utils: [docs/helper-policy.md, docs/repo-navigation-map.md]

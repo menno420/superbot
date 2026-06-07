@@ -1,12 +1,13 @@
 # Resource Provisioning Manager (RPM) — Overview
 
+> **Status:** `reference` — Resource-provisioning ownership + confirmation rules.
+
 Companion doc for the Global Settings & Customization Manager. Explains the
 **Resource Provisioning Lane** that runs parallel to settings and bindings.
 
 Sister docs:
 - [`docs/settings-customization-roadmap.md`](settings-customization-roadmap.md)
 - [`docs/settings-customization-command-map.md`](settings-customization-command-map.md)
-
 
 ## Why a separate lane
 
@@ -25,7 +26,6 @@ neither should grow that responsibility.
    `subsystem_bindings` directly).
 6. Audits the action.
 7. Emits both `resource.provisioned` and `binding.changed` events.
-
 
 ## The 11-step `provision(...)` contract
 
@@ -83,7 +83,6 @@ allowlist and tracked separately by the server-management lifecycle plan — see
     participation-mutation pattern.
 11. **Return** a typed `ProvisioningResult`.
 
-
 ## Hard rules
 
 - **No silent auto-create.** Every `provision(mode="create")` call requires
@@ -106,7 +105,6 @@ allowlist and tracked separately by the server-management lifecycle plan — see
   `GovernanceMutationPipeline`.
 - Setup wizard (S12 and onward) **consumes** provisioning packs; it never
   owns or replicates creation logic.
-
 
 ## Sibling lane: lifecycle services (the *change* operations)
 
@@ -140,7 +138,6 @@ catalogued domain event):
 See `docs/ownership.md` § "Service ownership" and
 `docs/planning/server-management-status-2026-06-05.md` for current scope.
 
-
 ## Reserved future model: `logging_routes`
 
 Per-severity log routing is **not in v1 scope** of this roadmap. The table
@@ -160,7 +157,6 @@ CREATE TABLE logging_routes (
 Reserved as migration `033_logging_routes.sql`. Until that future PR, v1
 recognises only `mod_channel` and `cleanup_channel` bindings.
 
-
 ## Standard channel-name presets (logging consumer)
 
 The logging customization (S7) seeds the `ChannelCreateModal` with the
@@ -176,7 +172,6 @@ following presets so operators don't have to hand-type the names:
 
 Operators may pick any preset, supply a custom name, or accept the suggestion
 seeded from `ProvisioningHint.suggested_name`.
-
 
 ## See also
 

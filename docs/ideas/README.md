@@ -9,6 +9,12 @@
 Pure brainstorm backlogs — capture without commitment. Each file should carry an
 `ideas` badge in its header and state what it is *not* (not a plan, not approval).
 
+Current broad captures:
+
+- [`future-product-direction-2026-06-07.md`](./future-product-direction-2026-06-07.md) —
+  source-aware future product direction across polish, extensions, reusable systems,
+  and long-term expansions; capture-only, not a roadmap.
+
 Related idea-shaped docs that live elsewhere **by design**:
 
 - `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog, **but** its

@@ -1,6 +1,7 @@
 # Admin Powers — Config Coverage Map
 
-Status: Reference only
+> **Status:** `plan` — admin-powers config-coverage backlog; cross-check source.
+
 Runtime impact: None
 Scope: Pipeline-ownership map for every category of admin/operator config — answers "who owns the write path for this kind of change?"
 

@@ -1,5 +1,7 @@
 # Direct-DB Exception Ledger (RC-8A)
 
+> **Status:** `reference` — Ledger of sanctioned direct-DB exceptions.
+
 > Companion to `docs/ownership.md` and `architecture_rules/mutation_owners.yaml`.
 > Catalogs every place a **cog** reaches the database through `utils.db`
 > directly, and classifies it, so new drift is visible.

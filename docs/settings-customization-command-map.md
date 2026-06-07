@@ -1,5 +1,7 @@
 # Settings & Customization Command Map
 
+> **Status:** `living-ledger` — Settings command map; pinned to code by doc-tests.
+
 S0 milestone of the **Global Settings & Customization Manager** roadmap. Maps every loaded
 cog and every registered subsystem against a single 24-field template so reviewers,
 operators, and future setup-wizard work have one canonical reference.
@@ -12,7 +14,6 @@ Sister docs:
 - [`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md) — the
   Resource Provisioning Manager (RPM) lane, the 11-step contract, the strict
   no-silent-auto-create rule, and the reserved `logging_routes` future model.
-
 
 ## How to read this doc
 
@@ -27,7 +28,6 @@ authoritative content.
 Field labels are stable so the resilient doc tests in
 `tests/unit/docs/test_settings_customization_doc.py` can assert on them
 without depending on bot startup or runtime registry population.
-
 
 ## Field template (24 fields)
 
@@ -82,7 +82,6 @@ without depending on bot startup or runtime registry population.
 24. **recommended_PR_phase** — the `S<n>` milestone in which this row first
     becomes actionable.
 
-
 ## Loaded cogs and registered subsystems
 
 The 22 cogs loaded at startup come from `disbot/config.py:INITIAL_EXTENSIONS`.
@@ -104,9 +103,7 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 `rps_tournament`, `counting`, `chain`, `leaderboard`, `proof_channel`,
 `utility`, `general`, `help`, `diagnostic`, `settings`, `logging`.
 
-
 ## Per-cog inventory
-
 
 ### admin
 
@@ -145,7 +142,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P1` — parent for the new `!settings` cog.
 24. **recommended_PR_phase**: S5.
-
 
 ### moderation
 
@@ -208,7 +204,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P0` — first subsystem page after Settings shell + logging.
 24. **recommended_PR_phase**: S10 (first of the subsystem-page sub-PRs).
 
-
 ### economy
 
 1. **cog_module**: `disbot/cogs/economy_cog.py` (+ `disbot/cogs/economy/`
@@ -259,7 +254,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P1` — after moderation + xp.
 24. **recommended_PR_phase**: S10.
 
-
 ### inventory
 
 1. **cog_module**: `disbot/cogs/inventory_cog.py`
@@ -290,7 +284,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
-
 
 ### mining
 
@@ -329,7 +322,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     (proposed for S10 — not declared yet).
 23. **priority**: `P1`.
 24. **recommended_PR_phase**: S10.
-
 
 ### xp
 
@@ -376,7 +368,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     `public-text)`.
 23. **priority**: `P0` — second subsystem page after moderation.
 24. **recommended_PR_phase**: S10.
-
 
 ### role
 
@@ -427,7 +418,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P1`.
 24. **recommended_PR_phase**: S10.
 
-
 ### channel
 
 1. **cog_module**: `disbot/cogs/channel_cog.py`
@@ -468,7 +458,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     Moderation / etc.).
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
-
 
 ### cleanup
 
@@ -514,7 +503,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P0` — biggest customization gap.
 24. **recommended_PR_phase**: S8.
 
-
 ### community
 
 1. **cog_module**: `disbot/cogs/community_cog.py`.
@@ -552,7 +540,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P1` — interface skeleton, low risk.
 24. **recommended_PR_phase**: mother-hub PR sequence Phase S9.
 
-
 ### games
 
 1. **cog_module**: `disbot/cogs/games_cog.py`.
@@ -588,7 +575,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P1` — interface skeleton, low risk.
 24. **recommended_PR_phase**: interface-completion Phase 3.
 
-
 ### blackjack
 
 1. **cog_module**: `disbot/cogs/blackjack_cog.py` (+ `disbot/cogs/blackjack/`
@@ -621,7 +607,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
 
-
 ### deathmatch
 
 1. **cog_module**: `disbot/cogs/deathmatch_cog.py`
@@ -652,7 +637,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
-
 
 ### rps_tournament
 
@@ -695,7 +679,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
 
-
 ### counting
 
 1. **cog_module**: `disbot/cogs/counting_cog.py` (+ `disbot/cogs/counting/`
@@ -735,7 +718,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
 
-
 ### chain
 
 1. **cog_module**: `disbot/cogs/chain_cog.py`
@@ -770,7 +752,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
 
-
 ### leaderboard
 
 1. **cog_module**: `disbot/cogs/leaderboard_cog.py`
@@ -798,7 +779,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
-
 
 ### proof_channel
 
@@ -841,7 +821,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P0` — hardcoded name `"proof"` is a current footgun.
 24. **recommended_PR_phase**: S10.
 
-
 ### utility
 
 1. **cog_module**: `disbot/cogs/utility_cog.py`
@@ -871,7 +850,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
-
 
 ### general
 
@@ -904,7 +882,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
 
-
 ### four_twenty
 
 1. **cog_module**: `disbot/cogs/four_twenty_cog.py`
@@ -934,7 +911,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P3`.
 24. **recommended_PR_phase**: PR #420.
-
 
 ### help
 
@@ -970,7 +946,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P0` — the discoverability hub for S11.
 24. **recommended_PR_phase**: S11.
-
 
 ### diagnostic
 
@@ -1012,7 +987,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P0` — hosts the registries that S2 / S2.5 surface.
 24. **recommended_PR_phase**: S2 (`!platform customization`) + S2.5
     (`!platform resources`).
-
 
 ### ai
 
@@ -1080,7 +1054,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P1` — surfaces platform AI state for operators.
 24. **recommended_PR_phase**: lands with Module 2 of the AI/BTD6
     plan.
-
 
 ### btd6
 
@@ -1155,7 +1128,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 24. **recommended_PR_phase**: lands with Module 4; settings expand in
     Module 6.
 
-
 ### btd6_reference
 
 1. **cog_module**: `disbot/cogs/btd6_reference_cog.py`
@@ -1174,7 +1146,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
    (deterministic reference reads; no settings, no mutations).
 23. **priority**: `P1` — BTD6 cog-split foundation.
 24. **recommended_PR_phase**: ships with the BTD6 cog split.
-
 
 ### btd6_events
 
@@ -1195,7 +1166,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 23. **priority**: `P1` — BTD6 cog-split foundation.
 24. **recommended_PR_phase**: ships with the BTD6 cog split.
 
-
 ### btd6_strategy
 
 1. **cog_module**: `disbot/cogs/btd6_strategy_cog.py`
@@ -1214,7 +1184,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
    flow through `services.btd6_strategy_mutation` (audited).
 23. **priority**: `P1` — BTD6 cog-split foundation.
 24. **recommended_PR_phase**: ships with the BTD6 cog split.
-
 
 ### paragon
 
@@ -1252,7 +1221,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P2` — BTD6 Paragon calculator.
 24. **recommended_PR_phase**: ships with the Paragon calculator feature.
-
 
 ### btd6_ops
 
@@ -1292,7 +1260,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P2` — BTD6 ingestion operations.
 24. **recommended_PR_phase**: ships with the BTD6 operator-visibility feature.
-
 
 ### settings
 
@@ -1352,7 +1319,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     subsystem's settings page.
 24. **recommended_PR_phase**: S5 (this cog) + S6 (edit/reset) + S7+
     (per-subsystem write surfaces).
-
 
 ### logging
 
@@ -1439,7 +1405,6 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     (binding-select) + S7c (provisioning preview/confirm) + S7d
     (panel + Help / Admin integration).
 
-
 ## Setting class summary
 
 Cross-cut by class, this is the work distribution implied by the per-cog
@@ -1465,7 +1430,6 @@ inventory above.
 - **per-user preference** — none in v1 of this roadmap.
 - **runtime diagnostic** — diagnostic cog read-only views.
 
-
 ## Setup-readiness blocker references
 
 The following blocker tags from `services.platform_consistency.SETUP_READINESS_BLOCKERS`
@@ -1483,7 +1447,6 @@ gate the roadmap; the doc test asserts every one is referenced here.
 - `slash_panel_entrypoints` — backs S11 discoverability pass.
 - `setup_wizard_readiness_bridge` — backs S12 planning doc.
 - `setup_wizard` — long-term consumer; never owner of any pipeline.
-
 
 ## Cross-cutting settings keys (not subsystem-owned)
 
@@ -1517,7 +1480,6 @@ Each key above is intentionally referenced here so the S0 doc test
 (`test_existing_settings_keys_constants_referenced`) can verify the
 inventory stays in sync with `settings_keys.__all__` without depending on
 runtime imports.
-
 
 ## Cross-references
 

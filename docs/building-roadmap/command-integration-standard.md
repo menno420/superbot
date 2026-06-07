@@ -1,6 +1,7 @@
 # Command Integration Standard
 
-Status: Reference only  
+> **Status:** `reference` — required panel/Help/settings wiring standard.
+
 Runtime impact: None  
 Scope: Future commands, panels, views, and cog menu integrations
 

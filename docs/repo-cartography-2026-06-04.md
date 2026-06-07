@@ -1,5 +1,7 @@
 # SuperBot repo cartography / architectural inventory
 
+> **Status:** `historical` — Dated architectural inventory snapshot; source wins.
+
 _Date: 2026-06-04_
 
 This document records the shared neutral repository map from the initial read-only architecture inventory. It is intended to seed later parallel Analysis chats and should be treated as a mapping artifact, not an implementation plan.

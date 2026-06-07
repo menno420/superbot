@@ -111,6 +111,7 @@ Source code and merged PRs win over anything written here.
 | Rules of engagement (CI parity, CodeGraph, arch invariants, workflow) | `.claude/CLAUDE.md` |
 | **What's true right now** | this file |
 | How to boot/operate the sandbox · maintainer preferences · hard-won rules · gotchas | `.session-journal.md` (guidebook head) |
+| Unresolved maintainer-facing questions · preserved owner intent · answer routing | `docs/owner/maintainer-question-router.md` (unanswered questions are not approval) |
 | What happened in past sessions | `.session-journal.md` (session log) |
 | Which docs to read for a specific task | `docs/AGENT_ORIENTATION.md` |
 | Deep-dive on one part of the bot (AI, BTD6, server-mgmt…) | `docs/subsystems/<area>.md` (start here for an area) |

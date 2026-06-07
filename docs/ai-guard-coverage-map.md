@@ -1,5 +1,7 @@
 # AI choke-point guard coverage map (RC-11)
 
+> **Status:** `reference` — AI guard/decision coverage reference.
+
 > **Purpose.** RC-11 / roadmap PR 10 / Ideas Lab §6 gate AI feature expansion (and
 > any new AI write/action tool) on guard tests being in place. This doc verifies
 > those guards **already exist** and maps each required guarantee to the test that
