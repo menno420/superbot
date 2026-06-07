@@ -77,6 +77,40 @@ def _position(obj: object) -> int:
     return int(getattr(obj, "position", 0) or 0)
 
 
+def _at_or_above(role: object, other: object) -> bool:
+    """True when ``role`` sits at or above ``other`` in Discord's role hierarchy
+    (so a member/bot whose top role is ``other`` can **not** manage ``role``).
+
+    Discord role ``position`` values are **not unique**: when two roles share a
+    position, Discord — and discord.py's ``Role`` comparison — break the tie by
+    **id**, ranking the older role (smaller id) higher.  Comparing raw
+    ``position`` alone therefore mis-flags a role that merely *ties* the top
+    role's position (roles created by the bot commonly all sit at position 1,
+    yet the bot's managed role still outranks the ones it created).  This mirrors
+    ``Role.__lt__``: ``role`` is strictly *below* ``other`` iff
+    ``role.position < other.position`` or (equal position and ``role.id >
+    other.id``); "at or above" is the negation.
+    """
+    rp, op = _position(role), _position(other)
+    if rp != op:
+        return rp > op
+    # Equal position → tie broken by id (older/smaller id ranks higher).  With
+    # ids absent (test fakes default to 0) this preserves the legacy ``>=``
+    # behaviour (0 <= 0 → treated as at-or-above).
+    rid = int(getattr(role, "id", 0) or 0)
+    oid = int(getattr(other, "id", 0) or 0)
+    return rid <= oid
+
+
+def is_below(role: object, other: object) -> bool:
+    """True when ``role`` is strictly *below* ``other`` in Discord's role
+    hierarchy — i.e. a member/bot whose top role is ``other`` can manage ``role``
+    (hierarchy-wise).  Inverse of :func:`_at_or_above`; uses the (position, id)
+    tiebreak rather than raw ``position`` so tied positions are ranked correctly.
+    """
+    return not _at_or_above(role, other)
+
+
 def _is_default(role: object) -> bool:
     is_default = getattr(role, "is_default", None)
     if callable(is_default):
@@ -115,11 +149,11 @@ def evaluate_role(
         if not _has_manage_roles(bot_member):
             return _verdict(BOT_MISSING_MANAGE_ROLES)
         bot_top = getattr(bot_member, "top_role", None)
-        if bot_top is not None and _position(role) >= _position(bot_top):
+        if bot_top is not None and _at_or_above(role, bot_top):
             return _verdict(ABOVE_BOT)
     if actor is not None:
         actor_top = getattr(actor, "top_role", None)
-        if actor_top is not None and _position(role) >= _position(actor_top):
+        if actor_top is not None and _at_or_above(role, actor_top):
             return _verdict(ABOVE_ACTOR)
     return _verdict(SELECTABLE)
 
@@ -181,6 +215,7 @@ __all__ = [
     "RoleFeasibility",
     "RoleFilter",
     "evaluate_role",
+    "is_below",
     "manageable_roles",
     "not_everyone",
     "summarize_exclusions",

@@ -419,6 +419,23 @@ def test_preflight_resolves_role_by_id_after_rename():
     assert result.ok is True
 
 
+def test_preflight_tied_position_role_after_bot_is_not_blocked():
+    """A threshold role sharing the bot's top-role position but created later
+    (larger id) is BELOW the bot per Discord's (position, id) ordering — it must
+    not be reported as a hierarchy blocker. Raw `position >=` wrongly flagged it
+    (every role at position 1 — the live test-guild state).
+    """
+    me = SimpleNamespace(
+        guild_permissions=SimpleNamespace(manage_roles=True),
+        top_role=SimpleNamespace(position=1, id=100),
+    )
+    role = _role(200, "testrole2", position=1)  # same pos, newer id → below bot
+    g = _guild(roles=[role], me=me)
+    result = check_preflight(g, [RoleThreshold("testrole2", 30, role_id=200)])
+    assert result.hierarchy_blockers == ()
+    assert result.ok is True
+
+
 # ---------------------------------------------------------------------------
 # apply — preflight guard + failure classification (the 26-errors fix)
 # ---------------------------------------------------------------------------
@@ -457,6 +474,32 @@ async def test_apply_blocks_entire_batch_when_bot_lacks_manage_roles():
     for m in members:
         m.add_roles.assert_not_awaited()
         m.remove_roles.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_apply_does_not_preempt_tied_position_manageable_role():
+    """Regression: a role at the bot's top-role position but created later (larger
+    id) is manageable, so apply() must NOT pre-empt it. Before the (position, id)
+    tiebreak fix the raw `position >=` check skipped it as ABOVE_BOT — silently
+    dropping a legitimate assignment.
+    """
+    role = _role(200, "testrole2", position=1)
+    member = _member(mid=1, display="u1", joined_days_ago=60)
+    me = SimpleNamespace(
+        guild_permissions=SimpleNamespace(manage_roles=True),
+        top_role=SimpleNamespace(position=1, id=100),
+    )
+    g = _guild(roles=[role], members=[member], me=me)
+    plans = compute_assignments(g, [RoleThreshold("testrole2", 30, role_id=200)])
+    assert len(plans) == 1
+    with patch(
+        "services.role_automation.emit_audit_action",
+        new_callable=AsyncMock,
+    ):
+        result = await apply(g, plans)
+    member.add_roles.assert_awaited_once()  # actually assigned, not pre-empted
+    assert result.succeeded == 1
+    assert result.failed == 0
 
 
 @pytest.mark.asyncio

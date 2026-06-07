@@ -333,6 +333,16 @@ def _build_consistency_subsystem(
         else SnapshotStatus.UNKNOWN
     )
     stale = _is_stale(report_at)
+    # A SKIPPED section means "not applicable / no data / no context" — e.g.
+    # Bindings checked from a DM (no guild), or no `binding_backfill` checkpoint
+    # rows because no backfill has run.  That is NOT something that "needs
+    # attention", so only WARNING/FATAL sections become findings; SKIPPED ones
+    # are recorded in facts.  Otherwise a benign "not applicable" state reads as
+    # a problem and inflates the "N blocking sections need attention" count.
+    actionable = tuple(
+        s for s in blocking if getattr(s.status, "value", "") in ("warning", "fatal")
+    )
+    skipped = tuple(s for s in blocking if getattr(s.status, "value", "") == "skipped")
     findings = tuple(
         OperationalHealthFinding(
             fingerprint=(
@@ -350,7 +360,7 @@ def _build_consistency_subsystem(
             file_hint=_scrub(getattr(s, "summary", "")),  # owner-only
             source=source,
         )
-        for s in blocking[:MAX_SUBSYSTEM_FINDINGS]
+        for s in actionable[:MAX_SUBSYSTEM_FINDINGS]
     )
     age = None if report_at is None else round((_now() - report_at).total_seconds())
     return SubsystemHealth(
@@ -364,7 +374,12 @@ def _build_consistency_subsystem(
         findings=findings,
         facts={
             "consistency_status": overall_value,
-            "blocking_sections": len(blocking),
+            # Only WARNING/FATAL sections count as "needs attention"; SKIPPED
+            # ("not applicable") are reported separately so they never inflate
+            # the actionable count.
+            "blocking_sections": len(actionable),
+            "skipped_sections": len(skipped),
+            "skipped_section_names": ", ".join(s.name for s in skipped),
             "report_age_seconds": age,
         },
         source=source,

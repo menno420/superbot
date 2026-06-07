@@ -6,11 +6,14 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · implementation-readiness reconciliation at
-> `docs/audits/implementation-readiness-review-2026-06-06.md`. Health/diagnostics is
-> verification-only; server-management remains current through PR9 and its tracker
-> starts the remaining queue at PR10; AI/BTD6 expansion remains gated. Legacy Phase-2
-> status cells were reclassified so they are not mistaken for current queues.
+> **Last updated:** 2026-06-06 · #553 merged (consistency-warning + role-hierarchy
+> fixes — see Recently shipped). This PR: implementation-readiness reconciliation at
+> `docs/audits/implementation-readiness-review-2026-06-06.md` — health/diagnostics is
+> verification-only; server-management remains current through PR9 with its tracker
+> starting the remaining queue at PR10; AI/BTD6 expansion remains gated; legacy
+> Phase-2 status cells were reclassified so they are not mistaken for current queues.
+> Verify open PRs against live GitHub (`list_pull_requests`); this snapshot names
+> none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -36,6 +39,8 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
+- **#553** — consistency-warning presentation fix (the health snapshot no longer flags benign `SKIPPED` consistency sections — bindings-from-DM / no-backfill-rows — as "needs attention") + role-hierarchy tiebreak (`role_feasibility` / `role_automation` compare hierarchy by (position, id) like discord.py, not raw `position`).
+- **#552** — session journal made lean + self-maintaining: archive split (`.session-journal-archive.md`), a Quick reference, Rules regrouped, and a "tidy-each-session" protocol step (mirrored in `.claude/CLAUDE.md`); docs-only.
 - **#551** — role-automation degradation fix: `role_automation.apply` preflight-guards at the mutation seam (via `utils.role_feasibility`), classifies failures, and keeps predictable Manage-Roles/hierarchy blockers off the ERROR-only health surface; operator + role-Diagnostics surfaces show the cause.
 - **#550** — collaboration-model doc + truth-layer restructure (goal-first, prompts-as-guidance); docs-only.
 - **#549** — server-management cleanup PR8+PR9: `policy_version` marker, presets builder + dry-run + panel diagnostics, and the guild-default `scope_id=0` no-op fix.
