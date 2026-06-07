@@ -1,6 +1,6 @@
 # SuperBot repo cartography / architectural inventory
 
-> **Status:** `historical` — Dated architectural inventory snapshot; source wins.
+> **Status:** `archive` — Dated architectural inventory snapshot; source wins.
 
 _Date: 2026-06-04_
 

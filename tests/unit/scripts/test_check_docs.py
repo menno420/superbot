@@ -123,3 +123,47 @@ def test_allowed_badges_match_agent_orientation(cd):
         "ALLOWED_BADGES in check_docs.py drifted from the badge list in "
         "docs/AGENT_ORIENTATION.md"
     )
+
+
+# ---------------------------------------------------------------------------
+# Reachability — every live doc must be reachable from a read-path root
+# ---------------------------------------------------------------------------
+
+
+def test_reachable_orphan_flagged_linked_ok(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    # AGENT_ORIENTATION is a read-path root; it links good.md (markdown) and
+    # sub.md (backtick path). orphan.md is linked from nowhere.
+    _write(
+        docs / "AGENT_ORIENTATION.md",
+        "# Orientation\n\n> **Status:** `binding`\n\n"
+        "[good](good.md) and `docs/sub.md`\n",
+    )
+    _write(docs / "good.md", "# Good\n\n> **Status:** `reference`\n")
+    _write(docs / "sub.md", "# Sub\n\n> **Status:** `reference`\n")
+    _write(docs / "orphan.md", "# Orphan\n\n> **Status:** `reference`\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    viol = cd.check_reachable()
+    assert [str(v[0]) for v in viol] == ["docs/orphan.md"]
+    assert viol[0][1] == "reachable"
+
+
+def test_reachable_exempt_badges_and_allowlist(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(docs / "AGENT_ORIENTATION.md", "# O\n\n> **Status:** `binding`\n")
+    # Retired badges need no inbound link; ADRs are exempt; allowlist covers islands.
+    _write(docs / "old.md", "# Old\n\n> **Status:** `historical`\n")
+    _write(docs / "gone.md", "# Gone\n\n> **Status:** `archive`\n")
+    _write(docs / "decisions" / "009-x.md", "# ADR\n\n**Status:** Accepted\n")
+    _write(docs / "island.md", "# Island\n\n> **Status:** `reference`\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(cd, "_REACHABILITY_ALLOWLIST", frozenset({"docs/island.md"}))
+    assert cd.check_reachable() == []
+
+
+def test_repo_has_no_doc_orphans(cd):
+    """Pin the real tree to zero orphans (mirrors the --strict CI gate)."""
+    orphans = cd.check_reachable()
+    assert orphans == [], "orphaned docs: " + ", ".join(str(v[0]) for v in orphans)

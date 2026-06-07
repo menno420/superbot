@@ -309,8 +309,11 @@ cross-check the source and the consistency ledger first.
 
 - `docs/phase-2-completion-readiness.md` — old Phase-2 punch list; retained for
   blocker/migration history, not current next-work status.
-- Raw dated audits and the superseded superbot planning routers under `docs/planning/`;
-  obey their banners and start from `docs/current-state.md` instead.
+- `docs/archive/` (see [`docs/archive/README.md`](archive/README.md)) — retired dated
+  snapshots (the 2026-06 planning/audit burst, early cartography); superseded, do not act
+  on them. Start from `docs/current-state.md` instead.
+- Any remaining raw dated audits under `docs/planning/` / `docs/audits/`; obey their
+  banners and start from `docs/current-state.md` instead.
 
 ### Ideas / brainstorms (not approved)
 

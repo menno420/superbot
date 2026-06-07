@@ -1,6 +1,6 @@
 # Stability Preimplementation Plan — First Preparation Pass
 
-> **Status:** `historical` — Superseded by the refined stability plan; context only.
+> **Status:** `archive` — Superseded by the refined stability plan; context only.
 
 **Date:** 2026-06-05
 **Base reviewed:** `8d47035` (`work`, equivalent to the repository state immediately after merge PR #528)
@@ -75,7 +75,7 @@ Automated architecture and broad targeted tests are the strongest available evid
 | Classification | Documents | Finding |
 |---|---|---|
 | **Binding** | `.claude/CLAUDE.md`; `docs/AGENT_ORIENTATION.md`; `docs/architecture.md`; `docs/ownership.md`; `docs/runtime_contracts.md`; `docs/helper-policy.md`; accepted ADRs | Continue to use. Source wins on conflict. `.session-journal.md` is strong workflow guidance but lower precedence. |
-| **Current living ledger** | `.session-journal.md`; `docs/planning/server-management-status-2026-06-05.md`; `docs/planning/cog-functionality-audit-2026-06-05.md`; `docs/btd6/btd6-gamedata-decode-status.md` | Useful, but the cog tracker and journal need reconciliation after #528; server-management status correctly records PR1–PR7 and remaining PR8+. |
+| **Current living ledger** | `.session-journal.md`; `docs/planning/server-management-status-2026-06-05.md`; `docs/archive/cog-functionality-audit-2026-06-05.md`; `docs/btd6/btd6-gamedata-decode-status.md` | Useful, but the cog tracker and journal need reconciliation after #528; server-management status correctly records PR1–PR7 and remaining PR8+. |
 | **Current plan / target architecture** | `server-management-implementation-plan`; `server-management-roadmap`; `settings-customization-roadmap`; `operator-settings-presets`; `resource-provisioning-overview`; AI readiness/provider plans | Use for target intent only. Re-plan the next 2–3 PRs against source; do not execute old sequence blindly. |
 | **Historical / superseded** | raw 2026-06-05 audit docs; `repo-cartography`; old setup roadmaps; `games-actionability-roadmap`; broad building roadmaps | Context only. Many claims were already closed by #513–#527. |
 | **Stale / needs cleanup** | `superbot-source-of-truth-index`; `superbot-next-session-roadmap`; `superbot-architecture-priority-map`; `cog-functionality-audit`; parts of `direct-db-exception-ledger`; `resource_provisioning.py` docstring | The source-of-truth index stops its server-management summary at #523; roadmap/priority documents still foreground already-shipped RC work; cog tracker still shows DiagnosticCog broken; direct-DB ledger says cleanup has reads only while cleanup commands/modals write prohibited words directly. |
@@ -409,7 +409,7 @@ The sequence below is deliberately staged. Per session, refine and execute only 
 >
 > Recommended PR order: **A runtime/dependency + channel boundary guardrails → B complete live cog audit/hard failures → C cleanup ownership/schema contract → D cleanup builder + bounded role/channel UX → E moderation config + setup consistency → F AI config/preset correctness → G BTD6 provenance/provider-parity verification → H docs reconciliation.** Refine only the next 2–3 PRs for execution.
 >
-> Read first: `.claude/CLAUDE.md`, `.session-journal.md`, `docs/AGENT_ORIENTATION.md`, `docs/planning/stability-preimplementation-plan-2026-06-05.md`, `docs/ownership.md`, `docs/runtime_contracts.md`, `docs/planning/server-management-status-2026-06-05.md`, `docs/planning/cog-functionality-audit-2026-06-05.md`, `docs/ai-config-ownership.md`, `docs/decisions/006-btd6-data-provenance-ownership.md`, then the exact source/tests for PR A.
+> Read first: `.claude/CLAUDE.md`, `.session-journal.md`, `docs/AGENT_ORIENTATION.md`, `docs/archive/stability-preimplementation-plan-2026-06-05.md`, `docs/ownership.md`, `docs/runtime_contracts.md`, `docs/planning/server-management-status-2026-06-05.md`, `docs/archive/cog-functionality-audit-2026-06-05.md`, `docs/ai-config-ownership.md`, `docs/decisions/006-btd6-data-provenance-ownership.md`, then the exact source/tests for PR A.
 >
 > Decisions needed from maintainer: (1) restore/clarify live-test environment; (2) support guild-scope AI presets versus amend the binding doc; (3) exact cleanup ownership/policy boundary and whether prohibited-word/history writes gain a canonical service; (4) how much remaining channel/member-assignment lifecycle convergence belongs before the hub; (5) explicit criteria to lift the BTD6 extraction pause.
 >

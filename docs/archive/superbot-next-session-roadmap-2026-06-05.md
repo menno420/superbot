@@ -3,7 +3,7 @@
 > **`historical` — 2026-06-05; PR sequence superseded.** For *what is true now*
 > and the next candidates, start at **`docs/current-state.md`**.
 
-> **Status:** `historical` — planning artifact. Companion to
+> **Status:** `archive` — planning artifact. Companion to
 > `superbot-audit-consolidation-2026-06-05.md` (verified findings, IDs RC-n)
 > and `superbot-architecture-priority-map-2026-06-05.md` (priority + dependency
 > graph). This doc converts the consolidated findings into an ordered,

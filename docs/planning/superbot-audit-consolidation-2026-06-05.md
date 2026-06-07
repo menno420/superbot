@@ -59,7 +59,7 @@ Postgres provider-parity execution (needs a live DB / cloud bucket).
 
 **Audit inputs (the five being consolidated):**
 
-- `docs/repo-cartography-2026-06-04.md` (Codex neutral inventory)
+- `docs/archive/repo-cartography-2026-06-04.md` (Codex neutral inventory)
 - `docs/audits/platform-runtime-data-layer-audit-2026-06-05.md` (Agent A)
 - `docs/audits/agent-b-governance-control-audit-2026-06-05.md` (Agent B)
 - `docs/audits/general-feature-layer-analysis-2026-06-05.md` (Agent C)
