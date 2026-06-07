@@ -1,6 +1,6 @@
 # Phase 2 — Completion readiness
 
-> **Status:** `historical` — Phase-2 snapshot; superseded as
+> **Status:** `historical` — a **historical Phase-2 snapshot; superseded as
 > a live next-work queue.** PR-10 consistency diagnostics and later setup work shipped
 > after this snapshot. Preserve this file for blocker-name/doc-test and migration
 > history, but use `docs/current-state.md`, subsystem folios, source, and active

@@ -69,14 +69,14 @@ merged PRs win over it, and you must verify in-flight PRs against live GitHub.
 Read it before task-specific docs so you don't act on stale state.
 
 Also read **`.session-journal.md`** (repo root) at the **start** of every
-session — our cross-session working memory: start with its **⚡ Quick reference**
-(boot / run-CI / Postgres-down / kill-bot), then the environment/boot runbook,
-maintainer preferences, recurring problems + fixes, past mistakes to avoid, and
-candidate rules not yet promoted into this file. Older session history lives in
-**`.session-journal-archive.md`** — grep it on demand, don't read it top-to-bottom.
-**Keep the journal lean** — it's a fast-read working set: at the **end** of every
-session append a dated entry **and** roll entries older than the newest ~4 into the
-archive (tidying stale Rules / the Quick reference in place), then commit. Precedence:
+session — our cross-session working memory, now **guidebook-only**: start with its
+**⚡ Quick reference** (boot / run-CI / Postgres-down / kill-bot), then the
+environment/boot runbook, maintainer preferences, recurring problems + fixes, past
+mistakes to avoid, and candidate rules not yet promoted into this file. **Per-session
+logs live in `.sessions/`** (`YYYY-MM-DD-<slug>.md`, newest-first) and older history in
+**`.session-journal-archive.md`** — grep them on demand, don't read top-to-bottom.
+**Keep the guidebook lean** — at the **end** of every session write a new `.sessions/`
+log file and tidy any stale Rules / Quick reference in place, then commit. Precedence:
 source code & merged PRs > this file (CLAUDE.md) > `docs/current-state.md` (live
 status) > the journal.
 <!-- READ_FIRST_END -->
