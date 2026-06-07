@@ -56,6 +56,13 @@ you can accomplish in one session.
 - **Think independently.** Proposing a better idea than the prompt asked for is
   welcome — capture it (implement if it's in scope and safe, or file it under
   `docs/ideas/`).
+- **A new idea is not a new priority.** Idea order ≠ implementation order: an idea
+  raised mid-stream is captured and classified (`docs/ideas/`), not treated as active
+  work, unless the maintainer says so or it exposes a blocker, safety, or architectural
+  conflict. The maintainer thinks associatively on purpose; classify and route before
+  building. The multi-agent pipeline that moves ideas → shipped is
+  `docs/owner/ai-project-workflow.md` (per-project roles, handoff templates, idea states);
+  the maintainer's working style is `docs/owner/maintainer-working-profile.md`.
 
 ## For executor agents (Claude)
 

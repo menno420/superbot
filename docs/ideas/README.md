@@ -43,3 +43,10 @@ An idea may graduate to an implementation plan only after **all** of:
 3. **Risk review** — privacy, security/permissions, cost, and moderation risk reviewed.
 4. **Mechanics** — migration / cache / test / rollback needs are listed.
 5. **Promotion** — `docs/current-state.md` marks it an active candidate.
+
+> **Idea-state vocabulary maps here.** The shared idea-states used across the AI projects
+> (`raw → captured → … → shipped`, see
+> [`../owner/ai-project-workflow.md`](../owner/ai-project-workflow.md) §5) are just words
+> for an idea's position on *this* promotion path plus the question-router lifecycle. This
+> README owns the `captured → ready-for-planning → shipped` gates; the workflow doc
+> references them — it does not define a parallel tracker.
