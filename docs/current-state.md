@@ -40,7 +40,9 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
-- **docs reachability cleanup** (this PR, pending) — consolidated the 14-file BTD6 doc island into `docs/btd6/` behind the folio (`docs/btd6/README.md` index); archived the retired 2026-06 planning/audit burst into `docs/archive/`; corrected `AGENT_ORIENTATION`'s stale self-count and wired the orphaned `docs/context-map-tooling.md`. Added a **hard reachability gate** to `scripts/check_docs.py` (a doc unreachable from any read-path doc / folio / README fails CI unless badged `historical`/`archive`). Only doc-path comments touched in `disbot/`; no runtime change.
+- **cross-area implementation roadmap** (this PR, pending) — `docs/roadmap.md`: the one by-area "what's planned, in what order" index (relative Now/Next/Later/Someday horizons + gates, not dates), linking each authoritative plan + folio, with a clearly-marked not-approved ideas section. Its AI section defers to the AI roadmap. Re-badged two mis-badged historical plans (`phase_2b_bindings_plan`, BTD6 extraction). Wired into `current-state` + `AGENT_ORIENTATION`.
+- **#565** (Codex, merged) — source-verified **AI roadmap** (`docs/planning/ai-roadmap-2026-06-07.md`, Phase 0–11) + a 10-question batch. Opus-reviewed (sound; read-only boundary preserved). Owner answers (router §18): **AR-10** first Opus target = lock the orchestration foundation; **AR-08** tiered audience; **AR-09** explanation-only now. AR-01–07 hold at safe defaults until their lanes activate.
+- **#564** — docs reachability cleanup: consolidated the 14-file BTD6 doc island into `docs/btd6/` behind the folio; archived the retired 2026-06 planning/audit burst into `docs/archive/`; corrected `AGENT_ORIENTATION`'s stale self-count and wired the orphaned `docs/context-map-tooling.md`. Added a **hard reachability gate** to `scripts/check_docs.py` (an unreachable doc fails CI unless badged `historical`/`archive`).
 - **#563** — owner-workflow mapping: split the #562 capture into `docs/owner/maintainer-working-profile.md` (the *person*) + `docs/owner/ai-project-workflow.md` (the multi-agent pipeline, per-project roles, handoff templates, idea-state vocabulary); de-duplicated the restated rules to links; routed the **"a new idea is not a new priority"** rule into `.claude/CLAUDE.md` + `docs/collaboration-model.md`. Docs-only.
 - **PR10 third slice** (pending PR) — configurable **warn escalation** owned at the `moderation_service` seam: `warn_escalation_action` (timeout/kick/ban/none at `warn_threshold`), `warn` returns a `WarnOutcome`, escalation deduplicated out of the cog + panel modal. Scalar/KV, no migration, behaviour-preserving by default.
 - **#556** — server-management **PR10 second slice**: `require_reason` enforcement at the `moderation_service` seam (warn/kick/ban; timeout exempt) + a read-only bot-readiness diagnostics line on the mod panel (`utils/moderation_feasibility.py`).
@@ -68,6 +70,9 @@ Source code and merged PRs win over anything written here.
 
 ## Next candidates
 
+- **Cross-area sequencing + the plan index now live in [`docs/roadmap.md`](roadmap.md)**
+  (by area, with Now / Next / Later / Someday horizons + gates — where to find which plan
+  for which part of the code). The picks below are the current top of that list.
 - Highest-value approved implementation lane: server-management. PR10's **first**
   (config-backed moderation behaviour, #555), **second** (require-reason +
   bot-readiness diagnostics, #556), and **third** (configurable warn escalation, the

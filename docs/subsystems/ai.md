@@ -36,9 +36,16 @@ scoped tools (including owner-gated diagnostics). Source:
 
 ## Plans / pending approval
 
-- `docs/ai-complex-request-tool-orchestration-plan.md` (`plan`) — research-backed
-  reusable tool orchestration (toolsets, tool-choice, budgets, evidence). Approve this
-  foundation **before** net-new tools.
+- **`docs/planning/ai-roadmap-2026-06-07.md`** (`plan`) — the consolidated, source-verified
+  AI roadmap (Phase 0–11) that sequences all AI expansion. **AI-area sequencing authority.**
+  **Owner decisions (AR batch, 2026-06-07 — `docs/owner/maintainer-question-router.md` §18):**
+  AR-10 → **first Opus target = lock the orchestration foundation** before any net-new tools;
+  AR-08 → **tiered audience** posture (read access never grants action authority); AR-09 →
+  **explanation-only** now (recurring-report draft as the eventual first action category only
+  if revisited). The rest of the AR batch holds at safe defaults until each lane is active.
+- `docs/ai-complex-request-tool-orchestration-plan.md` (`plan`) — the orchestration
+  foundation itself (toolsets, tool-choice, budgets, evidence); the roadmap's Phase 1.
+  Approve this **before** net-new tools.
 - `docs/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 

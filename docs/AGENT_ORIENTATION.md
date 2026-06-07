@@ -235,6 +235,9 @@ top before trusting the contents.
 - `docs/current-state.md` — the cross-cutting "what is true right now?"
   router (read 2nd, after CLAUDE.md): stability baseline, in-flight work,
   gates, off-limits. Source code and merged PRs win over it.
+- `docs/roadmap.md` — the cross-area **plan index**: by area, with Now / Next / Later /
+  Someday horizons + gates, linking each authoritative plan + folio. Where to look for
+  which plans apply to which part of the code. Evolving; sequencing is relative, not dated.
 - `docs/platform-consistency-ledger.md` — contract/reference shape with stale
   Phase-2 implementation-status cells; verify every cell against source + the relevant
   folio/tracker before treating it as work.
