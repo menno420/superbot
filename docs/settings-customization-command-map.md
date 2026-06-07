@@ -160,20 +160,25 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
    `warn_timeout_minutes`, `warn_escalation_action`, `dm_on_action`,
    `dm_template`, `require_reason`, `ban_delete_message_days`,
    `max_timeout_minutes`, `post_action_cleanup`, `post_action_cleanup_limit`,
-   `public_log_actions`, `public_log_channel`
+   `public_log_actions`, `public_log_channel`, `moderator_role`, `trusted_role`
    (`disbot/cogs/moderation/schemas.py`).  All but `warn_threshold` /
    `warn_timeout_minutes` are PR10 behaviour config; `warn_escalation_action` +
    those two are the escalation ladder; `post_action_cleanup` /
    `post_action_cleanup_limit` are the post-kick/ban message sweep; `public_log_actions`
    / `public_log_channel` are the optional public moderation log (delivered by
-   `server_logging`) — all applied at / consumed from the `moderation_service` seam.
+   `server_logging`); `moderator_role` / `trusted_role` are the capability-native
+   tier-grant roles (ADR-008, `input_hint="role"`, admin-floor capability) — all
+   applied at / consumed from the `moderation_service` / governance-tier seam.
 10. **existing_settings_keys**: `WARN_THRESHOLD`, `WARN_TIMEOUT_MINS`,
     `MOD_WARN_ESCALATION_ACTION`, `MOD_DM_ON_ACTION`, `MOD_DM_TEMPLATE`,
     `MOD_REQUIRE_REASON`, `MOD_BAN_DELETE_MESSAGE_DAYS`,
     `MOD_MAX_TIMEOUT_MINUTES`, `MOD_POST_ACTION_CLEANUP`,
     `MOD_POST_ACTION_CLEANUP_LIMIT`, `MOD_PUBLIC_LOG_ACTIONS`,
     `MOD_PUBLIC_LOG_CHANNEL`
-    (`disbot/utils/settings_keys/moderation.py`).
+    (`disbot/utils/settings_keys/moderation.py`); plus the governance-owned
+    `MODERATOR_TIER_ROLE_ID` / `TRUSTED_TIER_ROLE_ID`
+    (`disbot/utils/settings_keys/governance.py`), surfaced in the moderation
+    settings page as the `moderator_role` / `trusted_role` pickers.
 11. **existing_BindingSpec_entries**: none (mod_log promotion planned in
     later milestone).
 12. **existing_ResourceRequirement_entries**: `mod_log` with `binding_name=mod_log`,
@@ -183,7 +188,12 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     `moderation.kick.apply`, `moderation.ban.apply`, `moderation.ban.remove`,
     `moderation.log.view`, `moderation.settings.configure`.
 14. **hardcoded_or_env_only_behavior**: moderator/trusted **roles + capabilities**
-    are not yet first-class (the next PR10 item).  PR10 moved DM-on-action
+    are now first-class (ADR-008): a configured `moderator_role` grants the
+    `moderator` tier via the governance tier resolver, so its holders may use
+    moderation actions without Discord moderation permissions; the mod cog + panel
+    authorize on Discord-permission **OR** capability (behaviour-preserving — the
+    permission path is unchanged), and `trusted_role` is wired symmetrically.
+    Earlier, PR10 moved DM-on-action
     (`dm_on_action` / `dm_template`), the ban message-purge window
     (`ban_delete_message_days`), the timeout ceiling (`max_timeout_minutes`),
     `require_reason` (warn/kick/ban must justify; timeout exempt), the **warn

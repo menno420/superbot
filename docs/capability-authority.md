@@ -148,9 +148,19 @@ the authority of the equivalent typed command.
   to the old admin floor; the seam is what changed.
 - **Unblocked follow-on:** the capability-native **settings/bindings UI** (Ideas-Lab
   §4.5) — RC-4 no longer "spreads placeholder authority."
-- **Future policy:** a per-capability tier matrix (e.g. some settings need only
-  `moderator`) replaces `_DEFAULT_REQUIRED_TIER`. Revisit per the ADR-005
-  re-evaluation criteria.
+- **Shipped (ADR-008) — role → tier *grant*, not the matrix.** Moderation authority is
+  now capability-native via a **tier grant**: a configured `moderator_role` (and the
+  symmetric `trusted_role`) promotes a member's tier in the governance tier resolver
+  (`governance.resolver._resolve_member_tier`), so the moderation surfaces — which gate
+  on `resolve_execution` (the moderation subsystem's `visibility_tier` is `moderator`),
+  not on `actor_holds_capability` — admit role-granted moderators. This is a narrower
+  mechanism than the per-capability matrix below and does **not** change this
+  resolver's single-floor policy. See
+  [`docs/decisions/008-moderator-role-capability-native-authority.md`](decisions/008-moderator-role-capability-native-authority.md).
+- **Future policy (still deferred):** a per-capability tier matrix (e.g. some settings
+  need only `moderator`) replaces `_DEFAULT_REQUIRED_TIER` *here*, in
+  `actor_holds_capability`. ADR-008 deliberately did **not** introduce this — it stays
+  deferred per the ADR-005 re-evaluation criteria.
 - **Broaden the guard:** audit other Help-reachable mutating panels and apply the
   `interaction_is_admin` pattern where missing.
 
@@ -166,3 +176,5 @@ the authority of the equivalent typed command.
 | Bindings: capability deny/allow (actor must be a member of the target guild) | `tests/unit/bindings/test_binding_mutation_pipeline.py` |
 | `is_operator_disabled` source discrimination (explicit-OFF only) | `tests/unit/schema/test_feature_flags_declarations.py` |
 | Panel guards: non-admin blocked on chain panel + RPS matchup | `tests/unit/views/test_panel_command_gaps.py` |
+| Moderator/trusted role tier grant (grant-via-role, no-escalation, no-regression, precedence, cross-guild deny, fail-toward-lower) — ADR-008 | `tests/unit/governance/test_role_tier_grants.py` |
+| Moderation surfaces OR-gate (cog `_require_mod` + panel `interaction_check`: permission path, capability path, denial) — ADR-008 | `tests/unit/cogs/test_moderation_role_authority.py` |

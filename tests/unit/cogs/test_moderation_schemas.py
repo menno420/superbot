@@ -37,7 +37,7 @@ def test_register_schemas_adds_moderation_to_registry():
     assert "moderation" in schema_mod.registered_subsystems()
     schema = schema_mod.get_schema("moderation")
     assert schema is not None
-    assert schema.version == 5
+    assert schema.version == 6
 
 
 def test_moderation_settings_cover_legacy_plus_pr10():
@@ -57,6 +57,8 @@ def test_moderation_settings_cover_legacy_plus_pr10():
         "post_action_cleanup_limit",
         "public_log_actions",
         "public_log_channel",
+        "moderator_role",
+        "trusted_role",
     }
 
 
@@ -216,6 +218,43 @@ def test_public_log_channel_is_channel_picker():
         spec.validator("not-an-id")
     with pytest.raises(ValueError):
         spec.validator(123)  # must be a string id
+
+
+def test_moderator_role_is_role_picker():
+    """ADR-008 — the moderator role grants the moderator tier; settable via a
+    native role select, admin-floor capability, stored as the numeric role id."""
+    from utils.settings_keys import governance as _gov_keys
+
+    spec = _spec("moderator_role")
+    assert spec.value_type is str
+    assert spec.default == ""  # unset = Discord permissions only
+    assert spec.settings_key == _gov_keys.MODERATOR_TIER_ROLE_ID
+    assert spec.capability_required == "moderation.settings.configure"
+    assert spec.input_hint == "role"  # native role select
+    spec.validator("")  # empty = unset
+    spec.validator("123456789012345678")  # numeric role id
+    with pytest.raises(ValueError):
+        spec.validator("not-an-id")
+    with pytest.raises(ValueError):
+        spec.validator(123)  # must be a string id
+
+
+def test_trusted_role_is_role_picker():
+    """ADR-008 — the trusted role is wired symmetrically to the moderator role."""
+    from utils.settings_keys import governance as _gov_keys
+
+    spec = _spec("trusted_role")
+    assert spec.value_type is str
+    assert spec.default == ""
+    assert spec.settings_key == _gov_keys.TRUSTED_TIER_ROLE_ID
+    assert spec.capability_required == "moderation.settings.configure"
+    assert spec.input_hint == "role"
+    spec.validator("")
+    spec.validator("123456789012345678")
+    with pytest.raises(ValueError):
+        spec.validator("not-an-id")
+    with pytest.raises(ValueError):
+        spec.validator(123)
 
 
 # ---------------------------------------------------------------------------

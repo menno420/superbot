@@ -665,7 +665,7 @@ mod-roles still needs an ADR + the normal review path.
 **Area:** Server management / Architecture / Safety
 **Type:** Architecture
 **Priority:** High (gates the last PR10 item; changes *who can ban members*)
-**Status:** Answered (2026-06-07) — needs routing into an ADR when mod-roles is built
+**Status:** Answered (2026-06-07) — **Routed** → [ADR-008](../decisions/008-moderator-role-capability-native-authority.md) (implemented 2026-06-07)
 **Suggested destination after answer:** `docs/decisions/` (ADR) + server-management folio/tracker
 
 **Question:** Mod/trusted roles + capabilities lets non-admins moderate. Should a
@@ -701,10 +701,14 @@ escalation, no regression, cross-guild deny) when implemented.
 **Routing result**
 
 ```text
-Destination: docs/decisions/ (new ADR, when mod-roles ships) + the server-management
-  tracker's PR10 Remaining-queue + folio (decision already noted in both).
-Moved/copied on: 2026-06-07 (decision captured; ADR pending implementation).
-Notes: current-state.md ▶ Next action links here for the decision of record.
+Destination: docs/decisions/008-moderator-role-capability-native-authority.md (the ADR,
+  implemented 2026-06-07) + the server-management tracker's PR10 record + folio +
+  capability-authority.md §5/§6.
+Moved/copied on: 2026-06-07 — implemented: a configured moderator_role grants the
+  `moderator` tier via governance.resolver._resolve_member_tier; OR-gated on the mod cog +
+  panel (behaviour-preserving); settable in the Settings hub (admin floor); trusted_role
+  wired symmetrically. Answer A built as specified.
+Notes: ADR-008 is the decision of record; current-state.md ▶ Next action now points at PR11.
 ```
 
 ### Q-0007 — What should a PUBLIC moderation-log entry reveal?

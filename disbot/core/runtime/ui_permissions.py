@@ -10,6 +10,7 @@ they call can_execute() here so that the authorization path is unified.
 
 Public surface:
     can_execute(interaction, capability) → bool
+    can_execute_ctx(ctx, capability) → bool        (prefix-command path)
     require_execution(interaction, capability) → None  (raises on denial)
 """
 
@@ -41,6 +42,35 @@ async def can_execute(interaction: discord.Interaction, capability: str) -> bool
         logger.debug(
             "Execution denied | user=%d | capability=%s | reason=%s",
             interaction.user.id,
+            capability,
+            result.reason,
+        )
+
+    return result.allowed
+
+
+async def can_execute_ctx(ctx, capability: str) -> bool:
+    """Return True if the prefix-command invoker may execute *capability*.
+
+    The :class:`~discord.ext.commands.Context` counterpart of
+    :func:`can_execute`: prefix command checks resolve authority through the
+    same governance seam as interaction handlers, so a configured-role grant
+    (e.g. the moderator role, ADR-008) applies identically on both surfaces.
+
+    Permits commands invoked outside a guild (no guild-level governance).
+    """
+    from services import governance_service
+
+    if ctx.guild is None:
+        return True
+
+    gctx = governance_service.GovernanceContext.from_ctx(ctx)
+    result = await governance_service.resolve_execution(gctx, capability)
+
+    if not result.allowed:
+        logger.debug(
+            "Execution denied | user=%s | capability=%s | reason=%s",
+            getattr(ctx.author, "id", None),
             capability,
             result.reason,
         )
