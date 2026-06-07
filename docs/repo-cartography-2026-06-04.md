@@ -130,7 +130,7 @@ The repo contains more than one thousand tracked files. This table expands sourc
 | `docs/architecture.md`, `docs/ownership.md`, `docs/architecture/service_ownership.md`, `docs/runtime_contracts.md`, `docs/platform-consistency-ledger.md`, `docs/resource-provisioning-overview.md`, `docs/server-logging.md`, `docs/roadmap_setup_platform.md` | A/B shared | documentation | Architecture/runtime/ownership/platform resource docs. | A/B/C/D boundary contracts. | High |
 | `docs/helper-debt-inventory.md`, `helper-policy.md`, `repo-navigation-map.md`, `loose-ends-audit-roadmap.md`, `AGENT_ORIENTATION.md`, `codegraph-usage.md` | Shared/support | documentation | Repo navigation, helper policy/debt, audit roadmap. | All compartments. | High |
 | `docs/ai-*` | D/B | documentation | AI config, provider/grounding, readiness, integration. | D AI; B policy/governance. | High |
-| `docs/btd6-*` | D | documentation | BTD6 data pipeline/backends/decode/source/groundedness/smoke plans. | D BTD6 services/scripts/data. | High |
+| `docs/btd6/btd6-*` | D | documentation | BTD6 data pipeline/backends/decode/source/groundedness/smoke plans. | D BTD6 services/scripts/data. | High |
 | `docs/building-roadmap/*`, `docs/settings-*`, `docs/setup_wizard_finalization_plan.md`, `docs/operator-settings-presets.md`, `docs/phase_2b_bindings_plan.md` | B/C | documentation | Settings/setup/bindings/UI platform roadmap. | B setup/settings/governance, C features. | Medium |
 | `docs/cog-hub-coverage-audit.md`, `help-command-surface-map.md`, `games-actionability-roadmap.md`, `mining_exploration_brainstorm.md`, `ui-view-adoption-audit.md`, `smoke-test-checklist.md` | C/shared | documentation | Feature UX/cog/help/game/mining/view coverage docs. | C features with A/B references. | Medium |
 | `docs/decisions/**` | Shared/A/C | documentation/ADR | Architecture decisions such as game state restart safety and deferred followups. | A runtime, C games/views. | High |
@@ -199,7 +199,7 @@ Potentially misplaced or ambiguous C files include view-like files under `disbot
 - Helpers/data/DB: `utils/btd6/**`, `utils/db/ai.py`, BTD6 DB helpers, AI/BTD6 settings keys, `disbot/data/btd6/**`, `data/btd6/**`.
 - Migrations: AI policy/instruction migrations, BTD6 source/strategy/ingestion/blob/patch migrations, and YouTube cache if AI/BTD6-specific.
 - Scripts: BTD6 decode/inventory/diff/fetch/parse/import/seed/upload scripts and D-side eval runner usage.
-- Docs: `docs/ai-*`, `docs/btd6-*`, and D-side smoke/eval docs.
+- Docs: `docs/ai-*`, `docs/btd6/btd6-*`, and D-side smoke/eval docs.
 - Tests/fixtures: AI/BTD6 cogs/services/views/utils/scripts/runtime tests, `tests/evals/**`, NinjaKiwi and Steam fixtures.
 
 Potentially misplaced or ambiguous D files include `core/runtime/ai/**`, paragon at top-level cog/service paths, and YouTube/video context/cache/render files.
@@ -281,7 +281,7 @@ Potentially misplaced or ambiguous D files include `core/runtime/ai/**`, paragon
 | View/panel code exists both under `views/` and under some cog subpackages. | Cleanup/logging panel-like files under cogs; canonical `views/base.py`. | B/C | C with B reference | Medium |
 | Direct DB usage exceptions need verification against mutation ownership. | Simple inventory/game DB helpers and ownership exceptions. | A/C | C + A | Medium |
 | Migrations are numerous and domain-spanning. | `disbot/migrations/001`-`055`. | A/B/C/D | A with all chats | Medium |
-| Historical docs may conflict with current code after recent BTD6 changes. | Recent BTD6-heavy commits and extensive docs under `docs/btd6-*` and `docs/audits/**`. | D/shared | D + consolidation | Medium |
+| Historical docs may conflict with current code after recent BTD6 changes. | Recent BTD6-heavy commits and extensive docs under `docs/btd6/btd6-*` and `docs/audits/**`. | D/shared | D + consolidation | Medium |
 | YouTube/video ownership is unclear. | YouTube services, views, and migration `049`. | C/D/A | D asks maintainer | Unknown |
 | Help/settings/diagnostic surfaces cross multiple boundaries. | help, diagnostic, settings cogs/views/services. | B/C/A | B + C | Medium |
 | BTD6/AI cross runtime/governance/policy boundaries and could hide circular dependencies. | BTD6 cogs/services, runtime AI, governance policy/capability integrations. | A/B/D | D primary | High |

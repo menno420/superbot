@@ -15,7 +15,7 @@ Pick the backend with `BTD6_DATA_BACKEND`:
 |---|---|---|
 | `""` / `file` | Committed files under `disbot/data/btd6/` (`FileRawProvider`) | Default; local dev. |
 | `postgres` | The `btd6_data_blobs` table (`PostgresRawProvider`) | **Recommended in production** — you already run Postgres. |
-| `cloud` | A public-read object store / CDN (`CloudRawProvider`) | If you want the data on a bucket/CDN. See `docs/btd6-cloud-data.md`. |
+| `cloud` | A public-read object store / CDN (`CloudRawProvider`) | If you want the data on a bucket/CDN. See `docs/btd6/btd6-cloud-data.md`. |
 
 All backends share the same startup contract: the BTD6 mother cog's `cog_load`
 calls `btd6_data_service.warm_provider()` (a no-op for `file`) **before**

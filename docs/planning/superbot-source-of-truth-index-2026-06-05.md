@@ -115,14 +115,14 @@ authority.
 
 | Doc(s) | Trust | Caveat from this consolidation |
 |---|---|---|
-| `docs/btd6-data-backends.md`, `docs/btd6-data-pipeline.md`, `docs/btd6-cloud-data.md` | ✅ current | Pair with RC-10: provider-parity is **unverified** (needs live backend); provenance model is a pending decision. |
-| `docs/btd6-derived-value-groundedness-finding.md`, `docs/btd6-absence-claim-guard-design.md` | ✅ current | The faithfulness/groundedness guard is confirmed-healthy (RC-11) — preserve. |
-| `docs/btd6-smoke-test-checklist.md` | ✅ current | Run before BTD6 runtime PRs. |
+| `docs/btd6/btd6-data-backends.md`, `docs/btd6/btd6-data-pipeline.md`, `docs/btd6/btd6-cloud-data.md` | ✅ current | Pair with RC-10: provider-parity is **unverified** (needs live backend); provenance model is a pending decision. |
+| `docs/btd6/btd6-derived-value-groundedness-finding.md`, `docs/btd6/btd6-absence-claim-guard-design.md` | ✅ current | The faithfulness/groundedness guard is confirmed-healthy (RC-11) — preserve. |
+| `docs/btd6/btd6-smoke-test-checklist.md` | ✅ current | Run before BTD6 runtime PRs. |
 | `docs/ai-config-ownership.md`, `docs/ai-service-integration-map.md` | ✅ current (ownership doc is binding) | AI orchestration is healthy; do not refactor the choke point. |
 | `disbot/core/runtime/ai/README.md` | ✅ current | Package intent. |
 | `docs/server-logging.md` | ✅ current (shipped reference) | — |
 
-> BTD6 has **many** subsystem docs (`docs/btd6-*` — 15+ files). They are
+> BTD6 has **many** subsystem docs (`docs/btd6/btd6-*` — 15+ files). They are
 > domain-accurate but verbose; Agent D recommends a single BTD6 data-inventory
 > index (a future opportunity, not yet built). Until then, prefer source +
 > `btd6_data_service` over any single doc for current field state.
@@ -168,7 +168,7 @@ edits belong to **PR 7 (RC-13)**:
    `docs/planning/…consolidation…`" banner so future readers reach the verified
    set first.
 4. Consider a single BTD6 data-inventory index (Agent D future opportunity) to
-   retire ambiguity across the 15+ `docs/btd6-*` files.
+   retire ambiguity across the 15+ `docs/btd6/btd6-*` files.
 
 ---
 

@@ -1,7 +1,7 @@
 """Map the public BTD Mod Helper game-data dump → our BTD6 stats schema.
 
 This is the *third* and most authoritative BTD6 data source (see
-``docs/btd6-game-file-extraction-plan.md``). Unlike bloonswiki (lagging,
+``docs/btd6/btd6-game-file-extraction-plan.md``). Unlike bloonswiki (lagging,
 incomplete — only 6/17 heroes, 2 prose paragons) this reads the game's own
 exported model JSON, already decrypted by Mod Helper's "Export Game Data"
 button and published at ``github.com/Btd6ModHelper/btd6-game-data``.

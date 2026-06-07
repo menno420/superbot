@@ -304,7 +304,7 @@ the consolidation doc (for the RC-n evidence) → the priority map (for ordering
 | S3 | `scripts/check_architecture.py`; `architecture_rules/layers.yaml`; `utils/db/migrations.py` |
 | S4 | `docs/ownership.md`; ADR-002; `session_gc.py`; `settings_mutation.py`/`binding_mutation.py`; `platform-consistency-ledger.md` §1 |
 | S5 | `docs/helper-policy.md`; `docs/decisions/003-…md` §3; `docs/loose-ends-audit-roadmap.md`; `docs/ui-view-adoption-audit.md` |
-| S6 | `docs/ai-config-ownership.md`; `docs/btd6-data-backends.md`/`btd6-data-pipeline.md`; `docs/btd6-derived-value-groundedness-finding.md`; Agent D audit §6/§12/§13 |
+| S6 | `docs/ai-config-ownership.md`; `docs/btd6/btd6-data-backends.md`/`btd6-data-pipeline.md`; `docs/btd6/btd6-derived-value-groundedness-finding.md`; Agent D audit §6/§12/§13 |
 
 ---
 
@@ -471,7 +471,7 @@ references (resource-provisioning overview, `ownership.md`, this roadmap, Ideas-
 | **A. Capability-native settings UI** | Ideas-Lab §4.5 (settings capability preview, "why can't I edit this?", provenance cards, capability audit mini-report) | **Unblocked** — RC-4 shipped; build read-only over the authority result first | `docs/capability-authority.md`, Ideas-Lab §4.5 |
 | **B. Per-capability tier matrix** | Replace the v1 single administrator floor with a declared capability → required-tier map | Design decision; extend `_DEFAULT_REQUIRED_TIER`. No security regression (floors only relax with an explicit declaration); add per-tier tests | `docs/capability-authority.md` §5, ADR-005 re-eval criteria |
 | **C. Broaden the panel-authority guard** | Audit other mutating panels reachable without an admin-gated entry (Help `build_help_menu_view`, hub routes) and apply `interaction_is_admin` | Small, mechanical, per-panel; add a non-admin-blocked test each | `docs/capability-authority.md` §4 |
-| **D. ADR-006 BTD6 provenance** | Implement the single `DataProvenance` object + owner matrix; resume extraction against it | **Gated** — ADR-006 Accepted but extraction stays paused until the schema PR lands | ADR-006, `docs/btd6-data-backends.md` |
+| **D. ADR-006 BTD6 provenance** | Implement the single `DataProvenance` object + owner matrix; resume extraction against it | **Gated** — ADR-006 Accepted but extraction stays paused until the schema PR lands | ADR-006, `docs/btd6/btd6-data-backends.md` |
 | **E. ADR-007 media subsystem** | Add the `docs/ownership.md` media-subsystem row + register `youtube_context_service` / `video_reference_cache_service` under it | **Follow-on** of ADR-007 (Accepted); ownership-doc PR | ADR-007, `docs/ownership.md` |
 | **F. RC-8 staged cleanup** | A *tiny* mechanical view/cog slice (Direct-DB ledger → view moves → service moves), per-feature | Staged; never all-at-once; don't touch capability/BTD6/media in the same slice | priority-map §RC-8, `docs/direct-db-exception-ledger.md` |
 

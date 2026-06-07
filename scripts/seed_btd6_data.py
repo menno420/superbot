@@ -5,7 +5,7 @@ One-shot operator tool for the Postgres data backend. Walks
 ``disbot/data/btd6/`` (the fixtures + the per-entity ``stats/`` subtree) and
 upserts each ``*.json`` file as a row keyed by repo-relative path. Run it
 against your deployment database, then set ``BTD6_DATA_BACKEND=postgres`` (see
-``docs/btd6-data-backends.md``).
+``docs/btd6/btd6-data-backends.md``).
 
 Usage::
 

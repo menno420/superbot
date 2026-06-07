@@ -93,7 +93,7 @@ UPDATE ai_guild_policy SET default_provider='anthropic', default_model='' WHERE 
 - **Provider precedence:** guild policy (DB) > env `AI_ROUTING_<TASK>` > env `AI_DEFAULT_PROVIDER` > `deterministic`.
 - **Per‑task routing env** (the recommended split, set on Railway): default `openai` + `AI_ROUTING_GENERAL_NL_ANSWER`, `AI_ROUTING_BTD6_ANSWER`, `AI_ROUTING_BTD6_STRATEGY_REVIEW`, `AI_ROUTING_MODERATION_ASSIST`, `AI_ROUTING_SETTINGS_PROPOSE`, `AI_ROUTING_SETUP_SUGGEST`, `AI_ROUTING_LOGS_TRIAGE`, `AI_ROUTING_CODE_CONTEXT_EXPLAIN` = `anthropic`.
 - **Evals harness** (`tests/evals/`, opt‑in `RUN_EVALS=1` + API keys, or GitHub Action `ai-evals.yml`) — the A/B tool; run openai vs anthropic vs gpt‑5.4‑mini.
-- **Related docs:** `docs/btd6-data-pipeline.md`, `docs/btd6-ai-tool-calling-plan.md`, `docs/audits/repo-wide-audit-2026-05-29.md`.
+- **Related docs:** `docs/btd6/btd6-data-pipeline.md`, `docs/btd6/btd6-ai-tool-calling-plan.md`, `docs/audits/repo-wide-audit-2026-05-29.md`.
 
 ## 6. Lessons from last session (don't repeat)
 - **Verify against data/code; never assert BTD6 facts from memory.** (Last session wrongly flagged a correct Dart‑paragon answer as a hallucination because a diagnostic used `limit=12` against a 13‑item list.)

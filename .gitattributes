@@ -1,5 +1,5 @@
 # BTD6 deterministic data is served from Postgres at runtime (the
-# btd6_data_blobs table; see docs/btd6-data-backends.md). The committed JSON
+# btd6_data_blobs table; see docs/btd6/btd6-data-backends.md). The committed JSON
 # under disbot/data/btd6/ is kept on purpose as the seed source
 # (!btd6ops seed-data), the default/local/CI backend, and a version-controlled
 # backup. Mark it generated so GitHub collapses it in diffs and excludes it

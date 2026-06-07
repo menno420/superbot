@@ -1727,7 +1727,7 @@ def _upgrade_parent_tower_facts(
     that gap; ``resolved_tower_ids`` dedupes so a tower the user *did* name is
     never grounded twice.
 
-    Retrieval only — see ``docs/btd6-absence-claim-guard-design.md`` §4.1
+    Retrieval only — see ``docs/btd6/btd6-absence-claim-guard-design.md`` §4.1
     (Layer A / mechanism 2). Returns ``[]`` when no upgrade resolves or the
     parent tower is already grounded.
     """
@@ -1952,7 +1952,7 @@ async def build(message_text: str) -> BTD6Context:
         # despite holding the upgrade fact. Ground the parent tower (the same
         # context a tower-named query gets), deduped against towers already
         # grounded above. Retrieval only — see
-        # docs/btd6-absence-claim-guard-design.md §4.1 (Layer A / mechanism 2).
+        # docs/btd6/btd6-absence-claim-guard-design.md §4.1 (Layer A / mechanism 2).
         try:
             facts.extend(
                 _upgrade_parent_tower_facts(message_text, resolved_tower_ids),

@@ -361,7 +361,7 @@ async def test_build_grounds_parent_tower_for_upgrade_only_query():
     # PMFC names the upgrade but not its tower, so resolution used to attach only
     # the upgrade's ~4 detail lines — too thin for "what's the damage type when
     # the ability is active" to stand on, and the model refused despite holding
-    # the Sharp fact (docs/btd6-absence-claim-guard-design.md Update 3 / §4.1,
+    # the Sharp fact (docs/btd6/btd6-absence-claim-guard-design.md Update 3 / §4.1,
     # mechanism 2). The parent tower (Dart Monkey) is now grounded alongside the
     # upgrade so a conceptual question has the full tower context to answer from.
     ctx = await btd6_context_service.build(

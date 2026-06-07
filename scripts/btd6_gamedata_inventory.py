@@ -6,7 +6,7 @@ already pull). This script answers the prior question: across the whole dump,
 which domains and model types exist, what do they hold, and is the name /
 description text linked? It is a **discovery** tool — point it at a clone to
 build (or refresh, per patch) the data dictionary in
-``docs/btd6-gamedata-dictionary.md``.
+``docs/btd6/btd6-gamedata-dictionary.md``.
 
     git clone --depth 1 https://github.com/Btd6ModHelper/btd6-game-data /tmp/btd6gd
     python3.10 scripts/btd6_gamedata_inventory.py --dump /tmp/btd6gd            # domain overview

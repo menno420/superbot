@@ -22,7 +22,7 @@ Usage (nothing is fetched at runtime; point ``--dump`` at a clone)::
     git clone --depth 1 https://github.com/Btd6ModHelper/btd6-game-data /tmp/btd6gd
     python3.10 scripts/btd6_decode_inventory_report.py --dump /tmp/btd6gd
     python3.10 scripts/btd6_decode_inventory_report.py --dump /tmp/btd6gd \
-        > docs/btd6-decode-inventory-v55.md
+        > docs/btd6/btd6-decode-inventory-v55.md
 
 The report is deterministic for a given dump SHA (no wall-clock in the output),
 so re-running on the same clone reproduces the committed doc byte-for-byte; a
@@ -52,7 +52,7 @@ import parse_gamedata as pg  # noqa: E402
 # Curated per-domain ingest verdict. The dump-derived numbers (file counts,
 # audit verdicts, the $type tail) are computed live below; this table carries
 # the *judgement* layer — whether a domain is worth ingesting and why —
-# reconciled against docs/btd6-gamedata-decode-status.md (the authoritative
+# reconciled against docs/btd6/btd6-gamedata-decode-status.md (the authoritative
 # status doc) and the dictionary. Source + the decode-status doc win when a
 # companion doc disagrees. The "extracted" field records whether
 # parse_gamedata.py reads the domain into committed stats; "verdict" is one of

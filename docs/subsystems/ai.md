@@ -21,7 +21,7 @@ scoped tools (including owner-gated diagnostics). Source:
   `diagnostics_health_snapshot`.
 - **Faithfulness / groundedness guards are confirmed-healthy — preserve** (do not
   refactor the orchestration choke point). See `docs/ai-guard-coverage-map.md` and
-  `docs/btd6-derived-value-groundedness-finding.md`.
+  `docs/btd6/btd6-derived-value-groundedness-finding.md`.
 
 ## Current state
 
