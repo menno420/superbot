@@ -25,6 +25,8 @@ from services.moderation_config import (
     DEFAULT_MAX_TIMEOUT_MINUTES,
     DEFAULT_POST_ACTION_CLEANUP,
     DEFAULT_POST_ACTION_CLEANUP_LIMIT,
+    DEFAULT_PUBLIC_LOG_ACTIONS,
+    DEFAULT_PUBLIC_LOG_CHANNEL,
     DEFAULT_REQUIRE_REASON,
     DEFAULT_WARN_ESCALATION_ACTION,
     DEFAULT_WARN_THRESHOLD,
@@ -36,6 +38,7 @@ from services.moderation_config import (
     MIN_POST_ACTION_CLEANUP_LIMIT,
     MIN_TIMEOUT_MINUTES,
     POST_ACTION_CLEANUP_ACTIONS,
+    PUBLIC_LOG_ACTIONS,
     WARN_ESCALATION_ACTIONS,
 )
 from utils.settings_keys import (
@@ -45,6 +48,8 @@ from utils.settings_keys import (
     MOD_MAX_TIMEOUT_MINUTES,
     MOD_POST_ACTION_CLEANUP,
     MOD_POST_ACTION_CLEANUP_LIMIT,
+    MOD_PUBLIC_LOG_ACTIONS,
+    MOD_PUBLIC_LOG_CHANNEL,
     MOD_REQUIRE_REASON,
     MOD_WARN_ESCALATION_ACTION,
     WARN_THRESHOLD,
@@ -118,6 +123,25 @@ def _validate_post_action_cleanup_limit(value: object) -> None:
         raise ValueError(
             "post_action_cleanup_limit must be between "
             f"{MIN_POST_ACTION_CLEANUP_LIMIT} and {MAX_POST_ACTION_CLEANUP_LIMIT}",
+        )
+
+
+def _validate_public_log_actions(value: object) -> None:
+    if value not in PUBLIC_LOG_ACTIONS:
+        raise ValueError(
+            "public_log_actions must be one of "
+            f"{', '.join(PUBLIC_LOG_ACTIONS)}, got {value!r}",
+        )
+
+
+def _validate_public_log_channel(value: object) -> None:
+    """Accept an empty string (off) or a numeric channel id."""
+    if not isinstance(value, str):
+        raise ValueError(f"expected str, got {type(value).__name__}")
+    text = value.strip()
+    if text and not text.isdigit():
+        raise ValueError(
+            f"public_log_channel must be empty or a numeric channel id, got {value!r}",
         )
 
 
@@ -267,6 +291,37 @@ MODERATION_SETTINGS: tuple[SettingSpec, ...] = (
         input_hint="numeric_presets",
         presets=(50, 100, 200, 500),
     ),
+    # PR10 fifth slice — optional PUBLIC moderation log (operator opt-in;
+    # announces selected actions without naming the acting moderator).
+    SettingSpec(
+        name="public_log_actions",
+        value_type=str,
+        default=DEFAULT_PUBLIC_LOG_ACTIONS,
+        settings_key=MOD_PUBLIC_LOG_ACTIONS,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "Which actions are announced in the public moderation log: 'none' "
+            "(default, off), 'bans', 'removals' (kick + ban), or 'all' (warn + "
+            "timeout + kick + ban).  The acting moderator is never shown "
+            "publicly.  Requires public_log_channel to be set."
+        ),
+        validator=_validate_public_log_actions,
+        allowed_values=PUBLIC_LOG_ACTIONS,
+    ),
+    SettingSpec(
+        name="public_log_channel",
+        value_type=str,
+        default=DEFAULT_PUBLIC_LOG_CHANNEL,
+        settings_key=MOD_PUBLIC_LOG_CHANNEL,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "Channel for the optional public moderation log.  Leave empty to "
+            "disable.  Public entries show the action, the affected member, and "
+            "the reason — but never which moderator acted."
+        ),
+        validator=_validate_public_log_channel,
+        input_hint="channel",
+    ),
 )
 
 MODERATION_RESOURCE_REQUIREMENTS: tuple[ResourceRequirement, ...] = (
@@ -295,7 +350,9 @@ MODERATION_CONFIG_SCHEMA = SubsystemSchema(
     # escalation, owned at the moderation_service warn seam).
     # v4 — PR10 fourth slice added post_action_cleanup / post_action_cleanup_limit
     # (optional post-kick/ban message sweep, requested from the cleanup service).
-    version=4,
+    # v5 — PR10 fifth slice added public_log_actions / public_log_channel (optional
+    # operator-opt-in public moderation log, delivered by services.server_logging).
+    version=5,
 )
 
 

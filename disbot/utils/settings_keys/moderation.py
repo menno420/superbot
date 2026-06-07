@@ -21,3 +21,9 @@ MOD_WARN_ESCALATION_ACTION = "moderation_warn_escalation_action"
 # limit.  Requested from the cleanup subsystem at the moderation_service seam.
 MOD_POST_ACTION_CLEANUP = "moderation_post_action_cleanup"
 MOD_POST_ACTION_CLEANUP_LIMIT = "moderation_post_action_cleanup_limit"
+
+# Optional PUBLIC moderation log: a separate, operator-opt-in channel that
+# announces selected actions (none / bans / removals / all) WITHOUT naming the
+# acting moderator.  Delivered by services.server_logging; default OFF.
+MOD_PUBLIC_LOG_CHANNEL = "moderation_public_log_channel"
+MOD_PUBLIC_LOG_ACTIONS = "moderation_public_log_actions"

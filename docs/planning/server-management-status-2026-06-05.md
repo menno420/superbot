@@ -7,12 +7,12 @@
 > the target architecture and the implementation plan remains the PR-scope detail.
 >
 > **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523; updated 2026-06-06
-> for PR8+PR9, then for **PR10's first–fourth slices** — config-backed moderation
+> for PR8+PR9, then for **PR10's first–fifth slices** — config-backed moderation
 > behaviour, require-reason, bot-readiness diagnostics, configurable warn escalation,
-> and the post-action message cleanup sweep). **Body is current through PR10's fourth
-> slice; the remaining PR10 items (mod-roles + capabilities, dedicated log
-> destinations) + PR11–PR14 are the queue** — the "Shipped" + "Remaining queue"
-> sections below are authoritative.
+> the post-action message cleanup sweep, and the optional public moderation log).
+> **Body is current through PR10's fifth slice; the one remaining PR10 item
+> (moderator/trusted roles + capabilities) + PR11–PR14 are the queue** — the
+> "Shipped" + "Remaining queue" sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -406,6 +406,36 @@ OFF** (behaviour-preserving).
   **log destinations** — both cross-cutting (capability-authority seam /
   server-logging subsystem) and each carrying an owner decision.
 
+### PR10 (fifth slice) — Optional public moderation log *(shipped 2026-06-07)*
+
+The "optional public-log destinations" half of the dedicated-log-destinations item.
+An **operator-opt-in** public channel that announces selected actions, **redacting
+the acting moderator** (owner decision 2026-06-07: public entries show action + member
++ reason, not who moderated). Scalar/KV, **no migration**, **default OFF**.
+
+- **Two new settings** (`cogs/moderation/schemas.py`, schema → v5):
+  `public_log_actions` — enum `none` (default) / `bans` / `removals` (kick+ban) /
+  `all` (warn+timeout+kick+ban), an `allowed_values` Select (key
+  `MOD_PUBLIC_LOG_ACTIONS`); and `public_log_channel` — a `channel` SettingSpec
+  (native picker; empty = off; key `MOD_PUBLIC_LOG_CHANNEL`). unban / clearwarnings /
+  the post-action sweep / system auto-deletes are **never** publicised.
+- **`moderation_config`** gains the two fields, a `public_log_channel_id` parse
+  (fail-safe → 0), and a **pure** `public_log_includes(action, policy)`.
+- **Delivery stays in `server_logging`** (it owns log delivery): a **separate**
+  `_on_moderation_action_public` subscriber on `moderation.action_taken` (the staff
+  path is untouched) pre-filters to disciplinary actions, loads the policy, and posts
+  `format_public_log_embed` (member + reason; **no actor, no guild id**). Independent
+  of the `logging.enabled` staff switch; fail-safe + counted
+  (`mod_public_sent` / `mod_public_skipped`).
+- **Pinned by** `public_log_includes` + channel-id parse cases in
+  `test_moderation_config.py`, the redaction + routing (sends / not-selected /
+  channel-unresolvable / Forbidden / non-disciplinary-prefilter) cases in
+  `test_server_logging.py`, and the `public_log_*` shapes + drift guard + **v5** in
+  `test_moderation_schemas.py`. Command-map + server-logging docs updated.
+- **Remaining PR10 queue:** moderator/trusted **roles + capabilities** — the last
+  PR10 item (the capability-native tier-grant; owner decision 2026-06-07: a configured
+  role resolves to the `moderator` tier, routed through the capability resolver).
+
 ---
 
 ## Remaining queue (starts at PR10)
@@ -414,7 +444,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR10** | Moderation first-class configuration. **First–fourth slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup — see above). Remaining: mod-roles + capabilities, dedicated log destinations. | #521 |
+| **PR10** | Moderation first-class configuration. **First–fifth slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup, optional public log — see above). Remaining: moderator/trusted roles + capabilities (the last PR10 item). | #521 |
 | **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |

@@ -73,6 +73,10 @@ _COUNTERS: dict[str, int] = {
     # route buckets (debug_sent / info_sent / warning_sent / error_sent)
     # land alongside their respective subscribers in Phase 9c.3/9c.4.
     "audit_sent": 0,
+    # server-management PR10 — optional public moderation log (separate
+    # subscriber; moderator-name-redacted; gated by the moderation policy).
+    "mod_public_sent": 0,
+    "mod_public_skipped": 0,
 }
 
 
@@ -416,6 +420,31 @@ def format_log_embed(
     return embed
 
 
+def format_public_log_embed(
+    *,
+    action: str,
+    target_id: int,
+    reason: str,
+) -> discord.Embed:
+    """Render the **public** moderation-log embed (server-management PR10).
+
+    Deliberately narrower than :func:`format_log_embed`: it shows the action,
+    the affected member, and the reason — but **never the acting moderator**
+    (the maintainer's choice for the public surface) nor the internal guild id.
+    The staff mod-log keeps the full record.
+    """
+    root = _root_action(action)
+    embed = discord.Embed(
+        title=f"{_ACTION_ICON.get(root, '•')} {action}",
+        color=_ACTION_COLOR.get(root, discord.Color.dark_grey()),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    embed.add_field(name="Member", value=f"<@{target_id}> (`{target_id}`)", inline=True)
+    if reason:
+        embed.add_field(name="Reason", value=reason[:1000], inline=False)
+    return embed
+
+
 # ---------------------------------------------------------------------------
 # Send + handler
 # ---------------------------------------------------------------------------
@@ -726,6 +755,92 @@ async def _on_moderation_action(
         )
 
 
+# Only disciplinary actions can ever surface on the public log — the pre-filter
+# that lets the public subscriber skip unban / clearwarnings / post-action
+# sweep / system auto-deletes before reading any config.
+_PUBLIC_ELIGIBLE_ACTIONS = frozenset({"warn", "timeout", "kick", "ban"})
+
+
+async def maybe_log_public(
+    guild: discord.Guild,
+    *,
+    action: str,
+    target_id: int,
+    reason: str,
+) -> bool:
+    """Post the redacted public-moderation embed when the guild opts in.
+
+    Gated solely by the moderation policy (``public_log_actions`` selects which
+    actions, ``public_log_channel`` names the destination) — **independent of
+    the ``logging.enabled`` staff master switch**, since an operator who
+    configures a public channel clearly wants it.  Best-effort, fail-safe, and
+    counted; never raises into the bus.
+    """
+    from services import moderation_config
+
+    policy = await moderation_config.load_policy(guild.id)
+    if not moderation_config.public_log_includes(action, policy):
+        _bump("mod_public_skipped")
+        return False
+    channel = guild.get_channel(policy.public_log_channel_id)
+    if not isinstance(channel, discord.TextChannel):
+        _bump("mod_public_skipped")  # channel unset or stale/invalid
+        return False
+    embed = format_public_log_embed(action=action, target_id=target_id, reason=reason)
+    try:
+        await channel.send(embed=embed)
+    except (discord.Forbidden, discord.HTTPException) as exc:
+        _bump("send_error")
+        logger.warning(
+            "server_logging public: could not send to #%s (guild %d): %s",
+            getattr(channel, "name", "?"),
+            guild.id,
+            exc,
+        )
+        return False
+    _bump("mod_public_sent")
+    return True
+
+
+async def _on_moderation_action_public(
+    *,
+    guild_id: int,
+    target_id: int,
+    action: str,
+    reason: str,
+    **_extras: Any,
+) -> None:
+    """Bus subscriber for the optional PUBLIC moderation log.
+
+    Registered separately from :func:`_on_moderation_action` so the staff-log
+    path is untouched.  ``actor_id`` is intentionally swallowed into
+    ``_extras`` — the public surface never names the moderator.  Non-
+    disciplinary actions are skipped before any config read.
+    """
+    try:
+        if _root_action(action) not in _PUBLIC_ELIGIBLE_ACTIONS:
+            return
+        bot = _BOT
+        if bot is None:
+            return
+        guild = bot.get_guild(guild_id)
+        if guild is None:
+            return
+        await maybe_log_public(
+            guild,
+            action=action,
+            target_id=target_id,
+            reason=reason,
+        )
+    except Exception as exc:  # noqa: BLE001 — fail-safe subscriber
+        _bump("subscriber_errors")
+        logger.exception(
+            "server_logging public subscriber raised %s — counted and swallowed.",
+            type(exc).__name__,
+            exc_info=exc,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Setup / diagnostics registration
 # ---------------------------------------------------------------------------
@@ -752,10 +867,12 @@ def setup(bot: object | None = None) -> None:
     if _SUBSCRIBED:
         return
     bus.on(EVT_MOD_ACTION, _on_moderation_action)
+    bus.on(EVT_MOD_ACTION, _on_moderation_action_public)
     bus.on(EVT_AUDIT_ACTION_RECORDED, _on_audit_action)
     _SUBSCRIBED = True
     logger.info(
-        "server_logging: subscribed to %r + %r (default per-guild policy: OFF)",
+        "server_logging: subscribed to %r (+ public mirror) + %r "
+        "(default per-guild policy: OFF)",
         EVT_MOD_ACTION,
         EVT_AUDIT_ACTION_RECORDED,
     )
@@ -778,9 +895,11 @@ __all__ = [
     "ensure_log_channel",
     "format_audit_embed",
     "format_log_embed",
+    "format_public_log_embed",
     "is_enabled",
     "log_audit_event",
     "log_event",
+    "maybe_log_public",
     "resolve_log_channel",
     "setup",
 ]

@@ -37,7 +37,7 @@ def test_register_schemas_adds_moderation_to_registry():
     assert "moderation" in schema_mod.registered_subsystems()
     schema = schema_mod.get_schema("moderation")
     assert schema is not None
-    assert schema.version == 4
+    assert schema.version == 5
 
 
 def test_moderation_settings_cover_legacy_plus_pr10():
@@ -55,6 +55,8 @@ def test_moderation_settings_cover_legacy_plus_pr10():
         "max_timeout_minutes",
         "post_action_cleanup",
         "post_action_cleanup_limit",
+        "public_log_actions",
+        "public_log_channel",
     }
 
 
@@ -187,6 +189,35 @@ def test_post_action_cleanup_limit_is_numeric_presets_in_range():
         spec.validator(True)  # bool is not a valid scan limit
 
 
+def test_public_log_actions_is_enum_select():
+    spec = _spec("public_log_actions")
+    assert spec.value_type is str
+    assert spec.default == "none"  # off by default
+    assert spec.settings_key == _mod_keys.MOD_PUBLIC_LOG_ACTIONS
+    assert spec.capability_required == "moderation.settings.configure"
+    assert spec.allowed_values == ("none", "bans", "removals", "all")
+    spec.validator("none")
+    spec.validator("removals")
+    with pytest.raises(ValueError):
+        spec.validator("everything")
+    with pytest.raises(ValueError):
+        spec.validator(1)
+
+
+def test_public_log_channel_is_channel_picker():
+    spec = _spec("public_log_channel")
+    assert spec.value_type is str
+    assert spec.default == ""
+    assert spec.settings_key == _mod_keys.MOD_PUBLIC_LOG_CHANNEL
+    assert spec.input_hint == "channel"  # native channel select
+    spec.validator("")  # empty = off
+    spec.validator("123456789012345678")  # numeric channel id
+    with pytest.raises(ValueError):
+        spec.validator("not-an-id")
+    with pytest.raises(ValueError):
+        spec.validator(123)  # must be a string id
+
+
 # ---------------------------------------------------------------------------
 # Drift guard — spec defaults must equal the policy defaults
 # ---------------------------------------------------------------------------
@@ -223,4 +254,12 @@ def test_spec_defaults_match_policy_defaults():
     assert (
         _spec("post_action_cleanup_limit").default
         == moderation_config.DEFAULT_POST_ACTION_CLEANUP_LIMIT
+    )
+    assert (
+        _spec("public_log_actions").default
+        == moderation_config.DEFAULT_PUBLIC_LOG_ACTIONS
+    )
+    assert (
+        _spec("public_log_channel").default
+        == moderation_config.DEFAULT_PUBLIC_LOG_CHANNEL
     )
