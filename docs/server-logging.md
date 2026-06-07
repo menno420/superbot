@@ -1,6 +1,6 @@
 # Server logging foundation
 
-**Status:** shipped in Phase 2 PR-11.  Default: **OFF** per-guild.
+> **Status:** `binding` — shipped in Phase 2 PR-11.  Default: **OFF** per-guild.
 
 The server-logging service (`disbot/services/server_logging.py`)
 subscribes to the catalogued event `moderation.action_taken` emitted

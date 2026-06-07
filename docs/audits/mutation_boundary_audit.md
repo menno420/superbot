@@ -1,6 +1,6 @@
 # SuperBot — Mutation Boundary Audit
 
-> **Status:** living inventory. Run against the codebase after the
+> **Status:** `audit` — living inventory. Run against the codebase after the
 > Service Ownership Hardening session (2026-05-24). Update this document
 > when new mutation paths are introduced or existing paths change.
 >

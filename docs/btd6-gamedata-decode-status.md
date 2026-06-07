@@ -1,5 +1,7 @@
 # BTD6 game-data decode — status, lessons & open items
 
+> **Status:** `living-ledger`
+
 The living status of the effort to source BTD6 data from the **BTD Mod Helper
 game-data dump** (`github.com/Btd6ModHelper/btd6-game-data`, v55.0). Start here
 to pick up the work: it records what's done, **how the dump's data actually

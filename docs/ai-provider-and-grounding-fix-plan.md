@@ -1,6 +1,6 @@
 # Handoff — AI provider-switch + BTD6 grounding fix plan
 
-> **Status:** working handoff for the *next* session (not a binding contract).
+> **Status:** `plan` — working handoff for the *next* session (not a binding contract).
 > Written 2026‑05‑29 after a long live‑testing session. **The code is always the
 > source of truth — verify before trusting any BTD6 fact stated here.** The prior
 > session made mistakes precisely by trusting memory over the data; don't repeat that.

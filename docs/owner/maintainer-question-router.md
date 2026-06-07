@@ -245,15 +245,16 @@ D. Decide case by case.
 
 ## 11. Question inbox
 
-The starter questions below are deliberately **unanswered**. Recommended directions
-help the maintainer understand the trade-off; they are not approval.
+The starter questions below were **answered by the maintainer on 2026-06-07 — see §12**
+(answers preserved verbatim; durable conclusions routed in §12–§13). The §11 recommended
+directions were *not* approval; the maintainer's answers are the leading owner intent.
 
 ### Q-0001 — Should AI stay explanation-only, or eventually help prepare actions?
 
 **Area:** AI / Server management
 **Type:** Vision / Safety
 **Priority:** High
-**Status:** Awaiting maintainer answer
+**Status:** Answered (2026-06-07) — Routed → `docs/subsystems/ai.md` (see §12)
 **Suggested destination after answer:** decisions / AI folio / ideas
 
 **Question:** Should AI permanently stay read-only and explanation-only, or could it
@@ -275,7 +276,7 @@ after the documented gates and a dedicated decision.
 **Area:** Server management / Product
 **Type:** Vision / UX
 **Priority:** Medium
-**Status:** Awaiting maintainer answer
+**Status:** Answered (2026-06-07) — Routed → `docs/subsystems/server-management.md` (see §12)
 **Suggested destination after answer:** server-management folio / ideas / decisions
 
 **Question:** Should Discord panels remain the primary owner experience even if a web
@@ -295,7 +296,7 @@ reusable, and no web dashboard is started yet.
 **Area:** Workflow / General
 **Type:** Workflow / Safety
 **Priority:** High
-**Status:** Awaiting maintainer answer
+**Status:** Answered (2026-06-07) — Kept as guidance (confirms CLAUDE.md act-vs-ask; see §12)
 **Suggested destination after answer:** CLAUDE.md / keep here
 
 **Question:** When the desired product outcome is unclear, which work should agents
@@ -316,7 +317,7 @@ question and block only the material unresolved decision.
 **Area:** Docs / Workflow
 **Type:** Workflow
 **Priority:** Medium
-**Status:** Awaiting maintainer answer
+**Status:** Answered (2026-06-07) — Kept here (confirms §7/§14; see §12)
 **Suggested destination after answer:** keep here / CLAUDE.md
 
 **Question:** After an answer belongs in another doc, should the original answer stay
@@ -335,7 +336,7 @@ the original entirely. C. Leave everything here only. D. Defer.
 **Area:** Workflow / General
 **Type:** Safety / Workflow
 **Priority:** High
-**Status:** Awaiting maintainer answer
+**Status:** Answered (2026-06-07) — Kept as guidance (confirms §8 reproposal rule; see §12)
 **Suggested destination after answer:** CLAUDE.md / keep here
 
 **Question:** What should an agent do when the maintainer's requested direction cannot
@@ -350,15 +351,61 @@ D. Defer without explanation.
 
 **Safe default / recommended direction:** C.
 
-## 12. Answered but not yet routed
+## 12. Answered — 2026-06-07
 
-No entries yet. Preserve answers here before adding an agent interpretation or routing
-summary.
+The maintainer answered the starter batch on 2026-06-07. Answers are preserved verbatim
+as **leading owner intent**; the §11 recommended directions were *not* approval — these
+answers are. Durable conclusions are routed in §13.
+
+### Q-0001 — AI scope → **C: eventually broader actions**
+
+> *Maintainer answer (2026-06-07):* AI may **eventually** gain broader / action
+> capabilities (beyond explanation-only).
+
+**Interpretation — not an approval.** This is long-term owner intent. Any AI action
+capability stays behind *all* AI-readiness, orchestration, authority, confirmation,
+audit, and rollback gates **and** a dedicated decision before it ships. Today AI stays
+read-only / explanation-only. Routed → `docs/subsystems/ai.md`.
+
+### Q-0002 — Owner control surface → **B: Discord-first, web companion possible later**
+
+> *Maintainer answer (2026-06-07):* Discord panels remain the primary owner surface;
+> keep services / read-models reusable so a web companion is possible later; no web work
+> starts now.
+
+Routed → `docs/subsystems/server-management.md`.
+
+### Q-0003 — Unclear maintainer vision → **B: continue safe, pause material**
+
+> *Maintainer answer (2026-06-07):* Continue safe, reversible, source-verified work;
+> pause and ask on material product, safety, privacy, and architecture decisions.
+
+Kept as guidance — confirms the act-vs-ask envelope in `.claude/CLAUDE.md` and
+`docs/collaboration-model.md`.
+
+### Q-0004 — Answer routing → **A: preserve original + route a conclusion**
+
+> *Maintainer answer (2026-06-07):* Keep the original answer in this router; copy/link a
+> concise durable conclusion to its home.
+
+Kept as guidance — confirms §7 and §14 (this is now how this file operates).
+
+### Q-0005 — Challenging impossible/unsafe answers → **C: explain, cite, propose, confirm**
+
+> *Maintainer answer (2026-06-07):* Explain the conflict plainly, name the source/risk,
+> propose safer alternatives, and ask for confirmation before proceeding.
+
+Kept as guidance — confirms the reproposal rule (§8) and CLAUDE.md act-vs-ask.
 
 ## 13. Routed answers
 
-No entries yet. A routed entry should retain the original answer block and link the
-concise conclusion's destination.
+| Answer | Routed to | Concise conclusion copied |
+|---|---|---|
+| **Q-0001** — AI may eventually gain broader actions (owner intent, still fully gated) | `docs/subsystems/ai.md` | owner-intent note + "stays behind all AI gates + a dedicated decision; not approved now" |
+| **Q-0002** — Discord-first, web companion possible later | `docs/subsystems/server-management.md` | one-line product-direction note |
+
+Original answers stay preserved in §12; these destinations carry only the concise
+durable conclusion (one fact, one home).
 
 ## 14. General owner intent that should stay here
 

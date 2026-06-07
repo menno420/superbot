@@ -1,6 +1,6 @@
 # BTD6 derived-value groundedness — finding + fix
 
-> **Status:** FINDING with a shipped first fix. Distinct from — **do not conflate
+> **Status:** `reference` — FINDING with a shipped first fix. Distinct from — **do not conflate
 > with** — `btd6-absence-claim-guard-design.md`. That doc is about the model
 > asserting a false *"X has no Y"*; **this** is about the faithfulness guard
 > *rejecting a valid answer the model derived by arithmetic over grounded

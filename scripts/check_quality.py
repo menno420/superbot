@@ -132,6 +132,14 @@ def run_pytest() -> int:
     return _run("pytest", _tool("pytest", "tests/", "-q", "--tb=short"))
 
 
+def run_check_docs() -> int:
+    # CI runs `python3 scripts/check_docs.py --strict` on every PR (incl. docs-only).
+    return _run(
+        "check_docs",
+        [_PY, str(REPO_ROOT / "scripts" / "check_docs.py"), "--strict"],
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="SuperBot quality checker")
     parser.add_argument(
@@ -163,6 +171,8 @@ def main() -> int:
             failed.append(name)
 
     if not args.fix_only:
+        if run_check_docs() != 0:
+            failed.append("check_docs")
         if args.full:
             if run_mypy() != 0:
                 failed.append("mypy")

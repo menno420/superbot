@@ -52,6 +52,12 @@ jobs:
             echo "code=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Doc-hygiene gate — runs on EVERY PR (incl. docs-only), pure stdlib so it
+      # needs no setup. Hard-fails on missing/invalid Status badges, dead doc
+      # links, and broken read-path references. See scripts/check_docs.py.
+      - name: Run doc hygiene (check_docs)
+        run: python3 scripts/check_docs.py --strict
+
       - name: Set up Python
         if: steps.changes.outputs.code == 'true'
         uses: actions/setup-python@v5

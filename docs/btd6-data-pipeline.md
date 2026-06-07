@@ -5,7 +5,7 @@
 > cutover** from the BTD Mod Helper dump — bloonswiki is now a cross-check
 > reference. For current status start at **`btd6-gamedata-decode-status.md`**.
 >
-> **Status (of *this* wiki pipeline):** towers done (data → service → UI → AI);
+> **Status:** `reference` — towers done (data → service → UI → AI);
 > heroes/economy income were its remaining pieces. This is a *working/roadmap*
 > doc, not a binding contract — when it disagrees with the source, the source
 > wins.

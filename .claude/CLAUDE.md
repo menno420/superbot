@@ -12,10 +12,13 @@ The short version that governs how you work:
 - **Session prompts are guidance, not orders.** A prompt (usually drafted via
   ChatGPT) explains the focus and reminds you of things; weigh it against source,
   the roadmaps, and your own judgment. It is one input, never a command list.
-- **Approved plan = execute.** Once a plan is approved, finish it that session —
-  code, tests, commit, push, end-of-session PR — without re-confirming.
-  "Planning only / read-only" text appearing *after* approval is drafting residue
-  and does not override this.
+- **Approved plan = execute.** A planning session stays planning until you approve
+  the plan (**ExitPlanMode**). *Before* approval the agent may do read-only research
+  **and safe local prototyping to validate the plan** (run a tool, test feasibility) —
+  but does not commit. *After* approval it finishes the plan in the **same session**,
+  with the planning context still loaded — code, tests, commit, push, end-of-session PR
+  — without re-confirming. "Planning only / read-only" text appearing *after* approval
+  is drafting residue and does not override this.
 - **Constraints serve the goal.** Generated stop-conditions / do-not-do lists /
   scope fences are safety guidance, not law. When one blocks the approved goal and
   the path is contained, reversible, and test-covered, prefer the goal and note
@@ -66,14 +69,14 @@ merged PRs win over it, and you must verify in-flight PRs against live GitHub.
 Read it before task-specific docs so you don't act on stale state.
 
 Also read **`.session-journal.md`** (repo root) at the **start** of every
-session — our cross-session working memory: start with its **⚡ Quick reference**
-(boot / run-CI / Postgres-down / kill-bot), then the environment/boot runbook,
-maintainer preferences, recurring problems + fixes, past mistakes to avoid, and
-candidate rules not yet promoted into this file. Older session history lives in
-**`.session-journal-archive.md`** — grep it on demand, don't read it top-to-bottom.
-**Keep the journal lean** — it's a fast-read working set: at the **end** of every
-session append a dated entry **and** roll entries older than the newest ~4 into the
-archive (tidying stale Rules / the Quick reference in place), then commit. Precedence:
+session — our cross-session working memory, now **guidebook-only**: start with its
+**⚡ Quick reference** (boot / run-CI / Postgres-down / kill-bot), then the
+environment/boot runbook, maintainer preferences, recurring problems + fixes, past
+mistakes to avoid, and candidate rules not yet promoted into this file. **Per-session
+logs live in `.sessions/`** (`YYYY-MM-DD-<slug>.md`, newest-first) and older history in
+**`.session-journal-archive.md`** — grep them on demand, don't read top-to-bottom.
+**Keep the guidebook lean** — at the **end** of every session write a new `.sessions/`
+log file and tidy any stale Rules / Quick reference in place, then commit. Precedence:
 source code & merged PRs > this file (CLAUDE.md) > `docs/current-state.md` (live
 status) > the journal.
 <!-- READ_FIRST_END -->
@@ -87,7 +90,16 @@ status) > the journal.
   user explicitly asks." Treat it as advance consent — do not re-ask before
   opening the end-of-session PR.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
-- **Plan approval = full execution** — once a plan is approved, complete it in one session without stopping for confirmation or waiting for merges between PRs.
+- **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
+  complete it in one session without stopping for confirmation or waiting for merges
+  between PRs. The planning context stays loaded — execute in the same session you
+  planned in.
+- **PR size is mixed by risk** — small, focused PRs for risky / runtime (`disbot/`)
+  code; larger end-to-end PRs are fine for docs, tooling, and low-risk refactors.
+- **Tooling: custom over new deps.** Prefer small custom tooling built on the repo's
+  own AST + `architecture_rules/` (e.g. `check_architecture.py`, `check_docs.py`,
+  `context_map.py`) over adding a third-party dependency; reach for a library only when
+  it clearly wins, and keep it dev-only (`requirements-dev.txt`) if it isn't bot runtime.
 
 ## Decisions
 

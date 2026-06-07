@@ -1,6 +1,6 @@
 # SuperBot — Current State
 
-> **Doc type:** living status ledger (project state). **Not binding.**
+> **Status:** `living-ledger` — living status ledger (project state). **Not binding.**
 > **Source code and merged PRs always win over this file.**
 > The In-flight section below is a dated snapshot — **verify open PRs against
 > live GitHub** before trusting it (two same-session reports already
@@ -103,23 +103,15 @@ Source code and merged PRs win over anything written here.
 - Do not restate "bot fully tested & working" as *newly* verified without an actual
   boot + live walk — cite the #535 baseline instead.
 
-## Where to read next (the read path + what lives where)
+## Where to read next
 
-| Need | Read |
-|---|---|
-| **How we collaborate** (all agents — the working model, read first) | `docs/collaboration-model.md` |
-| Rules of engagement (CI parity, CodeGraph, arch invariants, workflow) | `.claude/CLAUDE.md` |
-| **What's true right now** | this file |
-| How to boot/operate the sandbox · maintainer preferences · hard-won rules · gotchas | `.session-journal.md` (guidebook head) |
-| Unresolved maintainer-facing questions · preserved owner intent · answer routing | `docs/owner/maintainer-question-router.md` (unanswered questions are not approval) |
-| What happened in past sessions | `.session-journal.md` (session log) |
-| Which docs to read for a specific task | `docs/AGENT_ORIENTATION.md` |
-| Deep-dive on one part of the bot (AI, BTD6, server-mgmt…) | `docs/subsystems/<area>.md` (start here for an area) |
-| Architecture / ownership / runtime contracts (binding) | `docs/architecture.md` · `docs/ownership.md` · `docs/runtime_contracts.md` |
-| Brainstorms (not approved) | `docs/ideas/` |
-| Plans / target architecture (historical once shipped) | `docs/planning/` |
+The **canonical read path + "what lives where"** lives in
+**`docs/AGENT_ORIENTATION.md`** ("Reading order by task" + the document-classification
+lists). This file is *step 3* of that path: read it for **what is true right now**, then
+follow the orientation route for your task. The read-path table is **not** duplicated
+here — one canonical home (`AGENT_ORIENTATION.md`).
 
-**One-fact-one-home rule:** if a fact belongs in one of the homes above, **link** to
-it — do not restate it here. Restatement across files is where drift breeds. In
-particular, **don't summarize plans'/trackers' PR numbers or status here** — link to the
-folio or tracker, which is authoritative for its own area.
+**One-fact-one-home rule:** if a fact belongs in one of those homes, **link** to it —
+do not restate it here. Restatement across files is where drift breeds. In particular,
+**don't summarize plans'/trackers' PR numbers or status here** — link to the folio or
+tracker, which is authoritative for its own area.

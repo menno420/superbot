@@ -1,6 +1,6 @@
 # SuperBot — Platform Consistency Ledger
 
-> **Status (reconciled 2026-06-06):** reference contract shape + **stale status
+> **Status:** `living-ledger` — reference contract shape + **stale status
 > snapshot**. The ownership/domain shapes remain useful, but many implementation
 > cells below still describe pre-ship Phase-2 state and are **not a current work
 > queue**. Verify every cell against source and the relevant subsystem folio/tracker;

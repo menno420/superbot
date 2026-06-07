@@ -1,5 +1,7 @@
 # Mining & Exploration — Brainstorm & Roadmap
 
+> **Status:** `ideas`
+
 > Status: **brainstorm / design notes**, not a binding contract. The
 > binding docs (`architecture.md`, `ownership.md`, `runtime_contracts.md`)
 > win on any conflict. This document captures ideas for growing the

@@ -1,5 +1,7 @@
 # BTD6 game-data decode & cutover — the deep explainer
 
+> **Status:** `reference`
+
 > **Who this is for:** anyone (the maintainer, or a future session) who wants to
 > *understand* — not just continue — the effort to source BTD6 data from the
 > game's own files. It explains the **what**, **why**, and **how** from first

@@ -1,6 +1,6 @@
 # Settings & Customization Manager — Roadmap
 
-> **Status (reconciled 2026-06-06):** architectural lane/reference roadmap. The
+> **Status:** `reference` — architectural lane/reference roadmap. The
 > S7–S12 planned/in-progress labels below are **not a verified current queue**; later
 > source contains access, cleanup, setup, and provisioning surfaces that make the
 > milestone sequence incomplete as status reporting. Start at
@@ -12,7 +12,6 @@ Settings & Customization Manager**. Companion to
 (per-cog inventory) and
 [`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md)
 (the RPM lane explainer).
-
 
 ## Three architectural lanes
 
@@ -26,7 +25,6 @@ Settings & Customization Manager**. Companion to
    "select existing **or** create new" UX for any Discord resource. It calls
    `BindingMutationPipeline.set_binding(...)` at step 8 of its 11-step
    contract — it never writes `subsystem_bindings` itself.
-
 
 ## Ownership invariants
 
@@ -50,7 +48,6 @@ Settings & Customization Manager**. Companion to
   in (e.g. `logging.auto_create_channels=true`) AND the operator has
   selected a provisioning policy ahead of time.
 
-
 ## Canonical mutation pipelines
 
 | Pipeline | Owns writes to | Source-of-truth file |
@@ -64,7 +61,6 @@ Settings & Customization Manager**. Companion to
 
 UI **calls** these — never writes a row directly. Setup wizard **calls** them
 via the Settings Manager cog and services — never directly.
-
 
 ## 15 roadmap milestones
 
@@ -100,7 +96,6 @@ kill-switch remains: operators flip it OFF either via the
 the (future) ``!platform flags`` command, and the cog returns the
 disabled embed in that state.
 
-
 ## Execution workflow
 
 - Every PR starts from a fresh `main`.
@@ -110,7 +105,6 @@ disabled embed in that state.
 - Stop on failing tests, migration uncertainty, circular-import risk,
   architecture ambiguity, or unexpected behaviour changes.
 - Never merge PRs without explicit operator approval.
-
 
 ## Dependency graph
 
@@ -138,7 +132,6 @@ disabled embed in that state.
                          cleanup_policies                              (untouched)
   participation_mutation ─ canonical writer for user_*                 (untouched)
 ```
-
 
 ## Module map
 
@@ -169,7 +162,6 @@ disbot/
     032_cleanup_prohibited_words.sql     ← S8 v3 (deferred)
     033_logging_routes.sql               ← future (NOT in v1 scope)
 ```
-
 
 ## See also
 

@@ -1,6 +1,6 @@
 # SuperBot — Service Ownership Quick Reference
 
-> **Status:** reference (not binding). This is a quick-lookup companion to
+> **Status:** `reference` — (not binding). This is a quick-lookup companion to
 > `docs/ownership.md`. When this table and `docs/ownership.md` disagree,
 > **`docs/ownership.md` is authoritative.** Update this table when
 > `docs/ownership.md` changes, not the other way around.

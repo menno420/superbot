@@ -1,6 +1,6 @@
 # Discord smoke-test checklist
 
-> **Status:** SuperBot 2.0 — PR-05.
+> **Status:** `binding` — SuperBot 2.0 — PR-05.
 > Run this checklist before merging anything that touches startup,
 > task ownership, the consistency report, or the readiness snapshot.
 
@@ -179,7 +179,6 @@ migration is caught before it strands fresh guilds again.
       above.  `command_access_decisions_total{decision="allow"}`
       and `…{decision="deny"}` both increment with the correct
       reason/source labels.
-
 
 ## Shutdown drain
 

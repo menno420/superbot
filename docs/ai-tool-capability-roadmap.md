@@ -1,6 +1,6 @@
 # AI Tool Capability Roadmap
 
-> **Status (2026-06-06): roadmap proposal; not implementation approval.**
+> **Status:** `plan` — roadmap proposal (2026-06-06); not implementation approval.
 > **Purpose:** refine the open AI extra-tool ideas backlog into a source-verified,
 > implementation-ready sequence without replacing the approved bot-awareness plan or the
 > research-backed BTD6 orchestration planning document.

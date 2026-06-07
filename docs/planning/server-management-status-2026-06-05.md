@@ -1,6 +1,6 @@
 # Server Management — Status Tracker
 
-> **Status:** living status ledger. This is the **single current record** of what
+> **Status:** `living-ledger` — living status ledger. This is the **single current record** of what
 > the server-management initiative has actually shipped and what is queued next.
 > When this tracker and the roadmap / implementation plan disagree about *what is
 > done*, **this tracker (cross-checked against source) wins**; the roadmap remains

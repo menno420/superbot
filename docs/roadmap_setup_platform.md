@@ -1,6 +1,6 @@
 # SuperBot — Setup + Configuration Wizard Platform Roadmap
 
-> **Status: aspirational roadmap — not a description of shipped behavior.**
+> **Status:** `plan` — aspirational roadmap; not a description of shipped behavior.
 > This document sketches a long-horizon "platform layer / Guild OS" vision in
 > eight phases. The **shipped** setup wizard is a pragmatic subset: a
 > session + draft + operations model (`services/setup_*.py`,

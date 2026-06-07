@@ -1,6 +1,6 @@
 # SuperBot — Runtime contracts
 
-> **Status:** binding. Describes the lifecycle every platform primitive
+> **Status:** `binding` — Describes the lifecycle every platform primitive
 > guarantees, and what subsystems must do to participate.  Failure
 > modes and recovery semantics live here so a new contributor can
 > answer "what happens when X breaks?" without reading source.

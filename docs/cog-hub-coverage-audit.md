@@ -1,6 +1,6 @@
 # SuperBot — Cog Hub Command-Coverage Audit
 
-> **Status:** inventory snapshot, dated 2026-05-24.
+> **Status:** `audit` — inventory snapshot, dated 2026-05-24.
 > Companion to `docs/ui-view-adoption-audit.md` (per-view adoption)
 > and `docs/help-command-surface-map.md` (Help route structure).
 >

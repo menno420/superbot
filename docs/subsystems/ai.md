@@ -46,6 +46,11 @@ scoped tools (including owner-gated diagnostics). Source:
 
 - `docs/ideas/ai-extra-tool-capability-ideas.md` — capability backlog (web/vision/
   file/KB/connectors/scheduler/etc.). Promotion path: `docs/ideas/README.md`.
+- **Owner intent (2026-06-07, `docs/owner/maintainer-question-router.md` Q-0001 — not
+  approval):** AI may *eventually* gain broader / action capabilities beyond
+  explanation-only — but only behind *all* AI gates (readiness, orchestration, authority,
+  confirmation, audit, rollback) **and** a dedicated decision. Today AI stays read-only /
+  explanation-only; this note changes no gate.
 
 ## Next candidates (self-direct from here)
 

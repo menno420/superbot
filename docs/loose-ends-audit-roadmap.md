@@ -1,6 +1,7 @@
 # SuperBot Loose Ends Audit Roadmap
 
-Status: doc-only planning PR  
+> **Status:** `plan` — doc-only planning PR
+
 Runtime impact: none  
 Baseline inspected: `main` at Phase 9b merge (`baacf461`)  
 Purpose: define the safest completion pass before feature expansion, with a button-first command surface, complete Help discovery, consistent panel navigation, and a clear slash-front-door strategy.

@@ -1,6 +1,6 @@
 # Implementation Readiness Review — 2026-06-06
 
-> **Status:** verified audit snapshot. This review classifies the current plans and
+> **Status:** `audit` — verified audit snapshot. This review classifies the current plans and
 > status documents; it does not replace binding contracts, subsystem folios, or the
 > server-management status tracker. Source code and merged commits win.
 >

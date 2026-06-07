@@ -1,10 +1,10 @@
 # Games Actionability Sweep — Operator Handoff
 
-Status: **complete** as of PR 9. This doc captures what shipped
+> **Status:** `historical` — **complete** as of PR 9. This doc captures what shipped
+
 across PRs 1–8 in the Help/Games actionability sweep, the manual
 smoke matrix operators should run after a fresh deploy, and the
 explicitly-deferred work the next session should consider.
-
 
 ## What shipped
 
@@ -118,7 +118,6 @@ collect` walks `all_schemas()` so the new schemas surface in
 Operator-facing roadmap + deferred-inventory note. No code
 changes.
 
-
 ## Manual smoke matrix
 
 Run after a fresh deploy. Each item is either ✅ (verified live)
@@ -191,7 +190,6 @@ live test).
 * [ ] Same for `deathmatch_turn_timeout` + the `_DuelView` timeout.
 * [ ] Defaults (0 fee, 60s timeout) are used when the setting is
   unset.
-
 
 ## Deferred — next session candidates
 
@@ -310,7 +308,6 @@ the original plan §5):
 
 Each requires the runtime read to be wired before the setting lands
 (plan §2.12 hard rule).
-
 
 ## Cross-references
 
