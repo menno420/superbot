@@ -37,7 +37,7 @@ def test_register_schemas_adds_moderation_to_registry():
     assert "moderation" in schema_mod.registered_subsystems()
     schema = schema_mod.get_schema("moderation")
     assert schema is not None
-    assert schema.version == 2
+    assert schema.version == 3
 
 
 def test_moderation_settings_cover_legacy_plus_pr10():
@@ -47,6 +47,7 @@ def test_moderation_settings_cover_legacy_plus_pr10():
     assert names == {
         "warn_threshold",
         "warn_timeout_minutes",
+        "warn_escalation_action",
         "dm_on_action",
         "dm_template",
         "require_reason",
@@ -120,6 +121,22 @@ def test_ban_delete_days_is_numeric_presets_in_range():
         spec.validator(True)  # bool is not a valid day count
 
 
+def test_warn_escalation_action_is_enum_select():
+    spec = _spec("warn_escalation_action")
+    assert spec.value_type is str
+    assert spec.default == "timeout"  # behaviour-preserving today
+    assert spec.settings_key == _mod_keys.MOD_WARN_ESCALATION_ACTION
+    assert spec.capability_required == "moderation.settings.configure"
+    # Non-empty allowed_values → the edit flow renders a Select, not free text.
+    assert spec.allowed_values == ("timeout", "kick", "ban", "none")
+    spec.validator("timeout")
+    spec.validator("none")
+    with pytest.raises(ValueError):
+        spec.validator("explode")
+    with pytest.raises(ValueError):
+        spec.validator(3)
+
+
 def test_max_timeout_minutes_is_numeric_presets_in_range():
     spec = _spec("max_timeout_minutes")
     assert spec.value_type is int
@@ -154,4 +171,13 @@ def test_spec_defaults_match_policy_defaults():
     assert (
         _spec("max_timeout_minutes").default
         == moderation_config.DEFAULT_MAX_TIMEOUT_MINUTES
+    )
+    assert _spec("warn_threshold").default == moderation_config.DEFAULT_WARN_THRESHOLD
+    assert (
+        _spec("warn_timeout_minutes").default
+        == moderation_config.DEFAULT_WARN_TIMEOUT_MINUTES
+    )
+    assert (
+        _spec("warn_escalation_action").default
+        == moderation_config.DEFAULT_WARN_ESCALATION_ACTION
     )

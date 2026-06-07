@@ -24,10 +24,14 @@ from services.moderation_config import (
     DEFAULT_DM_TEMPLATE,
     DEFAULT_MAX_TIMEOUT_MINUTES,
     DEFAULT_REQUIRE_REASON,
+    DEFAULT_WARN_ESCALATION_ACTION,
+    DEFAULT_WARN_THRESHOLD,
+    DEFAULT_WARN_TIMEOUT_MINUTES,
     MAX_BAN_DELETE_MESSAGE_DAYS,
     MAX_TIMEOUT_MINUTES,
     MIN_BAN_DELETE_MESSAGE_DAYS,
     MIN_TIMEOUT_MINUTES,
+    WARN_ESCALATION_ACTIONS,
 )
 from utils.settings_keys import (
     MOD_BAN_DELETE_MESSAGE_DAYS,
@@ -35,6 +39,7 @@ from utils.settings_keys import (
     MOD_DM_TEMPLATE,
     MOD_MAX_TIMEOUT_MINUTES,
     MOD_REQUIRE_REASON,
+    MOD_WARN_ESCALATION_ACTION,
     WARN_THRESHOLD,
     WARN_TIMEOUT_MINS,
 )
@@ -83,6 +88,14 @@ def _validate_dm_template(value: object) -> None:
         )
 
 
+def _validate_escalation_action(value: object) -> None:
+    if value not in WARN_ESCALATION_ACTIONS:
+        raise ValueError(
+            "warn_escalation_action must be one of "
+            f"{', '.join(WARN_ESCALATION_ACTIONS)}, got {value!r}",
+        )
+
+
 # ---------------------------------------------------------------------------
 # Phase 1a — Guild config schema
 # ---------------------------------------------------------------------------
@@ -91,23 +104,40 @@ MODERATION_SETTINGS: tuple[SettingSpec, ...] = (
     SettingSpec(
         name="warn_threshold",
         value_type=int,
-        default=3,
+        default=DEFAULT_WARN_THRESHOLD,
         settings_key=WARN_THRESHOLD,
         capability_required="moderation.settings.configure",
         hint=(
-            "Number of warnings before an automatic timeout is applied.  "
-            "Set high to disable automatic escalation."
+            "Number of warnings before the escalation action is applied.  "
+            "Set high to effectively disable automatic escalation."
         ),
         validator=_validate_positive_int,
     ),
     SettingSpec(
         name="warn_timeout_minutes",
         value_type=int,
-        default=10,
+        default=DEFAULT_WARN_TIMEOUT_MINUTES,
         settings_key=WARN_TIMEOUT_MINS,
         capability_required="moderation.settings.configure",
-        hint="Duration in minutes of the automatic timeout triggered by warn_threshold.",
+        hint=(
+            "Duration in minutes of the automatic timeout triggered when "
+            "warn_threshold is reached and warn_escalation_action is 'timeout'."
+        ),
         validator=_validate_positive_int,
+    ),
+    SettingSpec(
+        name="warn_escalation_action",
+        value_type=str,
+        default=DEFAULT_WARN_ESCALATION_ACTION,
+        settings_key=MOD_WARN_ESCALATION_ACTION,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "What happens when a member reaches warn_threshold warnings: "
+            "'timeout' (the default — auto-timeout for warn_timeout_minutes, "
+            "then reset), 'kick', 'ban', or 'none' to disable auto-escalation."
+        ),
+        validator=_validate_escalation_action,
+        allowed_values=WARN_ESCALATION_ACTIONS,
     ),
     # PR10 — first-class moderation behaviour, applied at the
     # ``services.moderation_service`` mutation seam so every surface (prefix
@@ -204,7 +234,9 @@ MODERATION_CONFIG_SCHEMA = SubsystemSchema(
     resource_requirements=MODERATION_RESOURCE_REQUIREMENTS,
     # v2 — PR10 added the dm_on_action / dm_template / ban_delete_message_days
     # / max_timeout_minutes behaviour settings.
-    version=2,
+    # v3 — PR10 third slice added warn_escalation_action (configurable terminal
+    # escalation, owned at the moderation_service warn seam).
+    version=3,
 )
 
 

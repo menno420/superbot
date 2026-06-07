@@ -11,7 +11,12 @@ from unittest.mock import patch
 import pytest
 
 from services import moderation_config
-from services.moderation_config import ModerationPolicy, render_dm_message
+from services.moderation_config import (
+    EscalationDecision,
+    ModerationPolicy,
+    evaluate_escalation,
+    render_dm_message,
+)
 
 # ---------------------------------------------------------------------------
 # ModerationPolicy derived properties
@@ -28,6 +33,10 @@ def test_default_policy_is_behaviour_preserving():
     # Default ban purge is a no-op; default ceiling is Discord's hard max.
     assert policy.ban_delete_message_seconds == 0
     assert policy.effective_max_timeout_minutes == 40320
+    # Escalation defaults reproduce today's warn→auto-timeout→reset ladder.
+    assert policy.warn_threshold == 3
+    assert policy.warn_timeout_minutes == 10
+    assert policy.warn_escalation_action == "timeout"
 
 
 @pytest.mark.parametrize(
@@ -87,6 +96,9 @@ async def test_load_policy_maps_resolved_values():
         "require_reason": True,
         "ban_delete_message_days": 3,
         "max_timeout_minutes": 120,
+        "warn_threshold": 5,
+        "warn_timeout_minutes": 25,
+        "warn_escalation_action": "kick",
     }
 
     async def _fake_resolve(guild_id, subsystem, name, fallback):
@@ -105,6 +117,9 @@ async def test_load_policy_maps_resolved_values():
         require_reason=True,
         ban_delete_message_days=3,
         max_timeout_minutes=120,
+        warn_threshold=5,
+        warn_timeout_minutes=25,
+        warn_escalation_action="kick",
     )
 
 
@@ -123,6 +138,52 @@ async def test_load_policy_falls_back_to_defaults():
         policy = await moderation_config.load_policy(7)
 
     assert policy == ModerationPolicy()
+
+
+# ---------------------------------------------------------------------------
+# evaluate_escalation — the pure warn-ladder decision
+# ---------------------------------------------------------------------------
+
+
+def test_escalation_below_threshold_returns_none():
+    policy = ModerationPolicy(warn_threshold=3)
+    assert evaluate_escalation(1, policy) is None
+    assert evaluate_escalation(2, policy) is None
+
+
+def test_escalation_default_action_is_timeout_at_threshold():
+    policy = ModerationPolicy()  # threshold 3, timeout 10, action "timeout"
+    decision = evaluate_escalation(3, policy)
+    assert decision == EscalationDecision(action="timeout", timeout_minutes=10)
+    # At or above the threshold escalates.
+    assert evaluate_escalation(9, policy) == EscalationDecision(
+        action="timeout", timeout_minutes=10
+    )
+
+
+@pytest.mark.parametrize("action", ["kick", "ban"])
+def test_escalation_non_timeout_actions_carry_no_duration(action):
+    policy = ModerationPolicy(warn_threshold=2, warn_escalation_action=action)
+    decision = evaluate_escalation(2, policy)
+    assert decision == EscalationDecision(action=action, timeout_minutes=0)
+
+
+def test_escalation_none_disables_escalation():
+    policy = ModerationPolicy(warn_threshold=1, warn_escalation_action="none")
+    assert evaluate_escalation(99, policy) is None
+
+
+def test_escalation_unknown_action_fails_safe_to_none():
+    """A malformed stored action never performs an unintended kick/ban."""
+    policy = ModerationPolicy(warn_threshold=1, warn_escalation_action="explode")
+    assert evaluate_escalation(99, policy) is None
+
+
+def test_escalation_respects_configured_timeout_minutes():
+    policy = ModerationPolicy(warn_threshold=5, warn_timeout_minutes=45)
+    assert evaluate_escalation(5, policy) == EscalationDecision(
+        action="timeout", timeout_minutes=45
+    )
 
 
 # ---------------------------------------------------------------------------

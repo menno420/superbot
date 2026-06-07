@@ -6,7 +6,10 @@ import discord
 from discord import Member, app_commands
 from discord.ext import commands
 
-from cogs.moderation._helpers import _build_mod_panel_embed
+from cogs.moderation._helpers import (
+    _build_mod_panel_embed,
+    render_warn_outcome_lines,
+)
 from core.runtime import panel_manager
 from services import moderation_service
 from services.moderation_service import ReasonRequiredError
@@ -89,32 +92,16 @@ class ModerationCog(commands.Cog):
     @commands.command(name="warn", hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def warn(self, ctx, member: Member, *, reason=""):
-        """Warn a user. Auto-timeouts at the configured threshold (default: 3)."""
+        """Warn a user. Escalates at the configured threshold (default: timeout)."""
         err = self._can_act_on(ctx, member)
         if err:
             await ctx.send(err)
             return
-        # Read through the canonical scalar resolver so coercion +
-        # validation are centralised; a malformed stored value falls
-        # back to the SettingSpec default instead of raising.
-        from services.settings_resolution import resolve_value
-
-        threshold = await resolve_value(
-            ctx.guild.id,
-            "moderation",
-            "warn_threshold",
-            3,
-        )
-        timeout_minutes = await resolve_value(
-            ctx.guild.id,
-            "moderation",
-            "warn_timeout_minutes",
-            10,
-        )
-        # The raw reason is passed through; the service enforces require_reason
-        # at the seam and defaults an empty reason for the log.
+        # The raw reason is passed through; the service enforces require_reason,
+        # owns the escalation ladder (threshold → configured action, reset on
+        # success), and returns a WarnOutcome the surface just renders.
         try:
-            count = await moderation_service.warn(
+            outcome = await moderation_service.warn(
                 member,
                 reason=reason,
                 actor_id=ctx.author.id,
@@ -122,32 +109,8 @@ class ModerationCog(commands.Cog):
         except ReasonRequiredError as exc:
             await ctx.send(f"❌ {exc}")
             return
-        await ctx.send(
-            f"⚠️ {member.mention} warned ({count}/{threshold}). "
-            f"Reason: {reason or 'No reason provided'}",
-        )
-        if count >= threshold:
-            try:
-                until = discord.utils.utcnow() + timedelta(minutes=timeout_minutes)
-                await moderation_service.timeout(
-                    member,
-                    until=until,
-                    reason=f"{threshold} warnings reached.",
-                    actor_id=ctx.author.id,
-                )
-                await ctx.send(
-                    f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
-                    f"({threshold} warnings).",
-                )
-                await moderation_service.clear_warnings(
-                    ctx.guild.id,
-                    member.id,
-                    actor_id=ctx.author.id,
-                )
-            except discord.Forbidden:
-                await ctx.send(
-                    f"⚠️ Reached {threshold} warnings but I lack permission to timeout this user.",
-                )
+        for line in render_warn_outcome_lines(member.mention, reason, outcome):
+            await ctx.send(line)
 
     @commands.command(name="timeout", hidden=True)
     @commands.has_permissions(moderate_members=True)

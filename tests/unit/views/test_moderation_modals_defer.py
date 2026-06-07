@@ -28,6 +28,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
+from services.moderation_service import WarnOutcome
+
 
 def _interaction() -> MagicMock:
     """Build an interaction mock matching the shape ``modals.py`` uses."""
@@ -150,27 +152,27 @@ async def test_warn_modal_happy_path_defers_before_db_io():
         ),
         patch("views.moderation.modals.safe_defer", tracker.defer()),
         patch("views.moderation.modals.safe_followup", tracker.followup()),
-        patch(
-            "services.settings_resolution.resolve_value",
-            tracker.slow("resolve_value", return_value=3),
-        ),
         patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
-        # count (1) stays below threshold (3) → no escalation branch.
-        mock_svc.warn = tracker.slow("svc.warn", return_value=1)
+        # Below threshold → non-escalated outcome, one followup. Threshold reads
+        # + escalation now live in the service, so the modal no longer calls
+        # resolve_value here.
+        mock_svc.warn = tracker.slow(
+            "svc.warn", return_value=WarnOutcome(count=1, threshold=3)
+        )
         await modal.on_submit(interaction)
 
     assert (
         tracker.calls[0] == "defer"
-    ), f"defer must come before any settings/service I/O; got {tracker.calls!r}"
-    assert "resolve_value" in tracker.calls
+    ), f"defer must come before any service I/O; got {tracker.calls!r}"
     assert "svc.warn" in tracker.calls
     assert "followup" in tracker.calls
     interaction.response.send_message.assert_not_called()
 
 
 async def test_warn_modal_threshold_branch_uses_followup_after_timeout():
-    """At-threshold path calls member.timeout then sends a second followup."""
+    """Escalation is owned by the service; the modal renders the two-line
+    outcome (warn confirmation + auto-timeout announcement)."""
     from views.moderation.modals import _WarnModal
 
     modal = _WarnModal()
@@ -199,21 +201,21 @@ async def test_warn_modal_threshold_branch_uses_followup_after_timeout():
             "views.moderation.modals.safe_followup",
             AsyncMock(side_effect=_capture_followup),
         ),
-        patch(
-            "services.settings_resolution.resolve_value",
-            AsyncMock(return_value=3),
-        ),
         patch("views.moderation.modals.moderation_service") as mock_svc,
     ):
-        # Third warning trips the threshold → escalation routes through
-        # the service (timeout + warning reset), not a direct API call.
-        mock_svc.warn = AsyncMock(return_value=3)
-        mock_svc.timeout = AsyncMock()
-        mock_svc.clear_warnings = AsyncMock()
+        # The service performs the escalation internally and reports it on the
+        # outcome — the modal no longer calls timeout / clear_warnings itself.
+        mock_svc.warn = AsyncMock(
+            return_value=WarnOutcome(
+                count=3,
+                threshold=3,
+                escalated=True,
+                escalation_action="timeout",
+                timeout_minutes=10,
+            ),
+        )
         await modal.on_submit(interaction)
 
-    mock_svc.timeout.assert_awaited_once()
-    mock_svc.clear_warnings.assert_awaited_once()
     # Two followups: warn-confirmation + auto-timeout announcement.
     assert len(followup_calls) == 2
     assert "warned" in followup_calls[0][0]

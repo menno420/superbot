@@ -31,7 +31,10 @@ from datetime import timedelta
 
 import discord
 
-from cogs.moderation._helpers import _can_act_on_interaction
+from cogs.moderation._helpers import (
+    _can_act_on_interaction,
+    render_warn_outcome_lines,
+)
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import moderation_service
 from services.moderation_service import ReasonRequiredError
@@ -71,25 +74,11 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             return
         if not await safe_defer(interaction):
             return
-        # Read through the canonical scalar resolver so coercion +
-        # validation are centralised; a malformed stored value falls
-        # back to the SettingSpec default instead of raising.
-        from services.settings_resolution import resolve_value
-
-        threshold = await resolve_value(
-            interaction.guild_id,
-            "moderation",
-            "warn_threshold",
-            3,
-        )
-        timeout_minutes = await resolve_value(
-            interaction.guild_id,
-            "moderation",
-            "warn_timeout_minutes",
-            10,
-        )
+        # The service owns require_reason enforcement and the escalation ladder
+        # (threshold → configured action, reset on success); the modal just
+        # renders the returned WarnOutcome — same shape as the !warn command.
         try:
-            count = await moderation_service.warn(
+            outcome = await moderation_service.warn(
                 member,
                 reason=reason,
                 actor_id=interaction.user.id,
@@ -97,38 +86,8 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
         except ReasonRequiredError as exc:
             await safe_followup(interaction, f"❌ {exc}", ephemeral=True)
             return
-        await safe_followup(
-            interaction,
-            f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
-        )
-        if count >= threshold:
-            # Escalation stays orchestrated at the surface (sequential
-            # service calls) until moderation config owns it; the
-            # warning reset is now audited via the service.
-            try:
-                until = discord.utils.utcnow() + timedelta(minutes=timeout_minutes)
-                await moderation_service.timeout(
-                    member,
-                    until=until,
-                    reason=f"{threshold} warnings reached.",
-                    actor_id=interaction.user.id,
-                )
-                await safe_followup(
-                    interaction,
-                    f"⏳ {member.mention} timed out for {timeout_minutes} minutes "
-                    f"({threshold} warnings).",
-                )
-                await moderation_service.clear_warnings(
-                    interaction.guild_id,
-                    member.id,
-                    actor_id=interaction.user.id,
-                )
-            except discord.Forbidden:
-                await safe_followup(
-                    interaction,
-                    f"⚠️ {threshold} warnings reached but I lack permission to timeout.",
-                    ephemeral=True,
-                )
+        for line in render_warn_outcome_lines(member.mention, reason, outcome):
+            await safe_followup(interaction, line)
 
 
 class _TimeoutModal(discord.ui.Modal, title="Timeout Member"):  # type: ignore[call-arg]
