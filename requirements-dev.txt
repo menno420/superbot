@@ -15,3 +15,8 @@ ruff==0.15.14
 mypy==2.1.0
 pytest==9.0.3
 pytest-asyncio==1.4.0
+
+# Import-graph engine for scripts/context_map.py (the file-context tool).
+# Developer/agent-only — NOT a bot-runtime dep and NOT installed in CI; the tool
+# degrades to an AST fallback when grimp is absent. See docs/context-map-tooling.md.
+grimp==3.14
