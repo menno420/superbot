@@ -38,7 +38,8 @@ each call site re-reading config (PR10).
 
 Public API
 ----------
-- :func:`warn(member, *, reason, actor_id)`               — adds a warning
+- :func:`warn(member, *, reason, actor_id)`               — adds a warning,
+                                                            applies escalation
 - :func:`timeout(member, *, until, reason, actor_id)`     — Discord timeout
 - :func:`kick(member, *, reason, actor_id)`               — guild kick
 - :func:`ban(guild, user, *, reason, actor_id)`           — guild ban
@@ -64,6 +65,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -97,6 +99,32 @@ class ReasonRequiredError(Exception):
     def __init__(self, action: str) -> None:
         self.action = action
         super().__init__(f"A reason is required to {action} a member.")
+
+
+@dataclass(frozen=True)
+class WarnOutcome:
+    """Result of :func:`warn`, including any escalation taken at the seam.
+
+    ``warn`` owns the warning-count escalation (PR10): once a member reaches
+    ``threshold`` warnings the configured terminal action runs *inside* the
+    service, so every surface (prefix command, panel modal, future hub) renders
+    one consistent result instead of re-orchestrating the ladder.
+
+    * ``escalated`` — the terminal action ran successfully (warnings were then
+      reset, matching the historical warn→auto-timeout→clear behaviour).
+    * ``escalation_action`` — ``"timeout"`` / ``"kick"`` / ``"ban"`` when an
+      escalation was due (set even when blocked), else ``None``.
+    * ``timeout_minutes`` — the applied timeout duration (timeout action only).
+    * ``escalation_blocked`` — the action was due but Discord refused it
+      (missing permission / hierarchy); the warning is still recorded.
+    """
+
+    count: int
+    threshold: int
+    escalated: bool = False
+    escalation_action: str | None = None
+    timeout_minutes: int | None = None
+    escalation_blocked: bool = False
 
 
 def _resolve_reason(
@@ -238,8 +266,15 @@ async def warn(
     *,
     reason: str,
     actor_id: int | None = None,
-) -> int:
-    """Record a warning for *member*; return new warning count.
+) -> WarnOutcome:
+    """Record a warning for *member* and apply escalation at the seam.
+
+    The warning is recorded, audited, and (if enabled) DM'd; then the guild's
+    configured escalation ladder is evaluated and **owned here** rather than by
+    each surface (PR10).  At ``warn_threshold`` warnings the configured terminal
+    action — ``timeout`` (default), ``kick``, ``ban``, or ``none`` — runs via the
+    sibling service functions (so it is audited + DM'd identically) and the
+    warning count is reset on success.
 
     Args:
         member: target Discord member.
@@ -247,7 +282,8 @@ async def warn(
         actor_id: invoking moderator's ID; None for system actions.
 
     Returns:
-        The post-increment warning count.
+        A :class:`WarnOutcome` describing the new count and any escalation,
+        so the caller can render one consistent message.
     """
     policy = await moderation_config.load_policy(member.guild.id)
     reason = _resolve_reason(reason, policy, action="warn")
@@ -266,7 +302,48 @@ async def warn(
         reason=reason,
         policy=policy,
     )
-    return new_count
+
+    decision = moderation_config.evaluate_escalation(new_count, policy)
+    if decision is None:
+        return WarnOutcome(count=new_count, threshold=policy.warn_threshold)
+
+    # Escalation owned at the seam — the same ladder the cog + the seven modals
+    # used to copy.  Discord refusal (missing perm / hierarchy) is reported on
+    # the outcome, not raised, so the surface keeps today's soft-warning UX.
+    escalation_reason = f"Reached {policy.warn_threshold} warnings"
+    timeout_minutes = decision.timeout_minutes if decision.action == "timeout" else None
+    try:
+        if decision.action == "timeout":
+            until = _now_utc() + timedelta(minutes=decision.timeout_minutes)
+            await timeout(
+                member,
+                until=until,
+                reason=escalation_reason,
+                actor_id=actor_id,
+            )
+        elif decision.action == "kick":
+            await kick(member, reason=escalation_reason, actor_id=actor_id)
+        elif decision.action == "ban":
+            await ban(member.guild, member, reason=escalation_reason, actor_id=actor_id)
+    except discord.Forbidden:
+        return WarnOutcome(
+            count=new_count,
+            threshold=policy.warn_threshold,
+            escalation_action=decision.action,
+            timeout_minutes=timeout_minutes,
+            escalation_blocked=True,
+        )
+
+    # Reset the counter after a successful escalation (matches the historical
+    # warn→auto-timeout→clear behaviour; harmless for kick/ban).
+    await clear_warnings(member.guild.id, member.id, actor_id=actor_id)
+    return WarnOutcome(
+        count=new_count,
+        threshold=policy.warn_threshold,
+        escalated=True,
+        escalation_action=decision.action,
+        timeout_minutes=timeout_minutes,
+    )
 
 
 async def timeout(

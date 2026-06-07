@@ -7,10 +7,11 @@
 > the target architecture and the implementation plan remains the PR-scope detail.
 >
 > **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523; updated 2026-06-06
-> for PR8+PR9, then for **PR10's first + second slices** — config-backed moderation
-> behaviour, require-reason, and bot-readiness diagnostics). **Body is current through
-> PR10's second slice; the remaining PR10 items + PR11–PR14 are the queue** — the
-> "Shipped" + "Remaining queue" sections below are authoritative.
+> for PR8+PR9, then for **PR10's first + second + third slices** — config-backed
+> moderation behaviour, require-reason, bot-readiness diagnostics, and configurable
+> warn escalation). **Body is current through PR10's third slice; the remaining PR10
+> items + PR11–PR14 are the queue** — the "Shipped" + "Remaining queue" sections
+> below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -334,6 +335,36 @@ service-seam discipline:
   `test_moderation_service.py`, and `has_reason` / `require_reason` cases in
   `test_moderation_config.py` + `test_moderation_schemas.py`.
 
+### PR10 (third slice) — Configurable warn escalation, owned at the seam *(shipped 2026-06-07)*
+
+Makes the warn→escalation ladder first-class and configurable, and moves its
+orchestration **off the surfaces into `moderation_service`** — deleting the
+copy-pasted escalation block the cog and the panel's `_WarnModal` each carried
+(the in-source comment said it stayed surface-side "until moderation config owns
+it"). Scalar/KV, **no migration**, behaviour-preserving by default.
+
+- **One new setting** (`cogs/moderation/schemas.py`, schema → v3):
+  `warn_escalation_action` — enum `timeout` (default = today) / `kick` / `ban` /
+  `none`, an `allowed_values` Select; key `MOD_WARN_ESCALATION_ACTION`. The
+  existing `warn_threshold` / `warn_timeout_minutes` defaults were consolidated
+  into the `moderation_config` canonical constants (one source of truth, drift-pinned).
+- **`moderation_config`** gains the three escalation fields on `ModerationPolicy`
+  plus a **pure** `evaluate_escalation(count, policy)` (fail-safe to no-op on an
+  unknown action).
+- **`moderation_service.warn`** now returns a frozen `WarnOutcome` and **owns the
+  ladder**: at `warn_threshold` it runs the configured terminal action via the
+  sibling `timeout`/`kick`/`ban` functions (so it stays audited + DM'd) and resets
+  the count on success; a Discord `Forbidden` is reported on the outcome (soft
+  warning), not raised. The cog + `_WarnModal` render the outcome via the shared
+  pure `cogs/moderation/_helpers.render_warn_outcome_lines`.
+- **Pinned by** `evaluate_escalation` + policy cases in `test_moderation_config.py`,
+  escalation (timeout/kick/ban/none/below-threshold/Forbidden-blocked) cases in
+  `test_moderation_service.py`, the `warn_escalation_action` shape + drift guard in
+  `test_moderation_schemas.py`, and the rewritten warn-modal cases in
+  `test_moderation_modals_defer.py`. Command-map doc updated for the doc-pin tests.
+- **Remaining PR10 queue:** moderator/trusted **roles + capabilities**, dedicated
+  **log destinations**, and a **post-action cleanup** hook.
+
 ---
 
 ## Remaining queue (starts at PR10)
@@ -342,7 +373,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR10** | Moderation first-class configuration. **First + second slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics — see above). Remaining: mod-roles + capabilities, dedicated log destinations, escalation rules, post-action cleanup hook. | #521 |
+| **PR10** | Moderation first-class configuration. **First + second + third slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation — see above). Remaining: mod-roles + capabilities, dedicated log destinations, post-action cleanup hook. | #521 |
 | **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |

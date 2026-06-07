@@ -6,15 +6,15 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-07 · #555 merged (server-management **PR10 first slice** —
-> config-backed moderation behaviour: DM-on-action, ban message-purge, timeout ceiling;
-> #554 implementation-readiness reconciliation also landed — see Recently shipped). This
-> PR (pending): **server-management PR10 second slice** — `require_reason` enforcement at
-> the `moderation_service` seam (warn/kick/ban; timeout exempt) + a read-only bot-readiness
-> diagnostics line on the mod panel (`utils/moderation_feasibility.py`). See the
-> server-management tracker's PR10 entry for the remaining queue (mod-roles + capabilities,
-> dedicated log destinations, escalation rules, post-action cleanup). Verify open PRs against
-> live GitHub (`list_pull_requests`); this snapshot names none on purpose.
+> **Last updated:** 2026-06-07 · server-management **PR10 first slice** (#555,
+> config-backed moderation behaviour) and **second slice** (#556, require-reason +
+> bot-readiness diagnostics) are merged. This PR (pending): **server-management PR10
+> third slice** — configurable **warn escalation** (`warn_escalation_action`:
+> timeout/kick/ban/none at `warn_threshold`) owned at the `moderation_service` seam,
+> deduplicating the escalation block the cog + panel modal each copied. See the
+> server-management tracker's PR10 entry for the remaining queue (mod-roles +
+> capabilities, dedicated log destinations, post-action cleanup hook). Verify open PRs
+> against live GitHub (`list_pull_requests`); this snapshot names none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -40,6 +40,8 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
+- **PR10 third slice** (pending PR) — configurable **warn escalation** owned at the `moderation_service` seam: `warn_escalation_action` (timeout/kick/ban/none at `warn_threshold`), `warn` returns a `WarnOutcome`, escalation deduplicated out of the cog + panel modal. Scalar/KV, no migration, behaviour-preserving by default.
+- **#556** — server-management **PR10 second slice**: `require_reason` enforcement at the `moderation_service` seam (warn/kick/ban; timeout exempt) + a read-only bot-readiness diagnostics line on the mod panel (`utils/moderation_feasibility.py`).
 - **#555** — server-management **PR10 first slice**: config-backed moderation behaviour (`moderation_config` policy + `dm_on_action` / `dm_template` / `ban_delete_message_days` / `max_timeout_minutes`) applied at the `moderation_service` mutation seam; behaviour-preserving by default.
 - **#554** — implementation-readiness reconciliation: source-grounded readiness audit (`docs/audits/implementation-readiness-review-2026-06-06.md`) + reclassified stale Phase-2 / platform-consistency status cells so they aren't mistaken for current work queues; docs-only.
 - **#553** — consistency-warning presentation fix (the health snapshot no longer flags benign `SKIPPED` consistency sections — bindings-from-DM / no-backfill-rows — as "needs attention") + role-hierarchy tiebreak (`role_feasibility` / `role_automation` compare hierarchy by (position, id) like discord.py, not raw `position`).
@@ -64,13 +66,13 @@ Source code and merged PRs win over anything written here.
 
 ## Next candidates
 
-- Highest-value approved implementation lane: server-management. PR10's **first slice**
-  (config-backed moderation behaviour, #555) and **second slice** (require-reason +
-  bot-readiness diagnostics, the current PR) have shipped; the next step is the
-  **remaining PR10 items** (mod-roles + capabilities, dedicated log destinations,
-  escalation rules, post-action cleanup hook), then PR11–PR14. The
-  `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
-  queue — don't duplicate it here.
+- Highest-value approved implementation lane: server-management. PR10's **first**
+  (config-backed moderation behaviour, #555), **second** (require-reason +
+  bot-readiness diagnostics, #556), and **third** (configurable warn escalation, the
+  current PR) slices have shipped; the next step is the **remaining PR10 items**
+  (mod-roles + capabilities, dedicated log destinations, post-action cleanup hook),
+  then PR11–PR14. The `docs/planning/server-management-status-2026-06-05.md` tracker
+  is the authoritative queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.
 - Use the canonical subsystem folios for area-specific implementation/planning. The

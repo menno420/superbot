@@ -22,6 +22,10 @@ def _default_policy():
     28-day timeout ceiling), so the convergence-era exact-call assertions
     still hold.  Config-behaviour tests set ``.return_value`` to a
     configured :class:`ModerationPolicy`.
+
+    Note: the default escalation action is ``timeout`` at threshold 3, so a
+    warn test that drives ``add_warning`` to/over 3 without exercising
+    escalation sets ``warn_escalation_action="none"``.
     """
     with patch(
         "services.moderation_config.load_policy",
@@ -79,7 +83,9 @@ def _make_user(user_id: int = 54321) -> MagicMock:
 
 
 @pytest.mark.asyncio
-async def test_warn_increments_count_and_emits_event():
+async def test_warn_increments_count_and_emits_event(_default_policy):
+    # Escalation off so this stays a pure single-warn assertion at count 3.
+    _default_policy.return_value = ModerationPolicy(warn_escalation_action="none")
     member = _make_member()
     with (
         patch(
@@ -96,13 +102,13 @@ async def test_warn_increments_count_and_emits_event():
             new_callable=AsyncMock,
         ) as emit,
     ):
-        new_count = await moderation_service.warn(
+        outcome = await moderation_service.warn(
             member,
             reason="spam",
             actor_id=42,
         )
 
-    assert new_count == 3
+    assert outcome.count == 3
     log_mod.assert_awaited_once_with(
         member.guild.id,
         "warn",
@@ -278,9 +284,9 @@ async def test_audit_companion_failure_does_not_block_action(
             new_callable=AsyncMock,
         ) as emit,
     ):
-        count = await moderation_service.warn(member, reason="x", actor_id=1)
+        outcome = await moderation_service.warn(member, reason="x", actor_id=1)
 
-    assert count == 2
+    assert outcome.count == 2
     log_mod.assert_awaited_once()
     emit.assert_awaited_once()
 
@@ -362,7 +368,10 @@ async def test_no_dm_when_dm_on_action_disabled():
 @pytest.mark.asyncio
 async def test_dm_failure_does_not_block_action(_default_policy):
     """A closed-DM member must not stop the warning being recorded."""
-    _default_policy.return_value = ModerationPolicy(dm_on_action=True)
+    # Escalation off so the single warn is the only recorded action here.
+    _default_policy.return_value = ModerationPolicy(
+        dm_on_action=True, warn_escalation_action="none"
+    )
     member = _make_member()
     member.guild.name = "G"
     member.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "dms closed"))
@@ -378,9 +387,9 @@ async def test_dm_failure_does_not_block_action(_default_policy):
         ) as log_mod,
         patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
     ):
-        count = await moderation_service.warn(member, reason="x", actor_id=1)
+        outcome = await moderation_service.warn(member, reason="x", actor_id=1)
 
-    assert count == 4
+    assert outcome.count == 4
     log_mod.assert_awaited_once()
     member.send.assert_awaited_once()
 
@@ -562,9 +571,9 @@ async def test_action_with_reason_passes_when_required(_default_policy):
         ) as log_mod,
         patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
     ):
-        count = await moderation_service.warn(member, reason="spam", actor_id=1)
+        outcome = await moderation_service.warn(member, reason="spam", actor_id=1)
 
-    assert count == 1
+    assert outcome.count == 1
     assert log_mod.await_args.args[4] == "spam"  # reason logged verbatim
 
 
@@ -602,6 +611,167 @@ async def test_timeout_exempt_from_require_reason(_default_policy):
         await moderation_service.timeout(member, until=until, reason="", actor_id=1)
 
     member.timeout.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# PR10 third slice — warn escalation owned at the seam
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_warn_no_escalation_below_threshold(_default_policy):
+    _default_policy.return_value = ModerationPolicy()  # timeout at threshold 3
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=2,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch(
+            "services.moderation_service.db.clear_warnings",
+            new_callable=AsyncMock,
+        ) as clear,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        outcome = await moderation_service.warn(member, reason="x", actor_id=1)
+
+    member.timeout.assert_not_awaited()
+    clear.assert_not_awaited()
+    assert outcome.escalated is False
+    assert outcome.escalation_action is None
+    assert outcome.count == 2
+    assert outcome.threshold == 3
+
+
+@pytest.mark.asyncio
+async def test_warn_escalates_timeout_at_threshold(_default_policy):
+    """The default ladder auto-timeouts at threshold then resets the count."""
+    _default_policy.return_value = ModerationPolicy()  # timeout 10 @ threshold 3
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=3,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch(
+            "services.moderation_service.db.clear_warnings",
+            new_callable=AsyncMock,
+        ) as clear,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        outcome = await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    member.timeout.assert_awaited_once()
+    clear.assert_awaited_once_with(member.id, member.guild.id)
+    assert outcome.escalated is True
+    assert outcome.escalation_action == "timeout"
+    assert outcome.timeout_minutes == 10
+    assert outcome.escalation_blocked is False
+
+
+@pytest.mark.asyncio
+async def test_warn_escalates_kick_at_threshold(_default_policy):
+    _default_policy.return_value = ModerationPolicy(warn_escalation_action="kick")
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=3,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.db.clear_warnings", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        outcome = await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    member.kick.assert_awaited_once()
+    assert outcome.escalated is True
+    assert outcome.escalation_action == "kick"
+    assert outcome.timeout_minutes is None
+
+
+@pytest.mark.asyncio
+async def test_warn_escalates_ban_at_threshold(_default_policy):
+    _default_policy.return_value = ModerationPolicy(warn_escalation_action="ban")
+    member = _make_member()
+    member.guild.ban = AsyncMock()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=3,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.db.clear_warnings", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        outcome = await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    member.guild.ban.assert_awaited_once()
+    assert outcome.escalated is True
+    assert outcome.escalation_action == "ban"
+
+
+@pytest.mark.asyncio
+async def test_warn_escalation_none_disables_auto_action(_default_policy):
+    _default_policy.return_value = ModerationPolicy(warn_escalation_action="none")
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=99,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch(
+            "services.moderation_service.db.clear_warnings",
+            new_callable=AsyncMock,
+        ) as clear,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        outcome = await moderation_service.warn(member, reason="x", actor_id=1)
+
+    member.timeout.assert_not_awaited()
+    member.kick.assert_not_awaited()
+    clear.assert_not_awaited()
+    assert outcome.escalated is False
+
+
+@pytest.mark.asyncio
+async def test_warn_escalation_blocked_when_forbidden(_default_policy):
+    """A Forbidden on the escalation action is reported, not raised; the warn
+    is still recorded and the count is NOT reset."""
+    _default_policy.return_value = ModerationPolicy()  # timeout at threshold 3
+    member = _make_member()
+    member.timeout = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "no perms"))
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=3,
+        ),
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch(
+            "services.moderation_service.db.clear_warnings",
+            new_callable=AsyncMock,
+        ) as clear,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        outcome = await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    assert outcome.escalation_blocked is True
+    assert outcome.escalated is False
+    assert outcome.escalation_action == "timeout"
+    clear.assert_not_awaited()  # count preserved on a blocked escalation
+    log_mod.assert_awaited()  # the warn itself was recorded
 
 
 # ---------------------------------------------------------------------------

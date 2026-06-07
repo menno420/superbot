@@ -13,3 +13,6 @@ MOD_DM_TEMPLATE = "moderation_dm_template"
 MOD_REQUIRE_REASON = "moderation_require_reason"
 MOD_BAN_DELETE_MESSAGE_DAYS = "moderation_ban_delete_message_days"
 MOD_MAX_TIMEOUT_MINUTES = "moderation_max_timeout_minutes"
+# The terminal action applied when a member reaches warn_threshold warnings
+# (timeout / kick / ban / none).  Consumed at the moderation_service warn seam.
+MOD_WARN_ESCALATION_ACTION = "moderation_warn_escalation_action"

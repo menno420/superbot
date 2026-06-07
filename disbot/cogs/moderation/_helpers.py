@@ -16,12 +16,17 @@ focused on relocation):
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import discord
 from discord import Member
 
 from core.runtime import resources
 from core.runtime.component_registry import stats_block
 from utils.ui_constants import MOD_COLOR
+
+if TYPE_CHECKING:
+    from services import moderation_service
 
 
 def _build_mod_panel_embed(guild: discord.Guild | None = None) -> discord.Embed:
@@ -84,3 +89,39 @@ def _can_act_on_interaction(
             "❌ I cannot perform this action — that member has a higher role than me."
         )
     return None
+
+
+def render_warn_outcome_lines(
+    member_mention: str,
+    reason: str,
+    outcome: moderation_service.WarnOutcome,
+) -> list[str]:
+    """Render the operator-facing reply line(s) for a warn + any escalation.
+
+    Shared by ``!warn`` and the panel's ``_WarnModal`` so both surfaces render
+    one consistent message.  The escalation itself is **owned by**
+    ``services.moderation_service.warn`` (PR10 third slice) — this only formats
+    the :class:`~services.moderation_service.WarnOutcome` it returns.  The first
+    line is always the warning confirmation; a second line reports the
+    escalation (or the soft "I lack permission" notice when Discord refused it).
+    """
+    lines = [
+        f"⚠️ {member_mention} warned ({outcome.count}/{outcome.threshold}). "
+        f"Reason: {reason or 'No reason provided'}",
+    ]
+    action = outcome.escalation_action
+    if outcome.escalation_blocked and action:
+        lines.append(
+            f"⚠️ Reached {outcome.threshold} warnings but I lack permission "
+            f"to {action} this user.",
+        )
+    elif outcome.escalated and action == "timeout":
+        lines.append(
+            f"⏳ {member_mention} timed out for {outcome.timeout_minutes} "
+            f"minutes ({outcome.threshold} warnings).",
+        )
+    elif outcome.escalated and action == "kick":
+        lines.append(f"👢 {member_mention} kicked ({outcome.threshold} warnings).")
+    elif outcome.escalated and action == "ban":
+        lines.append(f"🚫 {member_mention} banned ({outcome.threshold} warnings).")
+    return lines

@@ -50,6 +50,16 @@ DEFAULT_BAN_DELETE_MESSAGE_DAYS = 0
 # maximum, so an unconfigured guild keeps today's behaviour exactly.
 DEFAULT_MAX_TIMEOUT_MINUTES = 28 * 24 * 60  # 40320
 
+# Warn escalation — the discipline ladder applied at the warn seam.  The
+# defaults reproduce today's behaviour exactly: at the third warning the
+# member is auto-timed-out for ten minutes, then their warnings reset.
+DEFAULT_WARN_THRESHOLD = 3
+DEFAULT_WARN_TIMEOUT_MINUTES = 10
+DEFAULT_WARN_ESCALATION_ACTION = "timeout"
+# The terminal action taken when the warning count reaches the threshold.
+# ``"none"`` disables auto-escalation (the count still accrues + audits).
+WARN_ESCALATION_ACTIONS: tuple[str, ...] = ("timeout", "kick", "ban", "none")
+
 # Validator bounds (also enforced defensively at the service seam).
 MIN_BAN_DELETE_MESSAGE_DAYS = 0
 MAX_BAN_DELETE_MESSAGE_DAYS = 7
@@ -86,6 +96,9 @@ class ModerationPolicy:
     require_reason: bool = DEFAULT_REQUIRE_REASON
     ban_delete_message_days: int = DEFAULT_BAN_DELETE_MESSAGE_DAYS
     max_timeout_minutes: int = DEFAULT_MAX_TIMEOUT_MINUTES
+    warn_threshold: int = DEFAULT_WARN_THRESHOLD
+    warn_timeout_minutes: int = DEFAULT_WARN_TIMEOUT_MINUTES
+    warn_escalation_action: str = DEFAULT_WARN_ESCALATION_ACTION
 
     @property
     def ban_delete_message_seconds(self) -> int:
@@ -107,6 +120,41 @@ class ModerationPolicy:
             MIN_TIMEOUT_MINUTES,
             min(MAX_TIMEOUT_MINUTES, self.max_timeout_minutes),
         )
+
+
+@dataclass(frozen=True)
+class EscalationDecision:
+    """The terminal action a warning count triggers (pure, no I/O).
+
+    ``action`` is one of ``"timeout"`` / ``"kick"`` / ``"ban"``;
+    ``timeout_minutes`` is only meaningful for the timeout action (0
+    otherwise).  :func:`evaluate_escalation` returns ``None`` when no
+    escalation is due.
+    """
+
+    action: str
+    timeout_minutes: int = 0
+
+
+def evaluate_escalation(
+    count: int,
+    policy: ModerationPolicy,
+) -> EscalationDecision | None:
+    """Decide whether *count* warnings escalate under *policy* (pure).
+
+    Returns ``None`` below the threshold, when escalation is disabled
+    (``warn_escalation_action == "none"``), or for an unrecognised stored
+    action (fail-safe: never perform an unintended kick/ban).  Otherwise the
+    decision names the configured terminal action; only ``"timeout"`` carries
+    a duration.
+    """
+    action = policy.warn_escalation_action
+    if action not in ("timeout", "kick", "ban"):
+        return None
+    if count < policy.warn_threshold:
+        return None
+    minutes = policy.warn_timeout_minutes if action == "timeout" else 0
+    return EscalationDecision(action=action, timeout_minutes=minutes)
 
 
 async def load_policy(guild_id: int) -> ModerationPolicy:
@@ -149,12 +197,33 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
         "max_timeout_minutes",
         DEFAULT_MAX_TIMEOUT_MINUTES,
     )
+    warn_threshold = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "warn_threshold",
+        DEFAULT_WARN_THRESHOLD,
+    )
+    warn_timeout_minutes = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "warn_timeout_minutes",
+        DEFAULT_WARN_TIMEOUT_MINUTES,
+    )
+    warn_escalation_action = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "warn_escalation_action",
+        DEFAULT_WARN_ESCALATION_ACTION,
+    )
     return ModerationPolicy(
         dm_on_action=bool(dm_on_action),
         dm_template=str(dm_template),
         require_reason=bool(require_reason),
         ban_delete_message_days=int(ban_delete_message_days),
         max_timeout_minutes=int(max_timeout_minutes),
+        warn_threshold=int(warn_threshold),
+        warn_timeout_minutes=int(warn_timeout_minutes),
+        warn_escalation_action=str(warn_escalation_action),
     )
 
 
@@ -218,12 +287,18 @@ __all__ = [
     "DEFAULT_DM_TEMPLATE",
     "DEFAULT_MAX_TIMEOUT_MINUTES",
     "DEFAULT_REQUIRE_REASON",
+    "DEFAULT_WARN_ESCALATION_ACTION",
+    "DEFAULT_WARN_THRESHOLD",
+    "DEFAULT_WARN_TIMEOUT_MINUTES",
     "MAX_BAN_DELETE_MESSAGE_DAYS",
     "MAX_TIMEOUT_MINUTES",
     "MIN_BAN_DELETE_MESSAGE_DAYS",
     "MIN_TIMEOUT_MINUTES",
+    "WARN_ESCALATION_ACTIONS",
+    "EscalationDecision",
     "ModerationPolicy",
     "SUBSYSTEM",
+    "evaluate_escalation",
     "has_reason",
     "load_policy",
     "render_dm_message",
