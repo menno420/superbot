@@ -30,7 +30,7 @@ python scripts/context_map.py disbot/cogs/moderation_cog.py --max-importers 30
 |---|---|---|
 | File role / authority | `architecture_rules/mutation_owners.yaml` + layer from path | Authoritative |
 | Direct imports (module-level / lazy) | AST (`check_architecture._ImportVisitor`) | Authoritative for *scope* (module-level vs lazy). Names are at `from`-module granularity, so `from services import x` shows as `services`. |
-| Imported by / Blast radius | **Grimp** when installed; **AST scan** otherwise | Grimp is authoritative (resolves `from services import moderation_service` to the submodule + lazy importers). The AST fallback is a **lower bound** (like CodeGraph) and is clearly labelled in the output. |
+| Imported by / Blast radius | **Grimp** when installed; **AST scan** otherwise | Grimp reliably maps **import/module edges** (resolves `from services import moderation_service` to the submodule + lazy importers). Caveat: import edges ≠ full runtime impact — EventBus/dispatch/decorator edges aren't imports, so the blast radius is import-only. The AST fallback is a **lower bound** (like CodeGraph) and is clearly labelled in the output. |
 | Related docs / Relevant tests / Risk | `docs/context-map-overrides.yml` + `layers.yaml` + path mirror | Curated + heuristic — extend the override file as the repo grows. |
 
 The tool **does not map call edges** (function→function). That stays a
@@ -47,7 +47,7 @@ absent, so `tests/unit/scripts/test_context_map.py` stays green in CI (the
 Grimp-specific test is skipped via `pytest.importorskip`).
 
 ```bash
-pip install -r requirements-dev.txt   # installs grimp for the authoritative path
+pip install -r requirements-dev.txt   # installs grimp for the full import-graph path
 ```
 
 ## The override file

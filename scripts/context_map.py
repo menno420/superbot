@@ -332,7 +332,7 @@ def render(path: Path, reverse: _Reverse, overrides: dict, max_importers: int) -
     engine_note = (
         "Grimp import graph"
         if reverse.engine == "grimp"
-        else "AST fallback (install grimp for faster/authoritative edges)"
+        else "AST fallback (install grimp for faster, complete import edges)"
     )
 
     return "\n".join(
