@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import datetime as dt
+import logging
 import re
 from dataclasses import dataclass
 from typing import Literal
 
 import discord
+
+logger = logging.getLogger("bot.history_cleanup")
 
 
 def _extract_command_name(content: str, prefixes: list[str]) -> str | None:
@@ -98,3 +101,69 @@ async def build_history_cleanup_plan(
             else:
                 spam_last_seen[normalized] = created_at
     return HistoryCleanupPlan(scanned=scanned, matched=matched)
+
+
+async def build_author_cleanup_plan(
+    channel,
+    *,
+    author_id: int,
+    limit: int,
+    exclude_message_ids: set[int] | None = None,
+) -> HistoryCleanupPlan:
+    """Plan a post-moderation sweep of one member's recent messages.
+
+    Scans up to *limit* recent messages in *channel* and matches those whose
+    author is ``author_id`` — the target of a kick/ban whose leftover messages
+    a guild has opted to clear (server-management PR10).  Returns the same
+    :class:`HistoryCleanupPlan` the keyword/command/prohibited/spam modes
+    produce, so :func:`apply_history_cleanup_plan` applies all of them
+    identically.  This is a *plan* only — no message is deleted here.
+    """
+    exclude = exclude_message_ids or set()
+    scanned = 0
+    matched: list[discord.Message] = []
+    async for message in channel.history(limit=limit):
+        scanned += 1
+        if message.id in exclude:
+            continue
+        author = message.author
+        if author is not None and author.id == author_id:
+            matched.append(message)
+    return HistoryCleanupPlan(scanned=scanned, matched=matched)
+
+
+@dataclass(frozen=True)
+class CleanupApplyResult:
+    """Outcome of applying a :class:`HistoryCleanupPlan` — counts only."""
+
+    deleted: int
+    failed: int
+
+
+async def apply_history_cleanup_plan(plan: HistoryCleanupPlan) -> CleanupApplyResult:
+    """Delete every message a plan matched, one at a time (best-effort).
+
+    The single canonical apply path shared by the ``!cleanuphistory`` command
+    and the moderation post-action sweep, so the deletion mechanics live in one
+    place (the cleanup subsystem) rather than being re-implemented per caller.
+    Messages are deleted individually — Discord's bulk delete refuses messages
+    older than 14 days and gives no per-message failure isolation.  A
+    per-message ``Forbidden`` / ``HTTPException`` (including an already-deleted
+    ``NotFound``) is counted as a failure and never raised; the caller decides
+    how to surface the counts.
+    """
+    deleted = 0
+    failed = 0
+    for message in plan.matched:
+        try:
+            await message.delete()
+            deleted += 1
+        except (discord.Forbidden, discord.HTTPException):
+            failed += 1
+    if failed:
+        logger.warning(
+            "apply_history_cleanup_plan: %d of %d message(s) could not be deleted",
+            failed,
+            len(plan.matched),
+        )
+    return CleanupApplyResult(deleted=deleted, failed=failed)

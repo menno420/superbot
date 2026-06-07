@@ -333,6 +333,9 @@ _ACTION_COLOR: dict[str, discord.Color] = {
     "clearwarnings": discord.Color.blurple(),
     "clear_warnings": discord.Color.blurple(),
     "auto_delete": discord.Color.dark_grey(),
+    # Post-moderation message sweep (server-management PR10) — moderator-
+    # initiated, distinct from the system auto_delete tier.
+    "post_action_cleanup": discord.Color.teal(),
 }
 
 _ACTION_ICON: dict[str, str] = {
@@ -344,6 +347,7 @@ _ACTION_ICON: dict[str, str] = {
     "clearwarnings": "🧹",
     "clear_warnings": "🧹",
     "auto_delete": "🗑️",
+    "post_action_cleanup": "🧽",
 }
 
 

@@ -6,15 +6,24 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-07 · server-management **PR10 first slice** (#555,
-> config-backed moderation behaviour) and **second slice** (#556, require-reason +
-> bot-readiness diagnostics) are merged. This PR (pending): **server-management PR10
-> third slice** — configurable **warn escalation** (`warn_escalation_action`:
-> timeout/kick/ban/none at `warn_threshold`) owned at the `moderation_service` seam,
-> deduplicating the escalation block the cog + panel modal each copied. See the
-> server-management tracker's PR10 entry for the remaining queue (mod-roles +
-> capabilities, dedicated log destinations, post-action cleanup hook). Verify open PRs
-> against live GitHub (`list_pull_requests`); this snapshot names none on purpose.
+> **Last updated:** 2026-06-07 · server-management **PR10's first three slices are
+> merged**: config-backed moderation behaviour (#555), require-reason + bot-readiness
+> diagnostics (#556), and configurable **warn escalation** (#558). The cross-area
+> implementation roadmap also merged (#566, `docs/roadmap.md`). **This PR (pending):
+> server-management PR10 fourth slice** — optional **post-action message cleanup**
+> (`post_action_cleanup`: none/kick/ban/both up to `post_action_cleanup_limit`,
+> **default OFF**), owned at the `moderation_service` kick/ban seam and *requested
+> from* the cleanup subsystem (`services/history_cleanup.py`) so moderation
+> re-implements no deletion mechanics; the `!cleanuphistory` delete loop was extracted
+> into the shared `apply_history_cleanup_plan` (one source of truth).
+> **Next stage = the two remaining PR10 items** — moderator/trusted **roles +
+> capabilities** and dedicated **log destinations** (incl. an optional public log).
+> Per the roadmap + capability-authority docs these are *not* contained like the
+> shipped slices: each touches a cross-cutting seam (capability-authority seam /
+> server-logging subsystem) and carries an owner decision (new authority tier matrix /
+> public-log privacy) — confirm scope with the maintainer before building. See the
+> server-management tracker's PR10 entry. Verify open PRs against live GitHub
+> (`list_pull_requests`); this snapshot names none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -40,11 +49,12 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
-- **cross-area implementation roadmap** (this PR, pending) — `docs/roadmap.md`: the one by-area "what's planned, in what order" index (relative Now/Next/Later/Someday horizons + gates, not dates), linking each authoritative plan + folio, with a clearly-marked not-approved ideas section. Its AI section defers to the AI roadmap. Re-badged two mis-badged historical plans (`phase_2b_bindings_plan`, BTD6 extraction). Wired into `current-state` + `AGENT_ORIENTATION`.
+- **PR10 fourth slice** (this PR, pending) — server-management **post-action message cleanup**: optional post-kick/ban sweep of the moderated member's recent messages in the invoking channel (`post_action_cleanup`: none/kick/ban/both up to `post_action_cleanup_limit`, **default OFF**), owned at the `moderation_service` kick/ban seam and *requested from* `services/history_cleanup.py` (a new author-scoped plan + a shared `apply_history_cleanup_plan` extracted from `!cleanuphistory` — one delete path). Best-effort: a blocked sweep never undoes the action. Scalar/KV, no migration. Also reconciled `current-state` drift (#558/#566 were still tagged "pending").
+- **#566** (merged) — **cross-area implementation roadmap** (`docs/roadmap.md`): the one by-area "what's planned, in what order" index (relative Now/Next/Later/Someday horizons + gates, not dates), linking each authoritative plan + folio, with a clearly-marked not-approved ideas section. Its AI section defers to the AI roadmap. Re-badged two mis-badged historical plans (`phase_2b_bindings_plan`, BTD6 extraction). Wired into `current-state` + `AGENT_ORIENTATION`.
 - **#565** (Codex, merged) — source-verified **AI roadmap** (`docs/planning/ai-roadmap-2026-06-07.md`, Phase 0–11) + a 10-question batch. Opus-reviewed (sound; read-only boundary preserved). Owner answers (router §18): **AR-10** first Opus target = lock the orchestration foundation; **AR-08** tiered audience; **AR-09** explanation-only now. AR-01–07 hold at safe defaults until their lanes activate.
 - **#564** — docs reachability cleanup: consolidated the 14-file BTD6 doc island into `docs/btd6/` behind the folio; archived the retired 2026-06 planning/audit burst into `docs/archive/`; corrected `AGENT_ORIENTATION`'s stale self-count and wired the orphaned `docs/context-map-tooling.md`. Added a **hard reachability gate** to `scripts/check_docs.py` (an unreachable doc fails CI unless badged `historical`/`archive`).
 - **#563** — owner-workflow mapping: split the #562 capture into `docs/owner/maintainer-working-profile.md` (the *person*) + `docs/owner/ai-project-workflow.md` (the multi-agent pipeline, per-project roles, handoff templates, idea-state vocabulary); de-duplicated the restated rules to links; routed the **"a new idea is not a new priority"** rule into `.claude/CLAUDE.md` + `docs/collaboration-model.md`. Docs-only.
-- **PR10 third slice** (pending PR) — configurable **warn escalation** owned at the `moderation_service` seam: `warn_escalation_action` (timeout/kick/ban/none at `warn_threshold`), `warn` returns a `WarnOutcome`, escalation deduplicated out of the cog + panel modal. Scalar/KV, no migration, behaviour-preserving by default.
+- **#558** — server-management **PR10 third slice**: configurable **warn escalation** owned at the `moderation_service` seam: `warn_escalation_action` (timeout/kick/ban/none at `warn_threshold`), `warn` returns a `WarnOutcome`, escalation deduplicated out of the cog + panel modal. Scalar/KV, no migration, behaviour-preserving by default.
 - **#556** — server-management **PR10 second slice**: `require_reason` enforcement at the `moderation_service` seam (warn/kick/ban; timeout exempt) + a read-only bot-readiness diagnostics line on the mod panel (`utils/moderation_feasibility.py`).
 - **#555** — server-management **PR10 first slice**: config-backed moderation behaviour (`moderation_config` policy + `dm_on_action` / `dm_template` / `ban_delete_message_days` / `max_timeout_minutes`) applied at the `moderation_service` mutation seam; behaviour-preserving by default.
 - **#554** — implementation-readiness reconciliation: source-grounded readiness audit (`docs/audits/implementation-readiness-review-2026-06-06.md`) + reclassified stale Phase-2 / platform-consistency status cells so they aren't mistaken for current work queues; docs-only.
@@ -75,11 +85,13 @@ Source code and merged PRs win over anything written here.
   for which part of the code). The picks below are the current top of that list.
 - Highest-value approved implementation lane: server-management. PR10's **first**
   (config-backed moderation behaviour, #555), **second** (require-reason +
-  bot-readiness diagnostics, #556), and **third** (configurable warn escalation, the
-  current PR) slices have shipped; the next step is the **remaining PR10 items**
-  (mod-roles + capabilities, dedicated log destinations, post-action cleanup hook),
-  then PR11–PR14. The `docs/planning/server-management-status-2026-06-05.md` tracker
-  is the authoritative queue — don't duplicate it here.
+  bot-readiness diagnostics, #556), **third** (configurable warn escalation, #558),
+  and **fourth** (post-action message cleanup, this PR) slices have shipped; the next
+  step is the **two remaining PR10 items** (mod-roles + capabilities, dedicated log
+  destinations) — both cross-cutting (capability-authority seam / server-logging
+  subsystem) and each carrying an owner decision — then PR11–PR14. The
+  `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
+  queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.
 - Use the canonical subsystem folios for area-specific implementation/planning. The

@@ -1,7 +1,7 @@
 # Server management subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + the status tracker win.
-> **Last updated:** 2026-06-06.
+> **Last updated:** 2026-06-07.
 
 ## What & where
 
@@ -61,11 +61,13 @@ cleanup policy, setup, and the future unified hub. Inspect first:
 - Shipped foundations include moderation service convergence, shared role feasibility
   + multi-role selection, audited channel rename/move/delete/reorder lifecycle,
   audited role create/edit/delete lifecycle, selector-driven ID-first time/XP
-  role thresholds, and **config-backed moderation** (PR10 first–third slices —
-  DM-on-action, ban message-purge, timeout ceiling, require-reason, and configurable
-  warn escalation (`warn_escalation_action`), all applied at the
-  `services/moderation_service` mutation seam via `services/moderation_config.py`, plus
-  a read-only bot-readiness panel line from `utils/moderation_feasibility.py`).
+  role thresholds, and **config-backed moderation** (PR10 first–fourth slices —
+  DM-on-action, ban message-purge, timeout ceiling, require-reason, configurable
+  warn escalation (`warn_escalation_action`), and an optional post-kick/ban message
+  sweep (`post_action_cleanup`, default OFF, *requested* from
+  `services/history_cleanup.py`), all applied at the `services/moderation_service`
+  mutation seam via `services/moderation_config.py`, plus a read-only bot-readiness
+  panel line from `utils/moderation_feasibility.py`).
 - Channel creation remains owned by resource provisioning; clone, overwrites, and
   some category/lifecycle follow-ups remain outside the shipped lifecycle service.
 - Cleanup and setup exist today, but the tracker queues their server-management
@@ -80,13 +82,14 @@ The status tracker's remaining queue is the only current sequencing authority.
 Cleanup versioning + builder/dry-run/panel diagnostics shipped 2026-06-06 (PR8+PR9,
 presets-only). **PR10 (moderation configuration) is underway**: its first slice
 (config-backed behaviour — DM-on-action, ban message-purge, timeout ceiling), second
-slice (require-reason enforcement + bot-readiness diagnostics), and third slice
-(configurable warn escalation — `warn_escalation_action`, owned at the warn seam) have
-shipped; the **remaining PR10 items** (moderator/trusted roles + capabilities,
-dedicated log destinations, post-action cleanup hook) come next, then setup
-role/moderation/governance and repair sections, role templates, and finally the
-unified Server Management Hub. Link to the tracker for exact order and dependencies
-rather than copying them here.
+slice (require-reason enforcement + bot-readiness diagnostics), third slice
+(configurable warn escalation — `warn_escalation_action`, owned at the warn seam), and
+fourth slice (post-action message cleanup — `post_action_cleanup`, default OFF,
+requested from the cleanup subsystem at the kick/ban seam) have shipped; the
+**remaining PR10 items** (moderator/trusted roles + capabilities, dedicated log
+destinations) come next, then setup role/moderation/governance and repair sections,
+role templates, and finally the unified Server Management Hub. Link to the tracker for
+exact order and dependencies rather than copying them here.
 
 ## Ideas (not approved)
 
@@ -100,9 +103,10 @@ reusable so a web companion is *possible* later, but do not start web work now.
 
 ## Next candidates
 
-1. Continue PR10: its first–third slices shipped; the next step is the **remaining
-   PR10 items** (mod-roles + capabilities, dedicated log destinations, post-action
-   cleanup hook). Verify source before using either older planning document.
+1. Continue PR10: its first–fourth slices shipped; the next step is the **remaining
+   PR10 items** (mod-roles + capabilities, dedicated log destinations) — both
+   cross-cutting (capability-authority seam / server-logging subsystem) and each
+   carrying an owner decision. Verify source before using either older planning document.
 2. Take one bounded known UX follow-up (member quicksearch or role selector/cleanup)
    without changing lifecycle ownership.
 3. When extending setup, reuse provisioning previews/confirmation and capability

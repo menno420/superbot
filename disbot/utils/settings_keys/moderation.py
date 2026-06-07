@@ -16,3 +16,8 @@ MOD_MAX_TIMEOUT_MINUTES = "moderation_max_timeout_minutes"
 # The terminal action applied when a member reaches warn_threshold warnings
 # (timeout / kick / ban / none).  Consumed at the moderation_service warn seam.
 MOD_WARN_ESCALATION_ACTION = "moderation_warn_escalation_action"
+# Post-action message cleanup: after a kick/ban, sweep the member's recent
+# messages in the invoking channel (none / kick / ban / both) up to a scan
+# limit.  Requested from the cleanup subsystem at the moderation_service seam.
+MOD_POST_ACTION_CLEANUP = "moderation_post_action_cleanup"
+MOD_POST_ACTION_CLEANUP_LIMIT = "moderation_post_action_cleanup_limit"

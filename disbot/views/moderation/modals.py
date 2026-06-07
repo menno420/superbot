@@ -33,6 +33,8 @@ import discord
 
 from cogs.moderation._helpers import (
     _can_act_on_interaction,
+    _sweepable_channel,
+    render_cleanup_outcome_line,
     render_warn_outcome_lines,
 )
 from core.runtime.interaction_helpers import safe_defer, safe_followup
@@ -187,15 +189,19 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
         if not await safe_defer(interaction):
             return
         try:
-            await moderation_service.kick(
+            outcome = await moderation_service.kick(
                 member,
                 reason=reason,
                 actor_id=interaction.user.id,
+                channel=_sweepable_channel(interaction.channel),
             )
             await safe_followup(
                 interaction,
                 f"👢 {member.mention} kicked. Reason: {reason}",
             )
+            cleanup_line = render_cleanup_outcome_line(member.mention, outcome)
+            if cleanup_line:
+                await safe_followup(interaction, cleanup_line)
         except ReasonRequiredError as exc:
             await safe_followup(interaction, f"❌ {exc}", ephemeral=True)
         except discord.Forbidden:
@@ -238,16 +244,20 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
         if not await safe_defer(interaction):
             return
         try:
-            await moderation_service.ban(
+            outcome = await moderation_service.ban(
                 interaction.guild,
                 member,
                 reason=reason,
                 actor_id=interaction.user.id,
+                channel=_sweepable_channel(interaction.channel),
             )
             await safe_followup(
                 interaction,
                 f"🚫 {member.mention} banned. Reason: {reason}",
             )
+            cleanup_line = render_cleanup_outcome_line(member.mention, outcome)
+            if cleanup_line:
+                await safe_followup(interaction, cleanup_line)
         except ReasonRequiredError as exc:
             await safe_followup(interaction, f"❌ {exc}", ephemeral=True)
         except discord.Forbidden:

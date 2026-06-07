@@ -29,8 +29,12 @@ constants live in `disbot/utils/settings_keys/logging.py`.
 
 | Action | Channel slot |
 |---|---|
-| `warn` / `timeout` / `kick` / `ban` / `unban` / `clearwarnings` | `logging.mod_channel` |
+| `warn` / `timeout` / `kick` / `ban` / `unban` / `clearwarnings` / `post_action_cleanup` | `logging.mod_channel` |
 | `auto_delete:*` (cleanup auto-deletes) | `logging.cleanup_channel` → falls back to `logging.mod_channel` |
+
+> `post_action_cleanup` is the **moderator-initiated** post-kick/ban message
+> sweep (server-management PR10) — distinct from the system `auto_delete:*`
+> tier, so it routes to the mod channel like every other manual action.
 
 > The clear-warnings action token is **`clearwarnings`** (one word) — the canonical
 > value `moderation_service` emits (server-management PR1 / #521). The embed style
@@ -47,6 +51,7 @@ constants live in `disbot/utils/settings_keys/logging.py`.
 | `unban` | green | 🕊️ |
 | `clearwarnings` | blurple | 🧹 |
 | `auto_delete:*` | dark_grey | 🗑️ |
+| `post_action_cleanup` | teal | 🧽 |
 | anything else | dark_grey | • |
 
 Every embed includes Target (mention + id), Actor (mention or
