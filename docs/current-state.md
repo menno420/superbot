@@ -68,6 +68,9 @@ Source code and merged PRs win over anything written here.
 
 ## Next candidates
 
+- **Cross-area sequencing + the plan index now live in [`docs/roadmap.md`](roadmap.md)**
+  (by area, with Now / Next / Later / Someday horizons + gates — where to find which plan
+  for which part of the code). The picks below are the current top of that list.
 - Highest-value approved implementation lane: server-management. PR10's **first**
   (config-backed moderation behaviour, #555), **second** (require-reason +
   bot-readiness diagnostics, #556), and **third** (configurable warn escalation, the
