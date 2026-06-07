@@ -13,6 +13,7 @@ from cogs.moderation._helpers import (
     render_warn_outcome_lines,
 )
 from core.runtime import panel_manager
+from core.runtime.ui_permissions import can_execute_ctx
 from services import moderation_service
 from services.moderation_service import ReasonRequiredError
 from utils import db
@@ -22,6 +23,32 @@ from utils.ui_constants import MOD_COLOR
 # so the persistent-view registry is populated before on_ready runs
 # restore_anchors.  See docs/architecture.md §"PersistentView placement".
 from views.moderation import ModPanelView  # noqa: F401 — re-exported
+
+
+def _require_mod(capability: str, perm_attr: str):
+    """Command check: allow if the invoker holds the Discord permission
+    *perm_attr* **or** the governance *capability* (e.g. via a configured
+    moderator role — ADR-008, capability-native authority).
+
+    Behaviour-preserving: the Discord-permission path is evaluated first and is
+    unchanged, so no one who can moderate today loses access — the capability
+    path only *adds* the configured-role grant.  On denial it raises
+    :class:`discord.ext.commands.MissingPermissions` so the existing
+    ``on_command_error`` handler shows the standard "no permission" message
+    (a bare ``CheckFailure`` would be silent).
+    """
+
+    async def predicate(ctx: commands.Context) -> bool:
+        if ctx.guild is None:
+            raise commands.NoPrivateMessage()
+        perms = getattr(ctx.author, "guild_permissions", None)
+        if perms is not None and getattr(perms, perm_attr, False):
+            return True
+        if await can_execute_ctx(ctx, capability):
+            return True
+        raise commands.MissingPermissions([perm_attr])
+
+    return commands.check(predicate)
 
 
 class ModerationCog(commands.Cog):
@@ -47,7 +74,7 @@ class ModerationCog(commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.command(name="modmenu")
-    @commands.has_permissions(moderate_members=True)
+    @_require_mod("moderation.warn.apply", "moderate_members")
     async def mod_menu(self, ctx):
         """Show the interactive moderation action panel."""
         embed = _build_mod_panel_embed(ctx.guild)
@@ -92,7 +119,7 @@ class ModerationCog(commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.command(name="warn", hidden=True)
-    @commands.has_permissions(manage_roles=True)
+    @_require_mod("moderation.warn.apply", "manage_roles")
     async def warn(self, ctx, member: Member, *, reason=""):
         """Warn a user. Escalates at the configured threshold (default: timeout)."""
         err = self._can_act_on(ctx, member)
@@ -115,7 +142,7 @@ class ModerationCog(commands.Cog):
             await ctx.send(line)
 
     @commands.command(name="timeout", hidden=True)
-    @commands.has_permissions(moderate_members=True)
+    @_require_mod("moderation.timeout.apply", "moderate_members")
     async def timeout(self, ctx, member: Member, duration: int):
         """Timeout a member for a given number of minutes."""
         err = self._can_act_on(ctx, member)
@@ -137,7 +164,7 @@ class ModerationCog(commands.Cog):
             await ctx.send(f"❌ Failed to timeout: {e}")
 
     @commands.command(name="kick", hidden=True)
-    @commands.has_permissions(kick_members=True)
+    @_require_mod("moderation.kick.apply", "kick_members")
     async def kick(self, ctx, member: Member, *, reason=""):
         """Kick a member from the server."""
         err = self._can_act_on(ctx, member)
@@ -165,7 +192,7 @@ class ModerationCog(commands.Cog):
             await ctx.send(f"❌ Failed to kick: {e}")
 
     @commands.command(name="ban", hidden=True)
-    @commands.has_permissions(ban_members=True)
+    @_require_mod("moderation.ban.apply", "ban_members")
     async def ban(self, ctx, member: Member, *, reason=""):
         """Ban a member from the server."""
         err = self._can_act_on(ctx, member)
@@ -194,7 +221,7 @@ class ModerationCog(commands.Cog):
             await ctx.send(f"❌ Failed to ban: {e}")
 
     @commands.command(name="unban", hidden=True)
-    @commands.has_permissions(ban_members=True)
+    @_require_mod("moderation.ban.remove", "ban_members")
     async def unban(self, ctx, user_id: int):
         """Unban a user by their Discord user ID."""
         try:
@@ -221,7 +248,7 @@ class ModerationCog(commands.Cog):
             await ctx.send(f"❌ Failed to unban: {e}")
 
     @commands.command(name="clearwarnings", hidden=True)
-    @commands.has_permissions(manage_roles=True)
+    @_require_mod("moderation.warn.apply", "manage_roles")
     async def clearwarnings(self, ctx, member: Member):
         """Clear all warnings for a member."""
         await moderation_service.clear_warnings(
@@ -232,7 +259,7 @@ class ModerationCog(commands.Cog):
         await ctx.send(f"✅ Warnings cleared for {member.mention}.")
 
     @commands.command(name="modlogs", hidden=True)
-    @commands.has_permissions(manage_roles=True)
+    @_require_mod("moderation.log.view", "manage_roles")
     async def modlogs(self, ctx, member: Member):
         """Show moderation log history for a member."""
         logs = await db.get_mod_logs(member.id, ctx.guild.id, limit=10)

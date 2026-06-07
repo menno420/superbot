@@ -6,23 +6,24 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ Next action:** finish **PR10's last item** — moderator/trusted **roles +
-> capabilities** (owner decision 2026-06-07, preserved in
-> [`owner/maintainer-question-router.md`](owner/maintainer-question-router.md) §19:
-> *capability-native* — a configured role resolves to the `moderator` tier, routed
-> through the capability resolver; this is the per-capability tier matrix
-> `capability-authority.md` §5 defers, so it warrants an ADR + thorough authority
-> tests, a careful security-sensitive change). Authoritative scope + dependencies: the
+> **▶ Next action:** server-management **PR11** — setup role/moderation/governance
+> sections (reuse provisioning previews + capability checks; never add a second
+> resource-creation path). **PR10 is complete:** its final item — capability-native
+> moderator/trusted **roles + capabilities** — landed as
+> **[ADR-008](decisions/008-moderator-role-capability-native-authority.md)** (a
+> configured role grants the `moderator` tier via the governance tier resolver;
+> behaviour-preserving OR-gate that preserves Discord-perm holders; settable in the
+> Settings hub at the administrator floor). Authoritative scope + dependencies: the
 > server-management [status tracker](planning/server-management-status-2026-06-05.md)
 > Remaining-queue.
 >
-> **Last updated:** 2026-06-07 · server-management **PR10's first four slices merged**:
-> config-backed moderation behaviour (#555), require-reason + bot-readiness diagnostics
-> (#556), warn escalation (#558), post-action message cleanup (#567); the cross-area
-> roadmap also merged (#566). Later PR10 slices + the full queue live in the **status
-> tracker** (linked above). **This file lists only _merged_ work + the ▶ Next action;**
-> get in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's status
-> in prose here rots on merge (a `scripts/check_docs.py` freshness gate enforces this).
+> **Last updated:** 2026-06-07 · server-management **PR10 completed** — its final slice,
+> capability-native moderator/trusted **roles + capabilities**, was implemented this
+> session (decision of record **ADR-008**; the earlier slices merged as #555/#556/#558/#567,
+> the cross-area roadmap as #566). The full PR10 record + the PR11–PR14 queue live in the
+> **status tracker** (linked above). **This file lists only _merged_ work + the ▶ Next
+> action;** get in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's
+> status in prose here rots on merge (a `scripts/check_docs.py` freshness gate enforces this).
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -86,12 +87,12 @@ Source code and merged PRs win over anything written here.
 - **Cross-area sequencing + the plan index now live in [`docs/roadmap.md`](roadmap.md)**
   (by area, with Now / Next / Later / Someday horizons + gates — where to find which plan
   for which part of the code). The picks below are the current top of that list.
-- Highest-value approved implementation lane: server-management. PR10's first four
-  slices are merged (#555/#556/#558/#567), with the optional public log in flight; the
-  next step is the **one remaining PR10 item** — moderator/trusted **roles +
-  capabilities** (owner decision: capability-native role→`moderator`-tier grant; a
-  careful security-sensitive change — see the ▶ Next action at the top) — then PR11–PR14.
-  The `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
+- Highest-value approved implementation lane: server-management. **PR10 is complete** —
+  its six slices, ending with capability-native moderator/trusted **roles + capabilities**
+  (ADR-008; a configured role grants the `moderator` tier, OR-gated to preserve Discord-perm
+  holders, settable in the Settings hub). The next step is **PR11** (setup
+  role/moderation/governance sections), then PR12–PR14. The
+  `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
   queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.

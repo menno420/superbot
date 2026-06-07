@@ -52,6 +52,8 @@ from utils.settings_keys import (
     MOD_PUBLIC_LOG_CHANNEL,
     MOD_REQUIRE_REASON,
     MOD_WARN_ESCALATION_ACTION,
+    MODERATOR_TIER_ROLE_ID,
+    TRUSTED_TIER_ROLE_ID,
     WARN_THRESHOLD,
     WARN_TIMEOUT_MINS,
 )
@@ -142,6 +144,17 @@ def _validate_public_log_channel(value: object) -> None:
     if text and not text.isdigit():
         raise ValueError(
             f"public_log_channel must be empty or a numeric channel id, got {value!r}",
+        )
+
+
+def _validate_role_id_or_empty(value: object) -> None:
+    """Accept an empty string (unset) or a numeric role id."""
+    if not isinstance(value, str):
+        raise ValueError(f"expected str, got {type(value).__name__}")
+    text = value.strip()
+    if text and not text.isdigit():
+        raise ValueError(
+            f"role setting must be empty or a numeric role id, got {value!r}",
         )
 
 
@@ -322,6 +335,44 @@ MODERATION_SETTINGS: tuple[SettingSpec, ...] = (
         validator=_validate_public_log_channel,
         input_hint="channel",
     ),
+    # PR10 final slice — capability-native moderator / trusted roles (ADR-008).
+    # Setting a role here grants its members the corresponding governance tier
+    # via governance.resolver._resolve_member_tier, so non-admins can moderate
+    # (moderator role) or reach trust-gated surfaces (trusted role).  Stored as
+    # the numeric role id (string), read back through config_arbitration.
+    # Changing them requires the administrator floor (``moderation.settings.
+    # configure``) — only admins decide who moderates.  The grant only ever
+    # *adds* standing; a member keeps any access their Discord permissions
+    # already give them.
+    SettingSpec(
+        name="moderator_role",
+        value_type=str,
+        default="",
+        settings_key=MODERATOR_TIER_ROLE_ID,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "Role whose members may use moderation actions (warn, timeout, "
+            "kick, ban) without holding Discord moderation permissions.  Leave "
+            "empty to require Discord permissions only.  This only adds access — "
+            "no one who can moderate today loses it."
+        ),
+        validator=_validate_role_id_or_empty,
+        input_hint="role",
+    ),
+    SettingSpec(
+        name="trusted_role",
+        value_type=str,
+        default="",
+        settings_key=TRUSTED_TIER_ROLE_ID,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "Role whose members are treated as the 'trusted' tier — reserved "
+            "for trust-gated features and surfaces.  Leave empty to disable.  "
+            "Like the moderator role, this only ever adds standing."
+        ),
+        validator=_validate_role_id_or_empty,
+        input_hint="role",
+    ),
 )
 
 MODERATION_RESOURCE_REQUIREMENTS: tuple[ResourceRequirement, ...] = (
@@ -352,7 +403,9 @@ MODERATION_CONFIG_SCHEMA = SubsystemSchema(
     # (optional post-kick/ban message sweep, requested from the cleanup service).
     # v5 — PR10 fifth slice added public_log_actions / public_log_channel (optional
     # operator-opt-in public moderation log, delivered by services.server_logging).
-    version=5,
+    # v6 — PR10 final slice added moderator_role / trusted_role (capability-native
+    # authority — a configured role grants the moderator / trusted tier; ADR-008).
+    version=6,
 )
 
 

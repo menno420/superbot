@@ -69,7 +69,11 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   (`public_log_actions` / `public_log_channel`, default OFF, moderator-redacted,
   delivered by `services/server_logging.py`), all applied at / consumed from the
   `services/moderation_service` seam via `services/moderation_config.py`, plus a
-  read-only bot-readiness panel line from `utils/moderation_feasibility.py`).
+  read-only bot-readiness panel line from `utils/moderation_feasibility.py`), and
+  **capability-native moderator/trusted roles** (PR10 final slice, ADR-008: a configured
+  `moderator_role` grants the `moderator` tier via `governance/resolver.py`, OR-gated on
+  the cog + panel to preserve Discord-perm holders; both roles settable in the Settings
+  hub at the administrator floor).
 - Channel creation remains owned by resource provisioning; clone, overwrites, and
   some category/lifecycle follow-ups remain outside the shipped lifecycle service.
 - Cleanup and setup exist today, but the tracker queues their server-management
@@ -82,18 +86,17 @@ cleanup policy, setup, and the future unified hub. Inspect first:
 
 The status tracker's remaining queue is the only current sequencing authority.
 Cleanup versioning + builder/dry-run/panel diagnostics shipped 2026-06-06 (PR8+PR9,
-presets-only). **PR10 (moderation configuration) is nearly complete**: its first five
-slices have shipped — config-backed behaviour (DM-on-action, ban message-purge,
-timeout ceiling), require-reason + bot-readiness diagnostics, configurable warn
-escalation (`warn_escalation_action`), post-action message cleanup
-(`post_action_cleanup`, requested from the cleanup subsystem), and the optional public
-moderation log (`public_log_actions` / `public_log_channel`, moderator-redacted,
-delivered by `server_logging`). The **one remaining PR10 item** — moderator/trusted
-**roles + capabilities** (capability-native: a configured role resolves to the
-`moderator` tier, routed through the capability resolver) — comes next, then setup
-role/moderation/governance and repair sections, role templates, and finally the unified
-Server Management Hub. Link to the tracker for exact order and dependencies rather than
-copying them here.
+presets-only). **PR10 (moderation configuration) is COMPLETE**: all six slices shipped —
+config-backed behaviour (DM-on-action, ban message-purge, timeout ceiling),
+require-reason + bot-readiness diagnostics, configurable warn escalation
+(`warn_escalation_action`), post-action message cleanup (`post_action_cleanup`,
+requested from the cleanup subsystem), the optional public moderation log
+(`public_log_actions` / `public_log_channel`, moderator-redacted, delivered by
+`server_logging`), and **moderator/trusted roles + capabilities** (ADR-008,
+capability-native: a configured role resolves to the `moderator` tier via the governance
+tier resolver). Next comes **PR11** (setup role/moderation/governance sections), then
+repair sections, role templates, and finally the unified Server Management Hub. Link to
+the tracker for exact order and dependencies rather than copying them here.
 
 ## Ideas (not approved)
 
@@ -107,10 +110,10 @@ reusable so a web companion is *possible* later, but do not start web work now.
 
 ## Next candidates
 
-1. Finish PR10: its first–fifth slices shipped; the **last PR10 item** is
-   moderator/trusted **roles + capabilities** (owner decision 2026-06-07:
-   capability-native — a configured role resolves to the `moderator` tier, routed
-   through the capability resolver). Verify source before using either older planning
+1. **PR10 is complete** (all six slices, ending with moderator/trusted **roles +
+   capabilities** — ADR-008). Next is **PR11** (setup role/moderation/governance
+   sections): reuse provisioning previews/confirmation + capability checks; do not add a
+   second resource-creation path. Verify source before using either older planning
    document.
 2. Take one bounded known UX follow-up (member quicksearch or role selector/cleanup)
    without changing lifecycle ownership.

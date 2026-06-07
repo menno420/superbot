@@ -8,6 +8,8 @@ and external utils (subsystem_registry, visibility_rules, db, settings_keys).
 from __future__ import annotations
 
 import logging
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from governance.cache import (
     _CACHE_LOCK,
@@ -27,7 +29,11 @@ from governance.models import (
 )
 from utils import db
 from utils.subsystem_registry import SUBSYSTEMS
-from utils.visibility_rules import get_member_visibility_tier, get_subsystems_for_tier
+from utils.visibility_rules import (
+    get_member_visibility_tier,
+    get_subsystems_for_tier,
+    is_tier_sufficient,
+)
 
 logger = logging.getLogger("bot")
 
@@ -133,12 +139,55 @@ def _resolve_single_subsystem(
 
 
 # ---------------------------------------------------------------------------
-# Trusted tier resolution (ISSUE-015)
+# Configured-role tier grants (trusted: ISSUE-015 / moderator: ADR-008)
 # ---------------------------------------------------------------------------
 
 
+async def _role_grants_tier(
+    guild_id: int,
+    reader: Callable[[int], Awaitable[Any]],
+    role_ids: set[int],
+) -> bool:
+    """True when the guild's configured role (via ``reader``) is one the member holds.
+
+    ``reader`` is a :mod:`core.runtime.config_arbitration` getter returning a
+    ``ConfigReadResult`` whose ``.value`` is the configured role id (or ``None``).
+    A read failure degrades to ``False`` (no grant): a configured role may only
+    ever *add* standing, so a config-store hiccup must fail toward the lower
+    tier and can never escalate authority.
+    """
+    if not role_ids:
+        return False
+    try:
+        result = await reader(guild_id)
+    except Exception:  # noqa: BLE001 — a failed read must never grant a tier
+        return False
+    role_id = result.value
+    return role_id is not None and role_id in role_ids
+
+
 async def _resolve_member_tier(ctx: GovernanceContext) -> str:
-    """Resolve the member's visibility tier, applying trusted role check (ISSUE-015)."""
+    """Resolve the member's effective tier, applying configured-role grants.
+
+    The base tier comes from Discord permissions
+    (:func:`utils.visibility_rules.get_member_visibility_tier`).  Two
+    configured-role grants may then *raise* it — never lower it:
+
+    * the **moderator** role (``moderator_tier_role_id``) grants the
+      ``moderator`` tier, so its holders may use moderation actions without
+      holding the matching Discord permissions (capability-native authority,
+      ADR-008);
+    * the **trusted** role (``trusted_tier_role_id``) grants the ``trusted``
+      tier (ISSUE-015).
+
+    A grant applies only when the base tier is *below* the granted tier, so a
+    real administrator/owner is never demoted and the two grants compose (the
+    higher one wins).  Reads flow through the Phase 2 arbitration helpers so the
+    canary flip of ``bindings.primary`` stays a single change in
+    :mod:`core.runtime.config_arbitration`; this function MUST NOT branch on
+    ``is_enabled("bindings.primary", ...)`` directly (forbidden by the PR-7
+    invariant test).
+    """
     if ctx.member is None:
         return "user"
 
@@ -147,34 +196,27 @@ async def _resolve_member_tier(ctx: GovernanceContext) -> str:
         ctx.member.guild.owner_id if ctx.member.guild else 0,
     )
 
-    # Trusted tier: if the guild has a trusted_role binding (or legacy
-    # TRUSTED_TIER_ROLE_ID setting) AND the member has that role,
-    # promote them to "trusted" (but only if they're currently "user"
-    # — higher tiers like staff/mod/admin take precedence).
-    #
-    # Read flows through the Phase 2 arbitration helper so the canary
-    # flip of ``bindings.primary`` is a single change in
-    # :mod:`core.runtime.config_arbitration`.  This function MUST NOT
-    # branch on ``is_enabled("bindings.primary", ...)`` directly —
-    # that is forbidden by the invariant test in PR-7.
-    if tier == "user":
-        try:
-            # Local import — keep core.runtime out of governance/__init__'s
-            # module-load cycle (PR #74 protection).  resolver.py is a
-            # sibling of __init__.py but follows the same discipline.
-            from core.runtime.config_arbitration import get_trusted_tier_role
+    if ctx.role_ids:
+        # Local import — keep core.runtime out of governance/__init__'s
+        # module-load cycle (PR #74 protection).  resolver.py is a sibling of
+        # __init__.py but follows the same discipline.
+        from core.runtime.config_arbitration import (
+            get_moderator_tier_role,
+            get_trusted_tier_role,
+        )
 
-            trusted_role_result = await get_trusted_tier_role(ctx.guild_id)
-            trusted_role_id = trusted_role_result.value
-            if (
-                trusted_role_id is not None
-                and ctx.role_ids
-                and trusted_role_id in ctx.role_ids
-            ):
-                tier = "trusted"
-        except Exception:
-            # Fail gracefully: if the setting lookup fails, stay at "user"
-            pass
+        if not is_tier_sufficient(tier, "moderator") and await _role_grants_tier(
+            ctx.guild_id,
+            get_moderator_tier_role,
+            ctx.role_ids,
+        ):
+            tier = "moderator"
+        if not is_tier_sufficient(tier, "trusted") and await _role_grants_tier(
+            ctx.guild_id,
+            get_trusted_tier_role,
+            ctx.role_ids,
+        ):
+            tier = "trusted"
 
     return tier
 

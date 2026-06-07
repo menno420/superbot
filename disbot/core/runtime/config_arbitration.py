@@ -584,6 +584,25 @@ async def get_trusted_tier_role(guild_id: int) -> ConfigReadResult:
     return _coerce_to_int(result)
 
 
+async def get_moderator_tier_role(guild_id: int) -> ConfigReadResult:
+    """Resolve the governance moderator-tier role; value normalized to ``int|None``.
+
+    Symmetric to :func:`get_trusted_tier_role`.  Consumers
+    (``governance.resolver._resolve_member_tier``) check membership of this
+    role id against ``ctx.role_ids`` and, when matched, grant the member the
+    ``moderator`` tier so they may use moderation actions without holding the
+    corresponding Discord permissions (capability-native authority, ADR-008).
+    """
+    result = await read_config(
+        guild_id=guild_id,
+        subsystem="governance",
+        binding_name="moderator_role",
+        legacy_key="moderator_tier_role_id",
+        binding_kind="role",
+    )
+    return _coerce_to_int(result)
+
+
 # ---------------------------------------------------------------------------
 # Diagnostics provider registration (registers at import time)
 # ---------------------------------------------------------------------------
@@ -617,6 +636,7 @@ __all__ = [
     "attribution_snapshot",
     "counters_snapshot",
     "get_economy_log_channel",
+    "get_moderator_tier_role",
     "get_trusted_tier_role",
     "get_xp_announce_channel",
     "read_config",

@@ -20,6 +20,7 @@ from __future__ import annotations
 import discord
 
 from core.runtime.persistent_views import PersistentView, register
+from core.runtime.ui_permissions import can_execute
 from views.moderation.modals import (
     _BanModal,
     _ClearWarningsModal,
@@ -42,13 +43,22 @@ class ModPanelView(PersistentView):
     SUBSYSTEM = "moderation"
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not interaction.user.guild_permissions.moderate_members:  # type: ignore[union-attr]
-            await interaction.response.send_message(
-                "❌ You need Moderate Members permission.",
-                ephemeral=True,
-            )
-            return False
-        return True
+        # Behaviour-preserving OR-gate: the historical Moderate Members check OR
+        # the moderator-tier capability (e.g. a configured moderator role —
+        # ADR-008).  The panel is reachable via the Help menu, which is not
+        # admin-gated, so this is the panel's authority boundary
+        # (docs/capability-authority.md §4).
+        perms = getattr(interaction.user, "guild_permissions", None)
+        if perms is not None and perms.moderate_members:
+            return True
+        if await can_execute(interaction, "moderation.warn.apply"):
+            return True
+        await interaction.response.send_message(
+            "❌ You need Moderate Members permission or the configured "
+            "moderator role to use this panel.",
+            ephemeral=True,
+        )
+        return False
 
     @discord.ui.button(
         label="⚠️ Warn",

@@ -42,7 +42,11 @@ from utils.settings_keys.games import (
     DEATHMATCH_TURN_TIMEOUT,
     RPS_DEFAULT_ENTRY_FEE,
 )
-from utils.settings_keys.governance import GOVERNANCE_VERSION, TRUSTED_TIER_ROLE_ID
+from utils.settings_keys.governance import (
+    GOVERNANCE_VERSION,
+    MODERATOR_TIER_ROLE_ID,
+    TRUSTED_TIER_ROLE_ID,
+)
 from utils.settings_keys.logging import (
     DEFAULT_CLEANUP_CHANNEL_NAME,
     DEFAULT_MOD_CHANNEL_NAME,
@@ -101,6 +105,7 @@ __all__ = [
     "LOGGING_CLEANUP_CHANNEL",
     "LOGGING_ENABLED",
     "LOGGING_MOD_CHANNEL",
+    "MODERATOR_TIER_ROLE_ID",
     "MOD_BAN_DELETE_MESSAGE_DAYS",
     "MOD_DM_ON_ACTION",
     "MOD_DM_TEMPLATE",

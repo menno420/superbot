@@ -10,9 +10,9 @@
 > for PR8+PR9, then for **PR10's first–fifth slices** — config-backed moderation
 > behaviour, require-reason, bot-readiness diagnostics, configurable warn escalation,
 > the post-action message cleanup sweep, and the optional public moderation log).
-> **Body is current through PR10's fifth slice; the one remaining PR10 item
-> (moderator/trusted roles + capabilities) + PR11–PR14 are the queue** — the
-> "Shipped" + "Remaining queue" sections below are authoritative.
+> **Body is current through PR10's final slice — PR10 is COMPLETE** (all six slices
+> shipped, incl. moderator/trusted roles + capabilities, ADR-008). **PR11–PR14 are the
+> queue** — the "Shipped" + "Remaining queue" sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -436,16 +436,52 @@ the acting moderator** (owner decision 2026-06-07: public entries show action + 
   PR10 item (the capability-native tier-grant; owner decision 2026-06-07: a configured
   role resolves to the `moderator` tier, routed through the capability resolver).
 
+### PR10 (final slice) — Moderator/trusted roles + capabilities *(shipped 2026-06-07)*
+
+The **last PR10 item** and the highest-stakes change in the workstream (it changes
+*who can ban members*). Decision of record: **[ADR-008](../decisions/008-moderator-role-capability-native-authority.md)**
+(owner decision Q-0006 → A — capability-native role→tier grant). Scalar/KV,
+**no migration**, **behaviour-preserving by default**.
+
+- **Tier grant in the governance resolver** (`governance/resolver.py`):
+  `_resolve_member_tier` gains a **moderator-role** grant symmetric to the existing
+  trusted-role grant. A member holding the guild's configured
+  `moderator_tier_role_id` resolves to the `moderator` tier. Both grants only
+  **raise** a tier (never demote a real admin/owner) and **fail toward the lower
+  tier** on a config-read error — a configured role can only ever *add* standing.
+  Read via the new `config_arbitration.get_moderator_tier_role` (mirrors
+  `get_trusted_tier_role`).
+- **Behaviour-preserving OR-gate on the surfaces:** the mod cog's eight prefix
+  commands (`_require_mod`) and the panel `interaction_check` admit on
+  `Discord permission` **OR** the moderation capability (via `ui_permissions`,
+  new `can_execute_ctx` for the prefix path). The permission path is unchanged and
+  checked first, so no one who can moderate today loses access; denial raises
+  `MissingPermissions` so the error UX is preserved. The `/moderation` slash keeps
+  its Discord `default_permissions` UI default (documented boundary).
+- **Configured via the Settings hub** (owner decision: Settings-hub role setting):
+  two role-typed `SettingSpec`s (`moderator_role` / `trusted_role`,
+  `input_hint="role"`, schema → **v6**) on the moderation schema, written through the
+  audited `SettingsMutationPipeline` and gated by `moderation.settings.configure`
+  (administrator floor). This also makes the previously inert trusted role
+  configurable.
+- **Pinned by** `tests/unit/governance/test_role_tier_grants.py` (grant-via-role,
+  no-escalation, no-regression, precedence, cross-guild deny, fail-toward-lower),
+  `tests/unit/cogs/test_moderation_role_authority.py` (the cog + panel OR-gate), and
+  the `moderator_role` / `trusted_role` shapes + **v6** in `test_moderation_schemas.py`.
+  Live-booted (clean start, settings registry 0 findings). ADR + command-map +
+  capability-authority + folio docs updated.
+- **PR10 is now complete.** Next: **PR11** (setup role/moderation/governance sections).
+
 ---
 
-## Remaining queue (starts at PR10)
+## Remaining queue (starts at PR11)
 
 Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR10** | Moderation first-class configuration. **First–fifth slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup, optional public log — see above). Remaining: moderator/trusted roles + capabilities (the last PR10 item). | #521 |
-| **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
+| **PR10** | Moderation first-class configuration. **COMPLETE** — all six slices shipped (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup, optional public log, **and moderator/trusted roles + capabilities** — ADR-008, see above). | #521 |
+| **PR11** | Setup role/moderation/governance sections. **← next.** | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |
 | **PR14** | Server Management Hub (last). | all managers |
