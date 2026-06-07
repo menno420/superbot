@@ -211,3 +211,70 @@ def test_repo_current_state_has_no_stale_pending(cd):
     assert stale == [], "stale pending markers: " + "; ".join(
         f"{v[0]}: {v[2]}" for v in stale
     )
+
+
+# ---------------------------------------------------------------------------
+# Census (badge counts + top-level ratchet)
+# ---------------------------------------------------------------------------
+
+
+def test_census_counts_total_top_level_and_badges(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(docs / "a.md", "# A\n\n> **Status:** `binding`\n")
+    _write(docs / "b.md", "# B\n\n> **Status:** `binding`\n")
+    _write(docs / "c.md", "# C\n\n> **Status:** `plan`\n")
+    _write(docs / "subsystems" / "s.md", "# S\n\n> **Status:** `living-ledger`\n")
+    _write(docs / "decisions" / "001-x.md", "# ADR\n\nbody\n")  # ADR — no badge
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+
+    total, top_level, by_badge = cd.census()
+    assert total == 5
+    assert top_level == 3  # a, b, c (subdir + ADR don't count toward top-level)
+    assert by_badge["binding"] == 2
+    assert by_badge["plan"] == 1
+    assert by_badge["living-ledger"] == 1
+    assert by_badge["decision (ADR)"] == 1
+
+
+def test_census_flags_unbadged(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(docs / "bare.md", "# Bare\n\nno badge here\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    _, _, by_badge = cd.census()
+    assert by_badge["(unbadged)"] == 1
+
+
+def test_print_census_warns_over_ratchet(cd, tmp_path, monkeypatch, capsys):
+    docs = tmp_path / "docs"
+    for i in range(3):
+        _write(docs / f"d{i}.md", "# D\n\n> **Status:** `plan`\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(cd, "_TOP_LEVEL_DOCS_BUDGET", 2)  # 3 top-level > budget 2
+    cd.print_census()
+    out = capsys.readouterr().out
+    assert "census" in out
+    assert "⚠" in out and "ratchet" in out
+
+
+def test_print_census_silent_when_within_ratchet(cd, tmp_path, monkeypatch, capsys):
+    docs = tmp_path / "docs"
+    _write(docs / "only.md", "# Only\n\n> **Status:** `binding`\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(cd, "_TOP_LEVEL_DOCS_BUDGET", 41)
+    cd.print_census()
+    out = capsys.readouterr().out
+    assert "census" in out
+    assert "⚠" not in out  # within ratchet → no warning
+
+
+def test_repo_top_level_docs_within_ratchet(cd):
+    """The real repo's top-level pile must not silently grow past the ratchet."""
+    _, top_level, _ = cd.census()
+    assert top_level <= cd._TOP_LEVEL_DOCS_BUDGET, (
+        f"top-level docs/*.md = {top_level} > ratchet {cd._TOP_LEVEL_DOCS_BUDGET}; "
+        "move plans/audits/historical into a subdir or lower the ratchet."
+    )

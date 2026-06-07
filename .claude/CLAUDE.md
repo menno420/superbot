@@ -170,6 +170,14 @@ Reach for CodeGraph **without being asked** whenever the task involves any of th
 
 **Default order for any unfamiliar code:** `where` → `context` → grep-verify → `Read` only if more source detail is needed.
 
+**Before your first edit to a `disbot/*.py` file, run the file context map** —
+`python3.10 scripts/context_map.py <path>` (~0.2s). It is the **file-level** complement to
+CodeGraph's symbol-level tools: it surfaces module-level **and lazy/function-body
+(CodeGraph-invisible) imports**, reverse importers, blast radius, related docs/tests, a
+**recommended read set**, and the post-edit checks to run. A `PreToolUse` hook
+(`scripts/claude_pre_edit.py`) shows it automatically once per file per session, but run it
+yourself when planning a change. Full reference: `docs/context-map-tooling.md`.
+
 ### Reliable tools
 
 | Tool | Use for |

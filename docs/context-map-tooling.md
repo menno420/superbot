@@ -24,6 +24,18 @@ python scripts/context_map.py disbot/services/moderation_service.py
 python scripts/context_map.py disbot/cogs/moderation_cog.py --max-importers 30
 ```
 
+## Wired into the agent's reflex
+
+So the tool is *used*, not just available (the 2026-06-07 workflow review found it
+good but un-surfaced at edit time):
+
+- **`.claude/CLAUDE.md`** (CodeGraph section) names it as the file-level reflex:
+  run it before your first edit to a `disbot/*.py` file.
+- **`scripts/claude_pre_edit.py`** — a `PreToolUse` (Edit|Write) hook — injects the
+  map as `additionalContext` the **first time** a `disbot/*.py` file is edited in a
+  session (once per file; never blocks; skips non-`disbot` / new-file writes). Run
+  it by hand any time you're *planning* a change rather than mid-edit.
+
 ## How it resolves edges (and what to trust)
 
 | Section | Source | Trust |
